@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use App\Models\Exam;
@@ -13,23 +12,32 @@ use App\Models\Stage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
+
 class ExamController extends Controller
 {
     public function index()
     {
-        $exams = Exam::with('subject')
-            ->withCount('submissions')
-            ->latest()
-            ->get();
+        $user = auth()->user();
+        $query = Exam::with(['subject', 'stage'])->withCount('questions');
 
+        if ($user->role !== 'admin') {
+            $query->where(function ($q) use ($user) {
+                $q->where('teacher_id', $user->id);
+                if (!empty($user->subject_id)) {
+                    $q->orWhere('subject_id', $user->subject_id);
+                }
+            });
+        }
+
+        $exams = $query->latest()->get();
         return view('admin.exams.index', compact('exams'));
     }
 
     public function create()
     {
         $subjects = Subject::orderBy('name_ar')->get();
-        $stages = \App\Models\Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
-
+        $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
         return view('admin.exams.create', compact('subjects', 'stages'));
     }
 
@@ -39,11 +47,12 @@ class ExamController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'stage_id' => ['nullable', 'exists:stages,id'],
-            'duration_minutes' => ['required', 'integer', 'min:5', 'max:600'],
+            'duration_minutes' => ['required', 'integer', 'min:1', 'max:600'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.type' => ['required', 'in:mcq,essay'],
             'questions.*.question_text' => ['required', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
+            'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'questions.*.a' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.b' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.c' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
@@ -52,20 +61,26 @@ class ExamController extends Controller
             'questions.*.require_file' => ['nullable'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($request, $validated) {
             $exam = Exam::create([
+                'teacher_id' => auth()->id(),
                 'title' => $validated['title'],
                 'subject_id' => $validated['subject_id'],
                 'stage_id' => $validated['stage_id'] ?? null,
                 'duration_minutes' => $validated['duration_minutes'],
-                'is_published' => true,
             ]);
 
-            foreach ($validated['questions'] as $q) {
+            foreach ($request->questions as $q) {
+                $imagePath = null;
+                if (isset($q['image']) && $q['image'] instanceof \Illuminate\Http\UploadedFile) {
+                    $imagePath = $q['image']->store('questions', 'public');
+                }
+
                 Question::create([
                     'exam_id' => $exam->id,
                     'type' => $q['type'],
                     'question_text' => $q['question_text'],
+                    'image' => $imagePath,
                     'a' => $q['a'] ?? null,
                     'b' => $q['b'] ?? null,
                     'c' => $q['c'] ?? null,
@@ -77,199 +92,287 @@ class ExamController extends Controller
             }
         });
 
-        return response()->json(['title' => 'تم نشر الاختبار بنجاح 🚀']);
+        return response()->json(['message' => 'تم نشر الاختبار بنجاح 🚀'], 201);
+    }
+
+    public function edit(Exam $exam)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+            abort(403, 'غير مصرح لك بتعديل هذا الاختبار');
+        }
+
+        $stages = Stage::with('subjects')->get();
+        $subjects = Subject::orderBy('name_ar')->get();
+        return view('admin.exams.edit', compact('exam', 'stages', 'subjects'));
+    }
+
+    public function update(Request $request, Exam $exam)
+    {
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+            abort(403, 'غير مصرح لك بتحديث هذا الاختبار');
+        }
+
+        $validated = $request->validate([
+            'title'            => 'required|string|max:255',
+            'description'      => 'nullable|string',
+            'duration_minutes' => 'required|integer|min:1',
+            'total_marks'      => 'nullable|integer|min:1',
+            'pass_marks'       => 'nullable|integer|min:1',
+            'is_active'        => 'nullable|boolean',
+            'subject_id'       => 'nullable|exists:subjects,id',
+            'stage_id'         => 'nullable|exists:stages,id',
+        ]);
+
+        $exam->update([
+            'title'            => $validated['title'],
+            'description'      => $validated['description'] ?? $exam->description,
+            'duration_minutes' => $validated['duration_minutes'],
+            'total_marks'      => $validated['total_marks'] ?? $exam->total_marks,
+            'pass_marks'       => $validated['pass_marks'] ?? $exam->pass_marks,
+            'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
+            'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
+            'is_active'        => $request->has('is_active') ? $request->is_active : $exam->is_active,
+        ]);
+
+        return redirect()->route('admin.exams.index')->with('success', 'تم تحديث بيانات الاختبار بنجاح!');
     }
 
     public function stats($id)
     {
         $exam = Exam::with(['subject', 'questions', 'submissions.student'])->findOrFail($id);
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+            abort(403, 'غير مصرح لك بعرض إحصائيات هذا الاختبار');
+        }
 
-        // 1. تجهيز مصفوفة الإحصائيات بالأسماء الصحيحة التي تطلبها الواجهة
         $stats = [
-            'avg'   => $exam->submissions->avg('total_earned_grade') ?? 0, // حساب المتوسط
-            'max'   => $exam->submissions->max('total_earned_grade') ?? 0, // أعلى درجة
-            'count' => $exam->submissions->count(), // عدد الطلاب
+            'avg'   => $exam->submissions->avg('total_earned_grade') ?? 0,
+            'max'   => $exam->submissions->max('total_earned_grade') ?? 0,
+            'count' => $exam->submissions->count(),
         ];
 
-        // 2. تمرير المصفوفة للواجهة
         return view('admin.exams.stats', compact('exam', 'stats'));
+    }
+
+    public function submissions(Request $request)
+    {
+        $user = auth()->user();
+        $query = ExamSubmission::with(['student', 'exam.subject']);
+
+        if ($user->role !== 'admin') {
+            $query->whereHas('exam', function ($q) use ($user) {
+                $q->where('teacher_id', $user->id);
+            });
+        }
+
+        if ($request->has('exam_id')) {
+            $query->where('exam_id', $request->exam_id);
+        }
+
+        $submissions = $query->latest()->get();
+        return view('admin.exams.submissions', compact('submissions'));
+    }
+
+    public function grade($id)
+    {
+        $submission = ExamSubmission::with(['answers.question', 'student', 'exam.subject'])->findOrFail($id);
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+            abort(403, 'غير مصرح لك بتصحيح هذا التسليم');
+        }
+
+        return view('admin.exams.grading', compact('submission'));
+    }
+
+    public function saveGrade(Request $request, $id)
+    {
+        try {
+            $submission = ExamSubmission::with('exam')->findOrFail($id);
+            $user = auth()->user();
+            if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+                return response()->json(['success' => false, 'error' => 'غير مصرح لك برصد الدرجات لهذا التسليم'], 403);
+            }
+
+            if ($request->has('grades')) {
+                foreach ($request->grades as $answerId => $points) {
+                    SubmissionAnswer::where('id', $answerId)->update([
+                        'points_awarded' => $points
+                    ]);
+                }
+            }
+
+            $newTotalGrade = $submission->answers()->sum('points_awarded');
+            $submission->update([
+                'total_earned_grade' => $newTotalGrade,
+                'status' => 'graded'
+            ]);
+
+            return response()->json(['success' => true, 'title' => 'تم رصد الدرجات بنجاح ✅']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    // --- وظائف الطالب ---
+
+    public function studentIndex()
+    {
+        $user = auth()->user();
+        $student = $user->student ?? Student::where('email', $user->email)->first();
+        if (!$student) {
+            $student = Student::with('stage')->where('name_ar', 'LIKE', '%' . $user->name . '%')->first();
+        }
+        if (!$student) {
+            $student = Student::with('stage')->first();
+        }
+
+        $studentStageId = $student ? $student->stage_id : null;
+        $currentStageName = 'غير محددة';
+        if ($student && $student->stage_id) {
+            $stage = Stage::find($student->stage_id);
+            if ($stage) {
+                $stageArray = $stage->toArray();
+                unset($stageArray['id'], $stageArray['created_at'], $stageArray['updated_at'], $stageArray['stage_id']);
+                foreach ($stageArray as $value) {
+                    if (!empty($value) && is_string($value)) {
+                        $currentStageName = $value;
+                        break;
+                    }
+                }
+            }
+        }
+
+        $exams = Exam::with(['subject', 'stage', 'submissions' => function($query) use ($student) {
+            if ($student) {
+                $query->where('student_id', $student->id);
+            }
+        }])
+        ->withCount('questions')
+        ->when($studentStageId, function ($query) use ($studentStageId) {
+            $query->where('stage_id', $studentStageId)->orWhereNull('stage_id');
+        }, function ($query) {
+            $query->whereNull('stage_id');
+        })
+        ->latest()
+        ->get();
+
+        return view('student.exams.index', compact('exams', 'student', 'currentStageName'));
+    }
+
+    public function takeExam($examId)
+    {
+        $user = auth()->user();
+        $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+
+        if (!$student) {
+            return redirect()->route('student.exams.index')->with('error', 'حساب الطالب غير مرتبط بشكل صحيح.');
+        }
+
+        $alreadySubmitted = ExamSubmission::where('exam_id', $examId)->where('student_id', $student->id)->exists();
+        if ($alreadySubmitted) {
+            return redirect()->route('student.exams.index')->with('error', 'عذراً، لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكنك الدخول إليه مرة أخرى.');
+        }
+
+        $exam = Exam::with(['questions', 'subject', 'stage'])->findOrFail($examId);
+        return view('student.exams.take', compact('exam'));
+    }
+
+    public function submitExam(Request $request, $id)
+    {
+        try {
+            return DB::transaction(function () use ($request, $id) {
+                $user = auth()->user();
+                $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+
+                if (!$student) {
+                    return response()->json(['success' => false, 'error' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'], 422);
+                }
+
+                $exists = ExamSubmission::where('student_id', $student->id)->where('exam_id', $id)->exists();
+                if ($exists) {
+                    return response()->json(['success' => false, 'error' => 'لقد قمت بتقديم هذا الاختبار مسبقاً.'], 422);
+                }
+
+                $exam = Exam::with('questions')->findOrFail($id);
+
+                $submission = ExamSubmission::create([
+                    'exam_id' => $id,
+                    'student_id' => $student->id,
+                    'status' => 'pending',
+                    'total_earned_grade' => 0
+                ]);
+
+                $autoGrade = 0;
+                $answers = $request->input('answers', []);
+
+                foreach ($exam->questions as $q) {
+                    $studentAns = isset($answers[$q->id]) ? $answers[$q->id] : null;
+                    $points = 0;
+                    $filePath = null;
+
+                    if ($q->type == 'mcq') {
+                        $userAnswer = strtolower(trim($studentAns ?? ''));
+                        $correctAnswer = strtolower(trim($q->correct_answer ?? ''));
+
+                        if (!empty($userAnswer) && $userAnswer === $correctAnswer) {
+                            $points = $q->points;
+                        }
+                    } elseif ($q->type == 'essay') {
+                        if ($request->hasFile("files.{$q->id}")) {
+                            $filePath = $request->file("files.{$q->id}")->store('exams', 'public');
+                        }
+                    }
+
+                    SubmissionAnswer::create([
+                        'exam_submission_id' => $submission->id,
+                        'question_id' => $q->id,
+                        'answer_text' => is_array($studentAns) ? null : $studentAns,
+                        'file_path' => $filePath,
+                        'points_awarded' => ($q->type == 'mcq') ? $points : 0,
+                    ]);
+
+                    $autoGrade += $points;
+                }
+
+                $submission->update(['total_earned_grade' => $autoGrade]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تسليم الاختبار بنجاح!',
+                    'submission_id' => $submission->id,
+                    'redirect' => route('student.exams.results', $submission->id)
+                ]);
+            });
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'خطأ داخلي: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function showResult($id)
+    {
+        $submission = ExamSubmission::with(['exam.subject', 'answers.question'])->findOrFail($id);
+        return view('student.exams.results', compact('submission'));
     }
 
     public function gradebook()
     {
-        // جلب كل تسليمات الطالب الحالي مع العلاقات الضرورية
+        $user = auth()->user();
+        $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+
+        if (!$student) {
+            return redirect()->route('student.exams.index')->with('error', 'سجل الدرجات غير متاح لعدم وجود بيانات طالب مرتبطة.');
+        }
+
         $submissions = ExamSubmission::with(['exam.subject', 'answers.question'])
-            ->where('student_id', 1) // استبدل 1 بـ auth()->id() عند تفعيل الدخول
+            ->where('student_id', $student->id)
             ->latest()
             ->get();
 
         return view('student.exams.gradebook', compact('submissions'));
     }
-
-    // --- وظائف الطالب ---
-
-    /**
-     * عرض قائمة الاختبارات المتاحة للطالب
-     */
-    public function studentIndex() {
-        $exams = \App\Models\Exam::with('subject')->latest()->get();
-        return view('student.exams.index', compact('exams'));
-    }
-
-    /**
-     * دخول قاعة الاختبار وعرض الأسئلة
-     */
-    public function takeExam($id) {
-        $exam = \App\Models\Exam::with('questions')->findOrFail($id);
-        return view('student.exams.take', compact('exam'));
-    }
-
-    /**
-     * استقبال حلول الطالب وتصحيح الـ MCQ تلقائياً
-     */
-
-    /**
- * عرض قائمة تسليمات الطلاب للمدرس
- */
-public function submissions(Request $request)
-{
-    // جلب التسليمات مع بيانات الطالب والاختبار والمادة
-    $query = ExamSubmission::with(['student', 'exam.subject']);
-
-    // إذا كان هناك فلتر لاختبار معين
-    if ($request->has('exam_id')) {
-        $query->where('exam_id', $request->exam_id);
-    }
-
-    $submissions = $query->latest()->get();
-
-    // تأكد أن ملف الواجهة موجود في: resources/views/admin/exams/submissions.blade.php
-    return view('admin.exams.submissions', compact('submissions'));
-}
-
-/**
- * 1. عرض واجهة مراجعة وتصحيح إجابات الطالب
- */
-public function grade($id)
-{
-    // جلب التسليم مع كافة البيانات المرتبطة
-    $submission = ExamSubmission::with(['answers.question', 'student', 'exam.subject'])->findOrFail($id);
-    return view('admin.exams.grading', compact('submission'));
-}
-
-public function saveGrade(Request $request, $id)
-{
-    try {
-        $submission = ExamSubmission::findOrFail($id);
-
-        // تحديث درجات الأسئلة المقالية التي أرسلها المدرس
-        if ($request->has('grades')) {
-            foreach ($request->grades as $answerId => $points) {
-                SubmissionAnswer::where('id', $answerId)->update([
-                    'points_awarded' => $points
-                ]);
-            }
-        }
-
-        // إعادة حساب المجموع الكلي (تلقائي MCQ + يدوي Essay)
-        $newTotalGrade = $submission->answers()->sum('points_awarded');
-
-        $submission->update([
-            'total_earned_grade' => $newTotalGrade,
-            'status' => 'graded'
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'title' => 'تم رصد الدرجات بنجاح ✅'
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
-    }
-}
-public function submitExam(Request $request, $id)
-{
-    try {
-        return DB::transaction(function () use ($request, $id) {
-            $exam = Exam::with('questions')->findOrFail($id);
-
-            // 1. التأكد من وجود طالب واحد على الأقل في القاعدة (بما أننا في مرحلة التجربة)
-            $student = \App\Models\Student::first();
-            if (!$student) {
-                return response()->json(['success' => false, 'error' => 'لا يوجد طلاب في القاعدة! سجل طالب أولاً.'], 422);
-            }
-
-            // 2. إنشاء رأس التسليم
-            $submission = ExamSubmission::create([
-                'exam_id' => $id,
-                'student_id' => $student->id,
-                'status' => 'pending',
-                'total_earned_grade' => 0 // قيمة مبدئية
-            ]);
-
-            $autoGrade = 0;
-            $answers = $request->input('answers', []); // مصفوفة الإجابات
-
-            foreach ($exam->questions as $q) {
-                $studentAns = isset($answers[$q->id]) ? $answers[$q->id] : null;
-                $points = 0;
-                $filePath = null;
-
-                // تصحيح تلقائي للموضوعي
-                if ($q->type == 'mcq') {
-                    if ($studentAns == $q->correct_answer) {
-                        $points = $q->points;
-                    }
-                }
-                // رفع الملف للمقالي (إذا وجد)
-                elseif ($q->type == 'essay') {
-                    if ($request->hasFile("files.{$q->id}")) {
-                        $filePath = $request->file("files.{$q->id}")->store('exams', 'public');
-                    }
-                }
-
-                // حفظ تفاصيل الإجابة
-                SubmissionAnswer::create([
-                    'exam_submission_id' => $submission->id,
-                    'question_id' => $q->id,
-                    'answer_text' => is_array($studentAns) ? null : $studentAns,
-                    'file_path' => $filePath,
-                    'points_awarded' => ($q->type == 'mcq') ? $points : 0,
-                ]);
-
-                $autoGrade += $points;
-            }
-
-            // 3. تحديث الدرجة النهائية للتسليم
-            $submission->update(['total_earned_grade' => $autoGrade]);
-
-            return response()->json([
-                'success' => true,
-                'submission_id' => $submission->id
-            ]);
-        });
-    } catch (\Exception $e) {
-        // إرجاع الخطأ الحقيقي لنعرفه من الـ Console
-        return response()->json([
-            'success' => false,
-            'error' => 'خطأ داخلي: ' . $e->getMessage()
-        ], 500);
-    }
-}
-
-/**
- * عرض نتيجة الاختبار للطالب بعد التسليم
- */
-public function showResult($id)
-{
-    // جلب التسليم مع تفاصيل الأسئلة والإجابات والمادة
-    $submission = ExamSubmission::with(['exam.subject', 'answers.question'])
-        ->findOrFail($id);
-
-    // تأكد من أن ملف الواجهة موجود في: resources/views/student/exams/results.blade.php
-    return view('student.exams.results', compact('submission'));
-}
-
-
 }

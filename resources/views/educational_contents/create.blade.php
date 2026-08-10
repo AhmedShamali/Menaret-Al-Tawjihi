@@ -1,219 +1,265 @@
 @extends('layouts.app')
 
-@section('title', 'نشر محتوى ذكي')
+@section('title', 'إضافة محتوى تعليمي جديد')
 
 @section('content')
-<!-- المكتبات الضرورية -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<div class="content-wrapper">
 
-<div style="max-width: 900px; margin: 0 auto; padding-bottom: 50px;">
-    <div style="margin-bottom: 40px;">
-        <h1 style="font-size: 2.5rem; font-weight: 800; color: #1e293b;">نشر محتوى جديد 🎓</h1>
-        <p style="color: #64748b;">ارفع ملفاتك وتابع عملية الرفع لحظة بلحظة.</p>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">➕ إضافة محتوى تعليمي جديد</h1>
+            <p class="page-subtitle">يمكنك إضافة فيديو، ملف PDF، أو كلاهما معاً للدرس بضغطة واحدة</p>
+        </div>
+        <a href="{{ route('teacher.educational_contents.index') }}" class="btn-secondary-custom">إلغاء والعودة</a>
     </div>
 
-    <form id="uploadForm">
+    <form id="createForm" enctype="multipart/form-data">
         @csrf
-        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 30px;">
-            <!-- القسم الأيمن -->
-            <div style="display: flex; flex-direction: column; gap: 25px;">
+        <div class="form-grid">
+
+            <div class="main-column">
+
+                <!-- البيانات الأساسية -->
                 <div class="glass-card">
-                    <h3 style="margin-bottom: 25px; font-size: 1.2rem;">📦 بيانات المحتوى</h3>
+                    <h3 class="card-title">📦 البيانات الأساسية</h3>
 
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <!-- المرحلة والمادة -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div>
-                                <label class="f-label">المرحلة</label>
-                                <select id="stage_select" class="f-input" name="stage_select">
-                                    <option value="">اختر الصف...</option>
-                                    @foreach($stages as $stage)
-                                        <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div>
-                                <label class="f-label">المادة</label>
-                                <select name="subject_id" id="subject_select" class="f-input" disabled>
-                                    <option value="">اختر الصف أولاً</option>
-                                </select>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label class="f-label">عنوان الدرس / المحتوى <span class="required">*</span></label>
+                        <input type="text" name="title" class="f-input" placeholder="مثال: الدرس الثالث - الفيزياء" required>
+                    </div>
 
-                        <!-- العنوان -->
-                        <div>
-                            <label class="f-label">العنوان</label>
-                            <input type="text" id="title" placeholder="عنوان الدرس..." class="f-input">
-                        </div>
-
-                        <!-- تبديل النوع -->
-                        <div class="type-switcher">
-                            <label class="sw-btn">
-                                <input type="radio" name="type" value="video" checked hidden>
-                                <div class="sw-design">🎥 فيديو</div>
-                            </label>
-                            <label class="sw-btn">
-                                <input type="radio" name="type" value="file" hidden>
-                                <div class="sw-design">📄 ملف PDF</div>
-                            </label>
-                        </div>
-
-                        <!-- حقول الفيديو -->
-                        <div id="video_fields">
-                            <label class="f-label">مصدر الفيديو</label>
-                            <select id="upload_method" class="f-input" style="margin-bottom: 15px;">
-                                <option value="link">🔗 رابط (YouTube/Drive)</option>
-                                <option value="local">📤 رفع فيديو من الجهاز</option>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="f-label">المرحلة الدراسية <span class="required">*</span></label>
+                            <select id="stage_select" class="f-input">
+                                <option value="">اختر المرحلة...</option>
+                                @foreach($stages as $stage)
+                                    <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
+                                @endforeach
                             </select>
-                            <input type="text" id="url_path" placeholder="ضع الرابط هنا..." class="f-input">
-                            <input type="file" id="file_upload_video" class="f-input" style="display: none; background: #fff;">
                         </div>
-
-                        <!-- حقول الملف -->
-                        <div id="file_fields" style="display: none;">
-                            <label class="f-label">ارفاق PDF</label>
-                            <input type="file" id="file_upload_pdf" accept=".pdf" class="f-input" style="background: #fff;">
-                        </div>
-
-                        <!-- شريط التقدم -->
-                        <div id="progress_wrapper" style="display: none;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span id="progress_status" style="font-size: 0.85rem; font-weight: 700; color: #2563eb;">جاري الرفع...</span>
-                                <span id="progress_percent" style="font-size: 0.85rem; font-weight: 800;">0%</span>
-                            </div>
-                            <div class="progress-container">
-                                <div id="progress_bar" class="progress-fill"></div>
-                            </div>
+                        <div class="form-group">
+                            <label class="f-label">المادة الدراسية <span class="required">*</span></label>
+                            <select name="subject_id" id="subject_select" class="f-input" required disabled>
+                                <option value="">اختر المرحلة أولاً...</option>
+                            </select>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- القسم الأيسر -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div class="glass-card" style="padding: 25px;">
-                    <label class="f-label">اسم القناة</label>
-                    <input type="text" id="channel_name" class="f-input" style="margin-bottom: 15px;">
+                <!-- المرفقات -->
+                <div class="glass-card">
+                    <h3 class="card-title">📎 المرفقات المتاحة في هذا الدرس</h3>
 
-                    <label class="f-label">حجم الملف</label>
-                    <input type="text" id="file_size" class="f-input" style="margin-bottom: 15px;">
+                    <div class="attachment-selectors">
+                        <label class="selector-card" id="card_video">
+                            <input type="checkbox" id="check_video" onchange="toggleAttachmentSections()">
+                            <div class="selector-content">
+                                <span class="icon">🎥</span>
+                                <div>
+                                    <strong>فيديو تعليمي</strong>
+                                    <small>رابط يوتيوب أو رفع فيديو مباشرة</small>
+                                </div>
+                            </div>
+                        </label>
 
-                    <label class="f-label">الترتيب</label>
-                    <input type="number" id="order" value="1" class="f-input">
+                        <label class="selector-card" id="card_pdf">
+                            <input type="checkbox" id="check_pdf" onchange="toggleAttachmentSections()">
+                            <div class="selector-content">
+                                <span class="icon">📄</span>
+                                <div>
+                                    <strong>ملف مرفق (PDF)</strong>
+                                    <small>ملف ملخص، واجب، أو كتاب</small>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- تفاصيل الفيديو -->
+                    <div id="video_section" class="attachment-box" style="display: none;">
+                        <h4 class="box-title">🎬 تفاصيل الفيديو</h4>
+                        <div class="form-group">
+                            <label class="f-label">رابط الفيديو (YouTube)</label>
+                            <input type="text" name="video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=...">
+                        </div>
+                        <div class="form-group">
+                            <label class="f-label">أو رفع فيديو مباشر من جهازك</label>
+                            <input type="file" name="file_upload_video" accept="video/*" class="f-input file-input">
+                        </div>
+                    </div>
+
+                    <!-- تفاصيل الـ PDF -->
+                    <div id="pdf_section" class="attachment-box" style="display: none;">
+                        <h4 class="box-title">📑 تفاصيل ملف الـ PDF</h4>
+                        <div class="form-group">
+                            <label class="f-label">رفع ملف المستند (PDF / Document)</label>
+                            <input type="file" name="file_upload_pdf" accept=".pdf,.doc,.docx" class="f-input file-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="f-label">أو رابط ملف خارجي (Google Drive)</label>
+                            <input type="text" name="pdf_url" class="f-input" placeholder="https://drive.google.com/file/d/...">
+                        </div>
+                    </div>
+
+                    <!-- شريط التقدم -->
+                    <div id="upload_progress_container" class="progress-box" style="display: none;">
+                        <div class="progress-header">
+                            <span id="progress_status_text">جاري رفع الملفات... 📤</span>
+                            <span id="progress_percent_text">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="progress_bar_fill" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <button type="button" onclick="prformStore()" id="submitBtn" class="submit-btn">
-                    نشر المحتوى الآن ✅
+            </div>
+
+            <div class="side-column">
+                <div class="glass-card">
+                    <h3 class="card-title">⚙️ تفاصيل إضافية</h3>
+                    <div class="form-group">
+                        <label class="f-label">اسم القناة / المصدر</label>
+                        <input type="text" name="channel_name" class="f-input" placeholder="مثال: أ. معتز اسليم">
+                    </div>
+                    <div class="form-group">
+                        <label class="f-label">ترتيب الدرس</label>
+                        <input type="number" name="order" value="1" min="1" class="f-input">
+                    </div>
+                </div>
+
+                <button type="button" onclick="submitContent()" id="saveBtn" class="btn-submit">
+                    حفظ ونشر المحتوى 🚀
                 </button>
             </div>
+
         </div>
     </form>
 </div>
 
-<style>
-    .glass-card { background: white; padding: 30px; border-radius: 20px; border: 1px solid #f1f5f9; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-    .f-label { display: block; font-weight: 700; font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
-    .f-input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-family: inherit; }
-    .type-switcher { background: #f1f5f9; padding: 6px; border-radius: 12px; display: flex; gap: 5px; }
-    .sw-btn { flex: 1; cursor: pointer; }
-    .sw-design { padding: 10px; text-align: center; border-radius: 10px; font-weight: 700; color: #64748b; transition: 0.3s; }
-    .sw-btn input:checked + .sw-design { background: white; color: #2563eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .progress-container { height: 12px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-    .progress-fill { width: 0%; height: 100%; background: #2563eb; transition: width 0.2s; }
-    .submit-btn { width: 100%; padding: 18px; font-size: 1.1rem; border-radius: 15px; background: #2563eb; color: white; border: none; cursor: pointer; font-weight: 700; }
-    .submit-btn:disabled { background: #94a3b8; }
-</style>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     const stages = @json($stages);
 
-    // 1. منطق السلكت المعتمد عندك
-    document.getElementById('stage_select').addEventListener('change', function () {
+    document.getElementById('stage_select').addEventListener('change', function() {
         const subSel = document.getElementById('subject_select');
         subSel.innerHTML = '<option value="">اختر المادة...</option>';
-        if (this.value) {
-            const stage = stages.find(s => s.id == this.value);
-            if (stage && stage.subjects) {
-                stage.subjects.forEach(s => subSel.innerHTML += `<option value="${s.id}">${s.name_ar}</option>`);
-                subSel.disabled = false;
-            }
+        const stage = stages.find(s => s.id == this.value);
+        if (stage && stage.subjects && stage.subjects.length > 0) {
+            subSel.disabled = false;
+            stage.subjects.forEach(sub => {
+                subSel.innerHTML += `<option value="${sub.id}">${sub.name_ar}</option>`;
+            });
+        } else {
+            subSel.disabled = true;
         }
     });
 
-    // 2. التبديل بين فيديو و PDF
-    document.querySelectorAll('input[name="type"]').forEach(radio => {
-        radio.addEventListener('change', function () {
-            document.getElementById('video_fields').style.display = this.value === 'video' ? 'block' : 'none';
-            document.getElementById('file_fields').style.display = this.value === 'file' ? 'block' : 'none';
-        });
-    });
+    function toggleAttachmentSections() {
+        const videoChecked = document.getElementById('check_video').checked;
+        const pdfChecked = document.getElementById('check_pdf').checked;
 
-    // 3. طريقة الرفع (رابط أو ملف)
-    document.getElementById('upload_method').addEventListener('change', function () {
-        document.getElementById('url_path').style.display = this.value === 'link' ? 'block' : 'none';
-        document.getElementById('file_upload_video').style.display = this.value === 'local' ? 'block' : 'none';
-    });
+        document.getElementById('video_section').style.display = videoChecked ? 'block' : 'none';
+        document.getElementById('card_video').classList.toggle('selected', videoChecked);
 
-    // ==========================================
-    // 4. الدالة الأساسية prformStore
-    // ==========================================
-    function prformStore() {
-        let formData = new FormData();
+        document.getElementById('pdf_section').style.display = pdfChecked ? 'block' : 'none';
+        document.getElementById('card_pdf').classList.toggle('selected', pdfChecked);
+    }
 
-        // جلب القيم يدوياً
-        formData.append('subject_id', document.getElementById('subject_select').value);
-        formData.append('title', document.getElementById('title').value);
-        formData.append('type', document.querySelector('input[name="type"]:checked').value);
-        formData.append('channel_name', document.getElementById('channel_name').value);
-        formData.append('file_size', document.getElementById('file_size').value);
-        formData.append('order', document.getElementById('order').value);
-        formData.append('upload_method', document.getElementById('upload_method').value);
-        formData.append('url_path', document.getElementById('url_path').value);
+    function submitContent() {
+        const videoChecked = document.getElementById('check_video').checked;
+        const pdfChecked = document.getElementById('check_pdf').checked;
 
-        // إلحاق الملفات
-        let videoFile = document.getElementById('file_upload_video').files[0];
-        let pdfFile = document.getElementById('file_upload_pdf').files[0];
-        if (videoFile) formData.append('file_upload_video', videoFile);
-        if (pdfFile) formData.append('file_upload_pdf', pdfFile);
-
-        // إظهار شريط التقدم
-        document.getElementById('progress_wrapper').style.display = 'block';
-        let btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerText = "جاري الرفع...";
-
-        // الإرسال عبر Axios مع تتبع التقدم
-        axios.post("{{ route('educational_contents.store') }}", formData, {
-            onUploadProgress: (progressEvent) => {
-                let percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                document.getElementById('progress_bar').style.width = percent + '%';
-                document.getElementById('progress_percent').innerText = percent + '%';
-                if (percent === 100) document.getElementById('progress_status').innerText = "جاري المعالجة...";
-            }
-        })
-        .then(res => {
-            Swal.fire({ icon: 'success', title: res.data.tittle });
-            location.reload(); // إعادة تحميل بعد النجاح
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerText = "نشر المحتوى الآن ✅";
-
-            let msg = "الملف حجمه كبير";
-
-            if (err.response && err.response.data && err.response.data.tittle) {
-                msg = err.response.data.tittle;
-            }
-
+        if (!videoChecked && !pdfChecked) {
             Swal.fire({
-                icon: 'error',
-                title: 'خطأ',
-                text: msg
+                icon: 'warning',
+                title: 'تنبيه',
+                text: 'يرجى اختيار مرفق واحد على الأقل (فيديو أو ملف PDF) قبل الحفظ!',
             });
+            return;
+        }
 
-            document.getElementById('progress_wrapper').style.display = 'none';
+        const btn = document.getElementById('saveBtn');
+        const form = document.getElementById('createForm');
+        const formData = new FormData(form);
+
+        let contentType = 'video';
+        if (pdfChecked && !videoChecked) {
+            contentType = 'file';
+        } else if (videoChecked && pdfChecked) {
+            contentType = 'both';
+        }
+        formData.append('type', contentType);
+
+        btn.disabled = true;
+        btn.textContent = 'جاري الرفع...';
+
+        const progressContainer = document.getElementById('upload_progress_container');
+        const progressBarFill = document.getElementById('progress_bar_fill');
+        const progressPercentText = document.getElementById('progress_percent_text');
+
+        progressContainer.style.display = 'block';
+
+        axios.post("{{ route('teacher.educational_contents.store') }}", formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            onUploadProgress: function(progressEvent) {
+                if (progressEvent.lengthComputable) {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    progressBarFill.style.width = percent + '%';
+                    progressPercentText.textContent = percent + '%';
+                }
+            }
+        })
+        .then(function (response) {
+            Swal.fire({
+                icon: response.data.icon || 'success',
+                title: response.data.title || 'تم الإضافة بنجاح! 🎉',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                window.location.href = "{{ route('teacher.educational_contents.index') }}";
+            });
+        })
+        .catch(function (error) {
+            let errorMsg = 'حدث خطأ أثناء حفظ المحتوى';
+            if (error.response && error.response.data) {
+                errorMsg = error.response.data.title || error.response.data.message || errorMsg;
+            }
+
+            Swal.fire({ icon: 'error', title: 'خطأ', text: errorMsg });
+            progressContainer.style.display = 'none';
+            btn.disabled = false;
+            btn.textContent = 'حفظ ونشر المحتوى 🚀';
         });
     }
 </script>
+
+<style>
+    :root { --primary: #2563eb; --primary-dark: #1d4ed8; --border-color: #e2e8f0; --text-dark: #0f172a; --text-muted: #64748b; }
+    .content-wrapper { max-width: 1100px; margin: 0 auto; padding: 20px 0; }
+    .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .page-title { font-size: 2rem; font-weight: 800; color: var(--primary); margin: 0; }
+    .form-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 25px; }
+    .main-column, .side-column { display: flex; flex-direction: column; gap: 20px; }
+    .glass-card { background: #ffffff; padding: 28px; border-radius: 20px; border: 1px solid var(--border-color); }
+    .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 15px; }
+    .form-group { margin-bottom: 18px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .f-label { display: block; font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; }
+    .f-input { width: 100%; padding: 12px; border-radius: 12px; border: 1.5px solid var(--border-color); outline: none; }
+    .attachment-selectors { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .selector-card { border: 2px solid var(--border-color); padding: 16px; border-radius: 16px; cursor: pointer; position: relative; }
+    .selector-card.selected { border-color: var(--primary); background: #eff6ff; }
+    .selector-content { display: flex; align-items: center; gap: 12px; }
+    .attachment-box { background: #f8fafc; padding: 20px; border-radius: 16px; border: 2px dashed #cbd5e1; margin-top: 15px; }
+    .progress-box { background: #eff6ff; padding: 20px; border-radius: 16px; margin-top: 20px; }
+    .progress-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 10px; }
+    .progress-bar-bg { width: 100%; height: 12px; background: #dbeafe; border-radius: 10px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
+    .btn-submit { background: var(--primary); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; }
+    .btn-secondary-custom { border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 12px; color: var(--text-dark); text-decoration: none; }
+</style>
 @endsection

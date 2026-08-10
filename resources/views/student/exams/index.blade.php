@@ -1,94 +1,144 @@
 @extends('layouts.app')
 
-@section('title', 'قاعة الاختبارات الرقمية')
+@section('title', 'اختباراتي الدراسية')
 
 @section('content')
-<div style="display: flex; flex-direction: column; gap: 40px; animation: fadeIn 0.8s ease;">
+<div style="direction: rtl; text-align: right; padding: 20px; font-family: 'Tajawal', sans-serif;">
 
-    <!-- رأس الصفحة الفخم -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; background: white; padding: 40px; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.02);">
+    <!-- هيدر البوابة الأكاديمية -->
+    <div style="background: #0f172a; color: #ffffff; border-radius: 16px; padding: 30px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
         <div>
-            <div class="hero-badge">بوابة التقييم الأكاديمي</div>
-            <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary); margin-top: 15px; letter-spacing: -1px;">اختباراتي المتاحة 📝</h1>
-            <p style="color: var(--text-light); font-size: 1.1rem; margin-top: 10px;">هنا تجد كافة الاختبارات والتقييمات المقررة لك في مساقاتك الحالية.</p>
+            <span style="background: #3b82f6; color: #fff; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; margin-bottom: 10px;">بوابة الطالب الأكاديمية</span>
+            <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 800;">مرحباً بك، {{ optional($student)->name_ar ?? auth()->user()->name }}</h2>
+            <p style="margin: 0; color: #94a3b8; font-size: 15px;">
+                المرحلة الدراسية الحالية:
+                <span style="color: #f59e0b; font-weight: bold;">
+                    {{ $currentStageName ?? 'غير محددة' }}
+                </span>
+            </p>
         </div>
-        <div style="text-align: left;">
-            <div style="font-size: 0.8rem; color: var(--text-light); font-weight: 700; margin-bottom: 5px;">إجمالي الاختبارات</div>
-            <div style="font-size: 2.2rem; font-weight: 900; color: var(--accent);">{{ $exams->count() }}</div>
+        <div style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px; border-radius: 12px; text-align: center;">
+            <span style="display: block; color: #94a3b8; font-size: 12px; margin-bottom: 4px;">التاريخ الأكاديمي</span>
+            <strong style="color: #fff; font-family: monospace; font-size: 14px;">{{ date('Y/m/d') }}</strong>
         </div>
     </div>
 
-    <!-- شبكة الاختبارات (Exams Grid) -->
-    @if($exams->isEmpty())
-        <div class="glass-card" style="padding: 100px; text-align: center; border: none; background: white;">
-            <div style="font-size: 5rem; margin-bottom: 20px; opacity: 0.3;">🍃</div>
-            <h2 style="color: var(--primary); font-weight: 700;">لا توجد اختبارات متاحة حالياً</h2>
-            <p style="color: var(--text-light);">سيقوم المدرسون بنشر الاختبارات فور جهوزيتها، تابعنا دائماً.</p>
-        </div>
-    @else
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 30px;">
-            @foreach($exams as $exam)
-            <div class="glass-card exam-card" style="padding: 0; overflow: hidden; border: none; background: white; transition: 0.4s;">
-
-                {{-- شريط ملون علوي يطابق لون المادة --}}
-                <div style="height: 8px; background: {{ $exam->subject->color ?? 'var(--accent)' }};"></div>
-
-                <div style="padding: 35px;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px;">
-                        <span class="subject-chip" style="background: {{ $exam->subject->color ?? 'var(--accent)' }}15; color: {{ $exam->subject->color ?? 'var(--accent)' }};">
-                            {{ $exam->subject->name_ar }}
-                        </span>
-                        <div class="duration-tag">
-                            ⏱ {{ $exam->duration_minutes }} دقيقة
-                        </div>
-                    </div>
-
-                    <h3 style="font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 12px; line-height: 1.4;">
-                        {{ $exam->title }}
-                    </h3>
-
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 0.85rem; color: var(--text-light);">
-                        <span>📄 {{ $exam->questions_count ?? $exam->questions->count() }} أسئلة</span>
-                        <span style="opacity: 0.3;">|</span>
-                        <span>🎓 درجة الاختبار: {{ $exam->questions->sum('points') }}</span>
-                    </div>
-
-                    <div style="padding-top: 20px; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
-                        <a href="{{ route('student.exams.take', $exam->id) }}" class="start-exam-btn">
-                            دخول الاختبار
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 5px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                        </a>
-                        <span style="font-size: 0.7rem; font-weight: 700; color: #10b981; display: flex; align-items: center; gap: 5px;">
-                            <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
-                            متاح حالياً
-                        </span>
-                    </div>
-                </div>
-            </div>
-            @endforeach
+    <!-- تنبيه إذا كان الحساب غير مرتبط بمرحلة -->
+    @if(!$student || !$student->stage_id)
+        <div style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 15px 20px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; font-weight: bold;">
+            ⚠️ تنبيه: حساب الطالب غير مرتبط بشكل صحيح بالمرحلة الدراسية في قاعدة البيانات. يرجى مراجعة الإدارة لربط السجل بـ stage_id.
         </div>
     @endif
 
+    <!-- رسائل التنبيه والنجاح أو الخطأ -->
+    @if(session('success'))
+        <div style="background: #dcfce7; border: 1px solid #bbf7d0; color: #166534; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
+            ✓ {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background: #fee2e2; border: 1px solid #fecaca; color: #991b1b; padding: 15px; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
+            ✕ {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- عنوان القسم -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h4 style="margin: 0; font-size: 18px; font-weight: bold; color: #1e293b;">
+            📋 الاختبارات المتاحة لمرحلتك
+        </h4>
+        <span style="background: #f1f5f9; color: #475569; padding: 6px 15px; border-radius: 20px; font-size: 13px; border: 1px solid #cbd5e1;">
+            عدد الاختبارات: {{ isset($exams) ? $exams->count() : 0 }}
+        </span>
+    </div>
+
+    <!-- شبكة الاختبارات -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
+        @forelse($exams as $exam)
+            @php
+                $hasSubmitted = $student && $exam->submissions && $exam->submissions->where('student_id', $student->id)->isNotEmpty();
+                $submissionRecord = $hasSubmitted ? $exam->submissions->where('student_id', $student->id)->first() : null;
+            @endphp
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <span style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold;">
+                            {{ optional($exam->subject)->name_ar ?? (optional($exam->subject)->name ?? 'مادة عامة') }}
+                        </span>
+                        <span style="background: #2563eb; color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">
+                            {{ optional($exam->stage)->name_ar ?? (optional($exam->stage)->name ?? 'عام') }}
+                        </span>
+                    </div>
+
+                    <h5 style="margin: 0 0 10px 0; font-size: 17px; font-weight: bold; color: #0f172a; line-height: 1.4;">
+                        {{ $exam->title }}
+                    </h5>
+
+                    <p style="margin: 0 0 20px 0; color: #64748b; font-size: 13px; line-height: 1.6;">
+                        {{ $exam->description ?? 'اختبار معتمد ضمن خطتك الدراسية لهذا الفصل، يرجى الالتزام بالوقت المخصص.' }}
+                    </p>
+
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 12px; margin-bottom: 20px; border: 1px solid #f1f5f9; display: flex; text-align: center;">
+                        <div style="flex: 1; border-left: 1px solid #e2e8f0;">
+                            <span style="display: block; color: #94a3b8; font-size: 11px; margin-bottom: 2px;">مدة الاختبار</span>
+                            <strong style="color: #1e293b; font-size: 13px;">{{ $exam->duration_minutes }} دقيقة</strong>
+                        </div>
+                        <div style="flex: 1;">
+                            <span style="display: block; color: #94a3b8; font-size: 11px; margin-bottom: 2px;">عدد الأسئلة</span>
+                            <strong style="color: #1e293b; font-size: 13px;">{{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} أسئلة</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    @if($hasSubmitted)
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button disabled style="flex: 1; background: #dcfce7; color: #166534; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; border: 1px solid #bbf7d0; cursor: not-allowed; font-size: 14px;">
+                                ✓ تم التقديم
+                            </button>
+                            @if($submissionRecord)
+                                <a href="{{ route('student.exams.result', $submissionRecord->id) }}" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; text-align: center; padding: 12px 16px; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 14px; white-space: nowrap;">
+                                    النتيجة
+                                </a>
+                            @endif
+                        </div>
+                    @else
+                        <!-- زر مع دالة تأكيد البدء -->
+                        <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" style="display: block; width: 100%; background: #2563eb; color: #fff; text-align: center; padding: 12px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+                            بدء الاختبار الآن ←
+                        </button>
+                    @endif
+                </div>
+            </div>
+        @empty
+            <div style="grid-column: 1 / -1; background: #ffffff; border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px; text-align: center;">
+                <div style="font-size: 40px; margin-bottom: 10px; color: #94a3b8;">📂</div>
+                <h5 style="margin: 0 0 5px 0; font-size: 16px; font-weight: bold; color: #1e293b;">لا توجد اختبارات متاحة حالياً</h5>
+                <p style="margin: 0; color: #64748b; font-size: 13px;">لم يتم طرح أي اختبارات جديدة لمرحلتك الدراسية في الوقت الحالي.</p>
+            </div>
+        @endforelse
+    </div>
+
 </div>
 
-<style>
-    .hero-badge {
-        display: inline-block; padding: 6px 16px; background: var(--accent); color: white;
-        border-radius: 10px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmStartExam(takeUrl) {
+        Swal.fire({
+            title: 'هل أنت متأكد من بدء الاختبار؟',
+            text: 'تنبيه: يمكنك تقديم هذا الاختبار مرة واحدة فقط، وبمجرد البدء سيبدأ احتساب الوقت ولا يمكنك التراجع!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، ابدأ الاختبار',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = takeUrl;
+            }
+        });
     }
-
-    .exam-card:hover { transform: translateY(-10px); box-shadow: 0 25px 60px rgba(0,0,0,0.06); }
-
-    .subject-chip { padding: 6px 15px; border-radius: 10px; font-size: 0.8rem; font-weight: 800; }
-
-    .duration-tag { font-size: 0.8rem; font-weight: 700; color: var(--text-light); background: #f8fafc; padding: 6px 12px; border-radius: 10px; }
-
-    .start-exam-btn {
-        display: flex; align-items: center; text-decoration: none;
-        color: var(--accent); font-weight: 800; font-size: 0.95rem; transition: 0.3s;
-    }
-    .start-exam-btn:hover { color: var(--primary); transform: translateX(-5px); }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-</style>
+</script>
 @endsection

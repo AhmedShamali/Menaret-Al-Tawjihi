@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Stage;
+use Illuminate\Support\Facades\DB;
 
 class StageSeeder extends Seeder
 {
@@ -12,18 +13,32 @@ class StageSeeder extends Seeder
      */
     public function run(): void
     {
-            $data = [
-                ['grade_level' => 7,  'label_ar' => 'الصف السابع', 'icon' => '📚'],
-                ['grade_level' => 8,  'label_ar' => 'الصف الثامن', 'icon' => '📖'],
-                ['grade_level' => 9,  'label_ar' => 'الصف التاسع', 'icon' => '🖋️'],
-                ['grade_level' => 10, 'label_ar' => 'الصف العاشر', 'icon' => '🧪'],
-                ['grade_level' => 11, 'label_ar' => 'الصف الحادي عشر', 'icon' => '📐'],
-                ['grade_level' => 12, 'label_ar' => 'الصف الثاني عشر (توجيهي)', 'icon' => '🎓'],
-            ];
+        // إيقاف فحص المفاتيح الأجنبية وتفريغ جدول المراحل
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        Stage::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-            foreach ($data as $item) {
-                \App\Models\Stage::create($item);
-            }
+        $data = [
+            ['grade_level' => 7,   'label_ar' => 'الصف السابع', 'icon' => '📚'],
+            ['grade_level' => 8,   'label_ar' => 'الصف الثامن', 'icon' => '📖'],
+            ['grade_level' => 9,   'label_ar' => 'الصف التاسع', 'icon' => '🖋️'],
+            ['grade_level' => 10,  'label_ar' => 'الصف العاشر', 'icon' => '🧪'],
+
+            // الفرع الأدبي
+            ['grade_level' => 111, 'label_ar' => 'الصف الحادي عشر - أدبي', 'icon' => '📜'],
+            ['grade_level' => 121, 'label_ar' => 'الصف الثاني عشر - أدبي', 'icon' => '🎓'],
+
+            // الفرع العلمي
+            ['grade_level' => 112, 'label_ar' => 'الصف الحادي عشر - علمي', 'icon' => '📐'],
+            ['grade_level' => 122, 'label_ar' => 'الصف الثاني عشر - علمي', 'icon' => '⚛️'],
+        ];
+
+        foreach ($data as $item) {
+            Stage::create([
+                'grade_level' => $item['grade_level'],
+                'label_ar'    => $item['label_ar'],
+                'icon'        => $item['icon'],
+            ]);
         }
     }
-
+}

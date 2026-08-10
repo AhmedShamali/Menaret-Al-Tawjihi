@@ -2,18 +2,32 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Student extends Model
+class Student extends Authenticatable
 {
+    use Notifiable;
+
     protected $fillable = [
-        'name_ar', 'name_en', 'nid', 'email', 'password',
-        'age', 'gender', 'phone', 'whatsapp', 'photo',
-        'id_photo', 'stage_id', 'status'
+        'name_ar', 'name_en', 'nid', 'email', 'password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status'
     ];
 
-    // حلقة الوصل مع الصف الدراسي
+    protected $hidden = [
+        'password', 'remember_token',
+    ];
+
     public function stage() {
-        return $this->belongsTo(Stage::class, 'stage_id');
+        return $this->belongsTo(Stage::class);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(Activity::class);
+    }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'student_id');
     }
 }

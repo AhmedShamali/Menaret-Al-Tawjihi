@@ -21,16 +21,11 @@ return new class extends Migration
             $table->integer('age');
             $table->enum('gender', ['ذكر', 'أنثى']);
             $table->string('phone');
-            $table->string('whatsapp');
-            $table->string('status')->default('pending')->change();
+            $table->string('whatsapp')->nullable();
             $table->string('photo')->nullable();
             $table->string('id_photo')->nullable();
-            $table->foreignId('stage_id')->constrained('stages')->onDelete('cascade');
-            $table->enum('status', [
-                'pending',
-                'draft',
-                'published'
-            ])->default('pending');
+            $table->foreignId('stage_id')->constrained('stages')->onDelete('cascade'); // ربط المرحلة الدراسية بشكل صحيح
+            $table->enum('status', ['pending', 'draft', 'published'])->default('pending'); // تعريف الحالة مرة واحدة بشكل صحيح
             $table->timestamps();
         });
     }

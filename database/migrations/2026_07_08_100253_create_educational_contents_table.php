@@ -19,7 +19,8 @@ return new class extends Migration
                 $table->text('url_path');
                 $table->string('channel_name')->nullable();
                 $table->string('file_size')->nullable();
-                $table->integer('order')->default(0); 
+                $table->integer('order')->default(0);
+                $table->integer('views_count')->default(0);
                 $table->timestamps();
             });
         }

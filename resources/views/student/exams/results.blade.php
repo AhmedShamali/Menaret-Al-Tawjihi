@@ -1,73 +1,115 @@
 @extends('layouts.app')
 
-@section('title', 'حالة تسليم الاختبار')
+@section('title', 'تفاصيل نتيجة الاختبار')
 
 @section('content')
-<div style="max-width: 850px; margin: 0 auto; animation: slideUp 0.6s ease;">
+<style>
+    .result-card { background: #fff; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid #eef2f6; overflow: hidden; margin-bottom: 30px; }
+    .result-header { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white; padding: 40px; text-align: center; }
+    .score-badge { background: rgba(255,255,255,0.2); display: inline-block; padding: 15px 30px; border-radius: 50px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); margin-top: 15px; }
 
-    <div class="glass-card" style="padding: 60px; text-align: center; border: none; border-radius: 40px; background: white; box-shadow: 0 20px 60px rgba(0,0,0,0.02);">
+    .question-box { border: 2px solid #f1f5f9; border-radius: 18px; padding: 25px; margin-bottom: 20px; position: relative; transition: 0.3s; }
+    .status-badge { position: absolute; top: 20px; left: 20px; padding: 5px 15px; border-radius: 10px; font-weight: 800; font-size: 0.8rem; display: flex; align-items: center; gap: 5px; }
 
-        {{-- عرض حالة الاختبار بناءً على رصد المدرس --}}
-        @if($submission->status == 'pending')
-            {{-- حالة قيد المراجعة --}}
-            <div style="font-size: 5rem; margin-bottom: 25px; animation: pulse 2s infinite;">⏳</div>
-            <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">تم تسليم إجاباتك بنجاح!</h1>
-            <p style="color: #64748b; font-size: 1.2rem; max-width: 500px; margin: 15px auto; line-height: 1.6;">
-                شكراً لك يا بطل. إجاباتك الآن **قيد المراجعة والتدقيق** من قبل مدرس المساق. سيتم إخطارك فور رصد الدرجة النهائية.
-            </p>
+    /* ألوان الحالات */
+    .correct { border-color: #10b981; background-color: #f0fdf4; }
+    .correct .status-badge { background: #10b981; color: white; }
 
-            <div style="margin: 40px 0; padding: 25px 40px; background: #f8fafc; border-radius: 20px; display: inline-flex; align-items: center; gap: 15px; border: 1px solid #e2e8f0;">
-                <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 50%;"></div>
-                <span style="font-weight: 700; color: #92400e;">حالة النتيجة: بانتظار تصحيح المدرس</span>
-            </div>
-        @else
-            {{-- حالة تم الرصد (تظهر بعد تعديل المدرس) --}}
-            <div style="font-size: 5rem; margin-bottom: 25px;">🎓</div>
-            <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">النتيجة النهائية للاختبار</h1>
-            <p style="color: #64748b; font-size: 1.2rem;">{{ $submission->exam->title }} • {{ $submission->exam->subject->name_ar }}</p>
+    .wrong { border-color: #ef4444; background-color: #fef2f2; }
+    .wrong .status-badge { background: #ef4444; color: white; }
 
-            <div style="margin: 40px 0; padding: 30px; background: #ecfdf5; border-radius: 25px; display: inline-block; min-width: 250px; border: 2px solid #10b98120;">
-                <div style="font-size: 4rem; font-weight: 900; color: #059669;">{{ $submission->total_earned_grade }}</div>
-                <div style="font-size: 1rem; color: #065f46; font-weight: 700;">الدرجة النهائية المرصودة</div>
-            </div>
-        @endif
+    .pending { border-color: #f59e0b; background-color: #fffbeb; }
+    .pending .status-badge { background: #f59e0b; color: white; }
 
-        {{-- مراجعة الأسئلة التي تم تسليمها --}}
-        <div style="text-align: right; margin-top: 50px;">
-            <h3 style="margin-bottom: 25px; color: var(--primary); border-right: 4px solid var(--accent); padding-right: 15px;">ملخص الإجابات المسلمة</h3>
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                @foreach($submission->answers as $ans)
-                <div style="padding: 25px; border-radius: 22px; background: white; border: 1px solid #f1f5f9; position: relative; overflow: hidden;">
-                    <p style="font-weight: 700; margin-bottom: 12px; color: #1e293b;">{{ $ans->question->question_text }}</p>
+    .answer-text { background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px; font-weight: 600; }
+    .mcq-option { padding: 10px 15px; border-radius: 10px; margin-top: 5px; border: 1px solid #e2e8f0; font-size: 0.9rem; }
+    .correct-option { background: #d1fae5; border-color: #10b981; color: #065f46; font-weight: bold; }
+</style>
 
-                    <div style="font-size: 0.9rem; color: #64748b;">
-                        @if($ans->question->type == 'mcq')
-                            إجابتك المختارة: <strong>({{ strtoupper($ans->answer_text) }}) {{ $ans->question->{$ans->answer_text} }}</strong>
-                        @else
-                            نص الإجابة: <em style="color: #0f172a;">{{ $ans->answer_text ?? 'لقد قمت برفع ملف كحل لهذا السؤال' }}</em>
-                        @endif
-                    </div>
+<div style="max-width: 1000px; margin: 0 auto; padding: 20px;">
 
-                    {{-- شريط الحالة بجانب السؤال --}}
-                    <div style="position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: {{ $submission->status == 'graded' ? ($ans->points_awarded > 0 ? '#10b981' : '#ef4444') : '#cbd5e1' }};"></div>
-                </div>
-                @endforeach
+    {{-- هيدر النتيجة --}}
+    <div class="result-card">
+        <div class="result-header">
+            <h1 style="font-size: 2rem; font-weight: 900; margin: 0;">{{ $submission->exam->title }}</h1>
+            <p style="opacity: 0.8; margin-top: 10px;">مراجعة الإجابات المفصلة</p>
+            <div class="score-badge">
+                <span style="font-size: 2.5rem; font-weight: 900;">{{ $submission->total_earned_grade }}</span>
+                <span style="font-size: 1.2rem; opacity: 0.8;"> / {{ $submission->exam->questions->sum('points') }}</span>
             </div>
         </div>
 
-        <div style="margin-top: 50px; display: flex; gap: 15px; justify-content: center;">
-            <a href="/student/my-exams" class="btn btn-primary" style="padding: 15px 40px; border-radius: 15px;">العودة لقاعة الاختبارات</a>
-            <button onclick="window.print()" class="btn" style="background: #f1f5f9; padding: 15px 30px; border-radius: 15px; font-weight: 700;">📑 طباعة وصل التسليم</button>
+        <div style="padding: 40px;">
+            <h3 style="margin-bottom: 25px; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-clipboard-check" style="color: #4f46e5;"></i> مراجعة الإجابات:
+            </h3>
+
+            @foreach($submission->answers as $idx => $ans)
+                @php
+                    $awarded = (float)$ans->points_awarded;
+                    $max = (float)$ans->question->points;
+
+                    // تحديد الحالة
+                    if($ans->question->type == 'mcq') {
+                        $isCorrect = ($awarded >= $max && $max > 0);
+                        $statusClass = $isCorrect ? 'correct' : 'wrong';
+                        $statusText = $isCorrect ? 'إجابة صحيحة' : 'إجابة خاطئة';
+                        $icon = $isCorrect ? 'fa-check' : 'fa-xmark';
+                    } else {
+                        // الأسئلة المقالية غالباً تحتاج مراجعة معلم
+                        $statusClass = $awarded > 0 ? 'correct' : 'pending';
+                        $statusText = $awarded > 0 ? 'تم التصحيح' : 'بانتظار تصحيح المعلم';
+                        $icon = 'fa-clock';
+                    }
+                @endphp
+
+                <div class="question-box {{ $statusClass }}">
+                    <div class="status-badge">
+                        <i class="fa-solid {{ $icon }}"></i> {{ $statusText }} ({{ $awarded }} / {{ $max }})
+                    </div>
+
+                    <div style="max-width: 80%;">
+                        <span style="color: #4f46e5; font-weight: 800; font-size: 0.9rem;">السؤال {{ $idx + 1 }}:</span>
+                        <h4 style="color: #1e293b; margin: 10px 0; line-height: 1.6;">{{ $ans->question->question_text }}</h4>
+
+                        @if($ans->question->type == 'mcq')
+                            {{-- عرض الخيارات مع تحديد الصحيح --}}
+                            <div style="margin-top: 15px;">
+                                @foreach(['a', 'b', 'c', 'd'] as $opt)
+                                    @if($ans->question->$opt)
+                                        <div class="mcq-option {{ strtolower($ans->question->correct_answer) == $opt ? 'correct-option' : '' }}">
+                                            <strong>{{ strtoupper($opt) }}:</strong> {{ $ans->question->$opt }}
+                                            @if(strtolower($ans->answer_text) == $opt)
+                                                <span style="float: left; font-size: 0.7rem; background: #4f46e5; color: white; padding: 2px 8px; border-radius: 5px;">إجابتك</span>
+                                            @endif
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="answer-text">
+                                <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 5px;">الإجابة المسجلة:</span>
+                                {{ $ans->answer_text ?? 'تم رفع ملف مرفق لهذا السؤال' }}
+                            </div>
+                            @if($ans->file_path)
+                                <a href="{{ asset('storage/'.$ans->file_path) }}" target="_blank" style="margin-top: 10px; display: inline-block; color: #4f46e5; font-weight: 700; text-decoration: none; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-paperclip"></i> عرض الملف المرفق
+                                </a>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+
+            <div style="margin-top: 40px; display: flex; gap: 15px; justify-content: center;">
+                <a href="{{ url('/student/exams') }}" style="background: #4f46e5; color: white; padding: 15px 40px; border-radius: 15px; text-decoration: none; font-weight: 800; transition: 0.3s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+                    العودة لقاعة الاختبارات
+                </a>
+                <button onclick="window.print()" style="background: #f1f5f9; color: #475569; padding: 15px 40px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer;">
+                    <i class="fa-solid fa-print"></i> طباعة التقرير
+                </button>
+            </div>
         </div>
     </div>
 </div>
-
-<style>
-    @keyframes pulse {
-        0% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.1); opacity: 0.7; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-</style>
 @endsection

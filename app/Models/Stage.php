@@ -7,22 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 
 class Stage extends Model
 {
-    /** @use HasFactory<\Database\Factories\StageFactory> */
     use HasFactory;
 
-    protected $fillable =
-    [
+    protected $fillable = [
         'grade_level',
         'label_ar',
         'icon'
     ];
 
-    public function subjects() {
-        return $this->hasMany(Subject::class);
+    public function subjects()
+    {
+        return $this->hasMany(Subject::class, 'stage_id');
     }
 
-    public function students() {
+    public function students()
+    {
         return $this->hasMany(Student::class, 'stage_id');
     }
 
+    public function teachers()
+    {
+        return $this->hasMany(User::class, 'stage_id');
+    }
 }

@@ -31,7 +31,7 @@
 
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
             @foreach($stage->subjects as $subject)
-            <a href="{{ route('subjects.show', $subject->id) }}" class="glass-card subject-card">
+            <a href="{{ route('subject.show', $subject->id) }}" class="glass-card subject-card">
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div class="icon-wrap" style="background: {{ $subject->color }}10; color: {{ $subject->color }};">
                         {{ $subject->icon }}
