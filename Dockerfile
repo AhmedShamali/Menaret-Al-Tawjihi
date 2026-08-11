@@ -18,6 +18,9 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # نسخ ملفات المشروع إلى مجلد السيرفر
 COPY . /var/www/html
 
+# تشغيل Composer لتثبيت الحزم داخل الحاوية
+RUN composer install --no-dev --optimize-autoloader
+
 # ضبط الصلاحيات لمجلدات التخزين
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
