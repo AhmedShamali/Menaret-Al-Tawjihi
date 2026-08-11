@@ -25,6 +25,12 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# إنشاء ملف قاعدة بيانات sqlite فارغ وضبط صلاحياته
+RUN mkdir -p /var/www/html/database \
+    && touch /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/database \
+    && chmod -R 775 /var/www/html/database
+
 # إنشاء ملف البيئة وتوليد المفتاح
 RUN cp .env.example .env || true
 RUN php artisan key:generate
