@@ -19,12 +19,18 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# التأكد من صلاحيات مجلد التخزين والكاش
+# إنشاء مجلد وملف قاعدة بيانات SQLite لضمان عدم حدوث خطأ حتى لو كان الاتصال مطلوباً مؤقتاً
+RUN mkdir -p /var/www/html/database \
+    && touch /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/database \
+    && chmod -R 777 /var/www/html/database \
+    && chmod 777 /var/www/html/database/database.sqlite
+
 RUN php artisan key:generate --force || true
 
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 RUN a2enmod rewrite
 
-# تنظيف الكاش، تطبيق الميجريشنز، ثم تشغيل أباتشي
+# مسح الكاش، تطبيق الميجريشنز، ثم تشغيل أباتشي
 CMD php artisan config:clear && php artisan cache:clear && php artisan migrate --force && apache2-foreground
