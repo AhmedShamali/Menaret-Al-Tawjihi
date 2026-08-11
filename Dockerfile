@@ -9,20 +9,25 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip
 
-# تثبيت ملحقات PHP اللازمة للارافيل
+# تثبيت ملحقات PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# نسخ ملفات المشروع إلى مجلد السيرفر
+# نسخ ملفات المشروع
 COPY . /var/www/html
 
-# تشغيل Composer لتثبيت الحزم داخل الحاوية
+# تثبيت حزم لارافيل
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط الصلاحيات لمجلدات التخزين
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+# ضبط الأذونات وصلاحيات المجلدات وملف البيئة
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# نسخ ملف .env وإنشاء مفتاح التطبيق إذا لم يكن موجوداً
+RUN cp .env.example .env || true
+RUN php artisan key:generate
 
 # تعديل مسار أباتشي ليشير إلى مجلد public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
