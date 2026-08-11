@@ -35,6 +35,9 @@ RUN mkdir -p /var/www/html/database \
 RUN cp .env.example .env || true
 RUN php artisan key:generate
 
+# تشغيل الـ Migrations لإنشاء الجداول في قاعدة البيانات
+RUN php artisan migrate --force
+
 # تعديل مسار أباتشي ليشير إلى مجلد public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
