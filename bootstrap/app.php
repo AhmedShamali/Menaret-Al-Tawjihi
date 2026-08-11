@@ -14,7 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
 
-        // 1. تسجيل الـ Aliases للـ Middleware ليتوافق مع ملف routes/web.php
+        // 1. الثقة ببروكسي Railway لتجنب مشاكل الـ HTTPS والـ 419
+        $middleware->trustProxies(at: '*');
+
+        // 2. تسجيل الـ Aliases للـ Middleware ليتوافق مع ملف routes/web.php
         $middleware->alias([
             'IsAdmin'   => \App\Http\Middleware\IsAdmin::class,
             'IsTeacher' => \App\Http\Middleware\IsTeacher::class,
@@ -24,7 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'student'   => \App\Http\Middleware\IsStudent::class, // احتياطاً
         ]);
 
-        // 2. توجيه المستخدمين المسجلين مسبقاً إذا حاولوا فتح صفحة الدخول
+        // 3. توجيه المستخدمين المسجلين مسبقاً إذا حاولوا فتح صفحة الدخول
         $middleware->redirectUsersTo(function (Request $request) {
             if (Auth::guard('student')->check()) {
                 return route('student.dashboard');
