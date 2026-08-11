@@ -9,23 +9,23 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip
 
-# تثبيت ملحقات PHP
+# تثبيت ملحقات PHP اللازمة
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # تثبيت Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# نسخ ملفات المشروع
+# نسخ ملفات المشروع إلى السيرفر
 COPY . /var/www/html
 
-# تثبيت حزم لارافيل
+# تثبيت حزم لارافيل وتوليد الـ autoload
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط الأذونات وصلاحيات المجلدات وملف البيئة
+# ضبط الصلاحيات للمجلدات
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# نسخ ملف .env وإنشاء مفتاح التطبيق إذا لم يكن موجوداً
+# إنشاء ملف البيئة وتوليد المفتاح
 RUN cp .env.example .env || true
 RUN php artisan key:generate
 
