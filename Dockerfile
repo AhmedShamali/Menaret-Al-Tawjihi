@@ -29,16 +29,16 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 RUN mkdir -p /var/www/html/database \
     && touch /var/www/html/database/database.sqlite \
     && chown -R www-data:www-data /var/www/html/database \
-    && chmod -R 775 /var/www/html/database
+    && chmod -R 777 /var/www/html/database/database.sqlite
 
 # إنشاء ملف البيئة وتوليد المفتاح
 RUN cp .env.example .env || true
 RUN php artisan key:generate
 
-# تشغيل الـ Migrations لإنشاء الجداول في قاعدة البيانات
-RUN php artisan migrate --force
-
 # تعديل مسار أباتشي ليشير إلى مجلد public
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
 RUN a2enmod rewrite
+
+# التعديل الجوهري هنا: تشغيل الميجريشن عند بداية التشغيل فقط
+CMD php artisan migrate --force && apache2-foreground
