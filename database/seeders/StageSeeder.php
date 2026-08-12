@@ -13,10 +13,21 @@ class StageSeeder extends Seeder
      */
     public function run(): void
     {
-        // إيقاف فحص المفاتيح الأجنبية وتفريغ جدول المراحل
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // إيقاف فحص المفاتيح الأجنبية بطريقة متوافقة مع SQLite و MySQL
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = OFF;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        }
+
         Stage::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
+        // إعادة تفعيل فحص المفاتيح الأجنبية
+        if (DB::getDriverName() === 'sqlite') {
+            DB::statement('PRAGMA foreign_keys = ON;');
+        } else {
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
 
         $data = [
             ['grade_level' => 7,   'label_ar' => 'الصف السابع', 'icon' => '📚'],
