@@ -45,5 +45,5 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 EXPOSE 80
 
-# أوامر التشغيل عند بدء الموقع (تجهيز الكاش، تنفيذ الهجرة لقاعدة البيانات، ثم تشغيل السيرفر)
-CMD sh -c "php artisan config:cache && php artisan route:cache && php artisan migrate --force && apache2-foreground"
+# أوامر التشغيل الآمنة (مسح الكاش القديم، توليد المفتاح إن لم يكن موجوداً، تنفيذ الهجرة، ثم تشغيل أباتشي)
+CMD sh -c "php artisan key:generate --no-interaction --force && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan migrate --force && apache2-foreground"
