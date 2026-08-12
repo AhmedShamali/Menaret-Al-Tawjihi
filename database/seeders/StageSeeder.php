@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Stage;
-use Illuminate\Support\Facades\DB;
 
 class StageSeeder extends Seeder
 {
@@ -13,21 +12,8 @@ class StageSeeder extends Seeder
      */
     public function run(): void
     {
-        // إيقاف فحص المفاتيح الأجنبية بطريقة متوافقة مع SQLite و MySQL
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = OFF;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        }
-
+        // تفريغ الجدول مباشرة بدون أي أوامر تتعارض مع SQLite
         Stage::truncate();
-
-        // إعادة تفعيل فحص المفاتيح الأجنبية
-        if (DB::getDriverName() === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON;');
-        } else {
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-        }
 
         $data = [
             ['grade_level' => 7,   'label_ar' => 'الصف السابع', 'icon' => '📚'],
