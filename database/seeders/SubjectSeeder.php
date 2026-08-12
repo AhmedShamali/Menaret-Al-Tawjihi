@@ -5,15 +5,13 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Stage;
 use App\Models\Subject;
-use Illuminate\Support\Facades\DB;
 
 class SubjectSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        // تم إزالة أوامر MySQL المتعارضة مع SQLite وتفريغ الجدول مباشرة
         Subject::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $curriculum = [
             // --- المرحلة الإعدادية (7 - 9) ---
