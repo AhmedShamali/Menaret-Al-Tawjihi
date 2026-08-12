@@ -30,22 +30,28 @@ COPY . .
 # تثبيت حزم لاراڤيل
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط مجلد public كواجهة أساسية
+# ضبط مجلد public كواجهة أساسية لأباتشي وتفعيل AllowOverride لملفات .htaccess
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# تهيئة قاعدة البيانات والأذونات
+RUN echo "<Directory /var/www/html/public/>\n\
+    Options Indexes FollowSymLinks\n\
+    AllowOverride All\n\
+    Require all granted\n\
+</Directory>" >> /etc/apache2/apache2.conf
+
+# تهيئة قاعدة البيانات والأذونات الكاملة لمجلدات التخزين وقاعدة البيانات
 RUN mkdir -p /var/www/html/database && \
     touch /var/www/html/database/database.sqlite
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
-# التعديل الجوهري هنا: تجهيز ملف البيئة قبل التشغيل
+# تجهيز ملف البيئة من النسخة الافتراضية
 RUN cp .env.example .env
 
 EXPOSE 80
 
-# أوامر التشغيل: التأكد من وجود مفتاح وتجهيز النظام
+# أوامر التشغيل بالترتيب الصحيح (توليد المفتاح، تنفيذ الهجرة، مسح الكاش، ثم إقلاع أباتشي)
 CMD sh -c "php artisan key:generate --no-interaction --force && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan route:clear && apache2-foreground"
