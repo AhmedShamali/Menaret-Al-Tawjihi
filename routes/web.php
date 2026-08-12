@@ -21,6 +21,11 @@ use App\Http\Controllers\{
     StudentProfileController
 };
 
+/*
+|--------------------------------------------------------------------------
+| 1. الروابط العامة (Public Routes)
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [PublicController::class, 'index'])->name('home');
 
 Route::middleware('guest')->group(function () {
@@ -48,6 +53,16 @@ Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
     ->where('filename', '.*')
     ->name('video.stream');
 
+Route::get('/placement', [PlacementController::class, 'index'])->name('placement.index');
+Route::post('/placement/save', [PlacementController::class, 'store'])->name('placement.store');
+
+Route::get('/students', function () {
+    return view('visitor');
+});
+
+Route::resource('educational_contents', EducationalContentController::class);
+
+
 /*
 |--------------------------------------------------------------------------
 | 2. بوابة المدير العام (Admin Only)
@@ -63,12 +78,9 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/save', [AdminManagerController::class, 'studentStore'])->name('students.save');
     Route::post('/students/toggle-status/{id}', [StudentController::class, 'toggleStatus'])->name('students.toggleStatus');
 
-    // ✅ وضعنا الروابط المحددة (info و create) هنا بالاعلى قبل البارامترات المتغيرة
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');
     Route::post('/teachers/store', [AdminManagerController::class, 'teacherStore'])->name('teachers.store');
-
-    Route::get('students/records/all', [StudentController::class, 'profile'])->name('students.profile');
 
     Route::get('/settings', [AdminManagerController::class, 'settings'])->name('settings.index');
     Route::post('/settings/update', [AdminManagerController::class, 'settingsUpdate'])->name('settings.update');
@@ -87,21 +99,20 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::resource('exams', ExamController::class);
 
     Route::get('/educational-contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
-
     Route::get('/teachers', [DashboardController::class, 'teachersIndex'])->name('teachers.index');
 
-    // ⚠️ الروابط المتغيرة أصبحت في الأسفل لتجنب أي تداخل
-    Route::get('/teachers/{id}', [DashboardController::class, 'showTeacher'])->name('teachers.show');
-
-    Route::resource('students', StudentController::class);
+    // مسارات الطلاب بشكل آمن بدون تعارض
     Route::get('students/records/all', [StudentController::class, 'profile_all'])->name('students.profile_all');
     Route::get('students/profile/{id}', [StudentController::class, 'profile'])->name('students.profile');
-    Route::get('students/{id}/view', [StudentController::class, 'show'])->name('students.show');
+    Route::resource('students', StudentController::class);
+
+    // مسارات المعلمين المتغيرة
     Route::get('/teachers/{id}/edit', [AdminManagerController::class, 'teacherEdit'])->name('teachers.edit');
     Route::put('/teachers/{id}', [AdminManagerController::class, 'teacherUpdate'])->name('teachers.update');
     Route::delete('/teachers/{id}', [AdminManagerController::class, 'teacherDestroy'])->name('teachers.destroy');
-
+    Route::get('/teachers/{id}', [DashboardController::class, 'showTeacher'])->name('teachers.show');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -115,10 +126,9 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/submissions/{submission}/grade', [ExamController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{submission}/save-grade', [ExamController::class, 'saveGrade'])->name('submissions.saveGrade');
     Route::resource('exams', ExamController::class);
-// مسار العرض الرئيسي (index) الذي يسبب الخطأ
+
     Route::get('/educational_contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
-Route::get('educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');    // وباقي مسارات إنشاء وتخزين المحتوى إن لم تكن موجودة
-    Route::get('/educational_contents/create', [EducationalContentController::class, 'create'])->name('educational_contents.create');
+    Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
@@ -130,10 +140,12 @@ Route::get('educational-contents/create/{subject_id?}', [EducationalContentContr
     Route::get('/chat', [CommunicationController::class, 'teacherAdminChat'])->name('teacher.admin.chat');
     Route::get('/messages', [CommunicationController::class, 'fetchTeacherAdminMessages']);
     Route::post('/send', [CommunicationController::class, 'sendFromTeacherToAdmin']);
+
     Route::get('/admin/chat', [CommunicationController::class, 'teacherAdminChat'])->name('admin.chat');
     Route::get('/admin/chat/messages', [CommunicationController::class, 'fetchTeacherAdminMessages'])->name('admin.chat.messages');
     Route::post('/admin/chat/send', [CommunicationController::class, 'sendFromTeacherToAdmin'])->name('admin.chat.send');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -144,28 +156,20 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
 
-
     Route::get('/my-exams', [ExamController::class, 'studentIndex'])->name('exams.index');
     Route::get('/exams/{id}/take', [ExamController::class, 'takeExam'])->name('exams.take');
     Route::post('/exams/{id}/submit', [ExamController::class, 'submitExam'])->name('exams.submit');
 
-    // التعديل المطلوب لإصلاح خطأ Route [student.exams.result] not defined
     Route::get('/exams/{id}/result', [ExamController::class, 'showResult'])->name('exams.result');
-
     Route::get('/results/{id}', [ExamController::class, 'showResult'])->name('exam.results');
-    Route::get('/exams/{id}/results', [ExamController::class, 'showResult'])->name('exam.results.alt');
+    Route::get('/exams/{id}/results', [ExamController::class, 'showResult'])->name('exams.results.alt');
 
-
-
-    // الدعم الفني والمراسلات (المصححة والكاملة)
     Route::get('/support', [CommunicationController::class, 'studentChat'])->name('support');
     Route::get('/chat', [CommunicationController::class, 'studentChat'])->name('chat');
 
-    // مسار الجلب والإرسال الصحيح المدعوم بالـ AJAX
     Route::get('/support/fetch/{admin_id}', [CommunicationController::class, 'fetchStudentMessages'])->name('support.fetch');
     Route::post('/support/send', [CommunicationController::class, 'sendFromStudent'])->name('support.send');
 
-    // مسارات بديلة لضمان توافق أي استدعاء قديم
     Route::get('/messages/fetch/{admin_id}', [CommunicationController::class, 'fetchStudentMessages'])->name('fetchMessages');
     Route::post('/messages/send', [CommunicationController::class, 'sendFromStudent'])->name('sendMessage');
 
@@ -175,21 +179,8 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/teachers/{teacher_id}/messages', [CommunicationController::class, 'fetchTeacherMessages'])->name('messages.teacher');
     Route::post('/teachers/send', [CommunicationController::class, 'sendToTeacher'])->name('send.teacher');
 
-
-    Route::get('/subjects', [App\Http\Controllers\DashboardController::class, 'studentSubjectsIndex'])->name('subjects.index');
-
-    Route::get('/subjects/{id}', [App\Http\Controllers\DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
-
+    Route::get('/subjects', [DashboardController::class, 'studentSubjectsIndex'])->name('subjects.index');
+    Route::get('/subjects/{id}', [DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
     Route::get('/student/subjects/{id}', [DashboardController::class, 'showSubject'])->name('student.subjects.show');
-    Route::get('/exams/results/{id}', [ExamController::class, 'showResult'])->name('exams.results');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
 });
-Route::get('/placement', [PlacementController::class, 'index'])->name('placement.index');
-Route::get('/students', function () {
-    return view('visitor');
-});
-
-
-Route::get('/placement', [PlacementController::class, 'index'])->name('placement.index');
-Route::post('/placement/save', [PlacementController::class, 'store'])->name('placement.store');
-Route::resource('educational_contents', EducationalContentController::class);
