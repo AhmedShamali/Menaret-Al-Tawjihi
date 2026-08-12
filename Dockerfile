@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 # تنظيف الكاش الخاص بنظام التشغيل
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# تفعيل خاصية الـ rewrite في أباتشي (ضروري لروابط لاراڤيل)
+# تفعيل خاصية الـ rewrite في أباتشي
 RUN a2enmod rewrite
 
 # تثبيت Composer
@@ -24,26 +24,28 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # ضبط مسار العمل داخل السيرفر
 WORKDIR /var/www/html
 
-# نسخ كل ملفات مشروعك من جهازك إلى السيرفر
+# نسخ كل ملفات مشروعك
 COPY . .
 
-# تثبيت حزم لاراڤيل المطلوبة (بدون حزم التطوير لتقليل الحجم)
+# تثبيت حزم لاراڤيل
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط مجلد public ليكون الواجهة الأساسية للموقع
+# ضبط مجلد public كواجهة أساسية
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 
-# إنشاء مجلد قاعدة البيانات SQLite إذا لم يكن موجوداً
+# تهيئة قاعدة البيانات والأذونات
 RUN mkdir -p /var/www/html/database && \
     touch /var/www/html/database/database.sqlite
 
-# منح صلاحيات الكتابة الكاملة لمجلدات التخزين وقاعدة البيانات والكاش
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/database
 
+# التعديل الجوهري هنا: تجهيز ملف البيئة قبل التشغيل
+RUN cp .env.example .env
+
 EXPOSE 80
 
-# أوامر التشغيل الآمنة (مسح الكاش القديم، توليد المفتاح إن لم يكن موجوداً، تنفيذ الهجرة، ثم تشغيل أباتشي)
-CMD sh -c "php artisan key:generate --no-interaction --force && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan migrate --force && apache2-foreground"
+# أوامر التشغيل: التأكد من وجود مفتاح وتجهيز النظام
+CMD sh -c "php artisan key:generate && php artisan config:clear && php artisan cache:clear && php artisan route:clear && php artisan migrate --force && apache2-foreground"
