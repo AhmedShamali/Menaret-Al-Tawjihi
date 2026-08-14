@@ -7,7 +7,7 @@ use App\Models\Stage;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary; // أضف هذا السطر في الأعلى
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class EducationalContentController extends Controller
 {
@@ -60,10 +60,12 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary)
+        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary بالطريقة المضمونة)
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-            $uploadedFileUrl = Cloudinary::uploadVideo($request->file('file_upload_video')->getRealPath())->getSecurePath();
-            $content->url_path = $uploadedFileUrl;
+            $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
+                'resource_type' => 'video'
+            ]);
+            $content->url_path = $uploadedFile->getSecurePath();
         } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
@@ -152,10 +154,12 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
-        // --- تحديث مرفق الفيديو (عبر Cloudinary) ---
+        // --- تحديث مرفق الفيديو (عبر Cloudinary) بالطريقة المضمونة ---
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-            $uploadedFileUrl = Cloudinary::uploadVideo($request->file('file_upload_video')->getRealPath())->getSecurePath();
-            $content->url_path = $uploadedFileUrl;
+            $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
+                'resource_type' => 'video'
+            ]);
+            $content->url_path = $uploadedFile->getSecurePath();
         } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
