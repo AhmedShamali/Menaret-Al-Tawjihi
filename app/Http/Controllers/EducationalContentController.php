@@ -7,6 +7,7 @@ use App\Models\Stage;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary; // أضف هذا السطر في الأعلى
 
 class EducationalContentController extends Controller
 {
@@ -23,7 +24,8 @@ class EducationalContentController extends Controller
 
         return view('educational_contents.create', compact('mySubject', 'stages'));
     }
- public function store(Request $request)
+
+    public function store(Request $request)
     {
         // 1. التحقق من البيانات
         $validator = validator($request->all(), [
@@ -45,7 +47,6 @@ class EducationalContentController extends Controller
         if (auth()->check()) {
             $subject = Subject::find($request->subject_id);
             if ($subject) {
-                // وضع رقم المعلم الحقيقي (الذي قام بتسجيل الدخول حالياً)
                 $subject->user_id = auth()->id();
                 $subject->save();
             }
@@ -59,14 +60,15 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        // 2. معالجة الفيديو
+        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary)
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-            $content->url_path = $request->file('file_upload_video')->store('educational/videos', 'public');
+            $uploadedFileUrl = Cloudinary::uploadVideo($request->file('file_upload_video')->getRealPath())->getSecurePath();
+            $content->url_path = $uploadedFileUrl;
         } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // 3. معالجة الـ PDF
+        // 3. معالجة الـ PDF (يمكنك إبقاؤها محلياً أو رفعها أيضاً، سنتركها محلياً كما هي لتجنب التعقيد)
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
         } elseif ($request->filled('pdf_url')) {
@@ -84,7 +86,7 @@ class EducationalContentController extends Controller
 
         return response()->json([
             'icon'  => 'success',
-            'title' => 'تم حفظ الدرس والمرفقات بنجاح 🎉'
+            'title' => 'تم حفظ الدرس والمرفقات بنجاح على السحابة 🎉'
         ], 200);
     }
 
@@ -133,7 +135,6 @@ class EducationalContentController extends Controller
             ], 400);
         }
 
-        // --- ربط المادة بالمعلم الحالي تلقائياً عند التحديث أيضاً ---
         if (auth()->check() && auth()->user()->role === 'teacher') {
             $subject = Subject::find($request->subject_id);
             if ($subject && is_null($subject->user_id)) {
@@ -151,12 +152,10 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
-        // --- تحديث مرفق الفيديو ---
+        // --- تحديث مرفق الفيديو (عبر Cloudinary) ---
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-            if ($content->url_path && Storage::disk('public')->exists($content->url_path)) {
-                Storage::disk('public')->delete($content->url_path);
-            }
-            $content->url_path = $request->file('file_upload_video')->store('educational/videos', 'public');
+            $uploadedFileUrl = Cloudinary::uploadVideo($request->file('file_upload_video')->getRealPath())->getSecurePath();
+            $content->url_path = $uploadedFileUrl;
         } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
@@ -191,12 +190,7 @@ class EducationalContentController extends Controller
         $content = EducationalContent::find($id);
 
         if ($content) {
-            // حذف الفيديو القديم
-            if ($content->url_path && Storage::disk('public')->exists($content->url_path)) {
-                Storage::disk('public')->delete($content->url_path);
-            }
-
-            // حذف ملف الـ PDF القديم
+            // حذف ملف الـ PDF القديم إن وجد محلياً
             if ($content->pdf_path && Storage::disk('public')->exists($content->pdf_path)) {
                 Storage::disk('public')->delete($content->pdf_path);
             }

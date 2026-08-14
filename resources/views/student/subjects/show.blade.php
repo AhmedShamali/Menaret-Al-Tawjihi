@@ -285,7 +285,7 @@
 
             <!-- العمود الأيمن (المحتوى الأساسي) -->
             <div class="content-side">
-                
+
                 <div class="section-header">
                     <h2><i class="fas fa-play-circle text-primary"></i> الدروس المرئية</h2>
                     <span class="badge bg-white text-dark shadow-sm rounded-pill px-3 py-2" style="font-size: 0.8rem; font-weight: 700;">
@@ -294,38 +294,50 @@
                 </div>
 
                 @forelse($videos as $video)
-                    <div class="video-card animate__animated animate__fadeInUp">
-                        <div class="video-wrapper">
-                            @if(filter_var($video->url_path, FILTER_VALIDATE_URL))
-                                <iframe src="{{ $video->url_path }}" allowfullscreen></iframe>
-                            @else
-                                <video controls>
-                                    <source src="{{ asset('storage/' . $video->url_path) }}" type="video/mp4">
-                                </video>
-                            @endif
-                        </div>
-                        <div class="video-info">
-                            <div>
-                                <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">الدرس الحالي</span>
-                                <h3>{{ $video->title }}</h3>
-                            </div>
-                            <div class="text-center">
-                                <i class="fas fa-eye text-muted"></i>
-                                <span class="d-block text-muted" style="font-size: 0.75rem;">{{ $video->views_count ?? 0 }} مشاهدة</span>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="empty-state">
-                        <img src="https://cdn-icons-png.flaticon.com/512/748/748614.png" width="80" class="mb-3" style="opacity: 0.5;">
-                        <p class="text-muted">لا توجد دروس فيديو مضافة حالياً.</p>
-                    </div>
-                @endforelse
+    <div class="video-card animate__animated animate__fadeInUp">
+        <div class="video-wrapper">
+            @php
+                $isUrl = filter_var($video->url_path, FILTER_VALIDATE_URL);
+            @endphp
+
+            @if($isUrl)
+                @if(strpos($video->url_path, 'youtube.com') !== false || strpos($video->url_path, 'youtu.be') !== false)
+                    <iframe src="{{ str_replace('watch?v=', 'embed/', $video->url_path) }}" allowfullscreen></iframe>
+                @else
+                    <video controls>
+                        <source src="{{ $video->url_path }}" type="video/mp4">
+                        متصفحك لا يدعم عرض الفيديو.
+                    </video>
+                @endif
+            @else
+                <video controls>
+                    <source src="{{ asset('storage/' . $video->url_path) }}" type="video/mp4">
+                    متصفحك لا يدعم عرض الفيديو.
+                </video>
+            @endif
+        </div>
+        <div class="video-info">
+            <div>
+                <span class="text-muted d-block mb-1" style="font-size: 0.8rem;">الدرس الحالي</span>
+                <h3>{{ $video->title }}</h3>
+            </div>
+            <div class="text-center">
+                <i class="fas fa-eye text-muted"></i>
+                <span class="d-block text-muted" style="font-size: 0.75rem;">{{ $video->views_count ?? 0 }} مشاهدة</span>
+            </div>
+        </div>
+    </div>
+@empty
+    <div class="empty-state">
+        <img src="https://cdn-icons-png.flaticon.com/512/748/748614.png" width="80" class="mb-3" style="opacity: 0.5;">
+        <p class="text-muted">لا توجد دروس فيديو مضافة حالياً.</p>
+    </div>
+@endforelse
             </div>
 
             <!-- العمود الأيسر (Sidebar) -->
             <div class="sidebar-side">
-                
+
                 <!-- كارت المدرس والتقدم -->
                 <div class="sidebar-card animate__animated animate__fadeInLeft">
                     <div class="teacher-profile">
@@ -369,7 +381,7 @@
                         <p class="text-muted text-center small py-3">لا توجد ملفات مرفقة.</p>
                     @endforelse
 
-                   
+
                 </div>
 
                 <!-- إحصائيات سريعة -->

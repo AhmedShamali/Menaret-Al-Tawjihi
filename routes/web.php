@@ -184,3 +184,8 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/student/subjects/{id}', [DashboardController::class, 'showSubject'])->name('student.subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
 });
+
+
+Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
+    ->where('filename', '.*')
+    ->name('video.stream');

@@ -8,7 +8,7 @@
         <div class="brand-overlay"></div>
         <div class="brand-content">
             <div class="v-logo">J</div>
-            <h2>منصة جسر التعليمية</h2>
+            <h2>{{ env('PLATFORM_NAME', 'منصة جسر التعليمية') }}</h2>
             <p>نحو مستقبل تعليمي رقمي متطور يجمع بين الطالب والمعلم في بيئة تفاعلية متكاملة.</p>
             <div class="pal-badge">🇵🇸 صنع في فلسطين</div>
         </div>
