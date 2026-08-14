@@ -595,7 +595,11 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري اعتماد الحساب...</span>';
 
-        axios.post("{{ route('admin.teachers.store') }}", formData)
+        axios.post("{{ route('admin.teachers.store') }}", formData, {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
             .then(res => {
                 Swal.fire({
                     icon: 'success',
