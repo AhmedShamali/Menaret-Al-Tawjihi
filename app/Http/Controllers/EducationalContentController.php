@@ -60,8 +60,20 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary بالطريقة المضمونة)
+        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary مع تمرير المفاتيح صراحةً لتجنب أي خطأ كاش)
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
+
+            \Cloudinary\Configuration\Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => 'j42wtnro',
+                    'api_key'    => '121844293366988',
+                    'api_secret' => '1m4WaqdAFOk2wr0x21ZWtJpx1XE',
+                ],
+                'url' => [
+                    'secure' => true
+                ]
+            ]);
+
             $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
                 'resource_type' => 'video'
             ]);
@@ -70,7 +82,7 @@ class EducationalContentController extends Controller
             $content->url_path = $request->video_url;
         }
 
-        // 3. معالجة الـ PDF (يمكنك إبقاؤها محلياً أو رفعها أيضاً، سنتركها محلياً كما هي لتجنب التعقيد)
+        // 3. معالجة الـ PDF
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
         } elseif ($request->filled('pdf_url')) {
@@ -154,8 +166,20 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
-        // --- تحديث مرفق الفيديو (عبر Cloudinary) بالطريقة المضمونة ---
+        // --- تحديث مرفق الفيديو (عبر Cloudinary مع تمرير المفاتيح صراحةً) ---
         if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
+
+            \Cloudinary\Configuration\Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => 'j42wtnro',
+                    'api_key'    => '121844293366988',
+                    'api_secret' => '1m4WaqdAFOk2wr0x21ZWtJpx1XE',
+                ],
+                'url' => [
+                    'secure' => true
+                ]
+            ]);
+
             $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
                 'resource_type' => 'video'
             ]);
