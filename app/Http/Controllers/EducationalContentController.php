@@ -62,9 +62,10 @@ class EducationalContentController extends Controller
             $content->url_path = $request->video_url;
         }
 
-        // --- التخزين على سحابة Supabase ---
+        // --- التخزين المباشر للرابط الكامل على سحابة Supabase ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
-            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+            $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+            $content->pdf_path = Storage::disk('supabase')->url($path);
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
@@ -151,12 +152,16 @@ class EducationalContentController extends Controller
             $content->url_path = $request->video_url;
         }
 
-        // --- تحديث ملف الـ PDF وحذفه من Supabase إن وجد ---
+        // --- تحديث ملف الـ PDF وحذفه القديم من Supabase إن وجد ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
-            if ($content->pdf_path && Storage::disk('supabase')->exists($content->pdf_path)) {
-                Storage::disk('supabase')->delete($content->pdf_path);
+            if ($content->pdf_path) {
+                $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                if (Storage::disk('supabase')->exists($parsedPath)) {
+                    Storage::disk('supabase')->delete($parsedPath);
+                }
             }
-            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+            $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+            $content->pdf_path = Storage::disk('supabase')->url($path);
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
@@ -181,9 +186,11 @@ class EducationalContentController extends Controller
         $content = EducationalContent::find($id);
 
         if ($content) {
-            // حذف ملف الـ PDF من سحابة Supabase عند حذف الدرس
-            if ($content->pdf_path && Storage::disk('supabase')->exists($content->pdf_path)) {
-                Storage::disk('supabase')->delete($content->pdf_path);
+            if ($content->pdf_path) {
+                $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                if (Storage::disk('supabase')->exists($parsedPath)) {
+                    Storage::disk('supabase')->delete($parsedPath);
+                }
             }
 
             $deleted = $content->delete();

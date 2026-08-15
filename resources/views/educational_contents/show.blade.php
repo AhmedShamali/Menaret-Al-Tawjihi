@@ -115,10 +115,15 @@
 
                             <div class="d-grid gap-2">
                                 <a href="{{ $videoUrl }}" target="_blank" class="btn btn-primary rounded-3">
-                                     مشاهدة الآن <i class="fas fa-external-link-alt ms-1"></i>
+                                    مشاهدة الآن <i class="fas fa-external-link-alt ms-1"></i>
                                 </a>
                                 @if($video->pdf_path)
-                                    <a href="{{ asset('storage/' . $video->pdf_path) }}" class="btn btn-outline-danger btn-sm border-0">
+                                    @php
+                                        $videoPdfUrl = filter_var($video->pdf_path, FILTER_VALIDATE_URL)
+                                            ? $video->pdf_path
+                                            : asset('storage/' . $video->pdf_path);
+                                    @endphp
+                                    <a href="{{ $videoPdfUrl }}" target="_blank" class="btn btn-outline-danger btn-sm border-0">
                                         <i class="fas fa-file-pdf"></i> ملخص الدرس PDF
                                     </a>
                                 @endif
