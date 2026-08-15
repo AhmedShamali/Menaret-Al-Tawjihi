@@ -24,7 +24,7 @@
     }
 
     .editor-header h2 { font-weight: 800; color: #1e293b; margin: 0; }
-    
+
     .btn-exit {
         text-decoration: none;
         color: #64748b;
@@ -67,7 +67,7 @@
 
     /* الحقول والإدخال */
     .field-group { margin-bottom: 20px; }
-    
+
     .field-label {
         display: block;
         margin-bottom: 8px;
@@ -156,7 +156,7 @@
 </style>
 
 <div class="editor-wrapper">
-    
+
     <!-- رأس الصفحة -->
     <header class="editor-header">
         <div>
@@ -170,13 +170,13 @@
         @method('PUT')
 
         <div class="editor-grid">
-            
+
             <!-- العمود الأيمن الكبير -->
             <main>
                 <!-- بطاقة البيانات -->
                 <div class="editor-card">
                     <div class="card-title">📖 المعلومات الأساسية</div>
-                    
+
                     <div class="field-group">
                         <label class="field-label">عنوان المحتوى</label>
                         <input type="text" name="title" value="{{ $content->title }}" class="input-style" placeholder="أدخل اسم الدرس..." required>
@@ -207,52 +207,48 @@
                     </div>
                 </div>
 
-                <!-- بطاقة المرفقات -->
-                <div class="editor-card">
-                    <div class="card-title">🔗 الروابط والمرفقات</div>
+                <!-- قسم المرفقات المحدث -->
+            <div class="editor-card">
+                <div class="card-title">🔗 الروابط والمرفقات</div>
 
-                    <!-- قسم الفيديو -->
-                    <div class="upload-section">
-                        <div class="upload-header">
-                            <span class="field-label" style="margin:0">🎬 فيديو الدرس</span>
-                            @if($content->url_path) <span class="badge-present">مرفق مسبقاً ✅</span> @endif
-                        </div>
-                        <div class="flex-row">
-                            <input type="text" name="video_url" value="{{ filter_var($content->url_path, FILTER_VALIDATE_URL) ? $content->url_path : '' }}" class="input-style" placeholder="رابط يوتيوب">
-                            <input type="file" name="file_upload_video" class="input-style" accept="video/*">
-                        </div>
+                <!-- قسم الفيديو (رابط فقط لضمان الاستقرار) -->
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <span class="field-label" style="margin:0">🎬 رابط فيديو الدرس (YouTube / Drive)</span>
+                        @if($content->url_path) <span class="badge-present">موجود حالياً ✅</span> @endif
                     </div>
+                    <input type="url" name="video_url" value="{{ $content->url_path }}" class="input-style" placeholder="https://www.youtube.com/watch?v=...">
+                </div>
 
-                    <!-- قسم الـ PDF -->
-                    <div class="upload-section" style="background:#fef2f2">
-                        <div class="upload-header">
-                            <span class="field-label" style="margin:0; color:#991b1b">📄 مستند PDF</span>
-                            @if($content->pdf_path) <span class="badge-present" style="background:#fee2e2; color:#991b1b">مرفق مسبقاً ✅</span> @endif
-                        </div>
-                        <div class="flex-row">
-                            <input type="file" name="file_upload_pdf" class="input-style" accept=".pdf">
-                            <input type="text" name="pdf_url" value="{{ filter_var($content->pdf_path, FILTER_VALIDATE_URL) ? $content->pdf_path : '' }}" class="input-style" placeholder="رابط خارجي">
-                        </div>
+                <!-- قسم الـ PDF (رفع طبيعي للسيرفر) -->
+                <div class="upload-section" style="background:#fef2f2">
+                    <div class="upload-header">
+                        <span class="field-label" style="margin:0; color:#991b1b">📄 ملف PDF (تحميل مباشر)</span>
+                        @if($content->pdf_path) <span class="badge-present" style="background:#fee2e2; color:#991b1b">مرفق حالياً ✅</span> @endif
                     </div>
-
-                    <!-- التقدم -->
-                    <div class="progress-box" id="progress_box">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem; font-weight:700">
-                            <span>جاري حفظ البيانات...</span>
-                            <span id="percent_text">0%</span>
-                        </div>
-                        <div class="progress-bar-bg">
-                            <div class="progress-bar-fill" id="bar_fill"></div>
-                        </div>
+                    <div class="flex-row">
+                        <input type="file" name="file_upload_pdf" class="input-style" accept=".pdf">
                     </div>
                 </div>
+
+                <!-- التقدم -->
+                <div class="progress-box" id="progress_box">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:0.8rem; font-weight:700">
+                        <span>جاري حفظ الملفات...</span>
+                        <span id="percent_text">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="bar_fill"></div>
+                    </div>
+                </div>
+            </div>
             </main>
 
             <!-- العمود الأيسر الصغير -->
             <aside>
                 <div class="editor-card">
                     <div class="card-title">⚙️ الضبط</div>
-                    
+
                     <div class="field-group">
                         <label class="field-label">اسم القناة/المصدر</label>
                         <input type="text" name="channel_name" value="{{ $content->channel_name }}" class="input-style">
@@ -270,7 +266,7 @@
 
                     <button type="button" onclick="handleUpdate()" id="submitBtn" class="btn-submit">حفظ التغييرات</button>
                 </div>
-                
+
                 <p style="text-align:center; font-size:0.8rem; color:#94a3b8">آخر تحديث: {{ $content->updated_at->format('d/m/Y') }}</p>
             </aside>
 

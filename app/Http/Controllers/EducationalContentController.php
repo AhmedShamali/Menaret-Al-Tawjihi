@@ -7,7 +7,6 @@ use App\Models\Stage;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class EducationalContentController extends Controller
 {
@@ -27,13 +26,14 @@ class EducationalContentController extends Controller
 
     public function store(Request $request)
     {
-        // 1. التحقق من البيانات
+        // 1. التحقق من البيانات (تمت إزالة قيود رفع الفيديو لأننا نعتمد على الروابط)
         $validator = validator($request->all(), [
-            'subject_id'        => 'required',
-            'title'             => 'required|string|min:3',
-            'order'             => 'required|numeric',
-            'file_upload_video' => 'nullable|file|mimes:mp4,mov,ogg,qt,webm|max:204800',
-            'file_upload_pdf'   => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'subject_id'      => 'required',
+            'title'           => 'required|string|min:3',
+            'order'           => 'required|numeric',
+            'video_url'       => 'nullable|url',
+            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'pdf_url'         => 'nullable|url',
         ]);
 
         if ($validator->fails()) {
@@ -60,29 +60,12 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        // 2. معالجة الفيديو (الرفع السحابي عبر Cloudinary مع تمرير المفاتيح صراحةً لتجنب أي خطأ كاش)
-        if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-
-            \Cloudinary\Configuration\Configuration::instance([
-                'cloud' => [
-                    'cloud_name' => 'j42wtnro',
-                    'api_key'    => '121844293366988',
-                    'api_secret' => '1m4WaqdAFOk2wr0x21ZWtJpx1XE',
-                ],
-                'url' => [
-                    'secure' => true
-                ]
-            ]);
-
-            $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
-                'resource_type' => 'video'
-            ]);
-            $content->url_path = $uploadedFile->getSecurePath();
-        } elseif ($request->filled('video_url')) {
+        // 2. معالجة الفيديو (الاعتماد على الرابط فقط لضمان الاستقرار وعدم الحذف على السيرفر)
+        if ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // 3. معالجة الـ PDF
+        // 3. معالجة الـ PDF (رفع طبيعي أو رابط خارجي)
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
         } elseif ($request->filled('pdf_url')) {
@@ -92,7 +75,7 @@ class EducationalContentController extends Controller
         if (empty($content->url_path) && empty($content->pdf_path)) {
             return response()->json([
                 'icon'  => 'error',
-                'title' => 'فشلت عملية رفع الملف! تحقق من اختيار ملف وأن حجمه لا يتجاوز الحد المسموح.'
+                'title' => 'يرجى إدخال رابط فيديو أو إرفاق ملف واحد على الأقل!'
             ], 422);
         }
 
@@ -100,7 +83,7 @@ class EducationalContentController extends Controller
 
         return response()->json([
             'icon'  => 'success',
-            'title' => 'تم حفظ الدرس والمرفقات بنجاح على السحابة 🎉'
+            'title' => 'تم حفظ الدرس والمرفقات بنجاح 🎉'
         ], 200);
     }
 
@@ -135,11 +118,12 @@ class EducationalContentController extends Controller
         ];
 
         $validator = validator($request->all(), [
-            'subject_id'        => 'required',
-            'title'             => 'required|string|min:3',
-            'order'             => 'required|numeric',
-            'file_upload_video' => 'nullable|file|mimes:mp4,mov,ogg,qt,webm|max:204800',
-            'file_upload_pdf'   => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'subject_id'      => 'required',
+            'title'           => 'required|string|min:3',
+            'order'           => 'required|numeric',
+            'video_url'       => 'nullable|url',
+            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'pdf_url'         => 'nullable|url',
         ], $messages, $attributes);
 
         if ($validator->fails()) {
@@ -166,25 +150,8 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
-        // --- تحديث مرفق الفيديو (عبر Cloudinary مع تمرير المفاتيح صراحةً) ---
-        if ($request->hasFile('file_upload_video') && $request->file('file_upload_video')->isValid()) {
-
-            \Cloudinary\Configuration\Configuration::instance([
-                'cloud' => [
-                    'cloud_name' => 'j42wtnro',
-                    'api_key'    => '121844293366988',
-                    'api_secret' => '1m4WaqdAFOk2wr0x21ZWtJpx1XE',
-                ],
-                'url' => [
-                    'secure' => true
-                ]
-            ]);
-
-            $uploadedFile = Cloudinary::upload($request->file('file_upload_video')->getRealPath(), [
-                'resource_type' => 'video'
-            ]);
-            $content->url_path = $uploadedFile->getSecurePath();
-        } elseif ($request->filled('video_url')) {
+        // --- تحديث رابط الفيديو ---
+        if ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 

@@ -75,16 +75,12 @@
                         </label>
                     </div>
 
-                    <!-- تفاصيل الفيديو -->
                     <div id="video_section" class="attachment-box" style="display: none;">
                         <h4 class="box-title">🎬 تفاصيل الفيديو</h4>
                         <div class="form-group">
-                            <label class="f-label">رابط الفيديو (YouTube)</label>
-                            <input type="text" name="video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=...">
-                        </div>
-                        <div class="form-group">
-                            <label class="f-label">أو رفع فيديو مباشر من جهازك</label>
-                            <input type="file" name="file_upload_video" accept="video/*" class="f-input file-input">
+                            <label class="f-label">رابط الفيديو (YouTube أو Google Drive)</label>
+                            <input type="url" name="video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=...">
+                            <small style="color: var(--text-muted);">يرجى التأكد من أن رابط الفيديو متاح للجميع (Public).</small>
                         </div>
                     </div>
 

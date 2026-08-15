@@ -360,29 +360,30 @@
                     </div>
                 </div>
 
-                <!-- كارت الملفات -->
-                <div class="sidebar-card animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
-                    <div class="section-header mb-3">
-                        <h5 class="fw-bold m-0"><i class="fas fa-file-download ms-2"></i> المصادر المرفقة</h5>
-                    </div>
+                <!-- كارت الملفات (الجزء المعدل) -->
+<div class="sidebar-card animate__animated animate__fadeInLeft" style="animation-delay: 0.1s;">
+    <div class="section-header mb-3">
+        <h5 class="fw-bold m-0"><i class="fas fa-file-download ms-2"></i> المصادر المرفقة</h5>
+    </div>
 
-                    @forelse($files as $file)
-                        <a href="{{ asset('storage/' . $file->pdf_path) }}" target="_blank" class="file-row">
-                            <div class="file-icon">
-                                <i class="fas fa-file-pdf"></i>
-                            </div>
-                            <div style="flex: 1;">
-                                <div class="fw-bold" style="font-size: 0.9rem;">{{ $file->title ?? 'ملخص الدرس' }}</div>
-                                <span class="text-muted" style="font-size: 0.75rem;">اضغط للتحميل (PDF)</span>
-                            </div>
-                            <i class="fas fa-chevron-left text-muted small"></i>
-                        </a>
-                    @empty
-                        <p class="text-muted text-center small py-3">لا توجد ملفات مرفقة.</p>
-                    @endforelse
-
-
-                </div>
+    @forelse($files as $file)
+        <!-- إضافة خاصية download هنا تجبر المتصفح على التحميل -->
+        <a href="{{ filter_var($file->pdf_path, FILTER_VALIDATE_URL) ? $file->pdf_path : asset('storage/' . $file->pdf_path) }}"
+           download
+           class="file-row">
+            <div class="file-icon">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <div style="flex: 1;">
+                <div class="fw-bold" style="font-size: 0.9rem;">{{ $file->title ?? 'ملخص الدرس' }}</div>
+                <span class="text-muted" style="font-size: 0.75rem;">اضغط للتحميل (PDF)</span>
+            </div>
+            <i class="fas fa-download text-muted small"></i> <!-- قمت بتغيير الأيقونة لتناسب التحميل -->
+        </a>
+    @empty
+        <p class="text-muted text-center small py-3">لا توجد ملفات مرفقة.</p>
+    @endforelse
+</div>
 
                 <!-- إحصائيات سريعة -->
                 <div class="d-grid grid-2 gap-3" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
