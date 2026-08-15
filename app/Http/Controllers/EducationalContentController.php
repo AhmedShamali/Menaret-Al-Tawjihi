@@ -26,7 +26,6 @@ class EducationalContentController extends Controller
 
     public function store(Request $request)
     {
-        // 1. التحقق من البيانات (تمت إزالة قيود رفع الفيديو لأننا نعتمد على الروابط)
         $validator = validator($request->all(), [
             'subject_id'      => 'required',
             'title'           => 'required|string|min:3',
@@ -43,7 +42,6 @@ class EducationalContentController extends Controller
             ], 400);
         }
 
-        // --- جلب المعلم الحقيقي المسجل حالياً وتحديث المادة به ---
         if (auth()->check()) {
             $subject = Subject::find($request->subject_id);
             if ($subject) {
@@ -60,14 +58,13 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        // 2. معالجة الفيديو (الاعتماد على الرابط فقط لضمان الاستقرار وعدم الحذف على السيرفر)
         if ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // 3. معالجة الـ PDF (رفع طبيعي أو رابط خارجي)
+        // --- التخزين على سحابة Supabase ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
-            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
+            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
@@ -150,17 +147,16 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
-        // --- تحديث رابط الفيديو ---
         if ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // --- تحديث مرفق الـ PDF ---
+        // --- تحديث ملف الـ PDF وحذفه من Supabase إن وجد ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
-            if ($content->pdf_path && Storage::disk('public')->exists($content->pdf_path)) {
-                Storage::disk('public')->delete($content->pdf_path);
+            if ($content->pdf_path && Storage::disk('supabase')->exists($content->pdf_path)) {
+                Storage::disk('supabase')->delete($content->pdf_path);
             }
-            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
+            $content->pdf_path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
@@ -185,9 +181,9 @@ class EducationalContentController extends Controller
         $content = EducationalContent::find($id);
 
         if ($content) {
-            // حذف ملف الـ PDF القديم إن وجد محلياً
-            if ($content->pdf_path && Storage::disk('public')->exists($content->pdf_path)) {
-                Storage::disk('public')->delete($content->pdf_path);
+            // حذف ملف الـ PDF من سحابة Supabase عند حذف الدرس
+            if ($content->pdf_path && Storage::disk('supabase')->exists($content->pdf_path)) {
+                Storage::disk('supabase')->delete($content->pdf_path);
             }
 
             $deleted = $content->delete();
