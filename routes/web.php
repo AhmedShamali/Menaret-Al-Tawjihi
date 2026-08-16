@@ -192,3 +192,6 @@ Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
 
 
 Route::delete('/teacher/educational_contents/{id}', [EducationalContentController::class, 'destroy']);
+
+
+Route::get('/student/exams/{id}/results', [ExamController::class, 'showResult'])->name('student.exams.results');
