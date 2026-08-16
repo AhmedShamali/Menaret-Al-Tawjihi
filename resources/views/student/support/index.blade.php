@@ -341,7 +341,7 @@
         if (activeAdminId) fetchMessages();
     }, 5000);
 
-    // تشغيل جلب الرسائل أول ما تحمّل الصفحة بالكامل
+    // تشغيل جلب الرسائل أول ما تحمّل الصفحة بالكامل للمشرف الافتراضي الأول
     document.addEventListener("DOMContentLoaded", function() {
         if (activeAdminId) {
             fetchMessages();
