@@ -52,5 +52,5 @@ RUN cp .env.example .env
 
 EXPOSE 80
 
-# أوامر التشغيل: توليد المفتاح، الهجرات، السيدرز، مسح الكاش، ثم إقلاع أباتشي
-CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan migrate --force && php artisan db:seed --force && php artisan config:clear && php artisan cache:clear && php artisan route:clear && apache2-foreground"
+# أوامر التشغيل الآمنة: توليد المفتاح، مسح الكاش، ثم إقلاع أباتشي (بدون مساس بالبيانات أو الهجرات)
+CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan config:clear && php artisan cache:clear && php artisan route:clear && apache2-foreground"
