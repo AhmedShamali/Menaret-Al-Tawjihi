@@ -149,7 +149,7 @@
     :root {
         --primary: #6366f1;
         --primary-hover: #4f46e5;
-        --primary-light: #eeef2f7;
+        --primary-light: #eef2ff;
         --success: #10b981;
         --success-hover: #059669;
         --danger: #f43f5e;

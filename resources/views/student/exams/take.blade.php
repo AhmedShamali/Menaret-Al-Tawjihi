@@ -327,7 +327,6 @@
 
                     <h3 class="question-text">{!! nl2br(e($q->question_text)) !!}</h3>
 
-                    {{-- ✅ صندوق عرض صورة السؤال بشكل صحيح ومحدث ليدعم حقل image المضاف حديثاً --}}
                     @php
                         $questionImage = $q->image ?? ($q->image_path ?? null);
                     @endphp

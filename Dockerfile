@@ -47,10 +47,13 @@ RUN echo "<Directory /var/www/html/public/>\n\
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
     chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+# إنشاء الرابط الرمزي للصور لتفعيل عرضها تلقائياً
+RUN php artisan storage:link
+
 # تجهيز ملف البيئة من النسخة الافتراضية
 RUN cp .env.example .env
 
 EXPOSE 80
 
-# أوامر التشغيل الآمنة: توليد المفتاح، مسح الكاش، ثم إقلاع أباتشي (بدون مساس بالبيانات أو الهجرات)
+# أوامر التشغيل الآمنة: توليد المفتاح، مسح الكاش، ثم إقلاع أباتشي
 CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan config:clear && php artisan cache:clear && php artisan route:clear && apache2-foreground"

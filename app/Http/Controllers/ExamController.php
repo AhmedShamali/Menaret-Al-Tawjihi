@@ -57,8 +57,9 @@ class ExamController extends Controller
             'questions.*.b' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.c' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.d' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
-            'questions.*.correct_answer' => ['nullable', 'in:a,b,c,d'],
+            'questions.*.correct_answer' => ['nullable'], // تم جعلها مرنة لتقبل نص أو مصفوفة للإجابات المتعددة
             'questions.*.require_file' => ['nullable'],
+            'questions.*.is_multiple' => ['nullable'],
         ]);
 
         DB::transaction(function () use ($request, $validated) {
@@ -76,8 +77,14 @@ class ExamController extends Controller
                     $imagePath = $q['image']->store('questions', 'public');
                 }
 
-                // حل مشكلة التوافق مع PostgreSQL: تحويل صارم لـ boolean حقيقي
                 $requireFileValue = (bool) filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $isMultipleValue = filter_var($q['is_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+
+                // معالجة الإجابة الصحيحة في حال كانت متعددة (مصفوفة) أو مفردة
+                $correctAnswer = $q['correct_answer'] ?? null;
+                if (is_array($correctAnswer)) {
+                    $correctAnswer = json_encode($correctAnswer);
+                }
 
                 Question::create([
                     'exam_id' => $exam->id,
@@ -88,9 +95,10 @@ class ExamController extends Controller
                     'b' => $q['b'] ?? null,
                     'c' => $q['c'] ?? null,
                     'd' => $q['d'] ?? null,
-                    'correct_answer' => $q['correct_answer'] ?? null,
+                    'correct_answer' => $correctAnswer,
                     'points' => $q['points'],
-                    'require_file' => $requireFileValue,
+                    'require_file' => $requireFileValue ? 1 : 0,
+                    'is_multiple' => $isMultipleValue,
                 ]);
             }
         });
@@ -316,11 +324,29 @@ class ExamController extends Controller
                     $filePath = null;
 
                     if ($q->type == 'mcq') {
-                        $userAnswer = strtolower(trim($studentAns ?? ''));
-                        $correctAnswer = strtolower(trim($q->correct_answer ?? ''));
+                        if ($q->is_multiple) {
+                            // مقارنة إجابات متعددة (Checkbox)
+                            $userAnswers = array_map('strtolower', array_map('trim', (array)$studentAns));
+                            
+                            $decodedCorrect = json_decode($q->correct_answer, true);
+                            $correctAnswers = is_array($decodedCorrect) 
+                                ? array_map('strtolower', array_map('trim', $decodedCorrect)) 
+                                : [strtolower(trim($q->correct_answer ?? ''))];
 
-                        if (!empty($userAnswer) && $userAnswer === $correctAnswer) {
-                            $points = $q->points;
+                            sort($userAnswers);
+                            sort($correctAnswers);
+
+                            if ($userAnswers === $correctAnswers && !empty($userAnswers)) {
+                                $points = $q->points;
+                            }
+                        } else {
+                            // إجابة واحدة تقليدية (Radio)
+                            $userAnswer = strtolower(trim(is_array($studentAns) ? ($studentAns[0] ?? '') : ($studentAns ?? '')));
+                            $correctAnswer = strtolower(trim($q->correct_answer ?? ''));
+
+                            if (!empty($userAnswer) && $userAnswer === $correctAnswer) {
+                                $points = $q->points;
+                            }
                         }
                     } elseif ($q->type == 'essay') {
                         if ($request->hasFile("files.{$q->id}")) {
@@ -331,7 +357,7 @@ class ExamController extends Controller
                     SubmissionAnswer::create([
                         'exam_submission_id' => $submission->id,
                         'question_id' => $q->id,
-                        'answer_text' => is_array($studentAns) ? null : $studentAns,
+                        'answer_text' => is_array($studentAns) ? json_encode($studentAns) : $studentAns,
                         'file_path' => $filePath,
                         'points_awarded' => ($q->type == 'mcq') ? $points : 0,
                     ]);
