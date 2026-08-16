@@ -12,9 +12,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // تعطيل فحص المفاتيح الأجنبية مؤقتاً لتجنب أخطاء SQLite أثناء الـ Seeding
-        if (config('database.default') === 'sqlite') {
+        $dbDriver = config('database.default');
+
+        // تعطيل فحص المفاتيح الأجنبية مؤقتاً حسب نوع السيرفر/قاعدة البيانات
+        if ($dbDriver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = OFF;');
+        } elseif ($dbDriver === 'pgsql') {
+            DB::statement('SET session_replication_role = \'replica\';');
         }
 
         // 1. إنشاء الصفوف والمراحل أولاً
@@ -36,9 +40,9 @@ class DatabaseSeeder extends Seeder
             SubmissionAnswerSeeder::class,
         ]);
 
-        // 4. إنشاء حساب مدير النظام
+        // 4. إنشاء حساب مدير النظام (آمن ولا يتكرر ولا يحذف القديم)
         \App\Models\User::firstOrCreate(
-            ['email' => 'ahmad@admin.ps'], // لتجنب تكرار إنشاء الحساب لو تم تشغيل السيدر أكثر من مرة
+            ['email' => 'ahmad@admin.ps'],
             [
                 'name' => 'مدير النظام',
                 'password' => bcrypt('123456789'),
@@ -47,9 +51,11 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // إعادة تفعيل فحص المفاتيح الأجنبية لقاعدة بيانات SQLite
-        if (config('database.default') === 'sqlite') {
+        // إعادة تفعيل فحص المفاتيح الأجنبية
+        if ($dbDriver === 'sqlite') {
             DB::statement('PRAGMA foreign_keys = ON;');
+        } elseif ($dbDriver === 'pgsql') {
+            DB::statement('SET session_replication_role = \'origin\';');
         }
     }
 }

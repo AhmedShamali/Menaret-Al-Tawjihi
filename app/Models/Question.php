@@ -24,4 +24,9 @@ class Question extends Model
         'points',
         'is_placement'
     ];
+
+    protected $casts = [
+        'require_file' => 'boolean',
+    ];
+
 }

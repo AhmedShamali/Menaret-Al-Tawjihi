@@ -189,3 +189,4 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
 Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
     ->where('filename', '.*')
     ->name('video.stream');
+

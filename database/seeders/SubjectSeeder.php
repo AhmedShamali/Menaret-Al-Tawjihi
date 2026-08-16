@@ -10,8 +10,7 @@ class SubjectSeeder extends Seeder
 {
     public function run(): void
     {
-        // تم إزالة أوامر MySQL المتعارضة مع SQLite وتفريغ الجدول مباشرة
-        Subject::truncate();
+        // تم إزالة Subject::truncate() نهائياً لحماية بيانات المواد والعلاقات الحالية من الحذف
 
         $curriculum = [
             // --- المرحلة الإعدادية (7 - 9) ---

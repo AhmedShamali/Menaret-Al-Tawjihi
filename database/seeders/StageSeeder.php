@@ -12,8 +12,7 @@ class StageSeeder extends Seeder
      */
     public function run(): void
     {
-        // تفريغ الجدول مباشرة بدون أي أوامر تتعارض مع SQLite
-        Stage::truncate();
+        // تم إزالة Stage::truncate() لحماية البيانات الحالية من الحذف
 
         $data = [
             ['grade_level' => 7,   'label_ar' => 'الصف السابع', 'icon' => '📚'],
@@ -31,11 +30,14 @@ class StageSeeder extends Seeder
         ];
 
         foreach ($data as $item) {
-            Stage::create([
-                'grade_level' => $item['grade_level'],
-                'label_ar'    => $item['label_ar'],
-                'icon'        => $item['icon'],
-            ]);
+            // استخدام updateOrCreate للبحث برقم المستوى وتحديثه أو إضافته بأمان دون حذف البقية
+            Stage::updateOrCreate(
+                ['grade_level' => $item['grade_level']], // الشرط (الابحث عن الصف بهذا الرقم)
+                [
+                    'label_ar' => $item['label_ar'],
+                    'icon'     => $item['icon'],
+                ]
+            );
         }
     }
 }
