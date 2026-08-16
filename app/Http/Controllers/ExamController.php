@@ -87,7 +87,7 @@ class ExamController extends Controller
                     'd' => $q['d'] ?? null,
                     'correct_answer' => $q['correct_answer'] ?? null,
                     'points' => $q['points'],
-                    'require_file' => (bool) ($q['require_file'] ?? false),
+                    'require_file' => filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN),
                 ]);
             }
         });
@@ -133,7 +133,7 @@ class ExamController extends Controller
             'pass_marks'       => $validated['pass_marks'] ?? $exam->pass_marks,
             'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
             'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
-            'is_active'        => $request->has('is_active') ? $request->is_active : $exam->is_active,
+            'is_active'        => $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $exam->is_active,
         ]);
 
         return redirect()->route('admin.exams.index')->with('success', 'تم تحديث بيانات الاختبار بنجاح!');
