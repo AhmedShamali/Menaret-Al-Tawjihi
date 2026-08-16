@@ -454,14 +454,6 @@
 
                 <p>{{ \App\Models\Setting::get('site_name', 'جسر') }} تقدم تجربة تعليمية سلسة ومصممة بعناية لمساعدة الطلاب على التفوق عبر أفضل الشروحات والأدوات التفاعلية.</p>
 
-                <div class="hero-cta">
-                    <a href="{{ route('students.create') }}" class="btn-main">
-                        <span>انضم إلينا اليوم</span>
-                        <i class="fas fa-arrow-left"></i>
-                    </a>
-
-                </div>
-
                 <div class="stats-grid">
                     <div class="stat-item">
                         <h3><span class="counter" data-target="{{ $stats['students'] ?? 1500 }}">0</span>+</h3>
