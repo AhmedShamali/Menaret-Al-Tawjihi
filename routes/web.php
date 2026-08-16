@@ -132,6 +132,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
+    Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
 
     Route::get('/inbox', [CommunicationController::class, 'teacherInbox'])->name('messages.index');
     Route::get('/messages/{student_id}', [CommunicationController::class, 'fetchTeacherStudentMessages'])->name('messages.fetch');
@@ -162,7 +163,7 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
 
     Route::get('/exams/{id}/result', [ExamController::class, 'showResult'])->name('exams.result');
     Route::get('/results/{id}', [ExamController::class, 'showResult'])->name('exam.results');
-    Route::get('/exams/{id}/results', [ExamController::class, 'showResult'])->name('exams.results.alt');
+    Route::get('/exams/{id}/results', [ExamController::class, 'showResult'])->name('exams.results');
 
     Route::get('/support', [CommunicationController::class, 'studentChat'])->name('support');
     Route::get('/chat', [CommunicationController::class, 'studentChat'])->name('chat');
@@ -184,14 +185,3 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/student/subjects/{id}', [DashboardController::class, 'showSubject'])->name('student.subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
 });
-
-
-Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
-    ->where('filename', '.*')
-    ->name('video.stream');
-
-
-Route::delete('/teacher/educational_contents/{id}', [EducationalContentController::class, 'destroy']);
-
-
-Route::get('/student/exams/{id}/results', [ExamController::class, 'showResult'])->name('student.exams.results');
