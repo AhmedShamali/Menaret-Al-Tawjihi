@@ -168,10 +168,11 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/support', [CommunicationController::class, 'studentChat'])->name('support');
     Route::get('/chat', [CommunicationController::class, 'studentChat'])->name('chat');
 
-    Route::get('/support/fetch/{admin_id}', [CommunicationController::class, 'fetchStudentMessages'])->name('support.fetch');
+    // تم التعديل هنا لربط الجلب بدالة fetchMessages وتمرير ال admin_id بشكل صحيح
+    Route::get('/support/fetch/{admin_id}', [CommunicationController::class, 'fetchMessages'])->name('support.fetch');
     Route::post('/support/send', [CommunicationController::class, 'sendFromStudent'])->name('support.send');
 
-    Route::get('/messages/fetch/{admin_id}', [CommunicationController::class, 'fetchStudentMessages'])->name('fetchMessages');
+    Route::get('/messages/fetch/{admin_id}', [CommunicationController::class, 'fetchMessages'])->name('fetchMessages');
     Route::post('/messages/send', [CommunicationController::class, 'sendFromStudent'])->name('sendMessage');
 
     Route::get('/teachers', [CommunicationController::class, 'teachersIndex'])->name('teachers.index');
