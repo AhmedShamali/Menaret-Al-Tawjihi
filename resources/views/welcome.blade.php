@@ -531,7 +531,6 @@
                 <div class="footer-title">الروابط السريعة</div>
                 <ul class="footer-links">
                     <li><a href="{{ route('placement.index') }}">اختبار المستوى</a></li>
-                    <li><a href="{{ route('students.create') }}">حساب جديد</a></li>
                     <li><a href="{{ route('login') }}">تسجيل الدخول</a></li>
                 </ul>
             </div>
