@@ -119,9 +119,9 @@ class CommunicationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data'   => [
-                    'id'                     => $message->id,
-                    'message'                => $message->message,
-                    'sender_type'            => $message->sender_type,
+                    'id'                   => $message->id,
+                    'message'              => $message->message,
+                    'sender_type'          => $message->sender_type,
                     'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
                 ]
             ]);
@@ -135,19 +135,17 @@ class CommunicationController extends Controller
     public function fetchMessages($student_id)
     {
         try {
-            $adminId = Auth::id();
-
+            // تم تعديل الاستعلام هنا لجلب الرسائل المرتبطة بالطالب مباشرة بغض النظر عن الـ admin_id
             $messages = Message::where('student_id', $student_id)
-                ->where('admin_id', $adminId)
                 ->whereNull('teacher_id')
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
                     return [
-                        'id'                     => $msg->id,
-                        'message'                => $msg->message,
-                        'sender_type'            => strtolower(trim($msg->sender_type ?? 'student')),
-                        'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                        'id'                    => $msg->id,
+                        'message'               => $msg->message,
+                        'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
+                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
                     ];
                 });
 
@@ -189,9 +187,9 @@ class CommunicationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data'   => [
-                    'id'                     => $message->id,
-                    'message'                => $message->message,
-                    'sender_type'            => $message->sender_type,
+                    'id'                   => $message->id,
+                    'message'              => $message->message,
+                    'sender_type'          => $message->sender_type,
                     'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
                 ]
             ]);
@@ -241,10 +239,10 @@ class CommunicationController extends Controller
                 ->get()
                 ->map(function ($msg) {
                     return [
-                        'id'                     => $msg->id,
-                        'message'                => $msg->message,
-                        'sender_type'            => strtolower(trim($msg->sender_type)),
-                        'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                        'id'                    => $msg->id,
+                        'message'               => $msg->message,
+                        'sender_type'           => strtolower(trim($msg->sender_type)),
+                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
                     ];
                 });
 
@@ -278,9 +276,9 @@ class CommunicationController extends Controller
                 return response()->json([
                     'status' => 'success',
                     'data'   => [
-                        'id'                     => $message->id,
-                        'message'                => $message->message,
-                        'sender_type'            => 'teacher',
+                        'id'                   => $message->id,
+                        'message'              => $message->message,
+                        'sender_type'          => 'teacher',
                         'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
                     ]
                 ]);
@@ -346,7 +344,7 @@ class CommunicationController extends Controller
     }
 
     // ==========================================
-    // 2. الجزء الخاص بمراسلة المعلمين للأدمن (التي طلبناها)
+    // 2. الجزء الخاص بمراسلة المعلمين للأدمن
     // ==========================================
     public function teachersChat(Request $request)
     {
@@ -371,7 +369,8 @@ class CommunicationController extends Controller
     public function inbox()
     {
         $count = DB::table('students')->count();
-        dd($count);
+        // تم إزالة الـ dd() لكي لا تتسبب بتوقف التنفيذ
+        return view('admin.management.inbox', compact('count'));
     }
 
     public function fetchStudentMessages($student_id)
@@ -429,10 +428,10 @@ class CommunicationController extends Controller
             ->get()
             ->map(function($msg) {
                 return [
-                    'id'                     => $msg->id,
-                    'message'                  => $msg->message,
-                    'sender_type'            => strtolower(trim($msg->sender_type ?? 'student')),
-                    'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                    'id'                    => $msg->id,
+                    'message'               => $msg->message,
+                    'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
+                    'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
                 ];
             });
 
@@ -462,10 +461,10 @@ class CommunicationController extends Controller
             return response()->json([
                 'status' => 'success',
                 'data'   => [
-                    'id'                     => $message->id,
-                    'message'                  => $message->message,
-                    'sender_type'            => $message->sender_type,
-                    'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                    'id'                    => $message->id,
+                    'message'               => $message->message,
+                    'sender_type'           => $message->sender_type,
+                    'created_at_formatted'  => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
                 ]
             ]);
         } catch (\Exception $e) {
@@ -491,10 +490,10 @@ class CommunicationController extends Controller
             ->get()
             ->map(function($msg) use ($adminId) {
                 return [
-                    'id'                     => $msg->id,
-                    'message'                  => $msg->message,
-                    'sender_type'            => ($msg->sender_type === 'admin') ? 'admin' : 'teacher',
-                    'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                    'id'                    => $msg->id,
+                    'message'               => $msg->message,
+                    'sender_type'           => ($msg->sender_type === 'admin') ? 'admin' : 'teacher',
+                    'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
                 ];
             });
 
@@ -522,7 +521,6 @@ class CommunicationController extends Controller
     public function teacherAdminChat()
     {
         $teacher = Auth::user();
-        // جلب أول أدمن أو الأدمن المرتبط
         $admin = User::where('role', 'admin')->first();
         return view('teacher.admin_chat', compact('teacher', 'admin'));
     }

@@ -25,7 +25,7 @@
     /* القائمة الجانبية (المشرفين) */
     .chat-sidebar {
         width: var(--sidebar-width);
-        border-left: 1px solid #e5e5e5; /* خط فاصل لجهة اليمين لأننا RTL */
+        border-left: 1px solid #e5e5e5;
         display: flex;
         flex-direction: column;
         background: #fff;
@@ -87,6 +87,7 @@
         font-weight: bold;
         margin-left: 12px;
         font-size: 18px;
+        flex-shrink: 0;
     }
 
     .admin-info h6 { margin: 0; font-weight: 600; color: var(--text-main); }
@@ -200,19 +201,21 @@
             </div>
 
             <div class="admin-list" id="support-list">
-                @forelse($support as $index => $admin)
-                <div class="admin-item {{ $index === 0 ? 'active' : '' }}"
-                     id="admin_card_{{ $admin->id }}"
-                     onclick="loadSupportChat({{ $admin->id }}, '{{ $admin->name }}')">
-                    <div class="admin-avatar">{{ mb_substr($admin->name, 0, 1) }}</div>
-                    <div class="admin-info">
-                        <h6>{{ $admin->name }}</h6>
-                        <p>متصل الآن</p>
+                @isset($support)
+                    @forelse($support as $index => $admin)
+                    <div class="admin-item {{ $index === 0 ? 'active' : '' }}"
+                         id="admin_card_{{ $admin->id }}"
+                         onclick="loadSupportChat({{ $admin->id }}, '{{ $admin->name }}')">
+                        <div class="admin-avatar">{{ mb_substr($admin->name, 0, 1) }}</div>
+                        <div class="admin-info">
+                            <h6>{{ $admin->name }}</h6>
+                            <p>متصل الآن</p>
+                        </div>
                     </div>
-                </div>
-                @empty
-                <p class="text-center p-3 text-muted">لا يوجد مشرفين</p>
-                @endforelse
+                    @empty
+                    <p class="text-center p-3 text-muted">لا يوجد مشرفين متاحين</p>
+                    @endforelse
+                @endisset
             </div>
         </div>
 
@@ -220,9 +223,13 @@
         <div class="chat-main">
             <div class="chat-header">
                 <div class="d-flex align-items-center">
-                    <div class="admin-avatar" style="width: 35px; height: 35px; font-size: 14px;" id="active_avatar">🛡️</div>
-                    <div class="me-2">
-                        <h6 class="mb-0 fw-bold" id="active_name">{{ $support->first()->name ?? 'اختر مشرفاً' }}</h6>
+                    <div class="admin-avatar" style="width: 35px; height: 35px; font-size: 14px;" id="active_avatar">
+                        {{ isset($support) && $support->count() > 0 ? mb_substr($support->first()->name, 0, 1) : '🛡️' }}
+                    </div>
+                    <div class="me-2" style="margin-right: 12px;">
+                        <h6 class="mb-0 fw-bold" id="active_name">
+                            {{ isset($support) && $support->count() > 0 ? $support->first()->name : 'اختر مشرفاً' }}
+                        </h6>
                         <small class="text-success" style="font-size: 11px;">نشط الآن</small>
                     </div>
                 </div>
@@ -230,7 +237,6 @@
             </div>
 
             <div class="messages-area" id="chat_messages">
-                <!-- الرسائل تحمل هنا عبر الـ JS -->
                 <div class="welcome-screen">
                     <img src="https://cdn-icons-png.flaticon.com/512/5962/5962463.png" width="80" style="opacity: 0.2;">
                     <p class="mt-3">اختر مشرفاً لبدء المحادثة</p>
@@ -247,46 +253,56 @@
 </div>
 
 <script>
-    let activeAdminId = {{ $support->first()->id ?? 'null' }};
+    let activeAdminId = {{ isset($support) && $support->count() > 0 ? $support->first()->id : 'null' }};
 
     function loadSupportChat(id, name) {
         activeAdminId = id;
         document.getElementById('active_name').innerText = name;
         document.getElementById('active_avatar').innerText = name.charAt(0);
 
-        // تمييز العنصر المختار
+        // تمييز العنصر المختار في القائمة الجانبية
         document.querySelectorAll('.admin-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('admin_card_'+id).classList.add('active');
+        let selectedCard = document.getElementById('admin_card_' + id);
+        if(selectedCard) {
+            selectedCard.classList.add('active');
+        }
 
         fetchMessages();
     }
 
     function fetchMessages() {
-        if(!activeAdminId) return;
+        if (!activeAdminId) return;
         const container = document.getElementById('chat_messages');
 
         fetch("{{ url('student/support/fetch') }}/" + activeAdminId)
             .then(res => res.json())
             .then(data => {
-                if(data.status === 'success') {
+                if (data.status === 'success' && data.messages) {
                     let html = '';
-                    data.messages.forEach(msg => {
-                        let isMe = (msg.sender_type.toLowerCase() === 'student');
-                        html += `
-                            <div class="msg ${isMe ? 'msg-student' : 'msg-admin'}">
-                                ${msg.message}
-                                <span class="msg-time">${msg.created_at_formatted || ''}</span>
-                            </div>`;
-                    });
+                    if(data.messages.length === 0) {
+                        html = `<div class="welcome-screen">
+                                    <p class="text-muted">لا توجد رسائل سابقة، ابدأ المحادثة الآن!</p>
+                                </div>`;
+                    } else {
+                        data.messages.forEach(msg => {
+                            let isMe = (msg.sender_type && msg.sender_type.toLowerCase() === 'student');
+                            html += `
+                                <div class="msg ${isMe ? 'msg-student' : 'msg-admin'}">
+                                    ${msg.message}
+                                    <span class="msg-time">${msg.created_at_formatted || ''}</span>
+                                </div>`;
+                        });
+                    }
                     container.innerHTML = html;
                     container.scrollTop = container.scrollHeight;
                 }
-            });
+            })
+            .catch(err => console.error("Error fetching messages:", err));
     }
 
     function sendSupportMessage() {
         const input = document.getElementById('msg_input');
-        if(!input.value.trim() || !activeAdminId) return;
+        if (!input.value.trim() || !activeAdminId) return;
 
         let messageText = input.value;
         input.value = '';
@@ -298,10 +314,15 @@
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify({ message: messageText, admin_id: activeAdminId })
-        }).then(() => fetchMessages());
+        })
+        .then(res => res.json())
+        .then(data => {
+            fetchMessages(); // تحديث الرسائل فوراً بعد الإرسال
+        })
+        .catch(err => console.error("Error sending message:", err));
     }
 
-    // بحث المشرفين
+    // بحث المشرفين في القائمة الجانبية
     document.getElementById('admin_search').addEventListener('input', function(e) {
         let term = e.target.value.toLowerCase();
         document.querySelectorAll('.admin-item').forEach(item => {
@@ -312,13 +333,19 @@
 
     // إرسال عند ضغط Enter
     document.getElementById('msg_input').addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') sendSupportMessage();
+        if (e.key === 'Enter') sendSupportMessage();
     });
 
-    // تحديث تلقائي كل 5 ثواني
-    setInterval(fetchMessages, 5000);
+    // تحديث تلقائي كل 5 ثواني للرسائل الجديدة
+    setInterval(() => {
+        if (activeAdminId) fetchMessages();
+    }, 5000);
 
-    // تشغيل جلب الرسائل لأول مرة
-    window.onload = fetchMessages;
+    // تشغيل جلب الرسائل أول ما تحمّل الصفحة بالكامل
+    document.addEventListener("DOMContentLoaded", function() {
+        if (activeAdminId) {
+            fetchMessages();
+        }
+    });
 </script>
 @endsection
