@@ -539,7 +539,6 @@
                 <div class="footer-title">المساعدة</div>
                 <ul class="footer-links">
                     <li><a href="{{ route('public.faq') }}">الأسئلة الشائعة</a></li>
-                    <li><a href="{{ route('public.contact') }}">تواصل معنا</a></li>
                     <li><a href="{{ route('public.terms') }}">الشروط والأحكام</a></li>
                 </ul>
             </div>
