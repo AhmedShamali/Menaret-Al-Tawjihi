@@ -404,4 +404,23 @@ class ExamController extends Controller
 
         return view('student.exams.gradebook', compact('submissions'));
     }
+    public function destroy($id)
+    {
+        $user = auth()->user();
+        $exam = Exam::findOrFail($id);
+
+        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح لك بحذف هذا الاختبار'], 403);
+        }
+
+        try {
+            // حذف الأسئلة المرتبطة أو التسليمات إذا لزم الأمر
+            $exam->questions()->delete();
+            $exam->delete();
+
+            return response()->json(['success' => true, 'message' => 'تم حذف الاختبار بنجاح!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
 }
