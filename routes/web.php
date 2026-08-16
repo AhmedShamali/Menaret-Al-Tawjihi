@@ -190,3 +190,5 @@ Route::get('/video-stream/{filename}', [VideoController::class, 'stream'])
     ->where('filename', '.*')
     ->name('video.stream');
 
+
+Route::delete('/teacher/educational_contents/{id}', [EducationalContentController::class, 'destroy']);
