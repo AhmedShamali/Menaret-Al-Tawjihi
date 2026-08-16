@@ -76,6 +76,10 @@ class ExamController extends Controller
                     $imagePath = $q['image']->store('questions', 'public');
                 }
 
+                // حل مشكلة التوافق مع PostgreSQL: تحديد قيمة boolean صريحة
+                $val = $q['require_file'] ?? false;
+                $requireFileValue = ($val === true || $val === '1' || $val === 1 || $val === 'true');
+
                 Question::create([
                     'exam_id' => $exam->id,
                     'type' => $q['type'],
@@ -87,7 +91,7 @@ class ExamController extends Controller
                     'd' => $q['d'] ?? null,
                     'correct_answer' => $q['correct_answer'] ?? null,
                     'points' => $q['points'],
-                    'require_file' => filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    'require_file' => $requireFileValue,
                 ]);
             }
         });
@@ -115,7 +119,7 @@ class ExamController extends Controller
         }
 
         $validated = $request->validate([
-            'title'            => 'required|string|max:255',
+            'title'           => 'required|string|max:255',
             'description'      => 'nullable|string',
             'duration_minutes' => 'required|integer|min:1',
             'total_marks'      => 'nullable|integer|min:1',
