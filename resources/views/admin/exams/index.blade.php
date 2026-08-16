@@ -131,7 +131,7 @@
 
 </div>
 
-<!-- JavaScript لتأكيد الحذف بشكل عصري -->
+<!-- JavaScript لتأكيد الحذف وإظهار رسائل الجلسة (Session Alerts) -->
 <script>
 function confirmDelete(id) {
     Swal.fire({
@@ -153,6 +153,27 @@ function confirmDelete(id) {
         }
     });
 }
+
+// إظهار التنبيهات القادمة من الـ Controller تلقائياً
+@if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'تم بنجاح!',
+        text: "{{ session('success') }}",
+        timer: 3000,
+        showConfirmButton: false,
+        customClass: { popup: 'swal2-custom-popup' }
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'عذراً!',
+        text: "{{ session('error') }}",
+        customClass: { popup: 'swal2-custom-popup' }
+    });
+@endif
 </script>
 
 <style>

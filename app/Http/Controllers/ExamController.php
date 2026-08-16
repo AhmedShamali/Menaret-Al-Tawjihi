@@ -57,7 +57,7 @@ class ExamController extends Controller
             'questions.*.b' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.c' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.d' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
-            'questions.*.correct_answer' => ['nullable'], // تم جعلها مرنة لتقبل نص أو مصفوفة للإجابات المتعددة
+            'questions.*.correct_answer' => ['nullable'],
             'questions.*.require_file' => ['nullable'],
             'questions.*.is_multiple' => ['nullable'],
         ]);
@@ -80,7 +80,6 @@ class ExamController extends Controller
                 $requireFileValue = (bool) filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $isMultipleValue = filter_var($q['is_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
-                // معالجة الإجابة الصحيحة في حال كانت متعددة (مصفوفة) أو مفردة
                 $correctAnswer = $q['correct_answer'] ?? null;
                 if (is_array($correctAnswer)) {
                     $correctAnswer = json_encode($correctAnswer);
@@ -148,6 +147,26 @@ class ExamController extends Controller
         ]);
 
         return redirect()->route('admin.exams.index')->with('success', 'تم تحديث بيانات الاختبار بنجاح!');
+    }
+
+    // دالة حذف الاختبار المضافة حديثاً
+    public function destroy($id)
+    {
+        $user = auth()->user();
+        $exam = Exam::findOrFail($id);
+
+        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+            return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا الاختبار');
+        }
+
+        try {
+            $exam->questions()->delete();
+            $exam->delete();
+
+            return redirect()->route('admin.exams.index')->with('success', 'تم حذف الاختبار بنجاح!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
+        }
     }
 
     public function stats($id)
@@ -325,7 +344,6 @@ class ExamController extends Controller
 
                     if ($q->type == 'mcq') {
                         if ($q->is_multiple) {
-                            // مقارنة إجابات متعددة (Checkbox)
                             $userAnswers = array_map('strtolower', array_map('trim', (array)$studentAns));
                             
                             $decodedCorrect = json_decode($q->correct_answer, true);
@@ -340,7 +358,6 @@ class ExamController extends Controller
                                 $points = $q->points;
                             }
                         } else {
-                            // إجابة واحدة تقليدية (Radio)
                             $userAnswer = strtolower(trim(is_array($studentAns) ? ($studentAns[0] ?? '') : ($studentAns ?? '')));
                             $correctAnswer = strtolower(trim($q->correct_answer ?? ''));
 
@@ -403,24 +420,5 @@ class ExamController extends Controller
             ->get();
 
         return view('student.exams.gradebook', compact('submissions'));
-    }
-    public function destroy($id)
-    {
-        $user = auth()->user();
-        $exam = Exam::findOrFail($id);
-
-        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
-            return response()->json(['success' => false, 'error' => 'غير مصرح لك بحذف هذا الاختبار'], 403);
-        }
-
-        try {
-            // حذف الأسئلة المرتبطة أو التسليمات إذا لزم الأمر
-            $exam->questions()->delete();
-            $exam->delete();
-
-            return response()->json(['success' => true, 'message' => 'تم حذف الاختبار بنجاح!']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
-        }
     }
 }
