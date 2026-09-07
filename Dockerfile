@@ -49,10 +49,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # إنشاء الرابط الرمزي للصور لتفعيل عرضها تلقائياً
 RUN php artisan storage:link
 
-# تجهيز ملف البيئة الأساسي
-RUN cp .env.example .env
-
 EXPOSE 80
 
-# أوامر التشغيل: تشغيل الـ Migration فقط (بدون توليد مفتاح جديد لأنه موجود بـ Render) ثم إقلاع أباتشي
+# أوامر التشغيل: تشغيل الـ Migration ثم إقلاع أباتشي مباشرة بالاعتماد على متغيرات بيئة Render
 CMD sh -c "php artisan migrate --force && apache2-foreground"
