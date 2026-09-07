@@ -27,18 +27,46 @@ class DashboardController extends Controller {
         return view('admin.dashboard', compact('data'));
     }
 
-    /**
-     * عرض تفاصيل المادة الدراسية الموحدة (للفيديوهات، الملفات، والاختبارات)
-     */
     public function showSubject($id)
     {
-        $student_id = auth()->id() ?? 1;
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user();
+        $student_id = $student?->id ?? auth()->id();
 
-        // جلب المادة مع كامل علاقاتها (المرحلة، المعلم، المحتوى، والاختبارات)
+        // جلب المادة مع كامل علاقاتها
         $subject = Subject::with(['stage', 'teacher', 'contents', 'educationalContents', 'exams'])->findOrFail($id);
 
-        // الاعتماد على المحتوى المتاح سواء كان عبر contents أو educationalContents
+        // الاعتماد على المحتوى المتاح
         $contents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
+
+        // فحص اشتراك الطالب وصلاحياته في هذه المادة
+        $enrollment = null;
+        $isFullAccess = true;
+        $allowedIds = [];
+
+        if ($student) {
+            $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('subject_id', $subject->id)
+                ->first();
+
+            if ($enrollment) {
+                $isFullAccess = ($enrollment->access_mode === 'all');
+                if (!$isFullAccess) {
+                    $allowedIds = \App\Models\ContentAssignment::where('enrollment_id', $enrollment->id)
+                        ->where('is_visible', true)
+                        ->pluck('educational_content_id')
+                        ->toArray();
+                }
+            } else {
+                // إذا لم يكن مسجلاً باشتراك رسمي بعد، يمكن فتح الدروس الأولى أو اعتبارها مخصصة
+                $isFullAccess = false;
+                $allowedIds = $contents->where('order', '<=', 2)->pluck('id')->toArray(); // الدرس الأول والثاني مجاني تجريبي
+            }
+        }
+
+        // تحديد حالة القفل لكل درس
+        $contents->each(function ($item) use ($isFullAccess, $allowedIds) {
+            $item->is_unlocked = $isFullAccess || in_array($item->id, $allowedIds);
+        });
 
         // 1. جلب الفيديوهات
         $videos = $contents->filter(function ($item) {
@@ -51,9 +79,9 @@ class DashboardController extends Controller {
         })->sortBy('order');
 
         // 3. جلب الاختبارات التي حلها الطالب مسبقاً
-        $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
+        $solvedExamIds = $student_id ? ExamSubmission::where('student_id', $student_id)->pluck('exam_id') : collect();
 
-        return view('student.subjects.show', compact('subject', 'videos', 'files', 'solvedExamIds'));
+        return view('student.subjects.show', compact('subject', 'videos', 'files', 'solvedExamIds', 'enrollment', 'isFullAccess'));
     }
 
     // جعل الدالة البديلة تحول مباشرة للدالة الموحدة لضمان عدم حدوث تضارب

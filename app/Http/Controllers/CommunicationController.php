@@ -135,7 +135,22 @@ class CommunicationController extends Controller
     public function fetchMessages($student_id)
     {
         try {
-            // تم تعديل الاستعلام هنا لجلب الرسائل المرتبطة بالطالب مباشرة بغض النظر عن الـ admin_id
+            // وضع علامة مقروء على الرسائل المستلمة
+            $isStudent = Auth::guard('student')->check();
+            if ($isStudent) {
+                Message::where('student_id', $student_id)
+                    ->whereNull('teacher_id')
+                    ->where('sender_type', '!=', 'student')
+                    ->where('is_read', false)
+                    ->update(['is_read' => true]);
+            } else {
+                Message::where('student_id', $student_id)
+                    ->whereNull('teacher_id')
+                    ->where('sender_type', 'student')
+                    ->where('is_read', false)
+                    ->update(['is_read' => true]);
+            }
+
             $messages = Message::where('student_id', $student_id)
                 ->whereNull('teacher_id')
                 ->orderBy('created_at', 'asc')
@@ -233,6 +248,12 @@ class CommunicationController extends Controller
     {
         try {
             $teacherId = Auth::id();
+            Message::where('student_id', $student_id)
+                ->where('teacher_id', $teacherId)
+                ->where('sender_type', 'student')
+                ->where('is_read', false)
+                ->update(['is_read' => true]);
+
             $messages = Message::where('student_id', $student_id)
                 ->where('teacher_id', $teacherId)
                 ->orderBy('created_at', 'asc')
@@ -421,6 +442,12 @@ class CommunicationController extends Controller
         if (!$student) {
             return response()->json(['messages' => []]);
         }
+
+        Message::where('student_id', $student->id)
+            ->where('teacher_id', $teacher_id)
+            ->where('sender_type', 'teacher')
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
 
         $messages = Message::where('student_id', $student->id)
             ->where('teacher_id', $teacher_id)

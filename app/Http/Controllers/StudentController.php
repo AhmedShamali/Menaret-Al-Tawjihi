@@ -156,4 +156,67 @@ class StudentController extends Controller
         $student = Student::with('stage')->findOrFail($id);
         return view('admin.students.show', compact('student'));
     }
+
+    /**
+     * تفعيل اشتراك مادة بواسطة كود شحن أو بطاقة تفعيل
+     */
+    public function redeemCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string|min:4',
+            'subject_id' => 'nullable|exists:subjects,id',
+        ]);
+
+        $student = \App\Support\CurrentActor::student() ?? Auth::guard('student')->user();
+        if (!$student) {
+            return response()->json(['status' => 'error', 'message' => 'يجب تسجيل الدخول كطالب أولاً.'], 401);
+        }
+
+        $codeStr = strtoupper(trim($request->code));
+        $voucher = \App\Models\ActivationCode::where('code', $codeStr)->first();
+
+        if (!$voucher) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'كود التفعيل المدخل غير صحيح أو غير موجود.'
+            ], 404);
+        }
+
+        if ($voucher->is_used) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'عذراً، هذا الكود تم استخدامه مسبقاً.'
+            ], 422);
+        }
+
+        // تفعيل الاشتراك في المادة
+        $enrollment = \App\Models\Enrollment::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'subject_id' => $voucher->subject_id,
+            ],
+            [
+                'status' => 'active',
+                'access_mode' => $voucher->access_mode ?? 'all',
+                'payment_status' => 'voucher',
+                'activated_at' => now(),
+                'expires_at' => now()->addDays($voucher->duration_days ?? 365),
+            ]
+        );
+
+        // وضع علامة مستخدم على الكود
+        $voucher->update([
+            'is_used' => true,
+            'used_by_student_id' => $student->id,
+            'used_at' => now(),
+        ]);
+
+        $subjectName = optional($voucher->subject)->name_ar ?? optional($voucher->subject)->name ?? 'المادة الدراسية';
+
+        return response()->json([
+            'status' => 'success',
+            'message' => "تم تفعيل اشتراكك بنجاح في ({$subjectName}) مبارك! 🎉",
+            'subject_id' => $voucher->subject_id
+        ]);
+    }
 }

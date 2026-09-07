@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title') | {{ \App\Models\Setting::get('site_name', 'منصة جسر') }}</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <title>@yield('title') | {{ \App\Models\Setting::get('site_name', 'منصة فلسطين التعليمية') }}</title>
 
     <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -233,6 +235,9 @@
                 <a href="{{ route('teacher.educational_contents.index') }}" class="nav-item {{ Request::is('teacher/educational_contents*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-photo-film"></i> <span>دروسي وملفاتي</span></div></div>
                 </a>
+                <a href="{{ route('teacher.access.index') }}" class="nav-item {{ Request::is('teacher/access*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-shield"></i> <span>اشتراكات وصلاحيات الطلاب</span></div></div>
+                </a>
                 <a href="{{ route('teacher.messages.index') }}" class="nav-item {{ Request::is('teacher/inbox*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>رسائل الطلاب</span></div></div>
                 </a>
@@ -284,35 +289,80 @@
 
             <div style="display:flex; align-items:center; gap:15px;">
                 @php
-                    $unreadCount = 0; $unreadItems = collect();
-                    if(auth('student')->check()) {
-                        $unreadCount = \App\Models\Message::where('student_id', auth('student')->id())->whereNull('teacher_id')->where('sender_type', 'admin')->count();
-                        $unreadItems = \App\Models\Message::where('student_id', auth('student')->id())->whereNull('teacher_id')->where('sender_type', 'admin')->latest()->take(5)->get();
+                    $unreadCount = 0; 
+                    $unreadItems = collect();
+                    $isStudent = auth('student')->check();
+
+                    if($isStudent) {
+                        $sId = auth('student')->id();
+                        $unreadCount = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
+                        $unreadItems = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->latest()->take(5)->get();
                     } elseif(auth()->check() && auth()->user()->role === 'teacher') {
-                        $unreadCount = \App\Models\Message::where('teacher_id', auth()->id())->where('sender_type', 'student')->count();
-                        $unreadItems = \App\Models\Message::where('teacher_id', auth()->id())->where('sender_type', 'student')->latest()->take(5)->get();
+                        $tId = auth()->id();
+                        $unreadCount = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->count();
+                        $unreadItems = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
                     } elseif(auth()->check() && auth()->user()->role === 'admin') {
-                        $unreadCount = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->count();
-                        $unreadItems = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->latest()->take(5)->get();
+                        $unreadCount = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->count();
+                        $unreadItems = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
                     }
                 @endphp
 
                 <div class="notifications-dropdown-container" style="position: relative;">
-                    <button id="notificationsToggle" style="background: #f8fafc; border: 1px solid var(--border-color); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; position: relative;">
-                        <i class="fa-solid fa-bell"></i>
-                        @if($unreadCount > 0)
-                            <span style="position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; border: 2px solid white;">{{ $unreadCount }}</span>
-                        @endif
+                    <button id="notificationsToggle" style="background: #f8fafc; border: 1px solid var(--border-color); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; position: relative; display: grid; place-items: center; transition: 0.2s;">
+                        <i class="fa-solid fa-bell" style="font-size: 1.15rem; color: #475569;"></i>
+                        <span id="navUnreadBadge" style="{{ $unreadCount > 0 ? '' : 'display: none;' }} position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.65rem; padding: 2px 7px; border-radius: 10px; border: 2px solid white; font-weight: 800; animation: pulse 2s infinite;">{{ $unreadCount }}</span>
                     </button>
-                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 50px; width: 280px; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid var(--border-color); z-index: 1000;">
-                        <div style="padding: 12px; background: #f8fafc; border-bottom: 1px solid var(--border-color); font-weight: bold; border-radius: 12px 12px 0 0;">التنبيهات</div>
-                        <div style="max-height: 300px; overflow-y: auto;">
+                    
+                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 52px; width: 340px; background: white; border-radius: 18px; box-shadow: 0 15px 35px rgba(0,0,0,0.12); border: 1px solid var(--border-color); z-index: 1000; overflow: hidden; animation: fadeIn 0.2s ease;">
+                        <div style="padding: 14px 18px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 800; font-size: 0.92rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-bell" style="color: var(--primary-color);"></i> التنبيهات
+                            </span>
+                            @if($isStudent)
+                                <button onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.75rem; color: var(--primary-color); font-weight: 700; cursor: pointer;">
+                                    تحديد الكل كمقروء
+                                </button>
+                            @endif
+                        </div>
+
+                        <div style="max-height: 320px; overflow-y: auto;" id="navNotificationsList">
                             @forelse($unreadItems as $item)
-                                <a href="#" style="display: block; padding: 12px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; font-size: 0.8rem;">{{ Str::limit($item->message, 50) }}</a>
+                                @php
+                                    $link = '#';
+                                    if ($isStudent) {
+                                        $link = $item->sender_type === 'teacher' ? route('student.chat.teacher', $item->teacher_id ?? 1) : route('student.support');
+                                    } elseif (auth()->check() && auth()->user()->role === 'teacher') {
+                                        $link = route('teacher.messages.index');
+                                    } else {
+                                        $link = route('admin.messages.index');
+                                    }
+                                @endphp
+                                <a href="{{ $link }}" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; text-decoration: none; color: inherit; transition: 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; flex-shrink: 0; font-size: 0.9rem;">
+                                        <i class="fa-solid fa-comment-dots"></i>
+                                    </div>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="font-size: 0.82rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            {{ $item->message }}
+                                        </div>
+                                        <span style="font-size: 0.72rem; color: #94a3b8;">{{ $item->created_at ? $item->created_at->diffForHumans() : 'الآن' }}</span>
+                                    </div>
+                                </a>
                             @empty
-                                <div style="padding: 20px; text-align: center; color: #999;">لا توجد إشعارات</div>
+                                <div style="padding: 30px 20px; text-align: center; color: #94a3b8;">
+                                    <i class="fa-solid fa-check-circle" style="font-size: 1.8rem; margin-bottom: 6px; display: block; opacity: 0.4;"></i>
+                                    <span style="font-size: 0.85rem; font-weight: 600;">لا توجد إشعارات غير مقروءة</span>
+                                </div>
                             @endforelse
                         </div>
+
+                        @if($isStudent)
+                            <div style="padding: 10px; background: #f8fafc; border-top: 1px solid var(--border-color); text-align: center;">
+                                <a href="{{ route('student.notifications.index') }}" style="font-size: 0.8rem; font-weight: 700; color: var(--primary-color); text-decoration: none;">
+                                    عرض كافة التنبيهات والأرشيف ←
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -360,9 +410,33 @@
             notifToggle.onclick = (e) => { 
                 e.stopPropagation(); 
                 notifMenu.style.display = notifMenu.style.display === 'block' ? 'none' : 'block'; 
-            }
+            };
             window.addEventListener('click', () => {
                 if(notifMenu) notifMenu.style.display = 'none';
+            });
+        }
+
+        function markAllReadFromNav() {
+            axios.post('/student/notifications/mark-all-read', {
+                _token: '{{ csrf_token() }}'
+            }).then(() => {
+                const badge = document.getElementById('navUnreadBadge');
+                if (badge) badge.style.display = 'none';
+                const list = document.getElementById('navNotificationsList');
+                if (list) {
+                    list.innerHTML = '<div style="padding: 30px 20px; text-align: center; color: #94a3b8;"><i class="fa-solid fa-check-circle" style="font-size: 1.8rem; margin-bottom: 6px; display: block; color: #10b981;"></i><span style="font-size: 0.85rem; font-weight: 600;">تمت قراءة جميع الإشعارات بنجاح</span></div>';
+                }
+            });
+        }
+
+        // تسجيل Service Worker للعمل أوفلاين كتطبيق سطح مكتب PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(reg => {
+                    console.log('تم تفعيل مشغل الأوفلاين PWA بنجاح:', reg.scope);
+                }).catch(err => {
+                    console.log('تعذر تفعيل Service Worker:', err);
+                });
             });
         }
     </script>

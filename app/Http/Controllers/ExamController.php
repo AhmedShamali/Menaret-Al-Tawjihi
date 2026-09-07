@@ -34,6 +34,17 @@ class ExamController extends Controller
         return view('admin.exams.index', compact('exams'));
     }
 
+    public function show($id)
+    {
+        $exam = Exam::with(['subject', 'stage', 'questions'])->findOrFail($id);
+        
+        if (view()->exists('admin.exams.show')) {
+            return view('admin.exams.show', compact('exam'));
+        }
+
+        return redirect()->route('admin.exams.index');
+    }
+
     public function create()
     {
         $subjects = Subject::orderBy('name_ar')->get();

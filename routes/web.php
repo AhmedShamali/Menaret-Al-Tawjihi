@@ -60,6 +60,7 @@ Route::get('/students', function () {
     return view('visitor');
 });
 
+Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::resource('educational_contents', EducationalContentController::class);
 
 
@@ -134,6 +135,12 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
 
+    // إدارة اشتراكات وصلاحيات الطلاب في الفيديوهات والدروس
+    Route::get('/access-control', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('access.index');
+    Route::get('/access/{enrollment_id}/contents', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'getStudentContents'])->name('access.contents');
+    Route::post('/access/{enrollment_id}/update', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'updateAccess'])->name('access.update');
+    Route::post('/access/quick-enroll', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'quickEnroll'])->name('access.quickEnroll');
+
     Route::get('/inbox', [CommunicationController::class, 'teacherInbox'])->name('messages.index');
     Route::get('/messages/{student_id}', [CommunicationController::class, 'fetchTeacherStudentMessages'])->name('messages.fetch');
     Route::post('/send-message', [CommunicationController::class, 'sendFromTeacher'])->name('messages.send');
@@ -185,4 +192,8 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/subjects/{id}', [DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
     Route::get('/student/subjects/{id}', [DashboardController::class, 'showSubject'])->name('student.subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
+    Route::post('/redeem-code', [StudentController::class, 'redeemCode'])->name('redeemCode');
 });

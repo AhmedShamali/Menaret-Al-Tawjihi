@@ -1,0 +1,19 @@
+{
+  "name": "منصة فلسطين التعليمية - الثانوية العامة",
+  "short_name": "منصة التوجيهي",
+  "description": "المنصة التعليمية الشاملة لطلاب الثانوية العامة في فلسطين (علمي، أدبي، ريادي، شرعي، صناعي) مع ميزة المشاهدة بدون إنترنت",
+  "start_url": "/student/dashboard",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

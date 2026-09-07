@@ -199,6 +199,32 @@ class AdminManagerController extends Controller {
         }
     }
 
+    public function pulse()
+    {
+        $activities = Activity::with('student')->latest()->take(50)->get();
+        $chartData = collect();
+        
+        try {
+            $chartData = Activity::select(
+                DB::raw("date_part('hour', created_at) as hour"),
+                DB::raw('count(*) as count')
+            )
+            ->where('created_at', '>', now()->subDay())
+            ->groupBy('hour')
+            ->orderBy('hour')
+            ->get();
+        } catch (\Exception $e) {
+            // fallback if hour function or date_part differs
+            $chartData = collect();
+        }
+
+        if (view()->exists('admin.activities.pulse')) {
+            return view('admin.activities.pulse', compact('activities', 'chartData'));
+        }
+
+        return view('admin.activities.index', compact('activities'));
+    }
+
     public function studentProfile()
     {
         $student = Student::with('stage')->first();

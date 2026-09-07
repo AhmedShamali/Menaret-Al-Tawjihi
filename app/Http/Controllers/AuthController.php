@@ -75,6 +75,23 @@ class AuthController extends Controller
         return back()->withErrors(['error' => 'بيانات الدخول غير صحيحة أو الحساب غير موجود.']);
     }
 
+    public function handleForgot(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $email = trim($request->email);
+        $user = User::where('email', $email)->first();
+        $student = Student::where('email', $email)->first();
+
+        if (!$user && !$student) {
+            return back()->withErrors(['error' => 'البريد الإلكتروني المدخل غير مسجل في النظام.']);
+        }
+
+        return back()->with('status', 'إذا كان الحساب مسجلاً، فقد تم إرسال تعليمات إعادة تعيين كلمة المرور إلى بريدك.');
+    }
+
     public function logout(Request $request)
     {
         Auth::guard('web')->logout();

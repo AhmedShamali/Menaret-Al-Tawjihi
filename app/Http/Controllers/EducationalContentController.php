@@ -199,4 +199,45 @@ class EducationalContentController extends Controller
 
         return response()->json(['success' => false, 'message' => 'العنصر غير موجود'], 404);
     }
+
+    public function downloadFile($id)
+    {
+        $content = EducationalContent::findOrFail($id);
+
+        if (empty($content->pdf_path)) {
+            return back()->with('error', 'لا يوجد ملف مرفق لهذا الدرس.');
+        }
+
+        $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_\.]/u', '_', $content->title ?? 'ملف_تعليمي');
+        $fileName = $cleanTitle . '.pdf';
+
+        // 1. إذا كان الملف مخزناً محلياً
+        if (Storage::disk('public')->exists($content->pdf_path)) {
+            return Storage::disk('public')->download($content->pdf_path, $fileName);
+        }
+
+        // 2. إذا كان الملف على Supabase
+        if (str_contains($content->pdf_path, 'storage.supabase.co')) {
+            $parsedPath = preg_replace('#^.*?/educational/#', 'educational/', $content->pdf_path);
+            if (Storage::disk('supabase')->exists($parsedPath)) {
+                return Storage::disk('supabase')->download($parsedPath, $fileName);
+            }
+        }
+
+        // 3. مسار رابط عام أو مباشر
+        return response()->streamDownload(function () use ($content) {
+            $opts = [
+                'http' => ['method' => 'GET', 'header' => "User-Agent: PHP\r\n"]
+            ];
+            $context = stream_context_create($opts);
+            $stream = @fopen($content->pdf_path, 'rb', false, $context);
+            if ($stream) {
+                fpassthru($stream);
+                fclose($stream);
+            }
+        }, $fileName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+        ]);
+    }
 }
