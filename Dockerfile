@@ -32,8 +32,9 @@ COPY . .
 # تثبيت حزم لاراڤيل
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط مجلد public كواجهة أساسية لأباتشي وتفعيل AllowOverride
+# ضبط مجلد public كواجهة أساسية لأباتشي وتفعيل AllowOverride وتصحيح المسار الافتراضي
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -i -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
@@ -55,5 +56,5 @@ RUN cp .env.example .env
 
 EXPOSE 80
 
-# أوامر التشغيل السليمة والمنفصلة تماماً
+# أوامر التشغيل: توليد المفتاح، تشغيل الـ Migration تلقائياً، ثم إقلاع أباتشي
 CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan migrate --force && apache2-foreground"
