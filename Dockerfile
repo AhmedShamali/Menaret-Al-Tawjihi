@@ -32,11 +32,9 @@ COPY . .
 # تثبيت حزم لاراڤيل
 RUN composer install --no-dev --optimize-autoloader
 
-# ضبط مجلد public كواجهة أساسية لأباتشي وتفعيل AllowOverride وتصحيح المسار الافتراضي
+# تصحيح مسار الأباتشي الأساسي لمجلد public بشكل دقيق وصحيح
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 RUN sed -i -e 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 RUN echo "<Directory /var/www/html/public/>\n\
     Options Indexes FollowSymLinks\n\
@@ -51,10 +49,10 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # إنشاء الرابط الرمزي للصور لتفعيل عرضها تلقائياً
 RUN php artisan storage:link
 
-# تجهيز ملف البيئة الأساسي لكي لا يظهر خطأ عدم وجوده
+# تجهيز ملف البيئة الأساسي
 RUN cp .env.example .env
 
 EXPOSE 80
 
-# أوامر التشغيل: توليد المفتاح، تشغيل الـ Migration تلقائياً، ثم إقلاع أباتشي
-CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan migrate --force && apache2-foreground"
+# أوامر التشغيل: تشغيل الـ Migration فقط (بدون توليد مفتاح جديد لأنه موجود بـ Render) ثم إقلاع أباتشي
+CMD sh -c "php artisan migrate --force && apache2-foreground"
