@@ -51,5 +51,5 @@ RUN php artisan storage:link
 
 EXPOSE 80
 
-# أوامر التشغيل: تشغيل الـ Migration ثم إقلاع أباتشي مباشرة بالاعتماد على متغيرات بيئة Render
-CMD sh -c "php artisan migrate --force && apache2-foreground"
+# أوامر التشغيل: تشغيل الـ Migration ثم السيدر تلقائياً، وإقلاع أباتشي
+CMD sh -c "php artisan migrate --force && php artisan db:seed --force && apache2-foreground"
