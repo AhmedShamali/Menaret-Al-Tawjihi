@@ -50,10 +50,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 # إنشاء الرابط الرمزي للصور لتفعيل عرضها تلقائياً
 RUN php artisan storage:link
 
-# تجهيز ملف البيئة من النسخة الافتراضية
-RUN cp .env.example .env
-
 EXPOSE 80
 
-# أوامر التشغيل الآمنة: توليد المفتاح، مسح الكاش، ثم إقلاع أباتشي
-CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan config:clear && php artisan cache:clear && php artisan route:clear && apache2-foreground"
+# أوامر التشغيل: توليد المفتاح، تشغيل الـ Migration تلقائياً، ثم إقلاع أباتشي
+CMD sh -c "php artisan key:generate --no-interaction --force --ansi || true && php artisan migrate --force && apache2-foreground"git add Dockerfile
