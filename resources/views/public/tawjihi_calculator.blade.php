@@ -721,14 +721,14 @@
                 mandatory: [
                     { id: 'projects', label: 'المشاريع الريادية', max: 100, pass: 50, icon: 'fa-chart-pie', note: 'من 100' },
                     { id: 'accounting', label: 'المحاسبة', max: 100, pass: 50, icon: 'fa-coins', note: 'من 100' },
+                    { id: 'mgmt', label: 'الإدارة والاقتصاد', max: 100, pass: 50, icon: 'fa-briefcase', note: 'من 100' },
                     { id: 'arabic', label: 'اللغة العربية', max: 100, pass: 50, icon: 'fa-feather-pointed', note: 'من 100' },
                     { id: 'english', label: 'اللغة الإنجليزية', max: 100, pass: 50, icon: 'fa-language', note: 'من 100' },
                     { id: 'islamic', label: 'التربية الإسلامية', max: 100, pass: 50, icon: 'fa-moon', note: 'من 100' }
                 ],
-                electiveTitle: 'المواد الاختيارية (يُحتسب الأعلى):',
+                electiveTitle: 'المواد الاختيارية (يُحتسب المبحث الأعلى فقط من 100):',
                 electives: [
-                    { id: 'mgmt', label: 'الإدارة والاقتصاد', max: 100, pass: 50, icon: 'fa-briefcase' },
-                    { id: 'math', label: 'الرياضيات', max: 100, pass: 50, icon: 'fa-calculator' },
+                    { id: 'math', label: 'رياضيات الأعمال', max: 100, pass: 50, icon: 'fa-calculator' },
                     { id: 'tech', label: 'التكنولوجيا', max: 100, pass: 50, icon: 'fa-laptop-code' }
                 ]
             }

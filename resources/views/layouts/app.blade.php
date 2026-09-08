@@ -266,6 +266,10 @@
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-tags" style="color: #10b981;"></i> <span>تسعير المواد والخصومات 🏷️</span></div></div>
                 </a>
+
+                <a href="{{ route('admin.payments.index') }}" class="nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-wallet" style="color: #f59e0b;"></i> <span>الاشتراكات والمدفوعات 💳</span></div></div>
+                </a>
             @endif
 
             @if(auth()->check() && auth()->user()->role === 'teacher')

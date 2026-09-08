@@ -90,6 +90,8 @@ Route::get('/tawjihi-archive/answer-key/{id}', [\App\Http\Controllers\PastExamCo
 // بطاقات الاستذكار السريع والقوانين (Flashcards) للعامة والطلاب
 Route::get('/public-flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('smart.learning.flashcards');
 Route::get('/catalog', [\App\Http\Controllers\Student\CourseEnrollmentController::class, 'catalog'])->name('courses.catalog');
+Route::get('/checkout', [\App\Http\Controllers\Student\PaymentGatewayController::class, 'showCheckout'])->name('checkout.show');
+Route::get('/checkout/receipt/{id}', [\App\Http\Controllers\Student\PaymentGatewayController::class, 'successReceipt'])->name('checkout.receipt');
 
 // مسارات بديلة ومساعدة للروابط العامة
 Route::get('/contact-us', [PublicController::class, 'contact'])->name('contact');
@@ -156,6 +158,11 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/subjects/pricing', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'index'])->name('subjects.pricing');
     Route::post('/subjects/pricing/seasonal-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.seasonal');
     Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update');
+    Route::post('/subjects/pricing/{id}/update', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update']);
+
+    // إدارة الاشتراكات وعمليات الدفع والتحقق من الإيصالات
+    Route::get('/payments', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
+    Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
 });
 
 

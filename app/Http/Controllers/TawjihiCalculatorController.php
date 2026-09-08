@@ -98,25 +98,28 @@ class TawjihiCalculatorController extends Controller
             $maxTotal = 700;
             $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
         } elseif ($branch === 'business') {
-            // فرع الريادة والأعمال
-            $islamic = floatval($scores['islamic'] ?? 0);
-            $arabic  = floatval($scores['arabic'] ?? 0);
-            $english = floatval($scores['english'] ?? 0);
-            $projects = floatval($scores['projects'] ?? 0);
-            $accounting = floatval($scores['accounting'] ?? 0);
+            // فرع الريادة والأعمال: 6 مباحث إجبارية (600) + أعلى مادة اختيارية من (رياضيات الأعمال، التكنولوجيا) (100) = 700
+            $islamic    = min(100, max(0, floatval($scores['islamic'] ?? 0)));
+            $arabic     = min(100, max(0, floatval($scores['arabic'] ?? 0)));
+            $english    = min(100, max(0, floatval($scores['english'] ?? 0)));
+            $projects   = min(100, max(0, floatval($scores['projects'] ?? 0)));
+            $accounting = min(100, max(0, floatval($scores['accounting'] ?? 0)));
+            $mgmt       = min(100, max(0, floatval($scores['mgmt'] ?? 0)));
 
-            $math = floatval($scores['math'] ?? 0);
-            $mgmt = floatval($scores['mgmt'] ?? 0);
-            $tech = floatval($scores['tech'] ?? 0);
+            $math = min(100, max(0, floatval($scores['math'] ?? 0)));
+            $tech = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
-            $electives = ['رياضيات' => $math, 'إدارة واقتصاد' => $mgmt, 'تكنولوجيا' => $tech];
+            $electives = [
+                'رياضيات الأعمال' => $math,
+                'التكنولوجيا'     => $tech,
+            ];
             arsort($electives);
             $bestElectiveName = array_key_first($electives);
             $bestElectiveScore = reset($electives);
 
-            $total = $islamic + $arabic + $english + $projects + $accounting + ($scores['extra'] ?? 0) + $bestElectiveScore;
+            $total = $islamic + $arabic + $english + $projects + $accounting + $mgmt + $bestElectiveScore;
             $maxTotal = 700;
-            $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName}";
+            $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
         } else {
             // فروع عامة / صناعي
             $sum = 0;

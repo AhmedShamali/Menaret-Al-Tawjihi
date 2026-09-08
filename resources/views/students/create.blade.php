@@ -436,23 +436,37 @@
                     </div>
                 </div>
 
-                <!-- المرحلة/الفرع والمحافظة -->
+                <!-- المرحلة/الفرع والمحافظة والجنس -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="stage_id">الفرع والمرحلة الدراسية <span class="req">*</span></label>
+                        <label for="stage_id">الفرع الدراسي (توجيهي فقط) <span class="req">*</span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-graduation-cap lead-icon"></i>
-                            <select name="stage_id" id="stage_id" class="form-input" required>
-                                <option value="" disabled selected>اختر فرعك الدراسي...</option>
+                            <select name="stage_id" id="stage_id" class="form-input" required onchange="onStageChanged(this.value)">
                                 @foreach($stages as $stg)
-                                    <option value="{{ $stg->id }}" {{ ($stg->grade_level == 122 || str_contains($stg->label_ar, 'علمي')) ? 'selected' : '' }}>
-                                        {{ $stg->icon ?? '🎓' }} {{ $stg->label_ar }}
-                                    </option>
+                                    @if($stg->grade_level >= 120)
+                                        <option value="{{ $stg->id }}" data-grade="{{ $stg->grade_level }}" {{ ($stg->grade_level == 122 || str_contains($stg->label_ar, 'علمي')) ? 'selected' : '' }}>
+                                            {{ $stg->icon ?? '🎓' }} {{ $stg->label_ar }}
+                                        </option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
                     </div>
 
+                    <div class="input-group">
+                        <label for="gender">الجنس <span class="req">*</span></label>
+                        <div class="input-control-wrap">
+                            <i class="fas fa-venus-mars lead-icon"></i>
+                            <select name="gender" id="gender" class="form-input" required>
+                                <option value="ذكر" selected>ذكر (طالب)</option>
+                                <option value="أنثى">أنثى (طالبة)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="city">المحافظة / المدينة</label>
                         <div class="input-control-wrap">
@@ -477,6 +491,27 @@
                                 <option value="أخرى">خارج فلسطين / أخرى</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="age">العمر</label>
+                        <div class="input-control-wrap">
+                            <i class="fas fa-calendar-check lead-icon"></i>
+                            <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قائمة المواد التابعة للفرع للاشتراك بها -->
+                <div class="input-group" style="margin-bottom: 18px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: 700; color: var(--text-title); font-size: 0.88rem;">
+                            <i class="fas fa-book-bookmark" style="color: var(--primary);"></i> المواد المقررة للاشتراك بها في الفرع:
+                        </label>
+                        <span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">(جميع المواد مفعلة تلقائياً أو اختر ما يناسبك)</span>
+                    </div>
+                    <div id="subjectsSelectionContainer" style="background: #ffffff; border: 1.5px solid var(--border-card); border-radius: 12px; padding: 12px 16px; max-height: 200px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                        <!-- يتم ملء المواد ديناميكياً بواسطة جافاسكريبت -->
                     </div>
                 </div>
 
@@ -512,6 +547,42 @@
 </div>
 
 <script>
+    const stagesData = @json($stages);
+
+    function onStageChanged(stageId) {
+        const container = document.getElementById('subjectsSelectionContainer');
+        if (!container) return;
+
+        const currentStage = stagesData.find(s => s.id == stageId || s.grade_level == stageId);
+        if (!currentStage || !currentStage.subjects || currentStage.subjects.length === 0) {
+            container.innerHTML = '<div style="color: #64748b; font-size: 0.85rem; padding: 6px;">سيتم تفعيل كافة مواد المنهاج تلقائياً عند التسجيل.</div>';
+            return;
+        }
+
+        let html = '';
+        currentStage.subjects.forEach(sub => {
+            const price = sub.discount_price_ils || sub.price_ils || 100;
+            html += `
+                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+                    <span style="font-size: 1.1rem;">${sub.icon || '📘'}</span>
+                    <div style="flex: 1;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">${sub.name_ar}</div>
+                        <div style="font-size: 0.72rem; color: #64748b;">${price} ₪</div>
+                    </div>
+                </label>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const stageSelect = document.getElementById('stage_id');
+        if (stageSelect && stageSelect.value) {
+            onStageChanged(stageSelect.value);
+        }
+    });
+
     function togglePasswordVisibility() {
         const pwdInput = document.getElementById('password');
         const eyeIcon = document.getElementById('pwdEye');

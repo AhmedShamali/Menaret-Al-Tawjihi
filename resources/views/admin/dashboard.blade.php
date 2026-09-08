@@ -61,22 +61,25 @@
                     <h3><span class="material-icons-round">bolt</span> وصول سريع</h3>
                 </div>
                 <div class="quick-grid">
+                    <a href="{{ route('admin.subjects.pricing') }}" class="q-link">
+                        <div class="q-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><span class="material-icons-round">sell</span></div>
+                        <span>تسعير المواد 🏷️</span>
+                    </a>
+                    <a href="{{ route('admin.payments.index') }}" class="q-link">
+                        <div class="q-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><span class="material-icons-round">account_balance_wallet</span></div>
+                        <span>الاشتراكات والمدفوعات 💳</span>
+                    </a>
                     <a href="{{ route('admin.teachers.create') }}" class="q-link">
                         <div class="q-icon purple"><span class="material-icons-round">add_reaction</span></div>
                         <span>إضافة مدرس</span>
                     </a>
-                    {{-- تم تصحيح مسار إضافة الطالب ليتطابق مع المعيار (create) --}}
                     <a href="{{ route('admin.students.create') }}" class="q-link">
                         <div class="q-icon green"><span class="material-icons-round">group_add</span></div>
                         <span>إضافة طالب</span>
                     </a>
                     <a href="{{ route('admin.settings.index') }}" class="q-link">
                         <div class="q-icon blue"><span class="material-icons-round">settings_suggest</span></div>
-                        <span>الإعدادات</span>
-                    </a>
-                    <a href="#" class="q-link">
-                        <div class="q-icon orange"><span class="material-icons-round">analytics</span></div>
-                        <span>التقارير</span>
+                        <span>إعدادات المنصة</span>
                     </a>
                 </div>
             </div>

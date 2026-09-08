@@ -14,7 +14,17 @@ class SubjectController extends Controller
      */
     public function index()
     {
-        $stages = \App\Models\Stage::with('subjects')->get();
+        // فروع الثانوية العامة فقط (التوجيهي)
+        if (\App\Models\Stage::where('grade_level', '>=', 120)->count() < 3 || \App\Models\Subject::count() === 0) {
+            (new \Database\Seeders\StageSeeder())->run();
+            (new \Database\Seeders\SubjectSeeder())->run();
+        }
+
+        $stages = \App\Models\Stage::with('subjects')
+            ->where('grade_level', '>=', 120)
+            ->orderBy('grade_level', 'desc')
+            ->get();
+
         return view('subjects.index', compact('stages'));
     }
 

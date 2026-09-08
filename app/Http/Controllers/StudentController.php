@@ -42,7 +42,16 @@ class StudentController extends Controller
     }
 
     public function create() {
-        $stages = Stage::all();
+        if (\App\Models\Stage::where('grade_level', '>=', 120)->count() < 3 || \App\Models\Subject::count() === 0) {
+            (new \Database\Seeders\StageSeeder())->run();
+            (new \Database\Seeders\SubjectSeeder())->run();
+        }
+
+        $stages = Stage::with('subjects')
+            ->where('grade_level', '>=', 120)
+            ->orderBy('grade_level', 'desc')
+            ->get();
+
         return view('students.create', compact('stages'));
     }
 
@@ -104,6 +113,16 @@ class StudentController extends Controller
             $idPhotoPath = $request->file('id_photo')->store('students/ids', 'public');
         }
 
+        // مطابقة الجنس بدقة مع قيود قاعدة البيانات PostgreSQL (ذكر / أنثى)
+        $rawGender = $request->input('gender', 'ذكر');
+        $gender = ($rawGender === 'أنثى' || $rawGender === 'female') ? 'أنثى' : 'ذكر';
+
+        // مطابقة معرف فرع التوجيهي (سواء تم إرسال الـ ID أو رقم المرحلة 121, 122, 123)
+        $stage = Stage::where('id', $request->stage_id)
+            ->orWhere('grade_level', $request->stage_id)
+            ->first();
+        $stageId = $stage ? $stage->id : (Stage::where('grade_level', 122)->value('id') ?? 1);
+
         // إنشاء حساب الطالب مع تفعيل فوري ونقاط ترحيبية
         $student = Student::create([
             'name_ar'            => $request->name_ar,
@@ -114,8 +133,8 @@ class StudentController extends Controller
             'phone'              => $request->phone,
             'whatsapp'           => $request->whatsapp ?? $request->phone,
             'password'           => Hash::make($request->password),
-            'stage_id'           => $request->stage_id,
-            'gender'             => $request->gender ?? 'male',
+            'stage_id'           => $stageId,
+            'gender'             => $gender,
             'photo'              => $photoPath,
             'id_photo'           => $idPhotoPath,
             'status'             => 'active',
@@ -124,6 +143,25 @@ class StudentController extends Controller
             'last_activity_date' => now()->toDateString(),
         ]);
 
+        // تفعيل اشتراك الطالب في المواد المختارة (أو جميع مواد فرع التوجيهي)
+        if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {
+            foreach ($request->subject_ids as $subId) {
+                \App\Models\Enrollment::firstOrCreate(
+                    ['student_id' => $student->id, 'subject_id' => $subId],
+                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'registered', 'activated_at' => now()]
+                );
+            }
+        } else {
+            // تسجيل الطالب تلقائياً في مواد مرحلته الدراسية لتمكينه من البدء الفوري
+            $stageSubjects = \App\Models\Subject::where('stage_id', $stageId)->get();
+            foreach ($stageSubjects as $sub) {
+                \App\Models\Enrollment::firstOrCreate(
+                    ['student_id' => $student->id, 'subject_id' => $sub->id],
+                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'free', 'activated_at' => now()]
+                );
+            }
+        }
+
         // إذا كان تسجيلاً ذاتياً (ليس مديراً مسجلاً يضيف طالباً)، يتم تسجيل دخول الطالب فوراً
         if (!Auth::guard('web')->check()) {
             Auth::guard('student')->login($student);
@@ -131,7 +169,7 @@ class StudentController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'icon'     => 'success',
-                    'title'    => 'أهلاً بك يا بطل! تم إنشاء حسابك بنجاح 🚀',
+                    'title'    => 'أهلاً بك يا بطل! تم إنشاء حسابك وتفعيل موادك بنجاح 🚀',
                     'redirect' => route('student.dashboard')
                 ]);
             }
