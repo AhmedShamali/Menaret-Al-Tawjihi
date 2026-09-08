@@ -17,11 +17,26 @@ class Subject extends Model
         'name_ar',
         'subject_key',
         'icon',
-        'color'
+        'color',
+        'price_ils',
+        'discount_price_ils',
+        'is_free',
+        'description'
     ];
 
-
-    protected $guarded = [];
+    /**
+     * حساب السعر الفعلي للمادة بعد الخصومات أو المجانية
+     */
+    public function getEffectivePriceAttribute(): float
+    {
+        if ($this->is_free) {
+            return 0.00;
+        }
+        if ($this->discount_price_ils !== null && $this->discount_price_ils > 0) {
+            return (float) $this->discount_price_ils;
+        }
+        return (float) ($this->price_ils ?? 150.00);
+    }
 
     protected static function booted()
     {

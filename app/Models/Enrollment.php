@@ -45,6 +45,11 @@ class Enrollment extends Model
         return $this->hasMany(ContentAssignment::class);
     }
 
+    public function examAssignments(): HasMany
+    {
+        return $this->hasMany(ExamAssignment::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

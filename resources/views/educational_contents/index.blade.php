@@ -79,6 +79,11 @@
                                     </td>
                                     <td>
                                         <div class="actions-group">
+                                            @if(auth()->user()->role === 'teacher')
+                                                <a href="{{ route('teacher.access.index') }}?type=content&id={{ $content->id }}" class="btn-action access" style="background: #ecfdf5; color: #059669;" title="تحديد ظهور هذا الدرس/الملف للطلاب عبر اختيار صح [✓]">
+                                                    <i class="fa-solid fa-user-check"></i>
+                                                </a>
+                                            @endif
                                             <!-- زر عرض المساق -->
                                             <a href="{{ route('subject.show', $content->subject_id) }}" class="btn-action view" title="عرض المساق">
                                                 <i class="fa-solid fa-eye"></i>

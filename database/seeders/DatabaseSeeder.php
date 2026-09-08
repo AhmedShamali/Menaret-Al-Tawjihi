@@ -38,6 +38,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             StudentSeeder::class,
             SubmissionAnswerSeeder::class,
+            PastExamSeeder::class,
+            FlashcardSeeder::class,
         ]);
 
         // 4. إنشاء حساب مدير النظام (آمن ولا يتكرر ولا يحذف القديم)

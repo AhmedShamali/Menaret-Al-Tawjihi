@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip
 
-# تثبيت إضافات الـ PHP الضرورية لحل مشكلة الـ driver
-RUN docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd
+# تثبيت إضافات الـ PHP الضرورية (PostgreSQL و MySQL والدوال الأساسية)
+RUN docker-php-ext-install pdo pdo_pgsql pgsql pdo_mysql mbstring exif pcntl bcmath gd
 
 # تنظيف الكاش
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -42,14 +42,13 @@ RUN echo "<Directory /var/www/html/public/>\n\
     Require all granted\n\
 </Directory>" >> /etc/apache2/apache2.conf
 
-# ضبط الأذونات لمجلدات التخزين
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# ضبط الأذونات لمجلدات التخزين والمرفوعات وسكريبت الإقلاع
+RUN mkdir -p /var/www/html/public/uploads/logos && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/uploads && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public/uploads && \
+    chmod +x /var/www/html/docker-entrypoint.sh
 
-# إنشاء الرابط الرمزي للصور لتفعيل عرضها تلقائياً
-RUN php artisan storage:link
+EXPOSE 80 10000
 
-EXPOSE 80
-
-# أوامر التشغيل: تشغيل الـ Migration ثم السيدر تلقائياً، وإقلاع أباتشي
-CMD sh -c "php artisan migrate --force && php artisan db:seed --force && apache2-foreground"
+# تشغيل خادم الويب عبر سكريبت الإقلاع الذكي المتوافق مع Render و Railway
+ENTRYPOINT ["/var/www/html/docker-entrypoint.sh"]

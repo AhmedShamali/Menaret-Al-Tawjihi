@@ -39,6 +39,59 @@
         </div>
     </header>
 
+    @if(auth()->user()->role === 'teacher')
+    <!-- مركز استوديو المعلم الأكاديمي السريع -->
+    <div class="teacher-studio-grid">
+        <a href="{{ route('teacher.exams.create') }}" class="studio-card create-exam">
+            <div class="studio-icon" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5;">
+                <i class="fa-solid fa-file-circle-plus"></i>
+            </div>
+            <div class="studio-info">
+                <span class="studio-tag">اختبارات إلكترونية</span>
+                <h4>بناء اختبار جديد</h4>
+                <p>إنشاء أسئلة اختيار من متعدد ومقالية وتحديد المدة والدرجات</p>
+            </div>
+            <span class="studio-badge"><i class="fa-solid fa-arrow-left"></i> إعداد الآن</span>
+        </a>
+
+        <a href="{{ route('teacher.educational_contents.create') }}" class="studio-card upload-video">
+            <div class="studio-icon" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">
+                <i class="fa-solid fa-circle-play"></i>
+            </div>
+            <div class="studio-info">
+                <span class="studio-tag" style="background: #e0f2fe; color: #0369a1;">شروحات فيديو</span>
+                <h4>رفع درس فيديو</h4>
+                <p>رفع تسجيل الحصة أو درس شرح توجيهي بجودة عالية مع حفظ التقدم</p>
+            </div>
+            <span class="studio-badge"><i class="fa-solid fa-cloud-arrow-up"></i> رفع فيديو</span>
+        </a>
+
+        <a href="{{ route('teacher.educational_contents.create') }}" class="studio-card upload-pdf">
+            <div class="studio-icon" style="background: rgba(220, 38, 38, 0.1); color: #dc2626;">
+                <i class="fa-solid fa-file-pdf"></i>
+            </div>
+            <div class="studio-info">
+                <span class="studio-tag" style="background: #fee2e2; color: #b91c1c;">دوسيات وملازم</span>
+                <h4>إضافة دوسية أو PDF</h4>
+                <p>نشر كراسات الشرح، التلاخيص الوزارية، وأوراق العمل للطلاب</p>
+            </div>
+            <span class="studio-badge"><i class="fa-solid fa-file-arrow-up"></i> رفع ملخص</span>
+        </a>
+
+        <a href="{{ route('teacher.access.index') }}" class="studio-card manage-access">
+            <div class="studio-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i class="fa-solid fa-user-check"></i>
+            </div>
+            <div class="studio-info">
+                <span class="studio-tag" style="background: #d1fae5; color: #047857;">تحكم الطلاب [✓]</span>
+                <h4>التحكم بظهور المحتوى</h4>
+                <p>تحديد من يرى الدروس والاختبارات من الطلاب عبر خانات الاختيار</p>
+            </div>
+            <span class="studio-badge" style="background: #10b981;"><i class="fa-solid fa-sliders"></i> إدارة الظهور [✓]</span>
+        </a>
+    </div>
+    @endif
+
     <!-- شريط تنبيه يربط مباشرة مع المجلد الإداري Management -->
     @if(!auth()->user()->subject_id)
         <div class="alert-info-banner">
@@ -93,6 +146,11 @@
                                     <td>{{ $exam->created_at ? $exam->created_at->format('Y-m-d') : '-' }}</td>
                                     <td>
                                         <div class="actions-group">
+                                            @if(auth()->user()->role === 'teacher')
+                                                <a href="{{ route('teacher.access.index') }}?type=exam&id={{ $exam->id }}" class="btn-action access" style="background: #ecfdf5; color: #059669;" title="تحديد ظهور هذا الاختبار للطلاب عبر اختيار صح [✓]">
+                                                    <i class="fa-solid fa-user-check"></i>
+                                                </a>
+                                            @endif
                                             <!-- روابط الإجراءات الديناميكية بحسب الدور (معلم أو مدير) -->
                                             <a href="{{ route(auth()->user()->role . '.exams.submissions', $exam->id) }}" class="btn-action view" title="إجابات الطلاب">
                                                 <i class="fa-solid fa-users"></i>
@@ -191,6 +249,96 @@ function confirmDelete(id) {
     }
 
     .exams-dashboard-container { max-width: 1440px; margin: 0 auto; padding: 24px; }
+
+    /* شبكة بطاقات استوديو المعلم الفاخرة */
+    .teacher-studio-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+    .studio-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+        overflow: hidden;
+    }
+    .studio-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e1;
+    }
+    .studio-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        height: 4px;
+        background: transparent;
+        transition: background 0.3s;
+    }
+    .studio-card.create-exam:hover::before { background: #4f46e5; }
+    .studio-card.upload-video:hover::before { background: #0284c7; }
+    .studio-card.upload-pdf:hover::before { background: #dc2626; }
+    .studio-card.manage-access:hover::before { background: #10b981; }
+
+    .studio-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        margin-bottom: 14px;
+    }
+    .studio-tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        background: #ede9fe;
+        color: #6366f1;
+    }
+    .studio-info h4 {
+        margin: 0 0 6px;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--text-main);
+    }
+    .studio-info p {
+        margin: 0 0 16px;
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        flex: 1;
+    }
+    .studio-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #4f46e5;
+        color: #ffffff;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        align-self: flex-start;
+        transition: opacity 0.2s;
+    }
+    .studio-card:hover .studio-badge {
+        opacity: 0.92;
+    }
+
     .dashboard-header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 24px; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); margin-bottom: 24px; }
     .header-main-info { display: flex; align-items: center; gap: 20px; }
     .subject-icon-avatar { width: 70px; height: 70px; border-radius: 20px; display: grid; place-items: center; font-size: 2.2rem; flex-shrink: 0; }

@@ -92,21 +92,24 @@ class DashboardController extends Controller {
 
     public function studentSubjectsIndex()
     {
-        $user = auth()->user();
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
 
         // جلب معرف المرحلة الخاص بالطالب
-        $stageId = $user->stage_id ?? optional($user->student)->stage_id;
+        $stageId = $student?->stage_id ?? optional($student?->student)->stage_id;
 
-        // جلب المواد التي تنتمي لهذه المرحلة فقط مع عدادات المحتوى والاختبارات
-        $subjects = \App\Models\Subject::where('stage_id', $stageId)
-                        ->withCount(['educationalContents', 'contents', 'exams'])
-                        ->get();
+        // جلب المواد التي تنتمي لهذه المرحلة (أو كافة المواد إذا لم تحدد) مع عدادات المحتوى والاختبارات
+        $query = \App\Models\Subject::withCount(['educationalContents', 'contents', 'exams']);
+        if ($stageId) {
+            $query->where('stage_id', $stageId);
+        }
+        $subjects = $query->get();
 
         return view('student.subjects.index', compact('subjects'));
     }
 
     public function studentIndex() {
-        $student_id = auth()->id() ?? 1;
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        $student_id = $student?->id ?? 1;
 
         $my_stats = [
             'completed_exams' => ExamSubmission::where('student_id', $student_id)->count(),
@@ -116,11 +119,19 @@ class DashboardController extends Controller {
         // 1. جلب آي دي الاختبارات التي حلها الطالب مسبقاً
         $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
 
-        // 2. جلب الاختبارات المتاحة مع استثناء التي تم حلها مسبقاً
-        $available_exams = Exam::latest()
-                            ->whereNotIn('id', $solvedExamIds)
-                            ->take(3)
-                            ->get();
+        // 2. جلب الاختبارات المتاحة مع استثناء التي تم حلها مسبقاً ومطابقتها للمرحلة إن وجدت
+        $examsQuery = Exam::latest()->whereNotIn('id', $solvedExamIds);
+        if ($student?->stage_id) {
+            $examsQuery->whereHas('subject', function($q) use ($student) {
+                $q->where('stage_id', $student->stage_id);
+            });
+        }
+        $available_exams = $examsQuery->take(6)->get();
+
+        // إذا لم تتوفر امتحانات للمرحلة، نجلب الاختبارات العامة كبديل
+        if ($available_exams->isEmpty()) {
+            $available_exams = Exam::latest()->whereNotIn('id', $solvedExamIds)->take(3)->get();
+        }
 
         // 3. الاختبارات المكتملة
         $completed_exams = ExamSubmission::with('exam')
@@ -128,7 +139,7 @@ class DashboardController extends Controller {
                             ->latest()
                             ->get();
 
-        return view('student.dashboard', compact('my_stats', 'available_exams', 'completed_exams'));
+        return view('student.dashboard', compact('my_stats', 'available_exams', 'completed_exams', 'student'));
     }
 
     public function teachersIndex()

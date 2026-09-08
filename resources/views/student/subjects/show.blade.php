@@ -334,6 +334,46 @@
     .offline-drawer.open {
         transform: translateX(0);
     }
+
+    /* Smart Video Controls Toolbar */
+    .smart-player-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: #f8fafc;
+        border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);
+    }
+    .speed-buttons-group { display: flex; align-items: center; gap: 4px; }
+    .speed-btn {
+        padding: 4px 10px; font-size: 0.78rem; font-weight: 700; border-radius: 8px;
+        border: 1px solid var(--border-color); background: white; color: #475569;
+        cursor: pointer; transition: 0.2s;
+    }
+    .speed-btn:hover, .speed-btn.active {
+        background: var(--sub-color); color: white; border-color: var(--sub-color);
+    }
+    .btn-toggle-notes {
+        padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 8px;
+        border: 1px solid #bfdbfe; background: #eff6ff; color: #1d4ed8;
+        cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s;
+    }
+    .btn-toggle-notes:hover { background: #dbeafe; }
+    .video-notes-panel {
+        padding: 14px 16px; background: #f8fafc;
+        border-bottom: 1px solid var(--border-color); display: none;
+    }
+    .notes-list-box {
+        max-height: 190px; overflow-y: auto; margin-top: 10px;
+        display: flex; flex-direction: column; gap: 6px;
+    }
+    .single-note-item {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 12px; background: white; border: 1px solid var(--border-color);
+        border-radius: 10px; font-size: 0.82rem;
+    }
+    .btn-time-jump {
+        background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
+        padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    }
 </style>
 
 <div class="subject-page-wrapper">
@@ -408,6 +448,36 @@
                                     متصفحك لا يدعم مشغل الفيديو.
                                 </video>
                             @endif
+                        </div>
+
+                        <!-- شريط الأدوات الذكي (التحكم بالسرعة وملاحظات الدرس) -->
+                        <div class="smart-player-toolbar">
+                            <div class="speed-buttons-group">
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-left: 4px;"><i class="fa-solid fa-gauge-high"></i> السرعة:</span>
+                                <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
+                                <button type="button" class="speed-btn active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x</button>
+                                <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
+                                <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                            </div>
+                            <div>
+                                <button type="button" class="btn-toggle-notes" onclick="toggleNotesSection('{{ $video->id }}')">
+                                    <i class="fa-solid fa-bookmark"></i> ملاحظاتي على الشرح
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- قسم الملاحظات الذكية المرتبطة بتوقيت الفيديو -->
+                        <div class="video-notes-panel" id="notes_panel_{{ $video->id }}">
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="note_input_{{ $video->id }}" placeholder="اكتب ملاحظة عند التوقيت الحالي للفيديو..." style="flex: 1; padding: 8px 12px; border: 1.5px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; font-family: inherit; outline: none;">
+                                <button type="button" onclick="submitVideoNote('{{ $video->id }}')" style="padding: 8px 14px; background: var(--sub-color); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-plus"></i> حفظ بالتوقيت
+                                </button>
+                            </div>
+                            <div class="notes-list-box" id="notes_list_{{ $video->id }}">
+                                <span style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 6px;">اضغط "ملاحظاتي" لتحميل الملاحظات المسجلة</span>
+                            </div>
                         </div>
 
                         <div class="video-header-info">
@@ -783,6 +853,129 @@ function handleRedeemCode(e) {
         btn.textContent = 'تفعيل الآن 🚀';
         const msg = err.response?.data?.message || 'كود التفعيل غير صالح، يرجى التأكد وإعادة المحاولة.';
         Swal.fire('خطأ في التفعيل', msg, 'error');
+    });
+}
+
+// ----------------------------------------------------
+// مشغل الفيديو الذكي (التحكم بالسرعة وملاحظات التوقيت)
+// ----------------------------------------------------
+function setVideoSpeed(videoId, speed, btnElement) {
+    const player = document.getElementById(`player_${videoId}`);
+    if (player) {
+        player.playbackRate = speed;
+        // تحديث حالة الزر النشط
+        const parent = btnElement.closest('.speed-buttons-group');
+        if (parent) {
+            parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+    }
+}
+
+function toggleNotesSection(videoId) {
+    const panel = document.getElementById(`notes_panel_${videoId}`);
+    if (!panel) return;
+
+    if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+    } else {
+        panel.style.display = 'block';
+        loadVideoNotes(videoId);
+    }
+}
+
+function loadVideoNotes(videoId) {
+    const list = document.getElementById(`notes_list_${videoId}`);
+    if (!list) return;
+
+    fetch(`/student/video-notes/${videoId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (!data.notes || data.notes.length === 0) {
+                list.innerHTML = `<span style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 6px;">لا توجد ملاحظات مسجلة لهذا الدرس بعد.</span>`;
+                return;
+            }
+
+            let html = '';
+            data.notes.forEach(note => {
+                html += `
+                    <div class="single-note-item" id="note_item_${note.id}">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button type="button" class="btn-time-jump" onclick="seekVideo('${videoId}', ${note.timestamp_seconds})">
+                                <i class="fa-solid fa-play" style="font-size: 0.65rem;"></i> ${note.formatted_time}
+                            </button>
+                            <span style="font-weight: 600; color: #1e293b;">${note.note_text}</span>
+                        </div>
+                        <button type="button" onclick="deleteVideoNote(${note.id})" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px 6px;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        })
+        .catch(() => {
+            list.innerHTML = `<span style="font-size: 0.78rem; color: #ef4444; text-align: center; padding: 6px;">تعذر تحميل الملاحظات حالياً.</span>`;
+        });
+}
+
+function submitVideoNote(videoId) {
+    const player = document.getElementById(`player_${videoId}`);
+    const input = document.getElementById(`note_input_${videoId}`);
+    const text = input ? input.value.trim() : '';
+
+    if (!text) {
+        Swal.fire({ toast: true, position: 'top-start', icon: 'warning', title: 'يرجى كتابة نص الملاحظة', showConfirmButton: false, timer: 2000 });
+        return;
+    }
+
+    const currentSec = player ? Math.floor(player.currentTime) : 0;
+
+    fetch('/student/video-notes', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            educational_content_id: videoId,
+            timestamp_seconds: currentSec,
+            note_text: text
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            input.value = '';
+            loadVideoNotes(videoId);
+            Swal.fire({ toast: true, position: 'top-start', icon: 'success', title: res.message, showConfirmButton: false, timer: 2500 });
+        } else {
+            Swal.fire('خطأ', res.message || 'حدث خطأ أثناء الحفظ', 'error');
+        }
+    });
+}
+
+function seekVideo(videoId, seconds) {
+    const player = document.getElementById(`player_${videoId}`);
+    if (player) {
+        player.currentTime = seconds;
+        player.play();
+    }
+}
+
+function deleteVideoNote(noteId) {
+    fetch(`/student/video-notes/${noteId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            const el = document.getElementById(`note_item_${noteId}`);
+            if (el) el.remove();
+        }
     });
 }
 </script>

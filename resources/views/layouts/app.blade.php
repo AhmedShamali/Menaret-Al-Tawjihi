@@ -6,7 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0284c7">
-    <title>@yield('title') | {{ \App\Models\Setting::get('site_name', 'منصة فلسطين التعليمية') }}</title>
+    @if(\App\Models\Setting::get('site_favicon'))
+        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    @endif
+    <title>@yield('title') | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
 
     <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,8 +34,52 @@
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* --- أنماط الوضع الليلي (Dark Theme) --- */
+        body.dark-theme {
+            --side-bg: #0b1120;
+            --side-active: #1e293b;
+            --side-hover: #1e293b;
+            --text-active: #38bdf8;
+            --bg-body: #060913;
+            --primary-color: #38bdf8;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #1e293b;
+        }
+
+        body.dark-theme .top-bar,
+        body.dark-theme .side-brand,
+        body.dark-theme aside.sidebar,
+        body.dark-theme .user-info-text {
+            background-color: #0b1120 !important;
+            color: #f1f5f9 !important;
+            border-color: #1e293b !important;
+        }
+
+        body.dark-theme h1, 
+        body.dark-theme h2, 
+        body.dark-theme h3, 
+        body.dark-theme h4,
+        body.dark-theme .brand-logo,
+        body.dark-theme .st-exam-title,
+        body.dark-theme .st-completed-title {
+            color: #f1f5f9 !important;
+        }
+
+        body.dark-theme #notificationsMenu {
+            background: #0b1120 !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+
+        body.dark-theme #themeToggleBtn {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #fbbf24 !important;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Alexandria', sans-serif; }
-        body { background: var(--bg-body); min-height: 100vh; overflow-x: hidden; display: flex; color: var(--text-main); }
+        body { background: var(--bg-body); min-height: 100vh; overflow-x: hidden; display: flex; color: var(--text-main); transition: background 0.3s ease, color 0.3s ease; }
 
         /* --- السايدبار --- */
         aside.sidebar {
@@ -163,8 +212,12 @@
     <aside class="sidebar" id="sidebar">
         <div class="side-brand">
             <a href="/" class="brand-logo">
-                <div class="logo-square">{{ mb_substr(\App\Models\Setting::get('site_name', 'ج'), 0, 1) }}</div>
-                <span>{{ \App\Models\Setting::get('site_name', 'منصة جسر') }}</span>
+                @if(\App\Models\Setting::get('site_logo'))
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 40px; max-width: 48px; object-fit: contain; border-radius: 8px;">
+                @else
+                    <div class="logo-square">{{ mb_substr(\App\Models\Setting::get('site_name', 'منارة التوجيهي'), 0, 1) }}</div>
+                @endif
+                <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
             </a>
         </div>
 
@@ -208,6 +261,10 @@
 
                 <a href="{{ route('admin.messages.index') }}" class="nav-item {{ Request::is('admin/inbox*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>مراسلة الطلاب</span></div></div>
+                </a>
+
+                <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-tags" style="color: #10b981;"></i> <span>تسعير المواد والخصومات 🏷️</span></div></div>
                 </a>
             @endif
 
@@ -257,11 +314,37 @@
                 <a href="{{ route('student.subjects.index') }}" class="nav-item {{ request()->routeIs('student.subjects.*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-book-open-reader"></i> <span>المواد الدراسية</span></div></div>
                 </a>
+                <a href="{{ route('student.courses.catalog') }}" class="nav-item {{ Request::is('student/courses/catalog*') || Request::is('student/checkout*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-cart-shopping" style="color: #0284c7;"></i> <span>باقات المواد والاشتراك 💳</span></div></div>
+                </a>
+                <a href="{{ route('student.notifications.index') }}" class="nav-item {{ Request::is('student/notifications*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bell" style="color: #eab308;"></i> <span>مركز التنبيهات 🔔</span></div></div>
+                </a>
                 <a href="{{ route('student.teachers.index') }}" class="nav-item {{ Request::is('student/teachers*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chalkboard-teacher"></i> <span>معلّمو مرحلتي</span></div></div>
                 </a>
                 <a href="{{ route('student.support') }}" class="nav-item {{ Request::is('student/support*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-headset"></i> <span>الدعم الفني</span></div></div>
+                </a>
+
+                <span class="group-label">أدوات التفوق الوزاري 🇵🇸</span>
+                <a href="{{ route('student.flashcards.index') }}" class="nav-item {{ Request::is('student/flashcards*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-layer-group" style="color: #6366f1;"></i> <span>بطاقات الاستذكار (Flashcards)</span></div></div>
+                </a>
+                <a href="{{ route('student.planner.index') }}" class="nav-item {{ Request::is('student/study-planner*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-check" style="color: #0ea5e9;"></i> <span>جدول تنظيم المراجعة</span></div></div>
+                </a>
+                <a href="{{ route('student.leaderboard') }}" class="nav-item {{ Request::is('student/leaderboard*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-fire" style="color: #f97316;"></i> <span>لوحة شرف الأيام المتتالية</span></div></div>
+                </a>
+                <a href="{{ route('student.achievements') }}" class="nav-item {{ Request::is('student/achievements*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-medal" style="color: #d4af37;"></i> <span>أوسمتي والشهادات الملكية 🏆</span></div></div>
+                </a>
+                <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="nav-item">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calculator" style="color: #10b981;"></i> <span>حاسبة المعدل والقبول</span></div></div>
+                </a>
+                <a href="{{ route('tawjihi.formulas') }}" target="_blank" class="nav-item">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-square-root-variable" style="color: #8b5cf6;"></i> <span>دليل القوانين الذهبية</span></div></div>
                 </a>
             @endif
         </div>
@@ -295,7 +378,10 @@
 
                     if($isStudent) {
                         $sId = auth('student')->id();
-                        $unreadCount = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
+                        $studentUser = auth('student')->user();
+                        $dbNotifs = $studentUser ? $studentUser->unreadNotifications()->count() : 0;
+                        $msgNotifs = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
+                        $unreadCount = $dbNotifs + $msgNotifs;
                         $unreadItems = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->latest()->take(5)->get();
                     } elseif(auth()->check() && auth()->user()->role === 'teacher') {
                         $tId = auth()->id();
@@ -366,6 +452,10 @@
                     </div>
                 </div>
 
+                <button id="themeToggleBtn" onclick="toggleTheme()" title="تبديل الوضع الليلي / النهاري" style="background: #f8fafc; border: 1px solid var(--border-color); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: grid; place-items: center; transition: 0.2s; color: #475569;">
+                    <i class="fa-solid fa-moon" id="themeIcon"></i>
+                </button>
+
                 <div style="display:flex; align-items:center; gap:10px; background: #f8fafc; padding: 5px 12px; border-radius: 12px; border: 1px solid var(--border-color);">
                     <span class="user-info-text" style="font-size: 0.85rem; font-weight: 600;">{{ auth()->user()->name ?? auth('student')->user()->name ?? 'مستخدم' }}</span>
                     <i class="fa-solid fa-user-circle" style="font-size: 1.8rem; color: var(--primary-color);"></i>
@@ -428,6 +518,28 @@
                 }
             });
         }
+
+        // إدارة الوضع الليلي
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark-theme');
+            localStorage.setItem('tawjihi-theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark);
+        }
+
+        function updateThemeIcon(isDark) {
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            }
+        }
+
+        (function initTheme() {
+            const savedTheme = localStorage.getItem('tawjihi-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-theme');
+                updateThemeIcon(true);
+            }
+        })();
 
         // تسجيل Service Worker للعمل أوفلاين كتطبيق سطح مكتب PWA
         if ('serviceWorker' in navigator) {

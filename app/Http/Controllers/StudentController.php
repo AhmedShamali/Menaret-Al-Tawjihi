@@ -18,11 +18,20 @@ class StudentController extends Controller
         return view('admin.students.index', compact('students'));
     }
 
-    // 2. ملف الطالب الشخصي (للطالب المسجل دخوله)
-    public function profile()
+    // 2. ملف الطالب الشخصي (يدعم استعراض الأدمن عبر المعرف، أو استعراض الطالب لصفحته الشخصية)
+    public function profile($id = null)
     {
-        $student = auth()->user();
-        return view('admin.students.profile', compact('student'));
+        if ($id && Auth::guard('web')->check() && Auth::user()->role === 'admin') {
+            $student = Student::with('stage')->findOrFail($id);
+            return view('admin.students.profile', compact('student'));
+        }
+
+        $student = Auth::guard('student')->user() ?? Auth::user();
+        if (!$student) {
+            return redirect()->route('login');
+        }
+
+        return view('student.profile', compact('student'));
     }
 
     // 3. عرض كافة البروفايلات (للأدمن)
@@ -54,51 +63,83 @@ class StudentController extends Controller
         return view('student.subjects.show', compact('subject', 'videos', 'files'));
     }
 
-    // 4. دالة الحفظ (Store) - معدلة لضمان مسارات الصور
+    // 4. دالة حفظ وتسجيل الطالب (تدعم التسجيل الذاتي للطلاب وإضافة الأدمن)
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
             'name_ar'  => 'required|string|max:255',
             'nid'      => 'required|digits:9|unique:students,nid',
             'email'    => 'required|email|unique:students,email',
-            'password' => 'required|min:8',
-            'photo'    => 'required|image|max:2048',
-            'id_photo' => 'required|image|max:2048',
+            'password' => 'required|min:6',
             'stage_id' => 'required',
+            'phone'    => 'nullable|string|max:20',
+            'photo'    => 'nullable|image|max:3072',
+            'id_photo' => 'nullable|image|max:3072',
+        ], [
+            'name_ar.required' => 'يرجى كتابة الاسم الرباعي كاملاً.',
+            'nid.required'     => 'يرجى إدخال رقم الهوية الفلسطينية.',
+            'nid.digits'       => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
+            'nid.unique'       => 'رقم الهوية هذا مسجل مسبقاً في المنصة.',
+            'email.required'   => 'البريد الإلكتروني مطلوب.',
+            'email.unique'     => 'البريد الإلكتروني مستخدم بالفعل، يرجى تسجيل الدخول أو استخدام بريد آخر.',
+            'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
+            'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['icon' => 'error', 'title' => $validator->errors()->first()], 400);
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['icon' => 'error', 'title' => $validator->errors()->first()], 422);
+            }
+            return back()->withErrors($validator)->withInput();
         }
 
-        // رفع وتخزين الصورة الشخصية (ستخزن في storage/app/public/students/photos)
+        // رفع وتخزين الصورة الشخصية اختيارياً
         $photoPath = null;
-        if ($request->hasFile('photo')) {
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
-        // رفع وتخزين صورة الهوية (ستخزن في storage/app/public/students/ids)
+        // رفع وتخزين صورة الهوية اختيارياً
         $idPhotoPath = null;
-        if ($request->hasFile('id_photo')) {
+        if ($request->hasFile('id_photo') && $request->file('id_photo')->isValid()) {
             $idPhotoPath = $request->file('id_photo')->store('students/ids', 'public');
         }
 
-        // إنشاء السجل مع التأكد من إرسال المتغيرات التي تحمل "المسار" كـ String
-        Student::create([
-            'name_ar'  => $request->name_ar,
-            'name_en'  => $request->name_en,
-            'nid'      => $request->nid,
-            'age'      => $request->age,
-            'email'    => $request->email,
-            'phone'    => $request->phone,
-            'password' => Hash::make($request->password),
-            'stage_id' => $request->stage_id,
-            'gender'   => $request->gender,
-            'photo'    => $photoPath,    // سيتم حفظ نص مثل: students/photos/xyz.jpg
-            'id_photo' => $idPhotoPath, // سيتم حفظ نص مثل: students/ids/abc.jpg
-            'status'   => 'active',     // جعلته نشط مباشرة للإدارة
+        // إنشاء حساب الطالب مع تفعيل فوري ونقاط ترحيبية
+        $student = Student::create([
+            'name_ar'            => $request->name_ar,
+            'name_en'            => $request->name_en ?? $request->name_ar,
+            'nid'                => $request->nid,
+            'age'                => $request->age ?? 18,
+            'email'              => $request->email,
+            'phone'              => $request->phone,
+            'whatsapp'           => $request->whatsapp ?? $request->phone,
+            'password'           => Hash::make($request->password),
+            'stage_id'           => $request->stage_id,
+            'gender'             => $request->gender ?? 'male',
+            'photo'              => $photoPath,
+            'id_photo'           => $idPhotoPath,
+            'status'             => 'active',
+            'streak_count'       => 1,
+            'total_points'       => 50,
+            'last_activity_date' => now()->toDateString(),
         ]);
 
-        return response()->json(['icon' => 'success', 'title' => 'تم تسجيل الطالب بنجاح! 🎉']);
+        // إذا كان تسجيلاً ذاتياً (ليس مديراً مسجلاً يضيف طالباً)، يتم تسجيل دخول الطالب فوراً
+        if (!Auth::guard('web')->check()) {
+            Auth::guard('student')->login($student);
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'icon'     => 'success',
+                    'title'    => 'أهلاً بك يا بطل! تم إنشاء حسابك بنجاح 🚀',
+                    'redirect' => route('student.dashboard')
+                ]);
+            }
+
+            return redirect()->route('student.dashboard')->with('success', 'أهلاً بك في منصة منارة التوجيهي! تم إنشاء حسابك بنجاح 🎉');
+        }
+
+        return response()->json(['icon' => 'success', 'title' => 'تم تسجيل الطالب بنجاح في النظام! 🎉']);
     }
 
     public function edit($id) {
@@ -219,4 +260,35 @@ class StudentController extends Controller
             'subject_id' => $voucher->subject_id
         ]);
     }
+
+    /**
+     * تحديث كلمة المرور الخاصة بالطالب
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'old_password' => 'required',
+            'new_password' => 'required|min:6',
+        ], [
+            'old_password.required' => 'يرجى إدخال كلمة المرور القديمة.',
+            'new_password.required' => 'يرجى إدخال كلمة المرور الجديدة.',
+            'new_password.min' => 'كلمة المرور الجديدة يجب أن لا تقل عن 6 خانات.',
+        ]);
+
+        $student = \App\Support\CurrentActor::student() ?? Auth::guard('student')->user();
+        if (!$student) {
+            return response()->json(['status' => 'error', 'message' => 'غير مصرح'], 401);
+        }
+
+        if (!Hash::check($request->old_password, $student->password)) {
+            return response()->json(['status' => 'error', 'message' => 'كلمة المرور القديمة غير صحيحة.'], 422);
+        }
+
+        $student->update([
+            'password' => Hash::make($request->new_password)
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'تم تحديث كلمة المرور بنجاح! 🔒']);
+    }
 }
+

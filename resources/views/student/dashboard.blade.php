@@ -381,14 +381,19 @@
     <div class="st-welcome-card">
         <div class="st-welcome-content">
             <div class="st-welcome-badge">
-                <i class="fas fa-sparkles"></i>
-                <span>لوحة المتابعة اليومية</span>
+                <i class="fas fa-graduation-cap"></i>
+                <span>{{ $student->stage->name_ar ?? 'الثانوية العامة فلسطين 🇵🇸' }}</span>
             </div>
-            <h1 class="st-welcome-title">أهلاً بك مجدداً! 👋</h1>
-            <p class="st-welcome-desc">جاهز لمتابعة رحلتك التعليمية؟ استكمل اختباراتك اليوم وراقب تطور أدائك المتميز.</p>
+            <h1 class="st-welcome-title">أهلاً بك يا {{ $student->name_ar ?? 'بطل التوجيهي' }}! 👋</h1>
+            <p class="st-welcome-desc">طريقك نحو الـ 99% يبدأ من هنا. تابع دروسك واختباراتك المقررة وتواصل مع معلميك مباشرة.</p>
         </div>
 
         <div class="st-stats-wrapper">
+            @php $currentStudent = Auth::guard('student')->user() ?? $student; @endphp
+            <div class="st-stat-card" style="border-color: rgba(249, 115, 22, 0.4); background: rgba(249, 115, 22, 0.15);">
+                <span class="st-stat-label" style="color: #fdba74;"><i class="fas fa-fire"></i> التزامك اليومي</span>
+                <span class="st-stat-value" style="color: #ffedd5;">{{ $currentStudent->streak_count ?? 1 }} أيام 🔥</span>
+            </div>
             <div class="st-stat-card">
                 <span class="st-stat-label">المعدل العام</span>
                 <span class="st-stat-value">{{ number_format($my_stats['avg_grade'] ?? 0, 1) }}%</span>
@@ -397,6 +402,115 @@
                 <span class="st-stat-label">المكتملة</span>
                 <span class="st-stat-value">{{ $my_stats['completed_exams'] ?? 0 }}</span>
             </div>
+        </div>
+    </div>
+
+    {{-- عد تنازلي لامتحانات الثانوية العامة في فلسطين --}}
+    <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 20px; padding: 22px 28px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px -5px rgba(49, 46, 129, 0.3); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 50px; height: 50px; border-radius: 14px; background: rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #a5b4fc; flex-shrink: 0;">
+                <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="background: #ef4444; color: white; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">دورة فلسطين الوزارية 🇵🇸</span>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0; color: white;">العد التنازلي لامتحانات الثانوية العامة (التوجيهي)</h3>
+                </div>
+                <p style="margin: 0; font-size: 0.82rem; color: #c7d2fe;" id="dailyTipText">💡 نصيحة اليوم: ركز على حل تدريبات وأسئلة معلميك والتأكد من فهم كل خطوة.</p>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: center;" id="tawjihiCountdownBoxes">
+            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 8px 12px; text-align: center; min-width: 60px;">
+                <span style="font-size: 1.5rem; font-weight: 900; font-family: monospace; display: block; color: #38bdf8;" id="cntDays">--</span>
+                <span style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">يوم</span>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: rgba(255,255,255,0.3);">:</div>
+            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 8px 12px; text-align: center; min-width: 60px;">
+                <span style="font-size: 1.5rem; font-weight: 900; font-family: monospace; display: block; color: #38bdf8;" id="cntHours">--</span>
+                <span style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ساعة</span>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: rgba(255,255,255,0.3);">:</div>
+            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 8px 12px; text-align: center; min-width: 60px;">
+                <span style="font-size: 1.5rem; font-weight: 900; font-family: monospace; display: block; color: #38bdf8;" id="cntMinutes">--</span>
+                <span style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">دقيقة</span>
+            </div>
+            <div style="font-size: 1.1rem; font-weight: 800; color: rgba(255,255,255,0.3);">:</div>
+            <div style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.15); border-radius: 14px; padding: 8px 12px; text-align: center; min-width: 60px;">
+                <span style="font-size: 1.5rem; font-weight: 900; font-family: monospace; display: block; color: #fbbf24;" id="cntSeconds">--</span>
+                <span style="font-size: 0.65rem; font-weight: 700; color: #94a3b8; text-transform: uppercase;">ثانية</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- Tawjihi Super Toolkit Grid --}}
+    <div style="margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">
+                <span style="width: 32px; height: 32px; border-radius: 8px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </span>
+                صندوق أدوات التوجيهي والتفوق 🇵🇸
+            </h2>
+            <span style="font-size: 0.8rem; color: #64748b; font-weight: 600;">خدمات تفاعلية لمتابعة دراستك</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px;">
+            <a href="{{ route('student.courses.catalog') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-cart-shopping"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">باقات المواد والاشتراك</div>
+                <span style="font-size: 0.78rem; color: #64748b;">تفعيل فوري مع جوال باي وبال باي 💳</span>
+            </a>
+
+            <a href="{{ route('student.teachers.index') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">مراسلة المعلمين</div>
+                <span style="font-size: 0.78rem; color: #64748b;">محادثة ذكية بنمط تيليجرام 💬</span>
+            </a>
+
+            <a href="{{ route('tawjihi.calculator') }}" target="_blank" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef3c7; color: #b45309; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">حاسبة المعدل</div>
+                <span style="font-size: 0.78rem; color: #64748b;">واحتساب التنسيق والقبول 🧮</span>
+            </a>
+
+            <a href="{{ route('tawjihi.formulas') }}" target="_blank" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0e7ff; color: #4338ca; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-square-root-variable"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">دليل القوانين الذهبية</div>
+                <span style="font-size: 0.78rem; color: #64748b;">ملخص المنهاج العلمي 📐</span>
+            </a>
+
+            <a href="{{ route('student.flashcards.index') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #f3e8ff; color: #7e22ce; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">بطاقات الاستذكار</div>
+                <span style="font-size: 0.78rem; color: #64748b;">تكرار متباعد ومفاهيم ⚡</span>
+            </a>
+
+            <a href="{{ route('student.leaderboard') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #ffe4e6; color: #e11d48; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-fire"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">لوحة الشرف والالتزام</div>
+                <span style="font-size: 0.78rem; color: #64748b;">تنافس وتصدر قائمة الأبطال 🔥</span>
+            </a>
+
+            <a href="{{ route('student.achievements') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #fef9c3; color: #a16207; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">الشهادات الملكية وبومودورو</div>
+                <span style="font-size: 0.78rem; color: #64748b;">أوسمة معتمدة ومؤقت التركيز 🏆</span>
+            </a>
         </div>
     </div>
 
@@ -501,7 +615,57 @@
             </div>
         </div>
 
-    </div>
-
 </div>
+
+<script>
+    function initTawjihiCountdown() {
+        const now = new Date();
+        let currentYear = now.getFullYear();
+        let targetExamDate = new Date(currentYear, 5, 7, 9, 0, 0); // June 7 at 9:00 AM
+        if (now > targetExamDate) {
+            targetExamDate = new Date(currentYear + 1, 5, 7, 9, 0, 0);
+        }
+
+        const tips = [
+            "💡 نصيحة اليوم: ركز على حل نماذج امتحانات الإنجاز الوزارية والأسئلة الشاملة لضبط إدارة الوقت في القاعة.",
+            "💡 نصيحة اليوم: استخدم بطاقات الاستذكار لحفظ القوانين والمصطلحات الصعبة قبل النوم لتثبيتها في الذاكرة طويلة المدى.",
+            "💡 نصيحة اليوم: خصص استراحة 5 دقائق لكل 25 دقيقة دراسة (تقنية بومودورو) لتحافظ على نشاط عقلك.",
+            "💡 نصيحة اليوم: تأكد من مراجعة أسئلة نهاية كل وحدة في الكتب الوزارية فهي مصدر أساسي للأسئلة.",
+            "💡 نصيحة اليوم: لا تتردد في سؤال معلمك في المنصة عن أي مسألة أو قانون تجد فيه صعوبة."
+        ];
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+        const tipEl = document.getElementById('dailyTipText');
+        if (tipEl) tipEl.innerText = tips[dayOfYear % tips.length];
+
+        function updateTimer() {
+            const diff = targetExamDate - new Date();
+            if (diff <= 0) {
+                document.getElementById('cntDays').innerText = '0';
+                document.getElementById('cntHours').innerText = '0';
+                document.getElementById('cntMinutes').innerText = '0';
+                document.getElementById('cntSeconds').innerText = '0';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            const dEl = document.getElementById('cntDays');
+            const hEl = document.getElementById('cntHours');
+            const mEl = document.getElementById('cntMinutes');
+            const sEl = document.getElementById('cntSeconds');
+
+            if (dEl) dEl.innerText = days;
+            if (hEl) hEl.innerText = String(hours).padStart(2, '0');
+            if (mEl) mEl.innerText = String(minutes).padStart(2, '0');
+            if (sEl) sEl.innerText = String(seconds).padStart(2, '0');
+        }
+
+        updateTimer();
+        setInterval(updateTimer, 1000);
+    }
+    document.addEventListener('DOMContentLoaded', initTawjihiCountdown);
+</script>
 @endsection

@@ -260,32 +260,15 @@ class ExamController extends Controller
 
     public function studentIndex()
     {
-        $user = auth()->user();
-        $student = $user->student ?? Student::where('email', $user->email)->first();
-        if (!$student) {
-            $student = Student::with('stage')->where('name_ar', 'LIKE', '%' . $user->name . '%')->first();
-        }
-        if (!$student) {
-            $student = Student::with('stage')->first();
-        }
-
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
         $studentStageId = $student ? $student->stage_id : null;
-        $currentStageName = 'غير محددة';
-        if ($student && $student->stage_id) {
-            $stage = Stage::find($student->stage_id);
-            if ($stage) {
-                $stageArray = $stage->toArray();
-                unset($stageArray['id'], $stageArray['created_at'], $stageArray['updated_at'], $stageArray['stage_id']);
-                foreach ($stageArray as $value) {
-                    if (!empty($value) && is_string($value)) {
-                        $currentStageName = $value;
-                        break;
-                    }
-                }
-            }
-        }
+        $currentStageName = $student?->stage?->name_ar ?? 'الثانوية العامة (التوجيهي)';
 
-        $exams = Exam::with(['subject', 'stage', 'submissions' => function($query) use ($student) {
+        $enrollments = $student 
+            ? \App\Models\Enrollment::where('student_id', $student->id)->where('status', 'active')->get()->keyBy('subject_id') 
+            : collect();
+
+        $allExams = Exam::with(['subject', 'stage', 'submissions' => function($query) use ($student) {
             if ($student) {
                 $query->where('student_id', $student->id);
             }
@@ -293,11 +276,31 @@ class ExamController extends Controller
         ->withCount('questions')
         ->when($studentStageId, function ($query) use ($studentStageId) {
             $query->where('stage_id', $studentStageId)->orWhereNull('stage_id');
-        }, function ($query) {
-            $query->whereNull('stage_id');
         })
         ->latest()
         ->get();
+
+        // تصفية الاختبارات بناءً على صلاحيات الوصول وخانات الاختيار [✓] التي حددها المعلم
+        $exams = $allExams->filter(function ($exam) use ($student, $enrollments) {
+            if (!$student) return true;
+
+            $enr = $enrollments->get($exam->subject_id);
+            if (!$enr) {
+                // إذا لم يكن مسجلاً في المادة، يظهر الاختبار فقط إن كان تجريبياً عاماً
+                return $exam->is_free ?? true;
+            }
+
+            // إذا كان اشتراكه كاملاً، تظهر جميع اختبارات المادة
+            if ($enr->access_mode === 'all') {
+                return true;
+            }
+
+            // إذا كان اشتراكاً مخصصاً، نفحص هل وضع المعلم علامة صح [✓] لهذا الطالب
+            return \App\Models\ExamAssignment::where('enrollment_id', $enr->id)
+                ->where('exam_id', $exam->id)
+                ->where('is_visible', true)
+                ->exists();
+        })->values();
 
         return view('student.exams.index', compact('exams', 'student', 'currentStageName'));
     }

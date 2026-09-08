@@ -7,10 +7,16 @@
     <div class="auth-side-panel">
         <div class="brand-overlay"></div>
         <div class="brand-content">
-            <div class="v-logo">J</div>
-            <h2>{{ env('PLATFORM_NAME', 'منصة جسر التعليمية') }}</h2>
-            <p>نحو مستقبل تعليمي رقمي متطور يجمع بين الطالب والمعلم في بيئة تفاعلية متكاملة.</p>
-            <div class="pal-badge">🇵🇸 صنع في فلسطين</div>
+            <div class="v-logo">
+                @if(\App\Models\Setting::get('site_logo'))
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 80px; max-width: 140px; object-fit: contain; margin-bottom: 12px; border-radius: 14px; background: rgba(255,255,255,0.15); padding: 8px; backdrop-filter: blur(8px);">
+                @else
+                    🇵🇸
+                @endif
+            </div>
+            <h2>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</h2>
+            <p>المنصة التعليمية الأولى المتخصصة لطلبة توجيهي فلسطين نحو التفوق والتميز الأكاديمي.</p>
+            <div class="pal-badge">🇵🇸 صنع في فلسطين لدعم طلبتنا</div>
         </div>
     </div>
 

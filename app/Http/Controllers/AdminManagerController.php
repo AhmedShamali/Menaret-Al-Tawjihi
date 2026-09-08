@@ -185,7 +185,40 @@ class AdminManagerController extends Controller {
     public function settingsUpdate(Request $request)
     {
         try {
-            foreach ($request->except('_token') as $key => $value) {
+            // معالجة رفع شعار المنصة الرسمي
+            if ($request->hasFile('site_logo')) {
+                $request->validate([
+                    'site_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
+                ]);
+                $file = $request->file('site_logo');
+                $filename = 'site_logo_' . time() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path('uploads/logos');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                $file->move($destinationPath, $filename);
+                Setting::updateOrCreate(['key' => 'site_logo'], ['value' => 'uploads/logos/' . $filename]);
+            }
+
+            // معالجة رفع أيقونة المتصفح Favicon
+            if ($request->hasFile('site_favicon')) {
+                $fav = $request->file('site_favicon');
+                $favName = 'site_favicon_' . time() . '.' . $fav->getClientOriginalExtension();
+                $destinationPath = public_path('uploads/logos');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true);
+                }
+                $fav->move($destinationPath, $favName);
+                Setting::updateOrCreate(['key' => 'site_favicon'], ['value' => 'uploads/logos/' . $favName]);
+            }
+
+            // خيار إزالة الشعار واستعادة الشعار الافتراضي
+            if ($request->input('remove_logo') === '1') {
+                Setting::updateOrCreate(['key' => 'site_logo'], ['value' => '']);
+            }
+
+            // حفظ باقي إعدادات النصوص والأرقام
+            foreach ($request->except(['_token', 'site_logo', 'site_favicon', 'remove_logo']) as $key => $value) {
                 if ($value !== null) {
                     Setting::updateOrCreate(
                         ['key' => $key],
@@ -193,9 +226,16 @@ class AdminManagerController extends Controller {
                     );
                 }
             }
-            return response()->json(['success' => true, 'title' => 'تم تحديث هوية المنصة بنجاح ✅']);
+
+            $currentLogo = Setting::get('site_logo') ? asset(Setting::get('site_logo')) : null;
+
+            return response()->json([
+                'success' => true,
+                'title' => 'تم حفظ الشعار وهوية المنصة بنجاح ✅',
+                'logo_url' => $currentLogo
+            ]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء الحفظ: ' . $e->getMessage()], 500);
         }
     }
 

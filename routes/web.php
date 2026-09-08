@@ -16,9 +16,7 @@ use App\Http\Controllers\{
     ChannelController,
     StageController,
     SubjectController,
-    ExamSubmissionController,
-    SupportController,
-    StudentProfileController
+    ExamSubmissionController
 };
 
 /*
@@ -62,6 +60,21 @@ Route::get('/students', function () {
 
 Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::resource('educational_contents', EducationalContentController::class);
+
+// حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي
+Route::get('/tawjihi-calculator', [\App\Http\Controllers\TawjihiCalculatorController::class, 'index'])->name('tawjihi.calculator');
+Route::post('/tawjihi-calculator/calculate', [\App\Http\Controllers\TawjihiCalculatorController::class, 'calculate'])->name('tawjihi.calculate');
+
+// أرشيف الامتحانات الوزارية ونماذج الإجابة الرسمية
+Route::get('/tawjihi-archive', [\App\Http\Controllers\PastExamController::class, 'index'])->name('tawjihi.archive');
+Route::get('/tawjihi-archive/paper/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadPaper'])->name('tawjihi.download.paper');
+Route::get('/tawjihi-archive/answer-key/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadAnswerKey'])->name('tawjihi.download.key');
+
+// دليل القوانين والقواعد الذهبية للتوجيهي
+Route::get('/tawjihi-formulas', [\App\Http\Controllers\TawjihiFormulaController::class, 'index'])->name('tawjihi.formulas');
+
+// التحقق العام المباشر من الشهادات الأكاديمية عبر مسح رمز QR
+Route::get('/verify/certificate/{code}', [\App\Http\Controllers\SmartLearningController::class, 'verifyCertificate'])->name('certificates.verify');
 
 
 /*
@@ -112,6 +125,11 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/teachers/{id}', [AdminManagerController::class, 'teacherUpdate'])->name('teachers.update');
     Route::delete('/teachers/{id}', [AdminManagerController::class, 'teacherDestroy'])->name('teachers.destroy');
     Route::get('/teachers/{id}', [DashboardController::class, 'showTeacher'])->name('teachers.show');
+
+    // تسعير مواد التوجيهي والعروض الموسمية وباقات المواد
+    Route::get('/subjects/pricing', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'index'])->name('subjects.pricing');
+    Route::post('/subjects/pricing/seasonal-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.seasonal');
+    Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update');
 });
 
 
@@ -135,11 +153,14 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
 
-    // إدارة اشتراكات وصلاحيات الطلاب في الفيديوهات والدروس
+    // إدارة اشتراكات وصلاحيات الطلاب في الفيديوهات والدروس والاختبارات عبر خانات الاختيار
     Route::get('/access-control', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('access.index');
     Route::get('/access/{enrollment_id}/contents', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'getStudentContents'])->name('access.contents');
     Route::post('/access/{enrollment_id}/update', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'updateAccess'])->name('access.update');
     Route::post('/access/quick-enroll', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'quickEnroll'])->name('access.quickEnroll');
+    Route::get('/access/item-students', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'getItemStudents'])->name('access.itemStudents');
+    Route::post('/access/toggle-item-student', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'toggleItemStudent'])->name('access.toggleItemStudent');
+    Route::post('/access/bulk-toggle-item-students', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'bulkToggleItemStudents'])->name('access.bulkToggleItemStudents');
 
     Route::get('/inbox', [CommunicationController::class, 'teacherInbox'])->name('messages.index');
     Route::get('/messages/{student_id}', [CommunicationController::class, 'fetchTeacherStudentMessages'])->name('messages.fetch');
@@ -163,6 +184,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
+    Route::post('/profile/update-password', [StudentController::class, 'updatePassword'])->name('profile.updatePassword');
 
     Route::get('/my-exams', [ExamController::class, 'studentIndex'])->name('exams.index');
     Route::get('/exams/{id}/take', [ExamController::class, 'takeExam'])->name('exams.take');
@@ -184,16 +206,46 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
 
     Route::get('/teachers', [CommunicationController::class, 'teachersIndex'])->name('teachers.index');
     Route::get('/teachers/{teacher_id}/chat', [CommunicationController::class, 'showTeacherChat'])->name('chat.teacher');
+    Route::get('/teachers/{teacher_id}/conversation', [CommunicationController::class, 'showTeacherChat'])->name('teachers.chat');
     Route::post('/teachers/{teacher_id}/chat', [CommunicationController::class, 'sendToTeacher'])->name('chat.teacher.send');
     Route::get('/teachers/{teacher_id}/messages', [CommunicationController::class, 'fetchTeacherMessages'])->name('messages.teacher');
     Route::post('/teachers/send', [CommunicationController::class, 'sendToTeacher'])->name('send.teacher');
 
+    // كتالوج المواد واختيار مادة أو أكثر وبوابات الدفع الفلسطينية (بال باي، جوال باي، بنك فلسطين)
+    Route::get('/courses/catalog', [\App\Http\Controllers\Student\CourseEnrollmentController::class, 'catalog'])->name('courses.catalog');
+    Route::post('/courses/checkout', [\App\Http\Controllers\Student\CourseEnrollmentController::class, 'prepareCheckout'])->name('courses.checkout');
+    Route::get('/checkout', [\App\Http\Controllers\Student\PaymentGatewayController::class, 'showCheckout'])->name('checkout.show');
+    Route::post('/checkout/process', [\App\Http\Controllers\Student\PaymentGatewayController::class, 'processPayment'])->name('checkout.process');
+    Route::get('/checkout/receipt/{id}', [\App\Http\Controllers\Student\PaymentGatewayController::class, 'successReceipt'])->name('checkout.receipt');
+
     Route::get('/subjects', [DashboardController::class, 'studentSubjectsIndex'])->name('subjects.index');
     Route::get('/subjects/{id}', [DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
-    Route::get('/student/subjects/{id}', [DashboardController::class, 'showSubject'])->name('student.subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
-    Route::get('/notifications/unread-count', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
+    Route::delete('/notifications/{id}', [App\Http\Controllers\Student\NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::post('/redeem-code', [StudentController::class, 'redeemCode'])->name('redeemCode');
+
+    // مشغل الفيديو الذكي وملاحظات التوقيت
+    Route::get('/video-notes/{content_id}', [\App\Http\Controllers\VideoNoteController::class, 'fetchNotes'])->name('videoNotes.fetch');
+    Route::post('/video-notes', [\App\Http\Controllers\VideoNoteController::class, 'storeNote'])->name('videoNotes.store');
+    Route::delete('/video-notes/{id}', [\App\Http\Controllers\VideoNoteController::class, 'destroyNote'])->name('videoNotes.destroy');
+    Route::post('/video-progress', [\App\Http\Controllers\VideoNoteController::class, 'saveProgress'])->name('videoProgress.save');
+
+    // بطاقات الاستذكار السريع والقوانين (Flashcards)
+    Route::get('/flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('flashcards.index');
+
+    // مؤشر الالتزام اليومي ولوحة الشرف (Leaderboard)
+    Route::get('/leaderboard', [\App\Http\Controllers\Student\StreakController::class, 'leaderboard'])->name('leaderboard');
+    Route::post('/streak/activity', [\App\Http\Controllers\Student\StreakController::class, 'recordActivity'])->name('streak.activity');
+
+    // مولّد جدول المراجعة الذكي للامتحانات (Study Planner)
+    Route::get('/study-planner', [\App\Http\Controllers\Student\StudyPlannerController::class, 'index'])->name('planner.index');
+    Route::post('/study-planner/generate', [\App\Http\Controllers\Student\StudyPlannerController::class, 'generate'])->name('planner.generate');
+
+    // الأوسمة والشهادات الأكاديمية الملكية ومؤقت التركيز وبومودورو
+    Route::get('/achievements', [\App\Http\Controllers\SmartLearningController::class, 'myAchievements'])->name('achievements');
+    Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController::class, 'showCertificate'])->name('certificates.show');
+    Route::post('/pomodoro/session', [\App\Http\Controllers\SmartLearningController::class, 'savePomodoroSession'])->name('pomodoro.save');
 });

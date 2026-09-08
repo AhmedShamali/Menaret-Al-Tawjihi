@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use App\Services\NotificationService;
 
 class CommunicationController extends Controller
 {
@@ -293,6 +295,16 @@ class CommunicationController extends Controller
                 'message'     => trim($request->message),
             ]);
 
+            $teacherUser = Auth::user();
+            $teacherName = $teacherUser ? $teacherUser->name : 'معلم المادة';
+            NotificationService::notifyStudent(
+                $request->student_id,
+                "رد جديد من {$teacherName} 💬",
+                "أستاذ المادة قام بالرد على رسالتك: " . Str::limit($request->message, 70),
+                'message',
+                route('student.teachers.chat', $teacherId)
+            );
+
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'status' => 'success',
@@ -484,6 +496,12 @@ class CommunicationController extends Controller
                 'sender_type' => 'student',
                 'message'     => trim($request->message),
             ]);
+
+            NotificationService::notifyAdmin(
+                'استفسار دراسي جديد من طالب',
+                "قام الطالب {$student->name_ar} بإرسال استفسار دراسي لمعلم المادة: " . Str::limit($request->message, 70),
+                'message'
+            );
 
             return response()->json([
                 'status' => 'success',

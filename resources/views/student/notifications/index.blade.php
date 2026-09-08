@@ -1,182 +1,661 @@
 @extends('layouts.app')
 
-@section('title', 'سجل الإشعارات والتنبيهات الأكاديمية')
+@section('title', 'مركز الإشعارات والتنبيهات الشامل 🔔')
 
 @section('content')
-<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<div class="notifications-page-container" dir="rtl">
 
-<style>
-    * { font-family: 'Alexandria', sans-serif; }
-
-    .notifications-wrapper {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 10px 0 40px;
-        direction: rtl;
-    }
-
-    .notif-header-card {
-        background: white;
-        border-radius: 22px;
-        padding: 26px 30px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 25px;
-    }
-
-    .notif-item-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 20px 24px;
-        margin-bottom: 14px;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 18px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-    }
-
-    .notif-item-card:hover {
-        border-color: #0284c7;
-        box-shadow: 0 8px 25px rgba(2, 132, 199, 0.06);
-        transform: translateY(-2px);
-    }
-
-    .notif-item-card.unread {
-        background: #f0f9ff;
-        border-color: #bae6fd;
-        border-right: 4px solid #0284c7;
-    }
-
-    .notif-icon-circle {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: grid;
-        place-items: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-
-    .icon-msg { background: #e0f2fe; color: #0284c7; }
-    .icon-exam { background: #fef3c7; color: #d97706; }
-    .icon-success { background: #dcfce7; color: #16a34a; }
-</style>
-
-<div class="notifications-wrapper">
-    <!-- Header -->
-    <div class="notif-header-card">
-        <div>
-            <span style="background: #e0f2fe; color: #0284c7; padding: 4px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700;">
-                <i class="fa-solid fa-bell"></i> مركز التنبيهات
-            </span>
-            <h2 style="font-size: 1.4rem; font-weight: 800; color: #0f172a; margin: 8px 0 4px;">
-                الإشعارات والتنبيهات الأكاديمية
-            </h2>
-            <p style="font-size: 0.85rem; color: #64748b; margin: 0;">
-                تابع ردود معلميك، تحديثات الحصص، ونتائج امتحانات الثانوية العامة فور صدورها.
+    <!-- كرت الترويسة الرئيسية -->
+    <div class="notif-hero-card">
+        <div class="hero-content">
+            <div class="badge-tag">
+                <i class="fa-solid fa-bell-ring"></i> مركز الإشعارات الفورية
+            </div>
+            <h1 class="hero-title">تنبيهاتك الأكاديمية والمالية 🇵🇸</h1>
+            <p class="hero-subtitle">
+                تابع ردود معلمي الثانوية العامة، تنبيهات تفعيل المواد، ومواعيد الامتحانات الوزارية أولاً بأول.
             </p>
         </div>
 
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button onclick="markAllRead()" style="background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-check-double"></i> تحديد الكل كمقروء
-            </button>
+        <div class="hero-actions">
+            @if($counts['unread'] > 0)
+                <button type="button" class="btn-mark-all" onclick="markAllNotificationsRead()">
+                    <i class="fa-solid fa-check-double"></i>
+                    <span>تحديد الكل كمقروء ({{ $counts['unread'] }})</span>
+                </button>
+            @else
+                <div class="all-read-badge">
+                    <i class="fa-solid fa-circle-check text-success"></i>
+                    <span>جميع التنبيهات مقروءة</span>
+                </div>
+            @endif
         </div>
     </div>
 
-    <!-- قائمة الإشعارات -->
-    <div>
-        @forelse($notifications as $item)
+    <!-- شريط التبويبات والتصنيفات (Filter Pills) -->
+    <div class="filter-tabs-wrapper">
+        <div class="filter-tabs-scroll">
+            <a href="{{ route('student.notifications.index', ['filter' => 'all']) }}" 
+               class="filter-pill {{ $filter === 'all' ? 'active' : '' }}">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>كافة الإشعارات</span>
+                <span class="pill-count">{{ $counts['all'] }}</span>
+            </a>
+
+            <a href="{{ route('student.notifications.index', ['filter' => 'unread']) }}" 
+               class="filter-pill {{ $filter === 'unread' ? 'active' : '' }}">
+                <i class="fa-solid fa-envelope-open-text"></i>
+                <span>غير المقروءة</span>
+                @if($counts['unread'] > 0)
+                    <span class="pill-count unread-badge">{{ $counts['unread'] }}</span>
+                @else
+                    <span class="pill-count">0</span>
+                @endif
+            </a>
+
+            <a href="{{ route('student.notifications.index', ['filter' => 'message']) }}" 
+               class="filter-pill {{ $filter === 'message' ? 'active' : '' }}">
+                <i class="fa-solid fa-comments"></i>
+                <span>المراسلات والمعلمين</span>
+                <span class="pill-count">{{ $counts['message'] }}</span>
+            </a>
+
+            <a href="{{ route('student.notifications.index', ['filter' => 'payment']) }}" 
+               class="filter-pill {{ $filter === 'payment' ? 'active' : '' }}">
+                <i class="fa-solid fa-wallet"></i>
+                <span>الاشتراكات والمدفوعات</span>
+                <span class="pill-count">{{ $counts['payment'] }}</span>
+            </a>
+
+            <a href="{{ route('student.notifications.index', ['filter' => 'exam']) }}" 
+               class="filter-pill {{ $filter === 'exam' ? 'active' : '' }}">
+                <i class="fa-solid fa-clipboard-check"></i>
+                <span>الامتحانات والنتائج</span>
+                <span class="pill-count">{{ $counts['exam'] }}</span>
+            </a>
+
+            <a href="{{ route('student.notifications.index', ['filter' => 'academic']) }}" 
+               class="filter-pill {{ $filter === 'academic' ? 'active' : '' }}">
+                <i class="fa-solid fa-fire"></i>
+                <span>الإنجازات والتقدم</span>
+                <span class="pill-count">{{ $counts['academic'] }}</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- قائمة بطاقات الإشعارات -->
+    <div class="notifications-feed-lane">
+        @forelse($items as $notif)
             @php
-                $isMsg = ($item instanceof \App\Models\Message);
-                $isUnread = $isMsg ? !$item->is_read : is_null($item->read_at);
-                $content = $isMsg 
-                    ? $item->message 
-                    : ($item->data['message'] ?? $item->data['title'] ?? 'إشعار أكاديمي جديد');
-                $senderType = $isMsg ? $item->sender_type : ($item->data['type'] ?? 'system');
-                $title = $senderType === 'teacher' ? 'رسالة جديدة من معلم المادة' : ($senderType === 'admin' ? 'رد من إدارة المنصة والدعم' : 'تنبيه أكاديمي');
-                $url = $isMsg 
-                    ? ($senderType === 'teacher' ? route('student.chat.teacher', $item->teacher_id ?? 1) : route('student.support'))
-                    : ($item->data['url'] ?? route('student.dashboard'));
+                $isUnread = !$notif->is_read;
+                $type = $notif->type ?? 'system';
+                
+                // تحديد الأيقونة والتدرج اللوني بحسب نوع الإشعار
+                $iconClass = match($type) {
+                    'payment'  => 'fa-solid fa-credit-card',
+                    'message'  => 'fa-solid fa-comment-dots',
+                    'exam'     => 'fa-solid fa-file-pen',
+                    'streak'   => 'fa-solid fa-fire-flame-curved',
+                    'academic' => 'fa-solid fa-graduation-cap',
+                    default    => 'fa-solid fa-bell'
+                };
+                
+                $iconTypeClass = match($type) {
+                    'payment'  => 'type-payment',
+                    'message'  => 'type-message',
+                    'exam'     => 'type-exam',
+                    'streak'   => 'type-streak',
+                    'academic' => 'type-academic',
+                    default    => 'type-system'
+                };
             @endphp
 
-            <div class="notif-item-card {{ $isUnread ? 'unread' : '' }}" id="notif_card_{{ $item->id }}">
-                <div style="display: flex; gap: 16px; align-items: flex-start; flex: 1;">
-                    <div class="notif-icon-circle {{ $senderType === 'teacher' ? 'icon-msg' : ($senderType === 'admin' ? 'icon-success' : 'icon-exam') }}">
-                        @if($senderType === 'teacher')
-                            <i class="fa-solid fa-chalkboard-user"></i>
-                        @elseif($senderType === 'admin')
-                            <i class="fa-solid fa-headset"></i>
-                        @else
-                            <i class="fa-solid fa-bell"></i>
-                        @endif
+            <div class="notif-feed-card {{ $isUnread ? 'is-unread' : '' }}" id="card_{{ $notif->id }}">
+                <div class="notif-card-start">
+                    <div class="notif-icon-avatar {{ $iconTypeClass }}">
+                        <i class="{{ $iconClass }}"></i>
                     </div>
 
-                    <div style="flex: 1;">
-                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
-                            <h4 style="margin: 0; font-size: 0.98rem; font-weight: 800; color: #1e293b;">{{ $title }}</h4>
+                    <div class="notif-body-content">
+                        <div class="notif-headline-row">
+                            <h3 class="notif-headline">{{ $notif->title }}</h3>
                             @if($isUnread)
-                                <span style="background: #ef4444; color: white; padding: 1px 8px; border-radius: 10px; font-size: 0.65rem; font-weight: 700;">جديد</span>
+                                <span class="badge-new-dot">جديد</span>
                             @endif
                         </div>
-                        <p style="margin: 0 0 10px; font-size: 0.88rem; color: #475569; line-height: 1.6;">
-                            {{ $content }}
+
+                        <p class="notif-text-message">
+                            {{ $notif->message }}
                         </p>
-                        <span style="font-size: 0.75rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-regular fa-clock"></i> {{ $item->created_at ? $item->created_at->diffForHumans() : 'الآن' }}
-                        </span>
+
+                        <div class="notif-meta-tags">
+                            <span class="meta-time">
+                                <i class="fa-regular fa-clock"></i>
+                                {{ $notif->created_at ? \Carbon\Carbon::parse($notif->created_at)->diffForHumans() : 'الآن' }}
+                            </span>
+                            <span class="meta-category-tag">
+                                {{ match($type) {
+                                    'payment' => 'معاملة مالية',
+                                    'message' => 'رسالة خاصة',
+                                    'exam' => 'اختبار وزاري',
+                                    'streak' => 'حماس ودراسة',
+                                    default => 'تنبيه نظام'
+                                } }}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
-                    <a href="{{ $url }}" onclick="markSingleRead('{{ $item->id }}')" style="background: #0284c7; color: white; padding: 8px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;">
-                        فتح المحادثة <i class="fa-solid fa-arrow-left" style="font-size: 0.75rem;"></i>
+                <!-- أزرار الإجراء السريع -->
+                <div class="notif-card-actions">
+                    <a href="{{ $notif->action_url }}" 
+                       onclick="markReadDirect('{{ $notif->id }}')" 
+                       class="btn-open-action" 
+                       title="الانتقال للرابط المطلوب">
+                        <span>فتح</span>
+                        <i class="fa-solid fa-arrow-left"></i>
                     </a>
-                    @if($isUnread)
-                        <button onclick="markSingleRead('{{ $item->id }}')" style="background: none; border: none; color: #64748b; font-size: 0.75rem; cursor: pointer; text-decoration: underline;">
-                            تعيين كمقروء
+
+                    <div class="action-mini-group">
+                        @if($isUnread)
+                            <button type="button" 
+                                    class="btn-icon-subtle" 
+                                    onclick="markReadDirect('{{ $notif->id }}')" 
+                                    title="تعيين كمقروء">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        @endif
+
+                        <button type="button" 
+                                class="btn-icon-subtle delete-btn" 
+                                onclick="deleteNotifItem('{{ $notif->id }}')" 
+                                title="حذف من السجل">
+                            <i class="fa-regular fa-trash-can"></i>
                         </button>
-                    @endif
+                    </div>
                 </div>
             </div>
         @empty
-            <div style="text-align: center; padding: 70px 20px; background: white; border-radius: 22px; border: 1px dashed #cbd5e1; color: #94a3b8;">
-                <i class="fa-solid fa-bell-slash" style="font-size: 3.5rem; margin-bottom: 14px; display: block; opacity: 0.35;"></i>
-                <h4 style="margin: 0 0 6px; font-weight: 800; color: #64748b; font-size: 1.1rem;">صندوق التنبيهات فارغ</h4>
-                <p style="margin: 0; font-size: 0.88rem;">لا توجد إشعارات أو ردود مسجلة في حسابك حتى الآن.</p>
+            <div class="empty-feed-card">
+                <div class="empty-icon-circle">
+                    <i class="fa-solid fa-bell-slash"></i>
+                </div>
+                <h3>لا توجد إشعارات في هذا التصنيف</h3>
+                <p>كل التنبيهات والردود والأنشطة الأكاديمية الجديدة ستظهر لك هنا مباشرة وبصورة فورية.</p>
+                <a href="{{ route('student.courses.catalog') }}" class="btn-explore-empty">
+                    <i class="fa-solid fa-compass"></i> استكشاف المواد والامتحانات
+                </a>
             </div>
         @endforelse
     </div>
 
-    @if(method_exists($notifications, 'hasPages') && $notifications->hasPages())
-        <div style="margin-top: 30px; display: flex; justify-content: center;">
-            {{ $notifications->links() }}
+    <!-- ترقيم الصفحات (Pagination) -->
+    @if($lastPage > 1)
+        <div class="pagination-container">
+            @for($i = 1; $i <= $lastPage; $i++)
+                <a href="{{ route('student.notifications.index', ['filter' => $filter, 'page' => $i]) }}" 
+                   class="page-link-pill {{ $page === $i ? 'active' : '' }}">
+                    {{ $i }}
+                </a>
+            @endfor
         </div>
     @endif
+
 </div>
 
+<style>
+:root {
+    --max-w: 920px;
+}
+
+.notifications-page-container {
+    max-width: var(--max-w);
+    margin: 1.5rem auto 3rem;
+    padding: 0 1rem;
+}
+
+/* 1. كرت الترويسة */
+.notif-hero-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 24px 30px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+body.dark-theme .notif-hero-card {
+    background: #0f172a;
+    border-color: #1e293b;
+}
+
+.badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    color: #0284c7;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.hero-title {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+
+body.dark-theme .hero-title { color: #f8fafc; }
+
+.hero-subtitle {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.btn-mark-all {
+    background: #0284c7;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    transition: 0.2s;
+}
+
+.btn-mark-all:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+}
+
+.all-read-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+/* 2. شريط التبويبات (Tabs) */
+.filter-tabs-wrapper {
+    margin-bottom: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.filter-tabs-wrapper::-webkit-scrollbar { display: none; }
+
+.filter-tabs-scroll {
+    display: flex;
+    gap: 8px;
+    padding-bottom: 4px;
+}
+
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 50px;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+body.dark-theme .filter-pill {
+    background: #0f172a;
+    border-color: #1e293b;
+    color: #94a3b8;
+}
+
+.filter-pill:hover {
+    border-color: #0284c7;
+    color: #0284c7;
+}
+
+.filter-pill.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: white;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+}
+
+.pill-count {
+    background: rgba(0,0,0,0.06);
+    padding: 1px 7px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+}
+
+.filter-pill.active .pill-count {
+    background: rgba(255,255,255,0.25);
+    color: white;
+}
+
+.unread-badge {
+    background: #ef4444 !important;
+    color: white !important;
+}
+
+/* 3. بطاقات الإشعارات */
+.notifications-feed-lane {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notif-feed-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+}
+
+body.dark-theme .notif-feed-card {
+    background: #0f172a;
+    border-color: #1e293b;
+}
+
+.notif-feed-card:hover {
+    border-color: #0284c7;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.04);
+}
+
+.notif-feed-card.is-unread {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    border-right: 4px solid #10b981;
+}
+
+body.dark-theme .notif-feed-card.is-unread {
+    background: #064e3b20;
+    border-color: #065f46;
+    border-right-color: #10b981;
+}
+
+.notif-card-start {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+}
+
+.notif-icon-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.type-payment { background: #dcfce7; color: #059669; }
+.type-message { background: #e0f2fe; color: #0284c7; }
+.type-exam    { background: #fef3c7; color: #d97706; }
+.type-streak  { background: #ffedd5; color: #ea580c; }
+.type-academic{ background: #ede9fe; color: #7c3aed; }
+.type-system  { background: #f1f5f9; color: #475569; }
+
+.notif-body-content {
+    flex: 1;
+}
+
+.notif-headline-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.notif-headline {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+body.dark-theme .notif-headline { color: #f8fafc; }
+
+.badge-new-dot {
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1px 7px;
+    border-radius: 12px;
+}
+
+.notif-text-message {
+    color: #475569;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    margin: 0 0 8px;
+}
+
+body.dark-theme .notif-text-message { color: #cbd5e1; }
+
+.notif-meta-tags {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.meta-category-tag {
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 8px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+body.dark-theme .meta-category-tag {
+    background: #1e293b;
+    color: #94a3b8;
+}
+
+/* أزرار الإجراء */
+.notif-card-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-open-action {
+    background: #0284c7;
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.btn-open-action:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+}
+
+.action-mini-group {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-icon-subtle {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    transition: 0.2s;
+}
+
+body.dark-theme .btn-icon-subtle {
+    background: #1e293b;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+.btn-icon-subtle:hover {
+    color: #0284c7;
+    border-color: #0284c7;
+}
+
+.btn-icon-subtle.delete-btn:hover {
+    color: #ef4444;
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+/* حالة الفراغ */
+.empty-feed-card {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    background: #ffffff;
+    border-radius: 24px;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+}
+
+body.dark-theme .empty-feed-card {
+    background: #0f172a;
+    border-color: #334155;
+}
+
+.empty-icon-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1rem;
+}
+
+.btn-explore-empty {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 1rem;
+    background: #0284c7;
+    color: white;
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* ترقيم الصفحات */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 2rem;
+}
+
+.page-link-pill {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.88rem;
+    transition: 0.2s;
+}
+
+.page-link-pill.active {
+    background: #0284c7;
+    color: white;
+    border-color: #0284c7;
+}
+
+@media (max-width: 640px) {
+    .notif-feed-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .notif-card-actions {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-between;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid #f1f5f9;
+    }
+}
+</style>
+
 <script>
-function markSingleRead(id) {
+function markReadDirect(id) {
     axios.post(`/student/notifications/${id}/mark-read`, {
         _token: '{{ csrf_token() }}'
     }).then(() => {
-        const card = document.getElementById(`notif_card_${id}`);
+        const card = document.getElementById(`card_${id}`);
         if (card) {
-            card.classList.remove('unread');
+            card.classList.remove('is-unread');
+            const badge = card.querySelector('.badge-new-dot');
+            if (badge) badge.remove();
         }
     });
 }
 
-function markAllRead() {
+function markAllNotificationsRead() {
     axios.post('/student/notifications/mark-all-read', {
         _token: '{{ csrf_token() }}'
     }).then(res => {
@@ -184,11 +663,49 @@ function markAllRead() {
             toast: true,
             position: 'top-start',
             icon: 'success',
-            title: res.data.message || 'تم تعيين جميع التنبيهات كمقروءة',
+            title: res.data.message || 'تم تعيين جميع الإشعارات كمقروءة',
             showConfirmButton: false,
             timer: 2000
         });
-        document.querySelectorAll('.notif-item-card.unread').forEach(el => el.classList.remove('unread'));
+        document.querySelectorAll('.notif-feed-card.is-unread').forEach(card => {
+            card.classList.remove('is-unread');
+            const badge = card.querySelector('.badge-new-dot');
+            if (badge) badge.remove();
+        });
+    });
+}
+
+function deleteNotifItem(id) {
+    Swal.fire({
+        title: 'حذف الإشعار؟',
+        text: 'هل أنت متأكد من رغبتك في حذف هذا التنبيه من سجلك؟',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            axios.delete(`/student/notifications/${id}`, {
+                data: { _token: '{{ csrf_token() }}' }
+            }).then(res => {
+                const card = document.getElementById(`card_${id}`);
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.95)';
+                    setTimeout(() => card.remove(), 250);
+                }
+                Swal.fire({
+                    toast: true,
+                    position: 'top-start',
+                    icon: 'success',
+                    title: res.data.message || 'تم حذف الإشعار',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            });
+        }
     });
 }
 </script>
