@@ -804,22 +804,22 @@
             </a>
 
             <ul class="nav-menu">
-                <li><a href="{{ route('stages.index') }}">الفروع والمراحل</a></li>
-                <li><a href="{{ route('tawjihi.calculator') }}">حاسبة المعدل الوزاري</a></li>
-                <li><a href="{{ route('past-exams.index') }}">الامتحانات السابقة</a></li>
-                <li><a href="{{ route('smart.learning.flashcards') }}">البطاقات الذكية</a></li>
-                <li><a href="{{ route('student.courses.catalog') }}">المواد الدراسية</a></li>
-                <li><a href="{{ route('contact') }}">تواصل معنا</a></li>
+                <li><a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">الفروع والمراحل</a></li>
+                <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة المعدل الوزاري</a></li>
+                <li><a href="{{ Route::has('past-exams.index') ? route('past-exams.index') : (Route::has('tawjihi.archive') ? route('tawjihi.archive') : url('/tawjihi-archive')) }}">الامتحانات السابقة</a></li>
+                <li><a href="{{ Route::has('smart.learning.flashcards') ? route('smart.learning.flashcards') : url('/public-flashcards') }}">البطاقات الذكية</a></li>
+                <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">المواد الدراسية</a></li>
+                <li><a href="{{ Route::has('contact') ? route('contact') : (Route::has('public.contact') ? route('public.contact') : url('/contact')) }}">تواصل معنا</a></li>
             </ul>
 
             <div class="nav-actions">
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-primary">
+                    <a href="{{ Route::has('dashboard') ? route('dashboard') : url('/dashboard') }}" class="btn-primary">
                         <i class="fas fa-tachometer-alt"></i> لوحة التحكم
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn-text">تسجيل الدخول</a>
-                    <a href="{{ route('student.create') }}" class="btn-primary">
+                    <a href="{{ Route::has('login') ? route('login') : url('/login') }}" class="btn-text">تسجيل الدخول</a>
+                    <a href="{{ Route::has('student.create') ? route('student.create') : (Route::has('students.create') ? route('students.create') : url('/register')) }}" class="btn-primary">
                         <i class="fas fa-user-plus"></i> انضم كطالب
                     </a>
                 @endauth
@@ -842,10 +842,10 @@
             </p>
 
             <div class="hero-cta">
-                <a href="{{ route('student.create') }}" class="btn-cta-main">
+                <a href="{{ Route::has('student.create') ? route('student.create') : (Route::has('students.create') ? route('students.create') : url('/register')) }}" class="btn-cta-main">
                     <i class="fas fa-rocket"></i> انضم إلى منصتنا الآن
                 </a>
-                <a href="{{ route('tawjihi.calculator') }}" class="btn-cta-outline">
+                <a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}" class="btn-cta-outline">
                     <i class="fas fa-calculator"></i> احسب معدلك (من 700)
                 </a>
             </div>
@@ -937,7 +937,7 @@
                     <h3>حاسبة المعدل ودليل التنسيق</h3>
                     <p>احتساب دقيق وفق أعلى مادة اختيارية مع عرض مفاتيح القبول لجامعات بيرزيت، النجاح، القدس، وخضوري.</p>
                 </div>
-                <a href="{{ route('tawjihi.calculator') }}">جرب الحاسبة الآن ←</a>
+                <a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">جرب الحاسبة الآن ←</a>
             </div>
 
             <div class="feature-card">
@@ -946,7 +946,7 @@
                     <h3>الامتحانات الوزارية السابقة</h3>
                     <p>نماذج الامتحانات الوزارية للسنوات السابقة مع نماذج الإجابة الرسمية وسلم توزيع الدرجات.</p>
                 </div>
-                <a href="{{ route('past-exams.index') }}">استعراض الامتحانات ←</a>
+                <a href="{{ Route::has('past-exams.index') ? route('past-exams.index') : (Route::has('tawjihi.archive') ? route('tawjihi.archive') : url('/tawjihi-archive')) }}">استعراض الامتحانات ←</a>
             </div>
 
             <div class="feature-card">
@@ -955,7 +955,7 @@
                     <h3>بطاقات المراجعة الذكية</h3>
                     <p>مراجعة سريعة للمفاهيم والقوانين العلمية وقواعد الإعراب بأسلوب البطاقات الذكية التفاعلية.</p>
                 </div>
-                <a href="{{ route('smart.learning.flashcards') }}">بدء المراجعة الذكية ←</a>
+                <a href="{{ Route::has('smart.learning.flashcards') ? route('smart.learning.flashcards') : url('/public-flashcards') }}">بدء المراجعة الذكية ←</a>
             </div>
 
             <div class="feature-card">
@@ -964,7 +964,7 @@
                     <h3>شهادات إنجاز معتمدة</h3>
                     <p>شهادات تفوق وإتمام للمقررات التعليمية قابلة للتحقق الفوري عبر رمز الاستجابة السريع (QR Code).</p>
                 </div>
-                <a href="{{ route('login') }}">بوابة الطلاب ←</a>
+                <a href="{{ Route::has('login') ? route('login') : url('/login') }}">بوابة الطلاب ←</a>
             </div>
         </div>
     </section>
@@ -993,7 +993,7 @@
                         <span class="subject-tag">كيمياء</span>
                         <span class="subject-tag">أحياء</span>
                     </div>
-                    <a href="{{ route('stages.show', 122) }}" class="branch-link">تصفح مواد الفرع العلمي ←</a>
+                    <a href="{{ Route::has('stages.show') ? route('stages.show', 122) : url('/stages/122') }}" class="branch-link">تصفح مواد الفرع العلمي ←</a>
                 </div>
 
                 <!-- الفرع الأدبي -->
@@ -1010,7 +1010,7 @@
                         <span class="subject-tag">تاريخ</span>
                         <span class="subject-tag">جغرافيا</span>
                     </div>
-                    <a href="{{ route('stages.show', 121) }}" class="branch-link">تصفح مواد الفرع الأدبي ←</a>
+                    <a href="{{ Route::has('stages.show') ? route('stages.show', 121) : url('/stages/121') }}" class="branch-link">تصفح مواد الفرع الأدبي ←</a>
                 </div>
 
                 <!-- المرحلة الأساسية -->
@@ -1027,7 +1027,7 @@
                         <span class="subject-tag">الصف التاسع</span>
                         <span class="subject-tag">الصف العاشر</span>
                     </div>
-                    <a href="{{ route('stages.index') }}" class="branch-link">عرض كافة الصفوف ←</a>
+                    <a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}" class="branch-link">عرض كافة الصفوف ←</a>
                 </div>
             </div>
 
@@ -1083,20 +1083,20 @@
             <div class="footer-col">
                 <h4>روابط سريعة</h4>
                 <ul>
-                    <li><a href="{{ route('stages.index') }}">المراحل والصفوف</a></li>
-                    <li><a href="{{ route('tawjihi.calculator') }}">حاسبة معدل التوجيهي</a></li>
-                    <li><a href="{{ route('past-exams.index') }}">الامتحانات الوزارية</a></li>
-                    <li><a href="{{ route('smart.learning.flashcards') }}">البطاقات الذكية</a></li>
+                    <li><a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">المراحل والصفوف</a></li>
+                    <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة معدل التوجيهي</a></li>
+                    <li><a href="{{ Route::has('past-exams.index') ? route('past-exams.index') : (Route::has('tawjihi.archive') ? route('tawjihi.archive') : url('/tawjihi-archive')) }}">الامتحانات الوزارية</a></li>
+                    <li><a href="{{ Route::has('smart.learning.flashcards') ? route('smart.learning.flashcards') : url('/public-flashcards') }}">البطاقات الذكية</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
                 <h4>البوابات</h4>
                 <ul>
-                    <li><a href="{{ route('login') }}">دخول الطلاب والمعلمين</a></li>
-                    <li><a href="{{ route('student.create') }}">تسجيل طالب جديد</a></li>
-                    <li><a href="{{ route('student.courses.catalog') }}">كتالوج المواد</a></li>
-                    <li><a href="{{ route('privacy') }}">سياسة الخصوصية</a></li>
+                    <li><a href="{{ Route::has('login') ? route('login') : url('/login') }}">دخول الطلاب والمعلمين</a></li>
+                    <li><a href="{{ Route::has('student.create') ? route('student.create') : (Route::has('students.create') ? route('students.create') : url('/register')) }}">تسجيل طالب جديد</a></li>
+                    <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">كتالوج المواد</a></li>
+                    <li><a href="{{ Route::has('privacy') ? route('privacy') : (Route::has('public.privacy') ? route('public.privacy') : url('/privacy')) }}">سياسة الخصوصية</a></li>
                 </ul>
             </div>
 

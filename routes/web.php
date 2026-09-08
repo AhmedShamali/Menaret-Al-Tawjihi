@@ -36,6 +36,22 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// لوحة التحكم الموحدة للتوجيه التلقائي حسب نوع الحساب
+Route::get('/dashboard', function () {
+    if (Auth::guard('student')->check()) {
+        return redirect()->route('student.dashboard');
+    }
+    if (Auth::check()) {
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role === 'teacher') {
+            return redirect()->route('teacher.dashboard');
+        }
+    }
+    return redirect()->route('login');
+})->name('dashboard');
+
 Route::get('/faq', [PublicController::class, 'faq'])->name('public.faq');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
 Route::get('/terms', [PublicController::class, 'terms'])->name('public.terms');
@@ -67,8 +83,18 @@ Route::post('/tawjihi-calculator/calculate', [\App\Http\Controllers\TawjihiCalcu
 
 // أرشيف الامتحانات الوزارية ونماذج الإجابة الرسمية
 Route::get('/tawjihi-archive', [\App\Http\Controllers\PastExamController::class, 'index'])->name('tawjihi.archive');
+Route::get('/past-exams', [\App\Http\Controllers\PastExamController::class, 'index'])->name('past-exams.index');
 Route::get('/tawjihi-archive/paper/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadPaper'])->name('tawjihi.download.paper');
 Route::get('/tawjihi-archive/answer-key/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadAnswerKey'])->name('tawjihi.download.key');
+
+// بطاقات الاستذكار السريع والقوانين (Flashcards) للعامة والطلاب
+Route::get('/public-flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('smart.learning.flashcards');
+Route::get('/catalog', [\App\Http\Controllers\Student\CourseEnrollmentController::class, 'catalog'])->name('courses.catalog');
+
+// مسارات بديلة ومساعدة للروابط العامة
+Route::get('/contact-us', [PublicController::class, 'contact'])->name('contact');
+Route::get('/privacy-policy', [PublicController::class, 'privacy'])->name('privacy');
+Route::get('/student-register', [StudentController::class, 'create'])->name('student.create');
 
 // دليل القوانين والقواعد الذهبية للتوجيهي
 Route::get('/tawjihi-formulas', [\App\Http\Controllers\TawjihiFormulaController::class, 'index'])->name('tawjihi.formulas');

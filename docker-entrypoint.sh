@@ -27,6 +27,17 @@ if [ "$APP_ENV" = "production" ]; then
     php artisan view:cache || true
 fi
 
-# 6. إطلاق خادم الويب Apache
+# 6. ضبط أذونات التخزين والكاش وسجلات اللوج لـ www-data بشكل قطعي لمنع Permission denied
+echo "==> Ensuring storage and log permissions for www-data..."
+mkdir -p /var/www/html/storage/logs \
+         /var/www/html/storage/framework/cache/data \
+         /var/www/html/storage/framework/sessions \
+         /var/www/html/storage/framework/views \
+         /var/www/html/bootstrap/cache
+touch /var/www/html/storage/logs/laravel.log
+chmod -R 777 /var/www/html/storage /var/www/html/bootstrap/cache
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# 7. إطلاق خادم الويب Apache
 echo "==> Starting Apache web server on port ${PORT_TO_USE}..."
 exec apache2-foreground
