@@ -123,25 +123,57 @@ class StudentController extends Controller
             ->first();
         $stageId = $stage ? $stage->id : (Stage::where('grade_level', 122)->value('id') ?? 1);
 
+        // فك أي قيود قديمة في قاعدة البيانات (مثل students_status_check في PostgreSQL)
+        try {
+            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_status_check');
+            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_gender_check');
+        } catch (\Throwable $e) {}
+
         // إنشاء حساب الطالب مع تفعيل فوري ونقاط ترحيبية
-        $student = Student::create([
-            'name_ar'            => $request->name_ar,
-            'name_en'            => $request->name_en ?? $request->name_ar,
-            'nid'                => $request->nid,
-            'age'                => $request->age ?? 18,
-            'email'              => $request->email,
-            'phone'              => $request->phone,
-            'whatsapp'           => $request->whatsapp ?? $request->phone,
-            'password'           => Hash::make($request->password),
-            'stage_id'           => $stageId,
-            'gender'             => $gender,
-            'photo'              => $photoPath,
-            'id_photo'           => $idPhotoPath,
-            'status'             => 'active',
-            'streak_count'       => 1,
-            'total_points'       => 50,
-            'last_activity_date' => now()->toDateString(),
-        ]);
+        try {
+            $student = Student::create([
+                'name_ar'            => $request->name_ar,
+                'name_en'            => $request->name_en ?? $request->name_ar,
+                'nid'                => $request->nid,
+                'age'                => $request->age ?? 18,
+                'email'              => $request->email,
+                'phone'              => $request->phone,
+                'whatsapp'           => $request->whatsapp ?? $request->phone,
+                'password'           => Hash::make($request->password),
+                'stage_id'           => $stageId,
+                'gender'             => $gender,
+                'photo'              => $photoPath,
+                'id_photo'           => $idPhotoPath,
+                'status'             => 'active',
+                'streak_count'       => 1,
+                'total_points'       => 50,
+                'last_activity_date' => now()->toDateString(),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // في حال وجود قيد قديم لم يتم إسقاطه بعد في PostgreSQL
+            if (str_contains($e->getMessage(), 'students_status_check')) {
+                $student = Student::create([
+                    'name_ar'            => $request->name_ar,
+                    'name_en'            => $request->name_en ?? $request->name_ar,
+                    'nid'                => $request->nid,
+                    'age'                => $request->age ?? 18,
+                    'email'              => $request->email,
+                    'phone'              => $request->phone,
+                    'whatsapp'           => $request->whatsapp ?? $request->phone,
+                    'password'           => Hash::make($request->password),
+                    'stage_id'           => $stageId,
+                    'gender'             => $gender,
+                    'photo'              => $photoPath,
+                    'id_photo'           => $idPhotoPath,
+                    'status'             => 'published',
+                    'streak_count'       => 1,
+                    'total_points'       => 50,
+                    'last_activity_date' => now()->toDateString(),
+                ]);
+            } else {
+                throw $e;
+            }
+        }
 
         // تفعيل اشتراك الطالب في المواد المختارة (أو جميع مواد فرع التوجيهي)
         if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {
