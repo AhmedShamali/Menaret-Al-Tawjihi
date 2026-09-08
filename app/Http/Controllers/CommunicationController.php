@@ -143,14 +143,14 @@ class CommunicationController extends Controller
                 Message::where('student_id', $student_id)
                     ->whereNull('teacher_id')
                     ->where('sender_type', '!=', 'student')
-                    ->where('is_read', false)
-                    ->update(['is_read' => true]);
+                    ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
+                    ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
             } else {
                 Message::where('student_id', $student_id)
                     ->whereNull('teacher_id')
                     ->where('sender_type', 'student')
-                    ->where('is_read', false)
-                    ->update(['is_read' => true]);
+                    ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
+                    ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
             }
 
             $messages = Message::where('student_id', $student_id)
@@ -253,8 +253,8 @@ class CommunicationController extends Controller
             Message::where('student_id', $student_id)
                 ->where('teacher_id', $teacherId)
                 ->where('sender_type', 'student')
-                ->where('is_read', false)
-                ->update(['is_read' => true]);
+                ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
+                ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
 
             $messages = Message::where('student_id', $student_id)
                 ->where('teacher_id', $teacherId)
@@ -458,8 +458,8 @@ class CommunicationController extends Controller
         Message::where('student_id', $student->id)
             ->where('teacher_id', $teacher_id)
             ->where('sender_type', 'teacher')
-            ->where('is_read', false)
-            ->update(['is_read' => true]);
+            ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
+            ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
 
         $messages = Message::where('student_id', $student->id)
             ->where('teacher_id', $teacher_id)

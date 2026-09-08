@@ -18,6 +18,10 @@ class Message extends Model
         'is_read',
     ];
 
+    protected $casts = [
+        'is_read' => 'boolean',
+    ];
+
     /**
      * العلاقة مع موديل الطالب
      */

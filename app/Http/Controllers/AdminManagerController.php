@@ -23,7 +23,7 @@ class AdminManagerController extends Controller {
 
     public function inbox() {
         $chats = Student::withCount(['messages' => function($q) {
-            $q->where('is_read', false)->where('sender_type', 'student');
+            $q->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->where('sender_type', 'student');
         }])->has('messages')->latest()->get();
 
         return view('admin.management.inbox', compact('chats'));

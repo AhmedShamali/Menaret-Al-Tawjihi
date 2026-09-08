@@ -375,22 +375,28 @@
                 @php
                     $unreadCount = 0; 
                     $unreadItems = collect();
-                    $isStudent = auth('student')->check();
 
-                    if($isStudent) {
-                        $sId = auth('student')->id();
-                        $studentUser = auth('student')->user();
-                        $dbNotifs = $studentUser ? $studentUser->unreadNotifications()->count() : 0;
-                        $msgNotifs = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
-                        $unreadCount = $dbNotifs + $msgNotifs;
-                        $unreadItems = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->latest()->take(5)->get();
-                    } elseif(auth()->check() && auth()->user()->role === 'teacher') {
-                        $tId = auth()->id();
-                        $unreadCount = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->count();
-                        $unreadItems = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
-                    } elseif(auth()->check() && auth()->user()->role === 'admin') {
-                        $unreadCount = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->count();
-                        $unreadItems = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
+                    try {
+                        $isStudent = auth('student')->check();
+
+                        if($isStudent) {
+                            $sId = auth('student')->id();
+                            $studentUser = auth('student')->user();
+                            $dbNotifs = $studentUser ? $studentUser->unreadNotifications()->count() : 0;
+                            $msgNotifs = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->count();
+                            $unreadCount = $dbNotifs + $msgNotifs;
+                            $unreadItems = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->latest()->take(5)->get();
+                        } elseif(auth()->check() && auth()->user()->role === 'teacher') {
+                            $tId = auth()->id();
+                            $unreadCount = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->count();
+                            $unreadItems = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->latest()->take(5)->get();
+                        } elseif(auth()->check() && auth()->user()->role === 'admin') {
+                            $unreadCount = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->count();
+                            $unreadItems = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->latest()->take(5)->get();
+                        }
+                    } catch (\Throwable $e) {
+                        $unreadCount = 0;
+                        $unreadItems = collect();
                     }
                 @endphp
 
