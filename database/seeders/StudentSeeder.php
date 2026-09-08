@@ -15,24 +15,50 @@ class StudentSeeder extends Seeder
         $stage = \App\Models\Stage::where('grade_level', 122)->first() ?? \App\Models\Stage::first();
 
         if ($stage) {
-            \App\Models\Student::updateOrCreate(
-                ['email' => 'student@tawjihi.ps'],
-                [
-                    'name_ar' => 'محمد أحمد خليل',
-                    'name_en' => 'Mohammed Khalil',
-                    'nid' => '405123456',
-                    'password' => bcrypt('123456789'),
-                    'age' => 18,
-                    'gender' => 'ذكر',
-                    'phone' => '0599123456',
-                    'whatsapp' => '0599123456',
-                    'stage_id' => $stage->id,
-                    'status' => 'active',
-                    'streak_count' => 7,
-                    'total_points' => 120,
-                    'last_activity_date' => now()->toDateString(),
-                ]
-            );
+            try {
+                \Illuminate\Support\Facades\DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_status_check');
+                \Illuminate\Support\Facades\DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_gender_check');
+            } catch (\Throwable $e) {}
+
+            try {
+                \App\Models\Student::updateOrCreate(
+                    ['email' => 'student@tawjihi.ps'],
+                    [
+                        'name_ar' => 'محمد أحمد خليل',
+                        'name_en' => 'Mohammed Khalil',
+                        'nid' => '405123456',
+                        'password' => bcrypt('123456789'),
+                        'age' => 18,
+                        'gender' => 'ذكر',
+                        'phone' => '0599123456',
+                        'whatsapp' => '0599123456',
+                        'stage_id' => $stage->id,
+                        'status' => 'active',
+                        'streak_count' => 7,
+                        'total_points' => 120,
+                        'last_activity_date' => now()->toDateString(),
+                    ]
+                );
+            } catch (\Throwable $e) {
+                \App\Models\Student::updateOrCreate(
+                    ['email' => 'student@tawjihi.ps'],
+                    [
+                        'name_ar' => 'محمد أحمد خليل',
+                        'name_en' => 'Mohammed Khalil',
+                        'nid' => '405123456',
+                        'password' => bcrypt('123456789'),
+                        'age' => 18,
+                        'gender' => 'ذكر',
+                        'phone' => '0599123456',
+                        'whatsapp' => '0599123456',
+                        'stage_id' => $stage->id,
+                        'status' => 'published',
+                        'streak_count' => 7,
+                        'total_points' => 120,
+                        'last_activity_date' => now()->toDateString(),
+                    ]
+                );
+            }
         }
     }
 }

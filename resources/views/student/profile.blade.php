@@ -101,11 +101,11 @@
                 </h3>
 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
-                    <a href="{{ route('student.flashcards.index') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#6366f1'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-layer-group"></i></div>
+                    <a href="{{ route('student.subjects.index') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-book-open"></i></div>
                         <div>
-                            <strong style="font-size: 0.85rem; display: block;">بطاقات الاستذكار</strong>
-                            <small style="color: #64748b; font-size: 0.72rem;">مراجعة وحفظ</small>
+                            <strong style="font-size: 0.85rem; display: block;">مناهجي ومقرراتي</strong>
+                            <small style="color: #64748b; font-size: 0.72rem;">المواد والشروحات</small>
                         </div>
                     </a>
 

@@ -426,9 +426,9 @@
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon icon-purple"><i class="fa-solid fa-layer-group"></i></div>
-                <h3>بطاقات الاستذكار (Flashcards)</h3>
-                <p>أداة المذاكرة السريعة ثلاثية الأبعاد لتثبيت القوانين والمصطلحات والتواريخ الوزارية بسهولة.</p>
+                <div class="feature-icon icon-purple"><i class="fa-solid fa-play"></i></div>
+                <h3>شروحات فيديو تفاعلية وملازم</h3>
+                <p>دروس فيديو متخصصة مع ملخصات شاملة ومتابعة مباشرة مع نخبة من أفضل معلمي فلسطين.</p>
             </div>
 
             <div class="feature-card">

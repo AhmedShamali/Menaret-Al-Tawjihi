@@ -175,9 +175,9 @@ class DashboardController extends Controller {
     public function visitorIndex()
     {
         $settings = (object) [
-            'site_name' => 'منصة جسر الرقمية',
-            'site_symbol' => 'ج',
-            'site_description' => 'بوابتك المتكاملة لمتابعة المسارات التعليمية والاختبارات.'
+            'site_name' => \App\Models\Setting::get('site_name', 'منارة التوجيهي'),
+            'site_symbol' => 'م',
+            'site_description' => \App\Models\Setting::get('site_description', 'المنصة التعليمية المتكاملة لطلبة الثانوية العامة في فلسطين (التوجيهي).')
         ];
 
         return view('visitor', compact('settings'));

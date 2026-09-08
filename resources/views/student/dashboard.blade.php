@@ -488,12 +488,12 @@
                 <span style="font-size: 0.78rem; color: #64748b;">ملخص المنهاج العلمي 📐</span>
             </a>
 
-            <a href="{{ route('student.flashcards.index') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: #f3e8ff; color: #7e22ce; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
-                    <i class="fas fa-bolt"></i>
+            <a href="{{ route('student.subjects.index') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #1e40af; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                    <i class="fas fa-book-open"></i>
                 </div>
-                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">بطاقات الاستذكار</div>
-                <span style="font-size: 0.78rem; color: #64748b;">تكرار متباعد ومفاهيم ⚡</span>
+                <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">مناهجي ومقرراتي</div>
+                <span style="font-size: 0.78rem; color: #64748b;">شروحات الدروس والملخصات 📚</span>
             </a>
 
             <a href="{{ route('student.leaderboard') }}" style="background: white; border: 1px solid var(--st-border); border-radius: 16px; padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; transition: 0.2s; box-shadow: var(--st-shadow-subtle);">

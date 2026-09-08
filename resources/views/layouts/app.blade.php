@@ -202,6 +202,74 @@
             .brand-logo span { font-size: 1rem; }
             .logo-square { width: 35px; height: 35px; font-size: 1rem; }
         }
+
+        /* شريط التنقل السفلي الفاخر للهواتف الذكية (Mobile Bottom Navigation) */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+            justify-content: space-around;
+            align-items: center;
+            padding: 4px 10px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+        .dark-theme .mobile-bottom-nav {
+            background: rgba(15, 23, 42, 0.95);
+            border-top-color: #1e293b;
+        }
+        .bottom-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #64748b;
+            font-size: 0.72rem;
+            font-weight: 700;
+            gap: 3px;
+            position: relative;
+            flex: 1;
+            padding: 6px 0;
+            transition: all 0.2s ease;
+        }
+        .bottom-nav-item i {
+            font-size: 1.18rem;
+            transition: transform 0.2s ease;
+        }
+        .bottom-nav-item.active, .bottom-nav-item:hover {
+            color: var(--primary-color);
+        }
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
+        }
+        .bottom-nav-badge {
+            position: absolute;
+            top: 2px;
+            right: 20%;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 999px;
+            border: 1.5px solid #ffffff;
+        }
+        @media (max-width: 768px) {
+            .mobile-bottom-nav {
+                display: flex;
+            }
+            body:not(.no-sidebar) {
+                padding-bottom: 70px;
+            }
+        }
     </style>
 </head>
 <body class="{{ request()->is('login') || request()->is('register') ? 'no-sidebar' : '' }}">
@@ -474,6 +542,98 @@
             @yield('content')
         </div>
     </main>
+
+    <!-- شريط التنقل السفلي الفاخر للهواتف الذكية (Mobile Bottom Navigation) -->
+    <nav class="mobile-bottom-nav">
+        @if(auth('student')->check())
+            <a href="{{ route('student.dashboard') }}" class="bottom-nav-item {{ Request::is('student/dashboard*') ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="{{ route('student.subjects.index') }}" class="bottom-nav-item {{ Request::is('student/subjects*') ? 'active' : '' }}">
+                <i class="fa-solid fa-book-open"></i>
+                <span>موادي</span>
+            </a>
+            <a href="{{ route('tawjihi.calculator') }}" class="bottom-nav-item {{ Request::is('tawjihi-calculator*') ? 'active' : '' }}">
+                <i class="fa-solid fa-calculator"></i>
+                <span>الحاسبة</span>
+            </a>
+            <a href="{{ route('student.notifications.index') }}" class="bottom-nav-item {{ Request::is('student/notifications*') ? 'active' : '' }}">
+                <i class="fa-solid fa-bell"></i>
+                <span>التنبيهات</span>
+                @if(isset($unreadCount) && $unreadCount > 0)
+                    <span class="bottom-nav-badge">{{ $unreadCount }}</span>
+                @endif
+            </a>
+            <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ Request::is('student/profile*') ? 'active' : '' }}">
+                <i class="fa-solid fa-user-graduate"></i>
+                <span>حسابي</span>
+            </a>
+        @elseif(auth()->check() && auth()->user()->role === 'admin')
+            <a href="{{ route('admin.dashboard') }}" class="bottom-nav-item {{ Request::is('admin/dashboard*') ? 'active' : '' }}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>اللوحة</span>
+            </a>
+            <a href="{{ route('admin.subjects.pricing') }}" class="bottom-nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
+                <i class="fa-solid fa-tags"></i>
+                <span>الأسعار</span>
+            </a>
+            <a href="{{ route('admin.payments.index') }}" class="bottom-nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
+                <i class="fa-solid fa-wallet"></i>
+                <span>المدفوعات</span>
+            </a>
+            <a href="{{ route('admin.teachers.chat') }}" class="bottom-nav-item {{ Request::is('admin/teachers/chat*') ? 'active' : '' }}">
+                <i class="fa-solid fa-comments"></i>
+                <span>المحادثات</span>
+            </a>
+            <a href="{{ route('admin.settings.index') }}" class="bottom-nav-item {{ Request::is('admin/settings*') ? 'active' : '' }}">
+                <i class="fa-solid fa-gear"></i>
+                <span>الإعدادات</span>
+            </a>
+        @elseif(auth()->check() && auth()->user()->role === 'teacher')
+            <a href="{{ route('teacher.dashboard') }}" class="bottom-nav-item {{ Request::is('teacher/dashboard*') ? 'active' : '' }}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>اللوحة</span>
+            </a>
+            <a href="{{ route('teacher.exams.index') }}" class="bottom-nav-item {{ Request::is('teacher/exams*') ? 'active' : '' }}">
+                <i class="fa-solid fa-file-signature"></i>
+                <span>الاختبارات</span>
+            </a>
+            <a href="{{ route('teacher.submissions.index') }}" class="bottom-nav-item {{ Request::is('teacher/submissions*') ? 'active' : '' }}">
+                <i class="fa-solid fa-marker"></i>
+                <span>التصحيح</span>
+            </a>
+            <a href="{{ route('teacher.students.index') }}" class="bottom-nav-item {{ Request::is('teacher/students*') ? 'active' : '' }}">
+                <i class="fa-solid fa-user-check"></i>
+                <span>طلابي</span>
+            </a>
+            <a href="{{ route('admin.teachers.chat') }}" class="bottom-nav-item {{ Request::is('admin/teachers/chat*') ? 'active' : '' }}">
+                <i class="fa-solid fa-comments"></i>
+                <span>الرسائل</span>
+            </a>
+        @else
+            <a href="/" class="bottom-nav-item {{ Request::is('/') ? 'active' : '' }}">
+                <i class="fa-solid fa-house"></i>
+                <span>الرئيسية</span>
+            </a>
+            <a href="{{ route('stages.index') }}" class="bottom-nav-item {{ Request::is('stages*') ? 'active' : '' }}">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>الفروع</span>
+            </a>
+            <a href="{{ route('tawjihi.calculator') }}" class="bottom-nav-item {{ Request::is('tawjihi-calculator*') ? 'active' : '' }}">
+                <i class="fa-solid fa-calculator"></i>
+                <span>الحاسبة</span>
+            </a>
+            <a href="{{ route('contact') }}" class="bottom-nav-item {{ Request::is('contact*') ? 'active' : '' }}">
+                <i class="fa-solid fa-envelope"></i>
+                <span>تواصل</span>
+            </a>
+            <a href="{{ route('login') }}" class="bottom-nav-item {{ Request::is('login*') ? 'active' : '' }}">
+                <i class="fa-solid fa-right-to-bracket"></i>
+                <span>دخول</span>
+            </a>
+        @endif
+    </nav>
 
     <script>
         // دالة التبديل للقوائم الفرعية
