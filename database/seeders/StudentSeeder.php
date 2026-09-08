@@ -23,7 +23,7 @@ class StudentSeeder extends Seeder
                     'nid' => '405123456',
                     'password' => bcrypt('123456789'),
                     'age' => 18,
-                    'gender' => 'male',
+                    'gender' => 'ذكر',
                     'phone' => '0599123456',
                     'whatsapp' => '0599123456',
                     'stage_id' => $stage->id,

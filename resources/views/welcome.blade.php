@@ -805,8 +805,8 @@
 
             <ul class="nav-menu">
                 <li><a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">فروع التوجيهي</a></li>
-                <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة معدل التوجيهي</a></li>
-                <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">المواد والمقررات</a></li>
+                <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">المواد والمناهج</a></li>
+                <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة المعدل الوزاري</a></li>
                 <li><a href="{{ Route::has('contact') ? route('contact') : (Route::has('public.contact') ? route('public.contact') : url('/contact')) }}">تواصل معنا</a></li>
             </ul>
 
@@ -833,10 +833,10 @@
                 <span>المنهاج الفلسطيني الرسمي المعتمد 2026</span>
             </div>
             <h1 class="hero-title">
-                بوابتك المتكاملة للتفوق في <span>الثانوية العامة</span>
+                بوابتك المتكاملة للتفوق في <span>الثانوية العامة (التوجيهي)</span>
             </h1>
             <p class="hero-desc">
-                منصة تعليمية فلسطينية متخصصة لطلبة الثانوية العامة توفر شروحات دراسية شاملة ومقررات مصورة، ومتابعة أكاديمية مستمرة، وحاسبة معدل رسمية دقيقة وفق سلم الدرجات الوزاري المعتمد.
+                منصة تعليمية فلسطينية متكاملة مخصصة لطلبة التوجيهي، تقدم شروحات معتمدة للمنهاج، متابعة وتدريب مع معلمين مرخصين، وحاسبة معدل رسمية دقيقة وفق سلم الدرجات المعتمد.
             </p>
 
             <div class="hero-cta">
@@ -849,9 +849,9 @@
             </div>
 
             <div class="trust-pills">
-                <div class="trust-item"><i class="fas fa-check-circle"></i> كادر تعليمي معتمد</div>
-                <div class="trust-item"><i class="fas fa-check-circle"></i> شروحات المنهاج الفلسطيني المعتمد</div>
-                <div class="trust-item"><i class="fas fa-check-circle"></i> بوابات دفع فلسطينية آمنة</div>
+                <div class="trust-item"><i class="fas fa-check-circle"></i> كادر تعليمي فلسطيني معتمد</div>
+                <div class="trust-item"><i class="fas fa-check-circle"></i> شروحات المنهاج الوزاري المقررة</div>
+                <div class="trust-item"><i class="fas fa-check-circle"></i> بوابات دفع فلسطينية آمنة ومباشرة</div>
             </div>
         </div>
 
@@ -932,7 +932,7 @@
             <div class="feature-card">
                 <div>
                     <div class="feature-icon-wrapper"><i class="fas fa-calculator"></i></div>
-                    <h3>حاسبة معدل التوجيهي ودليل التنسيق</h3>
+                    <h3>حاسبة معدل التوجيهي (700)</h3>
                     <p>احتساب دقيق وفق أعلى مادة اختيارية مع عرض مفاتيح القبول لجامعات بيرزيت، النجاح، القدس، وخضوري.</p>
                 </div>
                 <a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">جرب الحاسبة الآن ←</a>
@@ -940,29 +940,29 @@
 
             <div class="feature-card">
                 <div>
-                    <div class="feature-icon-wrapper"><i class="fas fa-book-open-reader"></i></div>
-                    <h3>شروحات ومقررات التوجيهي</h3>
-                    <p>شروحات مرئية وافية للمنهاج الفلسطيني لطلبة العلمي والأدبي والريادة مع ملخصات PDF معتمدة.</p>
+                    <div class="feature-icon-wrapper"><i class="fas fa-book-bookmark"></i></div>
+                    <h3>المناهج والمقررات المقررة</h3>
+                    <p>شروحات مرئية وملخصات دراسية شاملة تغطي كافة مباحث المنهاج الوزاري الفلسطيني للتوجيهي.</p>
                 </div>
-                <a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">استعراض فروع التوجيهي ←</a>
+                <a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">استعراض المناهج ←</a>
+            </div>
+
+            <div class="feature-card">
+                <div>
+                    <div class="feature-icon-wrapper"><i class="fas fa-chalkboard-user"></i></div>
+                    <h3>كادر تدريسي وإشراف معتمد</h3>
+                    <p>متابعة أكاديمية مستمرة مع نخبة من أفضل معلمي الثانوية العامة في فلسطين بإشراف منصة منارة التوجيهي.</p>
+                </div>
+                <a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">تعرف على المباحث ←</a>
             </div>
 
             <div class="feature-card">
                 <div>
                     <div class="feature-icon-wrapper"><i class="fas fa-shield-halved"></i></div>
-                    <h3>بوابات الدفع الفلسطينية</h3>
-                    <p>تفعيل مباشر وسريع عبر محفظة جوال باي (Jawwal Pay)، بال باي (PalPay)، وبنك فلسطين.</p>
+                    <h3>بوابات دفع فلسطينية مباشرة</h3>
+                    <p>دفع آمن وفوري عبر محفظة جوال باي، بال باي، وبنك فلسطين بدون تعقيدات وباعتماد رسمي.</p>
                 </div>
-                <a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">كتالوج المواد والاشتراك ←</a>
-            </div>
-
-            <div class="feature-card">
-                <div>
-                    <div class="feature-icon-wrapper"><i class="fas fa-certificate"></i></div>
-                    <h3>شهادات إنجاز معتمدة</h3>
-                    <p>شهادات تفوق وإتمام للمقررات التعليمية قابلة للتحقق الفوري عبر رمز الاستجابة السريع (QR Code).</p>
-                </div>
-                <a href="{{ Route::has('login') ? route('login') : url('/login') }}">بوابة الطلاب ←</a>
+                <a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">اشتراك المقررات ←</a>
             </div>
         </div>
     </section>
@@ -972,8 +972,8 @@
         <div class="curriculum-box">
             <div class="section-header" style="margin-bottom: 24px;">
                 <span class="section-tag">فروع الثانوية العامة</span>
-                <h2>منهاج التوجيهي الفلسطيني المعتمد 2026</h2>
-                <p>تصفح المقررات والمباحث الوزارية الخاصة بفرعك للوصول إلى الشروحات والملخصات.</p>
+                <h2>منهاج الثانوية العامة (التوجيهي) في فلسطين</h2>
+                <p>تصفح مقررات ومواد المنهاج الفلسطيني لكافة فروع التوجيهي المعتمدة.</p>
             </div>
 
             <div class="branch-cards-grid">
@@ -981,10 +981,10 @@
                 <div class="branch-card">
                     <div class="branch-card-top">
                         <span class="branch-icon">⚛️</span>
-                        <span class="branch-badge">الثانوية العامة</span>
+                        <span class="branch-badge">الصف الثاني عشر</span>
                     </div>
                     <h3>الفرع العلمي</h3>
-                    <p>الرياضيات (200 علامة)، الفيزياء (100)، الكيمياء، الأحياء، التكنولوجيا، واللغات.</p>
+                    <p>الرياضيات (200)، الفيزياء (100)، الكيمياء، الأحياء، التكنولوجيا، واللغات.</p>
                     <div class="subject-tags">
                         <span class="subject-tag">رياضيات (200)</span>
                         <span class="subject-tag">فيزياء</span>
@@ -998,10 +998,10 @@
                 <div class="branch-card">
                     <div class="branch-card-top">
                         <span class="branch-icon">📜</span>
-                        <span class="branch-badge">الثانوية العامة</span>
+                        <span class="branch-badge">الصف الثاني عشر</span>
                     </div>
                     <h3>الفرع الأدبي</h3>
-                    <p>اللغة العربية (150 علامة)، اللغة الإنجليزية (150 علامة)، التاريخ، الجغرافيا، والمواد الاختيارية.</p>
+                    <p>اللغة العربية (150)، اللغة الإنجليزية (150)، التاريخ، الجغرافيا، والمواد الاختيارية.</p>
                     <div class="subject-tags">
                         <span class="subject-tag">عربي (150)</span>
                         <span class="subject-tag">إنجليزي (150)</span>
@@ -1015,110 +1015,55 @@
                 <div class="branch-card">
                     <div class="branch-card-top">
                         <span class="branch-icon">💼</span>
-                        <span class="branch-badge">الثانوية العامة</span>
+                        <span class="branch-badge">الصف الثاني عشر</span>
                     </div>
                     <h3>فرع الريادة والأعمال</h3>
-                    <p>المشاريع الريادية، المحاسبة، الإدارة والاقتصاد، اللغات، والعلوم الإدارية التطبيقية.</p>
+                    <p>المشاريع الريادية، المحاسبة المالية، الإدارة والاقتصاد، والتكنولوجيا واللغات.</p>
                     <div class="subject-tags">
                         <span class="subject-tag">مشاريع ريادية</span>
                         <span class="subject-tag">محاسبة</span>
                         <span class="subject-tag">إدارة واقتصاد</span>
-                        <span class="subject-tag">رياضيات</span>
+                        <span class="subject-tag">تكنولوجيا</span>
                     </div>
                     <a href="{{ Route::has('stages.show') ? route('stages.show', 123) : url('/stages/123') }}" class="branch-link">تصفح مواد فرع الريادة ←</a>
                 </div>
             </div>
 
-            <!-- Palestinian Pricing & Subscription Plans (Modern Educational Platform Standard) -->
-            <div class="payment-box" style="margin-top: 36px;">
+            <!-- Palestinian Payment Gateways Overview -->
+            <div class="payment-box">
                 <div class="payment-header">
-                    <div>
-                        <h3><i class="fas fa-gem" style="color: var(--primary);"></i> خطط وباقات الاشتراك لطلبة التوجيهي 🇵🇸</h3>
-                        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">اختر الباقة المناسبة وسدد بسهولة عبر وسائل الدفع الفلسطينية المعتمدة مع التفعيل الفوري.</p>
-                    </div>
+                    <h3><i class="fas fa-shield-halved" style="color: var(--primary);"></i> بوابات الدفع الوطنية الفلسطينية المعتمدة</h3>
                     <div class="payment-recipient-badge">
                         صاحب الحساب المعتمد: <strong>{{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</strong>
                     </div>
                 </div>
 
-                <!-- Plans Grid -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 28px;">
-                    <!-- Single Subject Plan -->
-                    <div style="background: #ffffff; border: 1.5px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <span style="display: inline-block; background: #eff6ff; color: #1e40af; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-bottom: 12px;">باقة مرنة</span>
-                            <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--text-heading); margin-bottom: 6px;">اشتراك المادة الواحدة</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">اختر أي مبحث ترغب بتقوية نفسك فيه واحصل على شروحاته الكاملة وملخصاته واختباراته.</p>
-                            <div style="font-size: 1.7rem; font-weight: 900; color: var(--primary); margin-bottom: 16px;">
-                                تبدأ من 80 ₪ <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">/ للمادة</span>
-                            </div>
-                            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.84rem; color: var(--text-body); margin-bottom: 20px;">
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> شروحات فيديو تفاعلية شاملة المنهاج</li>
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> ملخصات PDF وأوراق عمل وزارية</li>
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> اختبارات تدريبية مع تصحيح مباشر</li>
-                            </ul>
+                <div class="payment-grid">
+                    <div class="payment-item-card">
+                        <div class="payment-item-top">
+                            <i class="fas fa-wallet"></i>
+                            <h4>محفظة جوال باي (Jawwal Pay)</h4>
                         </div>
-                        <a href="{{ route('courses.catalog') }}" class="btn-primary" style="text-align: center; justify-content: center;">
-                            اختيار المواد والاشتراك ←
-                        </a>
+                        <div class="payment-number">{{ \App\Models\Setting::get('jawwal_pay_account', '0567897212') }}</div>
+                        <div class="payment-owner">{{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
                     </div>
 
-                    <!-- Full Branch Bundle Plan (Featured) -->
-                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); border: 2px solid #10b981; border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative;">
-                        <span style="position: absolute; top: -12px; left: 24px; background: #10b981; color: white; padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 6px rgba(16,185,129,0.3);">
-                            الأكثر طلباً وتوفيراً 🔥
-                        </span>
-                        <div>
-                            <span style="display: inline-block; background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; margin-bottom: 12px;">باقة المنهاج الكامل</span>
-                            <h4 style="font-size: 1.2rem; font-weight: 800; color: var(--text-heading); margin-bottom: 6px;">باقة الفرع الكامل للتوجيهي</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">جميع مواد فرعك (علمي / أدبي / ريادة) مع خصم باقة خاص 25% ومتابعة أكاديمية مستمرة حتى ليلة الامتحان الوزاري.</p>
-                            <div style="font-size: 1.7rem; font-weight: 900; color: #047857; margin-bottom: 16px;">
-                                خصم إضافي 25% <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted);">عند اختيار 3 مواد أو أكثر</span>
-                            </div>
-                            <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 0.84rem; color: var(--text-body); margin-bottom: 20px;">
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> وصول كامل لكافة مباحث الفرع الـ 8</li>
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> بنك أسئلة شامل ومراجعات ليلة الامتحان</li>
-                                <li><i class="fas fa-check-circle" style="color: #10b981; margin-left: 6px;"></i> تواصل مباشر واستفسارات مع مدرسي التوجيهي</li>
-                            </ul>
+                    <div class="payment-item-card">
+                        <div class="payment-item-top">
+                            <i class="fas fa-credit-card"></i>
+                            <h4>محفظة بال باي (PalPay)</h4>
                         </div>
-                        <a href="{{ route('courses.catalog') }}" class="btn-primary" style="background: #059669; text-align: center; justify-content: center;">
-                            اشترك في الباقة الكاملة ووفر الآن ←
-                        </a>
+                        <div class="payment-number">{{ \App\Models\Setting::get('palpay_account', '0567897212') }}</div>
+                        <div class="payment-owner">{{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
                     </div>
-                </div>
 
-                <!-- Palestinian Payment Methods Available -->
-                <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
-                    <div style="font-size: 0.92rem; font-weight: 800; color: var(--text-heading); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-shield-check" style="color: #10b981;"></i> بوابات الدفع الوطنية المتاحة للسداد الفوري:
-                    </div>
-                    <div class="payment-grid">
-                        <div class="payment-item-card">
-                            <div class="payment-item-top">
-                                <i class="fas fa-mobile-screen" style="color: #0284c7;"></i>
-                                <h4>محفظة جوال باي (Jawwal Pay)</h4>
-                            </div>
-                            <div class="payment-number">{{ \App\Models\Setting::get('jawwal_pay_account', '0567897212') }}</div>
-                            <div class="payment-owner">المستفيد: {{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
+                    <div class="payment-item-card">
+                        <div class="payment-item-top">
+                            <i class="fas fa-university"></i>
+                            <h4>بنك فلسطين (Bank of Palestine)</h4>
                         </div>
-
-                        <div class="payment-item-card">
-                            <div class="payment-item-top">
-                                <i class="fas fa-credit-card" style="color: #047857;"></i>
-                                <h4>محفظة بال باي (PalPay)</h4>
-                            </div>
-                            <div class="payment-number">{{ \App\Models\Setting::get('palpay_account', '0567897212') }}</div>
-                            <div class="payment-owner">المستفيد: {{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
-                        </div>
-
-                        <div class="payment-item-card">
-                            <div class="payment-item-top">
-                                <i class="fas fa-building-columns" style="color: #b45309;"></i>
-                                <h4>بنك فلسطين (Bank of Palestine)</h4>
-                            </div>
-                            <div class="payment-number">{{ \App\Models\Setting::get('bop_account', '0567897212') }}</div>
-                            <div class="payment-owner">المستفيد: {{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
-                        </div>
+                        <div class="payment-number">{{ \App\Models\Setting::get('bop_account', '0567897212') }}</div>
+                        <div class="payment-owner">{{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}</div>
                     </div>
                 </div>
             </div>
@@ -1130,21 +1075,21 @@
         <div class="footer-inner">
             <div class="footer-brand">
                 <h3>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</h3>
-                <p>المنصة التعليمية الوطنية الرائدة لطلبة الثانوية العامة في فلسطين، لتقديم شروحات المنهاج وبنوك الأسئلة والامتحانات المعتمدة.</p>
+                <p>المنصة التعليمية الوطنية لخدمة طلبة الثانوية العامة في فلسطين، لتقديم شروحات المنهاج وبنوك الأسئلة والامتحانات المعتمدة.</p>
             </div>
 
             <div class="footer-col">
                 <h4>روابط سريعة</h4>
                 <ul>
-                    <li><a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">فروع التوجيهي</a></li>
-                    <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة معدل التوجيهي</a></li>
-                    <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">المواد والمقررات</a></li>
-                    <li><a href="{{ Route::has('contact') ? route('contact') : (Route::has('public.contact') ? route('public.contact') : url('/contact')) }}">تواصل معنا</a></li>
+                    <li><a href="{{ Route::has('stages.index') ? route('stages.index') : url('/stages') }}">فروع التوجيهي (علمي، أدبي، ريادة)</a></li>
+                    <li><a href="{{ Route::has('courses.catalog') ? route('courses.catalog') : url('/courses/catalog') }}">المواد والمناهج المقررة</a></li>
+                    <li><a href="{{ Route::has('tawjihi.calculator') ? route('tawjihi.calculator') : url('/tawjihi-calculator') }}">حاسبة معدل التوجيهي (700)</a></li>
+                    <li><a href="{{ Route::has('contact') ? route('contact') : url('/contact') }}">تواصل مع الإدارة</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
-                <h4>البوابات والخدمات</h4>
+                <h4>البوابات</h4>
                 <ul>
                     <li><a href="{{ Route::has('login') ? route('login') : url('/login') }}">دخول الطلاب والمعلمين</a></li>
                     <li><a href="{{ Route::has('student.create') ? route('student.create') : (Route::has('students.create') ? route('students.create') : url('/register')) }}">تسجيل طالب جديد</a></li>

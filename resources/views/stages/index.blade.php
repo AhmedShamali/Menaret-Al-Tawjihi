@@ -1,244 +1,108 @@
 @extends('layouts.app')
 
-@section('title', 'فروع الثانوية العامة (التوجيهي)')
+@section('title', 'فروع الثانوية العامة (التوجيهي) | المنهاج الفلسطيني')
 
 @section('content')
-<style>
-    :root {
-        --card-bg: #ffffff;
-        --border-light: #e2e8f0;
-        --text-dark: #0f172a;
-        --text-slate: #475569;
-        --text-dim: #64748b;
-        --navy-primary: #1e3a8a;
-        --blue-soft: #eff6ff;
-        --emerald-soft: #ecfdf5;
-        --emerald-dark: #047857;
-        --radius: 18px;
-    }
+<div style="max-width: 1200px; margin: 0 auto; padding: 10px 0 60px;">
 
-    .stages-hero-wrap {
-        background: #ffffff;
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius);
-        padding: 36px 40px;
-        margin-bottom: 36px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    }
-
-    .stages-hero-text h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--text-dark);
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
-    }
-
-    .stages-hero-text p {
-        color: var(--text-dim);
-        font-size: 1.02rem;
-        max-width: 620px;
-    }
-
-    .grading-pill-box {
-        background: var(--blue-soft);
-        border: 1px solid #bfdbfe;
-        border-radius: 12px;
-        padding: 12px 18px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .grading-pill-box i {
-        color: var(--navy-primary);
-        font-size: 1.4rem;
-    }
-
-    .grading-pill-box .title {
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--navy-primary);
-    }
-
-    .grading-pill-box .subtitle {
-        font-size: 0.78rem;
-        color: #1e40af;
-    }
-
-    .branches-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-        gap: 26px;
-    }
-
-    .branch-portal-card {
-        background: var(--card-bg);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius);
-        padding: 32px;
-        text-decoration: none;
-        color: inherit;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: all 0.25s ease;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-    }
-
-    .branch-portal-card:hover {
-        border-color: #93c5fd;
-        transform: translateY(-3px);
-        box-shadow: 0 12px 24px rgba(30, 58, 138, 0.08);
-    }
-
-    .branch-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 22px;
-    }
-
-    .branch-icon-box {
-        width: 64px;
-        height: 64px;
-        background: #f8fafc;
-        border: 1px solid var(--border-light);
-        border-radius: 16px;
-        display: grid;
-        place-items: center;
-        font-size: 2.2rem;
-    }
-
-    .branch-count-badge {
-        background: var(--emerald-soft);
-        color: var(--emerald-dark);
-        border: 1px solid #a7f3d0;
-        font-size: 0.82rem;
-        font-weight: 700;
-        padding: 6px 14px;
-        border-radius: 999px;
-    }
-
-    .branch-title {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: var(--text-dark);
-        margin-bottom: 10px;
-    }
-
-    .branch-description {
-        color: var(--text-dim);
-        font-size: 0.92rem;
-        line-height: 1.65;
-        margin-bottom: 20px;
-    }
-
-    .subject-chips-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 24px;
-    }
-
-    .subject-chip {
-        background: #f8fafc;
-        border: 1px solid var(--border-light);
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: var(--text-slate);
-    }
-
-    .branch-card-action {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 18px;
-        border-top: 1px solid var(--border-light);
-        color: var(--navy-primary);
-        font-weight: 700;
-        font-size: 0.92rem;
-    }
-
-    .branch-card-action i {
-        transition: transform 0.2s;
-    }
-
-    .branch-portal-card:hover .branch-card-action i {
-        transform: translateX(-4px);
-    }
-</style>
-
-<!-- Hero Section -->
-<div class="stages-hero-wrap">
-    <div class="stages-hero-text">
-        <h1>فروع الثانوية العامة (التوجيهي) 🇵🇸</h1>
-        <p>اختر فرعك التعليمي للوصول إلى كافة المقررات والكتب والدروس والشروحات المعتمدة وفق المنهاج الفلسطيني الرسمي.</p>
-    </div>
-    <div class="grading-pill-box">
-        <i class="fas fa-scale-balanced"></i>
-        <div>
-            <div class="title">سلم احتساب التوجيهي (700 علامة)</div>
-            <div class="subtitle">العلمي: رياضيات 200 | الأدبي: عربي 150، إنجليزي 150 | الباقي 100</div>
+    <!-- Header Banner -->
+    <div style="text-align: center; margin-bottom: 40px;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 6px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 14px;">
+            <span>🇵🇸</span>
+            <span>المنهاج الفلسطيني الرسمي المعتمد 2026</span>
         </div>
+        <h1 style="font-size: 2.3rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.5px;">
+            فروع الثانوية العامة (التوجيهي)
+        </h1>
+        <p style="color: #64748b; font-size: 1.05rem; max-width: 650px; margin: 0 auto; line-height: 1.7;">
+            اختر مسارك الدراسي للوصول إلى شروحات المباحث المقررة، أوزان العلامات الوزارية المعتمدة، وبنوك الأسئلة والدروس التفاعلية.
+        </p>
     </div>
-</div>
 
-<!-- Branches Grid -->
-<div class="branches-grid">
-    @forelse($stages as $stage)
-    <a href="{{ route('stages.show', $stage->id) }}" class="branch-portal-card">
-        <div>
-            <div class="branch-card-header">
-                <div class="branch-icon-box">
-                    {{ $stage->icon ?? '🎓' }}
+    <!-- Tawjihi Branches Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 28px;">
+        @forelse($stages as $stage)
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 32px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04); transition: transform 0.2s, box-shadow 0.2s;">
+            <div>
+                <!-- Top Card Info -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px;">
+                    <div style="width: 65px; height: 65px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; display: grid; place-items: center; font-size: 2.2rem;">
+                        {{ $stage->icon ?? '🎓' }}
+                    </div>
+                    <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.82rem; font-weight: 700; padding: 6px 14px; border-radius: 8px;">
+                        {{ $stage->subjects_count ?? $stage->subjects->count() }} مواد وزارية
+                    </span>
                 </div>
-                <span class="branch-count-badge">
-                    <i class="fas fa-book-bookmark"></i> {{ $stage->subjects_count ?? $stage->subjects->count() }} مباحث وزارية
-                </span>
-            </div>
 
-            <h2 class="branch-title">{{ $stage->label_ar }}</h2>
-            
-            <p class="branch-description">
-                @if(str_contains($stage->label_ar, 'علمي'))
-                    منهاج الفرع العلمي الكامل: الرياضيات (200 علامة)، الفيزياء، الكيمياء، العلوم الحياتية، والمواد الإجبارية.
-                @elseif(str_contains($stage->label_ar, 'أدبي'))
-                    منهاج الفرع الأدبي التخصصي: اللغة العربية (150 علامة)، اللغة الإنجليزية (150 علامة)، التاريخ، الجغرافيا، والاختياري.
+                <!-- Branch Title -->
+                <h2 style="font-size: 1.45rem; font-weight: 800; color: #0f172a; margin-bottom: 10px;">
+                    {{ $stage->label_ar }}
+                </h2>
+
+                <!-- Special Grade Rules Indicator -->
+                @if($stage->grade_level == 122)
+                    <div style="background: #f8fafc; border-right: 3px solid #1e40af; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; color: #334155; margin-bottom: 18px;">
+                        <strong>سلم الدرجات:</strong> الرياضيات من <strong>200</strong> علامة | باقي المباحث من <strong>100</strong> (المجموع 700)
+                    </div>
+                @elseif($stage->grade_level == 121)
+                    <div style="background: #f8fafc; border-right: 3px solid #b45309; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; color: #334155; margin-bottom: 18px;">
+                        <strong>سلم الدرجات:</strong> العربي والإنجليزي من <strong>150</strong> علامة | باقي المباحث من <strong>100</strong> (المجموع 700)
+                    </div>
                 @else
-                    منهاج فرع الريادة والأعمال: المشاريع الريادية، المحاسبة، الإدارة والاقتصاد، والتطبيقات التجارية.
+                    <div style="background: #f8fafc; border-right: 3px solid #059669; padding: 8px 12px; border-radius: 6px; font-size: 0.82rem; color: #334155; margin-bottom: 18px;">
+                        <strong>سلم الدرجات:</strong> المباحث التخصصية والاختيارية من <strong>100</strong> علامة لكل مبحث
+                    </div>
                 @endif
-            </p>
 
-            <div class="subject-chips-wrap">
-                @foreach($stage->subjects->take(5) as $sub)
-                    <span class="subject-chip">{{ $sub->name_ar }}</span>
-                @endforeach
-                @if($stage->subjects_count > 5)
-                    <span class="subject-chip">+{{ $stage->subjects_count - 5 }} مواد إضافية</span>
-                @endif
+                <!-- Subjects Chips Preview -->
+                <p style="font-size: 0.82rem; font-weight: 700; color: #64748b; margin-bottom: 8px;">المباحث المقررة:</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 26px;">
+                    @forelse($stage->subjects->take(6) as $sub)
+                        <span style="background: #f1f5f9; color: #1e293b; font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            {{ $sub->name_ar }}
+                        </span>
+                    @empty
+                        <span style="font-size: 0.8rem; color: #94a3b8;">جاري تحميل المباحث...</span>
+                    @endforelse
+                    @if($stage->subjects->count() > 6)
+                        <span style="background: #e2e8f0; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 4px 8px; border-radius: 6px;">
+                            +{{ $stage->subjects->count() - 6 }} إضافية
+                        </span>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div>
+                <a href="{{ route('stages.show', $stage->id) }}" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background: #1e40af; color: #ffffff; text-decoration: none; padding: 13px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; transition: background 0.2s;">
+                    <span>استكشاف مباحث الفرع</span>
+                    <i class="fas fa-arrow-left"></i>
+                </a>
             </div>
         </div>
-
-        <div class="branch-card-action">
-            <span>تصفح منهاج ومواد الفرع</span>
-            <i class="fas fa-arrow-left"></i>
+        @empty
+        <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
+            <p style="color: #64748b; font-size: 1.1rem;">جاري تحميل فروع الثانوية العامة المعتمدة...</p>
         </div>
-    </a>
-    @empty
-    <div style="grid-column: 1/-1; text-align: center; padding: 60px; background: #fff; border-radius: 18px;">
-        <p style="color: var(--text-dim); font-size: 1.1rem;">جاري تهيئة فروع الثانوية العامة...</p>
+        @endforelse
     </div>
-    @endforelse
-</div>
 
+    <!-- Quick Tawjihi Calculator Link -->
+    <div style="margin-top: 50px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 52px; height: 52px; border-radius: 14px; background: #eff6ff; color: #1e40af; display: grid; place-items: center; font-size: 1.4rem;">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">حاسبة معدل التوجيهي الوزارية (من 700)</h3>
+                <p style="font-size: 0.88rem; color: #64748b;">احتساب فوري لأعلى مادة اختيارية ودليل القبول لجامعات فلسطين.</p>
+            </div>
+        </div>
+        <a href="{{ route('tawjihi.calculator') }}" style="background: #0f172a; color: #ffffff; text-decoration: none; padding: 11px 22px; border-radius: 10px; font-size: 0.9rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+            <span>جرب الحاسبة الآن</span>
+            <i class="fas fa-arrow-left"></i>
+        </a>
+    </div>
+
+</div>
 @endsection

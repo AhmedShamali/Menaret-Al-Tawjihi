@@ -64,9 +64,11 @@ class DatabaseSeeder extends Seeder
         // 5. إنشاء وتحديث المواد الدراسية وربطها بالمراحل
         $this->call(SubjectSeeder::class);
 
-        // 6. المحتوى التعليمي النموذجي والاختبارات التفاعلية للتوجيهي
+        // 6. المحتوى التعليمي، بنك الامتحانات الوزارية، والبطاقات الذكية
         $this->call([
             EducationalContentSeeder::class,
+            PastExamSeeder::class,
+            FlashcardSeeder::class,
             ExamSeeder::class,
         ]);
 

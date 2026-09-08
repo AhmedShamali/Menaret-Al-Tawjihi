@@ -332,9 +332,6 @@
                 </a>
 
                 <span class="group-label">أدوات التفوق الوزاري 🇵🇸</span>
-                <a href="{{ route('student.flashcards.index') }}" class="nav-item {{ Request::is('student/flashcards*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-layer-group" style="color: #6366f1;"></i> <span>بطاقات الاستذكار (Flashcards)</span></div></div>
-                </a>
                 <a href="{{ route('student.planner.index') }}" class="nav-item {{ Request::is('student/study-planner*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-check" style="color: #0ea5e9;"></i> <span>جدول تنظيم المراجعة</span></div></div>
                 </a>
