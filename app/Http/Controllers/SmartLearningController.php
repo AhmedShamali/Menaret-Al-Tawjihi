@@ -22,7 +22,17 @@ class SmartLearningController extends Controller
         $studentId = $student->id;
 
         // إذا لم يكن لدى الطالب شهادة، نولد له شهادة فخرية لمادته الأولى تشجيعاً له
-        $firstSubject = $student->enrolledSubjects()->first() ?? Subject::first();
+        $firstSubject = null;
+        if (method_exists($student, 'enrolledSubjects')) {
+            $firstSubject = $student->enrolledSubjects()->first();
+        }
+        if (!$firstSubject && !empty($student->stage_id)) {
+            $firstSubject = Subject::where('stage_id', $student->stage_id)->first();
+        }
+        if (!$firstSubject) {
+            $firstSubject = Subject::first();
+        }
+
         if ($firstSubject && Certificate::where('student_id', $studentId)->count() === 0) {
             Certificate::create([
                 'student_id' => $studentId,

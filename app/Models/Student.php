@@ -22,6 +22,33 @@ class Student extends Authenticatable
         return $this->belongsTo(Stage::class);
     }
 
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
+    public function enrolledSubjects()
+    {
+        return $this->belongsToMany(Subject::class, 'enrollments', 'student_id', 'subject_id')
+                    ->withPivot('status', 'access_mode', 'payment_status', 'activated_at')
+                    ->withTimestamps();
+    }
+
+    public function certificates()
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
+    public function examSubmissions()
+    {
+        return $this->hasMany(ExamSubmission::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function activities()
     {
         return $this->hasMany(Activity::class);
