@@ -15,11 +15,9 @@ php artisan storage:link || true
 echo "==> Running database migrations..."
 php artisan migrate --force
 
-# 4. تشغيل خيار Seeding فقط إذا تم تفعيل المتغير RUN_SEEDER_ON_BOOT=true
-if [ "$RUN_SEEDER_ON_BOOT" = "true" ]; then
-    echo "==> Seeding database..."
-    php artisan db:seed --force || true
-fi
+# 4. تشغيل الـ Seeding بأمان وبشكل متكرر (Idempotent) لضمان توفر المراحل والمواد والمسؤول
+echo "==> Seeding initial data safely (Stages, Subjects, Admin, Settings)..."
+php artisan db:seed --force || true
 
 # 5. تنظيف وتحسين الكاش لبيئة الإنتاج
 if [ "$APP_ENV" = "production" ]; then

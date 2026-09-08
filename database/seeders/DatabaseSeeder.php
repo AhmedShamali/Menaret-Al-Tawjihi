@@ -14,50 +14,75 @@ class DatabaseSeeder extends Seeder
     {
         $dbDriver = config('database.default');
 
-        // تعطيل فحص المفاتيح الأجنبية مؤقتاً حسب نوع السيرفر/قاعدة البيانات
-        if ($dbDriver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = OFF;');
-        } elseif ($dbDriver === 'pgsql') {
-            DB::statement('SET session_replication_role = \'replica\';');
+        // تعطيل فحص المفاتيح الأجنبية مؤقتاً بأمان تام (مع تجاوز القيود في بيئات السحاب)
+        try {
+            if ($dbDriver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys = OFF;');
+            } elseif ($dbDriver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+            } elseif ($dbDriver === 'pgsql') {
+                DB::statement("SET session_replication_role = 'replica';");
+            }
+        } catch (\Throwable $e) {
+            // في قواعد البيانات السحابية (مثل Render) التي تمنع صلاحيات السوبر يوزر، يتم المتابعة بأمان
         }
 
-        // 1. إنشاء الصفوف والمراحل أولاً
+        // 1. المراحل والصفوف الدراسية أولاً (StageSeeder)
         $this->call(StageSeeder::class);
 
-        // 2. إنشاء المواد ثانياً
-        $this->call(SubjectSeeder::class);
-
-        // 3. باقي الـ Seeders الخاصة بالمشروع
-        $this->call([
-            ActivitySeeder::class,
-            DashboardSeeder::class,
-            EducationalContentSeeder::class,
-            ExamSeeder::class,
-            ExamSubmissionSeeder::class,
-            QuestionSeeder::class,
-            SettingSeeder::class,
-            StudentSeeder::class,
-            SubmissionAnswerSeeder::class,
-            PastExamSeeder::class,
-            FlashcardSeeder::class,
-        ]);
-
-        // 4. إنشاء حساب مدير النظام (آمن ولا يتكرر ولا يحذف القديم)
-        \App\Models\User::firstOrCreate(
+        // 2. إنشاء المستخدمين الأساسيين (مدير النظام ومعلم تجريبي)
+        $admin = \App\Models\User::firstOrCreate(
             ['email' => 'ahmad@admin.ps'],
             [
-                'name' => 'مدير النظام',
+                'name' => 'أحمد شمالي (مدير النظام)',
                 'password' => bcrypt('123456789'),
                 'role' => 'admin',
-                'subject_id' => 1,
+                'phone' => '0567897212',
+                'major' => 'إدارة المنصة والإشراف الأكاديمي',
+                'bio' => 'مشرف عام المنصة التعليمية الفلسطينية',
             ]
         );
 
-        // إعادة تفعيل فحص المفاتيح الأجنبية
-        if ($dbDriver === 'sqlite') {
-            DB::statement('PRAGMA foreign_keys = ON;');
-        } elseif ($dbDriver === 'pgsql') {
-            DB::statement('SET session_replication_role = \'origin\';');
+        $teacher = \App\Models\User::firstOrCreate(
+            ['email' => 'teacher@tawjihi.ps'],
+            [
+                'name' => 'أ. عصام الشريف',
+                'password' => bcrypt('123456789'),
+                'role' => 'teacher',
+                'phone' => '0599000001',
+                'major' => 'العلوم الفيزيائية والرياضيات',
+                'bio' => 'معلم أول لمبحث الفيزياء للثانوية العامة بخبرة 15 عاماً',
+            ]
+        );
+
+        // 3. إعدادات المنصة والهوية الرسمية وبوابات الدفع
+        $this->call(SettingSeeder::class);
+
+        // 4. إنشاء الطالب النموذجي
+        $this->call(StudentSeeder::class);
+
+        // 5. إنشاء وتحديث المواد الدراسية وربطها بالمراحل
+        $this->call(SubjectSeeder::class);
+
+        // 6. المحتوى التعليمي، بنك الامتحانات الوزارية، والبطاقات الذكية
+        $this->call([
+            EducationalContentSeeder::class,
+            PastExamSeeder::class,
+            FlashcardSeeder::class,
+            ExamSeeder::class,
+        ]);
+
+        // إعادة تفعيل فحص المفاتيح الأجنبية بأمان
+        try {
+            if ($dbDriver === 'sqlite') {
+                DB::statement('PRAGMA foreign_keys = ON;');
+            } elseif ($dbDriver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+            } elseif ($dbDriver === 'pgsql') {
+                DB::statement("SET session_replication_role = 'origin';");
+            }
+        } catch (\Throwable $e) {
+            // تجاوز الأخطاء بأمان
         }
     }
 }

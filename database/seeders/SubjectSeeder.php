@@ -113,12 +113,24 @@ class SubjectSeeder extends Seeder
 
             if ($stage) {
                 foreach ($subjects as $sub) {
+                    $desc = 'مبحث ' . $sub['name'] . ' وفق المنهاج الفلسطيني الوزاري المعتمد (من 100 علامة).';
+                    if ($sub['key'] === 'math_12_sci') {
+                        $desc = 'مبحث الرياضيات للفرع العلمي (من 200 علامة - الورقة الأولى والثانية).';
+                    } elseif ($sub['key'] === 'arabic_12_lit') {
+                        $desc = 'مبحث اللغة العربية للفرع الأدبي (من 150 علامة - الورقة الأولى والثانية).';
+                    } elseif ($sub['key'] === 'english_12_lit') {
+                        $desc = 'مبحث اللغة الإنجليزية للفرع الأدبي (من 150 علامة - الورقة الأولى والثانية).';
+                    }
+
                     Subject::updateOrCreate(
                         ['subject_key' => $sub['key'], 'stage_id' => $stage->id],
                         [
-                            'name_ar' => $sub['name'],
-                            'icon'    => $sub['icon'],
-                            'color'   => $sub['color'],
+                            'name_ar'     => $sub['name'],
+                            'icon'        => $sub['icon'],
+                            'color'       => $sub['color'],
+                            'description' => $desc,
+                            'price_ils'   => 150.00,
+                            'is_free'     => false,
                         ]
                     );
                 }

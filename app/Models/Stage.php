@@ -15,6 +15,16 @@ class Stage extends Model
         'icon'
     ];
 
+    public function getNameArAttribute(): string
+    {
+        return $this->label_ar ?? '';
+    }
+
+    public function getNameAttribute(): string
+    {
+        return $this->label_ar ?? '';
+    }
+
     public function subjects()
     {
         return $this->hasMany(Subject::class, 'stage_id');

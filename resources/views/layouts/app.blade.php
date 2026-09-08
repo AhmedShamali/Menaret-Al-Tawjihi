@@ -22,12 +22,12 @@
     <style>
         :root {
             --side-bg: #ffffff;
-            --side-active: #f0f9ff;
+            --side-active: #eff6ff;
             --side-hover: #f8fafc;
-            --text-active: #0284c7;
+            --text-active: #1e40af;
             --bg-body: #f8fafc;
             --sidebar-width: 285px;
-            --primary-color: #0284c7;
+            --primary-color: #1e40af;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;

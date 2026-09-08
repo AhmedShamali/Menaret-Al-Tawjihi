@@ -48,17 +48,17 @@ class TawjihiCalculatorController extends Controller
         $passedAll = true;
 
         if ($branch === 'scientific') {
-            // المواد الإجبارية: إسلامية (100)، عربي (100)، إنجليزي (100)، رياضيات (200)، فيزياء (100)
-            $islamic = floatval($scores['islamic'] ?? 0);
-            $arabic  = floatval($scores['arabic'] ?? 0);
-            $english = floatval($scores['english'] ?? 0);
-            $math    = floatval($scores['math'] ?? 0); // من 200
-            $physics = floatval($scores['physics'] ?? 0);
+            // الفرع العلمي: رياضيات (200)، فيزياء (100)، عربي (100)، إنجليزي (100)، إسلامية (100)
+            $math    = min(200, max(0, floatval($scores['math'] ?? 0))); // الرياضيات من 200
+            $physics = min(100, max(0, floatval($scores['physics'] ?? 0)));
+            $arabic  = min(100, max(0, floatval($scores['arabic'] ?? 0)));
+            $english = min(100, max(0, floatval($scores['english'] ?? 0)));
+            $islamic = min(100, max(0, floatval($scores['islamic'] ?? 0)));
 
-            // المواد الاختيارية (أعلى مادة من: كيمياء، أحياء، تكنولوجيا)
-            $chemistry = floatval($scores['chemistry'] ?? 0);
-            $biology   = floatval($scores['biology'] ?? 0);
-            $tech      = floatval($scores['tech'] ?? 0);
+            // المواد الاختيارية (أعلى مادة من: كيمياء، أحياء، تكنولوجيا) - من 100
+            $chemistry = min(100, max(0, floatval($scores['chemistry'] ?? 0)));
+            $biology   = min(100, max(0, floatval($scores['biology'] ?? 0)));
+            $tech      = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
             $electives = [
                 'كيمياء' => $chemistry,
@@ -69,21 +69,21 @@ class TawjihiCalculatorController extends Controller
             $bestElectiveName = array_key_first($electives);
             $bestElectiveScore = reset($electives);
 
-            $total = $islamic + $arabic + $english + $math + $physics + $bestElectiveScore;
+            $total = $math + $physics + $arabic + $english + $islamic + $bestElectiveScore;
             $maxTotal = 700;
             $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
         } elseif ($branch === 'literary') {
-            // المواد الإجبارية: إسلامية (100)، عربي (200)، إنجليزي (100)، تاريخ (100)، جغرافيا (100)
-            $islamic   = floatval($scores['islamic'] ?? 0);
-            $arabic    = floatval($scores['arabic'] ?? 0); // من 200
-            $english   = floatval($scores['english'] ?? 0);
-            $history   = floatval($scores['history'] ?? 0);
-            $geography = floatval($scores['geography'] ?? 0);
+            // الفرع الأدبي: عربي (150)، إنجليزي (150)، تاريخ (100)، جغرافيا (100)، إسلامية (100)
+            $arabic    = min(150, max(0, floatval($scores['arabic'] ?? 0)));    // اللغة العربية من 150
+            $english   = min(150, max(0, floatval($scores['english'] ?? 0)));   // اللغة الإنجليزية من 150
+            $history   = min(100, max(0, floatval($scores['history'] ?? 0)));   // التاريخ من 100
+            $geography = min(100, max(0, floatval($scores['geography'] ?? 0))); // الجغرافيا من 100
+            $islamic   = min(100, max(0, floatval($scores['islamic'] ?? 0)));   // التربية الإسلامية من 100
 
-            // المواد الاختيارية (أعلى مادة من: رياضيات أدبي، ثقافة علمية، تكنولوجيا)
-            $math       = floatval($scores['math'] ?? 0);
-            $sciCulture = floatval($scores['sci_culture'] ?? 0);
-            $tech       = floatval($scores['tech'] ?? 0);
+            // المواد الاختيارية (أعلى مادة من: رياضيات أدبي، ثقافة علمية، تكنولوجيا) - من 100
+            $math       = min(100, max(0, floatval($scores['math'] ?? 0)));
+            $sciCulture = min(100, max(0, floatval($scores['sci_culture'] ?? 0)));
+            $tech       = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
             $electives = [
                 'رياضيات أدبي' => $math,
@@ -94,7 +94,7 @@ class TawjihiCalculatorController extends Controller
             $bestElectiveName = array_key_first($electives);
             $bestElectiveScore = reset($electives);
 
-            $total = $islamic + $arabic + $english + $history + $geography + $bestElectiveScore;
+            $total = $arabic + $english + $history + $geography + $islamic + $bestElectiveScore;
             $maxTotal = 700;
             $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
         } elseif ($branch === 'business') {
