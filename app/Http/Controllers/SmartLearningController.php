@@ -46,7 +46,16 @@ class SmartLearningController extends Controller
         $recommendations = Recommendation::with('content.subject')->where('student_id', $studentId)->get();
         $completedExamsCount = ExamSubmission::where('student_id', $studentId)->count();
 
-        return view('student.achievements.index', compact('certificates', 'recommendations', 'student', 'completedExamsCount'));
+        // جلب المواد الخاصة بالمرحلة الدراسية للطالب لخيارات تنظيم الدراسة
+        $subjects = collect();
+        if (!empty($student->stage_id)) {
+            $subjects = Subject::where('stage_id', $student->stage_id)->orderBy('name_ar')->get();
+        }
+        if ($subjects->isEmpty()) {
+            $subjects = Subject::orderBy('name_ar')->get();
+        }
+
+        return view('student.achievements.index', compact('certificates', 'recommendations', 'student', 'completedExamsCount', 'subjects'));
     }
 
     /**
@@ -67,23 +76,24 @@ class SmartLearningController extends Controller
     }
 
     /**
-     * عرض الشهادة الملكية الفاخرة للطباعة والتحميل
+     * عرض شهادة التفوق الملكية المعتمدة بتصميم رسمي فاخر
      */
     public function showCertificate($id)
     {
-        $certificate = Certificate::with(['student', 'subject'])->where('id', $id)
+        $certificate = Certificate::with(['student.stage', 'subject.stage'])->where('id', $id)
             ->orWhere('certificate_code', $id)
             ->firstOrFail();
 
+        $student = $certificate->student ?? Auth::guard('student')->user() ?? Auth::user();
         $siteName = Setting::get('site_name', 'منارة التوجيهي');
         $siteSlogan = Setting::get('site_slogan', 'المنصة التعليمية الأولى لطلبة الثانوية العامة في فلسطين');
         $verificationUrl = route('certificates.verify', $certificate->certificate_code);
 
-        return view('student.achievements.certificate_royal', compact('certificate', 'siteName', 'siteSlogan', 'verificationUrl'));
+        return view('student.achievements.certificate_royal', compact('certificate', 'student', 'siteName', 'siteSlogan', 'verificationUrl'));
     }
 
     /**
-     * صفحة التحقق العامة من صحة الشهادة عند مسح رمز QR
+     * التحقق العام من صحة الشهادة عبر الـ QR Code
      */
     public function verifyCertificate($code)
     {
@@ -95,11 +105,14 @@ class SmartLearningController extends Controller
     }
 
     /**
-     * حفظ جلسة تركيز بومودورو للثانوية العامة وزيادة رصيد الالتزام
+     * حفظ جلسة تركيز بومودورو للثانوية العامة وزيادة رصيد الالتزام وتنظيم الدراسة
      */
     public function savePomodoroSession(Request $request)
     {
         $minutes = (int) $request->input('minutes', 25);
+        $subjectName = trim($request->input('subject_name', ''));
+        $taskGoal = trim($request->input('task_goal', ''));
+        $tasksCompleted = (int) $request->input('tasks_completed', 0);
         $student = Auth::guard('student')->user();
 
         if ($student) {
@@ -109,14 +122,25 @@ class SmartLearningController extends Controller
                 $student->save();
             }
 
+            $extraText = '';
+            if ($subjectName) {
+                $extraText .= " في مادة [{$subjectName}]";
+            }
+            if ($taskGoal) {
+                $extraText .= " | الهدف: {$taskGoal}";
+            }
+            if ($tasksCompleted > 0) {
+                $extraText .= " (تم إنجاز {$tasksCompleted} مهام)";
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => "أحسنت يا بطل! تم تسجيل جلسة تركيز مدتها {$minutes} دقيقة بنجاح 🎯",
+                'message' => "أحسنت يا بطل التوجيهي! تم تسجيل جلسة دراسة مدتها {$minutes} دقيقة{$extraText} بنجاح 🎯",
                 'streak' => $student->streak_count ?? 1
             ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'جلسة تركيز ممتازة!']);
+        return response()->json(['success' => true, 'message' => 'جلسة تركيز ودراسة ممتازة!']);
     }
 
     /**

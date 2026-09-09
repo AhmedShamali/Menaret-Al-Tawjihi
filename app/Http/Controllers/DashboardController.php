@@ -48,7 +48,7 @@ class DashboardController extends Controller {
                 ->where('subject_id', $subject->id)
                 ->first();
 
-            if ($enrollment) {
+            if ($enrollment && $enrollment->status === 'active') {
                 $isFullAccess = ($enrollment->access_mode === 'all');
                 if (!$isFullAccess) {
                     $allowedIds = \App\Models\ContentAssignment::where('enrollment_id', $enrollment->id)
@@ -57,7 +57,7 @@ class DashboardController extends Controller {
                         ->toArray();
                 }
             } else {
-                // إذا لم يكن مسجلاً باشتراك رسمي بعد، يمكن فتح الدروس الأولى أو اعتبارها مخصصة
+                // إذا لم يكن مسجلاً باشتراك نشط أو كان طلبه قيد المراجعة، تتاح فقط الدروس التمهيدية المجانية
                 $isFullAccess = false;
                 $allowedIds = $contents->where('order', '<=', 2)->pluck('id')->toArray(); // الدرس الأول والثاني مجاني تجريبي
             }
@@ -139,7 +139,13 @@ class DashboardController extends Controller {
                             ->latest()
                             ->get();
 
-        return view('student.dashboard', compact('my_stats', 'available_exams', 'completed_exams', 'student'));
+        // 4. العمليات المالية قيد المراجعة والتدقيق
+        $pendingPayments = \App\Models\Payment::where('student_id', $student_id)
+                            ->where('status', 'pending')
+                            ->latest()
+                            ->get();
+
+        return view('student.dashboard', compact('my_stats', 'available_exams', 'completed_exams', 'student', 'pendingPayments'));
     }
 
     public function teachersIndex()

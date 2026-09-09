@@ -79,12 +79,15 @@ class PaymentGatewayController extends Controller
             'wallet_phone' => 'required_if:gateway,jawwal_pay|nullable|string',
             'palpay_ref'   => 'required_if:gateway,palpay|nullable|string',
             'bop_ref'      => 'required_if:gateway,bop|nullable|string',
-            'receipt_file' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'receipt_file' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:8192',
         ], [
             'gateway.required'          => 'يرجى اختيار طريقة الدفع الفلسطينية المناسبة.',
             'wallet_phone.required_if'  => 'يرجى إدخال رقم محفظة جوال باي الخاصة بك.',
             'palpay_ref.required_if'    => 'يرجى إدخال رقم العملية أو كود السداد في بال باي.',
             'bop_ref.required_if'       => 'يرجى إدخال رقم الحوالة أو المرجع البنكي.',
+            'receipt_file.required'     => 'يرجى إرفاق صورة إشعار أو وصل التحويل البنكي/المحفظة لاعتماد الدفعة من الإدارة.',
+            'receipt_file.mimes'        => 'يجب أن يكون الإشعار صورة (JPG, PNG, WEBP) أو ملف PDF.',
+            'receipt_file.max'          => 'حجم ملف الإشعار يجب ألا يتجاوز 8 ميجابايت.',
         ]);
 
         $receiptPath = null;
@@ -103,20 +106,20 @@ class PaymentGatewayController extends Controller
             'paid_at'      => now()->toDateTimeString(),
         ];
 
-        // 1. تسجيل المعاملة في جدول المدفوعات
+        // 1. تسجيل المعاملة في جدول المدفوعات بحالة قيد المراجعة (Pending) - ممنوع الاعتماد التلقائي
         $payment = Payment::create([
             'student_id'         => $student->id,
             'transaction_number' => $txNumber,
             'gateway'            => $request->gateway,
             'amount'             => $cart['total'],
             'currency'           => 'ILS',
-            'status'             => 'completed',
+            'status'             => 'pending',
             'payment_details'    => json_encode($details, JSON_UNESCAPED_UNICODE),
             'items'              => $cart['items'],
             'receipt_path'       => $receiptPath
         ]);
 
-        // 2. تفعيل اشتراكات الطالب في المواد فورياً
+        // 2. تسجيل قيد الالتحاق بحالة معلقة (غير مفعل) حتى يفحص المدير الإشعار ويعتمد التفعيل
         $subjectNames = [];
         foreach ($cart['items'] as $item) {
             Enrollment::updateOrCreate(
@@ -125,30 +128,30 @@ class PaymentGatewayController extends Controller
                     'subject_id' => $item['id']
                 ],
                 [
-                    'status'         => 'active',
+                    'status'         => 'pending', // غير مفعل حتى يعتمد المدير
                     'access_mode'    => 'all',
-                    'payment_status' => $request->gateway,
-                    'activated_at'   => now(),
+                    'payment_status' => 'pending',
+                    'activated_at'   => null,
                     'expires_at'     => now()->addDays(365),
                 ]
             );
             $subjectNames[] = $item['name_ar'];
         }
 
-        // 3. إرسال إشعار فوري للطالب
+        // 3. إرسال إشعار فوري للطالب بأن طلبه قيد التدقيق
         $namesStr = implode('، ', $subjectNames);
         NotificationService::notifyStudent(
             $student->id,
-            'تم تفعيل اشتراكك بنجاح! 🎉',
-            "مبارك! تم تفعيل اشتراكك في مواد ({$namesStr}) عبر {$payment->gateway_name_ar}. نتمنى لك أعلى الدرجات والتفوق الوزاري!",
+            'تم استلام إشعار الدفع بنجاح (قيد المراجعة) ⏳',
+            "تم إرسال إشعار سدادك بمبلغ {$payment->amount} ₪ لمواد ({$namesStr}). رقم العملية: {$txNumber}. طلبك قيد التدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد من الإشعار.",
             'payment',
-            route('student.dashboard')
+            route('student.checkout.receipt', $payment->id)
         );
 
-        // 4. إرسال تنبيه لإدارة المنصة
+        // 4. إرسال تنبيه لإدارة المنصة بالمراجعة والاعتماد
         NotificationService::notifyAdmin(
-            'عملية دفع جديدة عبر ' . $payment->gateway_name_ar,
-            "قام الطالب {$student->name_ar} بسداد مبلغ {$payment->amount} ₪ للاشتراك في ({$namesStr}). رقم العملية: {$txNumber}",
+            'عملية دفع جديدة بانتظار المراجعة والاعتماد',
+            "قام الطالب {$student->name_ar} برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ عبر {$payment->gateway_name_ar} للاشتراك في ({$namesStr}). رقم العملية: {$txNumber}. يرجى فحص الإشعار واعتماد التفعيل.",
             'payment'
         );
 
@@ -157,7 +160,7 @@ class PaymentGatewayController extends Controller
 
         return response()->json([
             'status'   => 'success',
-            'message'  => 'تم تأكيد الدفع وتفعيل المواد بنجاح! 🎉',
+            'message'  => 'تم إرسال إشعار السداد بنجاح! طلبك قيد المراجعة والتدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد ⏳',
             'redirect' => route('student.checkout.receipt', $payment->id)
         ]);
     }

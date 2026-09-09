@@ -68,14 +68,23 @@
                         <td>
                             <div class="status-pill {{ $student->status == 'active' ? 'active' : 'pending' }}">
                                 <span class="pulse"></span>
-                                {{ $student->status == 'active' ? 'حساب مفعّل' : 'قيد المراجعة' }}
+                                {{ $student->status == 'active' ? 'حساب مفعّل ومعتمد' : 'بانتظار موافقة المدير ⏳' }}
                             </div>
                         </td>
                         <td>
                             <div class="action-buttons">
+                                @if($student->status !== 'active')
+                                    <button onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($student->name_ar) }}')"
+                                            class="btn-approve-direct"
+                                            title="الموافقة الفورية على تسجيل الدخول وتفعيل الاشتراك">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                        <span>موافقة وتفعيل</span>
+                                    </button>
+                                @endif
+
                                 <button onclick="performToggle({{ $student->id }})"
                                         class="btn-icon {{ $student->status == 'active' ? 'btn-active' : 'btn-inactive' }}"
-                                        title="تغيير الحالة">
+                                        title="{{ $student->status == 'active' ? 'تجميد الحساب وإعادته لقيد الانتظار' : 'تفعيل الحساب' }}">
                                     @if($student->status == 'active')
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                                     @else
@@ -374,6 +383,27 @@
         100% { opacity: 1; }
     }
 
+    .btn-approve-direct {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 7px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-approve-direct:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .modern-table thead { display: none; }
@@ -402,6 +432,33 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    function approveStudentDirect(id, name) {
+        Swal.fire({
+            title: 'اعتماد تسجيل ودخول الطالب؟',
+            text: `هل تريد الموافقة على تسجيل دخول واشتراك الطالب (${name}) وفتح صلاحيات المنصة له؟`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، موافقة وتفعيل',
+            cancelButtonText: 'إلغاء'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                axios.post(`{{ url('admin/students') }}/${id}/approve`)
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التفعيل والاعتماد بنجاح! 🎉',
+                        text: res.data.message || 'تم اعتماد الطالب وتفعيل دخوله واشتراكه.',
+                        timer: 1600,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                })
+                .catch(err => Swal.fire('خطأ', 'فشلت عملية الاعتماد', 'error'));
+            }
+        });
+    }
+
     function performToggle(id) {
         axios.post(`{{ url('admin/students/toggle-status') }}/${id}`)
         .then(res => {

@@ -84,4 +84,12 @@ class Student extends Authenticatable
 
         return $this->streak_count;
     }
+
+    /**
+     * الاسم الكامل للطالب (عربي كأولوية أولى)
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->name_ar ?: ($this->name_en ?: 'طالب التوجيهي');
+    }
 }

@@ -240,6 +240,167 @@
         gap: 4px;
     }
     .receipt-link:hover { text-decoration: underline; }
+
+    .filter-tab .badge-count {
+        background: #ef4444;
+        color: white;
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-size: 0.72rem;
+        margin-right: 4px;
+        font-weight: 800;
+        display: inline-block;
+        animation: pulseCount 2s infinite;
+    }
+    @keyframes pulseCount {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+    }
+
+    .row-pending {
+        background: #fffbeb !important;
+        border-left: 4px solid #f59e0b;
+    }
+    .row-pending:hover {
+        background: #fef3c7 !important;
+    }
+
+    .receipt-btn-preview {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eff6ff;
+        color: #0284c7;
+        border: 1px solid #bfdbfe;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: 0.2s;
+        text-decoration: none;
+    }
+    .receipt-btn-preview:hover {
+        background: #0284c7;
+        color: white;
+        border-color: #0284c7;
+    }
+
+    .receipt-thumb {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 2px solid #cbd5e1;
+        cursor: pointer;
+        transition: transform 0.2s, border-color 0.2s;
+    }
+    .receipt-thumb:hover {
+        transform: scale(1.15);
+        border-color: #0284c7;
+    }
+
+    /* Modal Styling */
+    .receipt-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(5px);
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .receipt-modal-content {
+        background: #ffffff;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 680px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+        animation: modalPop 0.25s ease-out;
+    }
+    @keyframes modalPop {
+        0% { opacity: 0; transform: scale(0.95); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+    .receipt-modal-header {
+        padding: 16px 22px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+    }
+    .btn-close-modal {
+        background: transparent;
+        border: none;
+        font-size: 1.25rem;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: 0.2s;
+    }
+    .btn-close-modal:hover {
+        color: #0f172a;
+        background: #e2e8f0;
+    }
+    .receipt-modal-body {
+        padding: 20px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+    .receipt-info-pill-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 10px;
+        background: #f8fafc;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #f1f5f9;
+        font-size: 0.82rem;
+    }
+    .receipt-viewer-box {
+        text-align: center;
+        background: #0f172a;
+        border-radius: 12px;
+        padding: 10px;
+        min-height: 280px;
+        max-height: 480px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .receipt-viewer-box img {
+        max-height: 460px;
+        max-width: 100%;
+        object-fit: contain;
+        border-radius: 6px;
+    }
+    .receipt-viewer-box iframe {
+        width: 100%;
+        height: 460px;
+        border: none;
+        border-radius: 6px;
+    }
+    .receipt-modal-footer {
+        padding: 14px 22px;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 </style>
 
 <div class="payments-header">
@@ -293,8 +454,15 @@
 <div class="filter-card">
     <div class="filter-tabs">
         <a href="{{ route('admin.payments.index') }}" class="filter-tab {{ empty($status) ? 'active' : '' }}">الكل ({{ $stats['total_count'] }})</a>
-        <a href="{{ route('admin.payments.index', ['status' => 'completed']) }}" class="filter-tab {{ $status === 'completed' ? 'active' : '' }}">معتمد ({{ $stats['completed_count'] }})</a>
-        <a href="{{ route('admin.payments.index', ['status' => 'pending']) }}" class="filter-tab {{ $status === 'pending' ? 'active' : '' }}">قيد المراجعة ({{ $stats['pending_count'] }})</a>
+        <a href="{{ route('admin.payments.index', ['status' => 'pending']) }}" class="filter-tab {{ $status === 'pending' ? 'active' : '' }}" style="{{ $stats['pending_count'] > 0 && $status !== 'pending' ? 'border-color: #f59e0b; color: #b45309; background: #fffbeb;' : '' }}">
+            قيد المراجعة 
+            @if($stats['pending_count'] > 0)
+                <span class="badge-count">{{ $stats['pending_count'] }}</span>
+            @else
+                (0)
+            @endif
+        </a>
+        <a href="{{ route('admin.payments.index', ['status' => 'completed']) }}" class="filter-tab {{ $status === 'completed' ? 'active' : '' }}">معتمد ومفعل ({{ $stats['completed_count'] }})</a>
         <a href="{{ route('admin.payments.index', ['status' => 'cancelled']) }}" class="filter-tab {{ $status === 'cancelled' ? 'active' : '' }}">ملغي</a>
     </div>
 
@@ -319,30 +487,35 @@
                     <th>المواد المشتركة</th>
                     <th>المبلغ الإجمالي</th>
                     <th>التاريخ</th>
-                    <th>الإيصال</th>
+                    <th>إشعار السداد</th>
                     <th>الحالة</th>
                     <th>إجراء</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($payments as $p)
-                <tr>
+                <tr class="{{ $p->status === 'pending' ? 'row-pending' : '' }}">
                     <td>
-                        <strong style="font-family: monospace; color: #0284c7;">{{ $p->transaction_number }}</strong>
+                        <strong style="font-family: monospace; color: #0284c7; font-size: 0.92rem;">{{ $p->transaction_number }}</strong>
+                        @if($p->status === 'pending')
+                            <span style="display: block; font-size: 0.72rem; color: #d97706; font-weight: 800; margin-top: 2px;">
+                                <i class="fas fa-exclamation-circle"></i> بحاجة لاعتمادك
+                            </span>
+                        @endif
                     </td>
                     <td>
-                        <div style="font-weight: 700;">{{ $p->student->name_ar ?? 'طالب غير محدد' }}</div>
-                        <div style="font-size: 0.78rem; color: #64748b;">{{ $p->student->phone ?? '-' }}</div>
+                        <div style="font-weight: 800; color: #0f172a;">{{ $p->student->name_ar ?? 'طالب غير محدد' }}</div>
+                        <div style="font-size: 0.78rem; color: #64748b; direction: ltr; text-align: right;">{{ $p->student->phone ?? '-' }}</div>
                     </td>
                     <td>
-                        <span class="gateway-badge" style="background: #f1f5f9; color: #334155;">
+                        <span class="gateway-badge" style="background: #f1f5f9; color: #334155; border: 1px solid #e2e8f0;">
                             {{ $p->gateway_name_ar }}
                         </span>
                     </td>
                     <td>
                         @if(is_array($p->items))
                             @foreach($p->items as $it)
-                                <span style="display: inline-block; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin: 2px;">
+                                <span style="display: inline-block; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.75rem; padding: 2px 8px; border-radius: 6px; margin: 2px; font-weight: 600; color: #334155;">
                                     {{ $it['name_ar'] ?? 'مادة' }}
                                 </span>
                             @endforeach
@@ -351,39 +524,68 @@
                         @endif
                     </td>
                     <td>
-                        <strong style="color: #0f172a; font-size: 1rem;">{{ $p->amount }} ₪</strong>
+                        <strong style="color: #0f172a; font-size: 1.05rem;">{{ $p->amount }} ₪</strong>
                     </td>
                     <td style="font-size: 0.8rem; color: #64748b;">
                         {{ $p->created_at ? $p->created_at->format('Y-m-d H:i') : '-' }}
                     </td>
                     <td>
                         @if($p->receipt_path)
-                            <a href="{{ asset('storage/' . $p->receipt_path) }}" target="_blank" class="receipt-link">
-                                <i class="fas fa-paperclip"></i> عرض الإشعار
-                            </a>
+                            @php
+                                $isPdf = \Illuminate\Support\Str::endsWith(strtolower($p->receipt_path), '.pdf');
+                                $receiptUrl = route('admin.payments.receipt', $p->id);
+                                $studentName = addslashes($p->student->name_ar ?? 'طالب');
+                                $txNum = $p->transaction_number;
+                                $amountFormatted = $p->amount . ' ₪';
+                                $gwName = addslashes($p->gateway_name_ar);
+                            @endphp
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                @if(!$isPdf)
+                                    <img src="{{ $receiptUrl }}" alt="إشعار" class="receipt-thumb" onclick="previewReceiptModal('{{ $receiptUrl }}', '{{ $studentName }}', '{{ $txNum }}', '{{ $amountFormatted }}', '{{ $gwName }}', '{{ $p->status }}', {{ $p->id }}, 'image')" title="انقر للتكبير والمراجعة">
+                                @else
+                                    <div style="width: 36px; height: 36px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; display: grid; place-items: center; color: #ef4444; cursor: pointer;" onclick="previewReceiptModal('{{ $receiptUrl }}', '{{ $studentName }}', '{{ $txNum }}', '{{ $amountFormatted }}', '{{ $gwName }}', '{{ $p->status }}', {{ $p->id }}, 'pdf')">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </div>
+                                @endif
+                                <button type="button" class="receipt-btn-preview" onclick="previewReceiptModal('{{ $receiptUrl }}', '{{ $studentName }}', '{{ $txNum }}', '{{ $amountFormatted }}', '{{ $gwName }}', '{{ $p->status }}', {{ $p->id }}, '{{ $isPdf ? 'pdf' : 'image' }}')">
+                                    <i class="fas fa-eye"></i> فحص الإشعار
+                                </button>
+                            </div>
                         @else
-                            <span style="color: #94a3b8; font-size: 0.78rem;">لا يوجد ملف</span>
+                            <span style="color: #94a3b8; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fas fa-times-circle"></i> لا يوجد إشعار
+                            </span>
                         @endif
                     </td>
                     <td>
                         @if($p->status === 'completed')
                             <span class="status-badge status-completed"><i class="fas fa-check-circle"></i> معتمد ومفعل</span>
                         @elseif($p->status === 'pending')
-                            <span class="status-badge status-pending"><i class="fas fa-clock"></i> قيد المراجعة</span>
+                            <span class="status-badge status-pending" style="animation: pulseCount 2s infinite;"><i class="fas fa-clock"></i> قيد المراجعة</span>
                         @else
                             <span class="status-badge status-cancelled"><i class="fas fa-times-circle"></i> ملغي</span>
                         @endif
                     </td>
                     <td>
                         <div class="actions-cell">
-                            @if($p->status !== 'completed')
-                                <button onclick="changePaymentStatus({{ $p->id }}, 'completed')" class="btn-action btn-approve" title="اعتماد وتفعيل المواد فورياً">
-                                    <i class="fas fa-check"></i> اعتماد
+                            @if($p->status === 'pending')
+                                <button onclick="changePaymentStatus({{ $p->id }}, 'completed')" class="btn-action btn-approve" title="اعتماد إشعار السداد وتفعيل المواد والحساب فوراً">
+                                    <i class="fas fa-check-circle"></i> اعتماد وتفعيل
                                 </button>
-                            @endif
-                            @if($p->status !== 'cancelled')
-                                <button onclick="changePaymentStatus({{ $p->id }}, 'cancelled')" class="btn-action btn-reject" title="إلغاء">
-                                    <i class="fas fa-times"></i>
+                                <button onclick="changePaymentStatus({{ $p->id }}, 'cancelled')" class="btn-action btn-reject" title="رفض الإشعار">
+                                    <i class="fas fa-times-circle"></i> رفض
+                                </button>
+                            @elseif($p->status === 'completed')
+                                <span style="color: #059669; font-weight: 800; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-shield-check"></i> تم التفعيل
+                                </span>
+                                <button onclick="changePaymentStatus({{ $p->id }}, 'cancelled')" class="btn-action btn-reject" style="padding: 3px 8px; font-size: 0.72rem; margin-right: 6px;" title="إلغاء التفعيل">
+                                    إلغاء
+                                </button>
+                            @else
+                                <span style="color: #b91c1c; font-weight: 700; font-size: 0.8rem; margin-left: 6px;">ملغي</span>
+                                <button onclick="changePaymentStatus({{ $p->id }}, 'completed')" class="btn-action btn-approve" style="padding: 4px 10px; font-size: 0.75rem;" title="إعادة اعتماد">
+                                    تفعيل
                                 </button>
                             @endif
                         </div>
@@ -408,32 +610,144 @@
     @endif
 </div>
 
+<!-- Modal معاينة إشعار السداد البنكي -->
+<div id="receiptModal" class="receipt-modal-backdrop" style="display: none;" onclick="handleBackdropClick(event)">
+    <div class="receipt-modal-content" onclick="event.stopPropagation()">
+        <div class="receipt-modal-header">
+            <div>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;" id="modalStudentName">معاينة إشعار السداد</h3>
+                <div style="font-size: 0.82rem; color: #64748b; font-family: monospace;" id="modalTxNumber"></div>
+            </div>
+            <button type="button" onclick="closeReceiptModal()" class="btn-close-modal" title="إغلاق"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="receipt-modal-body">
+            <div class="receipt-info-pill-grid">
+                <div><span style="color: #64748b;">المبلغ:</span> <strong id="modalAmount" style="color: #0284c7; font-size: 0.95rem;">-</strong></div>
+                <div><span style="color: #64748b;">بوابة السداد:</span> <strong id="modalGateway" style="color: #1e293b;">-</strong></div>
+                <div><span style="color: #64748b;">الحالة:</span> <span id="modalStatusBadge">-</span></div>
+            </div>
+
+            <div id="modalReceiptContainer" class="receipt-viewer-box">
+                <!-- يتم إدراج الصورة أو الـ PDF هنا -->
+            </div>
+        </div>
+
+        <div class="receipt-modal-footer">
+            <div>
+                <a id="modalDownloadBtn" href="#" target="_blank" class="btn-action" style="background: #f1f5f9; color: #334155; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-external-link-alt"></i> فتح بنافذة مستقلة
+                </a>
+            </div>
+            <div style="display: flex; gap: 8px;" id="modalActionButtons">
+                <!-- أزرار الاعتماد أو الرفض -->
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    function previewReceiptModal(url, studentName, txNumber, amount, gateway, status, paymentId, fileType) {
+        document.getElementById('modalStudentName').textContent = 'إشعار سداد: ' + studentName;
+        document.getElementById('modalTxNumber').textContent = 'رقم المعاملة: ' + txNumber;
+        document.getElementById('modalAmount').textContent = amount;
+        document.getElementById('modalGateway').textContent = gateway;
+        document.getElementById('modalDownloadBtn').href = url;
+
+        const statusBadge = document.getElementById('modalStatusBadge');
+        if (status === 'completed') {
+            statusBadge.innerHTML = '<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> معتمد ومفعل</span>';
+        } else if (status === 'pending') {
+            statusBadge.innerHTML = '<span class="status-badge status-pending"><i class="fas fa-clock"></i> قيد المراجعة</span>';
+        } else {
+            statusBadge.innerHTML = '<span class="status-badge status-cancelled"><i class="fas fa-times-circle"></i> ملغي</span>';
+        }
+
+        const container = document.getElementById('modalReceiptContainer');
+        if (fileType === 'pdf') {
+            container.innerHTML = `<iframe src="${url}"></iframe>`;
+        } else {
+            container.innerHTML = `<img src="${url}" alt="إشعار السداد" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'color:white; padding: 40px;\\'><i class=\\'fas fa-exclamation-triangle\\' style=\\'font-size: 2rem; color: #f59e0b; margin-bottom: 10px; display:block;\\'></i>تعذر تحميل الصورة مباشرة، <a href=\\''+url+'\\' target=\\'_blank\\' style=\\'color:#38bdf8; font-weight:bold;\\'>اضغط هنا لفتحها</a></div>';">`;
+        }
+
+        const actionsContainer = document.getElementById('modalActionButtons');
+        actionsContainer.innerHTML = '';
+        if (status !== 'completed') {
+            const approveBtn = document.createElement('button');
+            approveBtn.className = 'btn-action btn-approve';
+            approveBtn.innerHTML = '<i class="fas fa-check-circle"></i> اعتماد وتفعيل المواد فوراً';
+            approveBtn.onclick = function() {
+                closeReceiptModal();
+                changePaymentStatus(paymentId, 'completed');
+            };
+            actionsContainer.appendChild(approveBtn);
+        }
+        if (status !== 'cancelled') {
+            const rejectBtn = document.createElement('button');
+            rejectBtn.className = 'btn-action btn-reject';
+            rejectBtn.innerHTML = '<i class="fas fa-times"></i> رفض العملية';
+            rejectBtn.onclick = function() {
+                closeReceiptModal();
+                changePaymentStatus(paymentId, 'cancelled');
+            };
+            actionsContainer.appendChild(rejectBtn);
+        }
+
+        document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    function closeReceiptModal() {
+        document.getElementById('receiptModal').style.display = 'none';
+        document.getElementById('modalReceiptContainer').innerHTML = '';
+    }
+
+    function handleBackdropClick(e) {
+        if (e.target.id === 'receiptModal') {
+            closeReceiptModal();
+        }
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeReceiptModal();
+    });
+
     function changePaymentStatus(paymentId, status) {
-        const title = status === 'completed' ? 'اعتماد عملية الدفع وتفعيل المواد؟' : 'إلغاء عملية الدفع؟';
-        const text = status === 'completed' 
-            ? 'سيتم تفعيل كافة مواد الطالب المشترك بها فورياً وإرسال إشعار له.' 
-            : 'سيتم إلغاء تفعيل اشتراك الطالب في هذه المواد.';
+        const isApprove = status === 'completed';
+        const title = isApprove ? 'اعتماد إشعار السداد وتفعيل المواد؟' : 'إلغاء / رفض عملية الدفع؟';
+        const text = isApprove 
+            ? 'سيتم تفعيل حساب الطالب وكافة المواد المشترك بها فورياً، وإرسال إشعار رسمي له بالتهنئة.' 
+            : 'سيتم إلغاء أو تعطيل تفعيل مواد الطالب المرتبطة بهذه العملية.';
 
         Swal.fire({
             title: title,
             text: text,
-            icon: status === 'completed' ? 'question' : 'warning',
+            icon: isApprove ? 'question' : 'warning',
             showCancelButton: true,
-            confirmButtonColor: status === 'completed' ? '#10b981' : '#ef4444',
+            confirmButtonColor: isApprove ? '#10b981' : '#ef4444',
             cancelButtonColor: '#64748b',
-            confirmButtonText: status === 'completed' ? 'نعم، اعتماد الآن' : 'نعم، إلغاء الدفعة',
+            confirmButtonText: isApprove ? 'نعم، اعتماد وتفعيل الآن ✅' : 'نعم، إلغاء الدفعة',
             cancelButtonText: 'تراجع'
         }).then((result) => {
             if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جارٍ التنفيذ...',
+                    text: 'يتم تحديث الحالة وتفعيل الاشتراكات...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
                 axios.post(`/admin/payments/${paymentId}/status`, { status: status })
                     .then(res => {
-                        Swal.fire('تم بنجاح!', res.data.message || 'تم تحديث حالة الدفع.', 'success')
-                            .then(() => location.reload());
+                        Swal.fire({
+                            title: 'تم بنجاح!',
+                            text: res.data.message || 'تم تحديث حالة الدفع وتفعيل المواد بنجاح.',
+                            icon: 'success',
+                            confirmButtonText: 'حسناً'
+                        }).then(() => location.reload());
                     })
                     .catch(err => {
-                        Swal.fire('خطأ', err.response?.data?.message || 'تعذر التحديث.', 'error');
+                        Swal.fire('خطأ', err.response?.data?.message || 'تعذر التحديث، يرجى المحاولة لاحقاً.', 'error');
                     });
             }
         });

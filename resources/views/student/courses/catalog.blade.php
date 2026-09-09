@@ -49,14 +49,19 @@
             @forelse($subjects as $sub)
                 @php
                     $isEnrolled = in_array($sub->id, $enrolledSubjectIds);
+                    $isPending = in_array($sub->id, $pendingSubjectIds ?? []);
                     $effectivePrice = $sub->effective_price;
                 @endphp
 
-                <div class="course-card {{ $isEnrolled ? 'enrolled' : '' }}" style="background: white; border: 2px solid {{ $isEnrolled ? '#10b981' : '#e2e8f0' }}; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+                <div class="course-card {{ $isEnrolled ? 'enrolled' : ($isPending ? 'pending-card' : '') }}" style="background: white; border: 2px solid {{ $isEnrolled ? '#10b981' : ($isPending ? '#f59e0b' : '#e2e8f0') }}; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: all 0.25s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
 
                     @if($isEnrolled)
                         <div style="position: absolute; top: 16px; left: 16px; background: #dcfce7; color: #166534; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px;">
-                            <i class="fa-solid fa-check-circle"></i> مشترك حالياً
+                            <i class="fa-solid fa-circle-check"></i> اشتراك معتمد ومفعّل ✔
+                        </div>
+                    @elseif($isPending)
+                        <div style="position: absolute; top: 16px; left: 16px; background: #fffbeb; border: 1px solid #fde68a; color: #b45309; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
+                            <i class="fa-solid fa-clock-rotate-left"></i> بانتظار موافقة المدير ⏳
                         </div>
                     @elseif($sub->is_free)
                         <div style="position: absolute; top: 16px; left: 16px; background: #e0f2fe; color: #0369a1; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px;">
@@ -122,6 +127,10 @@
                                 <a href="{{ route('student.subjects.show', $sub->id) }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border-radius: 12px; background: #ecfdf5; color: #059669; text-decoration: none; font-weight: 700; font-size: 0.85rem;">
                                     <span>متابعة التعلم</span> <i class="fa-solid fa-arrow-left"></i>
                                 </a>
+                            @elseif($isPending)
+                                <span style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px; background: #fffbeb; border: 1px solid #fde68a; color: #b45309; font-weight: 700; font-size: 0.82rem;" title="طلب اشتراكك قيد التدقيق والموافقة من قِبل إدارة المنصة">
+                                    <i class="fa-solid fa-hourglass-half"></i> <span>بانتظار موافقة المدير ⏳</span>
+                                </span>
                             @else
                                 <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; background: #f8fafc; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; transition: 0.2s;" onmouseover="this.style.borderColor='#0284c7'" onmouseout="this.style.borderColor='#cbd5e1'">
                                     <input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}" data-price="{{ $effectivePrice }}" data-name="{{ $sub->name_ar }}" onchange="updateCartBar()" style="width: 17px; height: 17px; accent-color: #0284c7; cursor: pointer;">

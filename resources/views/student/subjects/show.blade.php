@@ -390,11 +390,15 @@
         </p>
 
         <div class="hero-actions">
-            @if($enrollment && $enrollment->access_mode === 'all')
+            @if($enrollment && $enrollment->status === 'pending')
+                <span style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fde68a; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> إشعار الدفع قيد المراجعة والاعتماد من الإدارة ⏳
+                </span>
+            @elseif($enrollment && $enrollment->status === 'active' && $enrollment->access_mode === 'all')
                 <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-crown"></i> اشتراك كامل المنهج مفعّل
                 </span>
-            @elseif($enrollment && $enrollment->access_mode === 'custom')
+            @elseif($enrollment && $enrollment->status === 'active' && $enrollment->access_mode === 'custom')
                 <span style="background: rgba(99, 102, 241, 0.2); border: 1px solid #818cf8; color: #c7d2fe; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-layer-group"></i> اشتراك باقة مخصصة
                 </span>

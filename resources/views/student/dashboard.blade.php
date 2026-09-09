@@ -405,6 +405,41 @@
         </div>
     </div>
 
+    {{-- تنبيه العمليات المالية وإشعارات الدفع قيد المراجعة --}}
+    @if(isset($pendingPayments) && $pendingPayments->isNotEmpty())
+        @foreach($pendingPayments as $pendingPay)
+            <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #fde68a; border-radius: 20px; padding: 20px 26px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 18px; box-shadow: 0 4px 18px rgba(245, 158, 11, 0.12);">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="width: 48px; height: 48px; border-radius: 14px; background: #fef3c7; color: #b45309; display: grid; place-items: center; font-size: 1.4rem; flex-shrink: 0; border: 1.5px solid #fde68a;">
+                        <i class="fa-solid fa-hourglass-half"></i>
+                    </div>
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span style="background: #b45309; color: white; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">قيد التدقيق والمراجعة</span>
+                            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #78350f;">
+                                تم استلام إشعار السداد بنجاح وجارٍ تدقيقه وتفعيل موادك من قِبل المشرف
+                            </h3>
+                        </div>
+                        <p style="margin: 0; font-size: 0.86rem; color: #92400e; line-height: 1.5;">
+                            معاملة رقم <strong style="font-family: monospace;">{{ $pendingPay->transaction_number }}</strong> بمبلغ <strong>{{ number_format($pendingPay->amount, 0) }} ₪</strong> عبر {{ $pendingPay->gateway_name_ar }}. يقوم المشرف الآن بمطابقة الإشعار واعتماد المواد لحسابك رسمياً.
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <a href="{{ route('student.checkout.receipt', $pendingPay->id) }}" style="background: #0284c7; color: white; text-decoration: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
+                        <i class="fa-solid fa-file-invoice"></i>
+                        <span>عرض الإيصال والإشعار</span>
+                    </a>
+                    @php $adminWhatsapp = \App\Models\Setting::get('contact_whatsapp', \App\Models\Setting::get('payment_phone', '0567897212')); @endphp
+                    <a href="https://wa.me/972{{ ltrim($adminWhatsapp, '0') }}?text={{ urlencode('مرحباً إدارة منارة التوجيهي، قمت برفع إشعار دفع برقم: ' . $pendingPay->transaction_number . ' للاعتماد.') }}" target="_blank" style="background: #25d366; color: white; text-decoration: none; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-brands fa-whatsapp" style="font-size: 1.1rem;"></i>
+                        <span>متابعة مع المشرف</span>
+                    </a>
+                </div>
+            </div>
+        @endforeach
+    @endif
+
     {{-- عد تنازلي لامتحانات الثانوية العامة في فلسطين --}}
     <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); border-radius: 20px; padding: 22px 28px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px -5px rgba(49, 46, 129, 0.3); border: 1px solid rgba(255,255,255,0.1);">
         <div style="display: flex; align-items: center; gap: 16px;">

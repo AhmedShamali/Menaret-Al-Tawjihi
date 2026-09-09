@@ -119,6 +119,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/students/add', [AdminManagerController::class, 'studentCreate'])->name('students.add');
     Route::post('/students/save', [AdminManagerController::class, 'studentStore'])->name('students.save');
     Route::post('/students/toggle-status/{id}', [StudentController::class, 'toggleStatus'])->name('students.toggleStatus');
+    Route::post('/students/{id}/approve', [StudentController::class, 'approveStudent'])->name('students.approve');
 
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');
@@ -158,10 +159,12 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/subjects/pricing', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'index'])->name('subjects.pricing');
     Route::post('/subjects/pricing/seasonal-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.seasonal');
     Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update');
+    Route::post('/subjects/pricing/{id}/update', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update_alias');
 
     // إدارة الاشتراكات وعمليات الدفع والتحقق من الإيصالات
     Route::get('/payments', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+    Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt');
 });
 
 
@@ -214,6 +217,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('student.')->group(function () {
+    Route::get('/pending-approval', [StudentController::class, 'pendingApproval'])->name('pending-approval');
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
     Route::post('/profile/update-password', [StudentController::class, 'updatePassword'])->name('profile.updatePassword');

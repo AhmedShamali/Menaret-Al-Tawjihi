@@ -31,8 +31,15 @@ class AuthController extends Controller
         // 1. محاولة الدخول كطالب
         if ($role === 'student') {
             if (Auth::guard('student')->attempt($credentials)) {
+                $student = Auth::guard('student')->user();
+
                 // تنظيف كامل للجلسة وإعادتها لتجنب التداخل
                 $request->session()->regenerate();
+
+                // فحص موافقة المدير على تفعيل حساب الطالب واشتراكه
+                if ($student->status !== 'active') {
+                    return redirect()->route('student.pending-approval');
+                }
 
                 // استخدام redirect() مباشر بدلاً من intended لتجنب التوجيه القديم
                 return redirect()->route('student.dashboard');

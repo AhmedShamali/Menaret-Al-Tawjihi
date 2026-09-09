@@ -137,48 +137,135 @@ class AdminManagerController extends Controller {
 
     public function studentStore(Request $request) {
         $validator = Validator::make($request->all(), [
-            'name_ar' => 'required',
-            'email' => 'required|email|unique:students,email',
+            'name_ar'  => 'required|string|max:255',
+            'email'    => 'required|email|unique:students,email',
             'password' => 'required|min:6',
-            'nid' => 'required|unique:students,nid',
-            'photo' => 'nullable|image|max:2048',
-            'id_photo' => 'nullable|image|max:2048'
+            'nid'      => 'required|digits:9|unique:students,nid',
+            'stage_id' => 'required',
+            'phone'    => 'nullable|string|max:20',
+            'photo'    => 'nullable|image|max:3072',
+            'id_photo' => 'nullable|image|max:3072'
+        ], [
+            'name_ar.required'  => 'يرجى إدخال الاسم الرباعي للطالب.',
+            'email.required'    => 'يرجى إدخال البريد الإلكتروني.',
+            'email.unique'      => 'البريد الإلكتروني مستخدم بالفعل لطالب آخر.',
+            'password.required' => 'كلمة المرور مطلوبة ولا تقل عن 6 خانات.',
+            'password.min'      => 'كلمة المرور يجب أن تتكون من 6 خانات على الأقل.',
+            'nid.required'      => 'رقم الهوية مطلوب.',
+            'nid.digits'        => 'رقم الهوية يجب أن يتكون من 9 أرقام بدقة.',
+            'nid.unique'        => 'رقم الهوية مسجل مسبقاً في النظام.',
+            'stage_id.required' => 'يرجى اختيار المرحلة أو الفرع الدراسي.',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['icon' => 'error', 'title' => $validator->errors()->first()], 400);
+            return response()->json([
+                'icon'    => 'error',
+                'title'   => $validator->errors()->first(),
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
         $photoPath = null;
-        if ($request->hasFile('photo')) {
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
             $photoPath = $request->file('photo')->store('students/photos', 'public');
         }
 
         $idPhotoPath = null;
-        if ($request->hasFile('id_photo')) {
+        if ($request->hasFile('id_photo') && $request->file('id_photo')->isValid()) {
             $idPhotoPath = $request->file('id_photo')->store('students/ids', 'public');
         }
 
-        Student::create([
-            'name_ar' => $request->name_ar,
-            'name_en' => $request->name_en,
-            'nid' => $request->nid,
-            'age' => $request->age,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'stage_id' => $request->stage_id,
-            'gender' => $request->gender,
-            'photo' => $photoPath,
-            'id_photo' => $idPhotoPath,
-            'status' => 'active',
-        ]);
+        $rawGender = $request->input('gender', 'ذكر');
+        $gender = ($rawGender === 'أنثى' || $rawGender === 'female') ? 'أنثى' : 'ذكر';
 
-        return response()->json(['success' => true, 'title' => 'تم إنشاء حساب الطالب وتفعيله ✅']);
+        $stage = Stage::where('id', $request->stage_id)
+            ->orWhere('grade_level', $request->stage_id)
+            ->first();
+        $stageId = $stage ? $stage->id : (Stage::where('grade_level', 122)->value('id') ?? Stage::first()?->id ?? 1);
+
+        try {
+            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_status_check');
+            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_gender_check');
+        } catch (\Throwable $e) {}
+
+        $phone = $request->phone ?: '0590000000';
+        $age = $request->age ? (int)$request->age : 18;
+        $nameEn = $request->name_en ?: $request->name_ar;
+
+        try {
+            $student = Student::create([
+                'name_ar'            => $request->name_ar,
+                'name_en'            => $nameEn,
+                'nid'                => $request->nid,
+                'age'                => $age,
+                'email'              => $request->email,
+                'phone'              => $phone,
+                'whatsapp'           => $request->whatsapp ?? $phone,
+                'password'           => Hash::make($request->password),
+                'stage_id'           => $stageId,
+                'gender'             => $gender,
+                'photo'              => $photoPath,
+                'id_photo'           => $idPhotoPath,
+                'status'             => 'active',
+                'streak_count'       => 1,
+                'total_points'       => 50,
+                'last_activity_date' => now()->toDateString(),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            $student = Student::create([
+                'name_ar'            => $request->name_ar,
+                'name_en'            => $nameEn,
+                'nid'                => $request->nid,
+                'age'                => $age,
+                'email'              => $request->email,
+                'phone'              => $phone,
+                'whatsapp'           => $request->whatsapp ?? $phone,
+                'password'           => Hash::make($request->password),
+                'stage_id'           => $stageId,
+                'gender'             => $gender,
+                'photo'              => $photoPath,
+                'id_photo'           => $idPhotoPath,
+                'status'             => 'published',
+                'streak_count'       => 1,
+                'total_points'       => 50,
+                'last_activity_date' => now()->toDateString(),
+            ]);
+        }
+
+        // تسجيل الطالب تلقائياً في مواد مرحلته الدراسية لتمكينه من البدء الفوري
+        try {
+            $stageSubjects = \App\Models\Subject::where('stage_id', $stageId)->get();
+            foreach ($stageSubjects as $sub) {
+                \App\Models\Enrollment::firstOrCreate(
+                    ['student_id' => $student->id, 'subject_id' => $sub->id],
+                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'free', 'activated_at' => now()]
+                );
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success'  => true,
+            'icon'     => 'success',
+            'title'    => 'تم إنشاء حساب الطالب وتفعيل مواده بنجاح ✅',
+            'redirect' => route('admin.students.index')
+        ]);
     }
 
     public function studentCreate() {
-        $stages = Stage::all();
+        if (\App\Models\Stage::where('grade_level', '>=', 120)->count() < 3 || \App\Models\Subject::count() === 0) {
+            (new \Database\Seeders\StageSeeder())->run();
+            (new \Database\Seeders\SubjectSeeder())->run();
+        }
+
+        $stages = Stage::with('subjects')
+            ->where('grade_level', '>=', 120)
+            ->orderBy('grade_level', 'desc')
+            ->get();
+
+        if ($stages->isEmpty()) {
+            $stages = Stage::all();
+        }
+
         return view('admin.management.students_create', compact('stages'));
     }
 

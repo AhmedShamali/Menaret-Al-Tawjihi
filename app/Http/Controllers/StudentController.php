@@ -53,6 +53,15 @@ class StudentController extends Controller
             ->orderBy('grade_level', 'desc')
             ->get();
 
+        if ($stages->isEmpty()) {
+            $stages = Stage::all();
+        }
+
+        // إذا كان المستخدم الحالي مديراً، يتم إظهار واجهة تسجيل الطالب الإدارية
+        if (Auth::guard('web')->check() && Auth::user()->role === 'admin') {
+            return view('admin.management.students_create', compact('stages'));
+        }
+
         return view('students.create', compact('stages'));
     }
 
@@ -124,93 +133,99 @@ class StudentController extends Controller
             ->first();
         $stageId = $stage ? $stage->id : (Stage::where('grade_level', 122)->value('id') ?? 1);
 
-        // فك أي قيود قديمة في قاعدة البيانات (مثل students_status_check في PostgreSQL)
-        try {
-            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_status_check');
-            DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_gender_check');
-        } catch (\Throwable $e) {}
+        $phone = $request->phone ?: '0590000000';
+        $age = $request->age ? (int)$request->age : 18;
+        $nameEn = $request->name_en ?: $request->name_ar;
 
-        // إنشاء حساب الطالب مع تفعيل فوري ونقاط ترحيبية
+        $isAdmin = Auth::guard('web')->check();
+        $accountStatus = $isAdmin ? 'active' : 'pending';
+
+        // إنشاء حساب الطالب مع تعيين الحالة: معلق (pending) بانتظار موافقة المدير إن كان تسجيلاً ذاتياً
         try {
             $student = Student::create([
                 'name_ar'            => $request->name_ar,
-                'name_en'            => $request->name_en ?? $request->name_ar,
+                'name_en'            => $nameEn,
                 'nid'                => $request->nid,
-                'age'                => $request->age ?? 18,
+                'age'                => $age,
                 'email'              => $request->email,
-                'phone'              => $request->phone,
-                'whatsapp'           => $request->whatsapp ?? $request->phone,
+                'phone'              => $phone,
+                'whatsapp'           => $request->whatsapp ?? $phone,
                 'password'           => Hash::make($request->password),
                 'stage_id'           => $stageId,
                 'gender'             => $gender,
                 'photo'              => $photoPath,
                 'id_photo'           => $idPhotoPath,
-                'status'             => 'active',
+                'status'             => $accountStatus,
                 'streak_count'       => 1,
                 'total_points'       => 50,
                 'last_activity_date' => now()->toDateString(),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // في حال وجود قيد قديم لم يتم إسقاطه بعد في PostgreSQL
-            if (str_contains($e->getMessage(), 'students_status_check')) {
-                $student = Student::create([
-                    'name_ar'            => $request->name_ar,
-                    'name_en'            => $request->name_en ?? $request->name_ar,
-                    'nid'                => $request->nid,
-                    'age'                => $request->age ?? 18,
-                    'email'              => $request->email,
-                    'phone'              => $request->phone,
-                    'whatsapp'           => $request->whatsapp ?? $request->phone,
-                    'password'           => Hash::make($request->password),
-                    'stage_id'           => $stageId,
-                    'gender'             => $gender,
-                    'photo'              => $photoPath,
-                    'id_photo'           => $idPhotoPath,
-                    'status'             => 'published',
-                    'streak_count'       => 1,
-                    'total_points'       => 50,
-                    'last_activity_date' => now()->toDateString(),
-                ]);
-            } else {
-                throw $e;
-            }
+            $student = Student::create([
+                'name_ar'            => $request->name_ar,
+                'name_en'            => $nameEn,
+                'nid'                => $request->nid,
+                'age'                => $age,
+                'email'              => $request->email,
+                'phone'              => $phone,
+                'whatsapp'           => $request->whatsapp ?? $phone,
+                'password'           => Hash::make($request->password),
+                'stage_id'           => $stageId,
+                'gender'             => $gender,
+                'photo'              => $photoPath,
+                'id_photo'           => $idPhotoPath,
+                'status'             => $accountStatus,
+                'streak_count'       => 1,
+                'total_points'       => 50,
+                'last_activity_date' => now()->toDateString(),
+            ]);
         }
 
-        // تفعيل اشتراك الطالب في المواد المختارة (أو جميع مواد فرع التوجيهي)
+        // إذا اختار الطالب مواد محددة عند التسجيل، تسجل بحالة معلقة pending بانتظار موافقة وسداد الإدارة
         if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {
             foreach ($request->subject_ids as $subId) {
                 \App\Models\Enrollment::firstOrCreate(
                     ['student_id' => $student->id, 'subject_id' => $subId],
-                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'registered', 'activated_at' => now()]
-                );
-            }
-        } else {
-            // تسجيل الطالب تلقائياً في مواد مرحلته الدراسية لتمكينه من البدء الفوري
-            $stageSubjects = \App\Models\Subject::where('stage_id', $stageId)->get();
-            foreach ($stageSubjects as $sub) {
-                \App\Models\Enrollment::firstOrCreate(
-                    ['student_id' => $student->id, 'subject_id' => $sub->id],
-                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'free', 'activated_at' => now()]
+                    [
+                        'status'         => $isAdmin ? 'active' : 'pending',
+                        'access_mode'    => 'all',
+                        'payment_status' => $isAdmin ? 'admin_grant' : 'pending',
+                        'activated_at'   => $isAdmin ? now() : null
+                    ]
                 );
             }
         }
+        // تنبيه: لا يتم تسجيل الطالب تلقائياً في كامل مواد الفرع! يبقى الحساب والمواد بانتظار موافقة الإدارة والاشتراك
 
-        // إذا كان تسجيلاً ذاتياً (ليس مديراً مسجلاً يضيف طالباً)، يتم تسجيل دخول الطالب فوراً
-        if (!Auth::guard('web')->check()) {
-            Auth::guard('student')->login($student);
-
+        // إذا كان تسجيلاً من قبل مدير مسجل، يتم توجيهه للوحة إدارة الطلاب
+        if ($isAdmin) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
+                    'success'  => true,
                     'icon'     => 'success',
-                    'title'    => 'أهلاً بك يا بطل! تم إنشاء حسابك وتفعيل موادك بنجاح 🚀',
-                    'redirect' => route('student.dashboard')
+                    'title'    => 'تم تسجيل الطالب بنجاح! 🎉',
+                    'redirect' => route('admin.students.index')
                 ]);
             }
 
-            return redirect()->route('student.dashboard')->with('success', 'أهلاً بك في منصة منارة التوجيهي! تم إنشاء حسابك بنجاح 🎉');
+            return redirect()->route('admin.students.index')->with('success', 'تم تسجيل الطالب بنجاح! 🎉');
         }
 
-        return response()->json(['icon' => 'success', 'title' => 'تم تسجيل الطالب بنجاح في النظام! 🎉']);
+        // تسجيل دخول الطالب وتوجيهه لصفحة انتظار موافقة واعتماد المدير
+        Auth::guard('student')->login($student);
+        $request->session()->regenerate();
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'  => true,
+                'icon'     => 'info',
+                'title'    => 'تم استلام طلبك بنجاح! ⏳',
+                'text'     => 'حسابك واشتراكك قيد مراجعة واعتماد المشرف العام.',
+                'redirect' => route('student.pending-approval')
+            ]);
+        }
+
+        return redirect()->route('student.pending-approval')->with('info', 'تم استلام طلبك بنجاح! حسابك قيد مراجعة الإدارة.');
     }
 
     public function edit($id) {
@@ -247,11 +262,83 @@ class StudentController extends Controller
         return response()->json(['icon' => 'success', 'title' => 'تم تحديث البيانات بنجاح 🚀']);
     }
 
+    /**
+     * صفحة انتظار موافقة واعتماد المدير على تسجيل الدخول والاشتراك للطالب
+     */
+    public function pendingApproval()
+    {
+        $student = Auth::guard('student')->user();
+        if (!$student) {
+            return redirect()->route('login');
+        }
+
+        // إذا وافق المدير وأصبح الحساب مفعلاً، يتم تحويله للوحة التحكم فوراً
+        if ($student->status === 'active') {
+            return redirect()->route('student.dashboard');
+        }
+
+        $pendingEnrollments = \App\Models\Enrollment::with('subject')
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->get();
+
+        return view('student.pending_approval', compact('student', 'pendingEnrollments'));
+    }
+
+    /**
+     * موافقة المدير على تسجيل دخول الطالب وتفعيل اشتراكه في المواد
+     */
+    public function approveStudent($id)
+    {
+        $student = Student::findOrFail($id);
+        $student->status = 'active';
+        $student->save();
+
+        // تفعيل جميع اشتراكات الطالب المعلقة
+        \App\Models\Enrollment::where('student_id', $student->id)
+            ->update([
+                'status'         => 'active',
+                'activated_at'   => now(),
+            ]);
+
+        // إرسال إشعار فوري للطالب
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'تمت موافقة الإدارة وتفعيل حسابك واشتراكك! 🎉',
+                'مبارك يا بطل! وافق المشرف العام على تسجيل دخولك واشتراكك في المنصة. يمكنك الآن بدء دراستك وتصفح مساقاتك كاملة.',
+                'approval',
+                route('student.dashboard')
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'icon'    => 'success',
+            'title'   => 'تم اعتماد الطالب بنجاح! 🚀',
+            'message' => "تمت الموافقة وتفعيل دخول واشتراك الطالب ({$student->name_ar}) بنجاح."
+        ]);
+    }
+
     public function toggleStatus($id) {
         $student = Student::findOrFail($id);
-        $student->status = ($student->status == 'active') ? 'pending' : 'active';
+        $newStatus = ($student->status === 'active') ? 'pending' : 'active';
+        $student->status = $newStatus;
         $student->save();
-        return response()->json(['icon' => 'success', 'title' => 'تم تغيير الحالة بنجاح']);
+
+        if ($newStatus === 'active') {
+            \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('status', 'pending')
+                ->update([
+                    'status'       => 'active',
+                    'activated_at' => now()
+                ]);
+        }
+
+        return response()->json([
+            'icon'  => 'success',
+            'title' => $newStatus === 'active' ? 'تمت الموافقة وتفعيل الحساب والاشتراك بنجاح! 🎉' : 'تم تحويل الحساب لقيد المراجعة ⏳'
+        ]);
     }
 
     public function destroy($id) {

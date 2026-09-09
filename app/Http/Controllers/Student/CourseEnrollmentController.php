@@ -28,16 +28,27 @@ class CourseEnrollmentController extends Controller
         $subjects = $query->get();
         $stages = Stage::all();
 
-        // معرفات المواد التي يشترك فيها الطالب حالياً
+        // معرفات المواد التي يشترك فيها الطالب حالياً (فقط إن كان حسابه واشتراكه معتمداً ومفعلاً من المدير)
         $enrolledSubjectIds = [];
-        if ($student) {
+        $pendingSubjectIds  = [];
+        if ($student && $student->status === 'active') {
             $enrolledSubjectIds = Enrollment::where('student_id', $student->id)
                 ->where('status', 'active')
                 ->pluck('subject_id')
                 ->toArray();
+
+            $pendingSubjectIds = Enrollment::where('student_id', $student->id)
+                ->where('status', 'pending')
+                ->pluck('subject_id')
+                ->toArray();
+        } elseif ($student) {
+            // إذا كان حساب الطالب لم يعتمد بعد، فجميع المواد غير مفعلة
+            $pendingSubjectIds = Enrollment::where('student_id', $student->id)
+                ->pluck('subject_id')
+                ->toArray();
         }
 
-        return view('student.courses.catalog', compact('subjects', 'stages', 'enrolledSubjectIds', 'stageId', 'student'));
+        return view('student.courses.catalog', compact('subjects', 'stages', 'enrolledSubjectIds', 'pendingSubjectIds', 'stageId', 'student'));
     }
 
     /**

@@ -86,16 +86,16 @@
                             <input type="text" name="name_ar" class="modern-input" placeholder="مثال: أحمد محمد علي" required>
                         </div>
                         <div>
-                            <label class="form-label">الاسم بالإنجليزية <span>*</span></label>
-                            <input type="text" name="name_en" class="modern-input" placeholder="Full Name" required style="text-align: left; direction: ltr;">
+                            <label class="form-label">الاسم بالإنجليزية (اختياري)</label>
+                            <input type="text" name="name_en" class="modern-input" placeholder="Full Name" style="text-align: left; direction: ltr;">
                         </div>
                         <div>
-                            <label class="form-label">رقم الهوية/الجواز <span>*</span></label>
+                            <label class="form-label">رقم الهوية الفلسطينية (9 أرقام) <span>*</span></label>
                             <input type="text" name="nid" maxlength="9" class="modern-input" placeholder="9 أرقام" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div>
-                            <label class="form-label">العمر <span>*</span></label>
-                            <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="18" required>
+                            <label class="form-label">العمر</label>
+                            <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="18" value="18">
                         </div>
                     </div>
                 </div>
@@ -109,12 +109,12 @@
                             <input type="email" name="email" class="modern-input" placeholder="student@example.com" required>
                         </div>
                         <div>
-                            <label class="form-label">رقم التواصل <span>*</span></label>
-                            <input type="tel" name="phone" class="modern-input" placeholder="05xxxxxxxx" required>
+                            <label class="form-label">رقم التواصل / واتساب <span>*</span></label>
+                            <input type="tel" name="phone" class="modern-input" placeholder="059xxxxxxxx" required>
                         </div>
                         <div>
                             <label class="form-label">كلمة المرور <span>*</span></label>
-                            <input type="password" name="password" class="modern-input" placeholder="8 رموز على الأقل" required minlength="8">
+                            <input type="password" name="password" class="modern-input" placeholder="6 خانات على الأقل" required minlength="6">
                         </div>
                     </div>
                 </div>
@@ -127,9 +127,9 @@
                     <div class="section-title" style="color: white;"><i style="background: rgba(255,255,255,0.1); color: white;">🎓</i> التصنيف الأكاديمي</div>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         <div>
-                            <label class="form-label" style="color: rgba(255,255,255,0.8);">المرحلة الدراسية <span>*</span></label>
+                            <label class="form-label" style="color: rgba(255,255,255,0.8);">المرحلة / الفرع الدراسي <span>*</span></label>
                             <select name="stage_id" class="modern-input" required>
-                                <option value="" selected disabled>اختر المرحلة...</option>
+                                <option value="" selected disabled>اختر الفرع الأكاديمي...</option>
                                 @foreach($stages as $stage)
                                     <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
                                 @endforeach
@@ -147,20 +147,20 @@
 
                 <!-- المرفقات -->
                 <div class="glass-card">
-                    <div class="section-title"><i style="color: #f59e0b; background: #fffbeb;">📂</i> المرفقات المطلوبة</div>
+                    <div class="section-title"><i style="color: #f59e0b; background: #fffbeb;">📂</i> المرفقات (اختياري)</div>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         <div class="upload-box" id="box-photo" onclick="document.getElementById('p_file').click()">
                             <img id="preview-photo" src="" alt="preview">
                             <input type="file" name="photo" id="p_file" accept="image/*" hidden>
                             <span class="icon">📸</span>
-                            <span class="text">الصورة الشخصية</span>
+                            <span class="text">الصورة الشخصية (اختياري)</span>
                         </div>
 
                         <div class="upload-box" id="box-id" onclick="document.getElementById('i_file').click()">
                             <img id="preview-id" src="" alt="preview">
                             <input type="file" name="id_photo" id="i_file" accept="image/*" hidden>
                             <span class="icon">🪪</span>
-                            <span class="text">صورة الهوية</span>
+                            <span class="text">صورة الهوية (اختياري)</span>
                         </div>
                     </div>
                 </div>
@@ -213,15 +213,19 @@
             return;
         }
 
-        // 2. تحقق إضافي للملفات (بما أنها hidden فـ required المتصفح أحياناً يفشل)
-        if (!document.getElementById('p_file').files[0] || !document.getElementById('i_file').files[0]) {
-            Swal.fire({ icon: 'warning', title: 'نواقص', text: 'يرجى رفع الصورة الشخصية وصورة الهوية.' });
+        const nidInput = form.querySelector('[name="nid"]');
+        if (nidInput && (nidInput.value.trim().length !== 9 || !/^\d+$/.test(nidInput.value.trim()))) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'تنبيه رقم الهوية',
+                text: 'يرجى إدخال رقم الهوية المكون من 9 أرقام بدقة.'
+            });
             return;
         }
 
-        // 3. تجهيز البيانات
+        // 2. تجهيز البيانات
         btn.disabled = true;
-        btn.innerHTML = '<span style="opacity: 0.8">جاري معالجة البيانات...</span>';
+        btn.innerHTML = '<span style="opacity: 0.8"><i class="fas fa-spinner fa-spin"></i> جاري حفظ بيانات الطالب...</span>';
 
         let formData = new FormData(form);
 
@@ -230,24 +234,33 @@
 
             Swal.fire({
                 icon: 'success',
-                title: 'تمت العملية!',
-                text: response.data.title || 'تم تسجيل الطالب بنجاح',
-                confirmButtonColor: '#10b981'
+                title: 'تمت العملية بنجاح! 🎉',
+                text: response.data.title || 'تم تسجيل الطالب بنجاح وتفعيل مواده الدراسية.',
+                confirmButtonColor: '#10b981',
+                confirmButtonText: 'الانتقال إلى سجل الطلاب'
             }).then(() => {
-                location.href = "{{ route('admin.students.index') }}";
+                location.href = response.data.redirect || "{{ route('admin.students.index') }}";
             });
 
         } catch (error) {
             btn.disabled = false;
             btn.innerHTML = 'حفظ بيانات الطالب';
 
-            let message = 'حدث خطأ غير متوقع.';
+            let message = 'حدث خطأ أثناء حفظ البيانات، يرجى التأكد من صحة المدخلات.';
             if (error.response && error.response.data) {
-                // عرض أول خطأ قادم من Laravel Validator
-                message = error.response.data.title || error.response.data.message || message;
+                if (error.response.data.title) {
+                    message = error.response.data.title;
+                } else if (error.response.data.errors) {
+                    const firstKey = Object.keys(error.response.data.errors)[0];
+                    if (firstKey && error.response.data.errors[firstKey][0]) {
+                        message = error.response.data.errors[firstKey][0];
+                    }
+                } else if (error.response.data.message) {
+                    message = error.response.data.message;
+                }
             }
 
-            Swal.fire({ icon: 'error', title: 'فشل الحفظ', text: message });
+            Swal.fire({ icon: 'error', title: 'فشل الحفظ', text: message, confirmButtonText: 'حسناً' });
         }
     }
 </script>
