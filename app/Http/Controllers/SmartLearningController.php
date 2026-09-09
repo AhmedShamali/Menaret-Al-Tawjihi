@@ -21,28 +21,17 @@ class SmartLearningController extends Controller
 
         $studentId = $student->id;
 
-        // إذا لم يكن لدى الطالب شهادة، نولد له شهادة فخرية لمادته الأولى تشجيعاً له
-        $firstSubject = null;
-        if (method_exists($student, 'enrolledSubjects')) {
-            $firstSubject = $student->enrolledSubjects()->first();
-        }
-        if (!$firstSubject && !empty($student->stage_id)) {
-            $firstSubject = Subject::where('stage_id', $student->stage_id)->first();
-        }
-        if (!$firstSubject) {
-            $firstSubject = Subject::first();
+        // التحقق من قرار الإدارة بإعلان ونشر شهادات ونتائج نهاية العام
+        $isYearEndPublished = (bool) Setting::get('year_end_certificates_published', 0);
+        $allowGpaCalculation = (bool) Setting::get('allow_student_calculate_gpa', 0);
+
+        // حجب الشهادات تماماً عن الطالب حتى نهاية العام وعندما يأذن المدير
+        if ($isYearEndPublished) {
+            $certificates = Certificate::with(['subject', 'student'])->where('student_id', $studentId)->latest()->get();
+        } else {
+            $certificates = collect();
         }
 
-        if ($firstSubject && Certificate::where('student_id', $studentId)->count() === 0) {
-            Certificate::create([
-                'student_id' => $studentId,
-                'subject_id' => $firstSubject->id,
-                'certificate_code' => 'TAWJIHI-' . date('Y') . '-' . strtoupper(Str::random(6)),
-                'final_grade' => 96
-            ]);
-        }
-
-        $certificates = Certificate::with(['subject', 'student'])->where('student_id', $studentId)->latest()->get();
         $recommendations = Recommendation::with('content.subject')->where('student_id', $studentId)->get();
         $completedExamsCount = ExamSubmission::where('student_id', $studentId)->count();
 
@@ -55,7 +44,15 @@ class SmartLearningController extends Controller
             $subjects = Subject::orderBy('name_ar')->get();
         }
 
-        return view('student.achievements.index', compact('certificates', 'recommendations', 'student', 'completedExamsCount', 'subjects'));
+        return view('student.achievements.index', compact(
+            'certificates',
+            'recommendations',
+            'student',
+            'completedExamsCount',
+            'subjects',
+            'isYearEndPublished',
+            'allowGpaCalculation'
+        ));
     }
 
     /**
@@ -83,6 +80,14 @@ class SmartLearningController extends Controller
         $certificate = Certificate::with(['student.stage', 'subject.stage'])->where('id', $id)
             ->orWhere('certificate_code', $id)
             ->firstOrFail();
+
+        $isAdmin = Auth::guard('web')->check() && Auth::user()->role === 'admin';
+        $isYearEndPublished = (bool) Setting::get('year_end_certificates_published', 0);
+
+        if (!$isAdmin && !$isYearEndPublished) {
+            return redirect()->route('student.achievements')
+                ->with('warning', 'عذراً، الشهادات الأكاديمية محجوبة وتُعلن رسمياً في نهاية العام الدراسي بقرار الإدارة 🔒');
+        }
 
         $student = $certificate->student ?? Auth::guard('student')->user() ?? Auth::user();
         $siteName = Setting::get('site_name', 'منارة التوجيهي');

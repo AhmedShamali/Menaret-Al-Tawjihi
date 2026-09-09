@@ -167,6 +167,13 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/payments', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
     Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
     Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt');
+
+    // إدارة واعتماد شهادات ونتائج نهاية العام للثانوية العامة
+    Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');
+    Route::post('/certificates/toggle-publish', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'togglePublish'])->name('certificates.togglePublish');
+    Route::post('/certificates/toggle-gpa', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'toggleGpa'])->name('certificates.toggleGpa');
+    Route::post('/certificates/issue', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'issue'])->name('certificates.issue');
+    Route::delete('/certificates/{id}', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'destroy'])->name('certificates.destroy');
 });
 
 

@@ -22,8 +22,8 @@
 
         <div class="hero-stats-row">
             <div class="hero-stat-pill">
-                <span class="num">{{ $certificates->count() }}</span>
-                <span class="lbl">شهادات معتمدة</span>
+                <span class="num">{{ $isYearEndPublished ? $certificates->count() : '🔒' }}</span>
+                <span class="lbl">{{ $isYearEndPublished ? 'شهادات معتمدة' : 'الشهادات (نهاية العام)' }}</span>
             </div>
             <div class="hero-stat-pill">
                 <span class="num">{{ $completedExamsCount }}</span>
@@ -36,37 +36,71 @@
         </div>
     </div>
 
-    <!-- شبكة الشهادات الملكية -->
+    <!-- شبكة الشهادات الملكية ونتائج نهاية العام -->
     <div class="section-title-bar">
-        <h3><i class="fa-solid fa-award text-warning"></i> الشهادات الأكاديمية الصادرة</h3>
-        <span class="badge-count">{{ $certificates->count() }} شهادة</span>
+        <h3><i class="fa-solid fa-award text-warning"></i> الشهادات الأكاديمية ونتائج نهاية العام</h3>
+        <span class="badge-count">
+            @if($isYearEndPublished)
+                {{ $certificates->count() }} شهادة معتمدة
+            @else
+                محجوبة حتى نهاية العام 🔒
+            @endif
+        </span>
     </div>
 
-    @if($certificates->count() > 0)
+    @if(!$isYearEndPublished)
+        <!-- حالة الحجب الأكاديمي الشرفي: الشهادات محجوبة حتى نهاية العام بقرار المدير -->
+        <div class="year-end-locked-box" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border: 2px dashed #cbd5e1; border-radius: 24px; padding: 45px 30px; text-align: center; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.03); position: relative; overflow: hidden;">
+            <div style="width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 24px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; box-shadow: 0 10px 25px rgba(217, 119, 6, 0.2);">
+                <i class="fa-solid fa-school-flag"></i>
+            </div>
+            
+            <span style="background: #eef2ff; color: #4f46e5; padding: 6px 16px; border-radius: 50px; font-weight: 800; font-size: 0.85rem; display: inline-block; margin-bottom: 15px;">
+                <i class="fa-solid fa-lock"></i> نظام الاعتماد والشهادات المدرسية الرسمي
+            </span>
+            
+            <h2 style="font-size: 1.5rem; font-weight: 900; color: #0f172a; margin-bottom: 12px;">
+                الشهادات الأكاديمية والمعدلات تُعلن رسميّاً في نهاية العام الدراسي 🎓
+            </h2>
+            
+            <p style="font-size: 0.96rem; color: #64748b; max-width: 650px; margin: 0 auto 25px auto; line-height: 1.8;">
+                تنفيذاً للضوابط والمعايير المدرسية والأكاديمية المعتمدة، تخضع درجاتك وسجلك الدراسي للمتابعة والتقييم المستمر. لا تصدر الشهادات والمعدلات تلقائياً، بل تُعتمد وتُعلن رسميّاً من قبل <strong>إدارة المنصة والمشرف العام</strong> في نهاية العام الدراسي بعد استكمال متطلبات المنهاج والاختبارات الوزارية.
+            </p>
+
+            <div style="display: inline-flex; flex-wrap: wrap; gap: 15px; justify-content: center; align-items: center; background: #ffffff; padding: 14px 25px; border-radius: 16px; border: 1px solid #e2e8f0; font-size: 0.88rem; font-weight: 700;">
+                <span style="color: #475569; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: #f59e0b;"></i> حالة الاعتماد: <span style="color: #d97706;">قيد المتابعة والتقييم الأكاديمي المستمر</span>
+                </span>
+                <span style="color: #cbd5e1;">•</span>
+                <span style="color: #475569; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-calendar-check" style="color: #10b981;"></i> موعد إعلان النتائج: <span style="color: #059669;">نهاية العام الدراسي (بقرار الإدارة العامة)</span>
+                </span>
+            </div>
+        </div>
+    @elseif($certificates->count() > 0)
+        <!-- عرض الشهادات المعتمدة الحقيقية فقط بعد إعلان الإدارة -->
         <div class="certificates-royal-grid">
             @foreach($certificates as $cert)
                 <div class="cert-royal-card">
-                    <div class="cert-gold-ribbon"><i class="fa-solid fa-star"></i> تفوق</div>
-                    <div class="cert-card-icon">
-                        🎓
-                    </div>
-                    <h4 class="cert-subject-title">{{ $cert->subject->name_ar ?? $cert->subject->name ?? 'مساق أكاديمي' }}</h4>
-                    <p class="cert-student-sub">شهادة إتمام وتفوق صادرة باسم: <strong>{{ $cert->student->name_ar ?? $cert->student->name ?? $student->name_ar ?? $student->name }}</strong></p>
+                    <div class="cert-gold-ribbon"><i class="fa-solid fa-star"></i> معتمد رسمياً</div>
+                    <div class="cert-card-icon">🎓</div>
+                    <h4 class="cert-subject-title">{{ $cert->subject->name_ar ?? $cert->subject->name ?? 'شهادة إتمام وتفوق عامة' }}</h4>
+                    <p class="cert-student-sub">شهادة إتمام واجتياز أكاديمي صادرة باسم: <strong>{{ $cert->student->name_ar ?? $cert->student->name ?? $student->name_ar ?? $student->name }}</strong></p>
                     
                     <div class="cert-grade-tag">
-                        المعدل: <span>{{ $cert->final_grade }}%</span>
+                        المعدل المعتمد: <span>{{ $cert->final_grade }}%</span>
                     </div>
 
                     <div class="cert-code-box">
-                        <small>كود الشهادة:</small>
+                        <small>كود الوثيقة المعتمد:</small>
                         <code>{{ $cert->certificate_code }}</code>
                     </div>
 
                     <div class="cert-actions">
                         <a href="{{ route('student.certificates.show', $cert->id) }}" class="btn-cert-view" target="_blank">
-                            <i class="fa-solid fa-eye"></i> استعراض وطباعة
+                            <i class="fa-solid fa-eye"></i> استعراض وطباعة الشهادة
                         </a>
-                        <a href="{{ route('certificates.verify', $cert->certificate_code) }}" class="btn-cert-verify" target="_blank" title="التحقق المباشر">
+                        <a href="{{ route('certificates.verify', $cert->certificate_code) }}" class="btn-cert-verify" target="_blank" title="التحقق المباشر من صحة الشهادة">
                             <i class="fa-solid fa-qrcode"></i>
                         </a>
                     </div>
@@ -76,11 +110,8 @@
     @else
         <div class="empty-certs-card">
             <i class="fa-solid fa-graduation-cap empty-icon"></i>
-            <h4>لا توجد شهادات صادرة بعد</h4>
-            <p>أكمل دراسة دروسك واجتز اختبارات المادة بمعدل 85% فأكثر ليتم توليد شهادتك تلقائياً!</p>
-            <a href="{{ route('student.exams.index') }}" class="btn-primary-action">
-                <i class="fa-solid fa-pen-nib"></i> الانتقال للاختبارات
-            </a>
+            <h4>تم إعلان نتائج العام الدراسي</h4>
+            <p>شهادتك قيد المراجعة الإدارية النهائية وسيتم إدراجها فور اعتماد المشرف العام.</p>
         </div>
     @endif
 

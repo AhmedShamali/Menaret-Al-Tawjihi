@@ -338,6 +338,10 @@
                 <a href="{{ route('admin.payments.index') }}" class="nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-wallet" style="color: #f59e0b;"></i> <span>الاشتراكات والمدفوعات 💳</span></div></div>
                 </a>
+
+                <a href="{{ route('admin.certificates.index') }}" class="nav-item {{ Request::is('admin/certificates*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-award" style="color: #6366f1;"></i> <span>شهادات ونتائج التخرج 🎓</span></div></div>
+                </a>
             @endif
 
             @if(auth()->check() && auth()->user()->role === 'teacher')

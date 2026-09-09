@@ -20,6 +20,20 @@ class TawjihiCalculatorController extends Controller
      */
     public function calculate(Request $request)
     {
+        // التحقق من صلاحية حساب المعدل للطلاب بقرار المدير
+        if (\Illuminate\Support\Facades\Auth::guard('student')->check()) {
+            $allowGpa = (bool) \App\Models\Setting::get('allow_student_calculate_gpa', 0);
+            if (!$allowGpa) {
+                return response()->json([
+                    'success' => false,
+                    'icon'    => 'info',
+                    'title'   => 'حساب المعدل مغلق حالياً 🔒',
+                    'message' => 'حساب واعتماد المعدل النهائي مغلق حالياً، ويتم تفعيله بقرار إدارة المنصة في نهاية العام الدراسي.',
+                    'status'  => 'locked'
+                ], 403);
+            }
+        }
+
         $branch = $request->input('branch', 'scientific');
         $scores = $request->input('scores', []);
 
