@@ -120,6 +120,8 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/save', [AdminManagerController::class, 'studentStore'])->name('students.save');
     Route::post('/students/toggle-status/{id}', [StudentController::class, 'toggleStatus'])->name('students.toggleStatus');
     Route::post('/students/{id}/approve', [StudentController::class, 'approveStudent'])->name('students.approve');
+    Route::post('/students/{id}/sync-subjects', [StudentController::class, 'syncSubjects'])->name('students.syncSubjects');
+    Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
 
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');

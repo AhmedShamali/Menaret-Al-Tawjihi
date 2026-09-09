@@ -229,17 +229,17 @@ class StudentController extends Controller
     }
 
     public function edit($id) {
-        $student = Student::findOrFail($id);
-        $stages = Stage::all();
+        $student = Student::with(['enrolledSubjects', 'enrollments.subject'])->findOrFail($id);
+        $stages = Stage::with(['subjects.teacher'])->get();
         return view('students.edit', compact('student', 'stages'));
     }
 
-    // 5. دالة التحديث (Update) - معدلة
+    // 5. دالة التحديث (Update) - معدلة لدعم مزامنة المواد للطلاب الحاليين والقدامى
     public function update(Request $request, $id) {
         $student = Student::findOrFail($id);
 
         // استبعاد الصور وكلمة المرور من التحديث التلقائي لمعالجتها يدوياً
-        $data = $request->except(['password', 'photo', 'id_photo']);
+        $data = $request->except(['password', 'photo', 'id_photo', 'manage_subjects', 'subject_ids']);
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
@@ -259,7 +259,34 @@ class StudentController extends Controller
         }
 
         $student->update($data);
-        return response()->json(['icon' => 'success', 'title' => 'تم تحديث البيانات بنجاح 🚀']);
+
+        // مزامنة المواد الدراسية إذا أُرسلت من صفحة التعديل
+        if ($request->has('manage_subjects')) {
+            $selectedSubjectIds = $request->input('subject_ids', []);
+            if (!is_array($selectedSubjectIds)) {
+                $selectedSubjectIds = [];
+            }
+
+            // حذف اشتراكات المواد التي أُلغي تحديدها
+            \App\Models\Enrollment::where('student_id', $student->id)
+                ->whereNotIn('subject_id', $selectedSubjectIds)
+                ->delete();
+
+            // تفعيل أو إضافة المواد المحددة
+            foreach ($selectedSubjectIds as $subId) {
+                \App\Models\Enrollment::updateOrCreate(
+                    ['student_id' => $student->id, 'subject_id' => $subId],
+                    [
+                        'status'         => 'active',
+                        'access_mode'    => 'all',
+                        'payment_status' => 'admin_grant',
+                        'activated_at'   => now(),
+                    ]
+                );
+            }
+        }
+
+        return response()->json(['icon' => 'success', 'title' => 'تم تحديث البيانات والمواد بنجاح 🚀']);
     }
 
     /**
@@ -352,8 +379,93 @@ class StudentController extends Controller
     }
 
     public function show($id) {
-        $student = Student::with('stage')->findOrFail($id);
-        return view('admin.students.show', compact('student'));
+        $student = Student::with([
+            'stage.subjects.teacher',
+            'enrollments.subject.teacher',
+            'enrolledSubjects.teacher'
+        ])->findOrFail($id);
+
+        $allStages = Stage::with(['subjects.teacher'])->get();
+
+        return view('admin.students.show', compact('student', 'allStages'));
+    }
+
+    /**
+     * مزامنة وتحديث المواد المشترك بها الطالب فورياً (من ملف الطالب الشخصي والمودال)
+     */
+    public function syncSubjects(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $selectedSubjectIds = $request->input('subject_ids', []);
+        if (!is_array($selectedSubjectIds)) {
+            $selectedSubjectIds = [];
+        }
+
+        // حذف الاشتراكات للمواد التي تم إلغاء تحديدها
+        \App\Models\Enrollment::where('student_id', $student->id)
+            ->whereNotIn('subject_id', $selectedSubjectIds)
+            ->delete();
+
+        // تفعيل أو إضافة المواد المختارة
+        $addedCount = 0;
+        foreach ($selectedSubjectIds as $subId) {
+            \App\Models\Enrollment::updateOrCreate(
+                ['student_id' => $student->id, 'subject_id' => $subId],
+                [
+                    'status'         => 'active',
+                    'access_mode'    => 'all',
+                    'payment_status' => 'admin_grant',
+                    'activated_at'   => now(),
+                ]
+            );
+            $addedCount++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'icon'    => 'success',
+            'title'   => 'تم حفظ وتحديث مواد الطالب بنجاح! 📚',
+            'message' => "تم اعتماد {$addedCount} مادة دراسية للطالب ({$student->name_ar}).",
+            'count'   => $addedCount
+        ]);
+    }
+
+    /**
+     * تبديل أو إلغاء اشتراك مادة محددة للطالب بنقرة واحدة
+     */
+    public function toggleSubjectEnrollment(Request $request, $id, $subject_id)
+    {
+        $student = Student::findOrFail($id);
+        $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
+            ->where('subject_id', $subject_id)
+            ->first();
+
+        if ($enrollment) {
+            $enrollment->delete();
+            return response()->json([
+                'success' => true,
+                'status'  => 'removed',
+                'icon'    => 'info',
+                'title'   => 'تم إلغاء الاشتراك في المادة ❌',
+                'message' => 'تمت إزالة المادة من قائمة مواد الطالب بنجاح.'
+            ]);
+        } else {
+            \App\Models\Enrollment::create([
+                'student_id'     => $student->id,
+                'subject_id'     => $subject_id,
+                'status'         => 'active',
+                'access_mode'    => 'all',
+                'payment_status' => 'admin_grant',
+                'activated_at'   => now(),
+            ]);
+            return response()->json([
+                'success' => true,
+                'status'  => 'added',
+                'icon'    => 'success',
+                'title'   => 'تم تفعيل المادة للطالب بنجاح! ✅',
+                'message' => 'أصبحت المادة متاحة للطالب فوراً.'
+            ]);
+        }
     }
 
     /**

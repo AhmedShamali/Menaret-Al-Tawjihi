@@ -79,6 +79,52 @@
                     </div>
                 </div>
 
+                <!-- 3. المواد الدراسية المشترك بها -->
+                <div class="form-card">
+                    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="card-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                                <i class="fas fa-book-open"></i>
+                            </div>
+                            <h3>المواد الدراسية المشترك بها الطالب</h3>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="toggleEditSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">تحديد الكل</button>
+                            <button type="button" onclick="toggleEditSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">إلغاء التحديد</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <input type="hidden" name="manage_subjects" value="1">
+                        <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 14px;">
+                            حدد المواد المعتمدة لهذا الطالب في حسابه، سيتم تحديث وتفعيل اشتراكاته فور حفظ البيانات:
+                        </p>
+                        <div id="editSubjectsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                            @php
+                                $studentStage = $stages->firstWhere('id', $student->stage_id) ?? $stages->first();
+                                $currentSubIds = $student->enrolledSubjects->pluck('id')->toArray();
+                            @endphp
+
+                            @if($studentStage && $studentStage->subjects->count() > 0)
+                                @foreach($studentStage->subjects as $sub)
+                                    @php $isChecked = in_array($sub->id, $currentSubIds); @endphp
+                                    <label class="edit-subject-label" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1.5px solid {{ $isChecked ? '#4f46e5' : '#e2e8f0' }}; background: {{ $isChecked ? '#eef2ff' : '#f8fafc' }}; border-radius: 12px; cursor: pointer; transition: 0.2s; user-select: none;">
+                                        <input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}" class="edit-sub-cb" {{ $isChecked ? 'checked' : '' }} style="width: 17px; height: 17px; accent-color: #4f46e5;">
+                                        <span style="font-size: 1.3rem;">{{ $sub->icon ?? '📖' }}</span>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 700; font-size: 0.85rem; color: #1e293b;">{{ $sub->name_ar }}</div>
+                                            <div style="font-size: 0.72rem; color: #64748b;">{{ $sub->teacher?->name_ar ?? $sub->teacher?->name ?? 'مدرس المادة' }}</div>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            @else
+                                <div style="color: #94a3b8; font-size: 0.85rem; padding: 15px; text-align: center; grid-column: 1/-1;">
+                                    لا توجد مواد متاحة حالياً لهذه المرحلة.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- العمود الأيسر: الإعدادات والمرفقات -->
@@ -320,6 +366,33 @@
             }
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    // تبديل وتلوين كروت المواد في التعديل
+    document.querySelectorAll('.edit-subject-label').forEach(card => {
+        const cb = card.querySelector('.edit-sub-cb');
+        if (cb) {
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    card.style.borderColor = '#4f46e5';
+                    card.style.background = '#eef2ff';
+                } else {
+                    card.style.borderColor = '#e2e8f0';
+                    card.style.background = '#f8fafc';
+                }
+            });
+        }
+    });
+
+    function toggleEditSubjects(selectAll) {
+        document.querySelectorAll('.edit-sub-cb').forEach(cb => {
+            cb.checked = selectAll;
+            const card = cb.closest('.edit-subject-label');
+            if (card) {
+                card.style.borderColor = selectAll ? '#4f46e5' : '#e2e8f0';
+                card.style.background = selectAll ? '#eef2ff' : '#f8fafc';
+            }
+        });
     }
 
     // إرسال طلب التحديث

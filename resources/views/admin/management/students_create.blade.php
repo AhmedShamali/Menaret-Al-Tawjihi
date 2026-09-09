@@ -118,6 +118,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- المواد الدراسية المراد الاشتراك بها -->
+                <div class="glass-card" id="subjectsSection">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <div class="section-title" style="margin-bottom: 0;">
+                            <i style="color: #4f46e5; background: #eef2ff;">📚</i> المواد الدراسية المراد تسجيل الطالب بها (اختياري)
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" onclick="toggleAllSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">تحديد الكل</button>
+                            <button type="button" onclick="toggleAllSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">إلغاء التحديد</button>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 16px;">
+                        حدد المواد التي ترغب بتسجيل الطالب فيها لتفعيلها فوراً، أو اتركها دون تحديد لتخصيصها لاحقاً.
+                    </p>
+                    <div id="subjectsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <!-- يتم ملؤها تلقائياً بالمواد عند اختيار الفرع -->
+                    </div>
+                </div>
             </div>
 
             <!-- العمود الأيسر: الجانب -->
@@ -201,6 +220,81 @@
 
     setupFilePreview('p_file', 'preview-photo', 'box-photo');
     setupFilePreview('i_file', 'preview-id', 'box-id');
+
+    // منطق عرض المواد ديناميكياً حسب الفرع المختار
+    const stagesData = @json($stages);
+    const stageSelect = document.querySelector('select[name="stage_id"]');
+    const subjectsContainer = document.getElementById('subjectsContainer');
+
+    function renderSubjectsForStage(stageId) {
+        if (!subjectsContainer) return;
+
+        if (!stageId) {
+            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">يرجى اختيار الفرع أو المرحلة أولاً لعرض المواد المتاحة.</div>';
+            return;
+        }
+
+        const stage = stagesData.find(s => s.id == stageId || s.grade_level == stageId);
+        if (!stage || !stage.subjects || stage.subjects.length === 0) {
+            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">لا توجد مواد مسجلة لهذا الفرع حالياً.</div>';
+            return;
+        }
+
+        let html = '';
+        stage.subjects.forEach(sub => {
+            const teacherName = (sub.teacher && (sub.teacher.name_ar || sub.teacher.name)) ? (sub.teacher.name_ar || sub.teacher.name) : 'مدرس المادة';
+            const icon = sub.icon || '📖';
+            html += `
+                <label class="subject-choice-card" style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1.5px solid #e2e8f0; border-radius: 12px; cursor: pointer; transition: 0.2s; background: #ffffff; user-select: none;">
+                    <input type="checkbox" name="subject_ids[]" value="${sub.id}" class="subject-checkbox" style="width: 18px; height: 18px; accent-color: #4f46e5; cursor: pointer;">
+                    <span style="font-size: 1.3rem;">${icon}</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; font-size: 0.85rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${sub.name_ar}</div>
+                        <div style="font-size: 0.72rem; color: #64748b;">${teacherName}</div>
+                    </div>
+                </label>
+            `;
+        });
+        subjectsContainer.innerHTML = html;
+
+        // إضافة تفاعل التحديد
+        subjectsContainer.querySelectorAll('.subject-choice-card').forEach(card => {
+            const cb = card.querySelector('input[type="checkbox"]');
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    card.style.borderColor = '#4f46e5';
+                    card.style.background = '#eef2ff';
+                } else {
+                    card.style.borderColor = '#e2e8f0';
+                    card.style.background = '#ffffff';
+                }
+            });
+        });
+    }
+
+    function toggleAllSubjects(selectAll) {
+        if (!subjectsContainer) return;
+        const checkboxes = subjectsContainer.querySelectorAll('.subject-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll;
+            const card = cb.closest('.subject-choice-card');
+            if (card) {
+                card.style.borderColor = selectAll ? '#4f46e5' : '#e2e8f0';
+                card.style.background = selectAll ? '#eef2ff' : '#ffffff';
+            }
+        });
+    }
+
+    if (stageSelect) {
+        stageSelect.addEventListener('change', function() {
+            renderSubjectsForStage(this.value);
+        });
+        if (stageSelect.value) {
+            renderSubjectsForStage(stageSelect.value);
+        } else {
+            renderSubjectsForStage(null);
+        }
+    }
 
     // وظيفة الإرسال
     async function handleRegistration() {

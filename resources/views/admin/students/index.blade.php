@@ -51,7 +51,9 @@
                                     <div class="status-dot {{ $student->status == 'active' ? 'online' : 'offline' }}"></div>
                                 </div>
                                 <div class="student-details">
-                                    <span class="name">{{ $student->name_ar }}</span>
+                                    <a href="{{ route('admin.students.show', $student->id) }}" style="text-decoration: none; color: inherit;" title="عرض الملف وتخصيص المواد">
+                                        <span class="name" style="transition: color 0.2s; cursor: pointer;">{{ $student->name_ar }}</span>
+                                    </a>
                                     <span class="email">{{ $student->email }}</span>
                                 </div>
                             </div>
@@ -73,6 +75,11 @@
                         </td>
                         <td>
                             <div class="action-buttons">
+                                <a href="{{ route('admin.students.show', $student->id) }}"
+                                   class="btn-icon" style="color: #4f46e5; background: #eef2ff;" title="عرض ملف ومواد الطالب 📚">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                                </a>
+
                                 @if($student->status !== 'active')
                                     <button onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($student->name_ar) }}')"
                                             class="btn-approve-direct"

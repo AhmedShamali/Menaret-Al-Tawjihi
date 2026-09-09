@@ -232,21 +232,33 @@ class AdminManagerController extends Controller {
             ]);
         }
 
-        // تسجيل الطالب تلقائياً في مواد مرحلته الدراسية لتمكينه من البدء الفوري
-        try {
-            $stageSubjects = \App\Models\Subject::where('stage_id', $stageId)->get();
-            foreach ($stageSubjects as $sub) {
-                \App\Models\Enrollment::firstOrCreate(
-                    ['student_id' => $student->id, 'subject_id' => $sub->id],
-                    ['status' => 'active', 'access_mode' => 'all', 'payment_status' => 'free', 'activated_at' => now()]
-                );
+        // تسجيل الطالب في المواد التي حددها المدير حصراً دون إجباره على كل المواد تلقائياً
+        $enrolledCount = 0;
+        if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {
+            foreach ($request->subject_ids as $subId) {
+                try {
+                    \App\Models\Enrollment::firstOrCreate(
+                        ['student_id' => $student->id, 'subject_id' => $subId],
+                        [
+                            'status'         => 'active',
+                            'access_mode'    => 'all',
+                            'payment_status' => 'admin_grant',
+                            'activated_at'   => now(),
+                        ]
+                    );
+                    $enrolledCount++;
+                } catch (\Throwable $e) {}
             }
-        } catch (\Throwable $e) {}
+        }
+
+        $titleMsg = $enrolledCount > 0 
+            ? "تم إنشاء حساب الطالب وتفعيل ({$enrolledCount}) مادة مختارة بنجاح ✅" 
+            : 'تم إنشاء حساب الطالب بنجاح (يمكنك تخصيص مواده لاحقاً) ✅';
 
         return response()->json([
             'success'  => true,
             'icon'     => 'success',
-            'title'    => 'تم إنشاء حساب الطالب وتفعيل مواده بنجاح ✅',
+            'title'    => $titleMsg,
             'redirect' => route('admin.students.index')
         ]);
     }
@@ -257,13 +269,13 @@ class AdminManagerController extends Controller {
             (new \Database\Seeders\SubjectSeeder())->run();
         }
 
-        $stages = Stage::with('subjects')
+        $stages = Stage::with(['subjects.teacher'])
             ->where('grade_level', '>=', 120)
             ->orderBy('grade_level', 'desc')
             ->get();
 
         if ($stages->isEmpty()) {
-            $stages = Stage::all();
+            $stages = Stage::with(['subjects.teacher'])->get();
         }
 
         return view('admin.management.students_create', compact('stages'));
