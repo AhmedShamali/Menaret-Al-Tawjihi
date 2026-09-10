@@ -58,12 +58,10 @@ class PaymentGatewayController extends Controller
             'bop' => [
                 'name'          => 'بنك فلسطين (Bank of Palestine) 🏦',
                 'mobile_pay'    => '0567897212',
-                'bank_name'     => \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين - الإدارة العامة'),
-                'account_no'    => \App\Models\Setting::get('payment_account_no', '0458-123456-001'),
+                'bank_name'     => \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين'),
+                'account_no'    => \App\Models\Setting::get('payment_account_no', '2275913'),
                 'account_owner' => $palOwner,
-                'iban'          => \App\Models\Setting::get('payment_iban', 'PS91PALS0458000000123456001'),
-                'swift'         => 'PALSPS22',
-                'instructions'  => 'تحويل فوري إلى رقم الهاتف 0567897212 (خدمة التحويل لموبايل Pay to Mobile) أو عبر الآيبان لحساب المستفيد: ' . $palOwner . '.'
+                'instructions'  => 'تحويل فوري إلى رقم الهاتف 0567897212 أو لحساب رقم 2275913 باسم المستفيد: ' . $palOwner . '.'
             ],
             'palpay' => [
                 'name'          => 'بال باي (PalPay - محفظتي ونقاط البيع) 💳',

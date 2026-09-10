@@ -134,22 +134,15 @@
                         <div>
                             <label class="field-label">اسم البنك المعتمد</label>
                             <input type="text" name="payment_bank_name"
-                                   value="{{ \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين - الإدارة العامة') }}"
+                                   value="{{ \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين') }}"
                                    class="field-input">
                         </div>
 
                         <div>
-                            <label class="field-label">رقم الحساب المصرفي الداخلي</label>
+                            <label class="field-label">رقم حساب بنك فلسطين</label>
                             <input type="text" name="payment_account_no"
-                                   value="{{ \App\Models\Setting::get('payment_account_no', '0458-123456-001') }}"
-                                   class="field-input" style="direction: ltr; text-align: right;">
-                        </div>
-
-                        <div style="grid-column: span 2;">
-                            <label class="field-label">رقم الآيبان الفلسطيني (IBAN)</label>
-                            <input type="text" name="payment_iban"
-                                   value="{{ \App\Models\Setting::get('payment_iban', 'PS91PALS0458000000123456001') }}"
-                                   class="field-input" style="direction: ltr; text-align: right; font-family: monospace;">
+                                   value="{{ \App\Models\Setting::get('payment_account_no', '2275913') }}"
+                                   class="field-input" style="direction: ltr; text-align: right; font-weight: 700; font-family: monospace;">
                         </div>
                     </div>
                 </div>
@@ -164,7 +157,7 @@
                         <div>
                             <label class="field-label">رقم الواتساب الرسمي (للتواصل مع الطلاب)</label>
                             <input type="text" name="contact_whatsapp"
-                                   value="{{ \App\Models\Setting::get('contact_whatsapp', '0567897212') }}"
+                                   value="{{ \App\Models\Setting::get('contact_whatsapp', '00970597694385') }}"
                                    class="field-input" style="direction: ltr; text-align: right;">
                         </div>
                         <div>

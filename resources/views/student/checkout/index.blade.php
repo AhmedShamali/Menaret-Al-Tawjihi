@@ -158,7 +158,7 @@
                                 </div>
                                 <div>
                                     <strong style="display: block; font-size: 1rem; color: #0f172a;">بنك فلسطين (Bank of Palestine)</strong>
-                                    <small style="color: #64748b; font-size: 0.8rem;">تحويل بنكي / لموبايل (Pay to Mobile): <strong>0567897212</strong></small>
+                                    <small style="color: #64748b; font-size: 0.8rem;">رقم الحساب: <strong>2275913</strong> | جوال: <strong>0567897212</strong></small>
                                 </div>
                             </div>
                             <input type="radio" name="gateway_radio" style="accent-color: #0284c7; width: 20px; height: 20px;">
@@ -212,19 +212,19 @@
                             <strong style="font-size: 1rem; color: #0f172a;">{{ $palOwner ?? 'أحمد حسين شمالي' }}</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
-                            <span style="font-size: 0.85rem; color: #475569; font-weight: 700;">التحويل لموبايل (Pay to Mobile):</span>
+                            <span style="font-size: 0.85rem; color: #475569; font-weight: 700;">رقم حساب بنك فلسطين:</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <strong style="font-size: 1.25rem; color: #b91c1c; font-family: monospace; direction: ltr;">0567897212</strong>
-                                <button type="button" onclick="copyToClipboard('0567897212', 'تم نسخ رقم الهاتف للتحويل البنكي (0567897212)')" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+                                <strong style="font-size: 1.3rem; color: #0f172a; font-family: monospace; direction: ltr; letter-spacing: 1px;">2275913</strong>
+                                <button type="button" onclick="copyToClipboard('2275913', 'تم نسخ رقم حساب بنك فلسطين (2275913)')" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
                                     <i class="fa-solid fa-copy"></i> نسخ
                                 </button>
                             </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
-                            <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">الآيبان الدولي (IBAN):</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
+                            <span style="font-size: 0.85rem; color: #475569; font-weight: 700;">رقم الجوال للتحويل (Pay to Mobile):</span>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <code style="font-family: monospace; font-size: 0.85rem; direction: ltr;">PS91PALS0458000000123456001</code>
-                                <button type="button" onclick="copyToClipboard('PS91PALS0458000000123456001', 'تم نسخ الآيبان الدولي بنجاح')" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+                                <strong style="font-size: 1.25rem; color: #b91c1c; font-family: monospace; direction: ltr;">0567897212</strong>
+                                <button type="button" onclick="copyToClipboard('0567897212', 'تم نسخ رقم الجوال للتحويل البنكي (0567897212)')" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
                                     <i class="fa-solid fa-copy"></i> نسخ
                                 </button>
                             </div>
@@ -232,6 +232,10 @@
                         <div style="margin-bottom: 14px; margin-top: 14px;">
                             <label style="display: block; font-size: 0.85rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">رقم الحوالة أو اسم صاحب الحساب المُحوِّل *</label>
                             <input type="text" name="bop_ref" id="input_bop_ref" placeholder="اسم صاحب الحساب أو رقم المرجع من تطبيق بنكي" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; outline: none; font-size: 0.95rem; box-sizing: border-box;">
+                        </div>
+                        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 14px; font-size: 0.78rem; color: #991b1b; display: flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-circle-info" style="font-size: 1rem;"></i>
+                            <span>طريقة التحويل: عبر تطبيق بنكي (بنك فلسطين) اختر تحويل إلى حساب رقم <strong>2275913</strong> أو تحويل لموبايل على <strong>0567897212</strong>.</span>
                         </div>
                     </div>
 
