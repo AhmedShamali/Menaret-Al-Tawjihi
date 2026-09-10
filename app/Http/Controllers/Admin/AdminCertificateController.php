@@ -123,6 +123,19 @@ class AdminCertificateController extends Controller
             ]
         );
 
+        try {
+            $sub = Subject::find($subjectId);
+            $subName = $sub ? $sub->name_ar : 'الثانوية العامة';
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'تم إصدار شهادتك الرسمية المعتمدة! 🎓',
+                "مبارك لك يا {$student->name_ar}! قامت إدارة المنصة باعتماد وإصدار شهادتك الأكاديمية الرسمية في {$subName} بمعدل ({$certificate->final_grade}%).",
+                'grade',
+                route('certificates.show', $certificate->id),
+                'fa-award'
+            );
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success'          => true,
             'icon'             => 'success',

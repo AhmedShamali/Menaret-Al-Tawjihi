@@ -243,6 +243,17 @@ class AdminManagerController extends Controller {
             }
         }
 
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'أهلاً بك في منصة منارة التوجيهي! 🎓',
+                "تم إنشاء وتفعيل حسابك الأكاديمي رسمياً من قِبل إدارة المنصة. نتمنى لك رحلة تعليمية موفقة ومتميزة!",
+                'system',
+                route('student.dashboard'),
+                'fa-sparkles'
+            );
+        } catch (\Throwable $e) {}
+
         $titleMsg = $enrolledCount > 0 
             ? "تم إنشاء حساب الطالب وتفعيل ({$enrolledCount}) مادة مختارة بنجاح ✅" 
             : 'تم إنشاء حساب الطالب بنجاح (يمكنك تخصيص مواده لاحقاً) ✅';

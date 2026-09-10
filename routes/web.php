@@ -105,6 +105,9 @@ Route::get('/tawjihi-formulas', [\App\Http\Controllers\TawjihiFormulaController:
 Route::get('/verify/certificate/{code}', [\App\Http\Controllers\SmartLearningController::class, 'verifyCertificate'])->name('certificates.verify');
 Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController::class, 'showCertificate'])->name('certificates.show');
 
+// مسار موحد لتعيين كافة الإشعارات كمقروءة للمدير والمعلم والطالب
+Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Student\NotificationController::class, 'unifiedMarkAllRead'])->name('notifications.markAllReadUnified');
+
 
 /*
 |--------------------------------------------------------------------------

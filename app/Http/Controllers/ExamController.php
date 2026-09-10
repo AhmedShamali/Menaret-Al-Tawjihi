@@ -113,6 +113,20 @@ class ExamController extends Controller
             }
         });
 
+        try {
+            $sub = Subject::find($validated['subject_id']);
+            $stageId = $validated['stage_id'] ?? $sub?->stage_id;
+            if ($stageId && $sub) {
+                \App\Services\NotificationService::notifyStageStudents(
+                    $stageId,
+                    'اختبار تقييمي جديد 📝',
+                    "تم نشر اختبار جديد: \"{$validated['title']}\" في مبحث {$sub->name_ar}. اختبر معلوماتك الآن!",
+                    'exam',
+                    route('student.exams.index')
+                );
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json(['message' => 'تم نشر الاختبار بنجاح 🚀'], 201);
     }
 
@@ -249,6 +263,17 @@ class ExamController extends Controller
                 'total_earned_grade' => $newTotalGrade,
                 'status' => 'graded'
             ]);
+
+            try {
+                \App\Services\NotificationService::notifyStudent(
+                    $submission->student_id,
+                    'تم تصحيح اختبارك ورصد الدرجة! 🌟',
+                    "قام أستاذ المادة بتصحيح ورصد درجتك في اختبار: \"{$submission->exam->title}\". درجتك النهائية: {$newTotalGrade}/{$submission->exam->total_grade}.",
+                    'grade',
+                    route('student.exams.results', $submission->id),
+                    'fa-award'
+                );
+            } catch (\Throwable $e) {}
 
             return response()->json(['success' => true, 'title' => 'تم رصد الدرجات بنجاح ✅']);
         } catch (\Exception $e) {
@@ -401,6 +426,36 @@ class ExamController extends Controller
                 }
 
                 $submission->update(['total_earned_grade' => $autoGrade]);
+
+                // إشعار المعلم وإدارة المنصة بتسليم الاختبار
+                try {
+                    $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+                    if ($teacherId) {
+                        \App\Services\NotificationService::notifyTeacher(
+                            $teacherId,
+                            'تسليم اختبار جديد ✍️',
+                            "قام الطالب ({$student->name_ar}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة تلقائياً: {$autoGrade}/{$exam->total_grade}.",
+                            'exam',
+                            route('teacher.submissions.index')
+                        );
+                    } else {
+                        \App\Services\NotificationService::notifyAdmin(
+                            'تسليم اختبار جديد ✍️',
+                            "قام الطالب ({$student->name_ar}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة: {$autoGrade}/{$exam->total_grade}.",
+                            'exam',
+                            route('admin.submissions.index')
+                        );
+                    }
+
+                    // إشعار الطالب بالتسليم الناجح
+                    \App\Services\NotificationService::notifyStudent(
+                        $student->id,
+                        'تم تسليم الاختبار بنجاح ✅',
+                        "تم استلام إجاباتك في اختبار: \"{$exam->title}\" بنجاح. نتيجتك التقديرية المحتسبة: {$autoGrade} علامة.",
+                        'exam',
+                        route('student.exams.results', $submission->id)
+                    );
+                } catch (\Throwable $e) {}
 
                 return response()->json([
                     'success' => true,

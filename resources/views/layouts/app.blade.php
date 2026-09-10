@@ -726,21 +726,119 @@
 
                     try {
                         $isStudent = auth('student')->check();
+                        $isWeb = auth('web')->check();
 
-                        if($isStudent) {
-                            $sId = auth('student')->id();
+                        if ($isStudent) {
                             $studentUser = auth('student')->user();
-                            $dbNotifs = $studentUser ? $studentUser->unreadNotifications()->count() : 0;
-                            $msgNotifs = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
-                            $unreadCount = $dbNotifs + $msgNotifs;
-                            $unreadItems = \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->latest()->take(5)->get();
-                        } elseif(auth()->check() && auth()->user()->role === 'teacher') {
-                            $tId = auth()->id();
-                            $unreadCount = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->count();
-                            $unreadItems = \App\Models\Message::where('teacher_id', $tId)->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
-                        } elseif(auth()->check() && auth()->user()->role === 'admin') {
-                            $unreadCount = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->count();
-                            $unreadItems = \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->latest()->take(5)->get();
+                            $sId = $studentUser->id;
+
+                            // 1. إشعارات النظام وقاعدة البيانات للطالب
+                            $dbNotifs = $studentUser->unreadNotifications()->latest()->take(6)->get()->map(function($n) {
+                                $d = is_array($n->data) ? $n->data : json_decode($n->data, true) ?? [];
+                                return (object)[
+                                    'id'      => $n->id,
+                                    'title'   => $d['title'] ?? 'تنبيه أكاديمي',
+                                    'message' => $d['message'] ?? '',
+                                    'icon'    => $d['icon'] ?? 'fa-bell',
+                                    'url'     => $d['action_url'] ?? $d['url'] ?? route('student.dashboard'),
+                                    'time'    => $n->created_at ? $n->created_at->diffForHumans() : 'الآن',
+                                ];
+                            });
+
+                            // 2. رسائل المحادثة غير المقروءة للطالب
+                            $msgNotifs = \App\Models\Message::where('student_id', $sId)
+                                ->where('sender_type', '!=', 'student')
+                                ->where('is_read', false)
+                                ->latest()
+                                ->take(4)
+                                ->get()
+                                ->map(function($m) {
+                                    return (object)[
+                                        'id'      => 'msg_' . $m->id,
+                                        'title'   => ($m->sender_type === 'teacher') ? 'رسالة من معلم المادة 💬' : 'تنبيه من الدعم الفني 🎧',
+                                        'message' => $m->message,
+                                        'icon'    => 'fa-comments',
+                                        'url'     => ($m->sender_type === 'teacher') ? route('student.teachers.chat', $m->teacher_id ?? 1) : route('student.support'),
+                                        'time'    => $m->created_at ? $m->created_at->diffForHumans() : 'الآن',
+                                    ];
+                                });
+
+                            $unreadCount = $studentUser->unreadNotifications()->count() + \App\Models\Message::where('student_id', $sId)->where('sender_type', '!=', 'student')->where('is_read', false)->count();
+                            $unreadItems = $dbNotifs->concat($msgNotifs)->take(8);
+
+                        } elseif ($isWeb && auth()->user()->role === 'admin') {
+                            $adminUser = auth()->user();
+
+                            // 1. إشعارات النظام والعمليات للمدير
+                            $dbNotifs = $adminUser->unreadNotifications()->latest()->take(6)->get()->map(function($n) {
+                                $d = is_array($n->data) ? $n->data : json_decode($n->data, true) ?? [];
+                                return (object)[
+                                    'id'      => $n->id,
+                                    'title'   => $d['title'] ?? 'تنبيه إداري',
+                                    'message' => $d['message'] ?? '',
+                                    'icon'    => $d['icon'] ?? 'fa-shield-halved',
+                                    'url'     => $d['action_url'] ?? $d['url'] ?? route('admin.dashboard'),
+                                    'time'    => $n->created_at ? $n->created_at->diffForHumans() : 'الآن',
+                                ];
+                            });
+
+                            // 2. رسائل الطلاب وتذاكر الدعم غير المقروءة للمدير
+                            $msgNotifs = \App\Models\Message::whereNull('teacher_id')
+                                ->where('sender_type', 'student')
+                                ->where('is_read', false)
+                                ->latest()
+                                ->take(4)
+                                ->get()
+                                ->map(function($m) {
+                                    return (object)[
+                                        'id'      => 'msg_' . $m->id,
+                                        'title'   => 'تذكرة / رسالة جديدة من طالب 💬',
+                                        'message' => $m->message,
+                                        'icon'    => 'fa-comment-dots',
+                                        'url'     => route('admin.messages.index'),
+                                        'time'    => $m->created_at ? $m->created_at->diffForHumans() : 'الآن',
+                                    ];
+                                });
+
+                            $unreadCount = $adminUser->unreadNotifications()->count() + \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->count();
+                            $unreadItems = $dbNotifs->concat($msgNotifs)->take(8);
+
+                        } elseif ($isWeb && auth()->user()->role === 'teacher') {
+                            $teacherUser = auth()->user();
+
+                            // 1. إشعارات النظام الأكاديمية للمعلم
+                            $dbNotifs = $teacherUser->unreadNotifications()->latest()->take(6)->get()->map(function($n) {
+                                $d = is_array($n->data) ? $n->data : json_decode($n->data, true) ?? [];
+                                return (object)[
+                                    'id'      => $n->id,
+                                    'title'   => $d['title'] ?? 'تنبيه أكاديمي',
+                                    'message' => $d['message'] ?? '',
+                                    'icon'    => $d['icon'] ?? 'fa-chalkboard-teacher',
+                                    'url'     => $d['action_url'] ?? $d['url'] ?? route('teacher.dashboard'),
+                                    'time'    => $n->created_at ? $n->created_at->diffForHumans() : 'الآن',
+                                ];
+                            });
+
+                            // 2. استفسارات الطلاب لمعلم المادة
+                            $msgNotifs = \App\Models\Message::where('teacher_id', $teacherUser->id)
+                                ->where('sender_type', 'student')
+                                ->where('is_read', false)
+                                ->latest()
+                                ->take(4)
+                                ->get()
+                                ->map(function($m) {
+                                    return (object)[
+                                        'id'      => 'msg_' . $m->id,
+                                        'title'   => 'استفسار دراسي من طالب 💬',
+                                        'message' => $m->message,
+                                        'icon'    => 'fa-comments',
+                                        'url'     => route('teacher.messages.index'),
+                                        'time'    => $m->created_at ? $m->created_at->diffForHumans() : 'الآن',
+                                    ];
+                                });
+
+                            $unreadCount = $teacherUser->unreadNotifications()->count() + \App\Models\Message::where('teacher_id', $teacherUser->id)->where('sender_type', 'student')->where('is_read', false)->count();
+                            $unreadItems = $dbNotifs->concat($msgNotifs)->take(8);
                         }
                     } catch (\Throwable $e) {
                         $unreadCount = 0;
@@ -748,52 +846,47 @@
                     }
                 @endphp
 
-                <!-- قائمة الإشعارات -->
+                <!-- قائمة الإشعارات والتنبيهات الشاملة -->
                 <div class="notifications-dropdown-container" style="position: relative;">
                     <button id="notificationsToggle" style="background: var(--ed-surface); border: 1px solid var(--ed-border); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; position: relative; display: grid; place-items: center; transition: var(--transition-smooth); color: var(--ed-text-body);">
                         <i class="fa-regular fa-bell" style="font-size: 1.1rem;"></i>
                         <span id="navUnreadBadge" style="{{ $unreadCount > 0 ? '' : 'display: none;' }} position: absolute; top: -3px; right: -3px; background: var(--ed-danger); color: white; font-size: 0.62rem; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--ed-surface); font-weight: 700;">{{ $unreadCount }}</span>
                     </button>
                     
-                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 48px; width: 320px; background: var(--ed-surface); border-radius: var(--ed-radius-md); box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); z-index: 1000; overflow: hidden;">
+                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 48px; width: 340px; background: var(--ed-surface); border-radius: var(--ed-radius-md); box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); z-index: 1000; overflow: hidden;">
                         <div style="padding: 12px 16px; background: var(--ed-surface-alt); border-bottom: 1px solid var(--ed-border); display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-weight: 700; font-size: 0.88rem; color: var(--ed-text-main); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> التنبيهات
+                                <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> مركز التنبيهات
                             </span>
-                            @if(isset($isStudent) && $isStudent)
-                                <button onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.74rem; color: var(--ed-primary); font-weight: 600; cursor: pointer;">
-                                    تحديد الكل كمقروء
+                            @if(auth()->check() || auth('student')->check())
+                                <button onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.74rem; color: var(--ed-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                    <i class="fa-solid fa-check-double"></i> تحديد الكل كمقروء
                                 </button>
                             @endif
                         </div>
 
-                        <div style="max-height: 300px; overflow-y: auto;" id="navNotificationsList">
+                        <div style="max-height: 320px; overflow-y: auto;" id="navNotificationsList">
                             @forelse($unreadItems as $item)
-                                @php
-                                    $link = '#';
-                                    if (isset($isStudent) && $isStudent) {
-                                        $link = $item->sender_type === 'teacher' ? route('student.chat.teacher', $item->teacher_id ?? 1) : route('student.support');
-                                    } elseif (auth()->check() && auth()->user()->role === 'teacher') {
-                                        $link = route('teacher.messages.index');
-                                    } else {
-                                        $link = route('admin.messages.index');
-                                    }
-                                @endphp
-                                <a href="{{ $link }}" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
-                                    <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; flex-shrink: 0; font-size: 0.85rem;">
-                                        <i class="fa-regular fa-message"></i>
+                                <a href="{{ $item->url }}" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; flex-shrink: 0; font-size: 0.95rem;">
+                                        <i class="fa-solid {{ $item->icon }}"></i>
                                     </div>
                                     <div style="flex: 1; min-width: 0;">
-                                        <div style="font-size: 0.82rem; font-weight: 600; color: var(--ed-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--ed-text-main); margin-bottom: 2px;">
+                                            {{ $item->title }}
+                                        </div>
+                                        <div style="font-size: 0.78rem; font-weight: 500; color: var(--ed-text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">
                                             {{ $item->message }}
                                         </div>
-                                        <span style="font-size: 0.72rem; color: var(--ed-text-dim);">{{ $item->created_at ? $item->created_at->diffForHumans() : 'الآن' }}</span>
+                                        <span style="font-size: 0.7rem; color: var(--ed-text-dim); display: flex; align-items: center; gap: 4px;">
+                                            <i class="fa-regular fa-clock" style="font-size: 0.65rem;"></i> {{ $item->time }}
+                                        </span>
                                     </div>
                                 </a>
                             @empty
                                 <div style="padding: 28px 16px; text-align: center; color: var(--ed-text-muted);">
                                     <i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success); opacity: 0.8;"></i>
-                                    <span style="font-size: 0.84rem; font-weight: 500;">لا توجد إشعارات جديدة</span>
+                                    <span style="font-size: 0.84rem; font-weight: 500;">لا توجد تنبيهات جديدة</span>
                                 </div>
                             @endforelse
                         </div>
@@ -955,15 +1048,17 @@
         }
 
         function markAllReadFromNav() {
-            axios.post('/student/notifications/mark-all-read', {
+            axios.post('{{ route('notifications.markAllReadUnified') }}', {
                 _token: '{{ csrf_token() }}'
             }).then(() => {
                 const badge = document.getElementById('navUnreadBadge');
                 if (badge) badge.style.display = 'none';
                 const list = document.getElementById('navNotificationsList');
                 if (list) {
-                    list.innerHTML = '<div style="padding: 24px 16px; text-align: center; color: var(--ed-text-muted);"><i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success);"></i><span style="font-size: 0.84rem; font-weight: 500;">تمت قراءة جميع الإشعارات بنجاح</span></div>';
+                    list.innerHTML = '<div style="padding: 24px 16px; text-align: center; color: var(--ed-text-muted);"><i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success);"></i><span style="font-size: 0.84rem; font-weight: 500;">تمت قراءة كافة التنبيهات بنجاح</span></div>';
                 }
+            }).catch(err => {
+                console.error('Error marking all notifications read:', err);
             });
         }
 

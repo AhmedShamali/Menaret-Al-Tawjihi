@@ -118,6 +118,17 @@ class CommunicationController extends Controller
                 'message'     => trim($request->message),
             ]);
 
+            try {
+                $student = Student::find($studentId);
+                NotificationService::notifyAdmin(
+                    'رسالة جديدة من طالب في الدعم 💬',
+                    "أرسل الطالب ({$student?->name_ar}): " . Str::limit($request->message, 70),
+                    'support',
+                    route('admin.messages.index'),
+                    'fa-comment-dots'
+                );
+            } catch (\Throwable $e) {}
+
             return response()->json([
                 'status' => 'success',
                 'data'   => [
@@ -154,6 +165,17 @@ class CommunicationController extends Controller
                 'sender_type' => 'student',
                 'message'     => $fullMessage,
             ]);
+
+            try {
+                $student = Student::find($studentId);
+                NotificationService::notifyAdmin(
+                    'تذكرة دعم فني جديدة 🎧',
+                    "أرسل الطالب ({$student?->name_ar}) تذكرة دعم فني: " . Str::limit($request->message, 70),
+                    'support',
+                    route('admin.messages.index'),
+                    'fa-headset'
+                );
+            } catch (\Throwable $e) {}
 
             return response()->json([
                 'status'  => 'success',
@@ -479,6 +501,17 @@ class CommunicationController extends Controller
             'updated_at' => now(),
         ]);
 
+        try {
+            NotificationService::notifyStudent(
+                $request->student_id,
+                'رسالة جديدة من معلمك 💬',
+                "أرسل الأستاذ ({$teacher->name}): " . Str::limit($request->message, 60),
+                'message',
+                route('student.teachers.chat', $teacher->id),
+                'fa-comments'
+            );
+        } catch (\Throwable $e) {}
+
         return response()->json(['status' => 'success']);
     }
 
@@ -530,6 +563,15 @@ class CommunicationController extends Controller
                 'sender_type' => 'student',
                 'message'     => trim($request->message),
             ]);
+
+            NotificationService::notifyTeacher(
+                $request->teacher_id,
+                'استفسار وسؤال جديد من طالب 💬',
+                "أرسل الطالب ({$student->name_ar}): " . Str::limit($request->message, 70),
+                'message',
+                route('teacher.messages.index'),
+                'fa-comments'
+            );
 
             NotificationService::notifyAdmin(
                 'استفسار دراسي جديد من طالب',

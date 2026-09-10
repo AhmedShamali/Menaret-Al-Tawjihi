@@ -177,9 +177,11 @@ class PaymentGatewayController extends Controller
             );
 
             NotificationService::notifyAdmin(
-                'استفادة طالب من منحة إعفاء كامل وتفعيل فوري',
+                'استفادة طالب من منحة إعفاء كامل وتفعيل فوري 🎁',
                 "قام الطالب {$student->name_ar} بتفعيل مواده ({$namesStr}) بنجاح بموجب الإعفاء الكامل (100%). رقم العملية: {$txNumber}.",
-                'payment'
+                'payment',
+                route('admin.payments.index'),
+                'fa-gift'
             );
         } else {
             NotificationService::notifyStudent(
@@ -187,13 +189,16 @@ class PaymentGatewayController extends Controller
                 'تم استلام إشعار الدفع بنجاح (قيد المراجعة) ⏳',
                 "تم إرسال إشعار سدادك بمبلغ {$payment->amount} ₪ لمواد ({$namesStr}). رقم العملية: {$txNumber}. طلبك قيد التدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد من الإشعار.",
                 'payment',
-                route('student.checkout.receipt', $payment->id)
+                route('student.checkout.receipt', $payment->id),
+                'fa-receipt'
             );
 
             NotificationService::notifyAdmin(
-                'عملية دفع جديدة بانتظار المراجعة والاعتماد',
+                'عملية دفع جديدة بانتظار المراجعة والاعتماد 💳',
                 "قام الطالب {$student->name_ar} برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ للاشتراك في ({$namesStr}). رقم العملية: {$txNumber}. يرجى فحص الإشعار واعتماد التفعيل.",
-                'payment'
+                'payment',
+                route('admin.payments.index'),
+                'fa-wallet'
             );
         }
 

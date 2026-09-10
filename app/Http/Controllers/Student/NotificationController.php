@@ -121,9 +121,17 @@ class NotificationController extends Controller
     }
 
     /**
-     * تعيين كافة الإشعارات كمقروءة دفعة واحدة
+     * تعيين كافة الإشعارات كمقروءة دفعة واحدة (للطلاب)
      */
     public function markAllAsRead()
+    {
+        return $this->unifiedMarkAllRead();
+    }
+
+    /**
+     * تعيين كافة الإشعارات كمقروءة موحد لكافة الأدوار (مدير، معلم، طالب)
+     */
+    public function unifiedMarkAllRead()
     {
         $student = CurrentActor::student() ?? Auth::guard('student')->user();
         if ($student) {
@@ -131,12 +139,34 @@ class NotificationController extends Controller
             Message::where('student_id', $student->id)
                 ->where('sender_type', '!=', 'student')
                 ->update(['is_read' => true]);
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'تم تعيين جميع الإشعارات كمقروءة بنجاح ✅'
+            ]);
         }
 
-        return response()->json([
-            'status'  => 'success',
-            'message' => 'تم تعيين جميع الإشعارات كمقروءة بنجاح ✅'
-        ]);
+        $user = Auth::guard('web')->user() ?? Auth::user();
+        if ($user) {
+            $user->unreadNotifications->markAsRead();
+
+            if ($user->role === 'admin') {
+                Message::whereNull('teacher_id')
+                    ->where('sender_type', 'student')
+                    ->update(['is_read' => true]);
+            } elseif ($user->role === 'teacher') {
+                Message::where('teacher_id', $user->id)
+                    ->where('sender_type', 'student')
+                    ->update(['is_read' => true]);
+            }
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'تم تعيين جميع الإشعارات كمقروءة بنجاح ✅'
+            ]);
+        }
+
+        return response()->json(['status' => 'error', 'message' => 'غير مصرح'], 401);
     }
 
     /**

@@ -212,6 +212,23 @@ class StudentController extends Controller
             return redirect()->route('admin.students.index')->with('success', 'تم تسجيل الطالب بنجاح! 🎉');
         }
 
+        // إشعار إدارة المنصة فوراً بتسجيل طالب جديد للمراجعة والاعتماد
+        if (!$isAdmin) {
+            try {
+                $stageObj = Stage::find($stageId);
+                $stageName = $stageObj ? ($stageObj->label_ar ?? $stageObj->name_ar ?? 'الثانوية العامة') : 'الثانوية العامة';
+                \App\Services\NotificationService::notifyAdmin(
+                    'تسجيل طالب جديد 🎓',
+                    "قام الطالب ({$student->name_ar}) بإنشاء حساب جديد في {$stageName}، وحسابه بانتظار الاعتماد والموافقة.",
+                    'student',
+                    route('admin.students.show', $student->id),
+                    'fa-user-plus'
+                );
+            } catch (\Throwable $e) {
+                \Log::error('Admin registration notification error: ' . $e->getMessage());
+            }
+        }
+
         // تسجيل دخول الطالب وتوجيهه لصفحة انتظار موافقة واعتماد المدير
         Auth::guard('student')->login($student);
         $request->session()->regenerate();
@@ -457,6 +474,17 @@ class StudentController extends Controller
                     'status'       => 'active',
                     'activated_at' => now()
                 ]);
+
+            try {
+                \App\Services\NotificationService::notifyStudent(
+                    $student->id,
+                    'تم تفعيل واعتماد حسابك رسمياً! 🎉',
+                    "مرحباً بك يا {$student->name_ar}، قامت إدارة المنصة بتفعيل حسابك بنجاح. يمكنك الآن بدء دراستك وحضور الدروس وتقديم الاختبارات.",
+                    'system',
+                    route('student.dashboard'),
+                    'fa-circle-check'
+                );
+            } catch (\Throwable $e) {}
         }
 
         return response()->json([

@@ -79,6 +79,20 @@ class EducationalContentController extends Controller
 
         $content->save();
 
+        try {
+            $subject = \App\Models\Subject::find($content->subject_id);
+            if ($subject && $subject->stage_id) {
+                \App\Services\NotificationService::notifyStageStudents(
+                    $subject->stage_id,
+                    'درس ومصدر تعليمي جديد 📚',
+                    "أُضيف درس جديد: \"{$content->title}\" في مبحث {$subject->name_ar}.",
+                    'content',
+                    route('student.subjects.show', $subject->id),
+                    'fa-video'
+                );
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'icon'  => 'success',
             'title' => 'تم حفظ الدرس والمرفقات بنجاح 🎉'
