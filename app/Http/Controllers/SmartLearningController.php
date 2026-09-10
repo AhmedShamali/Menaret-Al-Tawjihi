@@ -77,11 +77,15 @@ class SmartLearningController extends Controller
      */
     public function showCertificate($id)
     {
-        $certificate = Certificate::with(['student.stage', 'subject.stage'])->where('id', $id)
-            ->orWhere('certificate_code', $id)
+        $certificate = Certificate::with(['student.stage', 'subject.stage'])
+            ->when(is_numeric($id), function ($q) use ($id) {
+                $q->where('id', $id)->orWhere('certificate_code', $id);
+            }, function ($q) use ($id) {
+                $q->where('certificate_code', $id);
+            })
             ->firstOrFail();
 
-        $isAdmin = Auth::guard('web')->check() && Auth::user()->role === 'admin';
+        $isAdmin = (Auth::guard('web')->check() && Auth::user() && Auth::user()->role === 'admin');
         $isYearEndPublished = (bool) Setting::get('year_end_certificates_published', 0);
 
         if (!$isAdmin && !$isYearEndPublished) {

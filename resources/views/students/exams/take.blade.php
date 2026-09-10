@@ -105,7 +105,7 @@
     </div>
 
     {{-- نموذج الأسئلة --}}
-    <form id="examForm" action="{{ route('exams.submit', $exam->id) }}" method="POST" enctype="multipart/form-data">
+    <form id="examForm" action="{{ route('student.exams.submit', $exam->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @foreach($exam->questions as $idx => $q)
         <div class="question-card">

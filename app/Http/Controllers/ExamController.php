@@ -307,8 +307,10 @@ class ExamController extends Controller
 
     public function takeExam($examId)
     {
-        $user = auth()->user();
-        $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
 
         if (!$student) {
             return redirect()->route('student.exams.index')->with('error', 'حساب الطالب غير مرتبط بشكل صحيح.');
@@ -327,8 +329,10 @@ class ExamController extends Controller
     {
         try {
             return DB::transaction(function () use ($request, $id) {
-                $user = auth()->user();
-                $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+                $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+                if ($student instanceof \App\Models\User) {
+                    $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+                }
 
                 if (!$student) {
                     return response()->json(['success' => false, 'error' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'], 422);
@@ -421,8 +425,10 @@ class ExamController extends Controller
 
     public function gradebook()
     {
-        $user = auth()->user();
-        $student = $user->student ?? Student::where('id', $user->id)->orWhere('email', $user->email)->first();
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
 
         if (!$student) {
             return redirect()->route('student.exams.index')->with('error', 'سجل الدرجات غير متاح لعدم وجود بيانات طالب مرتبطة.');

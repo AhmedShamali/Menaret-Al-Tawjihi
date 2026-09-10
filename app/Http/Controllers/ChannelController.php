@@ -13,8 +13,17 @@ class ChannelController extends Controller
      */
     public function showChannelPage()
     {
-        // تجريبي: نفترض الطالب رقم 1، لاحقاً نستخدم auth()->id()
-        $student = Student::with('stage')->find(1);
+        $student = \Illuminate\Support\Facades\Auth::guard('student')->user() 
+            ?? \App\Support\CurrentActor::student() 
+            ?? Student::with('stage')->first();
+
+        if (!$student) {
+            return redirect()->route('login');
+        }
+
+        if (!$student->relationLoaded('stage')) {
+            $student->load('stage');
+        }
 
         // فحص هل أرسل طلب سابقاً
         $request_exists = ChannelRequest::where('student_id', $student->id)->exists();
@@ -27,11 +36,24 @@ class ChannelController extends Controller
      */
     public function joinRequest()
     {
-        $student = Student::find(1); // تجريبي
+        $student = \Illuminate\Support\Facades\Auth::guard('student')->user() 
+            ?? \App\Support\CurrentActor::student() 
+            ?? Student::first();
 
-        ChannelRequest::create([
+        if (!$student) {
+            return response()->json([
+                'icon' => 'error',
+                'title' => 'يرجى تسجيل الدخول أولاً'
+            ], 401);
+        }
+
+        $stageName = $student->stage->label_ar ?? $student->stage->name_ar ?? 'المرحلة';
+        $genderLabel = ($student->gender == 'ذكر' || $student->gender == 'male') ? 'طلاب' : 'طالبات';
+
+        ChannelRequest::firstOrCreate([
             'student_id' => $student->id,
-            'channel_name' => "قناة " . $student->stage->label_ar . " - " . ($student->gender == 'ذكر' ? 'طلاب' : 'طالبات'),
+        ], [
+            'channel_name' => "قناة " . $stageName . " - " . $genderLabel,
             'status' => 'pending'
         ]);
 
@@ -40,5 +62,4 @@ class ChannelController extends Controller
             'title' => 'تم إرسال طلب الانضمام بنجاح ✅'
         ]);
     }
-
 }

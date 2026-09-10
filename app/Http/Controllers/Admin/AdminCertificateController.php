@@ -105,7 +105,7 @@ class AdminCertificateController extends Controller
         $subjectId = $request->subject_id;
         if (!$subjectId) {
             $firstSub = $student->enrolledSubjects()->first();
-            $subjectId = $firstSub ? $firstSub->id : Subject::where('stage_id', $student->stage_id)->value('id') ?? Subject::first()->id;
+            $subjectId = $firstSub ? $firstSub->id : (Subject::where('stage_id', $student->stage_id)->value('id') ?? Subject::first()?->id);
         }
 
         $code = 'TAWJIHI-' . date('Y') . '-' . strtoupper(Str::random(6));

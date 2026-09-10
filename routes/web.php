@@ -101,8 +101,9 @@ Route::get('/student-register', [StudentController::class, 'create'])->name('stu
 // دليل القوانين والقواعد الذهبية للتوجيهي
 Route::get('/tawjihi-formulas', [\App\Http\Controllers\TawjihiFormulaController::class, 'index'])->name('tawjihi.formulas');
 
-// التحقق العام المباشر من الشهادات الأكاديمية عبر مسح رمز QR
+// التحقق العام وعرض الشهادات الأكاديمية الملكية
 Route::get('/verify/certificate/{code}', [\App\Http\Controllers\SmartLearningController::class, 'verifyCertificate'])->name('certificates.verify');
+Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController::class, 'showCertificate'])->name('certificates.show');
 
 
 /*
@@ -124,6 +125,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
 
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
+    Route::get('/management', [AdminManagerController::class, 'teachersInfo'])->name('management.index');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');
     Route::post('/teachers/store', [AdminManagerController::class, 'teacherStore'])->name('teachers.store');
 
@@ -199,6 +201,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 
     // إدارة اشتراكات وصلاحيات الطلاب في الفيديوهات والدروس والاختبارات عبر خانات الاختيار
     Route::get('/access-control', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('access.index');
+    Route::get('/students', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('students.index');
     Route::get('/access/{enrollment_id}/contents', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'getStudentContents'])->name('access.contents');
     Route::post('/access/{enrollment_id}/update', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'updateAccess'])->name('access.update');
     Route::post('/access/quick-enroll', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'quickEnroll'])->name('access.quickEnroll');
@@ -293,4 +296,17 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/achievements', [\App\Http\Controllers\SmartLearningController::class, 'myAchievements'])->name('achievements');
     Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController::class, 'showCertificate'])->name('certificates.show');
     Route::post('/pomodoro/session', [\App\Http\Controllers\SmartLearningController::class, 'savePomodoroSession'])->name('pomodoro.save');
+
+    // قنوات التواصل التفاعلية
+    Route::get('/channels', [\App\Http\Controllers\ChannelController::class, 'showChannelPage'])->name('channels.index');
+    Route::post('/channels/join', [\App\Http\Controllers\ChannelController::class, 'joinRequest'])->name('channels.join');
+
+    // تذاكر الدعم الفني
+    Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
+
+// توافقية مسارات الإدارة القديمة والتسليم
+Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
+Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
+Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
+Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam'])->name('exams.submit');

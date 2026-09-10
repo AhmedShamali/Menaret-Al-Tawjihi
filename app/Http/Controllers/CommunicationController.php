@@ -134,6 +134,40 @@ class CommunicationController extends Controller
         }
     }
 
+    public function submitTicket(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string',
+        ]);
+
+        try {
+            $studentId = Auth::guard('student')->id() ?? Auth::id();
+            $admin = \App\Models\User::where('role', 'admin')->first();
+            $adminId = $admin ? $admin->id : 1;
+
+            $subjectPrefix = $request->filled('subject') ? "📌 [تذكرة دعم: {$request->subject}]\n" : "";
+            $fullMessage = $subjectPrefix . trim($request->message);
+
+            $message = Message::create([
+                'student_id'  => $studentId,
+                'admin_id'    => $adminId,
+                'sender_type' => 'student',
+                'message'     => $fullMessage,
+            ]);
+
+            return response()->json([
+                'status'  => 'success',
+                'success' => true,
+                'icon'    => 'success',
+                'title'   => 'تم إرسال تذكرتك بنجاح ✅',
+                'message' => 'تم استلام استفسارك وسيقوم فريق الدعم بالرد عليك قريباً.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Submit Ticket Error: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => 'تعذر إرسال التذكرة: ' . $e->getMessage()], 500);
+        }
+    }
+
     public function fetchMessages($student_id)
     {
         try {
