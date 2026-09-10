@@ -36,6 +36,7 @@
                         <th>المرحلة الدراسية</th>
                         <th>الهوية الوطنية</th>
                         <th>حالة الحساب</th>
+                        <th>الخصم والمنحة 🏷️</th>
                         <th class="text-center">التحكم</th>
                     </tr>
                 </thead>
@@ -74,7 +75,22 @@
                             </div>
                         </td>
                         <td>
+                            <div id="discount_badge_{{ $student->id }}" 
+                                 onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')" 
+                                 style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; transition: transform 0.2s; {{ $student->hasDiscount() ? ((float)($student->custom_discount_percent ?? 0) >= 100 ? 'background: #ecfdf5; color: #059669; border: 1.5px solid #a7f3d0;' : 'background: #f5f3ff; color: #7c3aed; border: 1.5px solid #ddd6fe;') : 'background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1;' }}"
+                                 onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+                                 title="انقر لتعديل الخصم أو المنحة للطالب">
+                                <span>{{ $student->hasDiscount() ? '🏷️' : '➕' }}</span>
+                                <span id="badge_text_{{ $student->id }}">{{ $student->discount_label }}</span>
+                            </div>
+                        </td>
+                        <td>
                             <div class="action-buttons">
+                                <button type="button" onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
+                                        class="btn-icon" style="color: #7c3aed; background: #f5f3ff;" title="تحديد / تعديل خصم الطالب 🏷️">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                                </button>
+
                                 <a href="{{ route('admin.students.show', $student->id) }}"
                                    class="btn-icon" style="color: #4f46e5; background: #eef2ff;" title="عرض ملف ومواد الطالب 📚">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
@@ -503,5 +519,220 @@
             }
         });
     }
+
+    // --- وظائف إدارة وتحديد خصومات الطلاب المخصصة ---
+    let currentDiscountStudentId = null;
+
+    function openDiscountModal(id, name, percent, fixed, notes) {
+        currentDiscountStudentId = id;
+        document.getElementById('discountStudentId').value = id;
+        document.getElementById('discountStudentName').innerText = name;
+        document.getElementById('discountNotes').value = notes || '';
+
+        if (fixed > 0) {
+            setDiscountType('fixed');
+            document.getElementById('discountValue').value = fixed;
+        } else {
+            setDiscountType('percent');
+            document.getElementById('discountValue').value = percent > 0 ? percent : '';
+        }
+
+        const overlay = document.getElementById('discountModalOverlay');
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDiscountModal() {
+        const overlay = document.getElementById('discountModalOverlay');
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+        currentDiscountStudentId = null;
+    }
+
+    function setDiscountType(type) {
+        document.getElementById('discountType').value = type;
+        const btnPercent = document.getElementById('typeBtnPercent');
+        const btnFixed = document.getElementById('typeBtnFixed');
+        const unitLabel = document.getElementById('discountUnitLabel');
+
+        if (type === 'percent') {
+            btnPercent.style.background = '#7c3aed';
+            btnPercent.style.color = '#ffffff';
+            btnPercent.style.borderColor = '#7c3aed';
+            btnFixed.style.background = '#ffffff';
+            btnFixed.style.color = '#64748b';
+            btnFixed.style.borderColor = '#cbd5e1';
+            unitLabel.innerText = '% (نسبة مئوية)';
+            document.getElementById('discountValue').placeholder = 'مثال: 25 أو 50 أو 100';
+            document.getElementById('discountValue').max = '100';
+        } else {
+            btnFixed.style.background = '#7c3aed';
+            btnFixed.style.color = '#ffffff';
+            btnFixed.style.borderColor = '#7c3aed';
+            btnPercent.style.background = '#ffffff';
+            btnPercent.style.color = '#64748b';
+            btnPercent.style.borderColor = '#cbd5e1';
+            unitLabel.innerText = '₪ (شيكل فلسطيني)';
+            document.getElementById('discountValue').placeholder = 'مثال: 50 أو 100';
+            document.getElementById('discountValue').removeAttribute('max');
+        }
+    }
+
+    function setQuickDiscount(percent, notes) {
+        setDiscountType('percent');
+        document.getElementById('discountValue').value = percent;
+        if (notes) {
+            document.getElementById('discountNotes').value = notes;
+        } else if (percent === 0) {
+            document.getElementById('discountNotes').value = '';
+        }
+    }
+
+    function handleDiscountSubmit(event) {
+        event.preventDefault();
+        if (!currentDiscountStudentId) return;
+
+        const type = document.getElementById('discountType').value;
+        const val = parseFloat(document.getElementById('discountValue').value) || 0;
+        const notes = document.getElementById('discountNotes').value.trim();
+
+        const btn = document.getElementById('btnSaveDiscount');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+
+        axios.post(`{{ url('admin/students') }}/${currentDiscountStudentId}/discount`, {
+            discount_type: val > 0 ? type : 'none',
+            discount_value: val,
+            discount_notes: notes
+        })
+        .then(res => {
+            const data = res.data;
+            Swal.fire({
+                icon: data.icon || 'success',
+                title: data.title || 'تم تحديث الخصم',
+                text: data.message || '',
+                timer: 1800,
+                showConfirmButton: false
+            });
+
+            // تحديث الشارة في الجدول فوراً
+            const badge = document.getElementById(`discount_badge_${currentDiscountStudentId}`);
+            const badgeText = document.getElementById(`badge_text_${currentDiscountStudentId}`);
+            if (badge && badgeText) {
+                badgeText.innerText = data.discount_label;
+                if (data.has_discount) {
+                    if (data.percent >= 100) {
+                        badge.style.background = '#ecfdf5';
+                        badge.style.color = '#059669';
+                        badge.style.borderColor = '#a7f3d0';
+                        badge.querySelector('span:first-child').innerText = '✨';
+                    } else {
+                        badge.style.background = '#f5f3ff';
+                        badge.style.color = '#7c3aed';
+                        badge.style.borderColor = '#ddd6fe';
+                        badge.querySelector('span:first-child').innerText = '🏷️';
+                    }
+                } else {
+                    badge.style.background = '#f8fafc';
+                    badge.style.color = '#94a3b8';
+                    badge.style.borderColor = '#cbd5e1';
+                    badge.querySelector('span:first-child').innerText = '➕';
+                }
+
+                // تحديث الـ onclick parameters
+                badge.setAttribute('onclick', `openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', ${data.percent || 0}, ${data.fixed || 0}, '${(data.notes || '').replace(/'/g, "\\'")}')`);
+            }
+
+            closeDiscountModal();
+        })
+        .catch(err => {
+            const msg = (err.response && err.response.data && err.response.data.title) ? err.response.data.title : 'فشل حفظ الخصم، يرجى المحاولة ثانية';
+            Swal.fire('خطأ', msg, 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    }
 </script>
+
+<!-- النافذة المنبثقة لتخصيص خصم الطالب (Modal) -->
+<div id="discountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
+    <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: modalIn 0.25s ease-out;">
+        
+        <!-- هيدر المودال -->
+        <div style="padding: 20px 24px; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.18); display: grid; place-items: center; font-size: 1.3rem;">
+                    🏷️
+                </div>
+                <div>
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">تحديد خصم أو منحة للطالب</h3>
+                    <span id="discountStudentName" style="font-size: 0.85rem; color: #e9d5ff; font-weight: 700;">اسم الطالب</span>
+                </div>
+            </div>
+            <button type="button" onclick="closeDiscountModal()" style="background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: grid; place-items: center;">✕</button>
+        </div>
+
+        <form id="discountForm" onsubmit="handleDiscountSubmit(event)" style="padding: 24px;">
+            <input type="hidden" id="discountStudentId" value="">
+            <input type="hidden" id="discountType" value="percent">
+
+            <!-- نوع الخصم -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 8px;">نوع الخصم المعتمد:</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button type="button" id="typeBtnPercent" onclick="setDiscountType('percent')" style="padding: 10px; border-radius: 12px; border: 2px solid #7c3aed; background: #7c3aed; color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s;">
+                        نسبة مئوية (%)
+                    </button>
+                    <button type="button" id="typeBtnFixed" onclick="setDiscountType('fixed')" style="padding: 10px; border-radius: 12px; border: 2px solid #cbd5e1; background: white; color: #64748b; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s;">
+                        مبلغ نقدي ثابت (₪)
+                    </button>
+                </div>
+            </div>
+
+            <!-- خيارات سريعة بنقرة واحدة -->
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 6px;">خيارات سريعة ومقترحة:</label>
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" onclick="setQuickDiscount(15, 'خصم تشجيعي')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">15% تشجيعي</button>
+                    <button type="button" onclick="setQuickDiscount(25, 'منحة تفوق دراسي')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">25% تفوق</button>
+                    <button type="button" onclick="setQuickDiscount(50, 'نصف منحة دراسية')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">50% نصف منحة</button>
+                    <button type="button" onclick="setQuickDiscount(100, 'إعفاء كامل - منحة شاملة 100%')" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">✨ إعفاء كامل 100%</button>
+                    <button type="button" onclick="setQuickDiscount(0, '')" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">❌ إلغاء الخصم</button>
+                </div>
+            </div>
+
+            <!-- قيمة الخصم -->
+            <div style="margin-bottom: 18px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155;">قيمة الخصم:</label>
+                    <span id="discountUnitLabel" style="font-size: 0.75rem; color: #7c3aed; font-weight: 700;">% (نسبة مئوية)</span>
+                </div>
+                <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="مثال: 25 أو 50" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1.05rem; font-weight: 800; font-family: monospace; outline: none; transition: 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#cbd5e1'">
+            </div>
+
+            <!-- سبب الخصم / ملاحظات المنحة -->
+            <div style="margin-bottom: 22px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">سبب الخصم أو ملاحظات المنحة (اختياري):</label>
+                <input type="text" id="discountNotes" placeholder="مثال: منحة تفوق توجيهي / إعفاء خاص" style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; outline: none; transition: 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#cbd5e1'">
+                <small style="color: #64748b; font-size: 0.73rem; display: block; margin-top: 4px;">سيظهر هذا السبب للطالب في إشعاراته وسلة اشتراكه.</small>
+            </div>
+
+            <!-- أزرار الحفظ والإلغاء -->
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" id="btnSaveDiscount" style="flex: 1; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; border: none; padding: 13px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
+                    <span>اعتماد وتطبيق الخصم</span>
+                    <i class="fa-solid fa-check"></i>
+                </button>
+                <button type="button" onclick="closeDiscountModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 13px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
+                    إلغاء
+                </button>
+            </div>
+        </form>
+
+    </div>
+</div>
+
 @endsection

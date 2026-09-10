@@ -11,7 +11,8 @@ class Student extends Authenticatable
 
     protected $fillable = [
         'name_ar', 'name_en', 'nid', 'email', 'password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status',
-        'streak_count', 'last_activity_date', 'total_points'
+        'streak_count', 'last_activity_date', 'total_points',
+        'custom_discount_percent', 'custom_discount_fixed', 'discount_notes'
     ];
 
     protected $hidden = [
@@ -91,5 +92,60 @@ class Student extends Authenticatable
     public function getNameAttribute(): string
     {
         return $this->name_ar ?: ($this->name_en ?: 'طالب التوجيهي');
+    }
+
+    /**
+     * هل يمتلك الطالب خصماً خاصاً معتمداً من الإدارة؟
+     */
+    public function hasDiscount(): bool
+    {
+        return ((float)($this->custom_discount_percent ?? 0) > 0) || ((float)($this->custom_discount_fixed ?? 0) > 0);
+    }
+
+    /**
+     * نص توصيفي أنيق للخصم
+     */
+    public function getDiscountLabelAttribute(): string
+    {
+        $percent = (float)($this->custom_discount_percent ?? 0);
+        $fixed = (float)($this->custom_discount_fixed ?? 0);
+
+        if ($percent >= 100) {
+            return 'إعفاء كامل 100%';
+        }
+        if ($percent > 0) {
+            return 'خصم ' . round($percent) . '%';
+        }
+        if ($fixed > 0) {
+            return 'خصم ' . round($fixed) . ' ₪';
+        }
+        return 'بدون خصم';
+    }
+
+    /**
+     * حساب قيمة الخصم لأي مبلغ محدد
+     */
+    public function calculateDiscount(float $amount): float
+    {
+        if ($amount <= 0) {
+            return 0.0;
+        }
+
+        $percent = (float)($this->custom_discount_percent ?? 0);
+        $fixed = (float)($this->custom_discount_fixed ?? 0);
+
+        if ($percent >= 100) {
+            return (float)$amount;
+        }
+
+        if ($percent > 0) {
+            return round($amount * ($percent / 100.0), 2);
+        }
+
+        if ($fixed > 0) {
+            return min((float)$amount, round($fixed, 2));
+        }
+
+        return 0.0;
     }
 }

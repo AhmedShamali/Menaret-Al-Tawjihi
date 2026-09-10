@@ -74,21 +74,25 @@ class PaymentGatewayController extends Controller
             return response()->json(['status' => 'error', 'message' => 'سلة المواد فارغة أو منتهية الصلاحية.'], 422);
         }
 
-        $request->validate([
-            'gateway'      => 'required|in:jawwal_pay,palpay,bop,voucher',
-            'wallet_phone' => 'required_if:gateway,jawwal_pay|nullable|string',
-            'palpay_ref'   => 'required_if:gateway,palpay|nullable|string',
-            'bop_ref'      => 'required_if:gateway,bop|nullable|string',
-            'receipt_file' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:8192',
-        ], [
-            'gateway.required'          => 'يرجى اختيار طريقة الدفع الفلسطينية المناسبة.',
-            'wallet_phone.required_if'  => 'يرجى إدخال رقم محفظة جوال باي الخاصة بك.',
-            'palpay_ref.required_if'    => 'يرجى إدخال رقم العملية أو كود السداد في بال باي.',
-            'bop_ref.required_if'       => 'يرجى إدخال رقم الحوالة أو المرجع البنكي.',
-            'receipt_file.required'     => 'يرجى إرفاق صورة إشعار أو وصل التحويل البنكي/المحفظة لاعتماد الدفعة من الإدارة.',
-            'receipt_file.mimes'        => 'يجب أن يكون الإشعار صورة (JPG, PNG, WEBP) أو ملف PDF.',
-            'receipt_file.max'          => 'حجم ملف الإشعار يجب ألا يتجاوز 8 ميجابايت.',
-        ]);
+        $isFullDiscount = ((float)($cart['total'] ?? 0) <= 0);
+
+        if (!$isFullDiscount) {
+            $request->validate([
+                'gateway'      => 'required|in:jawwal_pay,palpay,bop,voucher',
+                'wallet_phone' => 'required_if:gateway,jawwal_pay|nullable|string',
+                'palpay_ref'   => 'required_if:gateway,palpay|nullable|string',
+                'bop_ref'      => 'required_if:gateway,bop|nullable|string',
+                'receipt_file' => 'required|file|mimes:jpeg,png,jpg,webp,pdf|max:8192',
+            ], [
+                'gateway.required'          => 'يرجى اختيار طريقة الدفع الفلسطينية المناسبة.',
+                'wallet_phone.required_if'  => 'يرجى إدخال رقم محفظة جوال باي الخاصة بك.',
+                'palpay_ref.required_if'    => 'يرجى إدخال رقم العملية أو كود السداد في بال باي.',
+                'bop_ref.required_if'       => 'يرجى إدخال رقم الحوالة أو المرجع البنكي.',
+                'receipt_file.required'     => 'يرجى إرفاق صورة إشعار أو وصل التحويل البنكي/المحفظة لاعتماد الدفعة من الإدارة.',
+                'receipt_file.mimes'        => 'يجب أن يكون الإشعار صورة (JPG, PNG, WEBP) أو ملف PDF.',
+                'receipt_file.max'          => 'حجم ملف الإشعار يجب ألا يتجاوز 8 ميجابايت.',
+            ]);
+        }
 
         $receiptPath = null;
         if ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
@@ -96,30 +100,37 @@ class PaymentGatewayController extends Controller
         }
 
         // إنشاء رقم عملية مرجعي فلسطيني موحد
-        $txNumber = 'PAL-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+        $txNumber = ($isFullDiscount ? 'GRANT-' : 'PAL-') . date('Ymd') . '-' . strtoupper(Str::random(6));
 
         $details = [
-            'gateway'      => $request->gateway,
-            'wallet_phone' => $request->wallet_phone,
-            'reference_no' => $request->palpay_ref ?? $request->bop_ref ?? $request->voucher_code,
-            'ip'           => $request->ip(),
-            'paid_at'      => now()->toDateTimeString(),
+            'gateway'                => $isFullDiscount ? 'scholarship' : $request->gateway,
+            'wallet_phone'           => $request->wallet_phone,
+            'reference_no'           => $isFullDiscount ? 'ADMIN-SCHOLARSHIP-100' : ($request->palpay_ref ?? $request->bop_ref ?? $request->voucher_code),
+            'ip'                     => $request->ip(),
+            'paid_at'                => now()->toDateTimeString(),
+            'subtotal'               => $cart['subtotal'] ?? 0,
+            'bundle_discount'        => $cart['bundle_discount'] ?? 0,
+            'student_discount'       => $cart['student_discount'] ?? 0,
+            'student_discount_label' => $cart['student_discount_label'] ?? null,
+            'student_discount_notes' => $cart['student_discount_notes'] ?? null,
         ];
 
-        // 1. تسجيل المعاملة في جدول المدفوعات بحالة قيد المراجعة (Pending) - ممنوع الاعتماد التلقائي
+        // 1. تسجيل المعاملة في جدول المدفوعات (إذا كان إعفاء كامل 100% تعتمد فوراً)
+        $paymentStatus = $isFullDiscount ? 'completed' : 'pending';
+
         $payment = Payment::create([
             'student_id'         => $student->id,
             'transaction_number' => $txNumber,
-            'gateway'            => $request->gateway,
+            'gateway'            => $isFullDiscount ? 'scholarship' : $request->gateway,
             'amount'             => $cart['total'],
             'currency'           => 'ILS',
-            'status'             => 'pending',
+            'status'             => $paymentStatus,
             'payment_details'    => json_encode($details, JSON_UNESCAPED_UNICODE),
             'items'              => $cart['items'],
             'receipt_path'       => $receiptPath
         ]);
 
-        // 2. تسجيل قيد الالتحاق بحالة معلقة (غير مفعل) حتى يفحص المدير الإشعار ويعتمد التفعيل
+        // 2. تسجيل قيد الالتحاق (مفعل فورياً إذا كان إعفاء كامل، أو معلق بانتظار مراجعة الإشعار)
         $subjectNames = [];
         foreach ($cart['items'] as $item) {
             Enrollment::updateOrCreate(
@@ -128,39 +139,56 @@ class PaymentGatewayController extends Controller
                     'subject_id' => $item['id']
                 ],
                 [
-                    'status'         => 'pending', // غير مفعل حتى يعتمد المدير
+                    'status'         => $isFullDiscount ? 'active' : 'pending',
                     'access_mode'    => 'all',
-                    'payment_status' => 'pending',
-                    'activated_at'   => null,
+                    'payment_status' => $isFullDiscount ? 'scholarship' : 'pending',
+                    'activated_at'   => $isFullDiscount ? now() : null,
                     'expires_at'     => now()->addDays(365),
                 ]
             );
             $subjectNames[] = $item['name_ar'];
         }
 
-        // 3. إرسال إشعار فوري للطالب بأن طلبه قيد التدقيق
+        // 3. إرسال إشعار فوري للطالب
         $namesStr = implode('، ', $subjectNames);
-        NotificationService::notifyStudent(
-            $student->id,
-            'تم استلام إشعار الدفع بنجاح (قيد المراجعة) ⏳',
-            "تم إرسال إشعار سدادك بمبلغ {$payment->amount} ₪ لمواد ({$namesStr}). رقم العملية: {$txNumber}. طلبك قيد التدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد من الإشعار.",
-            'payment',
-            route('student.checkout.receipt', $payment->id)
-        );
+        if ($isFullDiscount) {
+            NotificationService::notifyStudent(
+                $student->id,
+                'تم تفعيل اشتراكك بنجاح بموجب المنحة الإدارية! 🎉',
+                "تم تفعيل موادك ({$namesStr}) بالكامل وبدء دراستك بنجاح بموجب الإعفاء المعتمد لك من إدارة المنصة.",
+                'payment',
+                route('student.checkout.receipt', $payment->id)
+            );
 
-        // 4. إرسال تنبيه لإدارة المنصة بالمراجعة والاعتماد
-        NotificationService::notifyAdmin(
-            'عملية دفع جديدة بانتظار المراجعة والاعتماد',
-            "قام الطالب {$student->name_ar} برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ عبر {$payment->gateway_name_ar} للاشتراك في ({$namesStr}). رقم العملية: {$txNumber}. يرجى فحص الإشعار واعتماد التفعيل.",
-            'payment'
-        );
+            NotificationService::notifyAdmin(
+                'استفادة طالب من منحة إعفاء كامل وتفعيل فوري',
+                "قام الطالب {$student->name_ar} بتفعيل مواده ({$namesStr}) بنجاح بموجب الإعفاء الكامل (100%). رقم العملية: {$txNumber}.",
+                'payment'
+            );
+        } else {
+            NotificationService::notifyStudent(
+                $student->id,
+                'تم استلام إشعار الدفع بنجاح (قيد المراجعة) ⏳',
+                "تم إرسال إشعار سدادك بمبلغ {$payment->amount} ₪ لمواد ({$namesStr}). رقم العملية: {$txNumber}. طلبك قيد التدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد من الإشعار.",
+                'payment',
+                route('student.checkout.receipt', $payment->id)
+            );
+
+            NotificationService::notifyAdmin(
+                'عملية دفع جديدة بانتظار المراجعة والاعتماد',
+                "قام الطالب {$student->name_ar} برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ للاشتراك في ({$namesStr}). رقم العملية: {$txNumber}. يرجى فحص الإشعار واعتماد التفعيل.",
+                'payment'
+            );
+        }
 
         // تفريغ السلة
         session()->forget('checkout_cart');
 
         return response()->json([
             'status'   => 'success',
-            'message'  => 'تم إرسال إشعار السداد بنجاح! طلبك قيد المراجعة والتدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد ⏳',
+            'message'  => $isFullDiscount 
+                ? 'تم تفعيل اشتراكك وموادك بنجاح بموجب منحة الإعفاء الكامل! مبارك يا بطل 🎉' 
+                : 'تم إرسال إشعار السداد بنجاح! طلبك قيد المراجعة والتدقيق من قِبل إدارة المنصة وسيتم تفعيل موادك فور التأكد ⏳',
             'redirect' => route('student.checkout.receipt', $payment->id)
         ]);
     }

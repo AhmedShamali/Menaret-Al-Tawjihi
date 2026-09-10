@@ -347,6 +347,102 @@ class StudentController extends Controller
         ]);
     }
 
+    /**
+     * تحديد وتحديث الخصم أو المنحة المخصصة للطالب من قِبل المدير
+     */
+    public function updateDiscount(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'discount_type'    => 'required|in:percent,fixed,none',
+            'discount_value'   => 'nullable|numeric|min:0',
+            'discount_notes'   => 'nullable|string|max:255',
+        ], [
+            'discount_type.required' => 'نوع الخصم مطلوب.',
+            'discount_value.numeric' => 'قيمة الخصم يجب أن تكون رقماً صحيحاً.',
+            'discount_value.min'     => 'قيمة الخصم يجب ألا تقل عن صفر.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'icon'    => 'error',
+                'title'   => $validator->errors()->first()
+            ], 422);
+        }
+
+        $type = $request->input('discount_type');
+        $val = (float) $request->input('discount_value', 0);
+        $notes = $request->input('discount_notes');
+
+        if ($type === 'none' || $val <= 0) {
+            $student->custom_discount_percent = 0;
+            $student->custom_discount_fixed = 0;
+            $student->discount_notes = null;
+            $student->save();
+
+            return response()->json([
+                'success'        => true,
+                'icon'           => 'info',
+                'title'          => 'تم إلغاء الخصم بنجاح',
+                'message'        => "تمت إزالة الخصم عن الطالب {$student->name_ar}.",
+                'discount_label' => 'بدون خصم',
+                'has_discount'   => false,
+                'percent'        => 0,
+                'fixed'          => 0,
+                'notes'          => null
+            ]);
+        }
+
+        if ($type === 'percent') {
+            if ($val > 100) {
+                $val = 100;
+            }
+            $student->custom_discount_percent = $val;
+            $student->custom_discount_fixed = 0;
+        } else {
+            $student->custom_discount_percent = 0;
+            $student->custom_discount_fixed = $val;
+        }
+
+        $student->discount_notes = $notes;
+        $student->save();
+
+        // إرسال إشعار فوري للطالب في حسابه
+        try {
+            $discountText = $type === 'percent' 
+                ? "خصم بقيمة " . round($val) . "%" 
+                : "خصم بقيمة " . round($val) . " ₪";
+            
+            if ($val >= 100 && $type === 'percent') {
+                $discountText = "إعفاء كامل بنسبة 100% (منحة مجانية شاملة)";
+            }
+
+            $reasonText = $notes ? " - السبب: {$notes}" : "";
+
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'مبارك! تم منحك خصماً خاصاً من إدارة المنصة 🏷️🎉',
+                "قررت إدارة المنصة منحك {$discountText}{$reasonText} على اشتراكات المواد الدراسية. يمكنك الآن الاستفادة من الخصم مباشرة عند الاشتراك.",
+                'discount',
+                route('student.courses.catalog')
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success'        => true,
+            'icon'           => 'success',
+            'title'          => 'تم حفظ الخصم بنجاح! 🏷️',
+            'message'        => "تم تحديث الخصم للطالب ({$student->name_ar}) بنجاح وإرسال إشعار له.",
+            'discount_label' => $student->discount_label,
+            'has_discount'   => $student->hasDiscount(),
+            'percent'        => (float)$student->custom_discount_percent,
+            'fixed'          => (float)$student->custom_discount_fixed,
+            'notes'          => $student->discount_notes
+        ]);
+    }
+
     public function toggleStatus($id) {
         $student = Student::findOrFail($id);
         $newStatus = ($student->status === 'active') ? 'pending' : 'active';

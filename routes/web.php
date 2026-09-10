@@ -123,6 +123,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/approve', [StudentController::class, 'approveStudent'])->name('students.approve');
     Route::post('/students/{id}/sync-subjects', [StudentController::class, 'syncSubjects'])->name('students.syncSubjects');
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
+    Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
 
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
     Route::get('/management', [AdminManagerController::class, 'teachersInfo'])->name('management.index');

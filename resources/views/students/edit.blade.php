@@ -194,6 +194,31 @@
                     </div>
                 </div>
 
+                <!-- 5. الخصومات والمنح (خاص بإدارة المنصة) -->
+                @if(Auth::guard('web')->check() && Auth::user()->role === 'admin')
+                <div class="form-card" style="border: 1.5px solid #ddd6fe; background: #faf5ff;">
+                    <div class="card-header" style="background: #f3e8ff;">
+                        <div class="card-icon" style="background: #7c3aed; color: white;"><i class="fas fa-tags"></i></div>
+                        <h3 style="color: #6b21a8;">المنح والخصومات الأكاديمية (إدارة)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="f-group">
+                            <label class="f-label">نسبة الخصم المئوية (%)</label>
+                            <input type="number" name="custom_discount_percent" value="{{ (float)($student->custom_discount_percent ?? 0) }}" min="0" max="100" step="any" class="f-input" placeholder="مثال: 25 أو 50 (100% تعني إعفاء كامل)">
+                            <small style="color: #7c3aed; font-size: 0.75rem; display: block; margin-top: 4px;">100% تمنح الطالب إعفاءً كاملاً بدون الحاجة لدفع أي رسوم.</small>
+                        </div>
+                        <div class="f-group" style="margin-top: 12px;">
+                            <label class="f-label">أو خصم بمبلغ نقدي ثابت (₪)</label>
+                            <input type="number" name="custom_discount_fixed" value="{{ (float)($student->custom_discount_fixed ?? 0) }}" min="0" step="any" class="f-input" placeholder="مثال: 50 أو 100">
+                        </div>
+                        <div class="f-group" style="margin-top: 12px;">
+                            <label class="f-label">سبب الخصم أو ملاحظات المنحة</label>
+                            <input type="text" name="discount_notes" value="{{ $student->discount_notes }}" class="f-input" placeholder="مثال: منحة تفوق دراسي / رعاية خاصة">
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- الأزرار -->
                 <div class="actions-box">
                     <button type="button" onclick="performUpdate({{ $student->id }})" id="saveBtn" class="btn-submit">

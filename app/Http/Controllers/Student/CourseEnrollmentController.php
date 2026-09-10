@@ -94,17 +94,41 @@ class CourseEnrollmentController extends Controller
             $bundleDiscount = round($subtotal * 0.15, 2);
         }
 
-        $totalAmount = max(0, $subtotal - $bundleDiscount);
+        $baseAfterBundle = max(0, $subtotal - $bundleDiscount);
+
+        // حساب الخصم أو المنحة المخصصة للطالب من قِبل المدير
+        $studentDiscount = 0;
+        $studentDiscountLabel = null;
+        $customPercent = (float) ($student->custom_discount_percent ?? 0);
+        $customFixed = (float) ($student->custom_discount_fixed ?? 0);
+
+        if ($customPercent >= 100) {
+            $studentDiscount = $baseAfterBundle;
+            $studentDiscountLabel = 'إعفاء ومنحة كاملة 100%';
+        } elseif ($customPercent > 0) {
+            $studentDiscount = round($baseAfterBundle * ($customPercent / 100), 2);
+            $studentDiscountLabel = 'خصم خاص من الإدارة (' . round($customPercent) . '%)';
+        } elseif ($customFixed > 0) {
+            $studentDiscount = min($baseAfterBundle, round($customFixed, 2));
+            $studentDiscountLabel = 'خصم خاص من الإدارة (' . round($customFixed) . ' ₪)';
+        }
+
+        $totalAmount = max(0, $baseAfterBundle - $studentDiscount);
 
         // تخزين بيانات السلة في الجلسة للانتقال إلى بوابة الدفع الفلسطينية
         session([
             'checkout_cart' => [
-                'student_id'      => $student->id,
-                'items'           => $items,
-                'subtotal'        => $subtotal,
-                'bundle_discount' => $bundleDiscount,
-                'total'           => $totalAmount,
-                'currency'        => 'ILS'
+                'student_id'              => $student->id,
+                'items'                   => $items,
+                'subtotal'                => $subtotal,
+                'bundle_discount'         => $bundleDiscount,
+                'student_discount'        => $studentDiscount,
+                'student_discount_label'  => $studentDiscountLabel,
+                'student_discount_notes'  => $student->discount_notes,
+                'custom_discount_percent' => $customPercent,
+                'custom_discount_fixed'   => $customFixed,
+                'total'                   => $totalAmount,
+                'currency'                => 'ILS'
             ]
         ]);
 

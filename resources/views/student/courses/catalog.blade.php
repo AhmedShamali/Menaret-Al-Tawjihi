@@ -24,6 +24,29 @@
         </div>
     </div>
 
+    <!-- شريط تنبيه الخصم الخاص للطالب -->
+    @if(isset($student) && $student && $student->hasDiscount())
+        <div style="background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border: 1.5px solid #d8b4fe; border-radius: 18px; padding: 18px 24px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.08);">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 48px; height: 48px; border-radius: 14px; background: #7c3aed; color: white; display: grid; place-items: center; font-size: 1.4rem; box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);">
+                    🏷️
+                </div>
+                <div>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; color: #581c87; margin: 0 0 4px 0;">
+                        مرحباً {{ $student->name_ar }}! لديك منحة/خصم خاص معتمد من إدارة المنصة: {{ $student->discount_label }}
+                    </h3>
+                    <p style="margin: 0; font-size: 0.82rem; color: #7e22ce;">
+                        {{ $student->discount_notes ? 'الملاحظات: ' . $student->discount_notes . ' • ' : '' }}
+                        سيتم تطبيق هذا الخصم لصالحك تلقائياً عند اختيار المواد والانتقال لبوابة الاشتراك!
+                    </p>
+                </div>
+            </div>
+            <span style="background: #7c3aed; color: white; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">
+                خصم ساري ومفعّل ✔
+            </span>
+        </div>
+    @endif
+
     <!-- شريط تصفية الفروع -->
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 25px; background: white; padding: 14px 20px; border-radius: 16px; border: 1px solid #e2e8f0;">
         <div style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.88rem; color: #334155;">
