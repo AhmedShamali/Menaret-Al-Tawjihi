@@ -10,14 +10,6 @@ class SubjectSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. حذف المواد التي لا تتبع لفروع التوجيهي المعتمدة لحصر المنصة كلياً في الثانوية العامة
-        $validStageIds = Stage::whereIn('grade_level', [121, 122, 123])->pluck('id')->toArray();
-        try {
-            Subject::whereNotIn('stage_id', $validStageIds)->delete();
-        } catch (\Throwable $e) {
-            // تجاهل أي قيد مفاتيح أجنبية
-        }
-
         $curriculum = [
             // --- الثاني عشر علمي - توجيهي (122) ---
             122 => [
@@ -229,7 +221,7 @@ class SubjectSeeder extends Seeder
 
             if ($stage) {
                 foreach ($subjects as $sub) {
-                    Subject::updateOrCreate(
+                    Subject::firstOrCreate(
                         ['subject_key' => $sub['key']],
                         [
                             'stage_id'    => $stage->id,

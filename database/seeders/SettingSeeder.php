@@ -32,7 +32,7 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($defaultSettings as $key => $value) {
-            \App\Models\Setting::updateOrCreate(
+            \App\Models\Setting::firstOrCreate(
                 ['key' => $key],
                 ['value' => $value]
             );
