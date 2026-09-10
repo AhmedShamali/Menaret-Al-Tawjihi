@@ -99,11 +99,35 @@
                 </span>
             </div>
 
-            <!-- الجنس -->
+            <!-- المحافظة / المدينة -->
             <div style="background: #f8fafc; padding: 16px 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">الجنس</span>
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">المحافظة / المدينة</span>
                 <span style="font-size: 0.92rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-user" style="color: #4f46e5;"></i> {{ $student->gender ?? 'غير محدد' }}
+                    <i class="fa-solid fa-map-marker-alt" style="color: #4f46e5;"></i> {{ $student->city ?? 'رام الله والبيرة' }}
+                </span>
+            </div>
+
+            <!-- اسم المدرسة الثانوية -->
+            <div style="background: #f8fafc; padding: 16px 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">المدرسة الثانوية</span>
+                <span style="font-size: 0.92rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-school" style="color: #4f46e5;"></i> {{ $student->school_name ?? 'غير مسجلة' }}
+                </span>
+            </div>
+
+            <!-- هاتف ولي الأمر -->
+            <div style="background: #f8fafc; padding: 16px 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">هاتف ولي الأمر / واتساب</span>
+                <span style="font-size: 0.92rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px; direction: ltr; justify-content: flex-end;">
+                    {{ $student->guardian_phone ?? $student->whatsapp ?? 'غير متوفر' }} <i class="fa-solid fa-user-shield" style="color: #4f46e5;"></i>
+                </span>
+            </div>
+
+            <!-- الجنس والعمر -->
+            <div style="background: #f8fafc; padding: 16px 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; display: block; margin-bottom: 6px;">الجنس والعمر</span>
+                <span style="font-size: 0.92rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-user" style="color: #4f46e5;"></i> {{ $student->gender ?? 'ذكر' }} ({{ $student->age ? $student->age . ' سنة' : '18 سنة' }})
                 </span>
             </div>
 
@@ -141,6 +165,122 @@
 
         </div>
 
+    </div>
+
+    <!-- بطاقة وثائق وإثبات الهوية الرسمية للطالب -->
+    <div style="background: #ffffff; border-radius: 24px; border: 1px solid #e2e8f0; box-shadow: 0 10px 30px rgba(0,0,0,0.03); overflow: hidden; padding: 35px; text-align: right; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 18px; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.25rem; font-weight: 900; color: #0f172a; margin: 0;">
+                        وثائق الهوية الرسمية والصورة الشخصية
+                    </h2>
+                    <span style="font-size: 0.82rem; color: #64748b;">مطابقة بطاقة الهوية الفلسطينية والمستندات المسجلة للطالب</span>
+                </div>
+            </div>
+
+            <a href="{{ route('admin.students.edit', $student->id) }}" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> تحديث / رفع وثائق جديدة
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+
+            <!-- 1. وثيقة الهوية الفلسطينية -->
+            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                    <span style="font-size: 0.88rem; font-weight: 800; color: #1e293b;">
+                        <i class="fa-solid fa-address-card" style="color: #0284c7;"></i> بطاقة الهوية / شهادة الميلاد:
+                    </span>
+                    @if($student->id_photo)
+                        <span style="background: #dcfce7; color: #166534; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px;">
+                            <i class="fa-solid fa-circle-check"></i> وثيقة مرفقة
+                        </span>
+                    @else
+                        <span style="background: #fef2f2; color: #991b1b; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px;">
+                            <i class="fa-solid fa-triangle-exclamation"></i> غير مرفقة بعد
+                        </span>
+                    @endif
+                </div>
+
+                @if($student->id_photo)
+                    @php
+                        $isIdPdf = \Illuminate\Support\Str::endsWith(strtolower($student->id_photo), '.pdf');
+                        $idUrl = asset('storage/' . $student->id_photo);
+                    @endphp
+                    <div style="background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 12px; text-align: center; margin-bottom: 14px;">
+                        @if($isIdPdf)
+                            <div style="padding: 25px; color: #ef4444;">
+                                <i class="fa-solid fa-file-pdf" style="font-size: 3rem; margin-bottom: 8px;"></i>
+                                <span style="display: block; font-size: 0.85rem; font-weight: 700; color: #334155;">مستند PDF: بطاقة الهوية</span>
+                            </div>
+                        @else
+                            <img src="{{ $idUrl }}" alt="بطاقة الهوية" style="max-height: 220px; max-width: 100%; border-radius: 10px; object-fit: contain; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.06);" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($student->name_ar) }}', '{{ $student->nid }}')">
+                        @endif
+                    </div>
+
+                    <div style="display: flex; gap: 8px;">
+                        @if(!$isIdPdf)
+                            <button type="button" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($student->name_ar) }}', '{{ $student->nid }}')" style="flex: 1; background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 9px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                                <i class="fa-solid fa-expand"></i> معاينة وتكبير
+                            </button>
+                        @endif
+                        <a href="{{ $idUrl }}" target="_blank" download style="flex: 1; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 9px; border-radius: 10px; font-weight: 800; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i class="fa-solid fa-download"></i> فتح / تنزيل
+                        </a>
+                    </div>
+                @else
+                    <div style="background: white; border: 1.5px dashed #cbd5e1; border-radius: 14px; padding: 30px 20px; text-align: center; color: #94a3b8;">
+                        <i class="fa-solid fa-id-badge" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 8px;"></i>
+                        <p style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 600;">لم يقم الطالب برفع صورة بطاقة الهوية بعد.</p>
+                        <a href="{{ route('admin.students.edit', $student->id) }}" style="background: #4f46e5; color: white; padding: 7px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> رفع الوثيقة الآن
+                        </a>
+                    </div>
+                @endif
+            </div>
+
+            <!-- 2. بطاقة الصورة الشخصية وبيانات التحقق -->
+            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 20px;">
+                <span style="font-size: 0.88rem; font-weight: 800; color: #1e293b; display: block; margin-bottom: 14px;">
+                    <i class="fa-solid fa-circle-user" style="color: #4f46e5;"></i> الصورة الشخصية وبيانات الطالب المعتمدة:
+                </span>
+
+                <div style="display: flex; gap: 16px; align-items: center; background: white; border: 1px solid #cbd5e1; border-radius: 14px; padding: 14px; margin-bottom: 14px;">
+                    <div style="width: 80px; height: 80px; border-radius: 16px; overflow: hidden; border: 2px solid #e2e8f0; flex-shrink: 0;">
+                        <img src="{{ $student->photo_url }}" alt="الصورة الشخصية" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div>
+                        <strong style="font-size: 1rem; color: #0f172a; display: block; margin-bottom: 4px;">{{ $student->name_ar }}</strong>
+                        <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 4px;">
+                            رقم الهوية: <code style="font-size: 0.85rem; font-family: monospace;">{{ $student->nid }}</code>
+                        </span>
+                        <span style="font-size: 0.8rem; color: #64748b; display: block;">
+                            الفرع: {{ $student?->stage?->label_ar ?? 'توجيهي' }}
+                        </span>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem; color: #475569;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px;">
+                        <span>المدرسة الثانوية:</span>
+                        <strong style="color: #0f172a;">{{ $student->school_name ?? 'غير مسجلة' }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding-bottom: 6px;">
+                        <span>المحافظة:</span>
+                        <strong style="color: #0f172a;">{{ $student->city ?? 'غير محددة' }}</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>هاتف ولي الأمر:</span>
+                        <strong style="color: #0f172a; direction: ltr;">{{ $student->guardian_phone ?? $student->whatsapp ?? 'غير متوفر' }}</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- قسم المواد الدراسية المقيد بها الطالب -->
@@ -579,5 +719,49 @@
         </form>
     </div>
 </div>
+
+<!-- نافذة تكبير ومعاينة بطاقة الهوية الفلسطينية للتحقق الرسمي -->
+<div id="idPhotoModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" onclick="closeIdModal()" dir="rtl">
+    <div style="background: #ffffff; width: 100%; max-width: 760px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; animation: modalIn 0.25s ease-out;" onclick="event.stopPropagation()">
+        <div style="padding: 18px 24px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; display: grid; place-items: center; font-size: 1.2rem;">
+                    <i class="fa-solid fa-id-card"></i>
+                </div>
+                <div>
+                    <h3 style="font-size: 1.05rem; font-weight: 800; margin: 0;" id="modalStudentName">معاينة بطاقة الهوية الفلسطينية</h3>
+                    <span style="font-size: 0.78rem; color: #94a3b8;" id="modalStudentNid">رقم الهوية: {{ $student->nid }}</span>
+                </div>
+            </div>
+            <button type="button" onclick="closeIdModal()" style="background: rgba(255,255,255,0.15); border: none; color: white; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: grid; place-items: center;">✕</button>
+        </div>
+        <div style="padding: 24px; background: #f8fafc; text-align: center; max-height: 70vh; overflow-y: auto;">
+            <img id="modalIdImg" src="" alt="بطاقة الهوية" style="max-height: 520px; max-width: 100%; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.15); object-fit: contain;">
+        </div>
+        <div style="padding: 16px 24px; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <a id="modalDownloadBtn" href="" target="_blank" download style="background: #0284c7; color: white; padding: 10px 22px; border-radius: 10px; font-size: 0.85rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-download"></i> تنزيل الوثيقة الرسمية
+            </a>
+            <button type="button" onclick="closeIdModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer;">
+                إغلاق النافذة
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function previewIdModal(imgUrl, studentName, studentNid) {
+    document.getElementById('modalIdImg').src = imgUrl;
+    document.getElementById('modalDownloadBtn').href = imgUrl;
+    document.getElementById('modalStudentName').textContent = 'بطاقة الهوية: ' + studentName;
+    document.getElementById('modalStudentNid').textContent = 'رقم الهوية الفلسطينية: ' + studentNid;
+    const modal = document.getElementById('idPhotoModalOverlay');
+    modal.style.display = 'flex';
+}
+
+function closeIdModal() {
+    document.getElementById('idPhotoModalOverlay').style.display = 'none';
+}
+</script>
 
 @endsection

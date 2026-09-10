@@ -11,6 +11,7 @@ class Student extends Authenticatable
 
     protected $fillable = [
         'name_ar', 'name_en', 'nid', 'email', 'password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status',
+        'city', 'school_name', 'guardian_phone',
         'streak_count', 'last_activity_date', 'total_points',
         'custom_discount_percent', 'custom_discount_fixed', 'discount_notes'
     ];
@@ -148,4 +149,35 @@ class Student extends Authenticatable
 
         return 0.0;
     }
+
+    /**
+     * رابط الصورة الشخصية مع بديل تلقائي
+     */
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo) {
+            return asset('storage/' . $this->photo);
+        }
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name_ar ?? 'طالب') . '&background=0284c7&color=fff&size=200&bold=true';
+    }
+
+    /**
+     * رابط صورة الهوية الفلسطينية
+     */
+    public function getIdPhotoUrlAttribute(): ?string
+    {
+        if ($this->id_photo) {
+            return asset('storage/' . $this->id_photo);
+        }
+        return null;
+    }
+
+    /**
+     * هل رفع الطالب صورة هويته؟
+     */
+    public function getHasIdPhotoAttribute(): bool
+    {
+        return !empty($this->id_photo);
+    }
 }
+

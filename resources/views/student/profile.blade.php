@@ -72,6 +72,14 @@
                     <strong style="color: #0f172a; font-family: monospace; font-size: 0.95rem;">{{ $student->nid ?? 'غير مسجل' }}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-location-dot" style="margin-left: 6px; color: #0284c7;"></i> المدينة / المحافظة:</span>
+                    <strong style="color: #0f172a;">{{ $student->city ?? 'فلسطين' }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-school" style="margin-left: 6px; color: #6366f1;"></i> المدرسة:</span>
+                    <strong style="color: #0f172a;">{{ $student->school_name ?? 'غير محددة' }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
                     <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-envelope" style="margin-left: 6px; color: #94a3b8;"></i> البريد:</span>
                     <strong style="color: #0f172a; font-size: 0.82rem;">{{ $student->email ?? auth()->user()->email }}</strong>
                 </div>
@@ -80,8 +88,24 @@
                     <strong style="color: #0f172a; font-family: monospace;">{{ $student->phone ?? 'غير متوفر' }}</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-user-shield" style="margin-left: 6px; color: #f59e0b;"></i> جوال ولي الأمر:</span>
+                    <strong style="color: #0f172a; font-family: monospace;">{{ $student->guardian_phone ?? 'غير متوفر' }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
                     <span style="color: #64748b; font-weight: 600;"><i class="fa-brands fa-whatsapp" style="margin-left: 6px; color: #10b981;"></i> واتساب:</span>
                     <strong style="color: #0f172a; font-family: monospace;">{{ $student->whatsapp ?? $student->phone ?? 'غير متوفر' }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
+                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-address-card" style="margin-left: 6px; color: #0284c7;"></i> بطاقة الهوية:</span>
+                    @if(!empty($student->id_photo))
+                        <span style="background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-circle-check"></i> مرفقة ومعتمدة
+                        </span>
+                    @else
+                        <span style="background: #fff1f2; color: #e11d48; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-circle-exclamation"></i> غير مرفقة
+                        </span>
+                    @endif
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
                     <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-calendar-check" style="margin-left: 6px; color: #94a3b8;"></i> تاريخ الانضمام:</span>

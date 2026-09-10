@@ -328,10 +328,85 @@
             text-decoration: underline;
         }
 
+        /* Upload Cards */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .upload-card-box {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+        .upload-card-box:hover {
+            border-color: var(--primary);
+            background: #f0f7ff;
+            transform: translateY(-2px);
+        }
+        .upload-card-box.has-file {
+            border-style: solid;
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        .upload-icon-circle {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #eff6ff;
+            color: var(--primary);
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
+            margin: 0 auto 8px auto;
+            transition: all 0.2s ease;
+        }
+        .upload-card-box.has-file .upload-icon-circle {
+            background: #dcfce7;
+            color: #10b981;
+        }
+        .upload-thumb-preview {
+            width: 65px;
+            height: 65px;
+            border-radius: 12px;
+            object-fit: cover;
+            margin: 0 auto 8px auto;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            border: 2px solid white;
+        }
+        .upload-card-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: var(--text-title);
+            display: block;
+            margin-bottom: 3px;
+        }
+        .upload-card-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: block;
+            line-height: 1.3;
+        }
+        .upload-file-status {
+            font-size: 0.72rem;
+            color: #059669;
+            font-weight: 700;
+            margin-top: 6px;
+            display: none;
+        }
+
         @media (max-width: 950px) {
             .auth-visual-side { display: none; }
             .auth-form-side { padding: 40px 20px; }
             .grid-2-cols { grid-template-columns: 1fr; gap: 0; }
+            .upload-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -395,7 +470,7 @@
                 <p>أدخل بياناتك للانضمام فورياً إلى المنصة ومتابعة دروسك</p>
             </div>
 
-            <form id="registerForm" onsubmit="handleRegisterSubmit(event)">
+            <form id="registerForm" onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
                 @csrf
 
                 <!-- الاسم الكامل ورقم الهوية -->
@@ -417,7 +492,7 @@
                     </div>
                 </div>
 
-                <!-- البريد ورقم الجوال -->
+                <!-- البريد ورقم جوال الطالب -->
                 <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="email">البريد الإلكتروني <span class="req">*</span></label>
@@ -428,18 +503,37 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="phone">رقم الجوال أو الواتساب</label>
+                        <label for="phone">رقم جوال الطالب / واتساب <span class="req">*</span></label>
                         <div class="input-control-wrap">
-                            <i class="fas fa-phone lead-icon"></i>
-                            <input type="tel" name="phone" id="phone" class="form-input" placeholder="059XXXXXXX أو 056XXXXXXX">
+                            <i class="fas fa-mobile-screen-button lead-icon"></i>
+                            <input type="tel" name="phone" id="phone" class="form-input" placeholder="059XXXXXXX أو 056XXXXXXX" required>
                         </div>
                     </div>
                 </div>
 
-                <!-- المرحلة/الفرع والمحافظة والجنس -->
+                <!-- هاتف ولي الأمر واسم المدرسة -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="stage_id">الفرع الدراسي (توجيهي فقط) <span class="req">*</span></label>
+                        <label for="guardian_phone">رقم جوال ولي الأمر (للمتابعة الأكاديمية)</label>
+                        <div class="input-control-wrap">
+                            <i class="fas fa-user-shield lead-icon"></i>
+                            <input type="tel" name="guardian_phone" id="guardian_phone" class="form-input" placeholder="059XXXXXXX أو 056XXXXXXX">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="school_name">اسم المدرسة الثانوية</label>
+                        <div class="input-control-wrap">
+                            <i class="fas fa-school lead-icon"></i>
+                            <input type="text" name="school_name" id="school_name" class="form-input" placeholder="مثال: مدرسة الحسين بن علي الثانوية">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المرحلة/الفرع والجنس -->
+                <div class="grid-2-cols">
+                    <div class="input-group">
+                        <label for="stage_id">الفرع الأكاديمي (توجيهي فلسطين) <span class="req">*</span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-graduation-cap lead-icon"></i>
                             <select name="stage_id" id="stage_id" class="form-input" required onchange="onStageChanged(this.value)">
@@ -466,9 +560,10 @@
                     </div>
                 </div>
 
+                <!-- المحافظة والعمر -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="city">المحافظة / المدينة</label>
+                        <label for="city">المحافظة / المدينة <span class="req">*</span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-map-marker-alt lead-icon"></i>
                             <select name="city" id="city" class="form-input">
@@ -498,6 +593,46 @@
                         <div class="input-control-wrap">
                             <i class="fas fa-calendar-check lead-icon"></i>
                             <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المرفقات والوثائق: الصورة الشخصية وصورة الهوية -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="font-size: 0.88rem; font-weight: 800; color: var(--text-title);">
+                            <i class="fas fa-camera" style="color: var(--primary);"></i> الصورة الشخصية وصورة الهوية الفلسطينية:
+                        </label>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">(اختياري وموصى به للاعتماد الرسمي)</span>
+                    </div>
+
+                    <div class="upload-grid">
+                        <!-- 1. صندوق رفع الصورة الشخصية -->
+                        <div class="upload-card-box" id="boxPhoto" onclick="document.getElementById('photoInput').click()">
+                            <input type="file" name="photo" id="photoInput" accept="image/jpeg,image/png,image/jpg,image/webp" style="display: none;" onchange="previewStudentPhoto(this)">
+                            <img id="previewPhotoImg" class="upload-thumb-preview" alt="معاينة الصورة الشخصية">
+                            <div class="upload-icon-circle" id="iconPhotoCircle">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <span class="upload-card-title">الصورة الشخصية للطالب</span>
+                            <span class="upload-card-sub" id="photoSubText">انقر لاختيار صورة واضحة لوجه الطالب (JPG/PNG)</span>
+                            <div class="upload-file-status" id="photoStatusBadge">
+                                <i class="fas fa-check-circle"></i> تم إرفاق الصورة
+                            </div>
+                        </div>
+
+                        <!-- 2. صندوق رفع صورة الهوية الفلسطينية -->
+                        <div class="upload-card-box" id="boxIdPhoto" onclick="document.getElementById('idPhotoInput').click()">
+                            <input type="file" name="id_photo" id="idPhotoInput" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" style="display: none;" onchange="previewStudentIdPhoto(this)">
+                            <img id="previewIdPhotoImg" class="upload-thumb-preview" alt="معاينة صورة الهوية">
+                            <div class="upload-icon-circle" id="iconIdCircle">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <span class="upload-card-title">صورة بطاقة الهوية الفلسطينية</span>
+                            <span class="upload-card-sub" id="idSubText">صورة البطاقة أو شهادة الميلاد للمطابقة الرسمية</span>
+                            <div class="upload-file-status" id="idStatusBadge">
+                                <i class="fas fa-check-circle"></i> تم إرفاق الوثيقة
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -582,6 +717,59 @@
             onStageChanged(stageSelect.value);
         }
     });
+
+    function previewStudentPhoto(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const previewImg = document.getElementById('previewPhotoImg');
+        const iconCircle = document.getElementById('iconPhotoCircle');
+        const box = document.getElementById('boxPhoto');
+        const subText = document.getElementById('photoSubText');
+        const statusBadge = document.getElementById('photoStatusBadge');
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            previewImg.style.display = 'block';
+            iconCircle.style.display = 'none';
+            box.classList.add('has-file');
+            subText.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+            statusBadge.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function previewStudentIdPhoto(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const previewImg = document.getElementById('previewIdPhotoImg');
+        const iconCircle = document.getElementById('iconIdCircle');
+        const box = document.getElementById('boxIdPhoto');
+        const subText = document.getElementById('idSubText');
+        const statusBadge = document.getElementById('idStatusBadge');
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                iconCircle.style.display = 'none';
+                box.classList.add('has-file');
+                subText.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+                statusBadge.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            previewImg.style.display = 'none';
+            iconCircle.style.display = 'grid';
+            iconCircle.innerHTML = '<i class="fas fa-file-pdf" style="color: #ef4444;"></i>';
+            box.classList.add('has-file');
+            subText.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+            statusBadge.style.display = 'block';
+        }
+    }
 
     function togglePasswordVisibility() {
         const pwdInput = document.getElementById('password');

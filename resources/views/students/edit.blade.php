@@ -50,6 +50,21 @@
                             <label class="f-label">العمر <span class="req">*</span></label>
                             <input type="number" name="age" value="{{ $student->age }}" class="f-input" required placeholder="مثال: 18">
                         </div>
+                        <div class="f-group">
+                            <label class="f-label">المحافظة / المدينة</label>
+                            <select name="city" class="f-input">
+                                @php
+                                    $cities = ['القدس', 'رام الله والبيرة', 'غزة', 'نابلس', 'الخليل', 'جنين', 'طولكرم', 'قلقيلية', 'بيت لحم', 'سلفيت', 'أريحا', 'طوباس', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح', 'أخرى'];
+                                @endphp
+                                @foreach($cities as $c)
+                                    <option value="{{ $c }}" {{ ($student->city ?? 'رام الله والبيرة') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="f-group">
+                            <label class="f-label">اسم المدرسة الثانوية</label>
+                            <input type="text" name="school_name" value="{{ $student->school_name }}" class="f-input" placeholder="اسم المدرسة">
+                        </div>
                     </div>
                 </div>
 
@@ -71,6 +86,10 @@
                         <div class="f-group">
                             <label class="f-label">رقم الواتساب <span class="req">*</span></label>
                             <input type="tel" name="whatsapp" value="{{ $student->whatsapp }}" class="f-input" required placeholder="05XXXXXXXX">
+                        </div>
+                        <div class="f-group full-width">
+                            <label class="f-label">رقم جوال ولي الأمر (للمتابعة الأكاديمية)</label>
+                            <input type="tel" name="guardian_phone" value="{{ $student->guardian_phone }}" class="f-input" placeholder="05XXXXXXXX">
                         </div>
                         <div class="f-group full-width">
                             <label class="f-label">كلمة المرور الجديدة <span class="opt">(اتركها فارغة إذا لم ترد التغيير)</span></label>
@@ -167,13 +186,13 @@
 
                         <!-- الصورة الشخصية -->
                         <div class="media-upload-item">
-                            <label class="f-label">الصورة الشخصية</label>
+                            <label class="f-label">الصورة الشخصية للطالب</label>
                             <div class="preview-box">
-                                <img id="photo-preview" src="{{ $student->photo ? asset('storage/'.$student->photo) : asset('assets/images/default-avatar.png') }}" alt="الشخصية">
+                                <img id="photo-preview" src="{{ $student->photo_url }}" alt="الشخصية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
                             </div>
                             <input type="file" name="photo" id="p_file" class="file-input-hidden" accept="image/*" onchange="previewImage(this, 'photo-preview')">
                             <label for="p_file" class="btn-upload-trigger">
-                                <span>🔄 تغيير الصورة الشخصية</span>
+                                <span>🔄 رفع / تغيير الصورة الشخصية</span>
                             </label>
                         </div>
 
@@ -181,13 +200,28 @@
 
                         <!-- صورة الهوية -->
                         <div class="media-upload-item">
-                            <label class="f-label">صورة الهوية / الوثيقة</label>
-                            <div class="preview-box">
-                                <img id="id-photo-preview" src="{{ $student->id_photo ? asset('storage/'.$student->id_photo) : asset('assets/images/default-id.png') }}" alt="الهوية">
+                            <label class="f-label">صورة الهوية الفلسطينية / شهادة الميلاد</label>
+                            <div class="preview-box" style="position: relative;">
+                                @if($student->id_photo)
+                                    <img id="id-photo-preview" src="{{ asset('storage/'.$student->id_photo) }}" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                                @else
+                                    <div id="id-photo-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.8rem; gap: 6px;">
+                                        <i class="fas fa-id-card" style="font-size: 2.2rem; color: #cbd5e1;"></i>
+                                        <span>لم تُرفع هوية بعد</span>
+                                    </div>
+                                    <img id="id-photo-preview" src="" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; display: none;">
+                                @endif
                             </div>
-                            <input type="file" name="id_photo" id="i_file" class="file-input-hidden" accept="image/*" onchange="previewImage(this, 'id-photo-preview')">
-                            <label for="i_file" class="btn-upload-trigger">
-                                <span>🔄 تغيير صورة الهوية</span>
+
+                            @if($student->id_photo)
+                                <a href="{{ asset('storage/'.$student->id_photo) }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-top: 8px; background: #e0f2fe; color: #0369a1; border-radius: 10px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
+                                    <i class="fas fa-expand"></i> معاينة الوثيقة بالحجم الكامل
+                                </a>
+                            @endif
+
+                            <input type="file" name="id_photo" id="i_file" class="file-input-hidden" accept="image/*,application/pdf" onchange="previewImage(this, 'id-photo-preview')">
+                            <label for="i_file" class="btn-upload-trigger" style="margin-top: 8px;">
+                                <span>🔄 رفع / تحديث صورة الهوية</span>
                             </label>
                         </div>
 

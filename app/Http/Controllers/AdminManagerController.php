@@ -191,45 +191,37 @@ class AdminManagerController extends Controller {
         $phone = $request->phone ?: '0590000000';
         $age = $request->age ? (int)$request->age : 18;
         $nameEn = $request->name_en ?: $request->name_ar;
+        $city = $request->input('city', 'رام الله والبيرة');
+        $schoolName = $request->input('school_name');
+        $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
+
+        $studentData = [
+            'name_ar'            => $request->name_ar,
+            'name_en'            => $nameEn,
+            'nid'                => $request->nid,
+            'age'                => $age,
+            'email'              => $request->email,
+            'phone'              => $phone,
+            'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
+            'guardian_phone'     => $guardianPhone,
+            'city'               => $city,
+            'school_name'        => $schoolName,
+            'password'           => Hash::make($request->password),
+            'stage_id'           => $stageId,
+            'gender'             => $gender,
+            'photo'              => $photoPath,
+            'id_photo'           => $idPhotoPath,
+            'status'             => 'active',
+            'streak_count'       => 1,
+            'total_points'       => 50,
+            'last_activity_date' => now()->toDateString(),
+        ];
 
         try {
-            $student = Student::create([
-                'name_ar'            => $request->name_ar,
-                'name_en'            => $nameEn,
-                'nid'                => $request->nid,
-                'age'                => $age,
-                'email'              => $request->email,
-                'phone'              => $phone,
-                'whatsapp'           => $request->whatsapp ?? $phone,
-                'password'           => Hash::make($request->password),
-                'stage_id'           => $stageId,
-                'gender'             => $gender,
-                'photo'              => $photoPath,
-                'id_photo'           => $idPhotoPath,
-                'status'             => 'active',
-                'streak_count'       => 1,
-                'total_points'       => 50,
-                'last_activity_date' => now()->toDateString(),
-            ]);
+            $student = Student::create($studentData);
         } catch (\Illuminate\Database\QueryException $e) {
-            $student = Student::create([
-                'name_ar'            => $request->name_ar,
-                'name_en'            => $nameEn,
-                'nid'                => $request->nid,
-                'age'                => $age,
-                'email'              => $request->email,
-                'phone'              => $phone,
-                'whatsapp'           => $request->whatsapp ?? $phone,
-                'password'           => Hash::make($request->password),
-                'stage_id'           => $stageId,
-                'gender'             => $gender,
-                'photo'              => $photoPath,
-                'id_photo'           => $idPhotoPath,
-                'status'             => 'published',
-                'streak_count'       => 1,
-                'total_points'       => 50,
-                'last_activity_date' => now()->toDateString(),
-            ]);
+            unset($studentData['city'], $studentData['school_name'], $studentData['guardian_phone']);
+            $student = Student::create($studentData);
         }
 
         // تسجيل الطالب في المواد التي حددها المدير حصراً دون إجباره على كل المواد تلقائياً

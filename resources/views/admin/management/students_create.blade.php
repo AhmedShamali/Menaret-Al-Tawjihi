@@ -97,6 +97,36 @@
                             <label class="form-label">العمر</label>
                             <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="18" value="18">
                         </div>
+                        <div>
+                            <label class="form-label">المحافظة / المدينة</label>
+                            <select name="city" class="modern-input">
+                                <option value="القدس">القدس الشريف 🕌</option>
+                                <option value="رام الله والبيرة" selected>رام الله والبيرة</option>
+                                <option value="غزة">غزة العزة 🌿</option>
+                                <option value="نابلس">نابلس (جبل النار)</option>
+                                <option value="الخليل">الخليل</option>
+                                <option value="جنين">جنين القسام</option>
+                                <option value="طولكرم">طولكرم</option>
+                                <option value="قلقيلية">قلقيلية</option>
+                                <option value="بيت لحم">بيت لحم</option>
+                                <option value="سلفيت">سلفيت</option>
+                                <option value="أريحا">أريحا والأغوار</option>
+                                <option value="طوباس">طوباس</option>
+                                <option value="خان يونس">خان يونس</option>
+                                <option value="رفح">رفح</option>
+                                <option value="شمال غزة">شمال غزة (جباليا)</option>
+                                <option value="دير البلح">دير البلح والوسطى</option>
+                                <option value="أخرى">خارج فلسطين / أخرى</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">اسم المدرسة الثانوية</label>
+                            <input type="text" name="school_name" class="modern-input" placeholder="مثال: مدرسة الحسين بن علي الثانوية">
+                        </div>
+                        <div>
+                            <label class="form-label">هاتف ولي الأمر (للمتابعة الأكاديمية)</label>
+                            <input type="tel" name="guardian_phone" class="modern-input" placeholder="059xxxxxxx">
+                        </div>
                     </div>
                 </div>
 

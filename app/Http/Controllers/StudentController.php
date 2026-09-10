@@ -85,14 +85,18 @@ class StudentController extends Controller
     // 4. دالة حفظ وتسجيل الطالب (تدعم التسجيل الذاتي للطلاب وإضافة الأدمن)
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'name_ar'  => 'required|string|max:255',
-            'nid'      => 'required|digits:9|unique:students,nid',
-            'email'    => 'required|email|unique:students,email',
-            'password' => 'required|min:6',
-            'stage_id' => 'required',
-            'phone'    => 'nullable|string|max:20',
-            'photo'    => 'nullable|image|max:3072',
-            'id_photo' => 'nullable|image|max:3072',
+            'name_ar'       => 'required|string|max:255',
+            'nid'           => 'required|digits:9|unique:students,nid',
+            'email'         => 'required|email|unique:students,email',
+            'password'      => 'required|min:6',
+            'stage_id'      => 'required',
+            'phone'         => 'nullable|string|max:20',
+            'whatsapp'      => 'nullable|string|max:20',
+            'guardian_phone'=> 'nullable|string|max:20',
+            'city'          => 'nullable|string|max:100',
+            'school_name'   => 'nullable|string|max:255',
+            'photo'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
+            'id_photo'      => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:6144',
         ], [
             'name_ar.required' => 'يرجى كتابة الاسم الرباعي كاملاً.',
             'nid.required'     => 'يرجى إدخال رقم الهوية الفلسطينية.',
@@ -102,6 +106,9 @@ class StudentController extends Controller
             'email.unique'     => 'البريد الإلكتروني مستخدم بالفعل، يرجى تسجيل الدخول أو استخدام بريد آخر.',
             'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
             'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
+            'photo.image'      => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
+            'photo.max'        => 'حجم الصورة الشخصية يجب ألا يتجاوز 5 ميغابايت.',
+            'id_photo.max'     => 'حجم صورة الهوية يجب ألا يتجاوز 6 ميغابايت.',
         ]);
 
         if ($validator->fails()) {
@@ -136,49 +143,43 @@ class StudentController extends Controller
         $phone = $request->phone ?: '0590000000';
         $age = $request->age ? (int)$request->age : 18;
         $nameEn = $request->name_en ?: $request->name_ar;
+        $city = $request->input('city', 'رام الله والبيرة');
+        $schoolName = $request->input('school_name');
+        $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
 
         $isAdmin = Auth::guard('web')->check();
         $accountStatus = $isAdmin ? 'active' : 'pending';
 
+        // إعداد مصفوفة بيانات الطالب
+        $studentData = [
+            'name_ar'            => $request->name_ar,
+            'name_en'            => $nameEn,
+            'nid'                => $request->nid,
+            'age'                => $age,
+            'email'              => $request->email,
+            'phone'              => $phone,
+            'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
+            'guardian_phone'     => $guardianPhone,
+            'city'               => $city,
+            'school_name'        => $schoolName,
+            'password'           => Hash::make($request->password),
+            'stage_id'           => $stageId,
+            'gender'             => $gender,
+            'photo'              => $photoPath,
+            'id_photo'           => $idPhotoPath,
+            'status'             => $accountStatus,
+            'streak_count'       => 1,
+            'total_points'       => 50,
+            'last_activity_date' => now()->toDateString(),
+        ];
+
         // إنشاء حساب الطالب مع تعيين الحالة: معلق (pending) بانتظار موافقة المدير إن كان تسجيلاً ذاتياً
         try {
-            $student = Student::create([
-                'name_ar'            => $request->name_ar,
-                'name_en'            => $nameEn,
-                'nid'                => $request->nid,
-                'age'                => $age,
-                'email'              => $request->email,
-                'phone'              => $phone,
-                'whatsapp'           => $request->whatsapp ?? $phone,
-                'password'           => Hash::make($request->password),
-                'stage_id'           => $stageId,
-                'gender'             => $gender,
-                'photo'              => $photoPath,
-                'id_photo'           => $idPhotoPath,
-                'status'             => $accountStatus,
-                'streak_count'       => 1,
-                'total_points'       => 50,
-                'last_activity_date' => now()->toDateString(),
-            ]);
+            $student = Student::create($studentData);
         } catch (\Illuminate\Database\QueryException $e) {
-            $student = Student::create([
-                'name_ar'            => $request->name_ar,
-                'name_en'            => $nameEn,
-                'nid'                => $request->nid,
-                'age'                => $age,
-                'email'              => $request->email,
-                'phone'              => $phone,
-                'whatsapp'           => $request->whatsapp ?? $phone,
-                'password'           => Hash::make($request->password),
-                'stage_id'           => $stageId,
-                'gender'             => $gender,
-                'photo'              => $photoPath,
-                'id_photo'           => $idPhotoPath,
-                'status'             => $accountStatus,
-                'streak_count'       => 1,
-                'total_points'       => 50,
-                'last_activity_date' => now()->toDateString(),
-            ]);
+            // استبعاد الأعمدة الإضافية في حال عدم اكتمال هجرة قاعدة البيانات الخارجية
+            unset($studentData['city'], $studentData['school_name'], $studentData['guardian_phone']);
+            $student = Student::create($studentData);
         }
 
         // إذا اختار الطالب مواد محددة عند التسجيل، تسجل بحالة معلقة pending بانتظار موافقة وسداد الإدارة
