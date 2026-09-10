@@ -13,7 +13,8 @@ class Student extends Authenticatable
         'name_ar', 'name_en', 'nid', 'email', 'password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status',
         'city', 'school_name', 'guardian_phone',
         'streak_count', 'last_activity_date', 'total_points',
-        'custom_discount_percent', 'custom_discount_fixed', 'discount_notes'
+        'custom_discount_percent', 'custom_discount_fixed', 'discount_notes',
+        'google_id', 'provider', 'provider_id', 'avatar_url'
     ];
 
     protected $hidden = [

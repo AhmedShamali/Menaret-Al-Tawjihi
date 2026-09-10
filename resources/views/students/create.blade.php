@@ -22,6 +22,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- Google Identity Services (GIS) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         :root {
@@ -208,6 +210,149 @@
         .form-head p {
             font-size: 0.9rem;
             color: var(--text-muted);
+        }
+
+        /* تنسيقات التسجيل السريع عبر Google وباقي الحسابات */
+        .social-auth-section {
+            margin-bottom: 22px;
+        }
+        .btn-social-auth {
+            width: 100%;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+        }
+        .btn-google-auth {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+        .btn-google-auth:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            color: #0f172a;
+        }
+        .social-mini-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn-social-mini {
+            height: 40px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .btn-social-mini:hover {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+            color: #0f172a;
+        }
+        .social-auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0 18px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .social-auth-divider::before,
+        .social-auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+        .social-auth-divider span {
+            padding: 0 12px;
+        }
+        .social-connected-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1.5px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 14px 18px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
+        }
+        .social-connected-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .social-connected-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .social-connected-info .title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #1e3a8a;
+        }
+        .social-connected-info .desc {
+            font-size: 0.78rem;
+            color: #2563eb;
+            font-weight: 600;
+        }
+        .btn-disconnect-social {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-disconnect-social:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .verified-badge-label {
+            background: #ecfdf5;
+            color: #059669;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .grid-2-cols {
@@ -470,16 +615,91 @@
                 <p>أدخل بياناتك للانضمام فورياً إلى المنصة ومتابعة دروسك</p>
             </div>
 
+            @if(session('error'))
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #dc2626; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-circle-exclamation"></i>
+                    <span>{{ session('error') }}</span>
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #1d4ed8; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>{{ session('info') }}</span>
+                </div>
+            @endif
+
+            @if(isset($googleProfile) && !empty($googleProfile['email']))
+                <!-- بطاقة الحساب المربوط عبر Google -->
+                <div class="social-connected-card">
+                    <div class="social-connected-main">
+                        @if(!empty($googleProfile['picture']))
+                            <img src="{{ $googleProfile['picture'] }}" alt="صورة الحساب" class="social-connected-avatar">
+                        @else
+                            <div class="social-connected-avatar" style="background: #2563eb; color: white; display: grid; place-items: center; font-size: 1.2rem;">
+                                <i class="fab fa-google"></i>
+                            </div>
+                        @endif
+                        <div class="social-connected-info">
+                            <div class="title">تم استيراد بيانات Google بنجاح 🎓</div>
+                            <div class="desc">{{ $googleProfile['name_ar'] ?? 'طالب التوجيهي' }} ({{ $googleProfile['email'] }})</div>
+                        </div>
+                    </div>
+                    <a href="{{ route('students.create') }}" class="btn-disconnect-social" title="إلغاء والعودة للنموذج العادي">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            @else
+                <!-- شريط التسجيل السريع عبر Google وباقي الحسابات للتسهيل -->
+                <div class="social-auth-section">
+                    <a href="{{ route('auth.google') }}" class="btn-social-auth btn-google-auth" id="btnGoogleRegister">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
+                            <path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.7l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z"/>
+                            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.7-.2-2.3H12v4.6h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.9z"/>
+                            <path fill="#FBBC05" d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.3 0-.8.2-1.6.4-2.3L1.9 7.3C.7 9.7 0 12.4 0 15.3c0 2.9.7 5.6 1.9 8l3.7-2.9z"/>
+                            <path fill="#34A853" d="M12 23.5c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16.5C3.7 20.4 7.5 23.5 12 23.5z"/>
+                        </svg>
+                        <span>التسجيل والمتابعة السريعة بحساب Google (Gmail)</span>
+                    </a>
+
+                    <div class="social-mini-row">
+                        <button type="button" class="btn-social-mini" onclick="openQuickGmailModal()">
+                            <i class="fas fa-bolt" style="color: #f59e0b;"></i>
+                            <span>تعبئة تلقائية بالـ Gmail</span>
+                        </button>
+                        <button type="button" class="btn-social-mini" onclick="openSocialModal('Microsoft')">
+                            <i class="fab fa-microsoft" style="color: #00a4ef;"></i>
+                            <span>حساب Microsoft</span>
+                        </button>
+                        <button type="button" class="btn-social-mini" onclick="openSocialModal('Apple')">
+                            <i class="fab fa-apple" style="color: #000000;"></i>
+                            <span>حساب Apple</span>
+                        </button>
+                    </div>
+
+                    <div class="social-auth-divider">
+                        <span>أو تعبئة البيانات الأكاديمية يدوياً أدناه</span>
+                    </div>
+                </div>
+            @endif
+
             <form id="registerForm" onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="google_id" id="google_id" value="{{ $googleProfile['google_id'] ?? '' }}">
+                <input type="hidden" name="avatar_url" id="avatar_url" value="{{ $googleProfile['picture'] ?? '' }}">
 
                 <!-- الاسم الكامل ورقم الهوية -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="name_ar">الاسم الرباعي (بالعربية) <span class="req">*</span></label>
+                        <label for="name_ar">
+                            <span>الاسم الرباعي (بالعربية) <span class="req">*</span></span>
+                            @if(!empty($googleProfile['name_ar']))
+                                <span class="verified-badge-label"><i class="fas fa-check"></i> من Google</span>
+                            @endif
+                        </label>
                         <div class="input-control-wrap">
                             <i class="fas fa-user lead-icon"></i>
-                            <input type="text" name="name_ar" id="name_ar" class="form-input" placeholder="مثال: أحمد محمد خليل علي" required>
+                            <input type="text" name="name_ar" id="name_ar" class="form-input" value="{{ old('name_ar', $googleProfile['name_ar'] ?? '') }}" placeholder="مثال: أحمد محمد خليل علي" required>
                         </div>
                     </div>
 
@@ -495,10 +715,15 @@
                 <!-- البريد ورقم جوال الطالب -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="email">البريد الإلكتروني <span class="req">*</span></label>
+                        <label for="email">
+                            <span>البريد الإلكتروني <span class="req">*</span></span>
+                            @if(!empty($googleProfile['email']))
+                                <span class="verified-badge-label"><i class="fas fa-check-circle"></i> معتمد من Google</span>
+                            @endif
+                        </label>
                         <div class="input-control-wrap">
                             <i class="fas fa-envelope lead-icon"></i>
-                            <input type="email" name="email" id="email" class="form-input" placeholder="student@example.com" required>
+                            <input type="email" name="email" id="email" class="form-input" value="{{ old('email', $googleProfile['email'] ?? '') }}" placeholder="student@example.com" required>
                         </div>
                     </div>
 
@@ -847,6 +1072,173 @@
                     confirmButtonText: 'حسناً'
                 });
             });
+    }
+
+    // استعراض صورة حساب Google إن توفرت
+    @if(isset($googleProfile) && !empty($googleProfile['picture']))
+        document.addEventListener('DOMContentLoaded', () => {
+            const previewImg = document.getElementById('previewPhotoImg');
+            const iconCircle = document.getElementById('iconPhotoCircle');
+            const box = document.getElementById('boxPhoto');
+            const subText = document.getElementById('photoSubText');
+            const statusBadge = document.getElementById('photoStatusBadge');
+            if (previewImg && box) {
+                previewImg.src = "{{ $googleProfile['picture'] }}";
+                previewImg.style.display = 'block';
+                if (iconCircle) iconCircle.style.display = 'none';
+                box.classList.add('has-file');
+                if (subText) subText.textContent = 'تم استيراد الصورة الشخصية من حساب Google';
+                if (statusBadge) {
+                    statusBadge.style.display = 'block';
+                    statusBadge.innerHTML = '<i class="fab fa-google"></i> صورة Google المعتمدة';
+                }
+            }
+        });
+    @endif
+
+    function openQuickGmailModal() {
+        Swal.fire({
+            title: 'تعبئة سريعة بحساب Gmail ⚡',
+            html: `
+                <div style="text-align: right; font-size: 0.88rem; color: #475569; margin-bottom: 12px; line-height: 1.6;">
+                    أدخل بريدك الإلكتروني لتعبئة نموذج التسجيل تلقائياً وتسهيل إنشاء الحساب:
+                </div>
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">بريد Gmail أو البريد الشخصي:</label>
+                    <input type="email" id="swalGmailInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="example@gmail.com" dir="ltr">
+                </div>
+                <div style="text-align: right;">
+                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">اسمك الكامل (اختياري):</label>
+                    <input type="text" id="swalNameInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="مثال: محمد أحمد" dir="rtl">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-magic"></i> تعبئة وتسهيل التسجيل',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#94a3b8',
+            preConfirm: () => {
+                const email = document.getElementById('swalGmailInput').value.trim();
+                const name = document.getElementById('swalNameInput').value.trim();
+                if (!email || !email.includes('@')) {
+                    Swal.showValidationMessage('يرجى إدخال بريد إلكتروني صحيح.');
+                    return false;
+                }
+                return { email, name };
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                const { email, name } = result.value;
+                axios.post('{{ route("auth.social.quickFill") }}', {
+                    email: email,
+                    name: name,
+                    _token: '{{ csrf_token() }}'
+                }).then(res => {
+                    applyGoogleProfile(res.data.data);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تمت التعبئة التلقائية بنجاح! 🚀',
+                        text: 'تم ملء بيانات الاسم والبريد. يرجى إكمال رقم الهوية واختيار الفرع.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    });
+                }).catch(() => {
+                    applyGoogleProfile({ email, name_ar: name });
+                });
+            }
+        });
+    }
+
+    function openSocialModal(provider) {
+        Swal.fire({
+            title: `التسجيل السريع بحساب ${provider} 💼`,
+            html: `
+                <div style="text-align: right; font-size: 0.88rem; color: #475569; margin-bottom: 12px; line-height: 1.6;">
+                    أدخل بريدك الإلكتروني التابع لـ ${provider} لاستيراد بياناتك وتعبئة النموذج فورياً:
+                </div>
+                <div style="text-align: right; margin-bottom: 10px;">
+                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">البريد الإلكتروني (${provider}):</label>
+                    <input type="email" id="swalSocialInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="${provider === 'Apple' ? 'user@icloud.com' : 'student@outlook.com'}" dir="ltr">
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'متابعة واستيراد البيانات',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#2563eb',
+            cancelButtonColor: '#94a3b8',
+            preConfirm: () => {
+                const email = document.getElementById('swalSocialInput').value.trim();
+                if (!email || !email.includes('@')) {
+                    Swal.showValidationMessage('يرجى إدخال بريد إلكتروني صحيح.');
+                    return false;
+                }
+                return email;
+            }
+        }).then(result => {
+            if (result.isConfirmed) {
+                const email = result.value;
+                const autoName = email.split('@')[0].replace(/[._]/g, ' ');
+                applyGoogleProfile({ email: email, name_ar: autoName });
+                Swal.fire({
+                    icon: 'success',
+                    title: `تم ربط بريد ${provider} بنجاح! 🎉`,
+                    text: 'أكمل فقط إدخال رقم الهوية الفلسطينية واختيار الفرع.',
+                    timer: 2500,
+                    showConfirmButton: false
+                });
+            }
+        });
+    }
+
+    function applyGoogleProfile(data) {
+        if (!data) return;
+        if (data.email) {
+            const emailInput = document.getElementById('email');
+            if (emailInput) {
+                emailInput.value = data.email;
+                emailInput.style.borderColor = '#10b981';
+                emailInput.style.background = '#f0fdf4';
+            }
+        }
+        if (data.name_ar || data.name) {
+            const nameInput = document.getElementById('name_ar');
+            if (nameInput) {
+                nameInput.value = data.name_ar || data.name;
+                nameInput.style.borderColor = '#10b981';
+                nameInput.style.background = '#f0fdf4';
+            }
+        }
+        if (data.google_id) {
+            const gIdInput = document.getElementById('google_id');
+            if (gIdInput) gIdInput.value = data.google_id;
+        }
+        if (data.picture) {
+            const avatarInput = document.getElementById('avatar_url');
+            if (avatarInput) avatarInput.value = data.picture;
+            const previewImg = document.getElementById('previewPhotoImg');
+            const iconCircle = document.getElementById('iconPhotoCircle');
+            const box = document.getElementById('boxPhoto');
+            if (previewImg && box) {
+                previewImg.src = data.picture;
+                previewImg.style.display = 'block';
+                if (iconCircle) iconCircle.style.display = 'none';
+                box.classList.add('has-file');
+            }
+        }
+
+        // توليد وتعبئة كلمة مرور قوية تلقائياً للتسهيل إن كانت فارغة
+        const pwdInput = document.getElementById('password');
+        if (pwdInput && !pwdInput.value) {
+            const genPwd = 'Tawjihi2026@' + Math.floor(1000 + Math.random() * 9000);
+            pwdInput.value = genPwd;
+            checkPasswordStrength(genPwd);
+        }
+
+        // تحويل المؤشر لحقل رقم الهوية لإكماله بسهولة
+        const nidInput = document.getElementById('nid');
+        if (nidInput) {
+            nidInput.focus();
+        }
     }
 </script>
 
