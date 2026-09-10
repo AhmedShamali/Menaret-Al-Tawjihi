@@ -110,7 +110,10 @@
                 };
             @endphp
 
-            <div class="notif-feed-card {{ $isUnread ? 'is-unread' : '' }}" id="card_{{ $notif->id }}">
+            <div class="notif-feed-card {{ $isUnread ? 'is-unread' : '' }}" 
+                 id="card_{{ $notif->id }}" 
+                 onclick="window.location.href='{{ route('notifications.open', $notif->id) }}'" 
+                 style="cursor: pointer;">
                 <div class="notif-card-start">
                     <div class="notif-icon-avatar {{ $iconTypeClass }}">
                         <i class="{{ $iconClass }}"></i>
@@ -147,9 +150,8 @@
                 </div>
 
                 <!-- أزرار الإجراء السريع -->
-                <div class="notif-card-actions">
-                    <a href="{{ $notif->action_url }}" 
-                       onclick="markReadDirect('{{ $notif->id }}')" 
+                <div class="notif-card-actions" onclick="event.stopPropagation();">
+                    <a href="{{ route('notifications.open', $notif->id) }}" 
                        class="btn-open-action" 
                        title="الانتقال للرابط المطلوب">
                         <span>فتح</span>
@@ -160,7 +162,7 @@
                         @if($isUnread)
                             <button type="button" 
                                     class="btn-icon-subtle" 
-                                    onclick="markReadDirect('{{ $notif->id }}')" 
+                                    onclick="event.stopPropagation(); markReadDirect('{{ $notif->id }}')" 
                                     title="تعيين كمقروء">
                                 <i class="fa-solid fa-check"></i>
                             </button>
@@ -168,7 +170,7 @@
 
                         <button type="button" 
                                 class="btn-icon-subtle delete-btn" 
-                                onclick="deleteNotifItem('{{ $notif->id }}')" 
+                                onclick="event.stopPropagation(); deleteNotifItem('{{ $notif->id }}')" 
                                 title="حذف من السجل">
                             <i class="fa-regular fa-trash-can"></i>
                         </button>

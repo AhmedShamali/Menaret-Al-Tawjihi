@@ -504,11 +504,12 @@ class StudentController extends Controller
     }
 
     public function show($id) {
+        $studentId = $id instanceof Student ? $id->id : $id;
         $student = Student::with([
             'stage.subjects.teacher',
             'enrollments.subject.teacher',
             'enrolledSubjects.teacher'
-        ])->findOrFail($id);
+        ])->findOrFail($studentId);
 
         $allStages = Stage::with(['subjects.teacher'])->get();
 

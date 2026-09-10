@@ -867,7 +867,7 @@
 
                         <div style="max-height: 320px; overflow-y: auto;" id="navNotificationsList">
                             @forelse($unreadItems as $item)
-                                <a href="{{ $item->url }}" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
+                                <a href="{{ route('notifications.open', $item->id) }}" class="notif-dropdown-item" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
                                     <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; flex-shrink: 0; font-size: 0.95rem;">
                                         <i class="fa-solid {{ $item->icon }}"></i>
                                     </div>
@@ -1037,13 +1037,18 @@
 
         const notifToggle = document.getElementById('notificationsToggle');
         const notifMenu = document.getElementById('notificationsMenu');
-        if(notifToggle && notifMenu) {
+        if (notifToggle && notifMenu) {
             notifToggle.onclick = (e) => { 
                 e.stopPropagation(); 
                 notifMenu.style.display = notifMenu.style.display === 'block' ? 'none' : 'block'; 
             };
-            window.addEventListener('click', () => {
-                notifMenu.style.display = 'none';
+            notifMenu.onclick = (e) => {
+                e.stopPropagation();
+            };
+            document.addEventListener('click', (e) => {
+                if (!notifToggle.contains(e.target) && !notifMenu.contains(e.target)) {
+                    notifMenu.style.display = 'none';
+                }
             });
         }
 

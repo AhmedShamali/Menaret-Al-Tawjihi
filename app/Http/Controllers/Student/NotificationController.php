@@ -97,25 +97,114 @@ class NotificationController extends Controller
     }
 
     /**
-     * تعيين إشعار مفرد كمقروء
+     * فتح الإشعار وتعيينه كمقروء وتوجيه المستخدم للرابط المخصص فوراً دون تجميد
+     */
+    public function openNotification($id)
+    {
+        $student = CurrentActor::student() ?? Auth::guard('student')->user();
+        $user = Auth::guard('web')->user() ?? Auth::user();
+
+        if (!$student && !$user) {
+            return redirect()->route('login');
+        }
+
+        $targetUrl = null;
+
+        // 1. إذا كان التنبيه رسالة محادثة خاصة (ID يبدأ بـ msg_)
+        if (str_starts_with($id, 'msg_')) {
+            $msgId = (int)str_replace('msg_', '', $id);
+            $msg = Message::find($msgId);
+            if ($msg) {
+                $msg->update(['is_read' => true]);
+                if ($student) {
+                    $targetUrl = ($msg->sender_type === 'teacher')
+                        ? route('student.teachers.chat', $msg->teacher_id ?? 1)
+                        : route('student.support');
+                } elseif ($user) {
+                    $targetUrl = ($user->role === 'teacher')
+                        ? route('teacher.messages.index')
+                        : route('admin.messages.index');
+                }
+            }
+        } else {
+            // 2. إشعار من جدول الإشعارات (Database Notification)
+            $notification = null;
+            if ($student) {
+                $notification = $student->notifications()->where('id', $id)->first();
+            } elseif ($user) {
+                $notification = $user->notifications()->where('id', $id)->first();
+            }
+
+            if (!$notification) {
+                $rawNotif = DB::table('notifications')->where('id', $id)->first();
+                if ($rawNotif) {
+                    DB::table('notifications')->where('id', $id)->update(['read_at' => now(), 'updated_at' => now()]);
+                    $data = is_array($rawNotif->data) ? $rawNotif->data : json_decode($rawNotif->data, true) ?? [];
+                    $targetUrl = $data['action_url'] ?? $data['url'] ?? null;
+                }
+            } else {
+                $notification->markAsRead();
+                $data = is_array($notification->data) ? $notification->data : json_decode($notification->data, true) ?? [];
+                $targetUrl = $data['action_url'] ?? $data['url'] ?? null;
+            }
+        }
+
+        // 3. روابط بديلة ذكية في حال لم يتوفر رابط بالبيانات
+        if (empty($targetUrl)) {
+            if ($student) {
+                $targetUrl = route('student.dashboard');
+            } elseif ($user && $user->role === 'admin') {
+                $targetUrl = route('admin.dashboard');
+            } elseif ($user && $user->role === 'teacher') {
+                $targetUrl = route('teacher.dashboard');
+            } else {
+                $targetUrl = url('/');
+            }
+        }
+
+        return redirect()->to($targetUrl);
+    }
+
+    /**
+     * تعيين إشعار مفرد كمقروء لجميع الأدوار (طالب، مدير، معلم)
      */
     public function markAsRead($id)
     {
         $student = CurrentActor::student() ?? Auth::guard('student')->user();
-        if (!$student) {
-            return response()->json(['status' => 'error'], 401);
+        $user = Auth::guard('web')->user() ?? Auth::user();
+
+        if (!$student && !$user) {
+            return response()->json(['status' => 'error', 'message' => 'غير مصرح'], 401);
         }
 
         if (str_starts_with($id, 'msg_')) {
             $msgId = (int)str_replace('msg_', '', $id);
-            Message::where('id', $msgId)->where('student_id', $student->id)->update(['is_read' => true]);
+            $query = Message::where('id', $msgId);
+            if ($student) {
+                $query->where('student_id', $student->id);
+            }
+            $query->update(['is_read' => true]);
             return response()->json(['status' => 'success']);
         }
 
-        $notification = $student->notifications()->where('id', $id)->first();
-        if ($notification) {
-            $notification->markAsRead();
+        if ($student) {
+            $notification = $student->notifications()->where('id', $id)->first();
+            if ($notification) {
+                $notification->markAsRead();
+                return response()->json(['status' => 'success']);
+            }
         }
+
+        if ($user) {
+            $notification = $user->notifications()->where('id', $id)->first();
+            if ($notification) {
+                $notification->markAsRead();
+                return response()->json(['status' => 'success']);
+            }
+        }
+
+        // Fallback update in DB
+        DB::table('notifications')->where('id', $id)->update(['read_at' => now(), 'updated_at' => now()]);
 
         return response()->json(['status' => 'success']);
     }
