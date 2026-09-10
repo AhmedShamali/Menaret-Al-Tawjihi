@@ -1906,7 +1906,7 @@
             <div class="footer-col-nav">
                 <h5>المساعدة والتواصل</h5>
                 <ul>
-                    <li><a href="https://wa.me/{{ \App\Models\Setting::get('contact_whatsapp', '970567897212') }}" target="_blank"><i class="fab fa-whatsapp" style="color: #22c55e;"></i> تواصل عبر واتساب</a></li>
+                    <li><a href="https://wa.me/970597694385" target="_blank"><i class="fab fa-whatsapp" style="color: #22c55e;"></i> تواصل عبر واتساب (+970597694385)</a></li>
                     <li><a href="mailto:{{ \App\Models\Setting::get('contact_email', 'support@tawjihi.ps') }}">الدعم الفني والشكاوى</a></li>
                     <li><a href="#faq">مركز الأسئلة الشائعة</a></li>
                     <li><a href="{{ route('login') }}">بوابة المعلمين والإدارة</a></li>

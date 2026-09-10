@@ -13,9 +13,9 @@ class AdminManagerController extends Controller {
     public function settings()
     {
         $settings = [
-            'site_name'         => Setting::get('site_name', 'منصة جسر'),
+            'site_name'         => Setting::get('site_name', 'منارة التوجيهي'),
             'contact_email'       => Setting::get('contact_email', 'info@jesr.ps'),
-            'contact_whatsapp'    => Setting::get('contact_whatsapp', '0590000000'),
+            'contact_whatsapp'    => Setting::get('contact_whatsapp', '00970597694385'),
             'registration_status' => Setting::get('registration_status', 'open'),
         ];
         return view('admin.management.settings', compact('settings'));

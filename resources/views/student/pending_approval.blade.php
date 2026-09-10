@@ -87,11 +87,25 @@
         <!-- أزرار الإجراء والتواصل السريع -->
         <div class="pending-actions-wrap">
             @php
-                $waMsg = urlencode("مرحباً أستاذ أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . $student->phone . ")، قمت بإنشاء حسابي في منارة التوجيهي وأرجو من حضرتك التكرم باعتماد وتفعيل دخولي واشتراكي.");
+                $supervisorPhone = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
+                $waDigits = preg_replace('/[^0-9]/', '', $supervisorPhone);
+                if (str_starts_with($waDigits, '00')) {
+                    $waDigits = substr($waDigits, 2);
+                } elseif (str_starts_with($waDigits, '0')) {
+                    $waDigits = '970' . substr($waDigits, 1);
+                }
+                $waNumber = !empty($waDigits) ? $waDigits : '970597694385';
+
+                $waMsg = urlencode("مرحباً أستاذ أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منارة التوجيهي وأرجو من حضرتك التكرم باعتماد وتفعيل دخولي واشتراكي.");
             @endphp
-            <a href="https://wa.me/970599000000?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp">
+            <a href="https://wa.me/{{ $waNumber }}?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
                 <i class="fa-brands fa-whatsapp"></i> تواصل مع المشرف العام لاعتماد الحساب فوراً
             </a>
+            <div style="font-size: 0.88rem; color: #166534; font-weight: 600; margin-top: -6px; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 1rem; color: #22c55e;"></i>
+                <span>رقم واتساب المشرف العام:</span>
+                <a href="https://wa.me/{{ $waNumber }}?text={{ $waMsg }}" target="_blank" style="color: #15803d; text-decoration: underline; font-weight: 700; direction: ltr;" dir="ltr">+970 597 694 385</a>
+            </div>
 
             <button type="button" class="btn-action-secondary" onclick="checkStatusRefresh()">
                 <i class="fa-solid fa-rotate-right"></i> فحص حالة الحساب وتحديث الصفحة
