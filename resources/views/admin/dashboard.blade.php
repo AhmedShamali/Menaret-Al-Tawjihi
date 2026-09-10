@@ -1,358 +1,742 @@
 @extends('layouts.app')
 
-@section('title', 'لوحة التحكم الاحترافية')
+@section('title', 'لوحة الإدارة المركزية')
 
 @section('content')
-<!-- استيراد الخطوط والأيقونات -->
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+<div class="ed-admin-container">
 
-<div class="admin-wrapper">
-
-    {{-- الجزء العلوي: الترحيب --}}
-    <header class="main-header">
-        <div class="greet-box">
-            <div class="date-chip">
-                <span class="material-icons-round">calendar_today</span>
-                {{ now()->translatedFormat('l, j F Y') }}
+    <!-- رأس لوحة الإدارة -->
+    <header class="ed-admin-header">
+        <div class="ed-admin-title-box">
+            <div class="ed-admin-breadcrumbs">
+                <i class="fas fa-home"></i>
+                <span>الرئيسية</span>
+                <i class="fas fa-chevron-left divider"></i>
+                <span class="active">لوحة التحكم الأكاديمية</span>
             </div>
-            <h1>مرحباً، <span class="gradient-text">سيادة المدير</span> <span class="wave-emoji">👋</span></h1>
-            <p>إليك ملخص سريع لأداء المنصة وما يتطلب انتباهك اليوم.</p>
+            <h1>لوحة الإدارة المركزية</h1>
+            <p>مرحباً بك، إليك ملخص مؤشرات الأداء، وإدارة الكادر التعليمي، والعمليات الحالية للمنصة.</p>
         </div>
 
-        <div class="header-actions">
-            <div class="server-status">
-                <div class="pulse-indicator"></div>
-                <span>حالة الخادم: متصل</span>
+        <div class="ed-admin-status-wrap">
+            <div class="ed-status-chip">
+                <span class="ed-live-dot"></span>
+                <span>النظام: متصل ومستقر</span>
+            </div>
+            <div class="ed-date-chip">
+                <i class="far fa-calendar-alt"></i>
+                <span>{{ now()->translatedFormat('l, j F Y') }}</span>
             </div>
         </div>
     </header>
 
-    {{-- الإحصائيات الرئيسية --}}
-    <div class="kpi-grid">
-        @php
-            $kpis = [
-                ['label' => 'المدرسين', 'val' => $data['total_teachers'] ?? 0, 'icon' => 'person_4', 'color' => '#4f46e5', 'trend' => 'كادر متميز'],
-                ['label' => 'الطلاب المسجلين', 'val' => $data['total_students'] ?? 0, 'icon' => 'school', 'color' => '#10b981', 'trend' => 'نمو مستمر'],
-                ['label' => 'المحتوى الرقمي', 'val' => $data['total_files'] ?? 0, 'icon' => 'inventory_2', 'color' => '#f59e0b', 'trend' => 'ملف تعليمي'],
-                ['label' => 'استقرار النظام', 'val' => '99.9%', 'icon' => 'security', 'color' => '#6366f1', 'trend' => 'آمن ومستقر'],
-            ];
-        @endphp
+    <!-- بطاقات المؤشرات الأكاديمية (KPIs) -->
+    @php
+        $kpis = [
+            [
+                'label' => 'إجمالي المعلمين',
+                'val' => $data['total_teachers'] ?? 0,
+                'icon' => 'fas fa-chalkboard-teacher',
+                'color' => '#1d4ed8',
+                'bg' => '#eff6ff',
+                'desc' => 'كادر تعليمي معتمد'
+            ],
+            [
+                'label' => 'الطلبة المسجلين',
+                'val' => $data['total_students'] ?? 0,
+                'icon' => 'fas fa-user-graduate',
+                'color' => '#059669',
+                'bg' => '#ecfdf5',
+                'desc' => 'طالب في مختلف الفروع'
+            ],
+            [
+                'label' => 'المحتوى والملفات',
+                'val' => $data['total_files'] ?? 0,
+                'icon' => 'fas fa-folder-open',
+                'color' => '#d97706',
+                'bg' => '#fffbeb',
+                'desc' => 'ملف ومصدر دراسي'
+            ],
+            [
+                'label' => 'حالة الخادم والأمان',
+                'val' => '99.9%',
+                'icon' => 'fas fa-shield-alt',
+                'color' => '#475569',
+                'bg' => '#f1f5f9',
+                'desc' => 'حماية وتوافرية كاملة'
+            ],
+        ];
+    @endphp
 
+    <div class="ed-kpi-grid">
         @foreach($kpis as $item)
-        <div class="kpi-card">
-            <div class="kpi-icon" style="background-color: {{ $item['color'] }}15; color: {{ $item['color'] }};">
-                <span class="material-icons-round">{{ $item['icon'] }}</span>
+        <div class="ed-kpi-card">
+            <div class="ed-kpi-icon-box" style="background-color: {{ $item['bg'] }}; color: {{ $item['color'] }};">
+                <i class="{{ $item['icon'] }}"></i>
             </div>
-            <div class="kpi-data">
-                <span class="kpi-label">{{ $item['label'] }}</span>
-                <h2 class="kpi-value">{{ is_numeric($item['val']) ? number_format($item['val']) : $item['val'] }}</h2>
-                <span class="kpi-trend">{{ $item['trend'] }}</span>
+            <div class="ed-kpi-info">
+                <span class="ed-kpi-title">{{ $item['label'] }}</span>
+                <div class="ed-kpi-number">{{ is_numeric($item['val']) ? number_format($item['val']) : $item['val'] }}</div>
+                <span class="ed-kpi-desc">{{ $item['desc'] }}</span>
             </div>
         </div>
         @endforeach
     </div>
 
-    <div class="dashboard-layout">
-        {{-- الجانب الأيمن: الإدارة السريعة --}}
-        <div class="main-column">
-            <div class="section-card shadow-sm">
-                <div class="section-header">
-                    <h3><span class="material-icons-round">bolt</span> وصول سريع</h3>
+    <!-- شبكة المحتوى الرئيسي -->
+    <div class="ed-admin-grid">
+
+        <!-- العمود الأيمن: أدوات الوصول السريع وإدارة القوى البشرية -->
+        <div class="ed-admin-main-col">
+
+            <!-- بطاقة إجراءات الإدارة السريعة -->
+            <div class="ed-card">
+                <div class="ed-card-header">
+                    <div class="ed-card-title">
+                        <i class="fas fa-th-large"></i>
+                        <span>إجراءات ووصول سريع</span>
+                    </div>
                 </div>
-                <div class="quick-grid">
-                    <a href="{{ route('admin.subjects.pricing') }}" class="q-link">
-                        <div class="q-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;"><span class="material-icons-round">sell</span></div>
-                        <span>تسعير المواد 🏷️</span>
+                <div class="ed-quick-actions-grid">
+                    <a href="{{ route('admin.subjects.pricing') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #eff6ff; color: #1d4ed8;">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <span class="ed-qb-title">تسعير المواد</span>
+                        <small class="ed-qb-desc">إدارة خطط الاشتراكات</small>
                     </a>
-                    <a href="{{ route('admin.payments.index') }}" class="q-link">
-                        <div class="q-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><span class="material-icons-round">account_balance_wallet</span></div>
-                        <span>الاشتراكات والمدفوعات 💳</span>
+
+                    <a href="{{ route('admin.payments.index') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #ecfdf5; color: #059669;">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <span class="ed-qb-title">الاشتراكات والمالية</span>
+                        <small class="ed-qb-desc">العمليات والمدفوعات</small>
                     </a>
-                    <a href="{{ route('admin.teachers.create') }}" class="q-link">
-                        <div class="q-icon purple"><span class="material-icons-round">add_reaction</span></div>
-                        <span>إضافة مدرس</span>
+
+                    <a href="{{ route('admin.certificates.index') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #fffbeb; color: #d97706;">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <span class="ed-qb-title">إصدار الشهادات</span>
+                        <small class="ed-qb-desc">شهادات التميز والإتمام</small>
                     </a>
-                    <a href="{{ route('admin.students.create') }}" class="q-link">
-                        <div class="q-icon green"><span class="material-icons-round">group_add</span></div>
-                        <span>إضافة طالب</span>
+
+                    <a href="{{ route('admin.teachers.create') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #f5f3ff; color: #7c3aed;">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <span class="ed-qb-title">إضافة مدرس</span>
+                        <small class="ed-qb-desc">إنشاء وتعيين الصلاحيات</small>
                     </a>
-                    <a href="{{ route('admin.settings.index') }}" class="q-link">
-                        <div class="q-icon blue"><span class="material-icons-round">settings_suggest</span></div>
-                        <span>إعدادات المنصة</span>
+
+                    <a href="{{ route('admin.students.create') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #e0f2fe; color: #0284c7;">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <span class="ed-qb-title">إضافة طالب</span>
+                        <small class="ed-qb-desc">تسجيل طالب جديد</small>
+                    </a>
+
+                    <a href="{{ route('admin.settings.index') }}" class="ed-quick-btn">
+                        <div class="ed-qb-icon" style="background: #f1f5f9; color: #334155;">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <span class="ed-qb-title">إعدادات المنصة</span>
+                        <small class="ed-qb-desc">خيارات وهوية النظام</small>
                     </a>
                 </div>
             </div>
 
-            <div class="section-card mt-4">
-                <div class="section-header">
-                    <h3><span class="material-icons-round">manage_accounts</span> إدارة القوى البشرية</h3>
-                </div>
-                <div class="user-list">
-                    <div class="user-item">
-                        <div class="u-info">
-                            <div class="u-avatar blue">T</div>
-                            <div>
-                                <h4>المعلمين</h4>
-                                <p>إدارة الحسابات، الصلاحيات، والتقارير</p>
-                            </div>
-                        </div>
-                        <a href="{{ route('admin.teachers.index') }}" class="btn-outline">عرض الكل</a>
+            <!-- بطاقة إدارة الكادر والطلبة -->
+            <div class="ed-card">
+                <div class="ed-card-header">
+                    <div class="ed-card-title">
+                        <i class="fas fa-users-cog"></i>
+                        <span>إدارة المستخدمين والأكاديميين</span>
                     </div>
-                    <div class="user-item">
-                        <div class="u-info">
-                            <div class="u-avatar green">S</div>
-                            <div>
-                                <h4>الطلاب</h4>
-                                <p>متابعة التسجيل والمستويات الدراسية</p>
+                </div>
+
+                <div class="ed-user-groups">
+                    <!-- مجموعة المعلمين -->
+                    <div class="ed-group-item">
+                        <div class="ed-gi-content">
+                            <div class="ed-gi-avatar teacher">
+                                <i class="fas fa-chalkboard-teacher"></i>
+                            </div>
+                            <div class="ed-gi-text">
+                                <strong>كادر المعلمين</strong>
+                                <p>إدارة الحسابات، صلاحيات المواد، والمجموعات التعليمية</p>
                             </div>
                         </div>
-                        <a href="{{ route('admin.students.index') }}" class="btn-outline">عرض الكل</a>
+                        <div class="ed-gi-actions">
+                            <a href="{{ route('admin.teachers.create') }}" class="ed-btn ed-btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">
+                                <i class="fas fa-plus"></i> إضافة
+                            </a>
+                            <a href="{{ route('admin.teachers.index') }}" class="ed-btn ed-btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
+                                عرض الكل
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- مجموعة الطلبة -->
+                    <div class="ed-group-item">
+                        <div class="ed-gi-content">
+                            <div class="ed-gi-avatar student">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="ed-gi-text">
+                                <strong>قاعدة بيانات الطلبة</strong>
+                                <p>متابعة الفروع الأكاديمية، والتحاق المواد، والتقدم الدراسي</p>
+                            </div>
+                        </div>
+                        <div class="ed-gi-actions">
+                            <a href="{{ route('admin.students.create') }}" class="ed-btn ed-btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">
+                                <i class="fas fa-plus"></i> إضافة
+                            </a>
+                            <a href="{{ route('admin.students.index') }}" class="ed-btn ed-btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
+                                عرض الكل
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+
         </div>
 
-        {{-- الجانب الأيسر: حالة النظام --}}
-        <div class="side-column">
-            <div class="monitor-card">
-                <div class="m-header">
-                    <h4>بوابة التحكم</h4>
-                    <span class="live-tag">LIVE</span>
+        <!-- العمود الأيسر: حالة المنصة وسعة التخزين -->
+        <div class="ed-admin-side-col">
+
+            <!-- بطاقة بوابة النظام -->
+            <div class="ed-card">
+                <div class="ed-card-header">
+                    <div class="ed-card-title">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>بوابة التحكم والتسجيل</span>
+                    </div>
+                    <span class="ed-badge ed-badge-blue">إشراف عام</span>
                 </div>
 
-                <div class="status-box">
-                    <p>حالة التسجيل</p>
+                <div class="ed-side-section">
+                    <label class="ed-side-label">حالة تسجيل الطلبة الجدد</label>
                     @if(class_exists(\App\Models\Setting::class) && \App\Models\Setting::get('registration_status') == 'open')
-                        <div class="status-badge success">مفتوح للمنتسبين</div>
+                        <div class="ed-status-indicator active">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>التسجيل متاح حالياً</strong>
+                                <p>يمكن للطلبة الجدد إنشاء حساباتهم ذاتياً</p>
+                            </div>
+                        </div>
                     @else
-                        <div class="status-badge danger">مغلق مؤقتاً</div>
+                        <div class="ed-status-indicator inactive">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <strong>التسجيل مغلق مؤقتاً</strong>
+                                <p>التسجيل يتم فقط عبر لوحة الإدارة</p>
+                            </div>
+                        </div>
                     @endif
                 </div>
 
-                <div class="storage-box">
-                    <div class="storage-info">
-                        <span>سعة التخزين</span>
-                        <span>82%</span>
+                <div class="ed-side-section">
+                    <div class="ed-side-flex-label">
+                        <label class="ed-side-label">سعة التخزين والسيرفر</label>
+                        <span class="ed-usage-pct">82%</span>
                     </div>
-                    <div class="progress-container">
-                        <div class="progress-fill" style="width: 82%"></div>
+                    <div class="ed-progress-track">
+                        <div class="ed-progress-bar" style="width: 82%;"></div>
                     </div>
-                    <small>تم استهلاك 164GB من أصل 200GB</small>
+                    <span class="ed-usage-info">تم استخدام 164 جيجابايت من إجمالي 200 جيجابايت</span>
                 </div>
 
-                <div class="system-footer">
-                    <p><span class="material-icons-round">info</span> أنت في لوحة الإدارة العليا. جميع العمليات يتم تسجيلها في سجل النظام.</p>
+                <div class="ed-side-note">
+                    <i class="fas fa-info-circle"></i>
+                    <p>أنت تعمل بصلاحيات المشرف العام. جميع التعديلات والإجراءات مؤمنة ومسجلة في سجل تدقيق النظام.</p>
                 </div>
             </div>
+
+            <!-- بطاقة الدعم الفني والمراسلات -->
+            <div class="ed-card">
+                <div class="ed-card-header">
+                    <div class="ed-card-title">
+                        <i class="fas fa-headset"></i>
+                        <span>قنوات التواصل والدعم</span>
+                    </div>
+                </div>
+                <div class="ed-support-summary">
+                    <p>مركز التواصل يتيح لك متابعة استفسارات ومشاكل الطلبة والمعلمين مباشرة.</p>
+                    <a href="{{ route('admin.settings.index') }}" class="ed-btn ed-btn-outline" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-sliders-h"></i> ضبط إعدادات المنصة
+                    </a>
+                </div>
+            </div>
+
         </div>
+
     </div>
+
 </div>
 
 <style>
-    :root {
-        --primary: #4f46e5;
-        --primary-light: #6366f1;
-        --bg-body: #f1f5f9;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
-        --white: #ffffff;
-        --radius: 16px;
-    }
-
-    .admin-wrapper {
-        font-family: 'Tajawal', sans-serif;
-        background: var(--bg-body);
-        padding: 2rem;
+    .ed-admin-container {
+        padding: 24px 32px 60px;
         direction: rtl;
-        min-height: 100vh;
+        font-family: 'Alexandria', 'Tajawal', sans-serif;
     }
 
-    /* Header Design */
-    .main-header {
+    /* Header */
+    .ed-admin-header {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 2.5rem;
-    }
-    .date-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #e2e8f0;
-        padding: 6px 14px;
-        border-radius: 100px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        margin-bottom: 1rem;
-    }
-    .main-header h1 {
-        font-size: 2.4rem;
-        font-weight: 800;
-        color: var(--text-main);
-        margin: 0;
-    }
-    .gradient-text {
-        background: linear-gradient(135deg, #4f46e5, #ec4899);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        align-items: flex-start;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 16px;
     }
 
-    .server-status {
-        background: white;
-        padding: 10px 20px;
-        border-radius: 12px;
+    .ed-admin-breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-bottom: 8px;
+    }
+
+    .ed-admin-breadcrumbs .divider {
+        font-size: 0.65rem;
+        color: #cbd5e1;
+    }
+
+    .ed-admin-breadcrumbs .active {
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    .ed-admin-title-box h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .ed-admin-title-box p {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .ed-admin-status-wrap {
         display: flex;
         align-items: center;
         gap: 10px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        flex-wrap: wrap;
     }
-    .pulse-indicator {
-        width: 10px; height: 10px; background: #10b981; border-radius: 50%;
-        animation: pulse-animation 2s infinite;
+
+    .ed-status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ecfdf5;
+        border: 1px solid #d1fae5;
+        color: #065f46;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .ed-live-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+    }
+
+    .ed-date-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
     }
 
     /* KPI Grid */
-    .kpi-grid {
+    .ed-kpi-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 28px;
     }
-    .kpi-card {
-        background: var(--white);
-        padding: 1.5rem;
-        border-radius: var(--radius);
+
+    .ed-kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
         display: flex;
         align-items: center;
-        gap: 1.2rem;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        transition: all 0.3s ease;
+        gap: 16px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-    .kpi-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
-    }
-    .kpi-icon {
-        width: 56px; height: 56px; border-radius: 14px;
-        display: grid; place-items: center; font-size: 1.8rem;
-    }
-    .kpi-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
-    .kpi-value { font-size: 1.6rem; font-weight: 800; margin: 2px 0; color: var(--text-main); }
-    .kpi-trend { font-size: 0.75rem; color: var(--text-muted); }
 
-    /* Layout Columns */
-    .dashboard-layout {
+    .ed-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+    }
+
+    .ed-kpi-icon-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .ed-kpi-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ed-kpi-title {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 4px;
+    }
+
+    .ed-kpi-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .ed-kpi-desc {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    /* Grid Layout */
+    .ed-admin-grid {
         display: grid;
         grid-template-columns: 2fr 1fr;
-        gap: 1.5rem;
+        gap: 24px;
+        align-items: start;
     }
 
-    .section-card {
-        background: var(--white);
-        border-radius: var(--radius);
-        padding: 1.8rem;
-        border: 1px solid rgba(226, 232, 240, 0.8);
-    }
-    .section-header h3 {
-        display: flex; align-items: center; gap: 10px;
-        font-size: 1.2rem; font-weight: 700; color: var(--text-main);
-        margin-bottom: 1.5rem;
+    .ed-admin-main-col,
+    .ed-admin-side-col {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
     }
 
-    /* Quick Links */
-    .quick-grid {
+    /* Cards */
+    .ed-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 22px 24px;
+    }
+
+    .ed-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .ed-card-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .ed-card-title i {
+        color: #1d4ed8;
+    }
+
+    /* Quick Actions */
+    .ed-quick-actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
     }
-    .q-link {
-        text-decoration: none; text-align: center;
-        padding: 1rem; border-radius: 12px;
-        background: #f8fafc; transition: 0.2s;
-    }
-    .q-link:hover { background: #f1f5f9; transform: scale(1.02); }
-    .q-icon {
-        width: 45px; height: 45px; margin: 0 auto 10px;
-        border-radius: 10px; display: grid; place-items: center; color: white;
-    }
-    .q-icon.purple { background: #8b5cf6; }
-    .q-icon.green { background: #10b981; }
-    .q-icon.blue { background: #3b82f6; }
-    .q-icon.orange { background: #f59e0b; }
-    .q-link span { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
 
-    /* User List */
-    .user-item {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 1rem; border-radius: 12px; border: 1px solid #f1f5f9;
+    .ed-quick-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 18px 12px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 14px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .ed-quick-btn:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+    }
+
+    .ed-qb-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
         margin-bottom: 10px;
     }
-    .u-info { display: flex; align-items: center; gap: 12px; }
-    .u-avatar {
-        width: 40px; height: 40px; border-radius: 50%;
-        display: grid; place-items: center; color: white; font-weight: bold;
-    }
-    .u-avatar.blue { background: var(--primary); }
-    .u-avatar.green { background: #10b981; }
-    .u-info h4 { margin: 0; font-size: 0.95rem; font-weight: 700; }
-    .u-info p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
-    .btn-outline {
-        padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 8px;
-        text-decoration: none; color: var(--text-main); font-size: 0.8rem; font-weight: 600;
-        transition: 0.2s;
-    }
-    .btn-outline:hover { background: var(--text-main); color: white; }
 
-    /* Side Column / Monitor */
-    .monitor-card {
-        background: #1e293b;
-        color: white;
-        padding: 1.8rem;
-        border-radius: var(--radius);
-        position: sticky; top: 20px;
-    }
-    .m-header { display: flex; justify-content: space-between; margin-bottom: 2rem; }
-    .live-tag {
-        background: rgba(239, 68, 68, 0.2); color: #f87171;
-        padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 900;
-        border: 1px solid #f87171;
-    }
-    .status-badge {
-        padding: 10px; border-radius: 10px; text-align: center; font-weight: 700; margin-top: 8px;
-    }
-    .status-badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .status-badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-
-    .storage-box { margin: 2rem 0; }
-    .storage-info { display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px; }
-    .progress-container { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #818cf8); border-radius: 10px; }
-    .storage-box small { font-size: 0.7rem; color: #94a3b8; display: block; margin-top: 8px; }
-
-    .system-footer { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); }
-    .system-footer p { font-size: 0.75rem; color: #94a3b8; line-height: 1.6; display: flex; gap: 8px; }
-
-    /* Animations */
-    @keyframes pulse-animation {
-        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-    .wave-emoji { display: inline-block; animation: wave 2s infinite; transform-origin: 70% 70%; }
-    @keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        20% { transform: rotate(-10deg); }
-        40% { transform: rotate(10deg); }
+    .ed-qb-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 2px;
     }
 
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .dashboard-layout { grid-template-columns: 1fr; }
-        .main-header { flex-direction: column; align-items: flex-start; }
+    .ed-qb-desc {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+
+    /* User Groups */
+    .ed-user-groups {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ed-group-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .ed-gi-content {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ed-gi-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+
+    .ed-gi-avatar.teacher {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .ed-gi-avatar.student {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .ed-gi-text strong {
+        display: block;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+
+    .ed-gi-text p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .ed-gi-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Side Column Items */
+    .ed-side-section {
+        margin-bottom: 20px;
+    }
+
+    .ed-side-label {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+    }
+
+    .ed-side-flex-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+
+    .ed-usage-pct {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #1d4ed8;
+    }
+
+    .ed-progress-track {
+        height: 7px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 6px;
+    }
+
+    .ed-progress-bar {
+        height: 100%;
+        background: #1d4ed8;
+        border-radius: 999px;
+    }
+
+    .ed-usage-info {
+        font-size: 0.75rem;
+        color: #94a3b8;
+        display: block;
+    }
+
+    .ed-status-indicator {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .ed-status-indicator.active {
+        background: #ecfdf5;
+        border: 1px solid #d1fae5;
+        color: #065f46;
+    }
+
+    .ed-status-indicator.inactive {
+        background: #fef2f2;
+        border: 1px solid #fee2e2;
+        color: #991b1b;
+    }
+
+    .ed-status-indicator i {
+        font-size: 1.25rem;
+        margin-top: 2px;
+    }
+
+    .ed-status-indicator strong {
+        display: block;
+        font-size: 0.88rem;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .ed-status-indicator p {
+        margin: 0;
+        font-size: 0.78rem;
+        opacity: 0.9;
+    }
+
+    .ed-side-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        border-radius: 10px;
+        padding: 12px;
+        margin-top: 20px;
+        color: #64748b;
+        font-size: 0.78rem;
+        line-height: 1.5;
+    }
+
+    .ed-side-note i {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin-top: 2px;
+    }
+
+    .ed-side-note p {
+        margin: 0;
+    }
+
+    .ed-support-summary p {
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .ed-kpi-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .ed-admin-container {
+            padding: 18px 16px 60px;
+        }
+        .ed-admin-grid {
+            grid-template-columns: 1fr;
+        }
+        .ed-quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 576px) {
+        .ed-kpi-grid {
+            grid-template-columns: 1fr;
+        }
+        .ed-quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+        .ed-group-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .ed-gi-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
     }
 </style>
 @endsection

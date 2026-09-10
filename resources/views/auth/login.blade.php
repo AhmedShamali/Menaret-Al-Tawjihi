@@ -1,345 +1,642 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="auth-master-wrapper">
-
-    <!-- الجانب الأيسر: الصورة والرسالة الترحيبية -->
-    <div class="auth-side-panel">
-        <div class="brand-overlay"></div>
-        <div class="brand-content">
-            <div class="v-logo">
-                @if(\App\Models\Setting::get('site_logo'))
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 80px; max-width: 140px; object-fit: contain; margin-bottom: 12px; border-radius: 14px; background: rgba(255,255,255,0.15); padding: 8px; backdrop-filter: blur(8px);">
-                @else
-                    🇵🇸
-                @endif
+<div class="ed-login-container">
+    <!-- الجانب الأيسر: هوية المنصة والمحتوى الترحيبي الأكاديمي -->
+    <div class="ed-login-banner">
+        <div class="ed-banner-overlay"></div>
+        <div class="ed-banner-content">
+            <div class="ed-banner-badge">
+                <i class="fas fa-graduation-cap"></i> منصة التعلم التفاعلية
             </div>
-            <h2>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</h2>
-            <p>المنصة التعليمية الأولى المتخصصة لطلبة توجيهي فلسطين نحو التفوق والتميز الأكاديمي.</p>
-            <div class="pal-badge">🇵🇸 صنع في فلسطين لدعم طلبتنا</div>
+            <h1 class="ed-banner-title">منارة التوجيهي الأكاديمية</h1>
+            <p class="ed-banner-desc">
+                بيئة تعليمية هادئة ومتكاملة، صُممت لمساعدة طلبة التوجيهي والمعلمين في فلسطين على تحقيق أعلى درجات التميز والإتقان الأكاديمي.
+            </p>
+
+            <div class="ed-banner-features">
+                <div class="ed-feat-item">
+                    <div class="ed-feat-icon"><i class="fas fa-book-open"></i></div>
+                    <div>
+                        <strong>مناهج معتمدة ومحدثة</strong>
+                        <p>شروحات وملخصات تفاعلية متوافقة مع أحدث المعايير</p>
+                    </div>
+                </div>
+                <div class="ed-feat-item">
+                    <div class="ed-feat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div>
+                        <strong>تقييم وتحليل ذكي</strong>
+                        <p>امتحانات دورية وقياس مباشر لمستوى التقدم والتحصيل</p>
+                    </div>
+                </div>
+                <div class="ed-feat-item">
+                    <div class="ed-feat-icon"><i class="fas fa-certificate"></i></div>
+                    <div>
+                        <strong>شهادات تميز رسمية</strong>
+                        <p>توثيق معتمد لإنجازاتك واجتيازك للمراحل التعليمية</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ed-banner-footer">
+                <span class="ed-country-tag">
+                    <span class="flag-icon">🇵🇸</span> منصة فلسطينية لخدمة طلبة الوطن
+                </span>
+            </div>
         </div>
     </div>
 
-    <!-- الجانب الأيمن: نموذج الدخول -->
-    <div class="auth-form-panel">
-        <div class="form-container">
-
-            <!-- مبدل الأدوار الذكي -->
-            <div class="role-nav">
-                <div class="role-item active" data-role="student" onclick="switchUI('student')">
-                    <span class="emoji">👨‍🎓</span> طالب
-                </div>
-                <div class="role-item" data-role="teacher" onclick="switchUI('teacher')">
-                    <span class="emoji">👨‍🏫</span> مدرس
-                </div>
-                <div class="role-item" data-role="admin" onclick="switchUI('admin')">
-                    <span class="emoji">⚙️</span> مدير
-                </div>
+    <!-- الجانب الأيمن: بطاقة تسجيل الدخول -->
+    <div class="ed-login-form-area">
+        <div class="ed-login-card">
+            
+            <!-- الشعار ورأس الصفحة -->
+            <div class="ed-login-header">
+                <a href="{{ url('/') }}" class="ed-login-brand">
+                    <span class="ed-brand-logo-sq"><i class="fas fa-book-reader"></i></span>
+                    <div class="ed-brand-text">
+                        <strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>
+                        <small>بوابة الدخول الموحدة</small>
+                    </div>
+                </a>
             </div>
 
-            <!-- صندوق تسجيل الدخول -->
-            <div id="login_box" class="animated-box">
-                <h1 id="dynamic_title" class="alexandria">دخول الطالب</h1>
-                <p class="subtitle">يرجى إدخال بياناتك الرسمية للمتابعة</p>
-
-                @if($errors->has('error'))
-                    <div class="error-alert">
-                        <i class="fas fa-exclamation-circle"></i> {{ $errors->first('error') }}
-                    </div>
-                @endif
-
-                <form action="{{ route('login.post') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="role" id="role_id" value="{{ old('role', 'student') }}">
-
-                    <div class="input-field">
-                        <label>البريد الإلكتروني</label>
-                        <input type="email" name="email" value="{{ old('email') }}" placeholder="name@jesr.ps" required autofocus>
-                    </div>
-
-                    <div class="input-field">
-                        <label>كلمة المرور</label>
-                        <input type="password" name="password" placeholder="••••••••" required>
-                    </div>
-
-                    <button type="submit" id="action_btn" class="main-auth-btn">
-                        <span>دخول للمنصة</span>
-                        <span class="rocket-icon">🚀</span>
-                    </button>
-                </form>
-
-                <div class="form-links">
-                    <span id="reg_text">جديد هنا؟ <a href="{{ route('students.create') }}" class="create-acc">أنشئ حسابك</a></span>
-                </div>
+            <!-- مبدل الأدوار الأكاديمي الهادئ -->
+            <div class="ed-role-selector">
+                <button type="button" class="ed-role-btn active" data-role="student" onclick="switchRole('student')">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>طالب</span>
+                </button>
+                <button type="button" class="ed-role-btn" data-role="teacher" onclick="switchRole('teacher')">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>مدرس</span>
+                </button>
+                <button type="button" class="ed-role-btn" data-role="admin" onclick="switchRole('admin')">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>إدارة</span>
+                </button>
             </div>
 
+            <div class="ed-form-heading">
+                <h2 id="role_heading_title">تسجيل دخول الطلبة</h2>
+                <p id="role_heading_subtitle">أدخل بيانات حسابك للمتابعة إلى صفحتك الدراسية</p>
+            </div>
+
+            @if($errors->has('error'))
+                <div class="ed-login-alert error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>{{ $errors->first('error') }}</span>
+                </div>
+            @endif
+
+            @if(session('status'))
+                <div class="ed-login-alert success">
+                    <i class="fas fa-check-circle"></i>
+                    <span>{{ session('status') }}</span>
+                </div>
+            @endif
+
+            <!-- نموذج الدخول -->
+            <form action="{{ route('login.post') }}" method="POST" class="ed-auth-form" autocomplete="on">
+                @csrf
+                <input type="hidden" name="role" id="role_id" value="{{ old('role', 'student') }}">
+
+                <div class="ed-input-group">
+                    <label for="email_field">البريد الإلكتروني أو اسم المستخدم</label>
+                    <div class="ed-input-wrapper">
+                        <i class="far fa-envelope ed-input-icon"></i>
+                        <input 
+                            type="email" 
+                            id="email_field"
+                            name="email" 
+                            value="{{ old('email') }}" 
+                            placeholder="student@example.com" 
+                            required 
+                            autofocus 
+                        />
+                    </div>
+                </div>
+
+                <div class="ed-input-group">
+                    <div class="ed-label-flex">
+                        <label for="password_field">كلمة المرور</label>
+                    </div>
+                    <div class="ed-input-wrapper">
+                        <i class="fas fa-lock ed-input-icon"></i>
+                        <input 
+                            type="password" 
+                            id="password_field"
+                            name="password" 
+                            placeholder="••••••••" 
+                            required 
+                        />
+                        <button type="button" class="ed-toggle-pwd" onclick="togglePasswordVisibility()" title="إظهار/إخفاء كلمة المرور">
+                            <i class="far fa-eye" id="pwd_eye_icon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="ed-form-options">
+                    <label class="ed-remember-me">
+                        <input type="checkbox" name="remember" value="1">
+                        <span>تذكر بياناتي في هذا المتصفح</span>
+                    </label>
+                </div>
+
+                <button type="submit" id="submit_btn" class="ed-submit-btn">
+                    <span>تسجيل الدخول</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </form>
+
+            <div class="ed-form-footer" id="student_reg_section">
+                <span>ليس لديك حساب بعد؟</span>
+                <a href="{{ route('students.create') }}" class="ed-register-link">إنشاء حساب طالب جديد</a>
+            </div>
+
+            <div class="ed-back-home">
+                <a href="{{ url('/') }}"><i class="fas fa-long-arrow-alt-right"></i> العودة للصفحة الرئيسية للمنصة</a>
+            </div>
 
         </div>
     </div>
 </div>
 
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;600;700;800&display=swap');
-
-    :root {
-        --student-color: #10b981;
-        --teacher-color: #1e3a2b;
-        --admin-color: #0f172a;
-        --text-dark: #1e293b;
-        --text-muted: #64748b;
-    }
-
-    * { box-sizing: border-box; }
-
-    .auth-master-wrapper {
+    .ed-login-container {
         display: flex;
-        height: 100vh;
-        background: #fff;
-        font-family: 'Alexandria', sans-serif;
-        overflow: hidden;
+        min-height: 100vh;
+        background: #f8fafc;
         direction: rtl;
+        font-family: 'Alexandria', 'Tajawal', sans-serif;
     }
 
-    /* الجانب البصري - مخفي في الجوال */
-    .auth-side-panel {
-        flex: 1;
-        background: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070') center/cover;
+    /* Left Visual Academic Banner */
+    .ed-login-banner {
+        flex: 1.1;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
         position: relative;
         display: flex;
         align-items: center;
-        padding: 80px;
+        padding: 60px;
+        color: #ffffff;
+        overflow: hidden;
     }
-    @media (max-width: 992px) { .auth-side-panel { display: none; } }
 
-    .brand-overlay {
+    .ed-banner-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.9), rgba(15, 23, 42, 0.95));
+        background: radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.25), transparent 50%),
+                    radial-gradient(circle at 20% 80%, rgba(30, 64, 175, 0.4), transparent 50%);
+        pointer-events: none;
     }
-    .brand-content { position: relative; z-index: 2; color: white; }
-    .v-logo {
-        width: 70px; height: 70px; background: white; color: var(--student-color);
-        border-radius: 20px; display: grid; place-items: center;
-        font-size: 2.2rem; font-weight: 900; margin-bottom: 30px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .brand-content h2 { font-size: 2.8rem; font-weight: 800; margin-bottom: 20px; }
-    .brand-content p { font-size: 1.1rem; line-height: 1.8; opacity: 0.9; max-width: 480px; }
-    .pal-badge { margin-top: 40px; font-weight: 600; background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 50px; display: inline-block; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.2); }
 
-    /* الجانب العملي */
-    .auth-form-panel {
-        flex: 1.1;
-        display: flex;
+    .ed-banner-content {
+        position: relative;
+        z-index: 2;
+        max-width: 520px;
+    }
+
+    .ed-banner-badge {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        padding: 40px;
-        background: #fdfdfd;
-    }
-    .form-container { width: 100%; max-width: 420px; }
-
-    /* مبدل الأدوار */
-    .role-nav {
-        display: flex;
         gap: 8px;
-        background: #f1f5f9;
-        padding: 6px;
-        border-radius: 20px;
+        padding: 6px 14px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 24px;
+        backdrop-filter: blur(8px);
+    }
+
+    .ed-banner-title {
+        font-size: 2.2rem;
+        font-weight: 800;
+        line-height: 1.35;
+        margin-bottom: 16px;
+        letter-spacing: -0.02em;
+    }
+
+    .ed-banner-desc {
+        font-size: 1rem;
+        line-height: 1.8;
+        color: #cbd5e1;
         margin-bottom: 40px;
     }
-    .role-item {
-        flex: 1;
-        padding: 14px;
-        text-align: center;
-        border-radius: 16px;
-        cursor: pointer;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--text-muted);
-        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    .ed-banner-features {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 45px;
+    }
+
+    .ed-feat-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .ed-feat-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.15);
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
+        font-size: 1.15rem;
+        color: #93c5fd;
+        flex-shrink: 0;
     }
-    .role-item.active {
-        background: white;
-        color: var(--text-dark);
-        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
-    }
-    .role-item .emoji { font-size: 1.1rem; }
 
-    h1 { font-size: 2.2rem; color: #0f172a; margin-bottom: 10px; font-weight: 800; }
-    .subtitle { color: var(--text-muted); margin-bottom: 35px; font-size: 0.95rem; }
-
-    /* الحقول */
-    .input-field { margin-bottom: 25px; }
-    .input-field label {
+    .ed-feat-item strong {
         display: block;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         font-weight: 700;
-        color: var(--text-dark);
-        margin-bottom: 10px;
+        margin-bottom: 2px;
+        color: #f1f5f9;
     }
-    .input-field input {
+
+    .ed-feat-item p {
+        margin: 0;
+        font-size: 0.82rem;
+        color: #94a3b8;
+        line-height: 1.5;
+    }
+
+    .ed-country-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        color: #cbd5e1;
+        background: rgba(15, 23, 42, 0.4);
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Right Login Area */
+    .ed-login-form-area {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 24px;
+    }
+
+    .ed-login-card {
         width: 100%;
-        padding: 16px 22px;
-        border-radius: 16px;
-        border: 2px solid #eef2f6;
-        background: #f8fafc;
-        transition: 0.3s;
+        max-width: 440px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 40px 36px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+    }
+
+    .ed-login-header {
+        margin-bottom: 24px;
+    }
+
+    .ed-login-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: #0f172a;
+    }
+
+    .ed-brand-logo-sq {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .ed-brand-text strong {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .ed-brand-text small {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    /* Role Selector Pills */
+    .ed-role-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        background: #f1f5f9;
+        padding: 5px;
+        border-radius: 14px;
+        margin-bottom: 24px;
+    }
+
+    .ed-role-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 10px 6px;
+        background: transparent;
+        border: none;
+        border-radius: 10px;
         font-family: inherit;
+        font-size: 0.85rem;
         font-weight: 600;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .ed-role-btn.active {
+        background: #ffffff;
+        color: #1d4ed8;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        font-weight: 700;
+    }
+
+    .ed-form-heading {
+        margin-bottom: 24px;
+    }
+
+    .ed-form-heading h2 {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .ed-form-heading p {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .ed-login-alert {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .ed-login-alert.error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fee2e2;
+    }
+
+    .ed-login-alert.success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #dcfce7;
+    }
+
+    .ed-auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .ed-input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .ed-input-group label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .ed-label-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ed-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .ed-input-icon {
+        position: absolute;
+        right: 14px;
+        color: #94a3b8;
+        font-size: 1rem;
+        pointer-events: none;
+    }
+
+    .ed-input-wrapper input {
+        width: 100%;
+        padding: 12px 40px 12px 14px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: #0f172a;
+        transition: all 0.2s ease;
         outline: none;
+    }
+
+    .ed-input-wrapper input:focus {
+        border-color: #1d4ed8;
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.1);
+    }
+
+    .ed-toggle-pwd {
+        position: absolute;
+        left: 12px;
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 4px;
         font-size: 1rem;
     }
-    .input-field input:focus {
-        border-color: var(--student-color);
-        background: #fff;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1);
+
+    .ed-toggle-pwd:hover {
+        color: #334155;
     }
 
-    /* الزر الرئيسي */
-    .main-auth-btn {
-        width: 100%;
-        padding: 18px;
-        border-radius: 18px;
-        background: var(--student-color);
-        color: white;
-        border: none;
-        font-weight: 800;
-        font-size: 1.1rem;
+    .ed-form-options {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.82rem;
+    }
+
+    .ed-remember-me {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748b;
         cursor: pointer;
-        transition: 0.4s;
-        margin-top: 10px;
+        font-weight: 500;
+    }
+
+    .ed-remember-me input {
+        accent-color: #1d4ed8;
+        cursor: pointer;
+        width: 16px;
+        height: 16px;
+    }
+
+    .ed-submit-btn {
+        width: 100%;
+        padding: 13px;
+        background: #1d4ed8;
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.98rem;
+        font-weight: 700;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 12px;
-    }
-    .main-auth-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 15px 30px rgba(16, 185, 129, 0.2);
-        filter: brightness(1.05);
-    }
-    .main-auth-btn:active { transform: translateY(0); }
-
-    /* الروابط */
-    .form-links { display: flex; justify-content: space-between; margin-top: 30px; font-size: 0.9rem; }
-    .forgot-link { color: var(--text-muted); text-decoration: none; transition: 0.3s; }
-    .forgot-link:hover { color: var(--student-color); }
-    .create-acc { color: var(--student-color); text-decoration: none; font-weight: 800; margin-right: 5px; }
-    .create-acc:hover { text-decoration: underline; }
-
-    .error-alert {
-        padding: 15px;
-        background: #fff1f2;
-        color: #be123c;
-        border-radius: 14px;
-        margin-bottom: 25px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border: 1px solid #ffe4e6;
+        gap: 10px;
+        transition: all 0.2s ease;
+        margin-top: 6px;
     }
 
-    .back-link {
-        display: block;
+    .ed-submit-btn:hover {
+        background: #1e40af;
+        box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
+    }
+
+    .ed-form-footer {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
         text-align: center;
-        margin-top: 25px;
-        color: var(--text-muted) !important;
-        text-decoration: none !important;
-        font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        color: #64748b;
     }
-    .back-link:hover { color: var(--text-dark) !important; }
 
-    /* الانيميشن */
-    .animated-box { animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
-    @keyframes slideUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+    .ed-register-link {
+        color: #1d4ed8;
+        font-weight: 700;
+        text-decoration: none;
+        margin-right: 4px;
+    }
+
+    .ed-register-link:hover {
+        text-decoration: underline;
+    }
+
+    .ed-back-home {
+        text-align: center;
+        margin-top: 16px;
+    }
+
+    .ed-back-home a {
+        font-size: 0.82rem;
+        color: #94a3b8;
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+
+    .ed-back-home a:hover {
+        color: #475569;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .ed-login-banner {
+            display: none;
+        }
+        .ed-login-form-area {
+            padding: 30px 16px;
+        }
+        .ed-login-card {
+            padding: 30px 22px;
+            box-shadow: none;
+            border-color: #e2e8f0;
+        }
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-    function switchUI(role) {
-        // 1. تحديث شكل التبويب النشط
-        document.querySelectorAll('.role-item').forEach(el => el.classList.remove('active'));
-        const targetTab = document.querySelector(`[data-role="${role}"]`);
-        if (targetTab) targetTab.classList.add('active');
+    function switchRole(role) {
+        // Active role pills
+        document.querySelectorAll('.ed-role-btn').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.querySelector(`.ed-role-btn[data-role="${role}"]`);
+        if (activeBtn) activeBtn.classList.add('active');
 
-        // 2. تحديث القيمة في الفورم
+        // Form role input
         document.getElementById('role_id').value = role;
 
-        // 3. تحديث العناصر البصرية (عناوين وألوان)
-        const title = document.getElementById('dynamic_title');
-        const btn = document.getElementById('action_btn');
-        const regText = document.getElementById('reg_text');
+        // Visual labels
+        const title = document.getElementById('role_heading_title');
+        const subtitle = document.getElementById('role_heading_subtitle');
+        const regSection = document.getElementById('student_reg_section');
+        const emailInput = document.getElementById('email_field');
+        const submitBtn = document.getElementById('submit_btn');
 
-        // تغيير لون الحقول عند التركيز بناءً على الدور
-        const inputs = document.querySelectorAll('.input-field input');
-
-        if(role === 'student') {
-            title.innerText = "دخول الطالب";
-            btn.style.background = "var(--student-color)";
-            regText.style.display = "inline";
-            updateFocusColor("#10b981");
-        } else if(role === 'teacher') {
-            title.innerText = "دخول المدرس";
-            btn.style.background = "var(--teacher-color)";
-            regText.style.display = "none";
-            updateFocusColor("#1e3a2b");
-        } else if(role === 'admin') {
-            title.innerText = "بوابة المدير";
-            btn.style.background = "var(--admin-color)";
-            regText.style.display = "none";
-            updateFocusColor("#0f172a");
+        if (role === 'student') {
+            title.innerText = 'تسجيل دخول الطلبة';
+            subtitle.innerText = 'أدخل بيانات حسابك للمتابعة إلى صفحتك الدراسية';
+            emailInput.placeholder = 'student@example.com';
+            regSection.style.display = 'block';
+            submitBtn.style.background = '#1d4ed8';
+        } else if (role === 'teacher') {
+            title.innerText = 'تسجيل دخول المعلمين';
+            subtitle.innerText = 'بوابة المعلمين لإدارة المواد والامتحانات ومتابعة الطلبة';
+            emailInput.placeholder = 'teacher@menaret-tawjihi.ps';
+            regSection.style.display = 'none';
+            submitBtn.style.background = '#0284c7';
+        } else if (role === 'admin') {
+            title.innerText = 'بوابة الإدارة الأكاديمية';
+            subtitle.innerText = 'لوحة التحكم المركزية وإدارة إعدادات المنصة';
+            emailInput.placeholder = 'admin@menaret-tawjihi.ps';
+            regSection.style.display = 'none';
+            submitBtn.style.background = '#0f172a';
         }
     }
 
-    function updateFocusColor(color) {
-        const style = document.createElement('style');
-        style.innerHTML = `.input-field input:focus { border-color: ${color} !important; box-shadow: 0 10px 25px ${color}20 !important; }`;
-        document.head.appendChild(style);
-    }
-
-    function showSection(sec) {
-        const loginBox = document.getElementById('login_box');
-        const forgotBox = document.getElementById('forgot_box');
-
-        if(sec === 'forgot') {
-            loginBox.style.display = 'none';
-            forgotBox.style.display = 'block';
+    function togglePasswordVisibility() {
+        const input = document.getElementById('password_field');
+        const icon = document.getElementById('pwd_eye_icon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
         } else {
-            loginBox.style.display = 'block';
-            forgotBox.style.display = 'none';
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
         }
     }
 
-    function requestOTP() {
-        const nid = document.getElementById('nid_field').value;
-        if(nid.length < 9) return Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى إدخال رقم هوية صحيح مكون من 9 أرقام', confirmButtonText: 'حسناً' });
-
-        // يمكنك ربط هذا المسار مع الـ Controller الخاص بك
-        axios.post("{{ route('password.forgot') }}", { nid: nid }).then(res => {
-            Swal.fire({
-                icon: res.data.success ? 'success' : 'error',
-                title: res.data.success ? 'تم الإرسال' : 'عذراً',
-                text: res.data.message,
-                confirmButtonColor: '#10b981'
-            });
-        }).catch(err => {
-            Swal.fire('خطأ', 'حدث خطأ غير متوقع، يرجى المحاولة لاحقاً.', 'error');
-        });
-    }
-
-    // تشغيل الحالة الافتراضية عند تحميل الصفحة
-    document.addEventListener("DOMContentLoaded", function() {
-        const currentRole = document.getElementById('role_id').value || 'student';
-        switchUI(currentRole);
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialRole = document.getElementById('role_id').value || 'student';
+        switchRole(initialRole);
     });
 </script>
 @endsection
