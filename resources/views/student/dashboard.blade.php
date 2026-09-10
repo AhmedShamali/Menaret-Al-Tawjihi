@@ -462,6 +462,26 @@
                 </div>
             </a>
 
+            <a href="{{ route('student.flashcards.index') }}" class="tool-card">
+                <div class="tool-icon" style="background: #fdf4ff; color: #a21caf;">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>بطاقات القوانين</h4>
+                    <span>مراجعة سريعة وتكرار متباعد</span>
+                </div>
+            </a>
+
+            <a href="{{ route('student.leaderboard') }}" class="tool-card">
+                <div class="tool-icon" style="background: #fffbeb; color: #b45309;">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>لوحة الشرف</h4>
+                    <span>أوائل طلبة فلسطين ونقاطك</span>
+                </div>
+            </a>
+
             <a href="{{ route('student.teachers.index') }}" class="tool-card">
                 <div class="tool-icon" style="background: #f5f3ff; color: #6d28d9;">
                     <i class="fa-solid fa-chalkboard-user"></i>

@@ -671,8 +671,11 @@
                 <a href="{{ route('student.achievements') }}" class="nav-item {{ Request::is('student/achievements*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-award" style="color: #059669;"></i> <span>الشهادات والإنجازات</span></div></div>
                 </a>
+                <a href="{{ route('student.flashcards.index') }}" class="nav-item {{ Request::is('student/flashcards*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bolt" style="color: #a21caf;"></i> <span>بطاقات الاستذكار السريع</span></div></div>
+                </a>
                 <a href="{{ route('student.leaderboard') }}" class="nav-item {{ Request::is('student/leaderboard*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-fire" style="color: #ea580c;"></i> <span>مؤشر الالتزام اليومي</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-trophy" style="color: #ea580c;"></i> <span>لوحة الشرف وتحدي الأوائل</span></div></div>
                 </a>
                 <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="nav-item">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calculator" style="color: #1d4ed8;"></i> <span>حاسبة المعدل الجامعي</span></div></div>

@@ -1,285 +1,458 @@
 @extends('layouts.app')
 
-@section('title', 'بطاقات الاستذكار السريع والقوانين | توجيهي فلسطين')
+@section('title', 'بطاقات الاستذكار السريع والقوانين | منارة التوجيهي')
 
 @section('content')
-<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<div class="ed-fc-container">
+
+    <!-- Header -->
+    <header class="ed-fc-header">
+        <div class="ed-fc-title-box">
+            <div class="ed-fc-breadcrumbs">
+                <i class="fas fa-home"></i>
+                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">لوحة الطالب</a>
+                <i class="fas fa-chevron-left divider"></i>
+                <span class="active">بطاقات الاستذكار السريع</span>
+            </div>
+            <h1>بطاقات استذكار المفاهيم والقوانين الوزارية</h1>
+            <p>راجع القوانين الفيزيائية، المتطابقات الرياضية، والتواريخ التاريخية بلمسة واحدة بأسلوب التكرار المتباعد الذكي.</p>
+        </div>
+
+        <div class="ed-fc-hint-tag">
+            <i class="fas fa-keyboard"></i>
+            <span>اختصار: مسطرة (Space) للقلب • الأسهم للتنقل</span>
+        </div>
+    </header>
+
+    <!-- تبويبات المواد الدراسية -->
+    <div class="ed-fc-subjects-bar">
+        @foreach($subjects as $sub)
+            <a href="{{ route('student.flashcards.index', ['subject' => $sub]) }}"
+               class="ed-fc-sub-pill {{ $activeSubject === $sub ? 'active' : '' }}">
+                <i class="fas fa-book-open"></i>
+                <span>{{ $sub }}</span>
+            </a>
+        @endforeach
+    </div>
+
+    @if($flashcards->count() > 0)
+        <!-- منصة البطاقة ثلاثية الأبعاد (3D Stage) -->
+        <div class="ed-fc-stage-wrapper">
+            <div class="ed-fc-stage" onclick="flipActiveCard()">
+                <div class="ed-fc-inner" id="flashcardInner">
+                    
+                    <!-- الوجه الأمامي: المفهوم / السؤال -->
+                    <div class="ed-fc-face ed-fc-front">
+                        <div class="ed-fc-meta-top">
+                            <span class="ed-badge ed-badge-blue" id="cardCategory">قوانين</span>
+                            <span class="ed-fc-counter" id="cardNumber">بطاقة 1 من {{ $flashcards->count() }}</span>
+                        </div>
+                        <div class="ed-fc-main-content">
+                            <h2 class="ed-fc-question" id="cardFrontText">...</h2>
+                        </div>
+                        <div class="ed-fc-hint-bottom">
+                            <i class="fas fa-hand-pointer"></i> اضغط على البطاقة أو اضغط (Space) لإظهار الإجابة
+                        </div>
+                    </div>
+
+                    <!-- الوجه الخلفي: القانون / الحل النموذجي -->
+                    <div class="ed-fc-face ed-fc-back">
+                        <div class="ed-fc-meta-top">
+                            <span class="ed-badge ed-badge-emerald"><i class="fas fa-check"></i> الحل النموذجي</span>
+                            <span class="ed-fc-counter"><i class="fas fa-lightbulb" style="color: #fbbf24;"></i> نموذج معتمد</span>
+                        </div>
+                        <div class="ed-fc-main-content">
+                            <div class="ed-fc-answer" id="cardBackText">...</div>
+                        </div>
+                        <div class="ed-fc-hint-bottom">
+                            <i class="fas fa-undo-alt"></i> اضغط للعودة إلى وجه السؤال
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- لوحة التحكم والأزرار -->
+            <div class="ed-fc-controls">
+                
+                <div class="ed-fc-nav-buttons">
+                    <button type="button" class="ed-btn ed-btn-outline" onclick="prevCard()">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>السابقة</span>
+                    </button>
+
+                    <button type="button" class="ed-btn ed-btn-primary" onclick="flipActiveCard()" style="padding: 12px 28px;">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>قلب البطاقة</span>
+                    </button>
+
+                    <button type="button" class="ed-btn ed-btn-outline" onclick="nextCard()">
+                        <span>التالية</span>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+
+                <!-- أزرار الإتقان والتقييم الذاتي -->
+                <div class="ed-fc-mastery-buttons">
+                    <button type="button" class="ed-mastery-btn mastered" onclick="markMastered()">
+                        <i class="fas fa-check-circle"></i>
+                        <span>أتقنتها تماماً (<strong id="masteredCount">0</strong>)</span>
+                    </button>
+                    <button type="button" class="ed-mastery-btn review" onclick="markReview()">
+                        <i class="fas fa-history"></i>
+                        <span>تحتاج لمراجعة لاحقة</span>
+                    </button>
+                </div>
+
+                <!-- مؤشر التقدم -->
+                <div class="ed-fc-progress-box">
+                    <div class="ed-fc-progress-labels">
+                        <span>معدل استعراض البطاقات</span>
+                        <strong id="progressText">0%</strong>
+                    </div>
+                    <div class="ed-progress-track">
+                        <div class="ed-progress-bar" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    @else
+        <div class="ed-empty-card" style="margin-top: 20px;">
+            <div class="ed-empty-icon"><i class="fas fa-box-open"></i></div>
+            <h3>لا توجد بطاقات استذكار لهذه المادة حالياً</h3>
+            <p>اختر مادة دراسية أخرى من الشريط العلوي لاستعراض القوانين والمفاهيم المحفوظة.</p>
+        </div>
+    @endif
+
+</div>
 
 <style>
-    :root {
-        --primary: #2563eb;
-        --emerald: #10b981;
-        --amber: #f59e0b;
-        --rose: #f43f5e;
-        --bg-main: #f8fafc;
-        --card-bg: #ffffff;
-        --border-card: #e2e8f0;
-        --text-title: #0f172a;
-        --text-body: #334155;
-        --text-muted: #64748b;
-    }
-
-    * { font-family: 'Alexandria', sans-serif; }
-
-    .flashcards-page-wrapper {
+    .ed-fc-container {
+        padding: 24px 32px 60px;
         direction: rtl;
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 20px 20px 60px;
+        font-family: 'Alexandria', 'Tajawal', sans-serif;
     }
 
-    .header-banner {
-        text-align: center; margin-bottom: 30px;
-    }
-    .badge-pill {
-        display: inline-flex; align-items: center; gap: 8px;
-        padding: 6px 16px; background: #eff6ff; border: 1px solid #bfdbfe;
-        color: var(--primary); border-radius: 50px; font-size: 0.82rem; font-weight: 700;
-        margin-bottom: 12px;
-    }
-    .header-banner h1 {
-        font-size: 2rem; font-weight: 800; color: var(--text-title); margin-bottom: 8px;
-    }
-    .header-banner p {
-        color: var(--text-muted); font-size: 0.95rem; max-width: 600px; margin: 0 auto;
+    /* Header */
+    .ed-fc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 16px;
     }
 
-    /* Subject Tabs */
-    .subjects-nav {
-        display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px;
+    .ed-fc-breadcrumbs {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: #64748b;
+        margin-bottom: 8px;
     }
-    .subject-pill-link {
-        padding: 10px 20px; border-radius: 12px; text-decoration: none;
-        font-size: 0.9rem; font-weight: 700; background: white;
-        border: 1px solid var(--border-card); color: var(--text-body);
-        transition: 0.2s ease; display: flex; align-items: center; gap: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+
+    .ed-fc-breadcrumbs .divider {
+        font-size: 0.65rem;
+        color: #cbd5e1;
     }
-    .subject-pill-link:hover { border-color: var(--primary); color: var(--primary); }
-    .subject-pill-link.active {
-        background: linear-gradient(135deg, #2563eb, #1d4ed8);
-        color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+
+    .ed-fc-breadcrumbs .active {
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+
+    .ed-fc-title-box h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .ed-fc-title-box p {
+        font-size: 0.9rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .ed-fc-hint-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    /* Subjects Navigation */
+    .ed-fc-subjects-bar {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    .ed-fc-sub-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #334155;
+        font-size: 0.88rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+    }
+
+    .ed-fc-sub-pill:hover {
+        border-color: #1d4ed8;
+        color: #1d4ed8;
+        transform: translateY(-2px);
+    }
+
+    .ed-fc-sub-pill.active {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
     }
 
     /* 3D Flashcard Stage */
-    .flashcard-stage {
-        perspective: 1200px;
-        max-width: 650px;
-        margin: 0 auto 30px;
-        height: 380px;
+    .ed-fc-stage-wrapper {
+        max-width: 680px;
+        margin: 0 auto;
     }
-    .flashcard-inner {
+
+    .ed-fc-stage {
+        perspective: 1200px;
+        height: 380px;
+        margin-bottom: 24px;
+        cursor: pointer;
+    }
+
+    .ed-fc-inner {
         position: relative;
         width: 100%;
         height: 100%;
         text-align: center;
         transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         transform-style: preserve-3d;
-        cursor: pointer;
     }
-    .flashcard-inner.is-flipped {
+
+    .ed-fc-inner.is-flipped {
         transform: rotateY(180deg);
     }
 
-    .card-face {
+    .ed-fc-face {
         position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        border-radius: 28px;
-        padding: 36px 30px;
+        border-radius: 22px;
+        padding: 32px 28px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-        border: 1.5px solid var(--border-card);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+        border: 1.5px solid #e2e8f0;
     }
 
-    /* Front Face */
-    .card-front {
-        background: white;
-        color: var(--text-title);
+    .ed-fc-front {
+        background: #ffffff;
+        color: #0f172a;
     }
-    /* Back Face */
-    .card-back {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        color: white;
+
+    .ed-fc-back {
+        background: #0f172a;
+        color: #f8fafc;
         transform: rotateY(180deg);
-        border-color: #334155;
+        border-color: #1e293b;
     }
 
-    .card-meta-top {
-        display: flex; justify-content: space-between; align-items: center;
-        font-size: 0.8rem; font-weight: 700; color: var(--text-muted);
-    }
-    .card-tag {
-        background: #f1f5f9; padding: 4px 12px; border-radius: 30px; color: var(--primary);
-    }
-    .card-back .card-tag {
-        background: rgba(255,255,255,0.1); color: #60a5fa;
+    .ed-fc-meta-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.82rem;
+        font-weight: 700;
     }
 
-    .card-content-main {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        flex: 1; padding: 15px 0;
-    }
-    .card-front .card-text {
-        font-size: 1.35rem; font-weight: 800; line-height: 1.6; color: var(--text-title);
-    }
-    .card-back .card-text {
-        font-size: 1.25rem; font-weight: 600; line-height: 1.7; color: #f8fafc; white-space: pre-line;
+    .ed-fc-counter {
+        color: #64748b;
+        font-size: 0.8rem;
     }
 
-    .card-hint-bottom {
-        font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center;
-        justify-content: center; gap: 6px;
+    .ed-fc-back .ed-fc-counter {
+        color: #94a3b8;
     }
-    .card-back .card-hint-bottom { color: #94a3b8; }
 
-    /* Controls Toolbar */
-    .controls-panel {
-        max-width: 650px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;
+    .ed-fc-main-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        padding: 20px 10px;
     }
-    .actions-bar {
-        display: flex; justify-content: space-between; align-items: center; gap: 12px;
-    }
-    .btn-control {
-        flex: 1; padding: 12px 18px; border-radius: 12px; font-size: 0.9rem; font-weight: 700;
-        cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-        border: 1px solid var(--border-card); background: white; color: var(--text-body);
-    }
-    .btn-control:hover { background: #f8fafc; border-color: #cbd5e1; }
-    .btn-flip-primary {
-        background: var(--primary); color: white; border: none;
-        box-shadow: 0 4px 12px rgba(37,99,235,0.3);
-    }
-    .btn-flip-primary:hover { background: #1d4ed8; color: white; }
 
-    /* Mastery Buttons */
-    .mastery-bar {
-        display: flex; gap: 12px;
+    .ed-fc-question {
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.6;
+        margin: 0;
     }
-    .btn-mastered {
-        flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.88rem;
-        background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #059669; cursor: pointer;
-        transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-mastered:hover { background: #d1fae5; }
-    .btn-review {
-        flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; font-size: 0.88rem;
-        background: #fff1f2; border: 1.5px solid #fecdd3; color: #e11d48; cursor: pointer;
-        transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-review:hover { background: #ffe4e6; }
 
-    /* Progress & Counter */
-    .progress-bar-wrapper {
-        height: 6px; background: #e2e8f0; border-radius: 10px; overflow: hidden; margin-top: 6px;
+    .ed-fc-answer {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f1f5f9;
+        line-height: 1.8;
+        white-space: pre-line;
     }
-    .progress-bar-fill {
-        height: 100%; background: var(--primary); transition: width 0.3s;
+
+    .ed-fc-hint-bottom {
+        font-size: 0.78rem;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    /* Controls Panel */
+    .ed-fc-controls {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .ed-fc-nav-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .ed-fc-mastery-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .ed-mastery-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .ed-mastery-btn.mastered {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+    }
+
+    .ed-mastery-btn.mastered:hover {
+        background: #d1fae5;
+    }
+
+    .ed-mastery-btn.review {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .ed-mastery-btn.review:hover {
+        background: #f1f5f9;
+    }
+
+    .ed-fc-progress-box {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ed-fc-progress-labels {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .ed-fc-progress-labels strong {
+        color: #1d4ed8;
+    }
+
+    /* Empty Card */
+    .ed-empty-card {
+        background: #ffffff;
+        border: 2px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .ed-empty-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 16px;
+    }
+
+    .ed-empty-card h3 {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
+    }
+
+    .ed-empty-card p {
+        font-size: 0.88rem;
+        color: #64748b;
+        max-width: 460px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .ed-fc-container {
+            padding: 18px 16px 60px;
+        }
+        .ed-fc-stage {
+            height: 340px;
+        }
     }
 </style>
-
-<div class="flashcards-page-wrapper">
-    <!-- Header -->
-    <div class="header-banner">
-        <div class="badge-pill">
-            <i class="fa-solid fa-bolt"></i>
-            <span>نظام الحفظ السريع والتكرار المتباعد (Spaced Repetition)</span>
-        </div>
-        <h1>بطاقات استذكار مفاهيم وقوانين التوجيهي</h1>
-        <p>احفظ القوانين الفيزيائية، المتطابقات الرياضية، والتواريخ التاريخية بلمسة واحدة لترسيخها قبل الامتحانات.</p>
-    </div>
-
-    <!-- Subject Tabs -->
-    <div class="subjects-nav">
-        @foreach($subjects as $sub)
-            <a href="{{ route('student.flashcards.index', ['subject' => $sub]) }}"
-               class="subject-pill-link {{ $activeSubject === $sub ? 'active' : '' }}">
-                <i class="fa-solid fa-layer-group"></i> {{ $sub }}
-            </a>
-        @endforeach
-    </div>
-
-    @if($flashcards->count() > 0)
-        <!-- Flashcard 3D Stage -->
-        <div class="flashcard-stage" onclick="flipActiveCard()">
-            <div class="flashcard-inner" id="flashcardInner">
-                <!-- الوجه الأمامي (السؤال / المفهوم) -->
-                <div class="card-face card-front">
-                    <div class="card-meta-top">
-                        <span class="card-tag" id="cardCategory">قوانين</span>
-                        <span id="cardNumber">بطاقة 1 من {{ $flashcards->count() }}</span>
-                    </div>
-                    <div class="card-content-main">
-                        <div class="card-text" id="cardFrontText">...</div>
-                    </div>
-                    <div class="card-hint-bottom">
-                        <i class="fa-solid fa-hand-pointer"></i> اضغط على البطاقة لقلبها وإظهار الإجابة
-                    </div>
-                </div>
-
-                <!-- الوجه الخلفي (القانون / الشرح) -->
-                <div class="card-face card-back">
-                    <div class="card-meta-top">
-                        <span class="card-tag">نموذج الحل والشرح</span>
-                        <span><i class="fa-solid fa-circle-check" style="color: #34d399;"></i> الإجابة المعتمدة</span>
-                    </div>
-                    <div class="card-content-main">
-                        <div class="card-text" id="cardBackText">...</div>
-                    </div>
-                    <div class="card-hint-bottom">
-                        <i class="fa-solid fa-rotate-left"></i> اضغط للعودة إلى السؤال
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls-panel">
-            <div class="actions-bar">
-                <button type="button" class="btn-control" onclick="prevCard()">
-                    <i class="fa-solid fa-arrow-right"></i> السابقة
-                </button>
-                <button type="button" class="btn-control btn-flip-primary" onclick="flipActiveCard()">
-                    <i class="fa-solid fa-arrows-rotate"></i> قلب البطاقة
-                </button>
-                <button type="button" class="btn-control" onclick="nextCard()">
-                    التالية <i class="fa-solid fa-arrow-left"></i>
-                </button>
-            </div>
-
-            <div class="mastery-bar">
-                <button type="button" class="btn-mastered" onclick="markMastered()">
-                    <i class="fa-solid fa-check"></i> أتقنتها تماماً (<span id="masteredCount">0</span>)
-                </button>
-                <button type="button" class="btn-review" onclick="markReview()">
-                    <i class="fa-solid fa-rotate-right"></i> أحتاج مراجعتها
-                </button>
-            </div>
-
-            <div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
-                    <span>مؤشر إنجاز المادة</span>
-                    <span id="progressText">0%</span>
-                </div>
-                <div class="progress-bar-wrapper">
-                    <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
-                </div>
-            </div>
-        </div>
-    @else
-        <div style="text-align: center; padding: 60px; background: white; border-radius: 24px; border: 1px solid var(--border-card);">
-            <i class="fa-solid fa-box-open" style="font-size: 3rem; color: #94a3b8; margin-bottom: 12px;"></i>
-            <h3 style="color: var(--text-title); margin-bottom: 6px;">لا توجد بطاقات متاحة لهذه المادة حالياً</h3>
-            <p style="color: var(--text-muted);">اختر مادة أخرى من الأعلى لتجربة بطاقات الاستذكار السريع.</p>
-        </div>
-    @endif
-</div>
 
 <script>
     const flashcards = @json($flashcards);
