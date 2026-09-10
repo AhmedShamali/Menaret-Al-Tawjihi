@@ -14,49 +14,67 @@
     <title>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} | المنصة التعليمية الأولى لطلبة الثانوية العامة في فلسطين</title>
     <meta name="description" content="منصة تعليمية متكاملة لطلبة الثانوية العامة (توجيهي فلسطين)، شروحات معتمدة، بنك أسئلة وامتحانات وزارية، بطاقات استذكار ذكية، وحاسبة معدل دقيقة.">
 
-    <!-- خطوط عربية حديثة: Alexandria & Tajawal -->
+    <!-- خطوط عربية وعالمية عصرية فائقة النقاء: Readex Pro & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Readex+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- FontAwesome 6 -->
+    <!-- FontAwesome 6 Pro-style icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         :root {
-            --primary: #1d4ed8;
-            --primary-dark: #1e3a8a;
-            --primary-light: #eff6ff;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-deep: #0f172a;
+            --primary-soft: rgba(37, 99, 235, 0.08);
+            --primary-glow: rgba(37, 99, 235, 0.25);
             --accent: #0284c7;
-            --accent-light: #e0f2fe;
-            --emerald: #059669;
-            --emerald-light: #ecfdf5;
-            --amber: #d97706;
-            --amber-light: #fffbeb;
-            --dark-surface: #0f172a;
-            --dark-card: #1e293b;
-            --bg-page: #f8fafc;
-            --bg-surface: #ffffff;
-            --border-subtle: #e2e8f0;
-            --border-hover: #cbd5e1;
+            --accent-soft: rgba(2, 132, 199, 0.08);
+            --emerald: #10b981;
+            --emerald-soft: rgba(16, 185, 129, 0.09);
+            --amber: #f59e0b;
+            --amber-soft: rgba(245, 158, 11, 0.09);
+            
+            --bg-body: #fafcff;
+            --surface-card: rgba(255, 255, 255, 0.88);
+            --surface-card-solid: #ffffff;
+            --border-subtle: rgba(226, 232, 240, 0.8);
+            --border-card: rgba(226, 232, 240, 0.9);
+            --border-focus: #93c5fd;
+
             --text-heading: #0f172a;
             --text-body: #334155;
             --text-muted: #64748b;
-            --radius-sm: 8px;
+            --text-dim: #94a3b8;
+
+            --radius-sm: 10px;
             --radius-md: 14px;
             --radius-lg: 20px;
-            --radius-xl: 28px;
-            --shadow-sm: 0 2px 4px rgba(0,0,0,0.02);
-            --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
-            --shadow-lg: 0 20px 35px -10px rgba(29, 78, 216, 0.12), 0 10px 15px -5px rgba(0,0,0,0.04);
-            --shadow-glow: 0 0 25px rgba(29, 78, 216, 0.25);
+            --radius-xl: 26px;
+            --radius-full: 9999px;
+
+            --shadow-subtle: 0 4px 20px -4px rgba(15, 23, 42, 0.05);
+            --shadow-card: 0 20px 40px -15px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(226, 232, 240, 0.7);
+            --shadow-float: 0 30px 60px -15px rgba(37, 99, 235, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.9);
+            --shadow-btn: 0 10px 22px -6px rgba(37, 99, 235, 0.38);
+
+            --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Alexandria', 'Tajawal', sans-serif;
+            font-family: 'Readex Pro', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .font-num {
+            font-family: 'Plus Jakarta Sans', 'Readex Pro', sans-serif !important;
+            direction: ltr;
+            display: inline-block;
         }
 
         html {
@@ -64,63 +82,102 @@
         }
 
         body {
-            background-color: var(--bg-page);
+            background-color: var(--bg-body);
             color: var(--text-body);
             line-height: 1.7;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(37, 99, 235, 0.04) 0%, transparent 45%),
+                radial-gradient(circle at 90% 45%, rgba(14, 165, 233, 0.04) 0%, transparent 50%),
+                radial-gradient(circle at 50% 85%, rgba(99, 102, 241, 0.03) 0%, transparent 45%);
+            background-attachment: fixed;
         }
 
-        /* --- شريط الإعلان العلوي --- */
+        /* --- 1. شريط الإعلان العلوي فائق الأناقة --- */
         .top-announcement {
-            background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            background: linear-gradient(90deg, #090e17 0%, #0f172a 45%, #1e293b 70%, #090e17 100%);
             color: #ffffff;
-            padding: 9px 20px;
-            text-align: center;
-            font-size: 0.85rem;
-            font-weight: 600;
+            padding: 8px 20px;
+            font-size: 0.82rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            z-index: 1001;
         }
 
         .top-announcement .badge-pal {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(8px);
             padding: 2px 10px;
-            border-radius: 999px;
-            font-size: 0.76rem;
+            border-radius: var(--radius-full);
+            font-size: 0.74rem;
+            font-weight: 600;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .top-announcement .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #22c55e;
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(0.9); opacity: 0.8; }
+            50% { transform: scale(1.3); opacity: 1; }
+            100% { transform: scale(0.9); opacity: 0.8; }
         }
 
         .top-announcement a {
-            color: #93c5fd;
+            color: #60a5fa;
             text-decoration: none;
-            margin-right: 6px;
-            font-weight: 700;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: var(--transition-smooth);
         }
 
         .top-announcement a:hover {
-            text-decoration: underline;
+            color: #93c5fd;
+            transform: translateX(-3px);
         }
 
-        /* --- شريط التنقل الرئيسي (Navbar) --- */
+        @media (max-width: 768px) {
+            .top-announcement {
+                font-size: 0.76rem;
+                padding: 7px 12px;
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+        }
+
+        /* --- 2. شريط التنقل الزجاجي العصري (Modern Glass Navbar) --- */
         nav.main-nav {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(14px);
-            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(255, 255, 255, 0.84);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
             position: sticky;
             top: 0;
             z-index: 1000;
-            transition: all 0.3s ease;
+            transition: var(--transition-smooth);
         }
 
         .nav-inner {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 16px 24px;
+            padding: 13px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -135,16 +192,21 @@
         }
 
         .logo-emblem {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+            display: grid;
+            place-items: center;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .brand-logo-area:hover .logo-emblem {
+            transform: rotate(-5deg) scale(1.04);
         }
 
         .brand-name {
@@ -152,145 +214,217 @@
             flex-direction: column;
         }
 
+        .brand-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .brand-name strong {
             font-size: 1.2rem;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--text-heading);
+            letter-spacing: -0.01em;
             line-height: 1.2;
         }
 
+        .brand-tag-year {
+            font-size: 0.65rem;
+            font-weight: 700;
+            background: var(--primary-soft);
+            color: var(--primary);
+            padding: 1px 7px;
+            border-radius: 6px;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+        }
+
         .brand-name span {
-            font-size: 0.75rem;
+            font-size: 0.74rem;
             color: var(--text-muted);
-            font-weight: 600;
+            font-weight: 500;
         }
 
         .nav-links-list {
             display: flex;
             align-items: center;
-            gap: 26px;
+            gap: 8px;
             list-style: none;
         }
 
-        @media (max-width: 960px) {
+        @media (max-width: 992px) {
             .nav-links-list { display: none; }
         }
 
         .nav-links-list a {
             text-decoration: none;
-            color: #334155;
-            font-size: 0.92rem;
+            color: #475569;
+            font-size: 0.88rem;
             font-weight: 600;
-            transition: color 0.2s ease;
-            position: relative;
+            padding: 8px 14px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-smooth);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .nav-links-list a:hover {
             color: var(--primary);
+            background: var(--primary-soft);
         }
 
         .nav-actions-area {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .btn-nav-login {
             text-decoration: none;
             color: var(--text-heading);
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: 0.88rem;
+            font-weight: 600;
             padding: 9px 18px;
             border-radius: var(--radius-md);
-            transition: background 0.2s ease;
+            transition: var(--transition-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-nav-login:hover {
             background: #f1f5f9;
+            color: var(--primary);
         }
 
         .btn-nav-register {
             text-decoration: none;
-            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
-            font-size: 0.9rem;
-            font-weight: 700;
-            padding: 10px 22px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 9px 20px;
             border-radius: var(--radius-md);
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
-            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+            transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             gap: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
         }
 
         .btn-nav-register:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+            color: #ffffff;
         }
 
-        /* --- قسم الهيرو المبتكر (Modern Hero Section) --- */
+        .btn-nav-register i {
+            font-size: 0.85rem;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-nav-register:hover i {
+            transform: translateX(-3px);
+        }
+
+        /* --- 3. قسم الهيرو فائق الجمال والرقي (Ultra-Premium Hero Section) --- */
         .hero-wrap {
             position: relative;
-            padding: 70px 24px 80px;
-            background: radial-gradient(circle at 10% 20%, rgba(29, 78, 216, 0.04) 0%, transparent 45%),
-                        radial-gradient(circle at 90% 80%, rgba(2, 132, 199, 0.04) 0%, transparent 50%),
-                        var(--bg-page);
+            padding: 70px 24px 85px;
             overflow: hidden;
         }
 
+        .hero-ambient-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+            top: -100px;
+            right: 5%;
+            pointer-events: none;
+            filter: blur(60px);
+            z-index: 0;
+        }
+
+        .hero-ambient-glow-left {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.1) 0%, transparent 70%);
+            bottom: -50px;
+            left: 5%;
+            pointer-events: none;
+            filter: blur(60px);
+            z-index: 0;
+        }
+
         .hero-container {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1.15fr 0.9fr;
-            gap: 50px;
+            gap: 56px;
             align-items: center;
+            position: relative;
+            z-index: 1;
         }
 
         @media (max-width: 992px) {
             .hero-container {
                 grid-template-columns: 1fr;
-                gap: 40px;
-                padding-top: 20px;
+                gap: 48px;
+                padding-top: 10px;
             }
         }
 
         .hero-badge-pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 6px 16px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
+            gap: 9px;
+            padding: 7px 18px;
+            background: rgba(37, 99, 235, 0.06);
+            border: 1px solid rgba(37, 99, 235, 0.18);
             color: var(--primary);
-            border-radius: 999px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-bottom: 22px;
+            border-radius: var(--radius-full);
+            font-size: 0.84rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(37, 99, 235, 0.05);
+        }
+
+        .hero-badge-pill i {
+            font-size: 0.9rem;
+            color: var(--primary);
         }
 
         .hero-headline {
-            font-size: 3rem;
-            font-weight: 900;
-            line-height: 1.25;
+            font-size: clamp(2.3rem, 4vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.35;
             color: var(--text-heading);
-            margin-bottom: 20px;
+            margin-bottom: 22px;
             letter-spacing: -0.02em;
         }
 
-        .hero-headline .text-highlight {
-            background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+        .gradient-text {
+            background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 50%, #2563eb 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            display: inline-block;
+            white-space: nowrap;
         }
 
         .hero-subtext {
-            font-size: 1.12rem;
-            color: var(--text-muted);
-            line-height: 1.85;
+            font-size: 1.08rem;
+            color: #475569;
+            line-height: 1.9;
             margin-bottom: 34px;
             max-width: 580px;
+            font-weight: 400;
         }
 
         .hero-cta-buttons {
@@ -298,55 +432,69 @@
             align-items: center;
             gap: 16px;
             flex-wrap: wrap;
-            margin-bottom: 40px;
+            margin-bottom: 38px;
         }
 
         .btn-cta-primary {
-            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
             text-decoration: none;
-            padding: 14px 32px;
-            border-radius: var(--radius-md);
-            font-size: 1.05rem;
-            font-weight: 800;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.35);
-            transition: all 0.25s ease;
-        }
-
-        .btn-cta-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px -5px rgba(29, 78, 216, 0.45);
-        }
-
-        .btn-cta-secondary {
-            background: #ffffff;
-            color: var(--text-heading);
-            border: 1.5px solid var(--border-subtle);
-            text-decoration: none;
-            padding: 14px 28px;
+            padding: 14px 30px;
             border-radius: var(--radius-md);
             font-size: 1rem;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow-btn);
+            transition: var(--transition-smooth);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-cta-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 16px 30px -6px rgba(37, 99, 235, 0.45);
+            color: #ffffff;
+        }
+
+        .btn-cta-primary i {
+            transition: transform 0.2s ease;
+        }
+
+        .btn-cta-primary:hover i {
+            transform: translateX(-4px);
+        }
+
+        .btn-cta-secondary {
+            background: rgba(255, 255, 255, 0.85);
+            color: var(--text-heading);
+            border: 1px solid var(--border-card);
+            text-decoration: none;
+            padding: 14px 26px;
+            border-radius: var(--radius-md);
+            font-size: 0.98rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
             gap: 10px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-subtle);
+            transition: var(--transition-smooth);
         }
 
         .btn-cta-secondary:hover {
-            background: #f8fafc;
+            background: #ffffff;
             border-color: var(--primary);
             color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-card);
         }
 
         .hero-social-proof {
             display: flex;
             align-items: center;
             gap: 16px;
+            padding-top: 6px;
         }
 
         .avatar-group {
@@ -354,121 +502,175 @@
             align-items: center;
         }
 
-        .avatar-group img,
-        .avatar-group span {
+        .avatar-pill {
             width: 38px;
             height: 38px;
             border-radius: 50%;
             border: 2.5px solid #ffffff;
             margin-right: -10px;
-            object-fit: cover;
-            background: #e2e8f0;
+            display: grid;
+            place-items: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        .proof-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .proof-stars {
+            color: #f59e0b;
+            font-size: 0.78rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: var(--primary);
+            gap: 3px;
+            margin-bottom: 2px;
         }
 
         .proof-text strong {
-            display: block;
-            font-size: 0.95rem;
+            font-size: 0.92rem;
             color: var(--text-heading);
+            font-weight: 700;
         }
 
         .proof-text small {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-muted);
         }
 
-        /* Hero Right Visual Card (Interactive Preview) */
+        /* --- 4. بطاقة العرض البصري التفاعلية الخارقة (Showcase Glass Card) --- */
         .hero-visual-card {
             position: relative;
-            background: #ffffff;
-            border: 1px solid var(--border-subtle);
+            background: var(--surface-card);
+            border: 1px solid rgba(255, 255, 255, 0.95);
             border-radius: var(--radius-xl);
             padding: 30px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-float);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            transition: var(--transition-smooth);
+        }
+
+        .hero-visual-card:hover {
+            box-shadow: 0 35px 70px -15px rgba(37, 99, 235, 0.2), 0 0 0 1px rgba(255, 255, 255, 1);
         }
 
         .vc-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.7);
             margin-bottom: 20px;
         }
 
         .vc-student-badge {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
+        }
+
+        .vc-avatar-wrap {
+            position: relative;
         }
 
         .vc-avatar {
             width: 48px;
             height: 48px;
             border-radius: 14px;
-            background: #eff6ff;
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
             color: var(--primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
+            display: grid;
+            place-items: center;
+            font-size: 1.25rem;
             font-weight: 800;
+            border: 2px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+        }
+
+        .vc-verified-badge {
+            position: absolute;
+            bottom: -3px;
+            right: -3px;
+            background: #10b981;
+            color: white;
+            font-size: 0.65rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            border: 2px solid #ffffff;
         }
 
         .vc-student-badge strong {
             display: block;
-            font-size: 1.05rem;
+            font-size: 1rem;
+            font-weight: 700;
             color: var(--text-heading);
+            margin-bottom: 2px;
         }
 
         .vc-student-badge span {
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .vc-gpa-stat {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 1px solid #a7f3d0;
             padding: 8px 16px;
-            border-radius: 12px;
+            border-radius: 14px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
         }
 
         .vc-gpa-stat span {
-            font-size: 0.72rem;
-            color: #15803d;
+            font-size: 0.7rem;
+            color: #065f46;
             font-weight: 700;
             display: block;
+            margin-bottom: 2px;
         }
 
         .vc-gpa-stat strong {
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: #166534;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #047857;
+            line-height: 1;
         }
 
         .vc-metrics-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
         }
 
         .vc-metric-box {
-            background: #f8fafc;
-            border: 1px solid #f1f5f9;
-            border-radius: 14px;
-            padding: 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: var(--radius-md);
+            padding: 12px 10px;
             text-align: center;
+            transition: var(--transition-smooth);
+        }
+
+        .vc-metric-box:hover {
+            background: #ffffff;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-subtle);
         }
 
         .vc-metric-box i {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             margin-bottom: 4px;
             display: block;
         }
@@ -481,34 +683,132 @@
         }
 
         .vc-metric-box strong {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 800;
             color: var(--text-heading);
         }
 
-        .vc-floating-pill {
-            position: absolute;
+        .vc-progress-block {
+            background: rgba(248, 250, 252, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+        }
+
+        .vc-progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-heading);
+        }
+
+        .vc-progress-track {
+            height: 7px;
+            background: #e2e8f0;
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .vc-progress-fill {
+            width: 88%;
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb, #0284c7);
+            border-radius: var(--radius-full);
+            position: relative;
+            animation: progressShimmer 3s infinite linear;
+        }
+
+        /* اختبار استرشادي سريع وتفاعلي داخل البطاقة */
+        .vc-interactive-teaser {
             background: #ffffff;
-            border: 1px solid var(--border-subtle);
-            padding: 10px 18px;
-            border-radius: 999px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            border-radius: 14px;
+            padding: 12px 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .vc-it-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 0.85rem;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .vc-it-question {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 10px;
+        }
+
+        .vc-it-options {
+            display: flex;
+            gap: 8px;
+        }
+
+        .vc-it-btn {
+            flex: 1;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: var(--text-body);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-align: center;
+        }
+
+        .vc-it-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .vc-it-btn.correct {
+            border-color: #10b981;
+            background: #ecfdf5;
+            color: #065f46;
             font-weight: 700;
-            animation: floatSlow 4s ease-in-out infinite alternate;
+        }
+
+        /* الأقراص الطافية العصرية (Floating Chips) */
+        .vc-floating-pill {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 9px 16px;
+            border-radius: var(--radius-full);
+            box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            backdrop-filter: blur(12px);
+            z-index: 2;
+            transition: var(--transition-smooth);
         }
 
         .vc-floating-pill.top-left {
-            top: -16px;
-            left: -20px;
+            top: -14px;
+            left: -16px;
+            animation: floatSlow 4s ease-in-out infinite alternate;
         }
 
         .vc-floating-pill.bottom-right {
-            bottom: -16px;
-            right: -20px;
+            bottom: -14px;
+            right: -16px;
+            animation: floatSlow 4.5s ease-in-out 1s infinite alternate-reverse;
         }
 
         @keyframes floatSlow {
@@ -516,16 +816,23 @@
             100% { transform: translateY(-8px); }
         }
 
-        /* --- شريط الإحصائيات السريعة (Stats Strip) --- */
+        @media (max-width: 600px) {
+            .vc-floating-pill.top-left { left: 0; top: -10px; font-size: 0.74rem; padding: 6px 12px; }
+            .vc-floating-pill.bottom-right { right: 0; bottom: -10px; font-size: 0.74rem; padding: 6px 12px; }
+        }
+
+        /* --- 5. شريط الإحصائيات والأرقام الحية (Stats Strip) --- */
         .stats-strip {
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(16px);
             border-top: 1px solid var(--border-subtle);
             border-bottom: 1px solid var(--border-subtle);
-            padding: 36px 24px;
+            padding: 38px 24px;
+            position: relative;
         }
 
         .stats-grid {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -540,23 +847,31 @@
             }
         }
 
+        .stat-item {
+            padding: 10px;
+            border-radius: var(--radius-md);
+            transition: var(--transition-smooth);
+        }
+
         .stat-item .num {
             font-size: 2.3rem;
-            font-weight: 900;
-            color: var(--primary);
+            font-weight: 800;
+            background: linear-gradient(135deg, #1d4ed8 0%, #0284c7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             line-height: 1.2;
             margin-bottom: 4px;
         }
 
         .stat-item .lbl {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 600;
             color: var(--text-muted);
         }
 
-        /* --- قسم الفروع والمناهج الأكاديمية (Curriculum Branches) --- */
+        /* --- 6. أقسام المحتوى الموحدة (Consistent Sections) --- */
         .section-padding {
-            padding: 80px 24px;
+            padding: 85px 24px;
         }
 
         .section-header {
@@ -569,35 +884,39 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 5px 14px;
-            background: #eff6ff;
+            padding: 5px 16px;
+            background: var(--primary-soft);
             color: var(--primary);
-            border-radius: 999px;
+            border-radius: var(--radius-full);
             font-size: 0.82rem;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(37, 99, 235, 0.15);
         }
 
         .section-title {
-            font-size: 2.2rem;
-            font-weight: 900;
+            font-size: clamp(1.8rem, 3vw, 2.4rem);
+            font-weight: 800;
             color: var(--text-heading);
             margin-bottom: 14px;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
+            line-height: 1.35;
         }
 
         .section-desc {
-            font-size: 1.05rem;
+            font-size: 1.02rem;
             color: var(--text-muted);
             line-height: 1.8;
+            font-weight: 400;
         }
 
+        /* الفروع الأكاديمية */
         .branches-grid {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
+            gap: 26px;
         }
 
         @media (max-width: 960px) {
@@ -608,21 +927,43 @@
 
         .branch-card {
             background: #ffffff;
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 30px;
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-xl);
+            padding: 32px 28px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: all 0.3s ease;
-            box-shadow: var(--shadow-sm);
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-subtle);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .branch-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--card-accent, var(--primary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .branch-card:hover {
             transform: translateY(-6px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-lg);
+            border-color: rgba(37, 99, 235, 0.3);
+            box-shadow: 0 24px 45px -12px rgba(15, 23, 42, 0.09);
         }
+
+        .branch-card:hover::before {
+            opacity: 1;
+        }
+
+        .branch-card.sci { --card-accent: #2563eb; }
+        .branch-card.lit { --card-accent: #d97706; }
+        .branch-card.bus { --card-accent: #059669; }
 
         .branch-icon-header {
             display: flex;
@@ -632,13 +973,12 @@
         }
 
         .branch-icon {
-            width: 54px;
-            height: 54px;
+            width: 52px;
+            height: 52px;
             border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
+            display: grid;
+            place-items: center;
+            font-size: 1.5rem;
         }
 
         .branch-card.sci .branch-icon { background: #eff6ff; color: #1d4ed8; }
@@ -646,23 +986,23 @@
         .branch-card.bus .branch-icon { background: #ecfdf5; color: #059669; }
 
         .branch-tag {
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             font-weight: 700;
             padding: 4px 12px;
-            border-radius: 8px;
+            border-radius: var(--radius-full);
             background: #f1f5f9;
             color: #475569;
         }
 
         .branch-card h3 {
-            font-size: 1.35rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--text-heading);
             margin-bottom: 10px;
         }
 
         .branch-card p {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-muted);
             line-height: 1.7;
             margin-bottom: 22px;
@@ -671,16 +1011,16 @@
         .subject-pills {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 26px;
+            gap: 7px;
+            margin-bottom: 28px;
         }
 
         .sub-pill {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
             background: #f8fafc;
-            border: 1px solid var(--border-subtle);
-            padding: 4px 12px;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            padding: 4px 11px;
             border-radius: 8px;
             color: var(--text-body);
         }
@@ -689,7 +1029,7 @@
             text-decoration: none;
             padding: 12px;
             border-radius: var(--radius-md);
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -698,16 +1038,17 @@
             border: 1.5px solid var(--border-subtle);
             background: #ffffff;
             color: var(--text-heading);
-            transition: all 0.2s ease;
+            transition: var(--transition-smooth);
         }
 
         .branch-card:hover .branch-btn {
             background: var(--primary);
             color: #ffffff;
             border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
         }
 
-        /* --- حاسبة المعدل التفاعلية المباشرة (Live Interactive Calculator) --- */
+        /* --- 7. حاسبة المعدل التفاعلية الحية (Interactive Live Calculator) --- */
         .calculator-preview-section {
             background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
             border-top: 1px solid var(--border-subtle);
@@ -718,10 +1059,10 @@
             max-width: 980px;
             margin: 0 auto;
             background: #ffffff;
-            border: 1.5px solid var(--border-subtle);
+            border: 1px solid var(--border-card);
             border-radius: var(--radius-xl);
             padding: 40px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-card);
         }
 
         @media (max-width: 768px) {
@@ -731,8 +1072,8 @@
         .calc-sliders-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            margin-bottom: 30px;
+            gap: 20px;
+            margin-bottom: 28px;
         }
 
         @media (max-width: 700px) {
@@ -743,7 +1084,13 @@
             background: #f8fafc;
             border: 1px solid #f1f5f9;
             border-radius: 14px;
-            padding: 16px;
+            padding: 16px 18px;
+            transition: var(--transition-smooth);
+        }
+
+        .calc-slider-item:hover {
+            border-color: #cbd5e1;
+            background: #ffffff;
         }
 
         .calc-slider-header {
@@ -754,14 +1101,14 @@
         }
 
         .calc-slider-header label {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             color: var(--text-heading);
         }
 
         .calc-slider-header .score-val {
             font-size: 1.1rem;
-            font-weight: 900;
+            font-weight: 800;
             color: var(--primary);
         }
 
@@ -769,47 +1116,48 @@
             width: 100%;
             accent-color: var(--primary);
             cursor: pointer;
+            height: 6px;
         }
 
         .calc-result-banner {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            background: linear-gradient(135deg, #090e17 0%, #1e3a8a 100%);
             color: #ffffff;
             border-radius: 18px;
-            padding: 24px 30px;
+            padding: 24px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 20px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
         }
 
         .calc-result-text h4 {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 800;
             margin-bottom: 4px;
         }
 
         .calc-result-text p {
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             color: #cbd5e1;
             margin: 0;
         }
 
         .calc-live-gpa {
-            font-size: 2.8rem;
-            font-weight: 900;
+            font-size: 2.7rem;
+            font-weight: 800;
             color: #38bdf8;
-            font-family: monospace;
             line-height: 1;
         }
 
-        /* --- بطاقات مزايا المنصة الذكية (Platform Superpowers) --- */
+        /* --- 8. بطاقات مزايا المنصة الذكية (Features) --- */
         .features-grid {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
+            gap: 22px;
         }
 
         @media (max-width: 1024px) { .features-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -817,45 +1165,45 @@
 
         .feat-card {
             background: #ffffff;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-card);
             border-radius: var(--radius-lg);
             padding: 28px 22px;
-            transition: all 0.25s ease;
+            transition: var(--transition-smooth);
+            box-shadow: var(--shadow-subtle);
         }
 
         .feat-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-            border-color: #cbd5e1;
+            box-shadow: var(--shadow-card);
+            border-color: rgba(37, 99, 235, 0.3);
         }
 
         .feat-icon-box {
             width: 48px;
             height: 48px;
             border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.35rem;
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
             margin-bottom: 18px;
         }
 
         .feat-card h4 {
-            font-size: 1.1rem;
+            font-size: 1.08rem;
             font-weight: 800;
             color: var(--text-heading);
             margin-bottom: 8px;
         }
 
         .feat-card p {
-            font-size: 0.85rem;
+            font-size: 0.86rem;
             color: var(--text-muted);
-            line-height: 1.65;
+            line-height: 1.68;
         }
 
-        /* --- آراء الطلبة المتفوقين (Testimonials) --- */
+        /* --- 9. آراء وقصص نجاح طلبتنا (Testimonials) --- */
         .testimonials-grid {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -866,25 +1214,33 @@
 
         .testi-card {
             background: #ffffff;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-card);
             border-radius: var(--radius-lg);
             padding: 28px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-subtle);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: var(--transition-smooth);
+        }
+
+        .testi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card);
         }
 
         .testi-stars {
             color: #f59e0b;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 14px;
+            display: flex;
+            gap: 3px;
         }
 
         .testi-text {
-            font-size: 0.94rem;
+            font-size: 0.92rem;
             color: var(--text-body);
-            line-height: 1.75;
+            line-height: 1.8;
             margin-bottom: 22px;
             font-style: italic;
         }
@@ -896,73 +1252,76 @@
         }
 
         .testi-avatar {
-            width: 44px;
-            height: 44px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            background: #eff6ff;
+            background: var(--primary-soft);
             color: var(--primary);
             font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
+            display: grid;
+            place-items: center;
+            font-size: 0.95rem;
+            border: 1.5px solid rgba(37, 99, 235, 0.2);
         }
 
         .testi-info strong {
             display: block;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             color: var(--text-heading);
+            font-weight: 700;
         }
 
         .testi-info span {
-            font-size: 0.78rem;
+            font-size: 0.76rem;
             color: var(--text-muted);
         }
 
-        /* --- الأسئلة الشائعة (FAQ) --- */
+        /* --- 10. الأسئلة الشائعة (FAQ) --- */
         .faq-accordion {
             max-width: 820px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
         .faq-item {
             background: #ffffff;
-            border: 1px solid var(--border-subtle);
+            border: 1px solid var(--border-card);
             border-radius: 14px;
             overflow: hidden;
-            transition: all 0.2s;
+            transition: var(--transition-smooth);
         }
 
         .faq-question {
             padding: 18px 22px;
-            font-size: 1rem;
+            font-size: 0.98rem;
             font-weight: 700;
             color: var(--text-heading);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            user-select: none;
         }
 
         .faq-question i {
             font-size: 0.85rem;
             color: var(--text-muted);
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
         }
 
         .faq-answer {
             display: none;
             padding: 0 22px 18px;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             color: var(--text-muted);
-            line-height: 1.7;
+            line-height: 1.75;
         }
 
         .faq-item.active {
             border-color: var(--primary);
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
         }
 
         .faq-item.active .faq-question {
@@ -978,74 +1337,90 @@
             display: block;
         }
 
-        /* --- راية الانضمام الختامية (Final CTA Banner) --- */
+        /* --- 11. راية الانضمام الختامية (Final CTA) --- */
         .final-cta-wrap {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto 60px;
             padding: 0 24px;
         }
 
         .final-cta-card {
-            background: linear-gradient(135deg, #0f172a 0%, #1e40af 100%);
+            background: linear-gradient(135deg, #090e17 0%, #1e3a8a 60%, #1d4ed8 100%);
             border-radius: var(--radius-xl);
-            padding: 60px 40px;
+            padding: 65px 40px;
             text-align: center;
             color: #ffffff;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+            box-shadow: 0 24px 50px -10px rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .final-cta-card h2 {
-            font-size: 2.4rem;
-            font-weight: 900;
+            font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+            font-weight: 800;
             margin-bottom: 14px;
+            letter-spacing: -0.01em;
         }
 
         .final-cta-card p {
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #cbd5e1;
-            max-width: 600px;
-            margin: 0 auto 30px;
+            max-width: 620px;
+            margin: 0 auto 32px;
+            line-height: 1.8;
+            font-weight: 400;
         }
 
-        /* --- تذييل الصفحة (Footer) --- */
+        .btn-cta-white {
+            background: #ffffff;
+            color: var(--primary);
+            text-decoration: none;
+            padding: 14px 34px;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transition: var(--transition-smooth);
+        }
+
+        .btn-cta-white:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            background: #f8fafc;
+        }
+
+        /* --- 12. تذييل الصفحة الرسمي (Footer) --- */
         footer.main-footer {
-            background: #0f172a;
+            background: #090e17;
             color: #ffffff;
-            padding: 60px 24px 30px;
+            padding: 60px 24px 28px;
             border-top: 1px solid #1e293b;
         }
 
         .footer-grid {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto 40px;
             display: grid;
             grid-template-columns: 1.5fr 1fr 1fr 1fr;
             gap: 40px;
         }
 
-        @media (max-width: 900px) {
-            .footer-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .footer-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 600px) { .footer-grid { grid-template-columns: 1fr; } }
 
         .footer-brand p {
             color: #94a3b8;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             line-height: 1.8;
             margin: 16px 0 20px;
         }
 
         .footer-col h5 {
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 800;
             margin-bottom: 18px;
             color: #ffffff;
@@ -1061,23 +1436,25 @@
         .footer-col ul a {
             color: #94a3b8;
             text-decoration: none;
-            font-size: 0.86rem;
-            transition: color 0.2s;
+            font-size: 0.85rem;
+            transition: var(--transition-smooth);
         }
 
         .footer-col ul a:hover {
             color: #ffffff;
+            transform: translateX(-3px);
+            display: inline-block;
         }
 
         .footer-bottom {
-            max-width: 1260px;
+            max-width: 1280px;
             margin: 0 auto;
             padding-top: 24px;
             border-top: 1px solid rgba(255,255,255,0.08);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #64748b;
             flex-wrap: wrap;
             gap: 12px;
@@ -1086,14 +1463,20 @@
 </head>
 <body>
 
-    <!-- 1. شريط الإعلان العلوي الرسمي -->
+    <!-- 1. شريط الإعلان العلوي الأنيق -->
     <div class="top-announcement">
-        <span class="badge-pal">🇵🇸 توجيهي فلسطين</span>
-        <span>أهلاً بكم في منارة التوجيهي - تم اعتماد مناهج وامتحانات الثانوية العامة المحدثة لدورة 2026.</span>
-        <a href="{{ route('tawjihi.calculator') }}">احسب معدلك المتوقع الآن ←</a>
+        <span class="badge-pal">
+            <span class="pulse-dot"></span>
+            <span>🇵🇸 توجيهي فلسطين 2026</span>
+        </span>
+        <span>أهلاً بكم في منارة التوجيهي — تم اعتماد مناهج ونماذج امتحانات الثانوية العامة المحدثة رسمياً.</span>
+        <a href="{{ route('tawjihi.calculator') }}">
+            <span>احسب معدلك المتوقع الآن</span>
+            <i class="fas fa-arrow-left" style="font-size: 0.72rem;"></i>
+        </a>
     </div>
 
-    <!-- 2. شريط التنقل الرئيسي (Navbar) -->
+    <!-- 2. شريط التنقل الرئيسي الزجاجي (Navbar) -->
     <nav class="main-nav">
         <div class="nav-inner">
             <a href="/" class="brand-logo-area">
@@ -1101,17 +1484,20 @@
                     <i class="fas fa-graduation-cap"></i>
                 </div>
                 <div class="brand-name">
-                    <strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>
+                    <div class="brand-title-row">
+                        <strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>
+                        <span class="brand-tag-year">2026 🇵🇸</span>
+                    </div>
                     <span>بوابة التفوق الأكاديمي للثانوية العامة</span>
                 </div>
             </a>
 
             <ul class="nav-links-list">
-                <li><a href="#branches">الفروع والمناهج</a></li>
-                <li><a href="#calculator">حاسبة المعدل</a></li>
-                <li><a href="#features">مزايا المنصة</a></li>
-                <li><a href="#testimonials">قصص النجاح</a></li>
-                <li><a href="#faq">الأسئلة الشائعة</a></li>
+                <li><a href="#branches"><i class="fas fa-layer-group" style="font-size: 0.8rem; color: var(--primary);"></i> الفروع والمناهج</a></li>
+                <li><a href="#calculator"><i class="fas fa-calculator" style="font-size: 0.8rem; color: var(--primary);"></i> حاسبة المعدل</a></li>
+                <li><a href="#features"><i class="fas fa-sparkles" style="font-size: 0.8rem; color: var(--primary);"></i> مزايا المنصة</a></li>
+                <li><a href="#testimonials"><i class="fas fa-award" style="font-size: 0.8rem; color: var(--primary);"></i> قصص النجاح</a></li>
+                <li><a href="#faq"><i class="fas fa-circle-question" style="font-size: 0.8rem; color: var(--primary);"></i> الأسئلة الشائعة</a></li>
             </ul>
 
             <div class="nav-actions-area">
@@ -1133,33 +1519,40 @@
                         </a>
                     @endif
                 @else
-                    <a href="{{ route('login') }}" class="btn-nav-login">تسجيل الدخول</a>
+                    <a href="{{ route('login') }}" class="btn-nav-login">
+                        <i class="fas fa-arrow-right-to-bracket" style="font-size: 0.85rem;"></i>
+                        <span>تسجيل الدخول</span>
+                    </a>
                     <a href="{{ route('students.create') }}" class="btn-nav-register">
-                        <i class="fas fa-user-plus"></i>
                         <span>إنشاء حساب مجاني</span>
+                        <i class="fas fa-arrow-left"></i>
                     </a>
                 @endauth
             </div>
         </div>
     </nav>
 
-    <!-- 3. قسم الهيرو الرئيسي الفخم (Hero Section) -->
+    <!-- 3. قسم الهيرو فائق الجمال (Hero Section) -->
     <section class="hero-wrap">
+        <div class="hero-ambient-glow"></div>
+        <div class="hero-ambient-glow-left"></div>
+
         <div class="hero-container">
             
             <!-- النصوص والإجراءات الرئيسية -->
             <div class="hero-content-col">
                 <div class="hero-badge-pill">
-                    <i class="fas fa-award"></i>
-                    <span>المنصة الأولى المتخصصة لطلبة التوجيهي في فلسطين</span>
+                    <i class="fas fa-sparkles"></i>
+                    <span>المنصة الأولى المتخصصة لطلبة التوجيهي في فلسطين 🇵🇸</span>
                 </div>
 
                 <h1 class="hero-headline">
-                    طريقك نحو التفوق والـ <span class="text-highlight">99%</span> في توجيهي فلسطين يبدأ هنا.
+                    طريقك الأكيد نحو التفوق <br>
+                    والـ <span class="gradient-text">99% في توجيهي فلسطين</span>
                 </h1>
 
                 <p class="hero-subtext">
-                    منصة تعليمية متكاملة توفر لك شروحات المباحث الوزارية المعتمدة، بنك الامتحانات المحلولة، بطاقات القوانين السريعة، ومتابعة دقيقة لكل فروع الثانوية العامة.
+                    منصة تعليمية متكاملة توفر لك شروحات المباحث الوزارية المعتمدة، بنك الامتحانات المحلولة، بطاقات القوانين السريعة، ومتابعة دقيقة لكل فروع الثانوية العامة نحو حلمك الجامعي.
                 </p>
 
                 <div class="hero-cta-buttons">
@@ -1169,77 +1562,105 @@
                     </a>
                     <a href="#calculator" class="btn-cta-secondary">
                         <i class="fas fa-calculator" style="color: var(--primary);"></i>
-                        <span>جرب حاسبة المعدل</span>
+                        <span>حاسبة المعدل التفاعلية</span>
                     </a>
                 </div>
 
                 <div class="hero-social-proof">
                     <div class="avatar-group">
-                        <span>أ</span>
-                        <span>م</span>
-                        <span>س</span>
-                        <span>+</span>
+                        <span class="avatar-pill" style="background: #2563eb;">أ</span>
+                        <span class="avatar-pill" style="background: #0284c7;">م</span>
+                        <span class="avatar-pill" style="background: #10b981;">س</span>
+                        <span class="avatar-pill" style="background: #f59e0b;">+</span>
                     </div>
                     <div class="proof-text">
+                        <div class="proof-stars">
+                            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-heading); margin-right: 4px;" class="font-num">4.9 / 5</span>
+                        </div>
                         <strong>أكثر من 15,000+ طالب ومعلم</strong>
-                        <small>يستعدون للامتحانات الوزارية بثقة وتفوق</small>
+                        <small>يستعدون للامتحانات الوزارية بثقة وتميز</small>
                     </div>
                 </div>
             </div>
 
-            <!-- بطاقة العرض البصري والتفاعل الحي -->
+            <!-- بطاقة العرض البصري والتفاعل الحي الفخمة (Showcase Card) -->
             <div class="hero-visual-col">
                 <div class="hero-visual-card">
                     
+                    <!-- الأقراص الطافية بنعومة -->
                     <div class="vc-floating-pill top-left">
-                        <i class="fas fa-check-circle" style="color: #059669;"></i>
+                        <i class="fas fa-circle-check" style="color: #10b981;"></i>
                         <span>امتحانات وزارية محلولة 2026</span>
                     </div>
 
                     <div class="vc-header">
                         <div class="vc-student-badge">
-                            <div class="vc-avatar">ط</div>
+                            <div class="vc-avatar-wrap">
+                                <div class="vc-avatar">ط</div>
+                                <div class="vc-verified-badge"><i class="fas fa-check"></i></div>
+                            </div>
                             <div>
                                 <strong>محمد أحمد خليل</strong>
-                                <span>الفرع العلمي • نابلس / غزة</span>
+                                <span><i class="fas fa-graduation-cap" style="color: var(--primary);"></i> الفرع العلمي • نابلس / غزة 🇵🇸</span>
                             </div>
                         </div>
                         <div class="vc-gpa-stat">
                             <span>المعدل التراكمي</span>
-                            <strong>98.6%</strong>
+                            <strong class="font-num">98.6%</strong>
                         </div>
                     </div>
 
                     <div class="vc-metrics-row">
                         <div class="vc-metric-box">
-                            <i class="fas fa-bolt" style="color: #ea580c;"></i>
+                            <i class="fas fa-fire" style="color: #ea580c;"></i>
                             <span>التزام متواصل</span>
-                            <strong>14 يوم</strong>
+                            <strong class="font-num">14 يوم</strong>
                         </div>
                         <div class="vc-metric-box">
-                            <i class="fas fa-file-signature" style="color: #1d4ed8;"></i>
+                            <i class="fas fa-file-signature" style="color: #2563eb;"></i>
                             <span>اختبارات منجزة</span>
-                            <strong>{{ $stats['exams'] ?? 18 }} اختبار</strong>
+                            <strong class="font-num">{{ $stats['exams'] ?? 18 }} اختبار</strong>
                         </div>
                         <div class="vc-metric-box">
                             <i class="fas fa-award" style="color: #d97706;"></i>
                             <span>أوسمة التميز</span>
-                            <strong>5 أوسمة</strong>
+                            <strong class="font-num">5 أوسمة</strong>
                         </div>
                     </div>
 
-                    <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 14px; padding: 14px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 6px;">
+                    <!-- شريط تقدم المادة -->
+                    <div class="vc-progress-block">
+                        <div class="vc-progress-header">
                             <span>التقدم في مبحث الرياضيات (علمي)</span>
-                            <span style="color: var(--primary);">88%</span>
+                            <span style="color: var(--primary);" class="font-num">88%</span>
                         </div>
-                        <div style="height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
-                            <div style="width: 88%; height: 100%; background: var(--primary); border-radius: 999px;"></div>
+                        <div class="vc-progress-track">
+                            <div class="vc-progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- تجربة سؤال وزاري تفاعلي سريع -->
+                    <div class="vc-interactive-teaser">
+                        <div class="vc-it-title">
+                            <i class="fas fa-bolt"></i>
+                            <span>سؤال وزاري استرشادي سريع 2026</span>
+                        </div>
+                        <div class="vc-it-question">
+                            ما هي المشتقة الأولى للاقتران: <span style="direction: ltr; display: inline-block;" class="font-num">ق(س) = س³</span> ؟
+                        </div>
+                        <div class="vc-it-options">
+                            <button type="button" class="vc-it-btn correct" onclick="alert('إجابة صحيحة وممتازة! 👏 3س² هي المشتقة الأولى وفق قواعد الاشتقاق.')">
+                                3س² <i class="fas fa-check" style="font-size: 0.7rem;"></i>
+                            </button>
+                            <button type="button" class="vc-it-btn" onclick="alert('حاول مجدداً! المشتقة هي نزل الأس واطرح 1 فتصبح 3س²')">
+                                2س³
+                            </button>
                         </div>
                     </div>
 
                     <div class="vc-floating-pill bottom-right">
-                        <i class="fas fa-shield-alt" style="color: #1d4ed8;"></i>
+                        <i class="fas fa-shield-halved" style="color: #2563eb;"></i>
                         <span>شهادات رسمية موثقة برمز QR</span>
                     </div>
 
@@ -1253,19 +1674,19 @@
     <section class="stats-strip">
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="num">{{ is_numeric($stats['students'] ?? null) ? number_format($stats['students']) : '12,500+' }}</div>
+                <div class="num font-num">{{ is_numeric($stats['students'] ?? null) ? number_format($stats['students']) : '12,500+' }}</div>
                 <div class="lbl">طالب وطالبة مسجلين</div>
             </div>
             <div class="stat-item">
-                <div class="num">{{ $stats['subjects'] ?? '24' }}</div>
+                <div class="num font-num">{{ $stats['subjects'] ?? '24' }}</div>
                 <div class="lbl">مبحث دراسي معتمد</div>
             </div>
             <div class="stat-item">
-                <div class="num">{{ is_numeric($stats['lessons'] ?? null) ? number_format($stats['lessons']) : '450+' }}</div>
+                <div class="num font-num">{{ is_numeric($stats['lessons'] ?? null) ? number_format($stats['lessons']) : '450+' }}</div>
                 <div class="lbl">شرح وملف وملخص دراسي</div>
             </div>
             <div class="stat-item">
-                <div class="num">99.2%</div>
+                <div class="num font-num">99.2%</div>
                 <div class="lbl">نسبة نجاح وتفوق طلبتنا</div>
             </div>
         </div>
@@ -1276,7 +1697,7 @@
         <div class="section-header">
             <div class="section-badge"><i class="fas fa-layer-group"></i> فروع التوجيهي المعتمدة</div>
             <h2 class="section-title">اختر فرعك وتصفح المواد المقررة</h2>
-            <p class="section-desc">مناهج فلسطينية شاملة ومحدثة مع أفضل الأساتذة المتميزين في كل تخصص.</p>
+            <p class="section-desc">مناهج فلسطينية شاملة ومحدثة مع نخبة من أفضل الأساتذة المتميزين في كل تخصص.</p>
         </div>
 
         <div class="branches-grid">
@@ -1289,7 +1710,7 @@
                         <span class="branch-tag">الفرع العلمي</span>
                     </div>
                     <h3>الثانوية العامة - الفرع العلمي</h3>
-                    <p>مخصص للطلبة الراغبين في دراسة الطب، الهندسة، الصيدلة، وتكنولوجيا المعلومات وعلوم الحاسوب.</p>
+                    <p>مخصص للطلبة الراغبين في دراسة الطب، الهندسة، الصيدلة، وتكنولوجيا المعلومات والذكاء الاصطناعي.</p>
                     
                     <div class="subject-pills">
                         <span class="sub-pill">📐 الرياضيات (200)</span>
@@ -1315,7 +1736,7 @@
                         <span class="branch-tag">الفرع الأدبي</span>
                     </div>
                     <h3>الثانوية العامة - الفرع الأدبي</h3>
-                    <p>موجه للراغبين في دراسة القانون والعلوم السياسية، اللغات والترجمة، الصحافة، والعلوم الإنسانية.</p>
+                    <p>موجه للراغبين في دراسة القانون والعلوم السياسية، اللغات والترجمة، الإعلام، والعلوم الإنسانية.</p>
                     
                     <div class="subject-pills">
                         <span class="sub-pill">📜 اللغة العربية (200)</span>
@@ -1341,7 +1762,7 @@
                         <span class="branch-tag">الريادة والأعمال</span>
                     </div>
                     <h3>فرع الريادة والأعمال (التجاري)</h3>
-                    <p>للطموحين في تخصصات إدارة الأعمال، المحاسبة، التمويل والمصارف، والتجارة الإلكترونية الحديثة.</p>
+                    <p>للطموحين في تخصصات إدارة الأعمال، المحاسبة، التمويل والمصارف، والتجارة والتسويق الرقمي.</p>
                     
                     <div class="subject-pills">
                         <span class="sub-pill">💼 المشاريع الصغيرة</span>
@@ -1376,7 +1797,7 @@
                 <div class="calc-slider-item">
                     <div class="calc-slider-header">
                         <label>الرياضيات (علمي - من 200)</label>
-                        <span class="score-val" id="mathVal">190</span>
+                        <span class="score-val font-num" id="mathVal">190</span>
                     </div>
                     <input type="range" class="calc-range-input" id="mathRange" min="100" max="200" value="190" oninput="updateLiveCalc()">
                 </div>
@@ -1384,7 +1805,7 @@
                 <div class="calc-slider-item">
                     <div class="calc-slider-header">
                         <label>الفيزياء (من 100)</label>
-                        <span class="score-val" id="physVal">96</span>
+                        <span class="score-val font-num" id="physVal">96</span>
                     </div>
                     <input type="range" class="calc-range-input" id="physRange" min="50" max="100" value="96" oninput="updateLiveCalc()">
                 </div>
@@ -1392,7 +1813,7 @@
                 <div class="calc-slider-item">
                     <div class="calc-slider-header">
                         <label>الكيمياء / الأحياء (من 100)</label>
-                        <span class="score-val" id="chemVal">95</span>
+                        <span class="score-val font-num" id="chemVal">95</span>
                     </div>
                     <input type="range" class="calc-range-input" id="chemRange" min="50" max="100" value="95" oninput="updateLiveCalc()">
                 </div>
@@ -1400,7 +1821,7 @@
                 <div class="calc-slider-item">
                     <div class="calc-slider-header">
                         <label>اللغة العربية (من 100)</label>
-                        <span class="score-val" id="arabVal">94</span>
+                        <span class="score-val font-num" id="arabVal">94</span>
                     </div>
                     <input type="range" class="calc-range-input" id="arabRange" min="50" max="100" value="94" oninput="updateLiveCalc()">
                 </div>
@@ -1412,13 +1833,13 @@
                     <h4>المعدل التقديري المحتسب:</h4>
                     <p>يؤهلك لدراسة تخصصات الطب البشري، الهندسة، والصيدلة في الجامعات الفلسطينية الرسمية.</p>
                 </div>
-                <div class="calc-live-gpa" id="liveGpaResult">95.4%</div>
+                <div class="calc-live-gpa font-num" id="liveGpaResult">95.4%</div>
             </div>
 
             <div style="text-align: center; margin-top: 24px;">
-                <a href="{{ route('tawjihi.calculator') }}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px;">
+                <a href="{{ route('tawjihi.calculator') }}" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 700; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 8px;">
                     <span>فتح حاسبة المعدل الشاملة ودليل التنسيق الجامعي لجميع الفروع</span>
-                    <i class="fas fa-external-link-alt"></i>
+                    <i class="fas fa-arrow-left" style="font-size: 0.8rem;"></i>
                 </a>
             </div>
         </div>
@@ -1533,7 +1954,7 @@
     <!-- 9. الأسئلة الشائعة (FAQ Accordion) -->
     <section class="section-padding" id="faq">
         <div class="section-header">
-            <div class="section-badge"><i class="fas fa-question-circle"></i> إجابات سريعة</div>
+            <div class="section-badge"><i class="fas fa-circle-question"></i> إجابات سريعة</div>
             <h2 class="section-title">الأسئلة الأكثر شيوعاً</h2>
             <p class="section-desc">كل ما تحتاج لمعرفته حول التسجيل، المواد، والامتحانات في المنصة.</p>
         </div>
@@ -1587,8 +2008,8 @@
     <div class="final-cta-wrap">
         <div class="final-cta-card">
             <h2>ابدأ رحلة تفوقك في التوجيهي اليوم</h2>
-            <p>لا تنتظر حتى اللحظات الأخيرة، انضم لآلاف الطلبة المتفوقين في فلسطين واستعد لامتحاناتك بكل ثقة وهدوء.</p>
-            <a href="{{ route('students.create') }}" class="btn-cta-primary" style="background: #ffffff; color: #1d4ed8; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <p>لا تنتظر حتى اللحظات الأخيرة، انضم لآلاف الطلبة المتفوقين في فلسطين واستعد لامتحاناتك بكل ثقة وهدوء واضمن مكانك في الكلية التي تحلم بها.</p>
+            <a href="{{ route('students.create') }}" class="btn-cta-white">
                 <span>سجل حسابك مجاناً الآن</span>
                 <i class="fas fa-arrow-left"></i>
             </a>
@@ -1601,8 +2022,8 @@
             
             <div class="footer-brand">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div class="logo-emblem" style="width: 36px; height: 36px; font-size: 1.1rem;"><i class="fas fa-graduation-cap"></i></div>
-                    <strong style="font-size: 1.15rem;">{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>
+                    <div class="logo-emblem" style="width: 38px; height: 38px; font-size: 1.1rem;"><i class="fas fa-graduation-cap"></i></div>
+                    <strong style="font-size: 1.15rem; font-weight: 800;">{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>
                 </div>
                 <p>
                     المنصة الأكاديمية الفلسطينية الرائدة، صُممت لمساندة طلبة الثانوية العامة وتوفير بيئة تعليمية هادئة وشاملة لتحقيق أعلى المراتب.
@@ -1646,7 +2067,7 @@
 
         <div class="footer-bottom">
             <span>جميع الحقوق محفوظة © {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
-            <span>نظام تعليمي متكامل لطلبة فلسطين</span>
+            <span>نظام تعليمي متكامل لطلبة فلسطين 🇵🇸</span>
         </div>
     </footer>
 
