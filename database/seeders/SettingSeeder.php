@@ -17,7 +17,7 @@ class SettingSeeder extends Seeder
             'site_tagline'          => 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين',
             'site_description'      => 'منصة تعليمية متكاملة لطلبة التوجيهي تشمل امتحانات وزارية، شروحات مرئية، بنك أسئلة، بطاقات ذكية، وحاسبة دقيقة لمعدل الثانوية العامة.',
             'contact_email'         => 'ahmed.shamali@tawjihi.ps',
-            'contact_whatsapp'      => '0567897212',
+            'contact_whatsapp'      => '00970597694385',
             'contact_phone'         => '0567897212',
             'registration_status'   => 'open',
             'payment_account_name'  => 'أحمد حسين شمالي',
@@ -32,7 +32,7 @@ class SettingSeeder extends Seeder
         ];
 
         foreach ($defaultSettings as $key => $value) {
-            \App\Models\Setting::firstOrCreate(
+            \App\Models\Setting::updateOrCreate(
                 ['key' => $key],
                 ['value' => $value]
             );

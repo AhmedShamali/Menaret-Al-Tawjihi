@@ -31,32 +31,50 @@ class PaymentGatewayController extends Controller
         $palPhone = \App\Models\Setting::get('payment_phone', '0567897212');
         $palOwner = \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي');
         $palSiteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $whatsappRaw = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
+        
+        // استخراج رقم الواتساب بالصيغة الدولية المباشرة للروابط
+        $waDigits = preg_replace('/[^0-9]/', '', $whatsappRaw);
+        if (str_starts_with($waDigits, '00')) {
+            $waDigits = substr($waDigits, 2);
+        } elseif (str_starts_with($waDigits, '0')) {
+            $waDigits = '970' . substr($waDigits, 1);
+        }
+        $waPhone = !empty($waDigits) ? $waDigits : '970597694385';
+
+        $studentName = $student?->name_ar ?? 'طالب توجيهي';
+        $totalAmt = $cart['total'] ?? 0;
+        $itemsList = implode(' + ', array_column($cart['items'] ?? [], 'name_ar'));
+        $waMessage = "مرحباً إدارة منارة التوجيهي 🇵🇸\nأنا الطالب: {$studentName}\nأريد تأكيد اشتراكي في باقة المواد: ({$itemsList})\nالمبلغ الإجمالي: {$totalAmt} ₪\nوأرفق لكم صورة وصل/إشعار التحويل للاعتماد والتفعيل الفوري.";
+        $whatsappUrl = "https://wa.me/{$waPhone}?text=" . urlencode($waMessage);
 
         $palGatewaysConfig = [
             'jawwal_pay' => [
-                'name'         => 'محفظة جوال باي (Jawwal Pay) 📱',
-                'merchant_no'  => $palPhone,
-                'merchant_name'=> $palOwner . ' (' . $palSiteName . ')',
-                'instructions' => 'قم بتحويل المبلغ إلى رقم المحفظة أعلاه لصاحب الحساب (' . $palOwner . ') ثم أدخل رقم محفظتك للتأكيد الفوري.'
-            ],
-            'palpay' => [
-                'name'         => 'بال باي (PalPay - محفظتي) 💳',
-                'service_code' => \App\Models\Setting::get('palpay_service_code', '99420'),
-                'merchant_name'=> $palOwner . ' - كود الخدمة المعتمد',
-                'instructions' => 'ادفع عبر تطبيق محفظتي أو أي نقطة بيع بال باي في كافة مدن وقرى الضفة وغزة باستخدام كود الخدمة أو رقم الحساب ' . $palPhone . '.'
+                'name'          => 'محفظة جوال باي (Jawwal Pay) 📱',
+                'merchant_no'   => '0567897212',
+                'merchant_name' => $palOwner . ' (' . $palSiteName . ')',
+                'instructions'  => 'قم بتحويل المبلغ إلى رقم المحفظة 0567897212 باسم (' . $palOwner . ') عبر تطبيق جوال باي ثم أدخل رقم محفظتك للتأكيد الفوري.'
             ],
             'bop' => [
-                'name'         => 'بنك فلسطين (Bank of Palestine) 🏦',
-                'bank_name'    => \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين - الإدارة العامة'),
-                'account_no'   => \App\Models\Setting::get('payment_account_no', '0458-123456-001'),
-                'account_owner'=> $palOwner,
-                'iban'         => \App\Models\Setting::get('payment_iban', 'PS91PALS0458000000123456001'),
-                'swift'        => 'PALSPS22',
-                'instructions' => 'حوالة بنكية عبر تطبيق بنكي (أونلاين) لحساب المستفيد: ' . $palOwner . ' ورقم الهاتف: ' . $palPhone . '.'
+                'name'          => 'بنك فلسطين (Bank of Palestine) 🏦',
+                'mobile_pay'    => '0567897212',
+                'bank_name'     => \App\Models\Setting::get('payment_bank_name', 'بنك فلسطين - الإدارة العامة'),
+                'account_no'    => \App\Models\Setting::get('payment_account_no', '0458-123456-001'),
+                'account_owner' => $palOwner,
+                'iban'          => \App\Models\Setting::get('payment_iban', 'PS91PALS0458000000123456001'),
+                'swift'         => 'PALSPS22',
+                'instructions'  => 'تحويل فوري إلى رقم الهاتف 0567897212 (خدمة التحويل لموبايل Pay to Mobile) أو عبر الآيبان لحساب المستفيد: ' . $palOwner . '.'
+            ],
+            'palpay' => [
+                'name'          => 'بال باي (PalPay - محفظتي ونقاط البيع) 💳',
+                'wallet_no'     => '0567897212',
+                'service_code'  => \App\Models\Setting::get('palpay_service_code', '99420'),
+                'merchant_name' => $palOwner . ' - كود الخدمة المعتمد',
+                'instructions'  => 'ادفع عبر تطبيق محفظتي أو أي نقطة بال باي في فلسطين بالتحويل للرقم 0567897212 أو باستخدام كود الخدمة 99420.'
             ]
         ];
 
-        return view('student.checkout.index', compact('cart', 'student', 'palGatewaysConfig'));
+        return view('student.checkout.index', compact('cart', 'student', 'palGatewaysConfig', 'whatsappUrl', 'whatsappRaw', 'palPhone', 'palOwner'));
     }
 
     /**

@@ -84,9 +84,11 @@
                     <a href="{{ route('student.checkout.receipt', $pendingPay->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.8rem;">
                         <i class="far fa-file-alt"></i> الإيصال
                     </a>
-                    @php $adminWhatsapp = \App\Models\Setting::get('contact_whatsapp', \App\Models\Setting::get('payment_phone', '0567897212')); @endphp
-                    <a href="https://wa.me/972{{ ltrim($adminWhatsapp, '0') }}?text={{ urlencode('مرحباً إدارة منارة التوجيهي، قمت برفع إشعار دفع برقم: ' . $pendingPay->transaction_number . ' للاعتماد.') }}" target="_blank" class="ed-btn ed-btn-primary" style="background: #16a34a; border-color: #16a34a; font-size: 0.8rem;">
-                        <i class="fab fa-whatsapp"></i> تواصل مع المشرف
+                    @php 
+                        $waDirect = '970597694385';
+                    @endphp
+                    <a href="https://wa.me/{{ $waDirect }}?text={{ urlencode('مرحباً إدارة منارة التوجيهي، قمت برفع إشعار دفع برقم: ' . $pendingPay->transaction_number . ' للاعتماد.') }}" target="_blank" class="ed-btn ed-btn-primary" style="background: #16a34a; border-color: #16a34a; font-size: 0.8rem;">
+                        <i class="fab fa-whatsapp"></i> تواصل مع المشرف (واتساب)
                     </a>
                 </div>
             </div>

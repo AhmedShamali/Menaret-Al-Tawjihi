@@ -241,7 +241,7 @@
                 <div>
                     <div style="font-weight: 800; font-size: 0.85rem; color: #0f172a;">توثيق المعاملة والاعتماد الإلكتروني</div>
                     <div style="font-size: 0.75rem; color: #64748b;">هذا الإيصال مُصدر ومسجل في النظام المالي للمنصة</div>
-                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">الدعم الفني: واتساب {{ \App\Models\Setting::get('contact_whatsapp', \App\Models\Setting::get('payment_phone', '0567897212')) }} • القدس - غزة - الضفة</div>
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">الدعم الفني: واتساب 00970597694385 • جوال باي وبنك فلسطين 0567897212 • فلسطين</div>
                 </div>
             </div>
 
@@ -284,10 +284,14 @@
                     <span>العودة إلى لوحة التحكم</span>
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
-                @php $adminWhatsapp = \App\Models\Setting::get('contact_whatsapp', \App\Models\Setting::get('payment_phone', '0567897212')); @endphp
-                <a href="https://wa.me/972{{ ltrim($adminWhatsapp, '0') }}?text={{ urlencode('مرحباً إدارة منارة التوجيهي، قمت برفع إشعار دفع جديد برقم المعاملة: ' . $payment->transaction_number . ' للتفعيل.') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #25d366; color: white; text-decoration: none; padding: 11px 24px; border-radius: 50px; font-weight: 700; font-size: 0.92rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+                @php 
+                    $waDirect = '970597694385'; 
+                    $waDisplay = '00970597694385';
+                    $waText = urlencode('مرحباً إدارة منارة التوجيهي، قمت بسداد الرسوم ورفع إشعار العملية برقم: ' . $payment->transaction_number . ' بمبلغ: ' . $payment->amount . ' ₪، يرجى التكرم بالاعتماد وتفعيل المواد.');
+                @endphp
+                <a href="https://wa.me/{{ $waDirect }}?text={{ $waText }}" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; background: #25d366; color: white; text-decoration: none; padding: 11px 24px; border-radius: 50px; font-weight: 700; font-size: 0.92rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
                     <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i>
-                    <span>متابعة فورية مع المشرف عبر واتساب</span>
+                    <span>متابعة فورية مع المشرف عبر واتساب ({{ $waDisplay }})</span>
                 </a>
             </div>
         </div>
