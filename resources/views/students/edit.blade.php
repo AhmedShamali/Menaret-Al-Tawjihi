@@ -131,7 +131,10 @@
                                         <span style="font-size: 1.3rem;">{{ $sub->icon ?? '📖' }}</span>
                                         <div style="flex: 1; min-width: 0;">
                                             <div style="font-weight: 700; font-size: 0.85rem; color: #1e293b;">{{ $sub->name_ar }}</div>
-                                            <div style="font-size: 0.72rem; color: #64748b;">{{ $sub->teacher?->name_ar ?? $sub->teacher?->name ?? 'مدرس المادة' }}</div>
+                                            <div style="font-size: 0.72rem; color: {{ $sub->hasAssignedTeacher() ? '#4f46e5' : '#b45309' }}; font-weight: 600;">
+                                                <i class="fa-solid fa-chalkboard-user" style="font-size: 0.68rem;"></i>
+                                                {{ $sub->teacher_display_name }}
+                                            </div>
                                         </div>
                                     </label>
                                 @endforeach

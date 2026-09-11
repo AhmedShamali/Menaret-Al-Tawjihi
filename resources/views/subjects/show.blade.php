@@ -32,14 +32,25 @@
     <!-- Teacher Info & Quick Stats Card -->
     <div class="teacher-hero-card">
         <div class="teacher-profile">
-            <div class="teacher-avatar">
-                {{ mb_substr($subject->teacher->name ?? 'معتز اسليم', 0, 1) }}
-            </div>
-            <div class="teacher-info">
-                <span class="badge-teacher">المدرس المسؤول</span>
-                <h3 class="teacher-name">{{ $subject->teacher->name ?? 'أ. معتز اسليم' }}</h3>
-                <p class="teacher-desc">مدرس مساق {{ $subject->name_ar }} - {{ $subject->stage->label_ar ?? 'الصف الثاني عشر' }}</p>
-            </div>
+            @if($subject->hasAssignedTeacher())
+                <div class="teacher-avatar">
+                    {{ mb_substr($subject->teacher_display_name, 0, 1) }}
+                </div>
+                <div class="teacher-info">
+                    <span class="badge-teacher">معلّم المادة المعتمد</span>
+                    <h3 class="teacher-name">{{ $subject->teacher_display_name }}</h3>
+                    <p class="teacher-desc">مدرس مساق {{ $subject->name_ar }} - {{ $subject->stage->label_ar ?? 'الصف الثاني عشر' }}</p>
+                </div>
+            @else
+                <div class="teacher-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                    ⏳
+                </div>
+                <div class="teacher-info">
+                    <span class="badge-teacher" style="background: #fef3c7; color: #b45309;">قريباً بإذن الله</span>
+                    <h3 class="teacher-name" style="color: #92400e;">نخبة من خيرة معلّمي التوجيهي قريباً</h3>
+                    <p class="teacher-desc">نعمل حالياً على اعتماد أفضل الكفاءات التعليمية لمساق {{ $subject->name_ar }} لتوفير تجربة تعليمية استثنائية وشاملة.</p>
+                </div>
+            @endif
         </div>
 
         <div class="hero-stats">

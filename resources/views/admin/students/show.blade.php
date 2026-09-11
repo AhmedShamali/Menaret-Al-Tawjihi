@@ -321,9 +321,9 @@
                                 </div>
                                 <div>
                                     <h3 style="font-size: 1.05rem; font-weight: 800; color: #1e293b; margin: 0 0 4px 0;">{{ $subject->name_ar }}</h3>
-                                    <span style="font-size: 0.78rem; color: #64748b; display: block;">
-                                        <i class="fa-solid fa-chalkboard-user" style="color: #4f46e5;"></i>
-                                        {{ $subject->teacher?->name_ar ?? $subject->teacher?->name ?? 'مدرس المادة' }}
+                                    <span style="font-size: 0.78rem; color: {{ $subject->hasAssignedTeacher() ? '#4f46e5' : '#b45309' }}; display: block; font-weight: 600;">
+                                        <i class="fa-solid fa-chalkboard-user"></i>
+                                        {{ $subject->teacher_display_name }}
                                     </span>
                                 </div>
                             </div>
@@ -404,8 +404,9 @@
                             <span style="font-size: 1.5rem;">{{ $sub->icon ?? '📖' }}</span>
                             <div style="flex: 1; min-width: 0;">
                                 <div style="font-weight: 800; font-size: 0.9rem; color: #1e293b;">{{ $sub->name_ar }}</div>
-                                <div style="font-size: 0.75rem; color: #64748b;">
-                                    {{ $sub->teacher?->name_ar ?? $sub->teacher?->name ?? 'مدرس المنصة' }}
+                                <div style="font-size: 0.75rem; color: {{ $sub->hasAssignedTeacher() ? '#4f46e5' : '#b45309' }}; font-weight: 600;">
+                                    <i class="fa-solid fa-chalkboard-user" style="font-size: 0.7rem;"></i>
+                                    {{ $sub->teacher_display_name }}
                                 </div>
                             </div>
                         </label>
@@ -498,7 +499,12 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
         try {
-            const response = await axios.post("{{ route('admin.students.syncSubjects', $student->id) }}", formData);
+            const response = await axios.post("{{ route('admin.students.syncSubjects', $student->id) }}", formData, {
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                timeout: 20000
+            });
             Swal.fire({
                 icon: 'success',
                 title: 'تم الحفظ بنجاح! 🎉',
@@ -511,10 +517,11 @@
         } catch (error) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل المواد';
+            const errorMsg = error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'استغرق الخادم وقتاً أطول للاستجابة، يرجى إعادة المحاولة.' : 'تعذر حفظ مواد الطالب، يرجى المحاولة مرة أخرى.');
             Swal.fire({
                 icon: 'error',
                 title: 'خطأ أثناء الحفظ',
-                text: 'تعذر حفظ مواد الطالب، يرجى المحاولة مرة أخرى.',
+                text: errorMsg,
                 confirmButtonText: 'حسناً'
             });
         }

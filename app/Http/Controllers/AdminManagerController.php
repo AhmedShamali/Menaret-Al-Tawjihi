@@ -67,6 +67,8 @@ class AdminManagerController extends Controller {
             $teacher->photo = $request->file('photo')->store('teachers/photos', 'public');
         }
 
+        $oldSubjectId = $teacher->subject_id;
+
         $teacher->update([
             'name' => $request->name,
             'email' => $request->email,
@@ -76,6 +78,24 @@ class AdminManagerController extends Controller {
             'subject_id' => $request->subject_id,
             'password' => $request->password ? Hash::make($request->password) : $teacher->password,
         ]);
+
+        // إلغاء إسناد المادة القديمة إذا تغيرت
+        if ($oldSubjectId && $oldSubjectId != $request->subject_id) {
+            \App\Models\Subject::where('id', $oldSubjectId)->update([
+                'user_id' => null,
+                'teacher_id' => null,
+                'teacher_name' => null,
+            ]);
+        }
+
+        // إسناد المادة الجديدة للمعلم المعتمد
+        if ($request->filled('subject_id')) {
+            \App\Models\Subject::where('id', $request->subject_id)->update([
+                'user_id' => $teacher->id,
+                'teacher_id' => $teacher->id,
+                'teacher_name' => $teacher->name,
+            ]);
+        }
 
         return redirect()->route('admin.teachers.info')->with('success', 'تم تحديث بيانات المعلم بنجاح');
     }
@@ -87,6 +107,16 @@ class AdminManagerController extends Controller {
         if ($teacher->photo) {
             Storage::disk('public')->delete($teacher->photo);
         }
+
+        // إخلاء أي مواد مسندة لهذا المعلم
+        \App\Models\Subject::where('user_id', $teacher->id)
+            ->orWhere('teacher_id', $teacher->id)
+            ->orWhere('id', $teacher->subject_id)
+            ->update([
+                'user_id' => null,
+                'teacher_id' => null,
+                'teacher_name' => null,
+            ]);
 
         $teacher->delete();
 
@@ -120,7 +150,7 @@ class AdminManagerController extends Controller {
             $photoPath = $request->file('photo')->store('teachers/photos', 'public');
         }
 
-        User::create([
+        $teacher = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
@@ -131,6 +161,15 @@ class AdminManagerController extends Controller {
             'photo' => $photoPath,
             'role' => 'teacher',
         ]);
+
+        // إسناد المادة للمدرس إذا تم تحديدها
+        if ($request->filled('subject_id')) {
+            \App\Models\Subject::where('id', $request->subject_id)->update([
+                'user_id' => $teacher->id,
+                'teacher_id' => $teacher->id,
+                'teacher_name' => $teacher->name,
+            ]);
+        }
 
         return response()->json(['success' => true, 'title' => 'تم إنشاء ملف المدرس بنجاح ✅']);
     }

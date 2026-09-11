@@ -413,7 +413,7 @@
                 <span id="heroOfflineBadge" style="background: white; color: var(--sub-color); padding: 1px 7px; border-radius: 10px; font-size: 0.75rem; font-weight: 800;">0</span>
             </button>
 
-            @if($subject->teacher)
+            @if($subject->hasAssignedTeacher() && $subject->teacher)
                 <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" class="btn-hero btn-hero-outline">
                     <i class="fa-solid fa-comment-dots"></i> استفسار من المعلم
                 </a>
@@ -531,7 +531,7 @@
                             هذا الدرس متاح ضمن باقة المنهج الكامل أو يتطلب تفعيل خاص من معلّم المادة.
                         </p>
                         <div style="display: flex; justify-content: center; gap: 10px;">
-                            @if($subject->teacher)
+                            @if($subject->hasAssignedTeacher() && $subject->teacher)
                                 <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" style="background: white; border: 1px solid var(--border-color); color: #1e293b; padding: 8px 16px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; text-decoration: none;">
                                     <i class="fa-solid fa-comment-dots"></i> طلب تفعيل من المعلم
                                 </a>
@@ -554,19 +554,34 @@
         <aside>
             <!-- بطاقة المعلم -->
             <div class="side-widget-card" style="text-align: center;">
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--sub-color) 0%, #1e1b4b 100%); color: white; display: grid; place-items: center; font-size: 1.8rem; font-weight: 900; margin: 0 auto 15px; border: 4px solid #f0f9ff;">
-                    {{ mb_substr(optional($subject->teacher)->name ?? 'م', 0, 1) }}
-                </div>
-                <h3 style="margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: #0f172a;">
-                    {{ optional($subject->teacher)->name ?? 'مدرس المادة' }}
-                </h3>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 16px;">
-                    معلم معتمد لمسار الثانوية العامة
-                </span>
-                @if($subject->teacher)
-                    <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" style="background: #f1f5f9; color: #1e293b; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: 0.2s;">
-                        <i class="fa-solid fa-paper-plane" style="color: var(--sub-color);"></i> مراسلة المعلم مباشرة
-                    </a>
+                @if($subject->hasAssignedTeacher())
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--sub-color) 0%, #1e1b4b 100%); color: white; display: grid; place-items: center; font-size: 1.8rem; font-weight: 900; margin: 0 auto 15px; border: 4px solid #f0f9ff;">
+                        {{ mb_substr($subject->teacher_display_name, 0, 1) }}
+                    </div>
+                    <h3 style="margin: 0 0 4px; font-size: 1.15rem; font-weight: 800; color: #0f172a;">
+                        {{ $subject->teacher_display_name }}
+                    </h3>
+                    <span style="font-size: 0.8rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 16px;">
+                        معلم معتمد لمسار الثانوية العامة
+                    </span>
+                    @if($subject->teacher)
+                        <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" style="background: #f1f5f9; color: #1e293b; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; text-decoration: none; transition: 0.2s;">
+                            <i class="fa-solid fa-paper-plane" style="color: var(--sub-color);"></i> مراسلة المعلم مباشرة
+                        </a>
+                    @endif
+                @else
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; display: grid; place-items: center; font-size: 1.8rem; font-weight: 900; margin: 0 auto 15px; border: 4px solid #fef3c7;">
+                        ⏳
+                    </div>
+                    <h3 style="margin: 0 0 4px; font-size: 1.1rem; font-weight: 800; color: #92400e;">
+                        معلّم المادة قريباً
+                    </h3>
+                    <span style="font-size: 0.8rem; color: #b45309; font-weight: 600; display: block; margin-bottom: 10px;">
+                        نخبة من خيرة معلّمي التوجيهي 🇵🇸
+                    </span>
+                    <p style="font-size: 0.78rem; color: #64748b; margin: 0; line-height: 1.5;">
+                        جاري اعتماد نخبة من مدرسي التوجيهي لتقديم الشروحات والاختبارات لمساق {{ $subject->name_ar }}.
+                    </p>
                 @endif
             </div>
 

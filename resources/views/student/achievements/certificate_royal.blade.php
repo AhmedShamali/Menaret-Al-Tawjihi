@@ -557,7 +557,7 @@
             <div class="cert-footer">
                 <div class="sig-block">
                     <div class="sig-title">معلم المساق الأكاديمي</div>
-                    <span class="sig-name">{{ $certificate->subject->teacher->name ?? 'أستاذ المادة المعتمد' }}</span>
+                    <span class="sig-name">{{ $certificate->subject?->teacher_display_name ?? 'أستاذ المادة المعتمد' }}</span>
                 </div>
 
                 <div class="cert-seal-box">

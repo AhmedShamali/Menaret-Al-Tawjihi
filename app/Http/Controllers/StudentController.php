@@ -540,26 +540,52 @@ class StudentController extends Controller
         if (!is_array($selectedSubjectIds)) {
             $selectedSubjectIds = [];
         }
+        $selectedSubjectIds = array_values(array_filter(array_map('intval', $selectedSubjectIds)));
 
-        // حذف الاشتراكات للمواد التي تم إلغاء تحديدها
+        // 1. حذف الاشتراكات للمواد التي تم إلغاء تحديدها
         \App\Models\Enrollment::where('student_id', $student->id)
             ->whereNotIn('subject_id', $selectedSubjectIds)
             ->delete();
 
-        // تفعيل أو إضافة المواد المختارة
-        $addedCount = 0;
-        foreach ($selectedSubjectIds as $subId) {
-            \App\Models\Enrollment::updateOrCreate(
-                ['student_id' => $student->id, 'subject_id' => $subId],
-                [
+        // 2. فحص المواد الموجودة مسبقاً دفعة واحدة
+        $existingSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
+            ->whereIn('subject_id', $selectedSubjectIds)
+            ->pluck('subject_id')
+            ->toArray();
+
+        // 3. تحديث المواد الموجودة دفعة واحدة
+        if (!empty($existingSubjectIds)) {
+            \App\Models\Enrollment::where('student_id', $student->id)
+                ->whereIn('subject_id', $existingSubjectIds)
+                ->update([
                     'status'         => 'active',
                     'access_mode'    => 'all',
                     'payment_status' => 'admin_grant',
                     'activated_at'   => now(),
-                ]
-            );
-            $addedCount++;
+                ]);
         }
+
+        // 4. إدراج المواد الجديدة في كويري واحدة سريعة (Bulk Insert)
+        $newSubjectIds = array_diff($selectedSubjectIds, $existingSubjectIds);
+        if (!empty($newSubjectIds)) {
+            $now = now();
+            $bulkRows = [];
+            foreach ($newSubjectIds as $subId) {
+                $bulkRows[] = [
+                    'student_id'     => $student->id,
+                    'subject_id'     => $subId,
+                    'status'         => 'active',
+                    'access_mode'    => 'all',
+                    'payment_status' => 'admin_grant',
+                    'activated_at'   => $now,
+                    'created_at'     => $now,
+                    'updated_at'     => $now,
+                ];
+            }
+            \App\Models\Enrollment::insert($bulkRows);
+        }
+
+        $addedCount = count($selectedSubjectIds);
 
         return response()->json([
             'success' => true,

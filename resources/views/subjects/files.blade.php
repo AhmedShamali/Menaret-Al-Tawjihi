@@ -19,7 +19,13 @@
                 <h1 class="page-title">
                     <span class="title-icon">📑</span> المكتبة الرقمية: {{ $subject->name_ar ?? $subject->title }}
                 </h1>
-                <p class="page-subtitle">جميع أوراق العمل، الكتب، والملخصات المعتمدة من أ. {{ $subject->teacher->name ?? 'معتز اسليم' }}</p>
+                <p class="page-subtitle">
+                    @if($subject->hasAssignedTeacher())
+                        جميع أوراق العمل، الكتب، والملخصات المعتمدة من أ. {{ $subject->teacher_display_name }}
+                    @else
+                        جميع أوراق العمل، الكتب، والملخصات المعتمدة لمساق {{ $subject->name_ar }}
+                    @endif
+                </p>
             </div>
 
             <a href="{{ route('subject.show', $subject->id) }}" class="btn-back-subject">
