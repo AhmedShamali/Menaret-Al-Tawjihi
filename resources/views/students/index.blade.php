@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إدارة الطلاب | منصة جسر')
+@section('title', 'إدارة الطلاب | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
 
 @section('content')
 <!-- استدعاء خط Cairo من جوجل -->
@@ -16,7 +16,7 @@
                 </div>
                 <div>
                     <h1 class="page-title">سجل الطلاب <span class="count-pill">{{ count($students) }}</span></h1>
-                    <p class="page-subtitle">إدارة وتفعيل حسابات طلاب منصة جسر والمراجعة الأكاديمية</p>
+                    <p class="page-subtitle">إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية</p>
                 </div>
             </div>
             <a href="{{ route('admin.students.create') }}" class="btn-primary-gradient">

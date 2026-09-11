@@ -9,7 +9,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">سجل الطلاب والطلبات 👥</h1>
-            <p style="color: var(--text-light);">إدارة وتفعيل حسابات طلاب منصة جسر والمراجعة الأكاديمية.</p>
+            <p style="color: var(--text-light);">إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية.</p>
         </div>
         <a href="{{ route('students.create') }}" class="btn btn-primary" style="border-radius: 15px; padding: 15px 30px;">
             ➕ إضافة طالب جديد
