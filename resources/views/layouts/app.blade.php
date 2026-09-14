@@ -21,6 +21,15 @@
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        if (window.axios) {
+            window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) {
+                window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
+            }
+        }
+    </script>
     
     <style>
         :root {

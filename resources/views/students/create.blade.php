@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
     @else
@@ -22,8 +23,15 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Axios -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <!-- Google Identity Services (GIS) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        if (window.axios) {
+            window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+            const token = document.querySelector('meta[name="csrf-token"]');
+            if (token) {
+                window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
+            }
+        }
+    </script>
 
     <style>
         :root {
@@ -1058,150 +1066,6 @@
         });
     @endif
 
-    function openQuickGmailModal() {
-        Swal.fire({
-            title: 'تعبئة سريعة بحساب Gmail ⚡',
-            html: `
-                <div style="text-align: right; font-size: 0.88rem; color: #475569; margin-bottom: 12px; line-height: 1.6;">
-                    أدخل بريدك الإلكتروني لتعبئة نموذج التسجيل تلقائياً وتسهيل إنشاء الحساب:
-                </div>
-                <div style="text-align: right; margin-bottom: 10px;">
-                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">بريد Gmail أو البريد الشخصي:</label>
-                    <input type="email" id="swalGmailInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="example@gmail.com" dir="ltr">
-                </div>
-                <div style="text-align: right;">
-                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">اسمك الكامل (اختياري):</label>
-                    <input type="text" id="swalNameInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="مثال: محمد أحمد" dir="rtl">
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: '<i class="fas fa-magic"></i> تعبئة وتسهيل التسجيل',
-            cancelButtonText: 'إلغاء',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#94a3b8',
-            preConfirm: () => {
-                const email = document.getElementById('swalGmailInput').value.trim();
-                const name = document.getElementById('swalNameInput').value.trim();
-                if (!email || !email.includes('@')) {
-                    Swal.showValidationMessage('يرجى إدخال بريد إلكتروني صحيح.');
-                    return false;
-                }
-                return { email, name };
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                const { email, name } = result.value;
-                axios.post('{{ route("auth.social.quickFill") }}', {
-                    email: email,
-                    name: name,
-                    _token: '{{ csrf_token() }}'
-                }).then(res => {
-                    applyGoogleProfile(res.data.data);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'تمت التعبئة التلقائية بنجاح! 🚀',
-                        text: 'تم ملء بيانات الاسم والبريد. يرجى إكمال رقم الهوية واختيار الفرع.',
-                        timer: 2500,
-                        showConfirmButton: false
-                    });
-                }).catch(() => {
-                    applyGoogleProfile({ email, name_ar: name });
-                });
-            }
-        });
-    }
-
-    function openSocialModal(provider) {
-        Swal.fire({
-            title: `التسجيل السريع بحساب ${provider} 💼`,
-            html: `
-                <div style="text-align: right; font-size: 0.88rem; color: #475569; margin-bottom: 12px; line-height: 1.6;">
-                    أدخل بريدك الإلكتروني التابع لـ ${provider} لاستيراد بياناتك وتعبئة النموذج فورياً:
-                </div>
-                <div style="text-align: right; margin-bottom: 10px;">
-                    <label style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">البريد الإلكتروني (${provider}):</label>
-                    <input type="email" id="swalSocialInput" class="swal2-input" style="margin: 6px 0 0; width: 100%; font-size: 0.9rem;" placeholder="${provider === 'Apple' ? 'user@icloud.com' : 'student@outlook.com'}" dir="ltr">
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: 'متابعة واستيراد البيانات',
-            cancelButtonText: 'إلغاء',
-            confirmButtonColor: '#2563eb',
-            cancelButtonColor: '#94a3b8',
-            preConfirm: () => {
-                const email = document.getElementById('swalSocialInput').value.trim();
-                if (!email || !email.includes('@')) {
-                    Swal.showValidationMessage('يرجى إدخال بريد إلكتروني صحيح.');
-                    return false;
-                }
-                return email;
-            }
-        }).then(result => {
-            if (result.isConfirmed) {
-                const email = result.value;
-                const autoName = email.split('@')[0].replace(/[._]/g, ' ');
-                applyGoogleProfile({ email: email, name_ar: autoName });
-                Swal.fire({
-                    icon: 'success',
-                    title: `تم ربط بريد ${provider} بنجاح! 🎉`,
-                    text: 'أكمل فقط إدخال رقم الهوية الفلسطينية واختيار الفرع.',
-                    timer: 2500,
-                    showConfirmButton: false
-                });
-            }
-        });
-    }
-
-    function applyGoogleProfile(data) {
-        if (!data) return;
-        if (data.email) {
-            const emailInput = document.getElementById('email');
-            if (emailInput) {
-                emailInput.value = data.email;
-                emailInput.style.borderColor = '#10b981';
-                emailInput.style.background = '#f0fdf4';
-            }
-        }
-        if (data.name_ar || data.name) {
-            const nameInput = document.getElementById('name_ar');
-            if (nameInput) {
-                nameInput.value = data.name_ar || data.name;
-                nameInput.style.borderColor = '#10b981';
-                nameInput.style.background = '#f0fdf4';
-            }
-        }
-        if (data.google_id) {
-            const gIdInput = document.getElementById('google_id');
-            if (gIdInput) gIdInput.value = data.google_id;
-        }
-        if (data.picture) {
-            const avatarInput = document.getElementById('avatar_url');
-            if (avatarInput) avatarInput.value = data.picture;
-            const previewImg = document.getElementById('previewPhotoImg');
-            const iconCircle = document.getElementById('iconPhotoCircle');
-            const box = document.getElementById('boxPhoto');
-            if (previewImg && box) {
-                previewImg.src = data.picture;
-                previewImg.style.display = 'block';
-                if (iconCircle) iconCircle.style.display = 'none';
-                box.classList.add('has-file');
-            }
-        }
-
-        // توليد وتعبئة كلمة مرور قوية تلقائياً للتسهيل إن كانت فارغة
-        const pwdInput = document.getElementById('password');
-        if (pwdInput && !pwdInput.value) {
-            const genPwd = 'Tawjihi2026@' + Math.floor(1000 + Math.random() * 9000);
-            pwdInput.value = genPwd;
-            checkPasswordStrength(genPwd);
-        }
-
-        // تحويل المؤشر لحقل رقم الهوية لإكماله بسهولة
-        const nidInput = document.getElementById('nid');
-        if (nidInput) {
-            nidInput.focus();
-        }
-    }
 </script>
 
 </body>
