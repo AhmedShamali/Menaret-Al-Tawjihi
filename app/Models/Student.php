@@ -10,7 +10,7 @@ class Student extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'name_ar', 'name_en', 'nid', 'email', 'password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status',
+        'name_ar', 'name_en', 'nid', 'email', 'password', 'plain_password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status', 'freeze_reason',
         'city', 'school_name', 'guardian_phone',
         'streak_count', 'last_activity_date', 'total_points',
         'custom_discount_percent', 'custom_discount_fixed', 'discount_notes',

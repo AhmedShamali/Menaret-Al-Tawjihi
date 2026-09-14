@@ -35,7 +35,56 @@
         @endforeach
     </div>
 
-    @if($flashcards->count() > 0)
+    <!-- شريط الإجراءات: إضافة بطاقة، تعديل، حذف، إخفاء عشوائي، اختبار إلزامي ومجلدات -->
+    <div class="ed-fc-actions-bar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button type="button" onclick="openAddCardModal()" class="ed-btn ed-btn-primary" style="font-size: 0.82rem; padding: 8px 16px;">
+                <i class="fas fa-plus-circle"></i>
+                <span>إضافة بطاقة جديدة</span>
+            </button>
+            @if($flashcards->count() > 0)
+                <button type="button" onclick="openEditCardModal()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #d97706; border-color: #fde68a;" title="تعديل البطاقة الحالية">
+                    <i class="fas fa-pen"></i>
+                    <span>تعديل الحالية</span>
+                </button>
+                <button type="button" onclick="deleteCurrentCard()" class="ed-btn ed-btn-outline danger" style="font-size: 0.82rem; padding: 8px 14px;" title="حذف البطاقة الحالية">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button type="button" onclick="toggleHideCurrentCard()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px;" title="إخفاء من المراجعة">
+                    <i class="fas fa-eye-slash"></i>
+                    <span>إخفاء/استعادة</span>
+                </button>
+                <button type="button" onclick="shuffleCards()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #6366f1; border-color: #c7d2fe;" title="ترتيب عشوائي للبطاقات">
+                    <i class="fas fa-random"></i>
+                    <span>خلط عشوائي</span>
+                </button>
+            @endif
+        </div>
+
+        @if($flashcards->count() > 0)
+            <div>
+                <button type="button" onclick="startMandatoryQuiz()" class="ed-btn ed-btn-primary" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); border: none; font-size: 0.85rem; padding: 9px 20px; box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>اختبار إلزامي ذكي 🎯</span>
+                </button>
+            </div>
+        @endif
+    </div>
+
+    <!-- تصفية المجلدات والأقسام -->
+    @if($categories->count() > 0)
+        <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; background: #ffffff; padding: 10px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;"><i class="fas fa-folder-open" style="color: #d97706;"></i> تصنيف المجلدات:</span>
+            <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ !request('category') ? '#eff6ff' : '#f8fafc' }}; color: {{ !request('category') ? '#1d4ed8' : '#64748b' }}; border: 1px solid {{ !request('category') ? '#bfdbfe' : '#e2e8f0' }};">
+                كافة المجلدات
+            </a>
+            @foreach($categories as $cat)
+                <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject, 'category' => $cat]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ request('category') === $cat ? '#eff6ff' : '#f8fafc' }}; color: {{ request('category') === $cat ? '#1d4ed8' : '#64748b' }}; border: 1px solid {{ request('category') === $cat ? '#bfdbfe' : '#e2e8f0' }};">
+                    {{ $cat }}
+                </a>
+            @endforeach
+        </div>
+    @endif
         <!-- منصة البطاقة ثلاثية الأبعاد (3D Stage) -->
         <div class="ed-fc-stage-wrapper">
             <div class="ed-fc-stage" onclick="flipActiveCard()">
@@ -519,6 +568,7 @@
 
     // اختصارات لوحة المفاتيح
     document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.code === 'Space') {
             e.preventDefault();
             flipActiveCard();
@@ -528,5 +578,276 @@
             prevCard();
         }
     });
+
+    // خلط البطاقات عشوائياً
+    function shuffleCards() {
+        if (!flashcards || flashcards.length < 2) return;
+        for (let i = flashcards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+        }
+        currentIndex = 0;
+        renderCard();
+        Swal.fire({
+            icon: 'info',
+            title: 'تم الخلط العشوائي 🔀',
+            text: 'أعيد ترتيب البطاقات عشوائياً لتحدي أفضل للذاكرة.',
+            timer: 1200,
+            showConfirmButton: false
+        });
+    }
+
+    // فتح مودال إضافة بطاقة
+    function openAddCardModal() {
+        Swal.fire({
+            title: 'إضافة بطاقة استذكار جديدة ✨',
+            html: `
+                <div style="text-align: right; font-family: inherit;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">المجلد / التصنيف</label>
+                        <input type="text" id="swalCatInput" placeholder="مثال: قوانين نيوتن، المتطابقات..." class="swal2-input" style="width: 100%; margin: 0; font-size: 0.9rem;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الأمامي (المفهوم / السؤال) *</label>
+                        <textarea id="swalFrontInput" rows="2" placeholder="اكتب السؤال أو المفهوم هنا..." class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الخلفي (القانون / الحل النموذجي) *</label>
+                        <textarea id="swalBackInput" rows="3" placeholder="اكتب القانون أو الإجابة النموذجية بالتفصيل..." class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'حفظ البطاقة',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#1d4ed8',
+            preConfirm: () => {
+                const front = document.getElementById('swalFrontInput').value.trim();
+                const back = document.getElementById('swalBackInput').value.trim();
+                const cat = document.getElementById('swalCatInput').value.trim();
+                if (!front || !back) {
+                    Swal.showValidationMessage('يرجى ملء وجهي البطاقة (السؤال والحل).');
+                    return false;
+                }
+                return { front, back, cat };
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await axios.post("{{ route('student.flashcards.store') }}", {
+                        _token: '{{ csrf_token() }}',
+                        subject_name: '{{ $activeSubject }}',
+                        category: result.value.cat,
+                        front_text: result.value.front,
+                        back_text: result.value.back
+                    });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحفظ!',
+                        text: res.data.message,
+                        timer: 1400,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر حفظ البطاقة الجديدة.' });
+                }
+            }
+        });
+    }
+
+    // فتح مودال تعديل البطاقة الحالية
+    function openEditCardModal() {
+        if (!flashcards || flashcards.length === 0) return;
+        const card = flashcards[currentIndex];
+
+        Swal.fire({
+            title: 'تعديل بطاقة الاستذكار 📝',
+            html: `
+                <div style="text-align: right; font-family: inherit;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">المجلد / التصنيف</label>
+                        <input type="text" id="swalEditCatInput" value="${card.category || ''}" class="swal2-input" style="width: 100%; margin: 0; font-size: 0.9rem;">
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الأمامي (المفهوم / السؤال) *</label>
+                        <textarea id="swalEditFrontInput" rows="2" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;">${card.front_text}</textarea>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الخلفي (القانون / الحل النموذجي) *</label>
+                        <textarea id="swalEditBackInput" rows="3" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;">${card.back_text}</textarea>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'تحديث التعديلات',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#d97706',
+            preConfirm: () => {
+                const front = document.getElementById('swalEditFrontInput').value.trim();
+                const back = document.getElementById('swalEditBackInput').value.trim();
+                const cat = document.getElementById('swalEditCatInput').value.trim();
+                if (!front || !back) {
+                    Swal.showValidationMessage('يرجى ملء وجهي البطاقة.');
+                    return false;
+                }
+                return { front, back, cat };
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const res = await axios.put(`{{ url('student/flashcards') }}/${card.id}`, {
+                        _token: '{{ csrf_token() }}',
+                        category: result.value.cat,
+                        front_text: result.value.front,
+                        back_text: result.value.back
+                    });
+                    card.category = result.value.cat;
+                    card.front_text = result.value.front;
+                    card.back_text = result.value.back;
+                    renderCard();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التعديل!',
+                        text: res.data.message,
+                        timer: 1400,
+                        showConfirmButton: false
+                    });
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحديث بيانات البطاقة.' });
+                }
+            }
+        });
+    }
+
+    // حذف البطاقة الحالية
+    function deleteCurrentCard() {
+        if (!flashcards || flashcards.length === 0) return;
+        const card = flashcards[currentIndex];
+
+        Swal.fire({
+            title: 'حذف بطاقة الاستذكار',
+            text: 'هل أنت متأكد من رغبتك في حذف هذه البطاقة نهائياً؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، حذف',
+            cancelButtonText: 'تراجع'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`{{ url('student/flashcards') }}/${card.id}`, {
+                        data: { _token: '{{ csrf_token() }}' }
+                    });
+                    flashcards.splice(currentIndex, 1);
+                    if (currentIndex >= flashcards.length) currentIndex = Math.max(0, flashcards.length - 1);
+                    renderCard();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحذف!',
+                        timer: 1200,
+                        showConfirmButton: false
+                    });
+                    if (flashcards.length === 0) location.reload();
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر حذف البطاقة.' });
+                }
+            }
+        });
+    }
+
+    // إخفاء أو استعادة البطاقة
+    async function toggleHideCurrentCard() {
+        if (!flashcards || flashcards.length === 0) return;
+        const card = flashcards[currentIndex];
+
+        try {
+            const res = await axios.post(`{{ url('student/flashcards') }}/${card.id}/toggle-hide`, {
+                _token: '{{ csrf_token() }}'
+            });
+            Swal.fire({
+                icon: 'info',
+                title: 'تحديث حالة العرض',
+                text: res.data.message,
+                timer: 1400,
+                showConfirmButton: false
+            });
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تبديل حالة إخفاء البطاقة.' });
+        }
+    }
+
+    // اختبار إلزامي ذكي (Mandatory Quiz Mode)
+    function startMandatoryQuiz() {
+        if (!flashcards || flashcards.length === 0) return;
+
+        let quizCards = [...flashcards];
+        // shuffle
+        for (let i = quizCards.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [quizCards[i], quizCards[j]] = [quizCards[j], quizCards[i]];
+        }
+
+        let qIndex = 0;
+        let score = 0;
+
+        function showQuizQuestion() {
+            if (qIndex >= quizCards.length) {
+                const percentage = Math.round((score / quizCards.length) * 100);
+                Swal.fire({
+                    icon: percentage >= 70 ? 'success' : 'info',
+                    title: 'انتهى الاختبار الإلزامي! 🏁',
+                    html: `
+                        <div style="text-align: center; font-family: inherit;">
+                            <div style="font-size: 2.2rem; font-weight: 900; color: #1d4ed8; margin-bottom: 8px;">${score} / ${quizCards.length}</div>
+                            <p style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">نسبة إتقان المفاهيم: ${percentage}%</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">${percentage >= 85 ? 'أداء ممتاز مع مرتبة الشرف يا بطل! 🌟' : (percentage >= 60 ? 'أداء جيد، احرص على مراجعة النقاط الصعبة.' : 'تحتاج لمزيد من المراجعة والتركيز.')}</p>
+                        </div>
+                    `,
+                    confirmButtonText: 'إغلاق الاختبار',
+                    confirmButtonColor: '#1d4ed8'
+                });
+                return;
+            }
+
+            const currentQ = quizCards[qIndex];
+
+            Swal.fire({
+                title: `السؤال (${qIndex + 1} من ${quizCards.length})`,
+                html: `
+                    <div style="text-align: right; font-family: inherit;">
+                        <span style="font-size: 0.75rem; background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${currentQ.category || 'عام'}</span>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 12px 0 16px; line-height: 1.5;">${currentQ.front_text}</div>
+                        <div id="quizAnswerReveal" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-bottom: 12px;">
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #15803d; display: block; margin-bottom: 4px;">الحل الوزاري المعتمد:</span>
+                            <div style="font-size: 0.95rem; color: #166534; font-weight: 700; line-height: 1.5;">${currentQ.back_text}</div>
+                        </div>
+                        <button type="button" id="btnRevealAnswer" onclick="document.getElementById('quizAnswerReveal').style.display = 'block'; this.style.display = 'none';" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: #475569; cursor: pointer; width: 100%; margin-bottom: 10px;">
+                            <i class="fas fa-eye"></i> كشف الحل النموذجي للتحقق
+                        </button>
+                    </div>
+                `,
+                showCancelButton: true,
+                showDenyButton: true,
+                confirmButtonText: '<i class="fas fa-check"></i> عرفت الإجابة (+1)',
+                denyButtonText: '<i class="fas fa-times"></i> لم أعرف الإجابة',
+                cancelButtonText: 'إنهاء الاختبار',
+                confirmButtonColor: '#059669',
+                denyButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    score++;
+                    qIndex++;
+                    showQuizQuestion();
+                } else if (res.isDenied) {
+                    qIndex++;
+                    showQuizQuestion();
+                }
+            });
+        }
+
+        showQuizQuestion();
+    }
 </script>
 @endsection

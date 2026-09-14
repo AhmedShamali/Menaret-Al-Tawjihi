@@ -22,7 +22,11 @@
             </div>
         </div>
 
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="confirmPurgeAllStudents()" style="background: #dc2626; color: white; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25); transition: 0.2s;" title="حذف وتصفير جميع الطلاب المسجلين دفعة واحدة">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>حذف جميع الطلاب دفعة واحدة</span>
+            </button>
             <a href="{{ route('admin.students.create') }}" class="btn-add-student">
                 <i class="fa-solid fa-user-plus"></i>
                 <span>إضافة طالب جديد</span>
@@ -87,12 +91,32 @@
         </div>
     </div>
 
+    {{-- شريط التحكم الجماعي بالطلاب المحددين (Bulk Action Bar) --}}
+    <div id="studentBulkBar" style="display: none; background: #1e1b4b; color: white; border-radius: 14px; padding: 12px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 8px 24px rgba(30, 27, 75, 0.3);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="background: #4f46e5; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-weight: 900; font-size: 0.95rem;" id="selectedStudentsCount">0</span>
+            <span style="font-weight: 700; font-size: 0.95rem;">طالب تم تحديدهم بالجدول</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="deselectAllStudents()" style="background: rgba(255,255,255,0.15); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                إلغاء التحديد
+            </button>
+            <button type="button" onclick="deleteSelectedStudents()" style="background: #dc2626; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>حذف الطلاب المحددين</span>
+            </button>
+        </div>
+    </div>
+
     {{-- 4. بطاقة الجدول المتطورة مع التمرير الأفقي المحمي --}}
     <div class="table-outer-card">
         <div class="responsive-table-wrapper">
             <table class="students-data-table">
                 <thead>
                     <tr>
+                        <th style="width: 45px; text-align: center;">
+                            <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="تحديد / إلغاء تحديد الكل" style="width: 18px; height: 18px; cursor: pointer; accent-color: #4f46e5;">
+                        </th>
                         <th style="min-width: 230px;">المعلومات الشخصية</th>
                         <th style="min-width: 170px;">الفرع والمرحلة</th>
                         <th style="min-width: 130px;">الهوية الوطنية</th>
@@ -135,6 +159,11 @@
                         data-status="{{ $student->status }}"
                         data-branch="{{ $stageLabel }}">
                         
+                        {{-- خانة التحديد للحذف الجماعي --}}
+                        <td style="text-align: center; vertical-align: middle;">
+                            <input type="checkbox" class="student-row-checkbox" value="{{ $student->id }}" onchange="updateStudentBulkBar()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #4f46e5;">
+                        </td>
+
                         {{-- 1. المعلومات الشخصية --}}
                         <td>
                             <div class="student-profile-cell">
@@ -148,7 +177,13 @@
                                     <a href="{{ route('admin.students.show', $student->id) }}" class="student-name-link" title="فتح الملف الشخصي والمواد الدراسية">
                                         {{ $student->name_ar }}
                                     </a>
-                                    <span class="student-email-sub" dir="ltr">{{ $student->email }}</span>
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        <span class="student-email-sub" dir="ltr">{{ $student->email }}</span>
+                                        <button type="button" onclick="revealStudentPassword('{{ addslashes($student->name_ar) }}', '{{ addslashes($student->plain_password ?? '') }}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; padding: 2px 6px; font-size: 0.72rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="كشف كلمة مرور الطالب">
+                                            <i class="fa-solid fa-key" style="color: #d97706;"></i>
+                                            <span>كلمة المرور</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -170,13 +205,23 @@
                             </span>
                         </td>
 
-                        {{-- 4. حالة الحساب --}}
+                        {{-- 4. حالة الحساب وسبب التجميد --}}
                         <td>
                             @if($student->status === 'active')
                                 <span class="status-clean-badge badge-active">
                                     <span class="live-dot-green"></span>
                                     <span>مفعّل ومعتمد</span>
                                 </span>
+                            @elseif($student->status === 'suspended' || $student->status === 'frozen' || $student->status === 'inactive')
+                                <span class="status-clean-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
+                                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
+                                    <span>حساب مجمد 🔒</span>
+                                </span>
+                                @if(!empty($student->freeze_reason))
+                                    <small style="display: block; font-size: 0.73rem; color: #dc2626; font-weight: 700; margin-top: 3px;" title="سبب التجميد المسجل">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ $student->freeze_reason }}
+                                    </small>
+                                @endif
                             @else
                                 <span class="status-clean-badge badge-pending">
                                     <span class="live-dot-amber"></span>
@@ -223,9 +268,9 @@
                                 </a>
 
                                 <button type="button" 
-                                        onclick="performToggle({{ $student->id }})"
+                                        onclick="performToggle({{ $student->id }}, '{{ $student->status }}', '{{ addslashes($student->name_ar) }}')"
                                         class="action-icon-btn {{ $student->status == 'active' ? 'btn-action-lock' : 'btn-action-unlock' }}"
-                                        title="{{ $student->status == 'active' ? 'تجميد الحساب وإيقافه' : 'تفعيل الحساب' }}">
+                                        title="{{ $student->status == 'active' ? 'تجميد الحساب مع ذكر السبب' : 'إلغاء التجميد وتفعيل الحساب' }}">
                                     @if($student->status == 'active')
                                         <i class="fa-solid fa-user-slash"></i>
                                     @else
@@ -250,7 +295,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
                             <i class="fa-solid fa-user-xmark" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
                             <strong>لا يوجد طلاب مسجلون حالياً في المنظومة.</strong>
                         </td>
@@ -258,7 +303,7 @@
                     @endforelse
 
                     <tr id="noResultsRow" style="display: none;">
-                        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
                             <i class="fa-solid fa-magnifying-glass" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
                             <strong>لا توجد نتائج مطابقة لبحثك أو الفلتر المحدد.</strong>
                         </td>
@@ -850,19 +895,105 @@
         });
     }
 
-    // 3. تجميد أو إعادة تفعيل الحساب
-    function performToggle(id) {
-        axios.post(`{{ url('admin/students/toggle-status') }}/${id}`)
+    // 3. تجميد أو إعادة تفعيل الحساب مع حفظ سبب التجميد (freeze_reason)
+    function performToggle(id, currentStatus, studentName) {
+        if (currentStatus === 'active') {
+            Swal.fire({
+                title: `تجميد حساب (${studentName}) 🔒`,
+                text: 'يرجى اختيار أو كتابة سبب تجميد الحساب:',
+                input: 'select',
+                inputOptions: {
+                    'عدم سداد الرسوم الدراسية': '💳 عدم سداد الرسوم الدراسية',
+                    'مخالفة الشروط والضوابط الأكاديمية': '⚠️ مخالفة الشروط والضوابط الأكاديمية',
+                    'طلب ولي الأمر إيقاف الحساب مؤقتاً': '👨‍👩‍👦 بطلب من ولي الأمر',
+                    'أخرى': '📝 سبب آخر (كتابة يدوية)'
+                },
+                inputPlaceholder: 'اختر سبب التجميد...',
+                showCancelButton: true,
+                confirmButtonText: 'متابعة وتجميد',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#dc2626',
+                preConfirm: (choice) => {
+                    if (!choice) {
+                        Swal.showValidationMessage('يرجى اختيار سبب التجميد');
+                        return false;
+                    }
+                    return choice;
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    let reason = result.value;
+                    if (reason === 'أخرى') {
+                        Swal.fire({
+                            title: 'اكتب سبب التجميد:',
+                            input: 'text',
+                            inputPlaceholder: 'اكتب السبب هنا بالتفصيل...',
+                            showCancelButton: true,
+                            confirmButtonText: 'تأكيد التجميد',
+                            cancelButtonText: 'إلغاء',
+                            confirmButtonColor: '#dc2626',
+                            preConfirm: (custom) => custom ? custom.trim() : 'إيقاف إداري'
+                        }).then((subRes) => {
+                            if (subRes.isConfirmed) {
+                                executeToggleStatus(id, subRes.value || 'إيقاف إداري');
+                            }
+                        });
+                    } else {
+                        executeToggleStatus(id, reason);
+                    }
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'تأكيد التفعيل',
+                text: `هل تريد إلغاء التجميد وتفعيل حساب (${studentName}) فورياً؟`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'نعم، تفعيل الحساب',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#10b981'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    executeToggleStatus(id, null);
+                }
+            });
+        }
+    }
+
+    function executeToggleStatus(id, reason) {
+        axios.post(`{{ url('admin/students/toggle-status') }}/${id}`, { freeze_reason: reason })
         .then(res => {
             Swal.fire({
                 icon: 'success',
                 title: 'تم التحديث بنجاح',
-                text: 'تم تعديل حالة حساب الطالب بنجاح',
-                timer: 1500,
+                text: reason ? `تم تجميد الحساب (السبب: ${reason})` : 'تم تفعيل الحساب بنجاح',
+                timer: 1600,
                 showConfirmButton: false
             }).then(() => location.reload());
         })
         .catch(err => Swal.fire('خطأ', 'فشل تعديل حالة الحساب', 'error'));
+    }
+
+    // كشف كلمة مرور الطالب plain_password
+    function revealStudentPassword(name, pwd) {
+        if (!pwd) {
+            Swal.fire({
+                icon: 'info',
+                title: `كلمة مرور الطالب (${name})`,
+                text: 'كلمة المرور مشفرة بالنظام لأمان الحساب، أو تم إنشاؤه بحساب قديم. يمكنك تعيين كلمة جديدة من شاشة التعديل.'
+            });
+            return;
+        }
+        Swal.fire({
+            title: `كلمة مرور (${name}) 🔑`,
+            html: `
+                <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-top: 10px;">
+                    <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 6px;">كلمة المرور الحالية المعتمدة:</span>
+                    <code style="font-size: 1.4rem; font-weight: 900; color: #1e1b4b; letter-spacing: 2px; font-family: monospace;">${pwd}</code>
+                </div>
+            `,
+            confirmButtonText: 'تمت المشاهدة'
+        });
     }
 
     // 4. حذف الطالب
@@ -888,6 +1019,129 @@
                     Swal.fire('تم الحذف!', 'تمت إزالة حساب الطالب بنجاح', 'success');
                 })
                 .catch(err => Swal.fire('خطأ', 'فشلت عملية الحذف', 'error'));
+            }
+        });
+    }
+
+    // 4.1 إدارة التحديد الجماعي وحذف الطلاب المحددين
+    function toggleSelectAllStudents(master) {
+        const checkboxes = document.querySelectorAll('.student-row-checkbox');
+        checkboxes.forEach(cb => {
+            const row = cb.closest('tr');
+            if (row && row.style.display !== 'none') {
+                cb.checked = master.checked;
+            }
+        });
+        updateStudentBulkBar();
+    }
+
+    function deselectAllStudents() {
+        const master = document.getElementById('selectAllStudentsCheckbox');
+        if (master) master.checked = false;
+        document.querySelectorAll('.student-row-checkbox').forEach(cb => cb.checked = false);
+        updateStudentBulkBar();
+    }
+
+    function updateStudentBulkBar() {
+        const checked = document.querySelectorAll('.student-row-checkbox:checked');
+        const bar = document.getElementById('studentBulkBar');
+        const countSpan = document.getElementById('selectedStudentsCount');
+        if (!bar) return;
+
+        if (checked.length > 0) {
+            bar.style.display = 'flex';
+            if (countSpan) countSpan.innerText = checked.length;
+        } else {
+            bar.style.display = 'none';
+        }
+    }
+
+    function deleteSelectedStudents() {
+        const checked = document.querySelectorAll('.student-row-checkbox:checked');
+        const ids = Array.from(checked).map(cb => cb.value);
+
+        if (ids.length === 0) {
+            Swal.fire('تنبيه', 'لم يتم تحديد أي طالب للحذف', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: `حذف (${ids.length}) طالب محدد؟ ⚠️`,
+            text: 'سيتم حذف حسابات وسجلات واشتراكات هؤلاء الطلاب نهائياً ولا يمكن التراجع عن ذلك!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: `نعم، احذف (${ids.length}) طالب`,
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#dc2626'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري الحذف...',
+                    text: 'يرجى الانتظار لحين معالجة البيانات',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.students.bulkDelete') }}", { ids: ids })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحذف الجماعي بنجاح ✅',
+                        text: res.data.message
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء الحذف', 'error');
+                });
+            }
+        });
+    }
+
+    // 4.2 حذف جميع الطلاب دفعة واحدة (Purge All Students)
+    function confirmPurgeAllStudents() {
+        Swal.fire({
+            title: 'حذف جميع الطلاب دفعة واحدة ⚠️',
+            html: `
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
+                    <strong>تحذير أمني شديد:</strong><br>
+                    أنت على وشك حذف <strong>كافة طلاب المنصة وسجلاتهم واشتراكاتهم وامتحاناتهم كاملة بنسبة 100%</strong>.<br>
+                    هذه الخطوة لا يمكن التراجع عنها مطلقاً.
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، يرجى كتابة العبارة الآتية بدقة:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'اكتب هنا: تأكيد الحذف',
+            showCancelButton: true,
+            confirmButtonText: 'تأكيد وحذف جميع الطلاب الآن 🗑️',
+            cancelButtonText: 'تراجع وإلغاء',
+            confirmButtonColor: '#dc2626',
+            preConfirm: (inputVal) => {
+                if (inputVal !== 'تأكيد الحذف' && inputVal !== 'DELETE') {
+                    Swal.showValidationMessage('العبارة غير متطابقة! يرجى كتابة (تأكيد الحذف)');
+                    return false;
+                }
+                return inputVal;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري تصفير وحذف جميع الطلاب...',
+                    text: 'يرجى الانتظار بضع ثوانٍ لإتمام تفريغ السجلات واشتراكات المواد',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.students.purgeAll') }}", { confirm_text: result.value })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم تصفير وحذف جميع الطلاب بنجاح 🎉',
+                        text: res.data.message
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء تصفير الطلاب', 'error');
+                });
             }
         });
     }

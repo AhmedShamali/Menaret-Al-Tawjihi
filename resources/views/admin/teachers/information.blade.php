@@ -179,14 +179,49 @@
     <!-- رأس الصفحة -->
     <div class="page-header">
         <div class="page-title">
-            <h2>سجل المعلمين</h2>
-            <small style="color: #64748b;">إدارة بيانات المعلمين وصلاحياتهم في المنصة</small>
+            <h2>سجل وبيانات المعلمين</h2>
+            <small style="color: #64748b;">إدارة بيانات الكادر التعليمي، كلمات المرور، والتصدير والاستيراد</small>
         </div>
-        <a href="{{ route('admin.teachers.create') }}" class="btn-add-new">
-            <i class="fas fa-plus-circle me-1"></i> إضافة معلم جديد
-        </a>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button type="button" onclick="confirmPurgeAllTeachers()" style="background: #dc2626; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);" title="حذف وتصفير جميع المعلمين دفعة واحدة">
+                <i class="fas fa-trash-can"></i> حذف جميع المعلمين
+            </button>
+            <a href="{{ route('admin.teachers.export') }}" class="btn-action" style="background: #059669; color: white; padding: 9px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);" title="تنزيل جدول المعلمين كاملاً إلى ملف Excel/CSV">
+                <i class="fas fa-file-excel"></i> تصدير إكسل (CSV)
+            </a>
+            <button type="button" onclick="openImportModal()" style="background: #0284c7; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);">
+                <i class="fas fa-file-import"></i> استيراد معلمين
+            </button>
+            <a href="{{ route('admin.teachers.create') }}" class="btn-add-new">
+                <i class="fas fa-plus-circle me-1"></i> إضافة معلم جديد
+            </a>
+        </div>
     </div>
 
+    @if(session('success'))
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-check-circle text-success"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+
+    {{-- شريط التحكم الجماعي بالمعلمين المحددين --}}
+    <div id="teacherBulkBar" style="display: none; background: #1e1b4b; color: white; border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 14px rgba(30, 27, 75, 0.25);">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="background: #4f46e5; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-weight: 900; font-size: 0.9rem;" id="selectedTeachersCount">0</span>
+            <span style="font-weight: 700; font-size: 0.95rem;">معلم تم تحديدهم</span>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button type="button" onclick="deselectAllTeachers()" style="background: rgba(255,255,255,0.15); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+                إلغاء التحديد
+            </button>
+            <button type="button" onclick="deleteSelectedTeachers()" style="background: #dc2626; color: white; border: none; padding: 7px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-trash-can"></i>
+                <span>حذف المعلمين المحددين</span>
+            </button>
+        </div>
+    </div>
 
     <!-- جدول البيانات -->
     <div class="content-card">
@@ -194,10 +229,14 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th style="width: 60px;">#</th>
+                        <th style="width: 40px; text-align: center;">
+                            <input type="checkbox" id="selectAllTeachersCheckbox" onchange="toggleSelectAllTeachers(this)" title="تحديد / إلغاء تحديد الكل" style="width: 17px; height: 17px; cursor: pointer; accent-color: #4f46e5;">
+                        </th>
+                        <th style="width: 50px;">#</th>
                         <th>المعلم</th>
-                        <th>البريد الإلكتروني</th>
+                        <th>البريد وكلمة المرور</th>
                         <th>التخصص</th>
+                        <th>المادة المسندة</th>
                         <th>تاريخ الانضمام</th>
                         <th style="text-align: center;">التحكم</th>
                     </tr>
@@ -205,6 +244,9 @@
                 <tbody>
                     @forelse($teachers as $index => $teacher)
                     <tr>
+                        <td style="text-align: center; vertical-align: middle;">
+                            <input type="checkbox" class="teacher-row-checkbox" value="{{ $teacher->id }}" onchange="updateTeacherBulkBar()" style="width: 17px; height: 17px; cursor: pointer; accent-color: #4f46e5;">
+                        </td>
                         <td>{{ $teachers->firstItem() + $index }}</td>
                         <td>
                             <div class="user-profile">
@@ -217,16 +259,39 @@
                                 @endif
                                 <div>
                                     <span class="user-name">{{ $teacher->name }}</span>
+                                    @if($teacher->phone)
+                                        <small style="color: #64748b; font-size: 11px;">{{ $teacher->phone }}</small>
+                                    @endif
                                 </div>
                             </div>
                         </td>
-                        <td dir="ltr" style="color: #64748b;">{{ $teacher->email }}</td>
+                        <td>
+                            <div dir="ltr" style="color: #1e293b; font-size: 13px; font-weight: 600;">{{ $teacher->email }}</div>
+                            <div style="margin-top: 4px;">
+                                <button type="button" onclick="revealTeacherPassword('{{ addslashes($teacher->name) }}', '{{ addslashes($teacher->plain_password ?? '') }}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="كشف كلمة المرور">
+                                    <i class="fas fa-key" style="color: #d97706;"></i>
+                                    <span>كشف كلمة المرور</span>
+                                </button>
+                            </div>
+                        </td>
                         <td>
                             <span class="badge-major">{{ $teacher->major ?? 'غير محدد' }}</span>
                         </td>
                         <td>
-                            <div style="font-weight: 500;">{{ $teacher->created_at->format('Y-m-d') }}</div>
-                            <small class="text-muted" style="font-size: 11px;">{{ $teacher->created_at->diffForHumans() }}</small>
+                            @php
+                                $sub = \App\Models\Subject::find($teacher->subject_id);
+                            @endphp
+                            @if($sub)
+                                <span style="background: #f0fdf4; color: #166534; padding: 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;">
+                                    {{ $sub->name_ar }}
+                                </span>
+                            @else
+                                <span style="color: #94a3b8; font-size: 12px;">غير مسند</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ $teacher->created_at ? $teacher->created_at->format('Y-m-d') : '' }}</div>
+                            <small class="text-muted" style="font-size: 11px;">{{ $teacher->created_at ? $teacher->created_at->diffForHumans() : '' }}</small>
                         </td>
                         <td>
                             <div class="action-group">
@@ -248,7 +313,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 50px; color: #94a3b8;">
+                        <td colspan="8" style="text-align: center; padding: 50px; color: #94a3b8;">
                             <i class="fas fa-users-slash fa-3x mb-3"></i>
                             <p>لا يوجد معلمين مسجلين في النظام حتى الآن.</p>
                         </td>
@@ -264,4 +329,185 @@
         {{ $teachers->links() }}
     </div>
 </div>
+
+{{-- نافذة استيراد المعلمين من ملف CSV --}}
+<div id="importModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
+    <div style="background: white; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center;">
+                    <i class="fas fa-file-import"></i>
+                </div>
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">استيراد معلمين من ملف CSV</h3>
+            </div>
+            <button type="button" onclick="closeImportModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">✕</button>
+        </div>
+
+        <form action="{{ route('admin.teachers.import') }}" method="POST" enctype="multipart/form-data" style="padding: 22px;">
+            @csrf
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
+                اختر ملف CSV يحتوي على بيانات المعلمين بالأعمدة: (الاسم، البريد الإلكتروني، كلمة المرور، رقم الهاتف، التخصص).
+            </p>
+
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #334155;">ملف CSV:</label>
+                <input type="file" name="csv_file" accept=".csv,.txt" required style="width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.85rem;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button type="button" onclick="closeImportModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer;">إلغاء</button>
+                <button type="submit" style="background: #0284c7; color: white; border: none; padding: 10px 22px; border-radius: 10px; font-weight: 800; cursor: pointer;">بدء الاستيراد</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function revealTeacherPassword(name, pwd) {
+        if (!pwd) {
+            Swal.fire({
+                icon: 'info',
+                title: `كلمة مرور المعلم (${name})`,
+                text: 'كلمة المرور مشفرة بالنظام لأمان الحساب. يمكنك تغييرها مباشرة بالنقر على تعديل المعلم.'
+            });
+            return;
+        }
+        Swal.fire({
+            title: `كلمة مرور المعلم (${name}) 🔑`,
+            html: `
+                <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-top: 10px;">
+                    <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 6px;">كلمة المرور الحالية المعتمدة:</span>
+                    <code style="font-size: 1.4rem; font-weight: 900; color: #1e1b4b; letter-spacing: 2px; font-family: monospace;">${pwd}</code>
+                </div>
+            `,
+            confirmButtonText: 'تمت المشاهدة'
+        });
+    }
+
+    function openImportModal() {
+        document.getElementById('importModalOverlay').style.display = 'flex';
+    }
+
+    function closeImportModal() {
+        document.getElementById('importModalOverlay').style.display = 'none';
+    }
+
+    // إدارة التحديد الجماعي وحذف المعلمين
+    function toggleSelectAllTeachers(master) {
+        const checkboxes = document.querySelectorAll('.teacher-row-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+        updateTeacherBulkBar();
+    }
+
+    function deselectAllTeachers() {
+        const master = document.getElementById('selectAllTeachersCheckbox');
+        if (master) master.checked = false;
+        document.querySelectorAll('.teacher-row-checkbox').forEach(cb => cb.checked = false);
+        updateTeacherBulkBar();
+    }
+
+    function updateTeacherBulkBar() {
+        const checked = document.querySelectorAll('.teacher-row-checkbox:checked');
+        const bar = document.getElementById('teacherBulkBar');
+        const countSpan = document.getElementById('selectedTeachersCount');
+        if (!bar) return;
+
+        if (checked.length > 0) {
+            bar.style.display = 'flex';
+            if (countSpan) countSpan.innerText = checked.length;
+        } else {
+            bar.style.display = 'none';
+        }
+    }
+
+    function deleteSelectedTeachers() {
+        const checked = document.querySelectorAll('.teacher-row-checkbox:checked');
+        const ids = Array.from(checked).map(cb => cb.value);
+
+        if (ids.length === 0) {
+            Swal.fire('تنبيه', 'لم يتم تحديد أي معلم للحذف', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: `حذف (${ids.length}) معلم محدد؟ ⚠️`,
+            text: 'سيتم حذف حسابات هؤلاء المعلمين وإخلاء إسناد المواد التابعة لهم نهائياً!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: `نعم، احذف (${ids.length}) معلم`,
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#dc2626'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري الحذف...',
+                    text: 'يرجى الانتظار لحين معالجة البيانات',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.teachers.bulkDelete') }}", { ids: ids })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحذف بنجاح ✅',
+                        text: res.data.message
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء الحذف', 'error');
+                });
+            }
+        });
+    }
+
+    function confirmPurgeAllTeachers() {
+        Swal.fire({
+            title: 'حذف جميع المعلمين دفعة واحدة ⚠️',
+            html: `
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
+                    <strong>تحذير أمني:</strong><br>
+                    أنت على وشك حذف <strong>كافة المعلمين المسجلين في المنصة دفعة واحدة</strong> وإخلاء إسناد المواد الدراسية.<br>
+                    حسابات الإدارة لن تتأثر، ولكن لا يمكن التراجع عن هذه الخطوة.
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، يرجى كتابة العبارة الآتية بدقة:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'اكتب هنا: تأكيد الحذف',
+            showCancelButton: true,
+            confirmButtonText: 'تأكيد وحذف جميع المعلمين الآن 🗑️',
+            cancelButtonText: 'تراجع وإلغاء',
+            confirmButtonColor: '#dc2626',
+            preConfirm: (inputVal) => {
+                if (inputVal !== 'تأكيد الحذف' && inputVal !== 'DELETE') {
+                    Swal.showValidationMessage('العبارة غير متطابقة! يرجى كتابة (تأكيد الحذف)');
+                    return false;
+                }
+                return inputVal;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري تصفير وحذف جميع المعلمين...',
+                    text: 'يرجى الانتظار بضع ثوانٍ',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.teachers.purgeAll') }}", { confirm_text: result.value })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم حذف جميع المعلمين بنجاح 🎉',
+                        text: res.data.message
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء حذف المعلمين', 'error');
+                });
+            }
+        });
+    }
+</script>
 @endsection

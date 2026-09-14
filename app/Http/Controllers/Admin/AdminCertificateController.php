@@ -90,12 +90,12 @@ class AdminCertificateController extends Controller
     {
         $request->validate([
             'student_id'  => 'required|exists:students,id',
-            'final_grade' => 'required|numeric|min:50|max:100',
+            'final_grade' => 'required|numeric|min:0|max:100',
             'subject_id'  => 'nullable|exists:subjects,id',
         ], [
             'student_id.required'  => 'يرجى اختيار الطالب.',
             'final_grade.required' => 'يرجى إدخال المعدل أو النسبة المعتمدة.',
-            'final_grade.min'      => 'المعدل يجب أن لا يقل عن 50%.',
+            'final_grade.min'      => 'المعدل يجب ألا يقل عن 0%.',
             'final_grade.max'      => 'المعدل لا يتجاوز 100%.',
         ]);
 

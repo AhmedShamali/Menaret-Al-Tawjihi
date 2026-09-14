@@ -85,18 +85,64 @@ class AuthController extends Controller
     public function handleForgot(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'        => 'required',
+            'nid'          => 'required|digits:9',
+            'new_password' => 'nullable|min:6',
+        ], [
+            'email.required'        => 'يرجى إدخال البريد الإلكتروني أو اسم المستخدم.',
+            'nid.required'          => 'رقم الهوية الفلسطينية إلزامي للتحقق من هوية الحساب.',
+            'nid.digits'            => 'رقم الهوية الفلسطينية يجب أن يتكون من 9 أرقام تماماً.',
+            'new_password.min'      => 'كلمة المرور الجديدة يجب ألا تقل عن 6 خانات.',
         ]);
 
         $email = trim($request->email);
-        $user = User::where('email', $email)->first();
-        $student = Student::where('email', $email)->first();
+        $nid = trim($request->nid);
 
-        if (!$user && !$student) {
-            return back()->withErrors(['error' => 'البريد الإلكتروني المدخل غير مسجل في النظام.']);
+        // فحص سجلات الطلاب أولاً بمطابقة الإيميل ورقم الهوية بدقة
+        $student = Student::where('nid', $nid)
+            ->where(function ($q) use ($email) {
+                $q->where('email', $email)
+                  ->orWhere('email', strtolower($email) . '@tawjihi-gaza.ps')
+                  ->orWhere('name_ar', 'like', "%{$email}%");
+            })
+            ->first();
+
+        $user = null;
+        if (!$student) {
+            $user = User::where('email', $email)->first();
         }
 
-        return back()->with('status', 'إذا كان الحساب مسجلاً، فقد تم إرسال تعليمات إعادة تعيين كلمة المرور إلى بريدك.');
+        if (!$student && !$user) {
+            return back()->withErrors([
+                'error' => 'بيانات التحقق غير متطابقة! يرجى التأكد من رقم الهوية الفلسطينية المكون من 9 أرقام والبريد المسجل، أو التواصل مع إدارة المنصة عبر واتساب.'
+            ]);
+        }
+
+        // إذا تم إرسال كلمة مرور جديدة، يتم تحديثها فورياً بعد تأكيد مطابقة الهوية
+        if ($request->filled('new_password')) {
+            $newHash = Hash::make($request->new_password);
+            if ($student) {
+                $student->password = $newHash;
+                try {
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('students', 'plain_password')) {
+                        $student->plain_password = $request->new_password;
+                    }
+                } catch (\Throwable $e) {}
+                $student->save();
+            } elseif ($user) {
+                $user->password = $newHash;
+                try {
+                    if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'plain_password')) {
+                        $user->plain_password = $request->new_password;
+                    }
+                } catch (\Throwable $e) {}
+                $user->save();
+            }
+
+            return back()->with('status', 'تم التحقق من مطابقة الهوية الوطنية وتعيين كلمة المرور الجديدة بنجاح! يمكنك الآن تسجيل الدخول.');
+        }
+
+        return back()->with('status', 'تمت مطابقة رقم الهوية الفلسطينية بنجاح! يمكنك تعيين كلمة مرور جديدة أو التواصل فورياً مع المشرف العام.');
     }
 
     public function logout(Request $request)

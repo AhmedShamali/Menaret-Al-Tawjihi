@@ -16,5 +16,8 @@ class Flashcard extends Model
         'front_text',
         'back_text',
         'difficulty',
+        'student_id',
+        'is_custom',
+        'is_hidden',
     ];
 }

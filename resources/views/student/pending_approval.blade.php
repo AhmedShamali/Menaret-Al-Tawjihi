@@ -82,6 +82,80 @@
                     <p>انطلاق الدروس والاختبارات التفاعلية</p>
                 </div>
             </div>
+        <!-- بطاقة إشعار سداد الرسوم وإرسال الإيصال (بوابات الدفع الفلسطينية) -->
+        <div class="pending-payment-box" style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 20px; padding: 25px; margin: 25px 0; text-align: right;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-size: 1.3rem;">
+                    💳
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 2px; font-size: 1.15rem; font-weight: 800; color: #0f172a;">إشعار سداد الرسوم وإرسال الإيصال الأكاديمي</h3>
+                    <p style="margin: 0; font-size: 0.82rem; color: #64748b;">قم بتحويل الرسوم عبر إحدى القنوات الفلسطينية المعتمدة وأرفق صورة الإشعار للاعتماد السريع</p>
+                </div>
+            </div>
+
+            <!-- وسائل الدفع الفلسطينية المتاحة -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 18px;">
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">📱</span>
+                    <div>
+                        <strong style="font-size: 0.85rem; color: #0f172a; display: block;">جوال باي (Jawwal Pay)</strong>
+                        <span style="font-size: 0.78rem; color: #0284c7; font-weight: 700; direction: ltr; display: block;" dir="ltr">0597694385</span>
+                    </div>
+                </div>
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">🏛️</span>
+                    <div>
+                        <strong style="font-size: 0.85rem; color: #0f172a; display: block;">بنك فلسطين / PalPay</strong>
+                        <span style="font-size: 0.78rem; color: #166534; font-weight: 700;">حساب معتمد للتوجيهي</span>
+                    </div>
+                </div>
+                <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.4rem;">⚡</span>
+                    <div>
+                        <strong style="font-size: 0.85rem; color: #0f172a; display: block;">ريكت (Reflect)</strong>
+                        <span style="font-size: 0.78rem; color: #4338ca; font-weight: 700;">تحويل فوري مباشر</span>
+                    </div>
+                </div>
+            </div>
+
+            @if(session('payment_success'))
+                <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 14px; padding: 14px; color: #065f46; font-size: 0.88rem; display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; color: #10b981;"></i>
+                    <span>{{ session('payment_success') }}</span>
+                </div>
+            @endif
+
+            <form action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                    <div>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">طريقة التحويل / الدفع <span style="color:#ef4444;">*</span></label>
+                        <select name="payment_method" class="form-input" style="width: 100%; padding: 10px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem;" required>
+                            <option value="Jawwal Pay">جوال باي (Jawwal Pay)</option>
+                            <option value="PalPay">بال باي (PalPay)</option>
+                            <option value="Bank of Palestine">تحويل بنك فلسطين</option>
+                            <option value="Reflect">محفظة ريفلكت (Reflect)</option>
+                            <option value="Cash / Agent">سداد نقدي عبر نقطة معتمدة</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">رقم الحوالة / العملية (اختياري)</label>
+                        <input type="text" name="reference_no" placeholder="مثال: TXN-89210" style="width: 100%; padding: 10px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.88rem; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 5px;">إرفاق صورة إيصال السداد أو لقطة الشاشة <span style="color:#ef4444;">*</span></label>
+                    <input type="file" name="receipt_photo" accept="image/*,application/pdf" style="width: 100%; padding: 9px; border-radius: 10px; border: 1.5px solid #cbd5e1; background: white; font-size: 0.82rem; box-sizing: border-box;" required>
+                    <small style="color: #64748b; font-size: 0.72rem; display: block; margin-top: 4px;">يقبل صور JPG, PNG أو ملف PDF بحجم أقصى 5 ميجابايت.</small>
+                </div>
+
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, #059669 0%, #10b981 100%); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span>إرسال إشعار السداد ووثيقة الإيصال للإدارة</span>
+                </button>
+            </form>
         </div>
 
         <!-- أزرار الإجراء والتواصل السريع -->

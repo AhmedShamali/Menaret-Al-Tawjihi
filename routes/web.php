@@ -31,6 +31,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'handleLogin'])->name('login.post');
     Route::get('/register', [StudentController::class, 'create'])->name('students.create');
     Route::post('/register', [StudentController::class, 'store'])->name('students.store');
+    Route::post('/register/send-otp', [StudentController::class, 'sendRegistrationOtp'])->name('register.sendOtp');
+    Route::post('/register/verify-otp', [StudentController::class, 'verifyRegistrationOtp'])->name('register.verifyOtp');
     Route::post('/forgot-password', [AuthController::class, 'handleForgot'])->name('password.forgot');
 
     // مسارات التسجيل والدخول السريع عبر Google وباقي الحسابات
@@ -60,6 +62,7 @@ Route::get('/dashboard', function () {
 
 Route::get('/faq', [PublicController::class, 'faq'])->name('public.faq');
 Route::get('/contact', [PublicController::class, 'contact'])->name('public.contact');
+Route::post('/contact/submit', [PublicController::class, 'submitContact'])->name('contact.submit');
 Route::get('/terms', [PublicController::class, 'terms'])->name('public.terms');
 Route::get('/privacy', [PublicController::class, 'privacy'])->name('public.privacy');
 
@@ -138,10 +141,26 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
     Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
 
+    // مسارات الحذف الجماعي والتصفير الشامل للطلاب
+    Route::post('/students/bulk-delete', [AdminManagerController::class, 'bulkDeleteStudents'])->name('students.bulkDelete');
+    Route::post('/students/purge-all', [AdminManagerController::class, 'purgeAllStudents'])->name('students.purgeAll');
+
     Route::get('/teachers/info', [AdminManagerController::class, 'teachersInfo'])->name('teachers.info');
     Route::get('/management', [AdminManagerController::class, 'teachersInfo'])->name('management.index');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');
     Route::post('/teachers/store', [AdminManagerController::class, 'teacherStore'])->name('teachers.store');
+    Route::get('/teachers/export', [AdminManagerController::class, 'exportTeachers'])->name('teachers.export');
+    Route::post('/teachers/import', [AdminManagerController::class, 'importTeachers'])->name('teachers.import');
+    Route::post('/teachers/bulk-delete', [AdminManagerController::class, 'bulkDeleteTeachers'])->name('teachers.bulkDelete');
+    Route::post('/teachers/purge-all', [AdminManagerController::class, 'purgeAllTeachers'])->name('teachers.purgeAll');
+
+    // مسار التصفير الشامل للعام الدراسي (حذف جميع الطلاب والمعلمين معاً دفعة واحدة)
+    Route::post('/system/purge-all-users', [AdminManagerController::class, 'purgeAllStudentsAndTeachers'])->name('system.purgeAllUsers');
+
+    // الاستفسارات والشكاوى الأكاديمية
+    Route::get('/academic-inquiries', [AdminManagerController::class, 'academicInquiries'])->name('inquiries.index');
+    Route::post('/academic-inquiries/{id}/reply', [AdminManagerController::class, 'academicInquiryReply'])->name('inquiries.reply');
+    Route::delete('/academic-inquiries/{id}', [AdminManagerController::class, 'academicInquiryDestroy'])->name('inquiries.destroy');
 
     Route::get('/settings', [AdminManagerController::class, 'settings'])->name('settings.index');
     Route::post('/settings/update', [AdminManagerController::class, 'settingsUpdate'])->name('settings.update');
@@ -213,6 +232,12 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
 
+    // الواجهات الثلاث المستقلة لإدارة المحتوى الأكاديمي
+    Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
+    Route::get('/files', [EducationalContentController::class, 'teacherFiles'])->name('files');
+    Route::get('/visibility', [EducationalContentController::class, 'teacherVisibility'])->name('visibility');
+    Route::post('/visibility/toggle/{id}', [EducationalContentController::class, 'toggleVisibility'])->name('visibility.toggle');
+
     // إدارة اشتراكات وصلاحيات الطلاب في الفيديوهات والدروس والاختبارات عبر خانات الاختيار
     Route::get('/access-control', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('access.index');
     Route::get('/students', [\App\Http\Controllers\Teacher\StudentAccessController::class, 'index'])->name('students.index');
@@ -244,6 +269,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 */
 Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('student.')->group(function () {
     Route::get('/pending-approval', [StudentController::class, 'pendingApproval'])->name('pending-approval');
+    Route::post('/pending-payment', [StudentController::class, 'submitPendingPayment'])->name('pendingPayment.submit');
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
     Route::post('/profile/update-password', [StudentController::class, 'updatePassword'])->name('profile.updatePassword');
@@ -297,6 +323,10 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
 
     // بطاقات الاستذكار السريع والقوانين (Flashcards)
     Route::get('/flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('flashcards.index');
+    Route::post('/flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'store'])->name('flashcards.store');
+    Route::put('/flashcards/{id}', [\App\Http\Controllers\Student\FlashcardController::class, 'update'])->name('flashcards.update');
+    Route::delete('/flashcards/{id}', [\App\Http\Controllers\Student\FlashcardController::class, 'destroy'])->name('flashcards.destroy');
+    Route::post('/flashcards/{id}/toggle-hide', [\App\Http\Controllers\Student\FlashcardController::class, 'toggleHide'])->name('flashcards.toggleHide');
 
     // مؤشر الالتزام اليومي ولوحة الشرف (Leaderboard)
     Route::get('/leaderboard', [\App\Http\Controllers\Student\StreakController::class, 'leaderboard'])->name('leaderboard');

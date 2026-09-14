@@ -78,10 +78,19 @@ class DashboardController extends Controller {
             return !empty($item->pdf_path);
         })->sortBy('order');
 
-        // 3. جلب الاختبارات التي حلها الطالب مسبقاً
-        $solvedExamIds = $student_id ? ExamSubmission::where('student_id', $student_id)->pluck('exam_id') : collect();
+        // 3. جلب بنك الاختبارات المعتمدة للمادة
+        $exams = Exam::where('subject_id', $subject->id)
+            ->withCount('questions')
+            ->latest()
+            ->get();
 
-        return view('student.subjects.show', compact('subject', 'videos', 'files', 'solvedExamIds', 'enrollment', 'isFullAccess'));
+        // 4. جلب الاختبارات التي حلها الطالب مسبقاً
+        $submissions = $student_id 
+            ? ExamSubmission::where('student_id', $student_id)->whereIn('exam_id', $exams->pluck('id'))->get()->keyBy('exam_id') 
+            : collect();
+        $solvedExamIds = $submissions->keys();
+
+        return view('student.subjects.show', compact('subject', 'videos', 'files', 'exams', 'submissions', 'solvedExamIds', 'enrollment', 'isFullAccess'));
     }
 
     // جعل الدالة البديلة تحول مباشرة للدالة الموحدة لضمان عدم حدوث تضارب

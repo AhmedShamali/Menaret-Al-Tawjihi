@@ -600,6 +600,9 @@
                 </a>
 
                 <span class="group-label">التواصل والدعم</span>
+                <a href="{{ route('admin.inquiries.index') }}" class="nav-item {{ Request::is('admin/academic-inquiries*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-clipboard-question" style="color: #2563eb;"></i> <span>الاستفسار الأكاديمي والشكاوى</span></div></div>
+                </a>
                 <a href="{{ route('admin.messages.index') }}" class="nav-item {{ Request::is('admin/inbox*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>رسائل الطلاب</span></div></div>
                 </a>
@@ -629,9 +632,17 @@
                     </ul>
                 </div>
 
-                <a href="{{ route('teacher.educational_contents.index') }}" class="nav-item {{ Request::is('teacher/educational_contents*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-photo-film"></i> <span>المحتوى والملفات</span></div></div>
-                </a>
+                <div class="nav-item has-sub {{ Request::is('teacher/videos*') || Request::is('teacher/files*') || Request::is('teacher/visibility*') || Request::is('teacher/educational_contents*') ? 'open' : '' }}">
+                    <div class="nav-link" onclick="toggleSub(this)">
+                        <div class="link-main"><i class="fa-solid fa-photo-film"></i> <span>إدارة المحتوى الأكاديمي</span></div>
+                        <i class="fa-solid fa-chevron-left nav-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li><a href="{{ route('teacher.videos') }}" class="submenu-item"><i class="fa-solid fa-video" style="font-size: 0.8rem; margin-left: 6px; color: #1d4ed8;"></i> رفع وإدارة الفيديوهات</a></li>
+                        <li><a href="{{ route('teacher.files') }}" class="submenu-item"><i class="fa-solid fa-file-pdf" style="font-size: 0.8rem; margin-left: 6px; color: #dc2626;"></i> رفع الملازم والملفات</a></li>
+                        <li><a href="{{ route('teacher.visibility') }}" class="submenu-item"><i class="fa-solid fa-toggle-on" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> التحكم بظهور المحتوى</a></li>
+                    </ul>
+                </div>
 
                 <a href="{{ route('teacher.access.index') }}" class="nav-item {{ Request::is('teacher/access*') || Request::is('teacher/students*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-check"></i> <span>اشتراكات وصلاحيات الطلاب</span></div></div>
@@ -720,6 +731,9 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:12px;">
+                <button type="button" onclick="toggleTheme()" class="theme-toggle-topbar" id="themeToggleBtn" title="تبديل المظهر (فاتح / داكن)" style="background: var(--ed-surface-alt); border: 1px solid var(--ed-border); color: var(--ed-text-main); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); font-size: 1rem;">
+                    <i class="fa-regular fa-moon" id="themeIcon"></i>
+                </button>
                 @php
                     $unreadCount = 0; 
                     $unreadItems = collect();

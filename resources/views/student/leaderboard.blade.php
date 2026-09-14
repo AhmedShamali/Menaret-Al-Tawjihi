@@ -34,9 +34,19 @@
                     <i class="fas fa-award"></i> المركز الثاني
                 </div>
                 <div class="ed-podium-avatar silver">
-                    {{ mb_substr($topStudents[1]->name_ar ?? 'طالب', 0, 1) }}
+                    @if($currentStudent && $currentStudent->id === ($topStudents[1]->id ?? null))
+                        {{ mb_substr($topStudents[1]->name_ar, 0, 1) }}
+                    @else
+                        🥈
+                    @endif
                 </div>
-                <h3 class="ed-podium-name">{{ $topStudents[1]->name_ar }}</h3>
+                <h3 class="ed-podium-name">
+                    @if($currentStudent && $currentStudent->id === ($topStudents[1]->id ?? null))
+                        {{ $topStudents[1]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">(أنت)</span>
+                    @else
+                        طالب متفوق #2
+                    @endif
+                </h3>
                 <span class="ed-podium-stage">{{ optional($topStudents[1]->stage)->label_ar ?? 'توجيهي فلسطين' }}</span>
                 <div class="ed-podium-stats">
                     <span><i class="fas fa-bolt"></i> {{ $topStudents[1]->streak_count ?? 1 }} يوم التزام</span>
@@ -45,10 +55,10 @@
                 </div>
             </div>
 
-            <!-- المركز الأول -->
+            <!-- المركز الأول (بطل التوجيهي المعلن) -->
             <div class="ed-podium-card rank-1">
                 <div class="ed-rank-tag gold">
-                    <i class="fas fa-crown"></i> المركز الأول
+                    <i class="fas fa-crown"></i> المركز الأول (بطل المنصة)
                 </div>
                 <div class="ed-podium-avatar gold">
                     {{ mb_substr($topStudents[0]->name_ar ?? 'طالب', 0, 1) }}
@@ -68,9 +78,19 @@
                     <i class="fas fa-award"></i> المركز الثالث
                 </div>
                 <div class="ed-podium-avatar bronze">
-                    {{ mb_substr($topStudents[2]->name_ar ?? 'طالب', 0, 1) }}
+                    @if($currentStudent && $currentStudent->id === ($topStudents[2]->id ?? null))
+                        {{ mb_substr($topStudents[2]->name_ar, 0, 1) }}
+                    @else
+                        🥉
+                    @endif
                 </div>
-                <h3 class="ed-podium-name">{{ $topStudents[2]->name_ar }}</h3>
+                <h3 class="ed-podium-name">
+                    @if($currentStudent && $currentStudent->id === ($topStudents[2]->id ?? null))
+                        {{ $topStudents[2]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">(أنت)</span>
+                    @else
+                        طالب متفوق #3
+                    @endif
+                </h3>
                 <span class="ed-podium-stage">{{ optional($topStudents[2]->stage)->label_ar ?? 'توجيهي فلسطين' }}</span>
                 <div class="ed-podium-stats">
                     <span><i class="fas fa-bolt"></i> {{ $topStudents[2]->streak_count ?? 1 }} يوم التزام</span>
@@ -87,7 +107,7 @@
         <div class="ed-lb-table-header">
             <div>
                 <h2><i class="fas fa-list-ol"></i> قائمة ترتيب الطلبة المتفوقين</h2>
-                <p>يتم تحديث النقاط والرتب تلقائياً بناءً على إنجاز الدروس، الامتحانات، والتفاعل اليومي</p>
+                <p>يظهر اسم صاحب المركز الأول فقط، وتُحجب أسماء باقي المتفوقين حفاظاً على الخصوصية الأكاديمية.</p>
             </div>
             <div class="ed-lb-counter">
                 إجمالي الطلبة بالقائمة: <strong>{{ $topStudents->count() }}</strong>
@@ -96,7 +116,10 @@
 
         <div class="ed-ranks-list">
             @forelse($topStudents as $index => $stu)
-                @php $isCurrent = $currentStudent && $currentStudent->id === $stu->id; @endphp
+                @php 
+                    $isCurrent = $currentStudent && $currentStudent->id === $stu->id; 
+                    $displayName = ($index === 0 || $isCurrent) ? $stu->name_ar : 'طالب متميز #' . ($index + 1);
+                @endphp
                 <div class="ed-rank-row {{ $isCurrent ? 'current-student' : '' }}">
                     <div class="ed-rank-left">
                         <div class="ed-rank-num-box {{ $index < 3 ? 'top-rank' : '' }}">
@@ -104,9 +127,13 @@
                         </div>
                         <div class="ed-rank-user-info">
                             <div class="name-line">
-                                <strong>{{ $stu->name_ar }}</strong>
-                                @if($isCurrent)
+                                <strong>{{ $displayName }}</strong>
+                                @if($index === 0)
+                                    <span class="ed-badge ed-badge-amber" style="font-size: 0.72rem; padding: 2px 8px;"><i class="fas fa-crown"></i> بطل المنصة</span>
+                                @elseif($isCurrent)
                                     <span class="ed-badge ed-badge-blue" style="font-size: 0.72rem; padding: 2px 8px;">أنت</span>
+                                @else
+                                    <span class="ed-badge" style="font-size: 0.68rem; padding: 2px 6px; background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1;"><i class="fas fa-user-shield"></i> محجوب للخصوصية</span>
                                 @endif
                             </div>
                             <span class="ed-rank-stage">{{ optional($stu->stage)->label_ar ?? 'توجيهي عام' }}</span>

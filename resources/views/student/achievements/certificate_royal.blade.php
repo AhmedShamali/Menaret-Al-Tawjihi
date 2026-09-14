@@ -501,9 +501,15 @@
                 </div>
 
                 <div class="header-emblem">
-                    <div class="emblem-icon">
-                        <i class="fa-solid fa-award"></i>
-                    </div>
+                    @if(\App\Models\Setting::get('director_logo'))
+                        <img src="{{ asset(\App\Models\Setting::get('director_logo')) }}" alt="شعار الإدارة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;">
+                    @elseif(\App\Models\Setting::get('site_logo'))
+                        <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="شعار المنصة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;">
+                    @else
+                        <div class="emblem-icon">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                    @endif
                     <span class="emblem-tag">وثيقة تخرج رسمية</span>
                 </div>
 
@@ -557,15 +563,24 @@
             <div class="cert-footer">
                 <div class="sig-block">
                     <div class="sig-title">معلم المساق الأكاديمي</div>
+                    @if(\App\Models\Setting::get('teacher_signature'))
+                        <div style="height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
+                            <img src="{{ asset(\App\Models\Setting::get('teacher_signature')) }}" alt="توقيع المعلم" style="max-height: 42px; max-width: 140px; object-fit: contain;">
+                        </div>
+                    @endif
                     <span class="sig-name">{{ $certificate->subject?->teacher_display_name ?? 'أستاذ المادة المعتمد' }}</span>
                 </div>
 
                 <div class="cert-seal-box">
-                    <div class="official-seal">
-                        <i class="fa-solid fa-stamp"></i>
-                        <span>معتمد رسميّاً</span>
-                        <span>OFFICIAL</span>
-                    </div>
+                    @if(\App\Models\Setting::get('official_stamp'))
+                        <img src="{{ asset(\App\Models\Setting::get('official_stamp')) }}" alt="ختم المنصة الرسمي" style="width: 80px; height: 80px; object-fit: contain; margin: 0 auto 4px; display: block;">
+                    @else
+                        <div class="official-seal">
+                            <i class="fa-solid fa-stamp"></i>
+                            <span>معتمد رسميّاً</span>
+                            <span>OFFICIAL</span>
+                        </div>
+                    @endif
                     <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">ختم التوثيق الأكاديمي</span>
                 </div>
 
@@ -584,6 +599,11 @@
 
                 <div class="sig-block">
                     <div class="sig-title">المشرف العام وإدارة المنصة</div>
+                    @if(\App\Models\Setting::get('admin_signature'))
+                        <div style="height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
+                            <img src="{{ asset(\App\Models\Setting::get('admin_signature')) }}" alt="توقيع المدير" style="max-height: 42px; max-width: 140px; object-fit: contain;">
+                        </div>
+                    @endif
                     <span class="sig-name">{{ \App\Models\Setting::get('admin_name', 'أ. المشرف العام للمنصة') }}</span>
                 </div>
             </div>

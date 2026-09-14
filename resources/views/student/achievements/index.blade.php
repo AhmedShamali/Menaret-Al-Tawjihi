@@ -283,14 +283,19 @@
                     </div>
 
                     <!-- أصوات التركيز -->
-                    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ed-border); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ed-border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
                         <span style="font-size: 0.78rem; color: var(--ed-text-muted); font-weight: 600;">
-                            <i class="fa-solid fa-headphones"></i> الأجواء الصوتية:
+                            <i class="fa-solid fa-headphones"></i> الأجواء الصوتية المركّزة:
                         </span>
-                        <div style="display: flex; gap: 6px;">
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                             <button type="button" class="btn-sound-chip active" id="btnSoundNone" onclick="setSoundMode('none')">صامت</button>
-                            <button type="button" class="btn-sound-chip" id="btnSoundTick" onclick="setSoundMode('tick')">دقات هادئة</button>
-                            <button type="button" class="btn-sound-chip" id="btnSoundRain" onclick="setSoundMode('rain')">مطر</button>
+                            <button type="button" class="btn-sound-chip" id="btnSoundTick" onclick="setSoundMode('tick')">بندول (دقات)</button>
+                            <button type="button" class="btn-sound-chip" id="btnSoundRain" onclick="setSoundMode('rain')">صوت مطر</button>
+                            <button type="button" class="btn-sound-chip" id="btnSoundNoise" onclick="setSoundMode('noise')">ضوضاء بيضاء</button>
+                            <div style="display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; background: rgba(0,0,0,0.03); padding: 3px 8px; border-radius: 8px;" title="مستوى الصوت">
+                                <i class="fa-solid fa-volume-high" style="font-size: 0.75rem; color: var(--ed-text-muted);"></i>
+                                <input type="range" min="0" max="1" step="0.05" value="0.5" oninput="setAudioVolume(this.value)" style="width: 60px; height: 4px; accent-color: #1d4ed8; cursor: pointer;">
+                            </div>
                         </div>
                     </div>
 
@@ -907,6 +912,7 @@
         }
 
         isRunning = true;
+        applySoundPlayback();
         const btn = document.getElementById('btnStartTimer');
         btn.innerHTML = '<i class="fa-solid fa-pause"></i> إيقاف مؤقت';
         document.getElementById('timerStatusLabel').innerText = currentSessionType === 'study' ? 'جلسة مذاكرة جارية 📚' : 'استراحة مستحقة ☕';
@@ -925,6 +931,7 @@
     function pauseFocusTimer() {
         clearInterval(timerInterval);
         isRunning = false;
+        stopCurrentAudio();
         const btn = document.getElementById('btnStartTimer');
         btn.innerHTML = '<i class="fa-solid fa-play"></i> استئناف الجلسة';
         document.getElementById('timerStatusLabel').innerText = 'موقوف مؤقتاً ⏸️';
@@ -934,6 +941,7 @@
     function resetFocusTimer() {
         clearInterval(timerInterval);
         isRunning = false;
+        stopCurrentAudio();
         remainingSeconds = totalSeconds;
         const btn = document.getElementById('btnStartTimer');
         btn.innerHTML = '<i class="fa-solid fa-play"></i> بدء الجلسة';
@@ -1083,12 +1091,127 @@
         if (sessEl) sessEl.innerText = stats.sessions;
     }
 
+    // --- مشغل ومولد الأصوات المحيطية Web Audio API ---
+    let audioCtx = null;
+    let currentSoundMode = 'none';
+    let noiseNode = null;
+    let noiseGain = null;
+    let metronomeInterval = null;
+    let currentVolume = 0.5;
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function stopCurrentAudio() {
+        if (metronomeInterval) {
+            clearInterval(metronomeInterval);
+            metronomeInterval = null;
+        }
+        if (noiseNode) {
+            try { noiseNode.stop(); } catch(e){}
+            try { noiseNode.disconnect(); } catch(e){}
+            noiseNode = null;
+        }
+        if (noiseGain) {
+            try { noiseGain.disconnect(); } catch(e){}
+            noiseGain = null;
+        }
+    }
+
+    function playTickSound() {
+        if (!audioCtx || currentSoundMode !== 'tick') return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.18 * currentVolume, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
+        } catch (e) {}
+    }
+
+    function startRainOrNoiseSound(type) {
+        initAudioContext();
+        stopCurrentAudio();
+
+        const bufferSize = audioCtx.sampleRate * 2;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+
+        let lastOut = 0.0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            if (type === 'rain') {
+                lastOut = (lastOut * 0.94) + (white * 0.06);
+                data[i] = lastOut * 3.5;
+            } else {
+                lastOut = (lastOut * 0.85) + (white * 0.15);
+                data[i] = lastOut * 2.0;
+            }
+        }
+
+        noiseNode = audioCtx.createBufferSource();
+        noiseNode.buffer = buffer;
+        noiseNode.loop = true;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = (type === 'rain') ? 650 : 1200;
+
+        noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.15 * currentVolume, audioCtx.currentTime);
+
+        noiseNode.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+
+        noiseNode.start();
+    }
+
+    function setAudioVolume(val) {
+        currentVolume = parseFloat(val);
+        if (noiseGain && audioCtx) {
+            noiseGain.gain.setValueAtTime(0.15 * currentVolume, audioCtx.currentTime);
+        }
+    }
+
+    function applySoundPlayback() {
+        stopCurrentAudio();
+        if (currentSoundMode === 'none' || !isRunning) return;
+
+        initAudioContext();
+
+        if (currentSoundMode === 'tick') {
+            playTickSound();
+            metronomeInterval = setInterval(playTickSound, 1000);
+        } else if (currentSoundMode === 'rain' || currentSoundMode === 'noise') {
+            startRainOrNoiseSound(currentSoundMode);
+        }
+    }
+
     function setSoundMode(mode) {
         currentSoundMode = mode;
         document.querySelectorAll('.btn-sound-chip').forEach(b => b.classList.remove('active'));
-        if (mode === 'none') document.getElementById('btnSoundNone').classList.add('active');
-        if (mode === 'tick') document.getElementById('btnSoundTick').classList.add('active');
-        if (mode === 'rain') document.getElementById('btnSoundRain').classList.add('active');
+        if (mode === 'none') document.getElementById('btnSoundNone')?.classList.add('active');
+        if (mode === 'tick') document.getElementById('btnSoundTick')?.classList.add('active');
+        if (mode === 'rain') document.getElementById('btnSoundRain')?.classList.add('active');
+        if (mode === 'noise') document.getElementById('btnSoundNoise')?.classList.add('active');
+
+        if (isRunning) {
+            applySoundPlayback();
+        } else {
+            stopCurrentAudio();
+        }
     }
 
     function toggleZenMode() {

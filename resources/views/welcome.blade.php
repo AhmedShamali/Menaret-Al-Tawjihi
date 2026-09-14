@@ -1788,6 +1788,107 @@
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* --- نظام الوضع الفاتح والداكن (Light & Dark Mode) --- */
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f8fafc;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.08);
+        }
+
+        body[data-theme="light"] {
+            --bg-deep: #f8fafc;
+            --bg-canvas: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.96);
+            --bg-card-hover: rgba(241, 245, 249, 0.98);
+            --bg-glass: rgba(15, 23, 42, 0.03);
+            --bg-glass-hover: rgba(15, 23, 42, 0.06);
+            --border-glass: rgba(15, 23, 42, 0.09);
+            --border-glow: rgba(59, 130, 246, 0.25);
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #0f172a;
+            --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.05);
+            background-color: #f8fafc;
+            color: #334155;
+        }
+        body[data-theme="light"] .island-nav {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+        body[data-theme="light"] .theme-toggle-btn {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+        body[data-theme="light"] .brand-titles strong {
+            color: #0f172a;
+        }
+        body[data-theme="light"] .nav-menu li a {
+            color: #475569;
+        }
+        body[data-theme="light"] .nav-menu li a:hover {
+            color: #1d4ed8;
+        }
+        body[data-theme="light"] .countdown-strip-card {
+            background: #ffffff;
+            border-color: #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        body[data-theme="light"] .strip-lead-text strong {
+            color: #0f172a;
+        }
+        body[data-theme="light"] .clock-box {
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+        body[data-theme="light"] .clock-num {
+            color: #1d4ed8;
+        }
+        body[data-theme="light"] .hero-title-epic, 
+        body[data-theme="light"] .section-title-epic,
+        body[data-theme="light"] .bento-head h3,
+        body[data-theme="light"] .calc-card-epic h3,
+        body[data-theme="light"] .faq-trigger-btn {
+            color: #0f172a !important;
+        }
+        body[data-theme="light"] .hero-desc-epic,
+        body[data-theme="light"] .section-subtitle-epic,
+        body[data-theme="light"] .bento-card-clean p,
+        body[data-theme="light"] .faq-body-content p {
+            color: #475569 !important;
+        }
+        body[data-theme="light"] .training-lab-card,
+        body[data-theme="light"] .bento-card-clean,
+        body[data-theme="light"] .track-box-epic,
+        body[data-theme="light"] .calc-card-epic,
+        body[data-theme="light"] .faq-item-clean,
+        body[data-theme="light"] .footer-epic {
+            background: #ffffff !important;
+            border-color: #e2e8f0 !important;
+        }
+        body[data-theme="light"] .footer-epic {
+            background: #f1f5f9 !important;
+        }
+        body[data-theme="light"] .footer-col h5,
+        body[data-theme="light"] .footer-col ul li a {
+            color: #334155 !important;
+        }
     </style>
 </head>
 <body>
@@ -1823,6 +1924,10 @@
             </ul>
 
             <div class="nav-actions">
+                <button type="button" class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="تبديل الوضع (فاتح / داكن)">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+
                 @auth
                     @if(auth()->user()->role === 'student' || auth('student')->check())
                         <a href="{{ route('student.dashboard') }}" class="btn-primary-pill">
@@ -2701,8 +2806,8 @@
             <div class="footer-col">
                 <h5>المساعدة والدعم</h5>
                 <ul>
-                    <li><a href="https://wa.me/970597694385" target="_blank" style="color: #4ade80;"><i class="fab fa-whatsapp"></i> واتساب الدعم (+970597694385)</a></li>
-                    <li><a href="mailto:{{ \App\Models\Setting::get('contact_email', 'support@tawjihi.ps') }}">البريد الإلكتروني للشكاوى</a></li>
+                    <li><a href="https://wa.me/970597694385" target="_blank" style="color: #4ade80;"><i class="fab fa-whatsapp"></i> واتساب المشرف العام (+970597694385)</a></li>
+                    <li><a href="{{ route('public.contact') }}" style="color: #38bdf8;"><i class="fas fa-headset"></i> مركز الشكاوى وتذاكر الدعم الفني</a></li>
                     <li><a href="#faq">مركز الأسئلة الشائعة</a></li>
                     <li><a href="{{ route('login') }}">بوابة المعلمين والإدارة</a></li>
                 </ul>
@@ -2812,31 +2917,66 @@
             }
         }
 
-        // العد التنازلي التفاعلي للثانوية العامة 2026
+        // نظام إدارة المظهر (فاتح / داكن)
+        function initTheme() {
+            const saved = localStorage.getItem('tawjihi-theme') || 'dark';
+            applyTheme(saved);
+        }
+
+        function applyTheme(t) {
+            document.body.setAttribute('data-theme', t);
+            document.documentElement.setAttribute('data-theme', t);
+            localStorage.setItem('tawjihi-theme', t);
+            const icon = document.getElementById('themeIcon');
+            if (icon) {
+                icon.className = t === 'light' ? 'fas fa-sun text-warning' : 'fas fa-moon';
+            }
+        }
+
+        function toggleTheme() {
+            const cur = document.body.getAttribute('data-theme') || 'dark';
+            const next = cur === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+        }
+
+        // العد التنازلي التفاعلي المباشر لامتحانات الثانوية العامة في فلسطين
         function initCountdown() {
-            // موعد امتحانات الثانوية العامة 2026 في فلسطين (تقريباً منتصف يونيو 2026)
-            const targetDate = new Date('June 15, 2026 09:00:00').getTime();
+            const configuredDateStr = '{{ \App\Models\Setting::get("tawjihi_exam_date", "") }}';
+            let targetDate;
+            const now = new Date();
+            
+            if (configuredDateStr) {
+                targetDate = new Date(configuredDateStr).getTime();
+            }
+            
+            if (!targetDate || isNaN(targetDate) || targetDate <= now.getTime()) {
+                let currentYear = now.getFullYear();
+                let examDate = new Date(currentYear, 5, 15, 9, 0, 0); // 15 حزيران
+                if (now > examDate) {
+                    examDate = new Date(currentYear + 1, 5, 15, 9, 0, 0);
+                }
+                targetDate = examDate.getTime();
+            }
 
             function updateTime() {
-                const now = new Date().getTime();
-                const diff = targetDate - now;
+                const cur = new Date().getTime();
+                let diff = targetDate - cur;
+                if (diff < 0) diff = 0;
 
-                if (diff > 0) {
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-                    const elDays = document.getElementById('cdDays');
-                    const elHours = document.getElementById('cdHours');
-                    const elMins = document.getElementById('cdMins');
-                    const elSecs = document.getElementById('cdSecs');
+                const elDays = document.getElementById('cdDays');
+                const elHours = document.getElementById('cdHours');
+                const elMins = document.getElementById('cdMins');
+                const elSecs = document.getElementById('cdSecs');
 
-                    if (elDays) elDays.textContent = days;
-                    if (elHours) elHours.textContent = hours < 10 ? '0' + hours : hours;
-                    if (elMins) elMins.textContent = minutes < 10 ? '0' + minutes : minutes;
-                    if (elSecs) elSecs.textContent = seconds < 10 ? '0' + seconds : seconds;
-                }
+                if (elDays) elDays.textContent = days;
+                if (elHours) elHours.textContent = hours < 10 ? '0' + hours : hours;
+                if (elMins) elMins.textContent = minutes < 10 ? '0' + minutes : minutes;
+                if (elSecs) elSecs.textContent = seconds < 10 ? '0' + seconds : seconds;
             }
 
             updateTime();
@@ -2859,7 +2999,10 @@
             }, 1000);
         }
 
+        initTheme();
+
         document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
             initCountdown();
             initHeroTimer();
             calculateLandingGpa();

@@ -58,14 +58,27 @@ class EducationalContentController extends Controller
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        if ($request->filled('video_url')) {
+        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
+            try {
+                $vPath = $request->file('video_file')->store('educational/videos', 'supabase');
+                $content->url_path = Storage::disk('supabase')->url($vPath);
+            } catch (\Throwable $e) {
+                $vPath = $request->file('video_file')->store('educational/videos', 'public');
+                $content->url_path = asset('storage/' . $vPath);
+            }
+        } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // --- التخزين المباشر للرابط الكامل على سحابة Supabase ---
+        // --- التخزين مع معالجة الأخطاء والاحتياطي المحلي للـ PDF ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
-            $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
-            $content->pdf_path = Storage::disk('supabase')->url($path);
+            try {
+                $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+                $content->pdf_path = Storage::disk('supabase')->url($path);
+            } catch (\Throwable $e) {
+                $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
+                $content->pdf_path = asset('storage/' . $path);
+            }
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
@@ -252,6 +265,101 @@ class EducationalContentController extends Controller
         }, $fileName, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+        ]);
+    }
+
+    /**
+     * واجهة رفع وإدارة الفيديوهات للمعلم
+     */
+    public function teacherVideos(Request $request)
+    {
+        $user = auth()->user();
+        $subjectId = $user->subject_id;
+        $subjects = Subject::orderBy('name_ar')->get();
+
+        $query = EducationalContent::with('subject.stage')
+            ->where(function($q) {
+                $q->whereNotNull('url_path')->where('url_path', '!=', '')
+                  ->orWhere('type', 'video');
+            });
+
+        if ($user->role === 'teacher' && $subjectId) {
+            $query->where('subject_id', $subjectId);
+        } elseif ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        $videos = $query->orderBy('order')->latest()->paginate(20);
+
+        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId'));
+    }
+
+    /**
+     * واجهة رفع وإدارة الملفات والملازم للمعلم
+     */
+    public function teacherFiles(Request $request)
+    {
+        $user = auth()->user();
+        $subjectId = $user->subject_id;
+        $subjects = Subject::orderBy('name_ar')->get();
+
+        $query = EducationalContent::with('subject.stage')
+            ->where(function($q) {
+                $q->whereNotNull('pdf_path')->where('pdf_path', '!=', '')
+                  ->orWhere('type', 'pdf');
+            });
+
+        if ($user->role === 'teacher' && $subjectId) {
+            $query->where('subject_id', $subjectId);
+        } elseif ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        $files = $query->orderBy('order')->latest()->paginate(20);
+
+        return view('teacher.files.index', compact('files', 'subjects', 'subjectId'));
+    }
+
+    /**
+     * واجهة التحكم بظهور وإخفاء المحتوى عن الطلبة
+     */
+    public function teacherVisibility(Request $request)
+    {
+        $user = auth()->user();
+        $subjectId = $user->subject_id;
+        $subjects = Subject::orderBy('name_ar')->get();
+
+        $query = EducationalContent::with('subject.stage');
+
+        if ($user->role === 'teacher' && $subjectId) {
+            $query->where('subject_id', $subjectId);
+        } elseif ($request->filled('subject_id')) {
+            $query->where('subject_id', $request->subject_id);
+        }
+
+        $contents = $query->orderBy('order')->latest()->paginate(25);
+
+        return view('teacher.visibility.index', compact('contents', 'subjects', 'subjectId'));
+    }
+
+    /**
+     * تبديل حالة ظهور المحتوى بلمسة واحدة
+     */
+    public function toggleVisibility($id)
+    {
+        $content = EducationalContent::findOrFail($id);
+        $user = auth()->user();
+        if ($user->role === 'teacher' && $user->subject_id && $content->subject_id != $user->subject_id) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح لك بتعديل هذا المحتوى'], 403);
+        }
+
+        $newVisible = $content->is_visible ? 0 : 1;
+        $content->update(['is_visible' => $newVisible]);
+
+        return response()->json([
+            'success'    => true,
+            'is_visible' => $newVisible,
+            'message'    => $newVisible ? 'تم إظهار المحتوى وإتاحته للطلبة 🟢' : 'تم إخفاء وقفل المحتوى عن الطلبة 🔒'
         ]);
     }
 }

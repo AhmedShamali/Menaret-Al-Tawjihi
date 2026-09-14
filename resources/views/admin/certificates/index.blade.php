@@ -177,21 +177,29 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="ed-table-actions">
+                                    <!-- دفتر علامات سريع ومباشر -->
+                                    <div style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #e2e8f0;" title="رصد وتعديل سريع للعلامة">
+                                        <input type="number" id="quick_grade_{{ $st->id }}" min="0" max="100" step="0.5" value="{{ $latestCert ? $latestCert->final_grade : '' }}" placeholder="%" style="width: 55px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 800; font-size: 0.82rem; text-align: center; color: #1d4ed8; background: #fff;">
+                                        <button type="button" onclick="quickSaveCertGrade({{ $st->id }}, this)" class="ed-btn ed-btn-primary" style="padding: 5px 8px; font-size: 0.75rem;" title="حفظ العلامة فوراً">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+
                                     @if($latestCert)
                                         <a href="{{ route('certificates.show', $latestCert->id) }}" target="_blank" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px;" title="معاينة وطباعة الشهادة الأكاديمية">
                                             <i class="fas fa-external-link-alt"></i> معاينة
                                         </a>
 
-                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}', {{ $latestCert->final_grade }}, {{ $latestCert->subject_id ?? 'null' }})" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #d97706; border-color: #fde68a;" title="تعديل المعدل">
-                                            <i class="fas fa-pen"></i> تعديل
+                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}', {{ $latestCert->final_grade }}, {{ $latestCert->subject_id ?? 'null' }})" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #d97706; border-color: #fde68a;" title="تعديل تفصيلي">
+                                            <i class="fas fa-pen"></i>
                                         </button>
 
                                         <button type="button" onclick="deleteCert({{ $latestCert->id }}, '{{ addslashes($st->name_ar) }}')" class="ed-btn ed-btn-outline danger" style="font-size: 0.78rem; padding: 6px 10px;" title="حذف الشهادة">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     @else
-                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}')" class="ed-btn ed-btn-primary" style="font-size: 0.78rem; padding: 6px 12px;">
-                                            <i class="fas fa-award"></i> اعتماد وإصدار
+                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}')" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #1d4ed8; border-color: #bfdbfe;">
+                                            <i class="fas fa-award"></i> تفصيلي
                                         </button>
                                     @endif
                                 </div>
@@ -260,12 +268,12 @@
 
                 <!-- رصد المعدل الفعلي -->
                 <div class="ed-input-group">
-                    <label for="modalFinalGrade">المعدل أو النسبة المئوية المعتمدة (من 50 إلى 100) *</label>
+                    <label for="modalFinalGrade">المعدل أو النسبة المئوية المعتمدة (من 0 إلى 100) *</label>
                     <input 
                         type="number" 
                         name="final_grade" 
                         id="modalFinalGrade" 
-                        min="50" 
+                        min="0" 
                         max="100" 
                         step="0.1" 
                         required 
@@ -781,6 +789,7 @@
 
         const btn = document.getElementById('btnSubmitIssue');
         btn.disabled = true;
+        const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاعتماد...';
 
         const formData = new FormData(form);
@@ -797,14 +806,58 @@
                 location.reload();
             });
         } catch (error) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> اعتماد وحفظ الشهادة';
-
             let msg = 'حدث خطأ أثناء رصد الشهادة.';
-            if (error.response && error.response.data && error.response.data.errors) {
-                msg = Object.values(error.response.data.errors).flat().join('<br>');
+            if (error.response && error.response.data) {
+                if (error.response.data.message) {
+                    msg = error.response.data.message;
+                }
+                if (error.response.data.errors) {
+                    msg = Object.values(error.response.data.errors).flat().join('<br>');
+                }
             }
             Swal.fire({ icon: 'error', title: 'فشل الاعتماد', html: msg });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    }
+
+    // رصد مباشر وسريع للعلامة من الجدول (دفتر العلامات السريع)
+    async function quickSaveCertGrade(studentId, btnEl) {
+        const input = document.getElementById(`quick_grade_${studentId}`);
+        const val = parseFloat(input.value);
+        if (isNaN(val) || val < 0 || val > 100) {
+            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى إدخال درجة صحيحة بين 0 و 100.' });
+            return;
+        }
+
+        const originalHtml = btnEl.innerHTML;
+        btnEl.disabled = true;
+        btnEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        try {
+            const res = await axios.post("{{ route('admin.certificates.issue') }}", {
+                _token: '{{ csrf_token() }}',
+                student_id: studentId,
+                final_grade: val
+            });
+            Swal.fire({
+                icon: 'success',
+                title: 'تم رصد العلامة بنجاح 🌟',
+                text: res.data.message,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
+                location.reload();
+            });
+        } catch (e) {
+            btnEl.disabled = false;
+            btnEl.innerHTML = originalHtml;
+            let errMsg = 'تعذر رصد العلامة.';
+            if (e.response && e.response.data && e.response.data.message) {
+                errMsg = e.response.data.message;
+            }
+            Swal.fire({ icon: 'error', title: 'خطأ', text: errMsg });
         }
     }
 

@@ -12,11 +12,15 @@
                 <a href="{{ route('student.teachers.index') }}" class="back-action-btn" title="العودة لقائمة المعلمين">
                     <i class="fa-solid fa-arrow-right"></i>
                 </a>
+                @php
+                    $isTeacherOnline = method_exists($teacher, 'isOnline') ? $teacher->isOnline() : false;
+                    $lastSeenStatus = method_exists($teacher, 'getLastSeenStatus') ? $teacher->getLastSeenStatus() : ($isTeacherOnline ? 'متصل الآن' : 'غير متصل');
+                @endphp
                 <div class="avatar-wrapper">
                     <div class="teacher-avatar-circle">
                         {{ mb_substr($teacher->name, 0, 1) }}
                     </div>
-                    <span class="online-indicator-dot" title="متاح للتواصل التعليمي"></span>
+                    <span class="online-indicator-dot" style="{{ $isTeacherOnline ? 'background: #10b981;' : 'background: #94a3b8;' }}" title="{{ $lastSeenStatus }}"></span>
                 </div>
                 <div class="user-details-text">
                     <div class="name-badge-row">
@@ -26,8 +30,8 @@
                         </span>
                     </div>
                     <div class="connection-status-text">
-                        <span class="pulse-circle"></span>
-                        <span id="status_text">متصل الآن • جاهز للإجابة عن أسئلة المنهاج</span>
+                        <span class="pulse-circle" style="{{ $isTeacherOnline ? 'background: #10b981;' : 'background: #94a3b8; animation: none;' }}"></span>
+                        <span id="status_text">{{ $lastSeenStatus }} • {{ $isTeacherOnline ? 'جاهز للإجابة عن أسئلة المنهاج' : 'يمكنك ترك سؤالك وسيرد المعلم فور دخوله' }}</span>
                     </div>
                 </div>
             </div>

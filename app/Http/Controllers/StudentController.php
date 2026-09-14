@@ -85,10 +85,22 @@ class StudentController extends Controller
 
     // 4. دالة حفظ وتسجيل الطالب (تدعم التسجيل الذاتي للطلاب وإضافة الأدمن)
     public function store(Request $request) {
+        // تنظيف البريد والتأكد من إلحاق النطاق المعتمد إذا أدخل الطالب اسم المستخدم فقط
+        $rawEmail = trim($request->input('email', ''));
+        if (!empty($rawEmail) && !str_contains($rawEmail, '@')) {
+            $rawEmail = $rawEmail . '@tawjihi-gaza.ps';
+            $request->merge(['email' => $rawEmail]);
+        }
+
         $validator = Validator::make($request->all(), [
             'name_ar'       => 'required|string|max:255',
             'nid'           => 'required|digits:9|unique:students,nid',
-            'email'         => 'required|email|unique:students,email',
+            'email'         => [
+                'required',
+                'email',
+                'regex:/^[a-zA-Z0-9._%+-]+@tawjihi-gaza\.ps$/i',
+                'unique:students,email'
+            ],
             'password'      => 'required|min:6',
             'stage_id'      => 'required',
             'phone'         => 'nullable|string|max:20',
@@ -104,6 +116,7 @@ class StudentController extends Controller
             'nid.digits'       => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
             'nid.unique'       => 'رقم الهوية هذا مسجل مسبقاً في المنصة.',
             'email.required'   => 'البريد الإلكتروني مطلوب.',
+            'email.regex'      => 'يجب أن يكون البريد الإلكتروني معتمداً بنطاق منصة التوجيهي [username@tawjihi-gaza.ps].',
             'email.unique'     => 'البريد الإلكتروني مستخدم بالفعل، يرجى تسجيل الدخول أو استخدام بريد آخر.',
             'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
             'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
@@ -169,6 +182,7 @@ class StudentController extends Controller
             'city'               => $city,
             'school_name'        => $schoolName,
             'password'           => Hash::make($request->password),
+            'plain_password'     => $request->password,
             'stage_id'           => $stageId,
             'gender'             => $gender,
             'photo'              => $photoPath,
@@ -188,6 +202,7 @@ class StudentController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             // استبعاد الأعمدة الإضافية في حال عدم اكتمال هجرة قاعدة البيانات الخارجية
             unset(
+                $studentData['plain_password'],
                 $studentData['city'], $studentData['school_name'], $studentData['guardian_phone'],
                 $studentData['google_id'], $studentData['provider'], $studentData['avatar_url']
             );
@@ -210,7 +225,6 @@ class StudentController extends Controller
                 );
             }
         }
-        // تنبيه: لا يتم تسجيل الطالب تلقائياً في كامل مواد الفرع! يبقى الحساب والمواد بانتظار موافقة الإدارة والاشتراك
 
         // إذا كان تسجيلاً من قبل مدير مسجل، يتم توجيهه للوحة إدارة الطلاب
         if ($isAdmin) {
@@ -233,7 +247,7 @@ class StudentController extends Controller
                 $stageName = $stageObj ? ($stageObj->label_ar ?? $stageObj->name_ar ?? 'الثانوية العامة') : 'الثانوية العامة';
                 \App\Services\NotificationService::notifyAdmin(
                     'تسجيل طالب جديد 🎓',
-                    "قام الطالب ({$student->name_ar}) بإنشاء حساب جديد في {$stageName}، وحسابه بانتظار الاعتماد والموافقة.",
+                    "قام الطالب ({$student->name_ar}) بإنشاء حساب جديد في {$stageName}، وحسابه بانتظار الاعتماد والموافقة وسداد الرسوم.",
                     'student',
                     route('admin.students.show', $student->id),
                     'fa-user-plus'
@@ -243,7 +257,7 @@ class StudentController extends Controller
             }
         }
 
-        // تسجيل دخول الطالب وتوجيهه لصفحة انتظار موافقة واعتماد المدير
+        // تسجيل دخول الطالب وتوجيهه لصفحة انتظار موافقة واعتماد المدير وبوابة الدفع
         Auth::guard('student')->login($student);
         $request->session()->regenerate();
 
@@ -252,13 +266,215 @@ class StudentController extends Controller
                 'success'  => true,
                 'icon'     => 'info',
                 'title'    => 'تم استلام طلبك بنجاح! ⏳',
-                'text'     => 'حسابك واشتراكك قيد مراجعة واعتماد المشرف العام.',
+                'text'     => 'يرجى مراجعة إشعار سداد الرسوم لإتمام تفعيل اشتراكك.',
                 'redirect' => route('student.pending-approval')
             ]);
         }
 
-        return redirect()->route('student.pending-approval')->with('info', 'تم استلام طلبك بنجاح! حسابك قيد مراجعة الإدارة.');
+        return redirect()->route('student.pending-approval')->with('info', 'تم استلام طلبك بنجاح! يرجى إتمام سداد الرسوم لمراجعة واعتماد اشتراكك.');
     }
+
+    /**
+     * صفحة انتظار الموافقة وبوابة سداد رسوم الاشتراك للطالب الجديد
+     */
+    public function pendingApproval()
+    {
+        $student = \App\Support\CurrentActor::student() ?? Auth::guard('student')->user();
+        if (!$student) {
+            return redirect()->route('login');
+        }
+
+        if ($student->status === 'active') {
+            return redirect()->route('student.dashboard');
+        }
+
+        $pendingEnrollments = \App\Models\Enrollment::with('subject')
+            ->where('student_id', $student->id)
+            ->get();
+
+        $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
+
+        return view('student.pending_approval', compact('student', 'pendingEnrollments', 'latestPayment'));
+    }
+
+    /**
+     * رفع وإرسال إشعار السداد من قبل الطالب أثناء انتظار الموافقة
+     */
+    public function submitPendingPayment(Request $request)
+    {
+        $student = \App\Support\CurrentActor::student() ?? Auth::guard('student')->user();
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 401);
+        }
+
+        $request->validate([
+            'payment_method'     => 'required|string',
+            'transaction_number' => 'required|string|max:100',
+            'amount'             => 'required|numeric|min:1',
+            'receipt_file'       => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:6144',
+        ], [
+            'payment_method.required'     => 'يرجى اختيار وسيلة الدفع المستخدمة.',
+            'transaction_number.required' => 'يرجى إدخال رقم العملية / الحوالة أو رقم المحفظة.',
+            'amount.required'             => 'يرجى إدخال المبلغ المدفوع.',
+        ]);
+
+        $receiptPath = null;
+        if ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
+            $receiptPath = $request->file('receipt_file')->store('payments/receipts', 'public');
+        }
+
+        $payment = \App\Models\Payment::create([
+            'student_id'         => $student->id,
+            'payment_method'     => $request->payment_method,
+            'transaction_number' => $request->transaction_number,
+            'amount'             => $request->amount,
+            'receipt_file'       => $receiptPath,
+            'status'             => 'pending',
+            'notes'              => $request->input('notes', 'سداد رسوم اشتراك طالب جديد'),
+        ]);
+
+        try {
+            \App\Services\NotificationService::notifyAdmin(
+                'إشعار سداد رسوم جديد 💳',
+                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ عبر {$payment->payment_method}، يرجى المراجعة والاعتماد.",
+                'payment',
+                route('admin.payments.index'),
+                'fa-credit-card'
+            );
+        } catch (\Throwable $e) {}
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'تم استلام إشعار السداد بنجاح! سيقوم المشرف العام بمطابقته وتفعيل حسابك واشتراكك فورياً. 🎉'
+            ]);
+        }
+
+        return back()->with('success', 'تم استلام إشعار السداد بنجاح! سيقوم المشرف العام بمطابقته وتفعيل حسابك واشتراكك فورياً.');
+    }
+
+    /**
+     * اعتماد وتفعيل حساب الطالب واشتراكه من قبل المدير
+     */
+    public function approveStudent(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $student->status = 'active';
+        $student->freeze_reason = null;
+        $student->save();
+
+        // تفعيل كافة المواد المقيد بها الطالب
+        \App\Models\Enrollment::where('student_id', $student->id)->update([
+            'status'         => 'active',
+            'payment_status' => 'paid',
+            'activated_at'   => now(),
+        ]);
+
+        // تحديث أي مدفوعات معلقة
+        \App\Models\Payment::where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->update([
+                'status'      => 'approved',
+                'reviewed_by' => auth()->id() ?? 1,
+                'reviewed_at' => now(),
+            ]);
+
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'تم اعتماد وتفعيل حسابك بنجاح! 🎉',
+                "أهلاً بك يا {$student->name_ar}! قامت إدارة المنصة بالموافقة على حسابك واشتراكك، وبإمكانك الآن الوصول لكافة الدروس والاختبارات.",
+                'account',
+                route('student.dashboard'),
+                'fa-circle-check'
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم اعتماد وتفعيل حساب الطالب واشتراكه بنجاح! 🎉'
+        ]);
+    }
+
+    /**
+     * تجميد أو فك تجميد حساب الطالب مع تخزين سبب التجميد
+     */
+    public function toggleStatus(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $isCurrentlyActive = ($student->status === 'active');
+        $newStatus = $isCurrentlyActive ? 'suspended' : 'active';
+        $reason = $request->input('freeze_reason');
+
+        $student->status = $newStatus;
+        if ($newStatus === 'suspended') {
+            $student->freeze_reason = $reason ?: 'تم تجميد الحساب من قبل الإدارة لمراجعة النشاط الدراسي والالتزام.';
+        } else {
+            $student->freeze_reason = null;
+        }
+
+        try {
+            $student->save();
+        } catch (\Throwable $e) {
+            // استبعاد حقل freeze_reason إذا لم تكتمل الهجرة
+            \DB::table('students')->where('id', $student->id)->update(['status' => $newStatus]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'status'  => $newStatus,
+            'message' => $newStatus === 'active' ? 'تم إعادة تفعيل حساب الطالب بنجاح.' : 'تم تجميد حساب الطالب وحفظ سبب التجميد بنجاح.'
+        ]);
+    }
+
+    /**
+     * إرسال رمز التحقق الحي عند تسجيل حساب جديد (Live OTP)
+     */
+    public function sendRegistrationOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|regex:/^[a-zA-Z0-9._%+-]+@tawjihi-gaza\.ps$/i',
+        ], [
+            'email.required' => 'يرجى إدخال البريد الإلكتروني.',
+            'email.regex'    => 'البريد يجب أن يكون بصيغة [username@tawjihi-gaza.ps].',
+        ]);
+
+        $otp = (string) rand(100000, 999999);
+        session([
+            'register_otp' => $otp,
+            'register_otp_email' => strtolower(trim($request->email)),
+            'register_otp_time' => now()->timestamp,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إنشاء رمز التحقق الحي: (' . $otp . ') للتجربة الفورية والمصادقة.',
+            'demo_otp' => $otp
+        ]);
+    }
+
+    /**
+     * مطابقة رمز التحقق الحي
+     */
+    public function verifyRegistrationOtp(Request $request)
+    {
+        $code = trim($request->input('otp', ''));
+        $savedOtp = session('register_otp');
+
+        if (!empty($savedOtp) && $code === (string)$savedOtp) {
+            session(['register_otp_verified' => true]);
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تأكيد البريد الإلكتروني بنجاح! ✅'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'رمز التحقق غير صحيح، يرجى إعادة المحاولة.'
+        ], 422);
+    }
+
 
     public function edit($id) {
         $student = Student::with(['enrolledSubjects', 'enrollments.subject'])->findOrFail($id);
@@ -275,6 +491,7 @@ class StudentController extends Controller
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
+            $data['plain_password'] = $request->password;
         }
 
         if ($request->hasFile('photo')) {
@@ -321,63 +538,9 @@ class StudentController extends Controller
         return response()->json(['icon' => 'success', 'title' => 'تم تحديث البيانات والمواد بنجاح 🚀']);
     }
 
-    /**
-     * صفحة انتظار موافقة واعتماد المدير على تسجيل الدخول والاشتراك للطالب
-     */
-    public function pendingApproval()
-    {
-        $student = Auth::guard('student')->user();
-        if (!$student) {
-            return redirect()->route('login');
-        }
 
-        // إذا وافق المدير وأصبح الحساب مفعلاً، يتم تحويله للوحة التحكم فوراً
-        if ($student->status === 'active') {
-            return redirect()->route('student.dashboard');
-        }
 
-        $pendingEnrollments = \App\Models\Enrollment::with('subject')
-            ->where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->get();
 
-        return view('student.pending_approval', compact('student', 'pendingEnrollments'));
-    }
-
-    /**
-     * موافقة المدير على تسجيل دخول الطالب وتفعيل اشتراكه في المواد
-     */
-    public function approveStudent($id)
-    {
-        $student = Student::findOrFail($id);
-        $student->status = 'active';
-        $student->save();
-
-        // تفعيل جميع اشتراكات الطالب المعلقة
-        \App\Models\Enrollment::where('student_id', $student->id)
-            ->update([
-                'status'         => 'active',
-                'activated_at'   => now(),
-            ]);
-
-        // إرسال إشعار فوري للطالب
-        try {
-            \App\Services\NotificationService::notifyStudent(
-                $student->id,
-                'تمت موافقة الإدارة وتفعيل حسابك واشتراكك! 🎉',
-                'مبارك يا بطل! وافق المشرف العام على تسجيل دخولك واشتراكك في المنصة. يمكنك الآن بدء دراستك وتصفح مساقاتك كاملة.',
-                'approval',
-                route('student.dashboard')
-            );
-        } catch (\Throwable $e) {}
-
-        return response()->json([
-            'success' => true,
-            'icon'    => 'success',
-            'title'   => 'تم اعتماد الطالب بنجاح! 🚀',
-            'message' => "تمت الموافقة وتفعيل دخول واشتراك الطالب ({$student->name_ar}) بنجاح."
-        ]);
-    }
 
     /**
      * تحديد وتحديث الخصم أو المنحة المخصصة للطالب من قِبل المدير
@@ -475,37 +638,7 @@ class StudentController extends Controller
         ]);
     }
 
-    public function toggleStatus($id) {
-        $student = Student::findOrFail($id);
-        $newStatus = ($student->status === 'active') ? 'pending' : 'active';
-        $student->status = $newStatus;
-        $student->save();
 
-        if ($newStatus === 'active') {
-            \App\Models\Enrollment::where('student_id', $student->id)
-                ->where('status', 'pending')
-                ->update([
-                    'status'       => 'active',
-                    'activated_at' => now()
-                ]);
-
-            try {
-                \App\Services\NotificationService::notifyStudent(
-                    $student->id,
-                    'تم تفعيل واعتماد حسابك رسمياً! 🎉',
-                    "مرحباً بك يا {$student->name_ar}، قامت إدارة المنصة بتفعيل حسابك بنجاح. يمكنك الآن بدء دراستك وحضور الدروس وتقديم الاختبارات.",
-                    'system',
-                    route('student.dashboard'),
-                    'fa-circle-check'
-                );
-            } catch (\Throwable $e) {}
-        }
-
-        return response()->json([
-            'icon'  => 'success',
-            'title' => $newStatus === 'active' ? 'تمت الموافقة وتفعيل الحساب والاشتراك بنجاح! 🎉' : 'تم تحويل الحساب لقيد المراجعة ⏳'
-        ]);
-    }
 
     public function destroy($id) {
         $student = Student::findOrFail($id);

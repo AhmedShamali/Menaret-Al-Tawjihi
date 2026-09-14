@@ -424,14 +424,26 @@
     <div class="content-grid">
         <!-- قسم الدروس والفيديوهات -->
         <main>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
-                <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-play" style="color: var(--sub-color); font-size: 1.1rem;"></i> الدروس والحصص المرئية
-                </h2>
-                <span style="background: white; border: 1px solid var(--border-color); color: #475569; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
-                    {{ $videos->count() }} درس
-                </span>
+            <!-- شريط التبديل بين الحصص المرئية وبنك الامتحانات المعتمدة للمادة -->
+            <div style="display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px; flex-wrap: wrap;">
+                <button type="button" id="tabBtnVideos" onclick="switchSubjectTab('videos')" style="padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: var(--sub-color); color: white;">
+                    <i class="fa-solid fa-play"></i> الدروس والحصص المرئية ({{ $videos->count() }})
+                </button>
+                <button type="button" id="tabBtnExams" onclick="switchSubjectTab('exams')" style="padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: transparent; color: #64748b;">
+                    <i class="fa-solid fa-file-pen"></i> جدار وبنك الامتحانات الإلكترونية ({{ $exams->count() }})
+                </button>
             </div>
+
+            <!-- تبويب 1: الحصص المرئية -->
+            <div id="tabContentVideos">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+                    <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-play" style="color: var(--sub-color); font-size: 1.1rem;"></i> الدروس والحصص المرئية
+                    </h2>
+                    <span style="background: white; border: 1px solid var(--border-color); color: #475569; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+                        {{ $videos->count() }} درس
+                    </span>
+                </div>
 
             @forelse($videos as $video)
                 @if($video->is_unlocked)
@@ -543,11 +555,68 @@
                     </div>
                 @endif
             @empty
-                <div style="text-align: center; padding: 60px; background: white; border-radius: 20px; border: 1px dashed var(--border-color); color: #94a3b8;">
-                    <i class="fa-solid fa-video-slash" style="font-size: 3rem; margin-bottom: 12px; display: block; opacity: 0.4;"></i>
-                    <p style="font-weight: 600; font-size: 0.95rem; margin: 0;">لم تتم إضافة فيديوهات لهذه المادة حتى الآن.</p>
                 </div>
             @endforelse
+            </div>
+
+            <!-- تبويب 2: بنك وجدار الامتحانات الإلكترونية للمادة -->
+            <div id="tabContentExams" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
+                    <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-file-pen" style="color: #059669; font-size: 1.1rem;"></i> جدار وبنك الامتحانات الإلكترونية المعتمدة
+                    </h2>
+                    <span style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
+                        {{ $exams->count() }} اختبار وزاري
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+                    @forelse($exams as $exam)
+                        @php
+                            $subm = $submissions[$exam->id] ?? null;
+                            $isSolved = !is_null($subm);
+                        @endphp
+                        <div style="background: white; border-radius: 18px; border: 1.5px solid {{ $isSolved ? '#bbf7d0' : 'var(--border-color)' }}; padding: 20px 24px; box-shadow: var(--shadow-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; transition: 0.2s;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 50px; height: 50px; border-radius: 14px; background: {{ $isSolved ? '#f0fdf4' : '#eff6ff' }}; color: {{ $isSolved ? '#16a34a' : '#1d4ed8' }}; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0;">
+                                    <i class="fa-solid {{ $isSolved ? 'fa-circle-check' : 'fa-clipboard-question' }}"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ $exam->title }}</h3>
+                                    <div style="display: flex; gap: 12px; align-items: center; font-size: 0.78rem; color: #64748b; font-weight: 600;">
+                                        <span><i class="fa-regular fa-clock"></i> المدة: {{ $exam->duration_minutes }} دقيقة</span>
+                                        <span>•</span>
+                                        <span><i class="fa-solid fa-list-check"></i> {{ $exam->questions_count }} أسئلة</span>
+                                        <span>•</span>
+                                        <span><i class="fa-solid fa-star" style="color: #eab308;"></i> {{ $exam->total_grade ?? 100 }} علامة</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                @if($isSolved)
+                                    <div style="text-align: left;">
+                                        <span style="display: block; font-size: 0.72rem; color: #64748b; font-weight: 700;">درجتك المحققة:</span>
+                                        <span style="font-size: 1.15rem; font-weight: 900; color: #15803d;">{{ $subm->total_earned_grade ?? 0 }} / {{ $exam->total_grade ?? 100 }}</span>
+                                    </div>
+                                    <a href="{{ route('student.exams.results', $subm->id) }}" style="background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; padding: 9px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fa-solid fa-square-poll-vertical"></i> مراجعة الإجابات
+                                    </a>
+                                @else
+                                    <a href="{{ route('student.exams.take', $exam->id) }}" style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); color: white; padding: 10px 22px; border-radius: 10px; font-size: 0.85rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(29,78,216,0.25);">
+                                        <i class="fa-solid fa-play"></i> بدء الاختبار الآن
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div style="text-align: center; padding: 50px 20px; background: white; border-radius: 20px; border: 1px dashed var(--border-color); color: #94a3b8;">
+                            <i class="fa-solid fa-clipboard-list" style="font-size: 2.5rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>
+                            <p style="font-weight: 700; margin: 0;">لا توجد اختبارات إلكترونية مدرجة لهذه المادة حالياً.</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
         </main>
 
         <!-- السايدبار الجانبي للمادة -->
@@ -992,10 +1061,39 @@ function deleteVideoNote(noteId) {
     .then(res => res.json())
     .then(res => {
         if (res.success) {
-            const el = document.getElementById(`note_item_${noteId}`);
-            if (el) el.remove();
         }
     });
+}
+
+function switchSubjectTab(tab) {
+    const vTab = document.getElementById('tabContentVideos');
+    const eTab = document.getElementById('tabContentExams');
+    const btnV = document.getElementById('tabBtnVideos');
+    const btnE = document.getElementById('tabBtnExams');
+
+    if (tab === 'exams') {
+        if (vTab) vTab.style.display = 'none';
+        if (eTab) eTab.style.display = 'block';
+        if (btnV) {
+            btnV.style.background = 'transparent';
+            btnV.style.color = '#64748b';
+        }
+        if (btnE) {
+            btnE.style.background = 'var(--sub-color)';
+            btnE.style.color = '#ffffff';
+        }
+    } else {
+        if (vTab) vTab.style.display = 'block';
+        if (eTab) eTab.style.display = 'none';
+        if (btnV) {
+            btnV.style.background = 'var(--sub-color)';
+            btnV.style.color = '#ffffff';
+        }
+        if (btnE) {
+            btnE.style.background = 'transparent';
+            btnE.style.color = '#64748b';
+        }
+    }
 }
 </script>
 @endsection

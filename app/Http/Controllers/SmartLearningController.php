@@ -25,12 +25,11 @@ class SmartLearningController extends Controller
         $isYearEndPublished = (bool) Setting::get('year_end_certificates_published', 0);
         $allowGpaCalculation = (bool) Setting::get('allow_student_calculate_gpa', 0);
 
-        // حجب الشهادات تماماً عن الطالب حتى نهاية العام وعندما يأذن المدير
-        if ($isYearEndPublished) {
-            $certificates = Certificate::with(['subject', 'student'])->where('student_id', $studentId)->latest()->get();
-        } else {
-            $certificates = collect();
-        }
+        // جلب الشهادات المعتمدة الخاصة بالطالب
+        $certificates = Certificate::with(['subject', 'student'])
+            ->where('student_id', $studentId)
+            ->latest()
+            ->get();
 
         $recommendations = Recommendation::with('content.subject')->where('student_id', $studentId)->get();
         $completedExamsCount = ExamSubmission::where('student_id', $studentId)->count();
@@ -86,9 +85,11 @@ class SmartLearningController extends Controller
             ->firstOrFail();
 
         $isAdmin = (Auth::guard('web')->check() && Auth::user() && Auth::user()->role === 'admin');
+        $isTeacher = (Auth::guard('web')->check() && Auth::user() && Auth::user()->role === 'teacher');
+        $isStudentOwner = (Auth::guard('student')->check() && Auth::guard('student')->id() == $certificate->student_id);
         $isYearEndPublished = (bool) Setting::get('year_end_certificates_published', 0);
 
-        if (!$isAdmin && !$isYearEndPublished) {
+        if (!$isAdmin && !$isTeacher && !$isStudentOwner && !$isYearEndPublished) {
             return redirect()->route('student.achievements')
                 ->with('warning', 'عذراً، الشهادات الأكاديمية محجوبة وتُعلن رسمياً في نهاية العام الدراسي بقرار الإدارة 🔒');
         }

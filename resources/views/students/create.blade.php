@@ -713,17 +713,42 @@
                 </div>
 
                 <!-- البريد ورقم جوال الطالب -->
+                <!-- البريد الرسمي بنطاق غزة ورقم جوال الطالب مع التحقق الفوري OTP -->
                 <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="email">
-                            <span>البريد الإلكتروني <span class="req">*</span></span>
-                            @if(!empty($googleProfile['email']))
-                                <span class="verified-badge-label"><i class="fas fa-check-circle"></i> معتمد من Google</span>
-                            @endif
+                            <span>البريد الأكاديمي الرسمي (@tawjihi-gaza.ps) <span class="req">*</span></span>
+                            <span class="verified-badge-label" style="background: #eff6ff; color: #1d4ed8; font-size: 0.75rem;">
+                                🇵🇸 نطاق غزة المعتمد
+                            </span>
                         </label>
                         <div class="input-control-wrap">
                             <i class="fas fa-envelope lead-icon"></i>
-                            <input type="email" name="email" id="email" class="form-input" value="{{ old('email', $googleProfile['email'] ?? '') }}" placeholder="student@example.com" required>
+                            <input type="text" name="email" id="email" class="form-input" value="{{ old('email', $googleProfile['email'] ?? '') }}" placeholder="أدخل اسم المستخدم أو بريدك الرسمي" required oninput="formatTawjihiEmail(this)">
+                        </div>
+                        <small style="color: #64748b; font-size: 0.74rem; margin-top: 2px;">
+                            * يضاف النطاق الرسمي تلقائياً: <strong id="emailPreviewDomain" style="color: #2563eb; direction: ltr; display: inline-block;">@tawjihi-gaza.ps</strong>
+                        </small>
+
+                        <!-- قسم التحقق الحي برمز OTP -->
+                        <div id="otpSection" style="margin-top: 8px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 10px 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                <span style="font-size: 0.78rem; font-weight: 700; color: #334155;">
+                                    <i class="fas fa-shield-halved" style="color: #2563eb;"></i> التحقق من البريد:
+                                </span>
+                                <button type="button" id="btnSendOtp" onclick="triggerSendOtp()" style="background: #2563eb; color: white; border: none; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: 0.2s;">
+                                    إرسال رمز OTP 📩
+                                </button>
+                            </div>
+                            <div id="otpInputWrap" style="display: none; margin-top: 8px;">
+                                <div style="display: flex; gap: 6px;">
+                                    <input type="text" id="otpCodeInput" maxlength="6" placeholder="أدخل الرمز المكون من 6 أرقام" style="flex: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem; text-align: center; letter-spacing: 3px; font-weight: 800;">
+                                    <button type="button" id="btnVerifyOtp" onclick="triggerVerifyOtp()" style="background: #10b981; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+                                        تأكيد الرمز
+                                    </button>
+                                </div>
+                                <small id="otpStatusMsg" style="font-size: 0.72rem; color: #64748b; display: block; margin-top: 4px;"></small>
+                            </div>
                         </div>
                     </div>
 
@@ -1026,6 +1051,90 @@
         } else {
             meter.style.background = '#10b981';
         }
+    }
+
+    let isOtpVerified = false;
+
+    function formatTawjihiEmail(input) {
+        let val = input.value.trim();
+        const preview = document.getElementById('emailPreviewDomain');
+        if (!val) {
+            if (preview) preview.innerText = '@tawjihi-gaza.ps';
+            return;
+        }
+        if (val.includes('@')) {
+            if (preview) preview.innerText = val.endsWith('@tawjihi-gaza.ps') ? 'معتمد رسميّاً 🇵🇸' : 'سيتم توجيهه لنطاق غزة';
+        } else {
+            if (preview) preview.innerText = val + '@tawjihi-gaza.ps';
+        }
+    }
+
+    function triggerSendOtp() {
+        const emailInput = document.getElementById('email');
+        const emailVal = emailInput.value.trim();
+        if (!emailVal) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'تنبيه',
+                text: 'يرجى إدخال اسم المستخدم أو البريد الإلكتروني أولاً.'
+            });
+            return;
+        }
+
+        const btn = document.getElementById('btnSendOtp');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> إرسال...';
+
+        axios.post('{{ route("register.sendOtp") }}', { email: emailVal })
+            .then(res => {
+                btn.disabled = false;
+                btn.innerHTML = 'إعادة إرسال 🔁';
+                document.getElementById('otpInputWrap').style.display = 'block';
+                const statusMsg = document.getElementById('otpStatusMsg');
+                statusMsg.style.color = '#059669';
+                statusMsg.innerHTML = `<i class="fas fa-check-circle"></i> تم إرسال رمز التحقق (رمز تجريبي للعرض: <strong>${res.data.demo_otp || 'تم الإرسال'}</strong>)`;
+                
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم إرسال رمز التحقق OTP 📩',
+                    html: `تم إرسال رمز الأمان للبريد الأكاديمي:<br><strong>${res.data.email}</strong><br><br><span style="font-size:0.85rem;color:#64748b;">(رمز تجريبي مباشر: <b style="color:#2563eb;letter-spacing:2px;">${res.data.demo_otp || '123456'}</b>)</span>`,
+                    confirmButtonText: 'حسناً، سأدخل الرمز'
+                });
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = 'إرسال رمز OTP 📩';
+                Swal.fire('تعذر إرسال الرمز', err.response?.data?.message || 'حدث خطأ أثناء إرسال الرمز.', 'error');
+            });
+    }
+
+    function triggerVerifyOtp() {
+        const otpVal = document.getElementById('otpCodeInput').value.trim();
+        if (otpVal.length !== 6) {
+            Swal.fire({ icon: 'warning', title: 'رمز غير مكتمل', text: 'يرجى إدخال رمز التحقق المكون من 6 أرقام بدقة.' });
+            return;
+        }
+
+        const btn = document.getElementById('btnVerifyOtp');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        axios.post('{{ route("register.verifyOtp") }}', { otp: otpVal })
+            .then(res => {
+                isOtpVerified = true;
+                btn.style.background = '#059669';
+                btn.innerHTML = '<i class="fas fa-check"></i> مؤكد';
+                document.getElementById('otpCodeInput').disabled = true;
+                const statusMsg = document.getElementById('otpStatusMsg');
+                statusMsg.style.color = '#059669';
+                statusMsg.innerHTML = '<i class="fas fa-circle-check"></i> تم التحقق من البريد بنجاح! يمكنك الآن استكمال التسجيل.';
+                Swal.fire({ icon: 'success', title: 'تم تأكيد الرمز بنجاح ✅', text: 'تم التحقق من بريدك الأكاديمي بنجاح.', timer: 1800, showConfirmButton: false });
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = 'تأكيد الرمز';
+                Swal.fire({ icon: 'error', title: 'رمز خاطئ', text: err.response?.data?.message || 'رمز التحقق غير صحيح، يرجى إعادة المحاولة.' });
+            });
     }
 
     function handleRegisterSubmit(e) {

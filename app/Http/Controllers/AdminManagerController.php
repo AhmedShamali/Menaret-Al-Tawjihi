@@ -69,15 +69,25 @@ class AdminManagerController extends Controller {
 
         $oldSubjectId = $teacher->subject_id;
 
-        $teacher->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'major' => $request->major,
-            'bio' => $request->bio,
+        $updateData = [
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'phone'      => $request->phone,
+            'major'      => $request->major,
+            'bio'        => $request->bio,
             'subject_id' => $request->subject_id,
-            'password' => $request->password ? Hash::make($request->password) : $teacher->password,
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'plain_password')) {
+                    $updateData['plain_password'] = $request->password;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        $teacher->update($updateData);
 
         // إلغاء إسناد المادة القديمة إذا تغيرت
         if ($oldSubjectId && $oldSubjectId != $request->subject_id) {
@@ -150,17 +160,25 @@ class AdminManagerController extends Controller {
             $photoPath = $request->file('photo')->store('teachers/photos', 'public');
         }
 
-        $teacher = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'major' => $request->major,
-            'bio' => $request->bio,
-            'subject_id' => $request->subject_id,
-            'photo' => $photoPath,
-            'role' => 'teacher',
-        ]);
+        $teacherData = [
+            'name'           => $request->name,
+            'email'          => $request->email,
+            'password'       => Hash::make($request->password),
+            'plain_password' => $request->password,
+            'phone'          => $request->phone,
+            'major'          => $request->major,
+            'bio'            => $request->bio,
+            'subject_id'     => $request->subject_id,
+            'photo'          => $photoPath,
+            'role'           => 'teacher',
+        ];
+
+        try {
+            $teacher = User::create($teacherData);
+        } catch (\Illuminate\Database\QueryException $e) {
+            unset($teacherData['plain_password']);
+            $teacher = User::create($teacherData);
+        }
 
         // إسناد المادة للمدرس إذا تم تحديدها
         if ($request->filled('subject_id')) {
@@ -172,6 +190,123 @@ class AdminManagerController extends Controller {
         }
 
         return response()->json(['success' => true, 'title' => 'تم إنشاء ملف المدرس بنجاح ✅']);
+    }
+
+    /**
+     * تصدير كامل جدول المعلمين إلى ملف CSV / Excel
+     */
+    public function exportTeachers()
+    {
+        $teachers = User::where('role', 'teacher')->latest()->get();
+
+        $filename = 'teachers_export_' . date('Y_m_d_His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($teachers) {
+            $file = fopen('php://output', 'w');
+            // Write UTF-8 BOM for Arabic Excel compatibility
+            fputs($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'المعرف',
+                'اسم المعلم',
+                'البريد الإلكتروني',
+                'كلمة المرور المسجلة',
+                'رقم الجوال',
+                'التخصص الأكاديمي',
+                'المادة المسندة',
+                'تاريخ التسجيل'
+            ]);
+
+            foreach ($teachers as $t) {
+                $subName = optional(\App\Models\Subject::find($t->subject_id))->name_ar ?? 'غير محدد';
+                fputcsv($file, [
+                    $t->id,
+                    $t->name,
+                    $t->email,
+                    $t->plain_password ?? 'مشفرة',
+                    $t->phone ?? '',
+                    $t->major ?? '',
+                    $subName,
+                    $t->created_at ? $t->created_at->format('Y-m-d H:i') : ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * استيراد المعلمين من ملف CSV
+     */
+    public function importTeachers(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:5120'
+        ]);
+
+        $file = $request->file('csv_file');
+        $handle = fopen($file->getRealPath(), 'r');
+        if (!$handle) {
+            return back()->with('error', 'تعذر فتح ملف البيانات المرفق.');
+        }
+
+        // skip BOM if present
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") {
+            rewind($handle);
+        }
+
+        // Header row
+        fgetcsv($handle);
+
+        $imported = 0;
+        while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+            if (count($row) < 3) continue;
+            $name = trim($row[1] ?? $row[0]);
+            $email = trim($row[2] ?? $row[1]);
+            $pwd = !empty($row[3]) ? trim($row[3]) : 'tawjihi2026';
+
+            if (empty($name) || empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+
+            if (User::where('email', $email)->exists()) {
+                continue;
+            }
+
+            $tData = [
+                'name'           => $name,
+                'email'          => $email,
+                'password'       => Hash::make($pwd),
+                'plain_password' => $pwd,
+                'phone'          => $row[4] ?? null,
+                'major'          => $row[5] ?? null,
+                'role'           => 'teacher',
+            ];
+
+            try {
+                User::create($tData);
+                $imported++;
+            } catch (\Illuminate\Database\QueryException $e) {
+                unset($tData['plain_password']);
+                User::create($tData);
+                $imported++;
+            }
+        }
+
+        fclose($handle);
+
+        return back()->with('success', "تم استيراد ({$imported}) معلماً بنجاح إلى النظام ✅");
     }
 
     public function studentStore(Request $request) {
@@ -353,13 +488,53 @@ class AdminManagerController extends Controller {
                 Setting::updateOrCreate(['key' => 'site_favicon'], ['value' => 'uploads/logos/' . $favName]);
             }
 
+            // معالجة رفع ختم المنصة الرسمي
+            if ($request->hasFile('official_stamp')) {
+                $stamp = $request->file('official_stamp');
+                $stampName = 'stamp_' . time() . '.' . $stamp->getClientOriginalExtension();
+                $dest = public_path('uploads/branding');
+                if (!file_exists($dest)) mkdir($dest, 0777, true);
+                $stamp->move($dest, $stampName);
+                Setting::updateOrCreate(['key' => 'official_stamp'], ['value' => 'uploads/branding/' . $stampName]);
+            }
+
+            // معالجة رفع شعار المدير العام
+            if ($request->hasFile('director_logo')) {
+                $dLogo = $request->file('director_logo');
+                $dLogoName = 'director_logo_' . time() . '.' . $dLogo->getClientOriginalExtension();
+                $dest = public_path('uploads/branding');
+                if (!file_exists($dest)) mkdir($dest, 0777, true);
+                $dLogo->move($dest, $dLogoName);
+                Setting::updateOrCreate(['key' => 'director_logo'], ['value' => 'uploads/branding/' . $dLogoName]);
+            }
+
+            // معالجة رفع التوقيع الرقمي للمدير
+            if ($request->hasFile('admin_signature')) {
+                $sig = $request->file('admin_signature');
+                $sigName = 'admin_sig_' . time() . '.' . $sig->getClientOriginalExtension();
+                $dest = public_path('uploads/branding');
+                if (!file_exists($dest)) mkdir($dest, 0777, true);
+                $sig->move($dest, $sigName);
+                Setting::updateOrCreate(['key' => 'admin_signature'], ['value' => 'uploads/branding/' . $sigName]);
+            }
+
+            // معالجة رفع التوقيع الرقمي للمعلم
+            if ($request->hasFile('teacher_signature')) {
+                $tSig = $request->file('teacher_signature');
+                $tSigName = 'teacher_sig_' . time() . '.' . $tSig->getClientOriginalExtension();
+                $dest = public_path('uploads/branding');
+                if (!file_exists($dest)) mkdir($dest, 0777, true);
+                $tSig->move($dest, $tSigName);
+                Setting::updateOrCreate(['key' => 'teacher_signature'], ['value' => 'uploads/branding/' . $tSigName]);
+            }
+
             // خيار إزالة الشعار واستعادة الشعار الافتراضي
             if ($request->input('remove_logo') === '1') {
                 Setting::updateOrCreate(['key' => 'site_logo'], ['value' => '']);
             }
 
             // حفظ باقي إعدادات النصوص والأرقام
-            foreach ($request->except(['_token', 'site_logo', 'site_favicon', 'remove_logo']) as $key => $value) {
+            foreach ($request->except(['_token', 'site_logo', 'site_favicon', 'official_stamp', 'director_logo', 'admin_signature', 'teacher_signature', 'remove_logo']) as $key => $value) {
                 if ($value !== null) {
                     Setting::updateOrCreate(
                         ['key' => $key],
@@ -372,7 +547,7 @@ class AdminManagerController extends Controller {
 
             return response()->json([
                 'success' => true,
-                'title' => 'تم حفظ الشعار وهوية المنصة بنجاح ✅',
+                'title' => 'تم حفظ الشعار وهوية المنصة والأختام بنجاح ✅',
                 'logo_url' => $currentLogo
             ]);
         } catch (\Exception $e) {
@@ -414,5 +589,429 @@ class AdminManagerController extends Controller {
         }
         $activities = Activity::where('student_id', $student->id)->latest()->take(5)->get();
         return view('student.profile', compact('student', 'activities'));
+    }
+
+    /**
+     * واجهة الاستفسار الأكاديمي وتذاكر الشكاوى للإدارة
+     */
+    public function academicInquiries(Request $request)
+    {
+        $query = \App\Models\Complaint::latest();
+
+        if ($request->filled('category') && $request->category !== 'all') {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function($q) use ($s) {
+                $q->where('name', 'like', "%{$s}%")
+                  ->orWhere('email', 'like', "%{$s}%")
+                  ->orWhere('subject', 'like', "%{$s}%")
+                  ->orWhere('message', 'like', "%{$s}%");
+            });
+        }
+
+        $inquiries = $query->paginate(15)->withQueryString();
+
+        $stats = [
+            'total'     => \App\Models\Complaint::count(),
+            'pending'   => \App\Models\Complaint::where('status', 'new')->count(),
+            'replied'   => \App\Models\Complaint::where('status', 'replied')->count(),
+            'academics' => \App\Models\Complaint::where('category', 'like', '%أكاديمي%')->count(),
+        ];
+
+        return view('admin.inquiries.index', compact('inquiries', 'stats'));
+    }
+
+    public function academicInquiryReply(Request $request, $id)
+    {
+        $request->validate([
+            'reply' => 'required|string|min:3',
+        ]);
+
+        $inquiry = \App\Models\Complaint::findOrFail($id);
+        $inquiry->reply = $request->reply;
+        $inquiry->status = 'replied';
+        $inquiry->replied_at = now();
+        if ($request->filled('admin_notes')) {
+            $inquiry->admin_notes = $request->admin_notes;
+        }
+        $inquiry->save();
+
+        return response()->json([
+            'success' => true,
+            'title'   => 'تم حفظ الرد على الاستفسار بنجاح ✅',
+            'status'  => 'replied'
+        ]);
+    }
+
+    public function academicInquiryDestroy($id)
+    {
+        $inquiry = \App\Models\Complaint::findOrFail($id);
+        $inquiry->delete();
+
+        return back()->with('success', 'تم حذف تذكرة الاستفسار بنجاح.');
+    }
+
+    /**
+     * حذف الطلاب المحددين (Bulk Delete Students)
+     */
+    public function bulkDeleteStudents(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'لم يتم تحديد أي طالب للحذف.'], 422);
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'معرفات الطلاب غير صالحة.'], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            $students = Student::whereIn('id', $ids)->get();
+            foreach ($students as $s) {
+                if ($s->photo) Storage::disk('public')->delete($s->photo);
+                if ($s->id_photo) Storage::disk('public')->delete($s->id_photo);
+            }
+
+            $idListStr = implode(',', $ids);
+
+            $tables = [
+                'submission_answers' => "submission_id IN (SELECT id FROM exam_submissions WHERE student_id IN ({$idListStr}))",
+                'exam_submissions'   => "student_id IN ({$idListStr})",
+                'enrollments'        => "student_id IN ({$idListStr})",
+                'certificates'       => "student_id IN ({$idListStr})",
+                'recommendations'    => "student_id IN ({$idListStr})",
+                'activities'         => "student_id IN ({$idListStr})",
+                'payments'           => "student_id IN ({$idListStr})",
+                'channel_requests'   => "student_id IN ({$idListStr})",
+                'placement_results'  => "student_id IN ({$idListStr})",
+                'support_tickets'    => "student_id IN ({$idListStr})",
+                'messages'           => "student_id IN ({$idListStr})",
+                'flashcards'         => "student_id IN ({$idListStr})",
+                'video_notes'        => "student_id IN ({$idListStr})",
+                'student_progress'   => "student_id IN ({$idListStr})",
+                'exam_assignments'   => "student_id IN ({$idListStr})",
+            ];
+
+            foreach ($tables as $tbl => $rawWhere) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    try {
+                        \DB::table($tbl)->whereRaw($rawWhere)->delete();
+                    } catch (\Throwable $ex) {}
+                }
+            }
+
+            Student::whereIn('id', $ids)->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'count'   => count($ids),
+                'message' => 'تم حذف (' . count($ids) . ') طالب بنجاح مع كافة سجلاتهم واشتراكاتهم 🗑️'
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * حذف جميع الطلاب دفعة واحدة (Purge All Students)
+     */
+    public function purgeAllStudents(Request $request)
+    {
+        $confirm = trim($request->input('confirm_text', ''));
+        if ($confirm !== 'تأكيد الحذف' && $confirm !== 'DELETE' && $confirm !== 'CONFIRM') {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى كتابة عبارة التأكيد بشكل صحيح (تأكيد الحذف) لإتمام العملية.'
+            ], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            $students = Student::all();
+            $count = $students->count();
+            foreach ($students as $s) {
+                if ($s->photo) Storage::disk('public')->delete($s->photo);
+                if ($s->id_photo) Storage::disk('public')->delete($s->id_photo);
+            }
+
+            $tablesToClean = [
+                'submission_answers',
+                'exam_submissions',
+                'enrollments',
+                'certificates',
+                'recommendations',
+                'activities',
+                'payments',
+                'channel_requests',
+                'placement_results',
+                'support_tickets',
+                'video_notes',
+                'student_progress',
+                'exam_assignments',
+            ];
+
+            foreach ($tablesToClean as $tbl) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    \DB::table($tbl)->truncate();
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
+                \DB::table('messages')->whereNotNull('student_id')->orWhere('sender_type', 'student')->delete();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('flashcards')) {
+                \DB::table('flashcards')->whereNotNull('student_id')->delete();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                \DB::table('notifications')->where('notifiable_type', 'like', '%Student%')->delete();
+            }
+
+            \DB::table('students')->truncate();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'count'   => $count,
+                'message' => 'تم حذف جميع الطلاب بنجاح (' . $count . ' طالب) وتصفير كافة سجلاتهم واشتراكاتهم! 🗑️'
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف الطلاب: ' . $e->getMessage()], 500);
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * حذف المعلمين المحددين (Bulk Delete Teachers)
+     */
+    public function bulkDeleteTeachers(Request $request)
+    {
+        $ids = $request->input('ids', []);
+        if (empty($ids) || !is_array($ids)) {
+            return response()->json(['success' => false, 'message' => 'لم يتم تحديد أي معلم للحذف.'], 422);
+        }
+
+        $ids = array_values(array_filter(array_map('intval', $ids)));
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'معرفات المعلمين غير صالحة.'], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            // فلترة فقط المعلمين لمنع حذف أي حساب إداري نهائياً
+            $teachers = User::where('role', 'teacher')->whereIn('id', $ids)->get();
+            $realIds = $teachers->pluck('id')->toArray();
+
+            if (empty($realIds)) {
+                \DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'لم يتم العثور على معلمين متطابقين مع التحديد.'], 404);
+            }
+
+            foreach ($teachers as $t) {
+                if ($t->photo) Storage::disk('public')->delete($t->photo);
+            }
+
+            // إخلاء إسناد المواد
+            if (\Illuminate\Support\Facades\Schema::hasTable('subjects')) {
+                \DB::table('subjects')->whereIn('user_id', $realIds)
+                    ->orWhereIn('teacher_id', $realIds)
+                    ->update([
+                        'user_id'      => null,
+                        'teacher_id'   => null,
+                        'teacher_name' => null,
+                    ]);
+            }
+
+            // حذف رسائل وتذاكر المعلم
+            if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
+                \DB::table('messages')->whereIn('teacher_id', $realIds)
+                    ->orWhere(function($q) use ($realIds) {
+                        $q->where('sender_type', 'teacher')->whereIn('sender_id', $realIds);
+                    })->delete();
+            }
+
+            User::where('role', 'teacher')->whereIn('id', $realIds)->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'count'   => count($realIds),
+                'message' => 'تم حذف (' . count($realIds) . ') معلم بنجاح وإخلاء إسناد المواد التابعة لهم 🗑️'
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * حذف جميع المعلمين دفعة واحدة (Purge All Teachers)
+     */
+    public function purgeAllTeachers(Request $request)
+    {
+        $confirm = trim($request->input('confirm_text', ''));
+        if ($confirm !== 'تأكيد الحذف' && $confirm !== 'DELETE' && $confirm !== 'CONFIRM') {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى كتابة عبارة التأكيد بشكل صحيح (تأكيد الحذف) لإتمام العملية.'
+            ], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            $teachers = User::where('role', 'teacher')->get();
+            $count = $teachers->count();
+            foreach ($teachers as $t) {
+                if ($t->photo) Storage::disk('public')->delete($t->photo);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('subjects')) {
+                \DB::table('subjects')->update([
+                    'user_id'      => null,
+                    'teacher_id'   => null,
+                    'teacher_name' => null,
+                ]);
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
+                \DB::table('messages')->where('sender_type', 'teacher')->orWhereNotNull('teacher_id')->delete();
+            }
+
+            User::where('role', 'teacher')->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'count'   => $count,
+                'message' => 'تم حذف جميع المعلمين بنجاح (' . $count . ' معلم) وإخلاء إسناد المواد دون المساس بحسابات الإدارة! 🗑️'
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف المعلمين: ' . $e->getMessage()], 500);
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
+    }
+
+    /**
+     * الحذف الشامل لجميع الطلاب والمعلمين معاً دفعة واحدة (Purge All Students & Teachers)
+     */
+    public function purgeAllStudentsAndTeachers(Request $request)
+    {
+        $confirm = trim($request->input('confirm_text', ''));
+        if ($confirm !== 'تأكيد الحذف الشامل' && $confirm !== 'DELETE ALL' && $confirm !== 'تأكيد الحذف') {
+            return response()->json([
+                'success' => false,
+                'message' => 'يرجى كتابة عبارة التأكيد (تأكيد الحذف الشامل) بدقة لتأكيد العملية الكبرى.'
+            ], 422);
+        }
+
+        \DB::beginTransaction();
+        try {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
+            // 1. حذف صور وسجلات الطلاب
+            $students = Student::all();
+            $studentCount = $students->count();
+            foreach ($students as $s) {
+                if ($s->photo) Storage::disk('public')->delete($s->photo);
+                if ($s->id_photo) Storage::disk('public')->delete($s->id_photo);
+            }
+
+            // 2. حذف صور المعلمين
+            $teachers = User::where('role', 'teacher')->get();
+            $teacherCount = $teachers->count();
+            foreach ($teachers as $t) {
+                if ($t->photo) Storage::disk('public')->delete($t->photo);
+            }
+
+            // 3. تنظيف الجداول التابعة
+            $tablesToClean = [
+                'submission_answers',
+                'exam_submissions',
+                'enrollments',
+                'certificates',
+                'recommendations',
+                'activities',
+                'payments',
+                'channel_requests',
+                'placement_results',
+                'support_tickets',
+                'messages',
+                'video_notes',
+                'student_progress',
+                'exam_assignments',
+            ];
+
+            foreach ($tablesToClean as $tbl) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    \DB::table($tbl)->truncate();
+                }
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('flashcards')) {
+                \DB::table('flashcards')->whereNotNull('student_id')->delete();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                \DB::table('notifications')->where('notifiable_type', 'like', '%Student%')->delete();
+            }
+
+            if (\Illuminate\Support\Facades\Schema::hasTable('subjects')) {
+                \DB::table('subjects')->update([
+                    'user_id'      => null,
+                    'teacher_id'   => null,
+                    'teacher_name' => null,
+                ]);
+            }
+
+            // تصفير جدول الطلاب بالكامل
+            \DB::table('students')->truncate();
+
+            // حذف المعلمين فقط والحفاظ على حسابات المدراء
+            User::where('role', 'teacher')->delete();
+
+            \DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "تم الحذف الشامل بنجاح! تم حذف ({$studentCount}) طالباً و({$teacherCount}) معلماً، وتصفير المنصة بالكامل للعام الدراسي الجديد 🚀"
+            ]);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء الحذف الشامل: ' . $e->getMessage()], 500);
+        } finally {
+            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        }
     }
 }

@@ -885,28 +885,69 @@
     <div class="modal-backdrop" id="forgotModal">
         <div class="modal-card">
             <div class="modal-head">
-                <h3>استعادة كلمة المرور</h3>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1.1rem;">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800;">استعادة كلمة المرور الأكاديمية</h3>
+                        <span style="font-size: 0.75rem; color: #64748b;">التحقق برقم الهوية الوطنية الفلسطينية 🇵🇸</span>
+                    </div>
+                </div>
                 <button type="button" class="modal-close-btn" onclick="closeForgotModal()">&times;</button>
             </div>
-            <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
-                أدخل البريد الإلكتروني المرتبط بحسابك وسنقوم بالتحقق منه ومساعدتك في إعادة تعيين كلمة المرور فوراً.
+            
+            <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 18px; line-height: 1.6;">
+                أدخل البريد الإلكتروني أو اسم المستخدم مع رقم الهوية الفلسطينية (9 أرقام) للتحقق ومطابقة الحساب بدقة.
             </p>
 
             <form action="{{ route('password.forgot') }}" method="POST">
                 @csrf
-                <div class="field-group" style="margin-bottom: 20px;">
-                    <label class="field-label">البريد الإلكتروني المسجل</label>
+                <div class="field-group" style="margin-bottom: 14px;">
+                    <label class="field-label">البريد الإلكتروني أو اسم المستخدم</label>
                     <div class="field-input-box">
                         <div class="field-icon-slot"><i class="far fa-envelope"></i></div>
-                        <input type="email" name="email" class="field-input" placeholder="example@domain.com" required>
+                        <input type="text" name="email" class="field-input" placeholder="student@example.com أو اسم المستخدم" required>
                     </div>
                 </div>
 
-                <button type="submit" class="submit-btn" style="margin-top: 0;">
-                    <span>إرسال رابط الاستعادة</span>
-                    <i class="fas fa-paper-plane"></i>
+                <div class="field-group" style="margin-bottom: 14px;">
+                    <label class="field-label">رقم الهوية الفلسطينية (9 أرقام)</label>
+                    <div class="field-input-box">
+                        <div class="field-icon-slot"><i class="fas fa-id-card"></i></div>
+                        <input type="text" name="nid" maxlength="9" pattern="\d{9}" class="field-input" placeholder="أدخل 9 أرقام (مثال: 401234567)" required>
+                    </div>
+                </div>
+
+                <div class="field-group" style="margin-bottom: 18px;">
+                    <label class="field-label">كلمة المرور الجديدة (اختياري للتعيين المباشر)</label>
+                    <div class="field-input-box">
+                        <div class="field-icon-slot"><i class="fas fa-lock"></i></div>
+                        <input type="password" name="new_password" minlength="6" class="field-input" placeholder="اتركها فارغة أو اكتب الكلمة الجديدة">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn" style="margin-top: 0; width: 100%; height: 48px;">
+                    <span>التحقق وتعيين كلمة المرور</span>
+                    <i class="fas fa-arrow-left"></i>
                 </button>
             </form>
+
+            @php
+                $supervisorPhone = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
+                $waDigits = preg_replace('/[^0-9]/', '', $supervisorPhone);
+                if (str_starts_with($waDigits, '00')) $waDigits = substr($waDigits, 2);
+                elseif (str_starts_with($waDigits, '0')) $waDigits = '970' . substr($waDigits, 1);
+                $waNum = !empty($waDigits) ? $waDigits : '970597694385';
+                $waMsg = urlencode("مرحباً إدارة منارة التوجيهي، أنا بحاجة لمساعدتكم في استعادة كلمة المرور لحسابي في المنصة.");
+            @endphp
+            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-default); text-align: center;">
+                <span style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 8px;">أو التواصل الفوري مع إدارة المنصة للمساعدة:</span>
+                <a href="https://wa.me/{{ $waNum }}?text={{ $waMsg }}" target="_blank" style="background: #22c55e; color: white; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; height: 42px; border-radius: 12px; font-size: 0.86rem; font-weight: 700; text-decoration: none; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.22); transition: 0.2s;">
+                    <i class="fab fa-whatsapp" style="font-size: 1.15rem;"></i>
+                    <span>مراسلة المشرف العام عبر واتساب 💬</span>
+                </a>
+            </div>
         </div>
     </div>
 

@@ -77,6 +77,89 @@
                     </div>
                 </div>
 
+                <!-- 0.5. بطاقة الأختام الرسمية والتواقيع الرقمية للشهادات والوثائق -->
+                <div class="settings-card">
+                    <div class="settings-card-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 18px 25px; display: flex; align-items: center; gap: 12px;">
+                        <i class="fa-solid fa-stamp" style="color: #d97706; font-size: 1.2rem;"></i>
+                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">الأختام الرسمية والتواقيع الرقمية للشهادات والوثائق (Official Stamp & Signatures)</h3>
+                    </div>
+                    <div style="padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+                        
+                        <!-- ختم المنصة الرسمي -->
+                        <div>
+                            <label class="field-label">ختم المنصة الرسمي المعتمد (Official Stamp)</label>
+                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
+                                <div style="width: 75px; height: 75px; border-radius: 14px; border: 2px dashed #cbd5e1; display: grid; place-items: center; overflow: hidden; background: #fffbeb; flex-shrink: 0;">
+                                    @if(\App\Models\Setting::get('official_stamp'))
+                                        <img src="{{ asset(\App\Models\Setting::get('official_stamp')) }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    @else
+                                        <span style="font-size: 1.8rem; color: #d97706;">🏛️</span>
+                                    @endif
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" name="official_stamp" accept="image/png,image/webp" class="field-input" style="padding: 8px;">
+                                    <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">يفضل PNG شفاف دائري بدقة عالية ليظهر على الشهادات.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- شعار المدير العام -->
+                        <div>
+                            <label class="field-label">شعار / ختم المدير العام (Director Emblem)</label>
+                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
+                                <div style="width: 75px; height: 75px; border-radius: 14px; border: 2px dashed #cbd5e1; display: grid; place-items: center; overflow: hidden; background: #f8fafc; flex-shrink: 0;">
+                                    @if(\App\Models\Setting::get('director_logo'))
+                                        <img src="{{ asset(\App\Models\Setting::get('director_logo')) }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    @else
+                                        <span style="font-size: 1.8rem; color: #1d4ed8;">🎖️</span>
+                                    @endif
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" name="director_logo" accept="image/*" class="field-input" style="padding: 8px;">
+                                    <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">يظهر في ترويسة الشهادة الرسمية والوثائق الأكاديمية.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- التوقيع الرقمي للمدير -->
+                        <div>
+                            <label class="field-label">توقيع المدير العام الرقمي (Director Digital Signature)</label>
+                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
+                                <div style="width: 75px; height: 75px; border-radius: 14px; border: 2px dashed #cbd5e1; display: grid; place-items: center; overflow: hidden; background: #f8fafc; flex-shrink: 0;">
+                                    @if(\App\Models\Setting::get('admin_signature'))
+                                        <img src="{{ asset(\App\Models\Setting::get('admin_signature')) }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    @else
+                                        <span style="font-size: 1.8rem; color: #475569;">✍️</span>
+                                    @endif
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" name="admin_signature" accept="image/png,image/webp" class="field-input" style="padding: 8px;">
+                                    <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">PNG شفاف يمثل التوقيع الفعلي المعتمد للمشرف العام.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- التوقيع الرقمي للمعلم الأكاديمي -->
+                        <div>
+                            <label class="field-label">توقيع المعلم / المشرف الأكاديمي (Teacher Signature)</label>
+                            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 12px;">
+                                <div style="width: 75px; height: 75px; border-radius: 14px; border: 2px dashed #cbd5e1; display: grid; place-items: center; overflow: hidden; background: #f8fafc; flex-shrink: 0;">
+                                    @if(\App\Models\Setting::get('teacher_signature'))
+                                        <img src="{{ asset(\App\Models\Setting::get('teacher_signature')) }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                                    @else
+                                        <span style="font-size: 1.8rem; color: #475569;">✍️</span>
+                                    @endif
+                                </div>
+                                <div style="flex: 1;">
+                                    <input type="file" name="teacher_signature" accept="image/png,image/webp" class="field-input" style="padding: 8px;">
+                                    <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">PNG شفاف يدرج في خانة توقيع معلم المساق على الشهادات.</small>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
                 <!-- 1. بطاقة تسمية وهوية المنصة -->
                 <div class="settings-card">
                     <div class="settings-card-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 18px 25px; display: flex; align-items: center; gap: 12px;">
@@ -230,6 +313,88 @@
 
         </div>
     </form>
+
+    <!-- منطقة العمليات الحساسة وتصفير المنصة للعام الجديد -->
+    <div style="margin-top: 40px; background: #fff; border: 2px solid #fecaca; border-radius: 22px; overflow: hidden; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.08);">
+        <div style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); padding: 22px 28px; border-bottom: 1.5px solid #fecaca; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: #dc2626; color: white; display: grid; place-items: center; font-size: 1.3rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0 0 3px; font-size: 1.25rem; font-weight: 900; color: #991b1b;">منطقة العمليات الحساسة وإعادة ضبط وتصفير المنصة (Danger Zone)</h3>
+                    <p style="margin: 0; font-size: 0.88rem; color: #b91c1c;">تصفير وحذف حسابات الطلبة والمعلمين دفعة واحدة عند بداية العام الدراسي الجديد أو تفريغ البيانات التجريبية.</p>
+                </div>
+            </div>
+            <span style="background: #fecaca; color: #991b1b; padding: 6px 14px; border-radius: 30px; font-weight: 800; font-size: 0.8rem;">
+                ⚠️ صلاحيات المدير العام فقط
+            </span>
+        </div>
+
+        <div style="padding: 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            
+            <!-- بطاقة حذف جميع الطلاب -->
+            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 1.5rem;">🎓</span>
+                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+                            {{ \App\Models\Student::count() }} طالب مسجل
+                        </span>
+                    </div>
+                    <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">حذف جميع الطلاب دفعة واحدة</h4>
+                    <p style="margin: 0 0 16px; font-size: 0.83rem; color: #64748b; line-height: 1.5;">
+                        حذف كافة الطلاب المسجلين وجميع اشتراكاتهم بالمواد وامتحاناتهم وتصفير سجل الطلاب بالكامل.
+                    </p>
+                </div>
+                <button type="button" onclick="purgeAllStudentsDirect()" style="width: 100%; background: #dc2626; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>حذف وتصفير جميع الطلاب</span>
+                </button>
+            </div>
+
+            <!-- بطاقة حذف جميع المعلمين -->
+            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 1.5rem;">👨‍🏫</span>
+                        <span style="background: #f0fdf4; color: #166534; font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+                            {{ \App\Models\User::where('role', 'teacher')->count() }} معلم مسجل
+                        </span>
+                    </div>
+                    <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">حذف جميع المعلمين دفعة واحدة</h4>
+                    <p style="margin: 0 0 16px; font-size: 0.83rem; color: #64748b; line-height: 1.5;">
+                        حذف حسابات جميع المعلمين وإخلاء المواد المسندة لهم دون المساس بحسابات الإدارة.
+                    </p>
+                </div>
+                <button type="button" onclick="purgeAllTeachersDirect()" style="width: 100%; background: #b91c1c; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>حذف وتصفير جميع المعلمين</span>
+                </button>
+            </div>
+
+            <!-- بطاقة الحذف الشامل (الطلاب + المعلمين معاً) -->
+            <div style="background: #fef2f2; border: 2px dashed #f87171; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 1.5rem;">🔥</span>
+                        <span style="background: #dc2626; color: white; font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+                            تصفير شامل مشترك
+                        </span>
+                    </div>
+                    <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 900; color: #991b1b;">حذف الطلاب والمعلمين معاً دفعة واحدة</h4>
+                    <p style="margin: 0 0 16px; font-size: 0.83rem; color: #7f1d1d; line-height: 1.5;">
+                        إعادة تهيئة وتصفير المنظومة الأكاديمية بالكامل لدورة جديدة، بحذف كافة الطلاب والمعلمين معاً بنقرة واحدة.
+                    </p>
+                </div>
+                <button type="button" onclick="purgeAllBothDirect()" style="width: 100%; background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%); color: white; border: none; padding: 13px; border-radius: 10px; font-weight: 900; font-size: 0.92rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(153, 27, 27, 0.35);">
+                    <i class="fa-solid fa-burst"></i>
+                    <span>حذف جميع الطلاب والمعلمين معاً</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <style>
@@ -378,6 +543,120 @@ body.dark-theme .field-select {
             });
             btn.disabled = false;
             btn.innerHTML = `<span>حفظ واعتماد التغييرات</span> <i class="fa-solid fa-cloud-arrow-up"></i>`;
+        });
+    }
+
+    // دوال الحذف الشامل والتصفير من صفحة الإعدادات
+    function purgeAllStudentsDirect() {
+        Swal.fire({
+            title: 'حذف وتصفير جميع الطلاب ⚠️',
+            html: `
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
+                    <strong>تحذير أمني شديد:</strong><br>
+                    سيتم حذف <strong>كافة الطلاب المسجلين</strong> وسجلاتهم واشتراكاتهم وامتحاناتهم نهائياً.
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، اكتب:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'اكتب: تأكيد الحذف',
+            showCancelButton: true,
+            confirmButtonText: 'تأكيد وحذف جميع الطلاب',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#dc2626',
+            preConfirm: (val) => {
+                if (val !== 'تأكيد الحذف' && val !== 'DELETE') {
+                    Swal.showValidationMessage('العبارة غير متطابقة! اكتب: تأكيد الحذف');
+                    return false;
+                }
+                return val;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'جاري حذف جميع الطلاب...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                axios.post("{{ route('admin.students.purgeAll') }}", { confirm_text: result.value })
+                .then(res => Swal.fire('تم بنجاح!', res.data.message, 'success').then(() => location.reload()))
+                .catch(err => Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ', 'error'));
+            }
+        });
+    }
+
+    function purgeAllTeachersDirect() {
+        Swal.fire({
+            title: 'حذف وتصفير جميع المعلمين ⚠️',
+            html: `
+                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
+                    <strong>تحذير:</strong><br>
+                    سيتم حذف <strong>كافة المعلمين</strong> وإخلاء إسناد المواد الدراسية. (حسابات الإدارة محمية).
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، اكتب:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'اكتب: تأكيد الحذف',
+            showCancelButton: true,
+            confirmButtonText: 'تأكيد وحذف جميع المعلمين',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#dc2626',
+            preConfirm: (val) => {
+                if (val !== 'تأكيد الحذف' && val !== 'DELETE') {
+                    Swal.showValidationMessage('العبارة غير متطابقة! اكتب: تأكيد الحذف');
+                    return false;
+                }
+                return val;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'جاري حذف جميع المعلمين...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                axios.post("{{ route('admin.teachers.purgeAll') }}", { confirm_text: result.value })
+                .then(res => Swal.fire('تم بنجاح!', res.data.message, 'success').then(() => location.reload()))
+                .catch(err => Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ', 'error'));
+            }
+        });
+    }
+
+    function purgeAllBothDirect() {
+        Swal.fire({
+            title: 'حذف جميع الطلاب والمعلمين معاً ⚠️🔥',
+            html: `
+                <div style="background: #7f1d1d; color: white; border-radius: 12px; padding: 16px; text-align: right; margin-bottom: 14px; font-size: 0.88rem; line-height: 1.6;">
+                    <strong>⚠️ إجراء التصفير الشامل للعام الجديد:</strong><br>
+                    سيتم حذف <strong>جميع الطلاب وجميع المعلمين معاً دفعة واحدة</strong>، وتفريغ كافة السجلات والاشتراكات بالكامل، وإعادة المنصة لنقطة الصفر مع الحفاظ على المواد وحسابات الإدارة.
+                </div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">لإتمام التصفير الشامل، يرجى كتابة العبارة بدقة:<br><strong style="color: #991b1b; font-size: 1rem;">تأكيد الحذف الشامل</strong></p>
+            `,
+            input: 'text',
+            inputPlaceholder: 'اكتب: تأكيد الحذف الشامل',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، نفذ التصفير الشامل الآن 🚀',
+            cancelButtonText: 'تراجع وإلغاء',
+            confirmButtonColor: '#991b1b',
+            preConfirm: (val) => {
+                if (val !== 'تأكيد الحذف الشامل' && val !== 'DELETE ALL' && val !== 'تأكيد الحذف') {
+                    Swal.showValidationMessage('العبارة غير متطابقة! اكتب بدقة: تأكيد الحذف الشامل');
+                    return false;
+                }
+                return val;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري التصفير الشامل للطلاب والمعلمين...',
+                    text: 'يرجى الانتظار لحين معالجة البيانات وإعادة الضبط',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.system.purgeAllUsers') }}", { confirm_text: result.value })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التصفير الشامل بنجاح! 🚀',
+                        text: res.data.message
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء التصفير الشامل', 'error');
+                });
+            }
         });
     }
 </script>

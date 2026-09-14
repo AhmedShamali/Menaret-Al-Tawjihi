@@ -14,12 +14,14 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'plain_password',
         'phone',
         'major',
         'bio',
         'photo',
         'role',
         'subject_id',
+        'last_activity',
     ];
 
     protected $hidden = [
@@ -27,22 +29,34 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    // دالة تفحص هل المستخدم متصل حالياً (آخر نشاط خلال آخر دقيقتين)
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'last_activity'     => 'datetime',
+    ];
+
+    // دالة تفحص هل المستخدم متصل حالياً (آخر نشاط خلال آخر 5 دقائق)
     public function isOnline()
     {
-        return $this->last_activity && $this->last_activity->gt(now()->subMinutes(2));
+        if (!$this->last_activity) {
+            return false;
+        }
+        $lastAct = is_string($this->last_activity) ? \Carbon\Carbon::parse($this->last_activity) : $this->last_activity;
+        return $lastAct->gt(now()->subMinutes(5));
     }
 
-// دالة تجلب نص آخر ظهور أو متصل الآن بشكل جاهز
+    // دالة تجلب نص آخر ظهور أو متصل الآن بشكل جاهز
     public function getLastSeenStatus()
     {
         if ($this->isOnline()) {
             return 'متصل الآن';
         }
 
-        return $this->last_activity
-            ? 'آخر ظهور: ' . $this->last_activity->timezone('Asia/Gaza')->diffForHumans()
-            : 'غير متصل';
+        if (!$this->last_activity) {
+            return 'غير متصل';
+        }
+
+        $lastAct = is_string($this->last_activity) ? \Carbon\Carbon::parse($this->last_activity) : $this->last_activity;
+        return 'آخر ظهور ' . $lastAct->diffForHumans();
     }
 
 
