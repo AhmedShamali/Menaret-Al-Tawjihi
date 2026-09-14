@@ -85,22 +85,19 @@ class StudentController extends Controller
 
     // 4. دالة حفظ وتسجيل الطالب (تدعم التسجيل الذاتي للطلاب وإضافة الأدمن)
     public function store(Request $request) {
-        // تنظيف البريد والتأكد من إلحاق النطاق المعتمد إذا أدخل الطالب اسم المستخدم فقط
+        // تنظيف البريد وتثبيت النطاق المعتمد @tawjihi.ps بشكل صارم
         $rawEmail = trim($request->input('email', ''));
-        if (!empty($rawEmail) && !str_contains($rawEmail, '@')) {
-            $rawEmail = $rawEmail . '@tawjihi-gaza.ps';
-            $request->merge(['email' => $rawEmail]);
+        $username = preg_replace('/[^a-zA-Z0-9._-]/', '', strtolower(explode('@', $rawEmail)[0]));
+        if (empty($username)) {
+            $username = 'std' . rand(1000, 9999);
         }
+        $officialEmail = $username . '@tawjihi.ps';
+        $request->merge(['email' => $officialEmail]);
 
         $validator = Validator::make($request->all(), [
             'name_ar'       => 'required|string|max:255',
             'nid'           => 'required|digits:9|unique:students,nid',
-            'email'         => [
-                'required',
-                'email',
-                'regex:/^[a-zA-Z0-9._%+-]+@tawjihi-gaza\.ps$/i',
-                'unique:students,email'
-            ],
+            'email'         => 'required|email|unique:students,email',
             'password'      => 'required|min:6',
             'stage_id'      => 'required',
             'phone'         => 'nullable|string|max:20',
@@ -115,9 +112,8 @@ class StudentController extends Controller
             'nid.required'     => 'يرجى إدخال رقم الهوية الفلسطينية.',
             'nid.digits'       => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
             'nid.unique'       => 'رقم الهوية هذا مسجل مسبقاً في المنصة.',
-            'email.required'   => 'البريد الإلكتروني مطلوب.',
-            'email.regex'      => 'يجب أن يكون البريد الإلكتروني معتمداً بنطاق منصة التوجيهي [username@tawjihi-gaza.ps].',
-            'email.unique'     => 'البريد الإلكتروني مستخدم بالفعل، يرجى تسجيل الدخول أو استخدام بريد آخر.',
+            'email.required'   => 'اسم المستخدم للبريد الأكاديمي مطلوب.',
+            'email.unique'     => 'اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.',
             'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
             'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
             'photo.image'      => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
@@ -292,9 +288,21 @@ class StudentController extends Controller
             ->where('student_id', $student->id)
             ->get();
 
+        // حساب إجمالي الرسوم الأكاديمية المطلوبة والخصم الممنوح
+        $totalAmount = 0;
+        foreach ($pendingEnrollments as $enr) {
+            $totalAmount += (float)($enr->subject->price ?? 120);
+        }
+        if ($totalAmount === 0) {
+            $totalAmount = 150; // باقة التوجيهي الأساسية الافتراضية
+        }
+
+        $discountAmount = $student->hasDiscount() ? $student->calculateDiscount($totalAmount) : 0;
+        $finalAmount = max(0, $totalAmount - $discountAmount);
+
         $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
 
-        return view('student.pending_approval', compact('student', 'pendingEnrollments', 'latestPayment'));
+        return view('student.pending_approval', compact('student', 'pendingEnrollments', 'latestPayment', 'totalAmount', 'discountAmount', 'finalAmount'));
     }
 
     /**
@@ -308,49 +316,51 @@ class StudentController extends Controller
         }
 
         $request->validate([
-            'payment_method'     => 'required|string',
-            'transaction_number' => 'required|string|max:100',
-            'amount'             => 'required|numeric|min:1',
-            'receipt_file'       => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:6144',
+            'payment_method' => 'required|string',
+            'receipt_photo'  => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:8192',
+            'receipt_file'   => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:8192',
         ], [
-            'payment_method.required'     => 'يرجى اختيار وسيلة الدفع المستخدمة.',
-            'transaction_number.required' => 'يرجى إدخال رقم العملية / الحوالة أو رقم المحفظة.',
-            'amount.required'             => 'يرجى إدخال المبلغ المدفوع.',
+            'payment_method.required' => 'يرجى تحديد وسيلة الدفع المستخدمة.',
         ]);
 
+        $receiptFile = $request->file('receipt_photo') ?? $request->file('receipt_file');
         $receiptPath = null;
-        if ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
-            $receiptPath = $request->file('receipt_file')->store('payments/receipts', 'public');
+        if ($receiptFile && $receiptFile->isValid()) {
+            $receiptPath = $receiptFile->store('payments/receipts', 'public');
         }
+
+        $txNo = $request->input('reference_no') ?: ($request->input('transaction_number') ?: 'TXN-' . time());
+        $amount = (float)($request->input('amount') ?: 150);
 
         $payment = \App\Models\Payment::create([
             'student_id'         => $student->id,
             'payment_method'     => $request->payment_method,
-            'transaction_number' => $request->transaction_number,
-            'amount'             => $request->amount,
+            'transaction_number' => $txNo,
+            'amount'             => $amount,
             'receipt_file'       => $receiptPath,
             'status'             => 'pending',
-            'notes'              => $request->input('notes', 'سداد رسوم اشتراك طالب جديد'),
+            'notes'              => $request->input('notes', 'إشعار سداد اشتراك من منصة التوجيهي'),
         ]);
 
+        // إشعار إدارة المنصة فوراً لوصول إشعار سداد من الطالب
         try {
             \App\Services\NotificationService::notifyAdmin(
                 'إشعار سداد رسوم جديد 💳',
-                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد بمبلغ {$payment->amount} ₪ عبر {$payment->payment_method}، يرجى المراجعة والاعتماد.",
+                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد عبر ({$payment->payment_method}) بمبلغ ({$payment->amount} ₪).",
                 'payment',
                 route('admin.payments.index'),
-                'fa-credit-card'
+                'fa-receipt'
             );
         } catch (\Throwable $e) {}
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'تم استلام إشعار السداد بنجاح! سيقوم المشرف العام بمطابقته وتفعيل حسابك واشتراكك فورياً. 🎉'
+                'message' => 'تم استلام إشعار السداد والإيصال بنجاح! سيقوم المشرف العام بمطابقته واعتماد حسابك فورياً. 🎉'
             ]);
         }
 
-        return back()->with('success', 'تم استلام إشعار السداد بنجاح! سيقوم المشرف العام بمطابقته وتفعيل حسابك واشتراكك فورياً.');
+        return back()->with('payment_success', 'تم استلام إشعار السداد والإيصال بنجاح! سيقوم المشرف العام بمراجعته واعتماد حسابك واشتراكك فورياً.');
     }
 
     /**
@@ -621,7 +631,7 @@ class StudentController extends Controller
                 'مبارك! تم منحك خصماً خاصاً من إدارة المنصة 🏷️🎉',
                 "قررت إدارة المنصة منحك {$discountText}{$reasonText} على اشتراكات المواد الدراسية. يمكنك الآن الاستفادة من الخصم مباشرة عند الاشتراك.",
                 'discount',
-                route('student.courses.catalog')
+                url('/student/dashboard')
             );
         } catch (\Throwable $e) {}
 

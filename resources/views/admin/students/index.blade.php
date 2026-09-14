@@ -23,6 +23,10 @@
         </div>
 
         <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <a href="{{ route('admin.students.export') }}" style="background: #059669; color: white; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25); transition: 0.2s;" title="تصدير بيانات جميع الطلاب بصيغة ملف Excel / CSV">
+                <i class="fa-solid fa-file-excel"></i>
+                <span>تصدير إكسل (CSV)</span>
+            </a>
             <button type="button" onclick="confirmPurgeAllStudents()" style="background: #dc2626; color: white; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25); transition: 0.2s;" title="حذف وتصفير جميع الطلاب المسجلين دفعة واحدة">
                 <i class="fa-solid fa-trash-can"></i>
                 <span>حذف جميع الطلاب دفعة واحدة</span>
@@ -114,15 +118,15 @@
             <table class="students-data-table">
                 <thead>
                     <tr>
-                        <th style="width: 45px; text-align: center;">
+                        <th style="width: 40px; text-align: center;">
                             <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="تحديد / إلغاء تحديد الكل" style="width: 18px; height: 18px; cursor: pointer; accent-color: #4f46e5;">
                         </th>
-                        <th style="min-width: 230px;">المعلومات الشخصية</th>
-                        <th style="min-width: 170px;">الفرع والمرحلة</th>
-                        <th style="min-width: 130px;">الهوية الوطنية</th>
-                        <th style="min-width: 140px;">حالة الحساب</th>
-                        <th style="min-width: 140px;">الخصم والمنحة 🏷️</th>
-                        <th style="min-width: 240px; text-align: center;">إجراءات التحكم</th>
+                        <th>المعلومات الشخصية</th>
+                        <th>الفرع والمرحلة</th>
+                        <th>الهوية الوطنية</th>
+                        <th>حالة الحساب</th>
+                        <th>الخصم والمنحة 🏷️</th>
+                        <th style="text-align: center;">إجراءات التحكم</th>
                     </tr>
                 </thead>
                 <tbody id="studentsTableBody">
@@ -177,12 +181,15 @@
                                     <a href="{{ route('admin.students.show', $student->id) }}" class="student-name-link" title="فتح الملف الشخصي والمواد الدراسية">
                                         {{ $student->name_ar }}
                                     </a>
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
                                         <span class="student-email-sub" dir="ltr">{{ $student->email }}</span>
-                                        <button type="button" onclick="revealStudentPassword('{{ addslashes($student->name_ar) }}', '{{ addslashes($student->plain_password ?? '') }}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; border-radius: 6px; padding: 2px 6px; font-size: 0.72rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="كشف كلمة مرور الطالب">
-                                            <i class="fa-solid fa-key" style="color: #d97706;"></i>
-                                            <span>كلمة المرور</span>
-                                        </button>
+                                        <span class="password-badge-display" title="كلمة مرور الطالب للدخول" style="display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: 1px 7px; font-size: 0.74rem; font-weight: 700; font-family: monospace;" dir="ltr">
+                                            <i class="fa-solid fa-key" style="font-size: 0.68rem; color: #d97706;"></i>
+                                            <span>{{ $student->plain_password ?: '123456' }}</span>
+                                            <button type="button" onclick="navigator.clipboard.writeText('{{ $student->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: none; border: none; padding: 0; cursor: pointer; color: #b45309;" title="نسخ">
+                                                <i class="fa-regular fa-copy" style="font-size: 0.68rem;"></i>
+                                            </button>
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -567,7 +574,6 @@
 
     .students-data-table {
         width: 100%;
-        min-width: 1080px;
         border-collapse: collapse;
         text-align: right;
     }

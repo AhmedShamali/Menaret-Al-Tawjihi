@@ -141,7 +141,8 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
     Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
 
-    // مسارات الحذف الجماعي والتصفير الشامل للطلاب
+    // مسارات الحذف الجماعي والتصفير الشامل وتصدير الطلاب
+    Route::get('/students/export', [AdminManagerController::class, 'exportStudents'])->name('students.export');
     Route::post('/students/bulk-delete', [AdminManagerController::class, 'bulkDeleteStudents'])->name('students.bulkDelete');
     Route::post('/students/purge-all', [AdminManagerController::class, 'purgeAllStudents'])->name('students.purgeAll');
 

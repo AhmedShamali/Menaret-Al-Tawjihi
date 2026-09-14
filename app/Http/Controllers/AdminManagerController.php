@@ -246,6 +246,80 @@ class AdminManagerController extends Controller {
     }
 
     /**
+     * تصدير بيانات الطلاب كملف CSV / Excel
+     */
+    public function exportStudents()
+    {
+        $students = Student::with('stage')->latest()->get();
+
+        $filename = 'students_export_' . date('Y_m_d_His') . '.csv';
+
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires'             => '0',
+        ];
+
+        $callback = function () use ($students) {
+            $file = fopen('php://output', 'w');
+            // Write UTF-8 BOM for Excel Arabic compatibility
+            fputs($file, "\xEF\xBB\xBF");
+
+            fputcsv($file, [
+                'المعرف',
+                'اسم الطالب (عربي)',
+                'الاسم (إنجليزي)',
+                'البريد الإلكتروني',
+                'كلمة المرور',
+                'رقم الهوية',
+                'الفرع / المرحلة',
+                'رقم الهاتف',
+                'رقم الواتساب',
+                'المدينة',
+                'المدرسة',
+                'الحالة',
+                'تاريخ التسجيل'
+            ]);
+
+            $statusMap = [
+                'active'    => 'مفعّل ومعتمد',
+                'pending'   => 'بانتظار الموافقة',
+                'suspended' => 'مجمد',
+                'frozen'    => 'مجمد',
+                'inactive'  => 'معطل',
+            ];
+
+            foreach ($students as $s) {
+                $stageName = $s->stage ? ($s->stage->label_ar ?? $s->stage->name_ar) : 'توجيهي';
+                $statusText = $statusMap[$s->status] ?? $s->status;
+
+                fputcsv($file, [
+                    $s->id,
+                    $s->name_ar,
+                    $s->name_en ?? '',
+                    $s->email,
+                    $s->plain_password ?? 'مشفرة',
+                    $s->nid ?? '',
+                    $stageName,
+                    $s->phone ?? '',
+                    $s->whatsapp ?? '',
+                    $s->city ?? '',
+                    $s->school_name ?? '',
+                    $statusText,
+                    $s->created_at ? $s->created_at->format('Y-m-d H:i') : ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+
+    /**
      * استيراد المعلمين من ملف CSV
      */
     public function importTeachers(Request $request)
@@ -770,7 +844,7 @@ class AdminManagerController extends Controller {
 
             foreach ($tablesToClean as $tbl) {
                 if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
-                    \DB::table($tbl)->truncate();
+                    \DB::table($tbl)->delete();
                 }
             }
 
@@ -786,7 +860,7 @@ class AdminManagerController extends Controller {
                 \DB::table('notifications')->where('notifiable_type', 'like', '%Student%')->delete();
             }
 
-            \DB::table('students')->truncate();
+            \DB::table('students')->delete();
 
             \DB::commit();
 
@@ -975,7 +1049,7 @@ class AdminManagerController extends Controller {
 
             foreach ($tablesToClean as $tbl) {
                 if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
-                    \DB::table($tbl)->truncate();
+                    \DB::table($tbl)->delete();
                 }
             }
 
@@ -995,8 +1069,8 @@ class AdminManagerController extends Controller {
                 ]);
             }
 
-            // تصفير جدول الطلاب بالكامل
-            \DB::table('students')->truncate();
+            // حذف جميع سجلات الطلاب
+            \DB::table('students')->delete();
 
             // حذف المعلمين فقط والحفاظ على حسابات المدراء
             User::where('role', 'teacher')->delete();

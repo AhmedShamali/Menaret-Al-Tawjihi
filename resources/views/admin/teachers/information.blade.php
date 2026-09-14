@@ -189,9 +189,6 @@
             <a href="{{ route('admin.teachers.export') }}" class="btn-action" style="background: #059669; color: white; padding: 9px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);" title="تنزيل جدول المعلمين كاملاً إلى ملف Excel/CSV">
                 <i class="fas fa-file-excel"></i> تصدير إكسل (CSV)
             </a>
-            <button type="button" onclick="openImportModal()" style="background: #0284c7; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);">
-                <i class="fas fa-file-import"></i> استيراد معلمين
-            </button>
             <a href="{{ route('admin.teachers.create') }}" class="btn-add-new">
                 <i class="fas fa-plus-circle me-1"></i> إضافة معلم جديد
             </a>
@@ -267,10 +264,13 @@
                         </td>
                         <td>
                             <div dir="ltr" style="color: #1e293b; font-size: 13px; font-weight: 600;">{{ $teacher->email }}</div>
-                            <div style="margin-top: 4px;">
-                                <button type="button" onclick="revealTeacherPassword('{{ addslashes($teacher->name) }}', '{{ addslashes($teacher->plain_password ?? '') }}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" title="كشف كلمة المرور">
-                                    <i class="fas fa-key" style="color: #d97706;"></i>
-                                    <span>كشف كلمة المرور</span>
+                            <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px;">
+                                <span class="password-badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: 2px 7px; font-size: 11px; font-weight: 700; font-family: monospace;" dir="ltr">
+                                    <i class="fas fa-key" style="color: #d97706; font-size: 10px;"></i>
+                                    <span>{{ $teacher->plain_password ?: '123456' }}</span>
+                                </span>
+                                <button type="button" onclick="navigator.clipboard.writeText('{{ $teacher->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: #475569;" title="نسخ كلمة المرور">
+                                    <i class="far fa-copy"></i>
                                 </button>
                             </div>
                         </td>
@@ -330,38 +330,6 @@
     </div>
 </div>
 
-{{-- نافذة استيراد المعلمين من ملف CSV --}}
-<div id="importModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
-    <div style="background: white; border-radius: 18px; width: 100%; max-width: 480px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
-        <div style="padding: 18px 22px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 36px; height: 36px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center;">
-                    <i class="fas fa-file-import"></i>
-                </div>
-                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">استيراد معلمين من ملف CSV</h3>
-            </div>
-            <button type="button" onclick="closeImportModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">✕</button>
-        </div>
-
-        <form action="{{ route('admin.teachers.import') }}" method="POST" enctype="multipart/form-data" style="padding: 22px;">
-            @csrf
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 16px; line-height: 1.5;">
-                اختر ملف CSV يحتوي على بيانات المعلمين بالأعمدة: (الاسم، البريد الإلكتروني، كلمة المرور، رقم الهاتف، التخصص).
-            </p>
-
-            <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 6px; color: #334155;">ملف CSV:</label>
-                <input type="file" name="csv_file" accept=".csv,.txt" required style="width: 100%; padding: 10px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.85rem;">
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                <button type="button" onclick="closeImportModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer;">إلغاء</button>
-                <button type="submit" style="background: #0284c7; color: white; border: none; padding: 10px 22px; border-radius: 10px; font-weight: 800; cursor: pointer;">بدء الاستيراد</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function revealTeacherPassword(name, pwd) {
@@ -383,14 +351,6 @@
             `,
             confirmButtonText: 'تمت المشاهدة'
         });
-    }
-
-    function openImportModal() {
-        document.getElementById('importModalOverlay').style.display = 'flex';
-    }
-
-    function closeImportModal() {
-        document.getElementById('importModalOverlay').style.display = 'none';
     }
 
     // إدارة التحديد الجماعي وحذف المعلمين
