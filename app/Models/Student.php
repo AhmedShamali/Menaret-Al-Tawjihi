@@ -180,5 +180,13 @@ class Student extends Authenticatable
     {
         return !empty($this->id_photo);
     }
+
+    /**
+     * الاشتراكات الشهرية للطالب على مدار السنة
+     */
+    public function monthlySubscriptions()
+    {
+        return $this->hasMany(\App\Models\StudentMonthlySubscription::class)->orderBy('month');
+    }
 }
 

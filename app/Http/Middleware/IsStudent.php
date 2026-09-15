@@ -21,8 +21,11 @@ class IsStudent
 
             // فحص حالة اعتماد الطالب من قبل إدارة المنصة
             if ($student->status !== 'active') {
-                // السماح فقط لصفحة انتظار الاعتماد وتسجيل الخروج
-                if ($request->routeIs('student.pending-approval') || $request->is('logout') || $request->is('student/logout')) {
+                // السماح لصفحة انتظار الاعتماد، ونموذج إرسال إشعار السداد، وتسجيل الخروج
+                if ($request->routeIs('student.pending-approval') || 
+                    $request->routeIs('student.pendingPayment.submit') || 
+                    $request->is('logout') || 
+                    $request->is('student/logout')) {
                     return $next($request);
                 }
 

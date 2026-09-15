@@ -149,19 +149,33 @@
                 </div>
             @endif
 
-            <form action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data">
+            @if($errors->any())
+                <div class="alert-danger-box" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-weight: 700; text-align: right; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem; color: #dc2626; margin-top: 2px;"></i>
+                    <div>
+                        <div style="margin-bottom: 4px;">يرجى تصحيح الأخطاء التالية:</div>
+                        <ul style="margin: 0; padding-right: 20px; font-size: 0.88rem; font-weight: 600;">
+                            @foreach($errors->all() as $err)
+                                <li>{{ $err }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
+
+            <form id="pendingPaymentForm" action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data" onsubmit="return validatePaymentForm(event)">
                 @csrf
                 <input type="hidden" name="amount" value="{{ $finalAmount ?? 150 }}">
 
                 <div class="form-grid-row">
                     <div class="form-group-cell">
                         <label class="input-label">وسيلة الدفع المستخدمة <span class="required">*</span></label>
-                        <select name="payment_method" class="form-select-clean" required>
-                            <option value="Jawwal Pay">جوال باي (Jawwal Pay) - 0567897212</option>
-                            <option value="PalPay">بال باي (PalPay) - 0567897212</option>
-                            <option value="Bank of Palestine">بنك فلسطين - 0567897212</option>
-                            <option value="Reflect">ريفلكت (Reflect)</option>
-                            <option value="Cash">سداد نقدي مباشر للمشرف</option>
+                        <select name="payment_method" id="paymentMethodSelect" class="form-select-clean" required>
+                            <option value="جوال باي (Jawwal Pay)">جوال باي (Jawwal Pay) - 0567897212</option>
+                            <option value="بال باي (PalPay)">بال باي (PalPay) - 0567897212</option>
+                            <option value="بنك فلسطين (Bank of Palestine)">بنك فلسطين - 0567897212</option>
+                            <option value="ريفلكت (Reflect)">ريفلكت (Reflect)</option>
+                            <option value="سداد نقدي مباشر للمشرف">سداد نقدي مباشر للمشرف</option>
                         </select>
                     </div>
 
@@ -173,8 +187,8 @@
 
                 <div class="form-group-full">
                     <label class="input-label">إرفاق صورة الإيصال أو لقطة الشاشة <span class="required">*</span></label>
-                    <div class="file-upload-box">
-                        <input type="file" name="receipt_photo" id="receiptFileInput" accept="image/*,application/pdf" class="file-input-hidden" required onchange="handleFileSelected(this)">
+                    <div class="file-upload-box" id="fileUploadBox">
+                        <input type="file" name="receipt_photo" id="receiptFileInput" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" class="file-input-hidden" onchange="handleFileSelected(this)">
                         <label for="receiptFileInput" class="file-upload-label">
                             <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
                             <span id="uploadLabelText">اضغط هنا لرفع صورة الإيصال أو ملف PDF</span>
@@ -183,9 +197,9 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit-receipt">
+                <button type="submit" class="btn-submit-receipt" id="btnSubmitReceipt">
                     <i class="fa-solid fa-paper-plane"></i>
-                    <span>تأكيد إرسال الإشعار للإدارة لتفعيل الحساب</span>
+                    <span id="submitBtnText">تأكيد إرسال الإشعار للإدارة لتفعيل الحساب</span>
                 </button>
             </form>
         </div>
@@ -248,7 +262,34 @@
             labelText.innerText = `تم اختيار الملف: ${input.files[0].name} ✅`;
             labelText.style.color = '#059669';
             labelText.style.fontWeight = '800';
+            const uploadBox = document.getElementById('fileUploadBox');
+            if (uploadBox) uploadBox.style.borderColor = '#10b981';
         }
+    }
+
+    function validatePaymentForm(e) {
+        const fileInput = document.getElementById('receiptFileInput');
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            Swal.fire({
+                icon: 'warning',
+                title: 'يرجى إرفاق الإيصال 📄',
+                text: 'يرجى النقر على مربع رفع الملف واختيار صورة إيصال التحويل أو ملف PDF ليتمكن المشرف من مطابقة ومراجعة سدادك فوراً.',
+                confirmButtonText: 'حسناً، سأقوم برفع الإيصال',
+                confirmButtonColor: '#2563eb'
+            });
+            return false;
+        }
+
+        const btn = document.getElementById('btnSubmitReceipt');
+        const text = document.getElementById('submitBtnText');
+        if (btn) {
+            btn.disabled = true;
+            btn.style.opacity = '0.75';
+            btn.style.cursor = 'not-allowed';
+            if (text) text.innerText = 'جاري إرسال الإشعار ورفع الإيصال للإدارة...';
+        }
+        return true;
     }
 
     function checkStatusRefresh() {
@@ -666,7 +707,16 @@
         margin-bottom: 16px;
     }
     .file-input-hidden {
-        display: none;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        opacity: 0;
     }
     .file-upload-label {
         display: flex;

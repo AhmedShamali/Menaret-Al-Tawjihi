@@ -332,21 +332,45 @@ class StudentController extends Controller
         $txNo = $request->input('reference_no') ?: ($request->input('transaction_number') ?: 'TXN-' . time());
         $amount = (float)($request->input('amount') ?: 150);
 
+        // تحويل اسم وسيلة الدفع إلى رمز البوابة المتوافق مع جدول payments
+        $rawMethod = strtolower($request->payment_method);
+        $gateway = 'jawwal_pay';
+        if (str_contains($rawMethod, 'palpay') || str_contains($rawMethod, 'بال باي')) {
+            $gateway = 'palpay';
+        } elseif (str_contains($rawMethod, 'bank') || str_contains($rawMethod, 'فلسطين') || str_contains($rawMethod, 'bop')) {
+            $gateway = 'bop';
+        } elseif (str_contains($rawMethod, 'reflect') || str_contains($rawMethod, 'ريفلكت')) {
+            $gateway = 'reflect';
+        } elseif (str_contains($rawMethod, 'cash') || str_contains($rawMethod, 'نقد')) {
+            $gateway = 'cash';
+        } elseif (str_contains($rawMethod, 'voucher') || str_contains($rawMethod, 'كارت')) {
+            $gateway = 'voucher';
+        }
+
+        $paymentDetails = json_encode([
+            'payment_method_label' => $request->payment_method,
+            'reference_no'         => $request->input('reference_no'),
+            'notes'                => $request->input('notes', 'إشعار سداد اشتراك من منصة التوجيهي'),
+            'submitted_at'         => now()->toDateTimeString(),
+        ], JSON_UNESCAPED_UNICODE);
+
         $payment = \App\Models\Payment::create([
             'student_id'         => $student->id,
-            'payment_method'     => $request->payment_method,
             'transaction_number' => $txNo,
+            'gateway'            => $gateway,
             'amount'             => $amount,
-            'receipt_file'       => $receiptPath,
+            'currency'           => 'ILS',
             'status'             => 'pending',
-            'notes'              => $request->input('notes', 'إشعار سداد اشتراك من منصة التوجيهي'),
+            'payment_details'    => $paymentDetails,
+            'receipt_path'       => $receiptPath,
         ]);
 
         // إشعار إدارة المنصة فوراً لوصول إشعار سداد من الطالب
         try {
+            $gwLabel = $payment->gateway_name_ar ?? $request->payment_method;
             \App\Services\NotificationService::notifyAdmin(
                 'إشعار سداد رسوم جديد 💳',
-                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد عبر ({$payment->payment_method}) بمبلغ ({$payment->amount} ₪).",
+                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد عبر ({$gwLabel}) بمبلغ ({$payment->amount} ₪).",
                 'payment',
                 route('admin.payments.index'),
                 'fa-receipt'
@@ -652,12 +676,49 @@ class StudentController extends Controller
 
     public function destroy($id) {
         $student = Student::findOrFail($id);
+        
         // حذف الصور عند حذف الطالب
         if($student->photo) Storage::disk('public')->delete($student->photo);
         if($student->id_photo) Storage::disk('public')->delete($student->id_photo);
 
-        $student->delete();
-        return response()->json(['success' => true]);
+        $studentId = $student->id;
+
+        \DB::beginTransaction();
+        try {
+            $tables = [
+                'submission_answers' => "submission_id IN (SELECT id FROM exam_submissions WHERE student_id = {$studentId})",
+                'exam_submissions'   => "student_id = {$studentId}",
+                'enrollments'        => "student_id = {$studentId}",
+                'certificates'       => "student_id = {$studentId}",
+                'recommendations'    => "student_id = {$studentId}",
+                'activities'         => "student_id = {$studentId}",
+                'payments'           => "student_id = {$studentId}",
+                'channel_requests'   => "student_id = {$studentId}",
+                'placement_results'  => "student_id = {$studentId}",
+                'support_tickets'    => "student_id = {$studentId}",
+                'messages'           => "student_id = {$studentId}",
+                'flashcards'         => "student_id = {$studentId}",
+                'video_notes'        => "student_id = {$studentId}",
+                'student_progress'   => "student_id = {$studentId}",
+                'exam_assignments'   => "student_id = {$studentId}",
+            ];
+
+            foreach ($tables as $tbl => $rawWhere) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    try {
+                        \DB::table($tbl)->whereRaw($rawWhere)->delete();
+                    } catch (\Throwable $ex) {}
+                }
+            }
+
+            $student->delete();
+            \DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'تم حذف الطالب وكافة سجلاته بنجاح']);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'تعذر حذف الطالب: ' . $e->getMessage()], 500);
+        }
     }
 
     public function show($id) {

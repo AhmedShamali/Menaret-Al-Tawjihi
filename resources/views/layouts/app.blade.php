@@ -591,6 +591,7 @@
                     <ul class="submenu">
                         <li><a href="{{ route('admin.students.index') }}" class="submenu-item">إدارة الطلاب</a></li>
                         <li><a href="{{ route('admin.teachers.index') }}" class="submenu-item">إدارة المعلمين</a></li>
+                        <li><a href="{{ route('admin.teachers.salaries') }}" class="submenu-item"><i class="fa-solid fa-money-bill-wave" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> رواتب ومستحقات المعلمين</a></li>
                         <li><a href="{{ route('admin.teachers.info') }}" class="submenu-item">إضافة معلم جديد</a></li>
                         <li><a href="{{ route('admin.students.profile_all') }}" class="submenu-item">سجل الطلاب الكامل</a></li>
                     </ul>
@@ -604,9 +605,16 @@
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-tags" style="color: #059669;"></i> <span>تسعير المواد</span></div></div>
                 </a>
 
-                <a href="{{ route('admin.payments.index') }}" class="nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-wallet" style="color: #d97706;"></i> <span>الاشتراكات والمدفوعات</span></div></div>
-                </a>
+                <div class="nav-item has-sub {{ Request::is('admin/payments*') || Request::is('admin/subscriptions*') ? 'open' : '' }}">
+                    <div class="nav-link" onclick="toggleSub(this)">
+                        <div class="link-main"><i class="fa-solid fa-wallet" style="color: #d97706;"></i> <span>الاشتراكات والمدفوعات</span></div>
+                        <i class="fa-solid fa-chevron-left nav-arrow"></i>
+                    </div>
+                    <ul class="submenu">
+                        <li><a href="{{ route('admin.subscriptions.monthly') }}" class="submenu-item"><i class="fa-solid fa-calendar-days" style="font-size: 0.8rem; margin-left: 6px; color: #0284c7;"></i> مصفوفة اشتراكات الطلاب (12 شهراً)</a></li>
+                        <li><a href="{{ route('admin.payments.index') }}" class="submenu-item"><i class="fa-solid fa-receipt" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> إشعارات الدفع والتحويلات</a></li>
+                    </ul>
+                </div>
 
                 <span class="group-label">التواصل والدعم</span>
                 <a href="{{ route('admin.inquiries.index') }}" class="nav-item {{ Request::is('admin/academic-inquiries*') ? 'active' : '' }}">
@@ -661,6 +669,10 @@
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>رسائل الطلاب</span></div></div>
                 </a>
 
+                <a href="{{ route('teacher.salaries.index') }}" class="nav-item {{ Request::is('teacher/salaries*') || Request::is('teacher/salary*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-file-invoice-dollar" style="color: #10b981;"></i> <span>مسير الرواتب والمستحقات</span></div></div>
+                </a>
+
                 <a href="{{ route('teacher.admin.chat') }}" class="nav-item {{ Request::is('teacher/admin/chat*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-shield-halved"></i> <span>مراسلة الإدارة</span></div></div>
                 </a>
@@ -673,6 +685,9 @@
                 </a>
                 <a href="{{ route('student.subjects.index') }}" class="nav-item {{ request()->routeIs('student.subjects.*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-book-open"></i> <span>المواد والدروس</span></div></div>
+                </a>
+                <a href="{{ route('student.subscriptions.index') }}" class="nav-item {{ Request::is('student/subscriptions*') ? 'active' : '' }}">
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-days" style="color: #059669;"></i> <span>سجل اشتراكاتي الشهرية (12 شهراً)</span></div></div>
                 </a>
                 <a href="{{ route('student.exams.index') }}" class="nav-item {{ Request::is('student/my-exams*') || Request::is('student/exams*') ? 'active' : '' }}">
                     <div class="nav-link"><div class="link-main"><i class="fa-solid fa-pen-ruler"></i> <span>اختباراتي</span></div></div>

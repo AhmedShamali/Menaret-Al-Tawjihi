@@ -204,6 +204,15 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
     Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt');
 
+    // مصفوفة وسجل الاشتراكات الشهرية للطلاب (12 شهراً)
+    Route::get('/subscriptions/monthly', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'index'])->name('subscriptions.monthly');
+    Route::post('/subscriptions/monthly/update', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStatus'])->name('subscriptions.monthly.update');
+
+    // إدارة ومسير رواتب المعلمين
+    Route::get('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'adminIndex'])->name('teachers.salaries');
+    Route::post('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'storeOrUpdate'])->name('teachers.salaries.store');
+    Route::delete('/teachers/salaries/{id}', [\App\Http\Controllers\TeacherSalaryController::class, 'destroy'])->name('teachers.salaries.destroy');
+
     // إدارة واعتماد شهادات ونتائج نهاية العام للثانوية العامة
     Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');
     Route::post('/certificates/toggle-publish', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'togglePublish'])->name('certificates.togglePublish');
@@ -260,6 +269,11 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/admin/chat', [CommunicationController::class, 'teacherAdminChat'])->name('admin.chat');
     Route::get('/admin/chat/messages', [CommunicationController::class, 'fetchTeacherAdminMessages'])->name('admin.chat.messages');
     Route::post('/admin/chat/send', [CommunicationController::class, 'sendFromTeacherToAdmin'])->name('admin.chat.send');
+
+    // كشف مسير رواتب المعلم وقسائم الراتب والمطالبات المالية
+    Route::get('/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'teacherIndex'])->name('salaries.index');
+    Route::get('/salary', [\App\Http\Controllers\TeacherSalaryController::class, 'teacherIndex'])->name('salary');
+    Route::post('/salaries/claim', [\App\Http\Controllers\TeacherSalaryController::class, 'submitTeacherClaim'])->name('salaries.claim');
 });
 
 
@@ -271,6 +285,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('student.')->group(function () {
     Route::get('/pending-approval', [StudentController::class, 'pendingApproval'])->name('pending-approval');
     Route::post('/pending-payment', [StudentController::class, 'submitPendingPayment'])->name('pendingPayment.submit');
+    Route::get('/subscriptions', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'studentIndex'])->name('subscriptions.index');
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
     Route::post('/profile/update-password', [StudentController::class, 'updatePassword'])->name('profile.updatePassword');

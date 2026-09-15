@@ -749,7 +749,9 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
+            }
 
             $students = Student::whereIn('id', $ids)->get();
             foreach ($students as $s) {
@@ -798,7 +800,9 @@ class AdminManagerController extends Controller {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         } finally {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
+            }
         }
     }
 
@@ -817,7 +821,9 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
+            }
 
             $students = Student::all();
             $count = $students->count();
@@ -873,7 +879,9 @@ class AdminManagerController extends Controller {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف الطلاب: ' . $e->getMessage()], 500);
         } finally {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
+            }
         }
     }
 
@@ -894,7 +902,9 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
+            }
 
             // فلترة فقط المعلمين لمنع حذف أي حساب إداري نهائياً
             $teachers = User::where('role', 'teacher')->whereIn('id', $ids)->get();
@@ -941,7 +951,9 @@ class AdminManagerController extends Controller {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
         } finally {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
+            }
         }
     }
 
@@ -960,7 +972,9 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
+            }
 
             $teachers = User::where('role', 'teacher')->get();
             $count = $teachers->count();
@@ -993,7 +1007,9 @@ class AdminManagerController extends Controller {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف المعلمين: ' . $e->getMessage()], 500);
         } finally {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
+            }
         }
     }
 
@@ -1012,7 +1028,9 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
+            }
 
             // 1. حذف صور وسجلات الطلاب
             $students = Student::all();
@@ -1085,7 +1103,9 @@ class AdminManagerController extends Controller {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء الحذف الشامل: ' . $e->getMessage()], 500);
         } finally {
-            \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+            if (\DB::connection()->getDriverName() === 'mysql') {
+                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
+            }
         }
     }
 }

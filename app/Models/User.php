@@ -74,4 +74,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Subject::class, 'subject_id');
     }
+
+    public function salaries()
+    {
+        return $this->hasMany(\App\Models\TeacherSalary::class, 'teacher_id')->orderBy('year', 'desc')->orderBy('month', 'desc');
+    }
 }
+
