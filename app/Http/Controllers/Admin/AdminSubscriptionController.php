@@ -52,39 +52,12 @@ class AdminSubscriptionController extends Controller
 
         $students = $studentsQuery->latest()->paginate(25)->withQueryString();
 
-        // فحص وإسناد الشهور الـ 12 تلقائياً للطلاب المستعرضين إن لم تكن موجودة
+        // فحص ومزامنة الشهور الـ 12 تلقائياً مع مدفوعات الطالب وحالة تسجيله
         foreach ($students as $student) {
-            if ($student->monthlySubscriptions->count() < 12) {
-                $existingMonths = $student->monthlySubscriptions->pluck('month')->toArray();
-                $baseAmount = (float)($student->final_amount ?? 150.00);
-                if ($student->hasDiscount() && $student->custom_discount_percent >= 100) {
-                    $baseAmount = 0.00;
-                    $defaultStatus = 'waived';
-                } else {
-                    $defaultStatus = ($student->status === 'active') ? 'unpaid' : 'pending';
-                }
-
-                $inserts = [];
-                for ($m = 1; $m <= 12; $m++) {
-                    if (!in_array($m, $existingMonths)) {
-                        $inserts[] = [
-                            'student_id'    => $student->id,
-                            'academic_year' => $year,
-                            'month'         => $m,
-                            'amount'        => $baseAmount,
-                            'status'        => $defaultStatus,
-                            'created_at'    => now(),
-                            'updated_at'    => now(),
-                        ];
-                    }
-                }
-                if (!empty($inserts)) {
-                    StudentMonthlySubscription::insert($inserts);
-                    $student->load(['monthlySubscriptions' => function ($q) use ($year) {
-                        $q->where('academic_year', $year)->orderBy('month');
-                    }]);
-                }
-            }
+            StudentMonthlySubscription::syncWithStudentPayments($student, $year);
+            $student->load(['monthlySubscriptions' => function ($q) use ($year) {
+                $q->where('academic_year', $year)->orderBy('month');
+            }]);
         }
 
         // إحصائيات عامة للمدير
@@ -169,37 +142,8 @@ class AdminSubscriptionController extends Controller
         }
 
         $year = '2026-2027';
-        $subscriptions = StudentMonthlySubscription::where('student_id', $student->id)
-            ->where('academic_year', $year)
-            ->orderBy('month')
-            ->get();
-
-        // تهيئة الشهور إن لم تكن موجودة
-        if ($subscriptions->count() < 12) {
-            $existing = $subscriptions->pluck('month')->toArray();
-            $baseAmount = (float)($student->final_amount ?? 150.00);
-            $inserts = [];
-            for ($m = 1; $m <= 12; $m++) {
-                if (!in_array($m, $existing)) {
-                    $inserts[] = [
-                        'student_id'    => $student->id,
-                        'academic_year' => $year,
-                        'month'         => $m,
-                        'amount'        => $baseAmount,
-                        'status'        => ($student->status === 'active') ? 'unpaid' : 'pending',
-                        'created_at'    => now(),
-                        'updated_at'    => now(),
-                    ];
-                }
-            }
-            if (!empty($inserts)) {
-                StudentMonthlySubscription::insert($inserts);
-                $subscriptions = StudentMonthlySubscription::where('student_id', $student->id)
-                    ->where('academic_year', $year)
-                    ->orderBy('month')
-                    ->get();
-            }
-        }
+        // مزامنة وربط الشهور الـ 12 تلقائياً مع مدفوعات الطالب وحالة تسجيله
+        $subscriptions = StudentMonthlySubscription::syncWithStudentPayments($student, $year);
 
         $monthsNames = StudentMonthlySubscription::monthNamesAr();
         $paidCount = $subscriptions->where('status', 'paid')->count();

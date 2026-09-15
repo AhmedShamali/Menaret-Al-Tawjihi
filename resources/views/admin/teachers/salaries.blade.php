@@ -103,77 +103,151 @@
         </form>
     </div>
 
-    {{-- 4. جدول الرواتب --}}
+    {{-- 4. جدول وبطاقات الرواتب (خالٍ تماماً من السكرول الأفقي) --}}
     <div class="table-container-card">
-        <table class="payroll-table">
-            <thead>
-                <tr>
-                    <th>المعلم</th>
-                    <th>الشهر والعام</th>
-                    <th>الأساسي</th>
-                    <th>المكافآت</th>
-                    <th>الخصومات</th>
-                    <th>صافي الراتب</th>
-                    <th>تاريخ وطريقة الصرف</th>
-                    <th>الحالة</th>
-                    <th style="text-align: center;">إجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($salaries as $sal)
-                    @php
-                        $isPaid = $sal->status === 'paid';
-                        $monthLabel = $monthsNames[$sal->month] ?? "شهر {$sal->month}";
-                    @endphp
+        {{-- عرض الجدول للشاشات الكبيرة --}}
+        <div class="payroll-table-wrap">
+            <table class="payroll-table">
+                <thead>
                     <tr>
-                        <td>
-                            <div class="teacher-meta-cell">
-                                <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($sal->teacher->name) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb">
-                                <div>
-                                    <strong>{{ $sal->teacher->name }}</strong>
-                                    <small>{{ $sal->teacher->subject->name_ar ?? 'كادر التدريس' }}</small>
+                        <th style="width: 25%;">المعلم والمادة</th>
+                        <th style="width: 15%;">الشهر والعام</th>
+                        <th style="width: 22%;">تفاصيل الراتب</th>
+                        <th style="width: 14%;">صافي الراتب</th>
+                        <th style="width: 14%;">حالة وطريقة الصرف</th>
+                        <th style="width: 10%; text-align: center;">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($salaries as $sal)
+                        @php
+                            $isPaid = $sal->status === 'paid';
+                            $monthLabel = $monthsNames[$sal->month] ?? "شهر {$sal->month}";
+                        @endphp
+                        <tr>
+                            <td>
+                                <div class="teacher-meta-cell">
+                                    <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($sal->teacher->name) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb">
+                                    <div class="teacher-meta-text">
+                                        <strong class="teacher-name-text">{{ $sal->teacher->name }}</strong>
+                                        <span class="teacher-subject-pill">{{ $sal->teacher->subject->name_ar ?? 'كادر التدريس' }}</span>
+                                    </div>
                                 </div>
+                            </td>
+                            <td>
+                                <span class="month-pill"><i class="fa-regular fa-calendar-check"></i> {{ $monthLabel }} {{ $sal->year }}</span>
+                            </td>
+                            <td>
+                                <div class="salary-breakdown-compact">
+                                    <span class="base-badge font-mono">الأساسي: {{ number_format($sal->basic_salary, 2) }} ₪</span>
+                                    @if($sal->bonus > 0)
+                                        <span class="bonus-badge font-mono">+{{ number_format($sal->bonus, 2) }} ₪ إضافي</span>
+                                    @endif
+                                    @if($sal->deductions > 0)
+                                        <span class="deduct-badge font-mono">-{{ number_format($sal->deductions, 2) }} ₪ خصم</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td>
+                                <span class="font-mono font-bold text-base {{ $isPaid ? 'text-paid' : 'text-pending' }}">
+                                    {{ number_format($sal->net_salary, 2) }} ₪
+                                </span>
+                            </td>
+                            <td>
+                                <div class="payment-col-wrap">
+                                    <span class="status-pill {{ $isPaid ? 'status-paid' : 'status-pending' }}">
+                                        {{ $isPaid ? 'تم الصرف ✅' : 'قيد الصرف ⏳' }}
+                                    </span>
+                                    <small class="payment-method-label">{{ $sal->payment_method ?: 'تحويل بنكي' }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('m/d') . ')' : '' }}</small>
+                                </div>
+                            </td>
+                            <td style="text-align: center;">
+                                <div class="actions-group">
+                                    <button type="button" class="btn-action-edit" onclick='openEditSalaryModal(@json($sal))' title="تعديل بيانات الراتب">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </button>
+                                    <button type="button" class="btn-action-delete" onclick="deleteSalaryRecord({{ $sal->id }})" title="حذف السجل">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                                <i class="fa-solid fa-receipt" style="font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
+                                <strong>لا توجد سجلات رواتب مدخلة تطابق معايير الفلترة المحددة.</strong>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        {{-- عرض بطاقات الجوال والأجهزة اللوحية (بدون أي سكرول أفقي نهائياً) --}}
+        <div class="payroll-cards-mobile">
+            @forelse($salaries as $sal)
+                @php
+                    $isPaid = $sal->status === 'paid';
+                    $monthLabel = $monthsNames[$sal->month] ?? "شهر {$sal->month}";
+                @endphp
+                <div class="payroll-mob-card">
+                    <div class="mob-card-header">
+                        <div class="teacher-meta-cell">
+                            <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($sal->teacher->name) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb">
+                            <div>
+                                <strong class="teacher-name-text">{{ $sal->teacher->name }}</strong>
+                                <span class="teacher-subject-pill">{{ $sal->teacher->subject->name_ar ?? 'كادر التدريس' }}</span>
                             </div>
-                        </td>
-                        <td>
-                            <span class="month-pill">{{ $monthLabel }} {{ $sal->year }}</span>
-                        </td>
-                        <td class="font-mono">{{ number_format($sal->basic_salary, 2) }} ₪</td>
-                        <td class="font-mono text-emerald">+{{ number_format($sal->bonus, 2) }} ₪</td>
-                        <td class="font-mono text-rose">-{{ number_format($sal->deductions, 2) }} ₪</td>
-                        <td class="font-mono font-bold text-lg {{ $isPaid ? 'text-paid' : 'text-pending' }}">
-                            {{ number_format($sal->net_salary, 2) }} ₪
-                        </td>
-                        <td>
-                            <div>{{ $sal->payment_method ?: 'تحويل بنكي' }}</div>
-                            <small class="text-gray-muted font-mono">{{ $sal->payment_date ? $sal->payment_date->format('Y-m-d') : '-' }}</small>
-                        </td>
-                        <td>
-                            <span class="status-pill {{ $isPaid ? 'status-paid' : 'status-pending' }}">
-                                {{ $isPaid ? 'تم الصرف ✅' : 'قيد الصرف ⏳' }}
-                            </span>
-                        </td>
-                        <td style="text-align: center;">
-                            <div class="actions-group">
-                                <button type="button" class="btn-action-edit" onclick='openEditSalaryModal(@json($sal))' title="تعديل بيانات الراتب">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                                <button type="button" class="btn-action-delete" onclick="deleteSalaryRecord({{ $sal->id }})" title="حذف السجل">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                        </div>
+                        <span class="status-pill {{ $isPaid ? 'status-paid' : 'status-pending' }}">
+                            {{ $isPaid ? 'تم الصرف ✅' : 'قيد الصرف ⏳' }}
+                        </span>
+                    </div>
+
+                    <div class="mob-card-body">
+                        <div class="mob-stat-row">
+                            <span class="mob-label">الشهر والسنة:</span>
+                            <span class="month-pill font-mono">{{ $monthLabel }} {{ $sal->year }}</span>
+                        </div>
+                        <div class="mob-stat-row">
+                            <span class="mob-label">صافي الراتب:</span>
+                            <strong class="font-mono text-base {{ $isPaid ? 'text-paid' : 'text-pending' }}">{{ number_format($sal->net_salary, 2) }} ₪</strong>
+                        </div>
+                        <div class="mob-stat-row">
+                            <span class="mob-label">تفاصيل:</span>
+                            <div class="salary-breakdown-compact">
+                                <span class="base-badge font-mono">أساسي: {{ number_format($sal->basic_salary, 0) }} ₪</span>
+                                @if($sal->bonus > 0)
+                                    <span class="bonus-badge font-mono">+{{ number_format($sal->bonus, 0) }} ₪</span>
+                                @endif
+                                @if($sal->deductions > 0)
+                                    <span class="deduct-badge font-mono">-{{ number_format($sal->deductions, 0) }} ₪</span>
+                                @endif
                             </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" style="text-align: center; padding: 40px; color: #64748b;">
-                            <i class="fa-solid fa-receipt" style="font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
-                            <strong>لا توجد سجلات رواتب مدخلة تطابق معايير الفلترة المحددة.</strong>
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                        </div>
+                        <div class="mob-stat-row">
+                            <span class="mob-label">الصرف:</span>
+                            <span style="font-size: 0.8rem; color: #64748b;">{{ $sal->payment_method ?: 'تحويل بنكي' }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('Y-m-d') . ')' : '' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mob-card-footer">
+                        <button type="button" class="btn-mob-edit" onclick='openEditSalaryModal(@json($sal))'>
+                            <i class="fa-solid fa-pen"></i> تعديل
+                        </button>
+                        <button type="button" class="btn-mob-delete" onclick="deleteSalaryRecord({{ $sal->id }})">
+                            <i class="fa-solid fa-trash-can"></i> حذف
+                        </button>
+                    </div>
+                </div>
+            @empty
+                <div style="text-align: center; padding: 30px; color: #64748b;">
+                    <i class="fa-solid fa-receipt" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 8px;"></i>
+                    <strong>لا توجد سجلات رواتب مدخلة.</strong>
+                </div>
+            @endforelse
+        </div>
 
         <div style="margin-top: 20px;">
             {{ $salaries->links() }}
@@ -383,9 +457,12 @@
 
 <style>
     .admin-payroll-wrapper {
-        max-width: 1440px;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
-        padding: 24px 20px 80px;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
     .payroll-header-box {
         display: flex;
@@ -520,13 +597,19 @@
         text-decoration: none;
     }
 
-    /* Table */
+    /* Table & Container (بدون سكرول أفقي) */
     .table-container-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 20px;
         padding: 24px;
-        overflow-x: auto;
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+    .payroll-table-wrap {
+        width: 100%;
+        overflow-x: hidden;
     }
     .payroll-table {
         width: 100%;
@@ -535,28 +618,52 @@
     }
     .payroll-table th {
         background: #f8fafc;
-        padding: 12px 16px;
+        padding: 12px 14px;
         font-size: 0.85rem;
         font-weight: 800;
         color: #475569;
         border-bottom: 2px solid #e2e8f0;
     }
     .payroll-table td {
-        padding: 16px;
+        padding: 14px;
         border-bottom: 1px solid #f1f5f9;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         vertical-align: middle;
     }
     .teacher-meta-cell {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
+        min-width: 0;
     }
     .teacher-thumb {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
+        flex-shrink: 0;
+    }
+    .teacher-meta-text {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .teacher-name-text {
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .teacher-subject-pill {
+        font-size: 0.72rem;
+        color: #0284c7;
+        background: #f0f9ff;
+        padding: 1px 6px;
+        border-radius: 4px;
+        width: fit-content;
+        margin-top: 2px;
     }
     .month-pill {
         background: #f1f5f9;
@@ -565,18 +672,37 @@
         font-weight: 700;
         font-size: 0.82rem;
         color: #334155;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
+    .salary-breakdown-compact {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .base-badge { font-size: 0.8rem; color: #334155; font-weight: 600; }
+    .bonus-badge { font-size: 0.72rem; color: #059669; background: #ecfdf5; padding: 1px 6px; border-radius: 4px; display: inline-block; width: fit-content; }
+    .deduct-badge { font-size: 0.72rem; color: #dc2626; background: #fef2f2; padding: 1px 6px; border-radius: 4px; display: inline-block; width: fit-content; }
     .text-paid { color: #059669; }
     .text-pending { color: #d97706; }
-    .text-rose { color: #e11d48; }
-    .text-emerald { color: #059669; }
-
+    .payment-col-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .payment-method-label {
+        font-size: 0.74rem;
+        color: #64748b;
+    }
     .status-pill {
         display: inline-flex;
         padding: 4px 10px;
         border-radius: 12px;
         font-size: 0.78rem;
         font-weight: 700;
+        width: fit-content;
     }
     .status-paid { background: #ecfdf5; color: #059669; }
     .status-pending { background: #fffbeb; color: #b45309; }
@@ -603,6 +729,100 @@
         height: 34px;
         border-radius: 8px;
         cursor: pointer;
+    }
+
+    /* بطاقات الجوال بدون سكرول نهائياً */
+    .payroll-cards-mobile {
+        display: none;
+    }
+
+    @media (max-width: 960px) {
+        .payroll-table-wrap { display: none; }
+        .payroll-cards-mobile {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            width: 100%;
+        }
+        .payroll-mob-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .mob-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+        .mob-card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mob-stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+        }
+        .mob-label {
+            font-weight: 700;
+            color: #64748b;
+            font-size: 0.82rem;
+        }
+        .mob-card-footer {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 12px;
+        }
+        .btn-mob-edit {
+            flex: 1;
+            background: #f0f9ff;
+            color: #0284c7;
+            border: 1px solid #bae6fd;
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.84rem;
+        }
+        .btn-mob-delete {
+            flex: 1;
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            padding: 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.84rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stats-cards-grid {
+            grid-template-columns: 1fr;
+        }
+        .form-row-2, .form-row-3 {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* Modal */

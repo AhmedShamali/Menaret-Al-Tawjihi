@@ -739,65 +739,55 @@ class StudentController extends Controller
      */
     public function syncSubjects(Request $request, $id)
     {
-        $student = Student::findOrFail($id);
-        $selectedSubjectIds = $request->input('subject_ids', []);
-        if (!is_array($selectedSubjectIds)) {
-            $selectedSubjectIds = [];
-        }
-        $selectedSubjectIds = array_values(array_filter(array_map('intval', $selectedSubjectIds)));
-
-        // 1. حذف الاشتراكات للمواد التي تم إلغاء تحديدها
-        \App\Models\Enrollment::where('student_id', $student->id)
-            ->whereNotIn('subject_id', $selectedSubjectIds)
-            ->delete();
-
-        // 2. فحص المواد الموجودة مسبقاً دفعة واحدة
-        $existingSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
-            ->whereIn('subject_id', $selectedSubjectIds)
-            ->pluck('subject_id')
-            ->toArray();
-
-        // 3. تحديث المواد الموجودة دفعة واحدة
-        if (!empty($existingSubjectIds)) {
-            \App\Models\Enrollment::where('student_id', $student->id)
-                ->whereIn('subject_id', $existingSubjectIds)
-                ->update([
-                    'status'         => 'active',
-                    'access_mode'    => 'all',
-                    'payment_status' => 'admin_grant',
-                    'activated_at'   => now(),
-                ]);
-        }
-
-        // 4. إدراج المواد الجديدة في كويري واحدة سريعة (Bulk Insert)
-        $newSubjectIds = array_diff($selectedSubjectIds, $existingSubjectIds);
-        if (!empty($newSubjectIds)) {
-            $now = now();
-            $bulkRows = [];
-            foreach ($newSubjectIds as $subId) {
-                $bulkRows[] = [
-                    'student_id'     => $student->id,
-                    'subject_id'     => $subId,
-                    'status'         => 'active',
-                    'access_mode'    => 'all',
-                    'payment_status' => 'admin_grant',
-                    'activated_at'   => $now,
-                    'created_at'     => $now,
-                    'updated_at'     => $now,
-                ];
+        try {
+            $student = Student::findOrFail($id);
+            $selectedSubjectIds = $request->input('subject_ids', []);
+            if (!is_array($selectedSubjectIds)) {
+                $selectedSubjectIds = [];
             }
-            \App\Models\Enrollment::insert($bulkRows);
+            $selectedSubjectIds = array_values(array_filter(array_map('intval', $selectedSubjectIds)));
+
+            \DB::transaction(function () use ($student, $selectedSubjectIds) {
+                // 1. حذف الاشتراكات للمواد التي تم إلغاء تحديدها
+                \App\Models\Enrollment::where('student_id', $student->id)
+                    ->whereNotIn('subject_id', $selectedSubjectIds)
+                    ->delete();
+
+                // 2. تحديث أو تفعيل المواد المحددة دفعة واحدة
+                foreach ($selectedSubjectIds as $subId) {
+                    \App\Models\Enrollment::updateOrCreate(
+                        [
+                            'student_id' => $student->id,
+                            'subject_id' => $subId,
+                        ],
+                        [
+                            'status'         => 'active',
+                            'access_mode'    => 'all',
+                            'payment_status' => 'admin_grant',
+                            'activated_at'   => now(),
+                        ]
+                    );
+                }
+            });
+
+            $addedCount = count($selectedSubjectIds);
+
+            return response()->json([
+                'success' => true,
+                'icon'    => 'success',
+                'title'   => 'تم حفظ وتحديث مواد الطالب بنجاح! 📚',
+                'message' => "تم اعتماد {$addedCount} مادة دراسية للطالب ({$student->name_ar}).",
+                'count'   => $addedCount
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error("syncSubjects error for student {$id}: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'icon'    => 'error',
+                'title'   => 'خطأ في الحفظ',
+                'message' => 'حدث خطأ أثناء حفظ المواد: ' . $e->getMessage(),
+            ], 500);
         }
-
-        $addedCount = count($selectedSubjectIds);
-
-        return response()->json([
-            'success' => true,
-            'icon'    => 'success',
-            'title'   => 'تم حفظ وتحديث مواد الطالب بنجاح! 📚',
-            'message' => "تم اعتماد {$addedCount} مادة دراسية للطالب ({$student->name_ar}).",
-            'count'   => $addedCount
-        ]);
     }
 
     /**

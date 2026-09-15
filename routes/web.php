@@ -184,41 +184,41 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
 
     // مسارات الطلاب بشكل آمن بدون تعارض
     Route::get('students/records/all', [StudentController::class, 'profile_all'])->name('students.profile_all');
-    Route::get('students/profile/{id}', [StudentController::class, 'profile'])->name('students.profile');
+    Route::get('students/profile/{id}', [StudentController::class, 'profile'])->name('students.profile')->whereNumber('id');
     Route::resource('students', StudentController::class);
 
+    // إدارة ومسير رواتب المعلمين (يجب أن تسبق مسار teachers/{id} لتفادي أي تعارض)
+    Route::get('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'adminIndex'])->name('teachers.salaries');
+    Route::post('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'storeOrUpdate'])->name('teachers.salaries.store');
+    Route::delete('/teachers/salaries/{id}', [\App\Http\Controllers\TeacherSalaryController::class, 'destroy'])->name('teachers.salaries.destroy')->whereNumber('id');
+
     // مسارات المعلمين المتغيرة
-    Route::get('/teachers/{id}/edit', [AdminManagerController::class, 'teacherEdit'])->name('teachers.edit');
-    Route::put('/teachers/{id}', [AdminManagerController::class, 'teacherUpdate'])->name('teachers.update');
-    Route::delete('/teachers/{id}', [AdminManagerController::class, 'teacherDestroy'])->name('teachers.destroy');
-    Route::get('/teachers/{id}', [DashboardController::class, 'showTeacher'])->name('teachers.show');
+    Route::get('/teachers/{id}/edit', [AdminManagerController::class, 'teacherEdit'])->name('teachers.edit')->whereNumber('id');
+    Route::put('/teachers/{id}', [AdminManagerController::class, 'teacherUpdate'])->name('teachers.update')->whereNumber('id');
+    Route::delete('/teachers/{id}', [AdminManagerController::class, 'teacherDestroy'])->name('teachers.destroy')->whereNumber('id');
+    Route::get('/teachers/{id}', [DashboardController::class, 'showTeacher'])->name('teachers.show')->whereNumber('id');
 
     // تسعير مواد التوجيهي والعروض الموسمية وباقات المواد
     Route::get('/subjects/pricing', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'index'])->name('subjects.pricing');
     Route::post('/subjects/pricing/seasonal-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.seasonal');
-    Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update');
-    Route::post('/subjects/pricing/{id}/update', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update_alias');
+    Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update')->whereNumber('id');
+    Route::post('/subjects/pricing/{id}/update', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update_alias')->whereNumber('id');
 
     // إدارة الاشتراكات وعمليات الدفع والتحقق من الإيصالات
     Route::get('/payments', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'index'])->name('payments.index');
-    Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
-    Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt');
+    Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus')->whereNumber('id');
+    Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt')->whereNumber('id');
 
     // مصفوفة وسجل الاشتراكات الشهرية للطلاب (12 شهراً)
     Route::get('/subscriptions/monthly', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'index'])->name('subscriptions.monthly');
     Route::post('/subscriptions/monthly/update', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStatus'])->name('subscriptions.monthly.update');
-
-    // إدارة ومسير رواتب المعلمين
-    Route::get('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'adminIndex'])->name('teachers.salaries');
-    Route::post('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'storeOrUpdate'])->name('teachers.salaries.store');
-    Route::delete('/teachers/salaries/{id}', [\App\Http\Controllers\TeacherSalaryController::class, 'destroy'])->name('teachers.salaries.destroy');
 
     // إدارة واعتماد شهادات ونتائج نهاية العام للثانوية العامة
     Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');
     Route::post('/certificates/toggle-publish', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'togglePublish'])->name('certificates.togglePublish');
     Route::post('/certificates/toggle-gpa', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'toggleGpa'])->name('certificates.toggleGpa');
     Route::post('/certificates/issue', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'issue'])->name('certificates.issue');
-    Route::delete('/certificates/{id}', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'destroy'])->name('certificates.destroy');
+    Route::delete('/certificates/{id}', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'destroy'])->name('certificates.destroy')->whereNumber('id');
 });
 
 

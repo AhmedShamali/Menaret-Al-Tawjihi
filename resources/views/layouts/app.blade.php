@@ -284,10 +284,13 @@
             flex: 1;
             margin-right: var(--sidebar-width);
             width: calc(100% - var(--sidebar-width));
+            max-width: calc(100% - var(--sidebar-width));
+            min-width: 0;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             transition: var(--transition-smooth);
+            overflow-x: hidden;
         }
 
         .top-bar {
@@ -307,6 +310,11 @@
         .content-body {
             flex: 1;
             padding: 28px 32px 60px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         /* زر الجوال */
@@ -524,6 +532,8 @@
             main.main-content {
                 margin-right: 0;
                 width: 100%;
+                max-width: 100%;
+                min-width: 0;
             }
             .mobile-toggle {
                 display: flex;

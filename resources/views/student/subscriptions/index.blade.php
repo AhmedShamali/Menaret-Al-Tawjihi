@@ -120,9 +120,14 @@
                                 <i class="fa-solid fa-tag"></i> منحة وإعفاء كامل
                             </span>
                         @else
-                            <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً أستاذ أحمد شمالي، أود الاستفسار وسداد قسط شهر (' . $sub->month_name_ar . ') لحساب الطالب ' . $student->name_ar) }}" target="_blank" class="btn-month-status pay">
-                                <i class="fa-solid fa-credit-card"></i> سداد هذا الشهر
-                            </a>
+                            <div class="unpaid-actions-row">
+                                <a href="{{ route('student.pendingPayment.submit') }}" class="btn-month-status pay" style="flex: 1;">
+                                    <i class="fa-solid fa-receipt"></i> سداد هذا القسط
+                                </a>
+                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً أستاذ أحمد شمالي، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . $student->name_ar) }}" target="_blank" class="btn-month-status whatsapp" title="سداد أو استفسار عبر واتساب">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </a>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -133,9 +138,12 @@
 
 <style>
     .student-subs-container {
-        max-width: 1340px;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
-        padding: 24px 20px 80px;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
     .student-subs-header {
         background: linear-gradient(135deg, #0f172a, #1e293b);
@@ -349,5 +357,18 @@
     .btn-month-status.waived { background: #e0e7ff; color: #3730a3; }
     .btn-month-status.pay { background: #0284c7; color: #fff; transition: 0.2s; }
     .btn-month-status.pay:hover { background: #0369a1; }
+    .unpaid-actions-row { display: flex; align-items: center; gap: 8px; }
+    .btn-month-status.whatsapp {
+        background: #25d366;
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 1.15rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.2s;
+    }
+    .btn-month-status.whatsapp:hover { background: #128c7e; }
 </style>
 @endsection

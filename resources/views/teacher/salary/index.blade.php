@@ -209,6 +209,75 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- عرض بطاقات الشهور للجوال والتابلت بدون سكرول نهائياً --}}
+        <div class="teacher-salary-mobile-cards">
+            @foreach($monthsNames as $monthNum => $monthLabel)
+                @php
+                    $sal = $salaries[$monthNum] ?? null;
+                    $isPaid = $sal && $sal->status === 'paid';
+                    $isPending = $sal && $sal->status === 'pending';
+                @endphp
+                <div class="teacher-mob-month-card {{ $isPaid ? 'card-paid' : ($isPending ? 'card-pending' : 'card-unissued') }}">
+                    <div class="mob-m-header">
+                        <div class="mob-m-title">
+                            <span class="mob-m-num font-mono">{{ sprintf('%02d', $monthNum) }}</span>
+                            <strong>{{ $monthLabel }}</strong>
+                        </div>
+                        @if($isPaid)
+                            <span class="status-pill status-paid"><i class="fa-solid fa-circle-check"></i> تم الصرف</span>
+                        @elseif($isPending)
+                            <span class="status-pill status-pending"><i class="fa-solid fa-clock-rotate-left"></i> قيد الاعتماد</span>
+                        @else
+                            <span class="status-pill status-unissued"><i class="fa-regular fa-circle"></i> بانتظار الإعداد</span>
+                        @endif
+                    </div>
+
+                    <div class="mob-m-body">
+                        <div class="mob-net-box">
+                            <span class="mob-net-label">صافي الراتب المستحق:</span>
+                            @if($sal)
+                                <strong class="mob-net-val font-mono {{ $isPaid ? 'text-paid' : 'text-pending' }}">
+                                    {{ number_format($sal->net_salary, 2) }} ₪
+                                </strong>
+                            @else
+                                <span class="text-gray-muted font-bold">-</span>
+                            @endif
+                        </div>
+
+                        @if($sal)
+                            <div class="mob-salary-pills">
+                                <span class="m-pill-item">الأساسي: <strong class="font-mono">{{ number_format($sal->basic_salary, 0) }} ₪</strong></span>
+                                @if($sal->bonus > 0)
+                                    <span class="m-pill-item text-emerald">+مكافأة: <strong class="font-mono">{{ number_format($sal->bonus, 0) }} ₪</strong></span>
+                                @endif
+                                @if($sal->deductions > 0)
+                                    <span class="m-pill-item text-rose">-خصم: <strong class="font-mono">{{ number_format($sal->deductions, 0) }} ₪</strong></span>
+                                @endif
+                            </div>
+                            @if($sal->payment_method || $sal->payment_date)
+                                <div class="mob-payment-note">
+                                    <i class="fa-solid fa-money-check-dollar"></i>
+                                    <span>{{ $sal->payment_method ?: 'تحويل بنكي' }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('Y-m-d') . ')' : '' }}</span>
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+
+                    <div class="mob-m-footer">
+                        @if($sal)
+                            <button type="button" class="btn-table-action btn-payslip w-full" onclick="openPayslipModal({{ json_encode($sal) }}, '{{ addslashes($monthLabel) }}')">
+                                <i class="fa-solid fa-receipt"></i> قسيمة الراتب الرسمية
+                            </button>
+                        @else
+                            <button type="button" class="btn-table-action btn-claim w-full" onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')">
+                                <i class="fa-regular fa-comment-dots"></i> إرسال استفسار مالي
+                            </button>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
     </div>
 </div>
 
@@ -473,10 +542,13 @@
 
 <style>
     .salary-dashboard-wrapper {
-        max-width: 1400px;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
-        padding: 24px 20px 80px;
+        padding: 10px 0 60px;
         font-family: inherit;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
     /* 1. Header Card */
@@ -676,6 +748,9 @@
         border-radius: 24px;
         padding: 28px;
         box-shadow: 0 6px 20px rgba(0,0,0,0.03);
+        width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
     .table-header-row {
         display: flex;
@@ -715,7 +790,8 @@
     }
 
     .table-responsive-box {
-        overflow-x: auto;
+        width: 100%;
+        overflow-x: hidden;
     }
     .salary-luxury-table {
         width: 100%;
@@ -1110,6 +1186,103 @@
         border-radius: 10px;
         font-weight: 700;
         cursor: pointer;
+    /* بطاقات كشف الرواتب للجوال بدون سكرول أفقي نهائياً */
+    .teacher-salary-mobile-cards {
+        display: none;
+    }
+
+    @media (max-width: 992px) {
+        .table-responsive-box { display: none; }
+        .teacher-salary-mobile-cards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            width: 100%;
+        }
+        .teacher-mob-month-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .teacher-mob-month-card.card-paid { border-color: #10b981; background: #f0fdf4; }
+        .teacher-mob-month-card.card-pending { border-color: #f59e0b; background: #fffbeb; }
+        .teacher-mob-month-card.card-unissued { border-color: #e2e8f0; background: #ffffff; }
+
+        .mob-m-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            padding-bottom: 10px;
+        }
+        .mob-m-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+        .mob-m-num {
+            background: #0284c7;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+        .mob-net-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 10px 14px;
+        }
+        .mob-net-label { font-size: 0.84rem; color: #475569; font-weight: 700; }
+        .mob-net-val { font-size: 1.25rem; font-weight: 900; }
+        .mob-salary-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .m-pill-item {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+        }
+        .mob-payment-note {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mob-m-footer {
+            border-top: 1px solid rgba(0,0,0,0.06);
+            padding-top: 10px;
+        }
+        .w-full {
+            width: 100%;
+            justify-content: center;
+        }
+        .salary-header-card {
+            padding: 20px 18px;
+        }
+        .header-main-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+        }
     }
 
     /* Print styles */

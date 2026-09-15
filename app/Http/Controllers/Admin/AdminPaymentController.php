@@ -122,6 +122,13 @@ class AdminPaymentController extends Controller
                 }
             }
 
+            // مزامنة أقساط واشتراكات الشهور الـ 12 للطالب تلقائياً
+            if ($payment->student) {
+                try {
+                    \App\Models\StudentMonthlySubscription::syncWithStudentPayments($payment->student);
+                } catch (\Throwable $e) {}
+            }
+
             // إشعار الطالب
             if ($payment->student_id) {
                 NotificationService::notifyStudent(

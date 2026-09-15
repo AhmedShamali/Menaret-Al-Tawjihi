@@ -492,18 +492,23 @@
     // حفظ ومزامنة المواد عبر AJAX
     async function submitSyncSubjects() {
         const btn = document.getElementById('btnSaveSubjects');
-        const form = document.getElementById('syncSubjectsForm');
-        const formData = new FormData(form);
+        const checkedBoxes = document.querySelectorAll('.modal-subject-cb:checked');
+        const subjectIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
         try {
-            const response = await axios.post("{{ route('admin.students.syncSubjects', $student->id) }}", formData, {
+            const response = await axios.post("{{ route('admin.students.syncSubjects', $student->id) }}", {
+                subject_ids: subjectIds,
+                _token: '{{ csrf_token() }}'
+            }, {
                 headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                timeout: 20000
+                timeout: 15000
             });
             Swal.fire({
                 icon: 'success',

@@ -29,24 +29,133 @@ class StudentMonthlySubscription extends Model
     public static function monthNamesAr(): array
     {
         return [
-            1  => 'يناير (1)',
-            2  => 'فبراير (2)',
-            3  => 'مارس (3)',
-            4  => 'أبريل (4)',
-            5  => 'مايو (5)',
-            6  => 'يونيو (6)',
-            7  => 'يوليو (7)',
-            8  => 'أغسطس (8)',
-            9  => 'سبتمبر (9)',
-            10 => 'أكتوبر (10)',
-            11 => 'نوفمبر (11)',
-            12 => 'ديسمبر (12)',
+            1  => 'الشهر الأول (بداية التسجيل)',
+            2  => 'الشهر الثاني',
+            3  => 'الشهر الثالث',
+            4  => 'الشهر الرابع',
+            5  => 'الشهر الخامس',
+            6  => 'الشهر السادس',
+            7  => 'الشهر السابع',
+            8  => 'الشهر الثامن',
+            9  => 'الشهر التاسع',
+            10 => 'الشهر العاشر',
+            11 => 'الشهر الحادي عشر',
+            12 => 'الشهر الثاني عشر',
         ];
     }
 
     public function getMonthNameArAttribute(): string
     {
-        return self::monthNamesAr()[$this->month] ?? "شهر {$this->month}";
+        return self::monthNamesAr()[$this->month] ?? "الشهر {$this->month}";
+    }
+
+    /**
+     * مزامنة وتحديث سجلات الشهور الـ 12 للطالب تلقائياً وربطها بعمليات الدفع وحالة التسجيل
+     */
+    public static function syncWithStudentPayments(Student $student, string $academicYear = '2026-2027'): \Illuminate\Database\Eloquent\Collection
+    {
+        $existing = self::where('student_id', $student->id)
+            ->where('academic_year', $academicYear)
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $baseAmount = (float)($student->final_amount ?? 150.00);
+        if ($baseAmount <= 0) {
+            $baseAmount = 150.00;
+        }
+
+        $isFullWaived = $student->hasDiscount() && $student->custom_discount_percent >= 100;
+
+        // جلب دفعات الطالب المعتمدة وقيد المراجعة
+        $completedPayments = Payment::where('student_id', $student->id)
+            ->where('status', 'completed')
+            ->orderBy('created_at')
+            ->get();
+
+        $pendingPayments = Payment::where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->orderBy('created_at')
+            ->get();
+
+        $completedCount = $completedPayments->count();
+        $pendingCount = $pendingPayments->count();
+
+        // إن كان الطالب مفعلاً بالمنصة (Active)، يعتبر الشهر الأول مسدداً كحد أدنى عند التسجيل
+        $paidMonthsCount = max($completedCount, ($student->status === 'active' ? 1 : 0));
+
+        for ($m = 1; $m <= 12; $m++) {
+            $sub = $existing->get($m);
+
+            if ($isFullWaived) {
+                $status = 'waived';
+                $amount = 0.00;
+                $notes = 'معفى رسمياً - منحة دراسية كاملة 100%';
+                $paymentId = null;
+                $paidAt = null;
+            } elseif ($m <= $paidMonthsCount) {
+                $status = 'paid';
+                $amount = $baseAmount;
+                $pIndex = $m - 1;
+                $payment = $completedPayments->get($pIndex);
+                if ($payment) {
+                    $paymentId = $payment->id;
+                    $paidAt = $payment->updated_at ?? $payment->created_at;
+                    $notes = "مسدد ومعتمد (" . ($payment->gateway_name_ar) . ")";
+                } else {
+                    $paymentId = null;
+                    $paidAt = $student->created_at ?? now();
+                    $notes = 'تم السداد واعتماد الاشتراك عند بداية التسجيل';
+                }
+            } elseif ($m <= ($paidMonthsCount + $pendingCount)) {
+                $status = 'pending';
+                $amount = $baseAmount;
+                $pendIndex = ($m - $paidMonthsCount) - 1;
+                $pendPayment = $pendingPayments->get($pendIndex);
+                $paymentId = $pendPayment ? $pendPayment->id : null;
+                $paidAt = null;
+                $notes = 'إشعار الدفع قيد المراجعة والاعتماد من الإدارة';
+            } else {
+                $status = $sub ? $sub->status : 'unpaid';
+                if ($status === 'paid' && $m > $paidMonthsCount) {
+                    $status = 'paid';
+                } elseif ($status !== 'waived') {
+                    $status = 'unpaid';
+                }
+                $amount = $baseAmount;
+                $paymentId = $sub ? $sub->payment_id : null;
+                $paidAt = $sub ? $sub->paid_at : null;
+                $notes = $sub ? $sub->notes : null;
+            }
+
+            if (!$sub) {
+                self::create([
+                    'student_id'    => $student->id,
+                    'academic_year' => $academicYear,
+                    'month'         => $m,
+                    'amount'        => $amount,
+                    'status'        => $status,
+                    'payment_id'    => $paymentId,
+                    'paid_at'       => $paidAt,
+                    'notes'         => $notes,
+                ]);
+            } else {
+                if (($sub->status === 'unpaid' && in_array($status, ['paid', 'pending', 'waived'])) ||
+                    ($m === 1 && $student->status === 'active' && $sub->status === 'unpaid')) {
+                    $sub->update([
+                        'status'     => $status,
+                        'payment_id' => $paymentId ?? $sub->payment_id,
+                        'paid_at'    => $paidAt ?? $sub->paid_at,
+                        'notes'      => $notes ?? $sub->notes,
+                    ]);
+                }
+            }
+        }
+
+        return self::where('student_id', $student->id)
+            ->where('academic_year', $academicYear)
+            ->orderBy('month')
+            ->get();
     }
 
     public function getStatusBadgeAttribute(): array
