@@ -120,11 +120,6 @@ class DashboardController extends Controller {
         $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
         $student_id = $student?->id ?? 1;
 
-        $my_stats = [
-            'completed_exams' => ExamSubmission::where('student_id', $student_id)->count(),
-            'avg_grade'       => ExamSubmission::where('student_id', $student_id)->avg('total_earned_grade'),
-        ];
-
         // 1. جلب آي دي الاختبارات التي حلها الطالب مسبقاً
         $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
 
@@ -141,6 +136,12 @@ class DashboardController extends Controller {
         if ($available_exams->isEmpty()) {
             $available_exams = Exam::latest()->whereNotIn('id', $solvedExamIds)->take(3)->get();
         }
+
+        $my_stats = [
+            'completed_exams'       => ExamSubmission::where('student_id', $student_id)->count(),
+            'available_exams_count' => $available_exams->count(),
+            'avg_grade'             => ExamSubmission::where('student_id', $student_id)->avg('total_earned_grade'),
+        ];
 
         // 3. الاختبارات المكتملة
         $completed_exams = ExamSubmission::with('exam')

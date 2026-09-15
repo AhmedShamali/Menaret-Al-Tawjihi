@@ -61,7 +61,12 @@
                 <div class="ed-hstat-icon"><i class="fas fa-clipboard-check"></i></div>
                 <div class="ed-hstat-info">
                     <span class="lbl">امتحانات منجزة</span>
-                    <strong class="val">{{ $my_stats['completed_exams'] ?? 0 }} اختبار</strong>
+                    <strong class="val">{{ $my_stats['completed_exams'] ?? 0 }} منجز</strong>
+                    @if(($my_stats['available_exams_count'] ?? 0) > 0)
+                        <small style="font-size: 0.72rem; color: #38bdf8; display: block; margin-top: 2px;">
+                            (متاح {{ $my_stats['available_exams_count'] }} اختبار بانتظارك)
+                        </small>
+                    @endif
                 </div>
             </div>
         </div>
