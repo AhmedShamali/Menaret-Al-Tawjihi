@@ -130,16 +130,19 @@ class DashboardController extends Controller {
                 $q->where('stage_id', $student->stage_id);
             });
         }
+        $availableExamsCount = (clone $examsQuery)->count();
         $available_exams = $examsQuery->take(6)->get();
 
         // إذا لم تتوفر امتحانات للمرحلة، نجلب الاختبارات العامة كبديل
         if ($available_exams->isEmpty()) {
-            $available_exams = Exam::latest()->whereNotIn('id', $solvedExamIds)->take(3)->get();
+            $fallbackQuery = Exam::latest()->whereNotIn('id', $solvedExamIds);
+            $availableExamsCount = (clone $fallbackQuery)->count();
+            $available_exams = $fallbackQuery->take(3)->get();
         }
 
         $my_stats = [
             'completed_exams'       => ExamSubmission::where('student_id', $student_id)->count(),
-            'available_exams_count' => $available_exams->count(),
+            'available_exams_count' => $availableExamsCount,
             'avg_grade'             => ExamSubmission::where('student_id', $student_id)->avg('total_earned_grade'),
         ];
 
