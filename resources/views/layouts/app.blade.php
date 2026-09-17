@@ -29,97 +29,57 @@
                 window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
             }
         }
+        try {
+            localStorage.removeItem('tawjihi-theme');
+            localStorage.removeItem('theme');
+            document.documentElement.classList.remove('dark-theme');
+        } catch(e) {}
     </script>
     
     <style>
         :root {
-            /* نظام ألوان هادئ وبسيط بثلاثة ألوان رئيسية فقط (Soft Minimalist EdTech) */
+            /* نظام ألوان هادئ مخصص للمنصات التعليمية (Calm EdTech Tokens) */
             --ed-bg: #f8fafc;
             --ed-surface: #ffffff;
             --ed-surface-alt: #f1f5f9;
             --ed-border: #e2e8f0;
             --ed-border-subtle: #edf2f7;
-            --ed-border-focus: #38bdf8;
+            --ed-border-focus: #3b82f6;
 
-            /* 1. أزرق فاتح / سماوي هادئ (Soft Light Blue - Primary Action & Links) */
-            --ed-primary: #0284c7;
-            --ed-primary-hover: #0369a1;
-            --ed-primary-light: #38bdf8;
-            --ed-primary-soft: #f0f9ff;
-            --ed-primary-border: #bae6fd;
+            --ed-primary: #1d4ed8;         /* أزرق أكاديمي رصين ومريح */
+            --ed-primary-hover: #1e40af;
+            --ed-primary-light: #3b82f6;
+            --ed-primary-soft: #eff6ff;
+            --ed-primary-border: #bfdbfe;
 
-            /* 2. أورانج فاتح / مشمشي ناعم (Soft Light Orange - Accents, Alerts, Pending) */
-            --ed-accent: #f97316;
-            --ed-accent-hover: #ea580c;
-            --ed-accent-light: #fb923c;
-            --ed-accent-soft: #fff7ed;
-            --ed-accent-border: #fed7aa;
-            --ed-warning: #f97316;
-            --ed-warning-soft: #fff7ed;
+            --ed-accent: #0284c7;
+            --ed-accent-soft: #f0f9ff;
 
-            /* 3. أخضر فاتح / نعناعي ناعم (Soft Mint Green - Success, Completed, Paid) */
-            --ed-success: #10b981;
-            --ed-success-hover: #059669;
-            --ed-success-light: #34d399;
-            --ed-success-soft: #ecfdf5;
-            --ed-success-border: #a7f3d0;
-
-            /* تنبيهات حرجة بسيطة */
-            --ed-danger: #ef4444;
-            --ed-danger-soft: #fef2f2;
-
-            /* نصوص مقروءة ومريحة للعين */
-            --ed-text-main: #0f172a;
-            --ed-text-body: #334155;
-            --ed-text-muted: #64748b;
+            --ed-text-main: #0f172a;       /* كحلي داكن للنصوص الرئيسية وعالي المقروئية */
+            --ed-text-body: #334155;       /* نصوص الشرح والقراءة المريحة */
+            --ed-text-muted: #64748b;      /* نصوص مساعدة ثانوية */
             --ed-text-dim: #94a3b8;
+
+            --ed-success: #059669;
+            --ed-success-soft: #ecfdf5;
+            --ed-warning: #d97706;
+            --ed-warning-soft: #fffbeb;
+            --ed-danger: #dc2626;
+            --ed-danger-soft: #fef2f2;
 
             --ed-radius-sm: 8px;
             --ed-radius-md: 12px;
             --ed-radius-lg: 16px;
             --ed-radius-xl: 20px;
 
-            --ed-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-            --ed-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
-            --ed-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06);
-            --ed-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.07);
+            --ed-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+            --ed-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+            --ed-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+            --ed-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
 
-            --sidebar-width: 260px;
+            --sidebar-width: 270px;
             --topbar-height: 68px;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* --- أنماط الوضع الداكن الهادئ المريح للعين (Dark Mode) --- */
-        body.dark-theme {
-            --ed-bg: #0b1120;
-            --ed-surface: #1e293b;
-            --ed-surface-alt: #0f172a;
-            --ed-border: #334155;
-            --ed-border-subtle: #1e293b;
-            --ed-border-focus: #38bdf8;
-
-            --ed-primary: #38bdf8;
-            --ed-primary-hover: #7dd3fc;
-            --ed-primary-soft: rgba(56, 189, 248, 0.12);
-            --ed-primary-border: rgba(56, 189, 248, 0.25);
-
-            --ed-accent: #fb923c;
-            --ed-accent-hover: #fdba74;
-            --ed-accent-soft: rgba(251, 146, 60, 0.12);
-            --ed-accent-border: rgba(251, 146, 60, 0.25);
-
-            --ed-success: #34d399;
-            --ed-success-hover: #6ee7b7;
-            --ed-success-soft: rgba(52, 211, 153, 0.12);
-            --ed-success-border: rgba(52, 211, 153, 0.25);
-
-            --ed-text-main: #f8fafc;
-            --ed-text-body: #cbd5e1;
-            --ed-text-muted: #94a3b8;
-            --ed-text-dim: #64748b;
-
-            --ed-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-            --ed-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
         }
 
         /* --- دعم اللغة الإنجليزية واتجاه من اليسار لليمين (LTR Support) --- */
@@ -820,11 +780,6 @@
                     <i class="fa-solid fa-globe" style="color: var(--ed-primary); font-size: 0.95rem;"></i>
                     <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
                 </a>
-
-                <!-- زر الوضع الليلي / النهاري -->
-                <button type="button" onclick="toggleTheme()" class="theme-toggle-topbar" id="themeToggleBtn" title="{{ __('تبديل المظهر') }}" style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); font-size: 1rem;">
-                    <i class="fa-regular fa-moon" id="themeIcon"></i>
-                </button>
                 @php
                     $unreadCount = 0; 
                     $unreadItems = collect();
@@ -1168,26 +1123,13 @@
             });
         }
 
-        function toggleTheme() {
-            const isDark = document.body.classList.toggle('dark-theme');
-            localStorage.setItem('tawjihi-theme', isDark ? 'dark' : 'light');
-            updateThemeIcon(isDark);
-        }
-
-        function updateThemeIcon(isDark) {
-            const icon = document.getElementById('themeIcon');
-            if (icon) {
-                icon.className = isDark ? 'fa-regular fa-sun' : 'fa-regular fa-moon';
-            }
-        }
-
-        (function initTheme() {
-            const savedTheme = localStorage.getItem('tawjihi-theme');
-            if (savedTheme === 'dark') {
-                document.body.classList.add('dark-theme');
-                updateThemeIcon(true);
-            }
-        })();
+        // الحفاظ التام على الواجهات الفاتحة الأصلية وإزالة أي أثر للوضع الداكن
+        try {
+            localStorage.removeItem('tawjihi-theme');
+            localStorage.removeItem('theme');
+            document.body.classList.remove('dark-theme');
+            document.documentElement.classList.remove('dark-theme');
+        } catch(e) {}
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
