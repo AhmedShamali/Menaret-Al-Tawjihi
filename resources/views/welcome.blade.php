@@ -11,1042 +11,987 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} | المنظومة الأكاديمية لطلبة الثانوية العامة في فلسطين 🇵🇸</title>
-    <meta name="description" content="منصة منارة التوجيهي التعليمية: شروحات مبسطة لنخبة معلمي فلسطين، بنك اختبارات وزارية شاملة، ومتابعة أكاديمية مستمرة لدورة التوجيهي.">
+    <title>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} - بوابة الثانوية العامة الفلسطينية 🇵🇸</title>
+    <meta name="description" content="منصة منارة التوجيهي التعليمية: شروحات مبسطة، بنك اختبارات وزارية محلولة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.">
 
-    <!-- الخطوط العربية الراقية -->
+    <!-- خط كلاسيكي عربي مريح وواضح -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Readex+Pro:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- أيقونات FontAwesome 6 -->
+    <!-- أيقونات FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        :root {
-            --primary: #1e3a8a;
-            --primary-dark: #172554;
-            --primary-light: #2563eb;
-            --accent: #059669;
-            --accent-light: #10b981;
-            --gold: #d97706;
-            --gold-light: #f59e0b;
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #475569;
-            --text-light: #64748b;
-            --border-color: #e2e8f0;
-            --border-hover: #cbd5e1;
-            --radius-md: 14px;
-            --radius-lg: 22px;
-            --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
-            --shadow-md: 0 10px 30px -8px rgba(15, 23, 42, 0.08);
-            --shadow-lg: 0 20px 40px -15px rgba(15, 23, 42, 0.12);
-            --transition: all 0.25s ease;
-        }
-
+        /* ==========================================================================
+           تصميم كلاسيكي بسيط وهادئ (زي المواقع التعليمية التقليدية)
+           ========================================================================== */
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Alexandria', 'Readex Pro', sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        html {
-            scroll-behavior: smooth;
+            font-family: 'Cairo', Tahoma, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            line-height: 1.8;
-            overflow-x: hidden;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            font-size: 14px;
+            line-height: 1.6;
+            direction: rtl;
+            text-align: right;
         }
 
-        /* حاوية العرض المتناسقة */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
+        a {
+            color: #1d4ed8;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
         }
 
-        /* 1. شريط التنقل العلوي (Navbar) */
-        .navbar-wrap {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            transition: var(--transition);
+        /* الحاوية الرئيسية للموقع بتنسيق كلاسيكي متناسق */
+        .site-wrapper {
+            max-width: 1100px;
+            margin: 15px auto;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
         }
 
-        .navbar-inner {
+        /* 1. الشريط العلوي الرفيع */
+        .top-info-bar {
+            background-color: #172554;
+            color: #e2e8f0;
+            padding: 6px 15px;
+            font-size: 12px;
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            height: 76px;
+            align-items: center;
+            border-bottom: 1px solid #1e3a8a;
+        }
+        .top-info-bar .date-info {
+            display: flex;
+            gap: 15px;
+        }
+        .top-info-bar .top-links a {
+            color: #93c5fd;
+            margin-right: 12px;
+            font-size: 12px;
+        }
+        .top-info-bar .top-links a:hover {
+            color: #ffffff;
         }
 
-        .brand-logo {
+        /* 2. ترويسة الموقع (Header) الكلاسيكية */
+        .main-header {
+            background: linear-gradient(to bottom, #1e3a8a, #1e40af);
+            color: #ffffff;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #f59e0b;
+        }
+        .header-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            text-decoration: none;
+            gap: 15px;
         }
-
-        .brand-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            display: grid;
-            place-items: center;
-            font-size: 1.25rem;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-        }
-
-        .brand-text h1 {
-            font-size: 1.18rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .brand-text span {
-            font-size: 0.76rem;
-            font-weight: 600;
-            color: var(--accent);
-            display: block;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover {
-            color: var(--primary-light);
-        }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-nav-login {
-            background: #f1f5f9;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-            padding: 9px 18px;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-nav-login:hover {
-            background: #e2e8f0;
-            color: var(--primary-dark);
-        }
-
-        .btn-nav-register {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 9px 20px;
-            border-radius: 10px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            text-decoration: none;
-            transition: var(--transition);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.22);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-nav-register:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.32);
-        }
-
-        /* 2. قسم البطل (Hero Section) */
-        .hero-section {
-            padding: 70px 0 60px;
-            background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05) 0%, rgba(248, 250, 252, 0.9) 60%);
-            border-bottom: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #eff6ff;
-            color: var(--primary-light);
-            border: 1px solid #bfdbfe;
-            border-radius: 50px;
-            padding: 6px 18px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            margin-bottom: 22px;
-        }
-
-        .hero-title {
-            font-size: 2.6rem;
-            font-weight: 900;
-            color: var(--primary-dark);
-            line-height: 1.35;
-            max-width: 860px;
-            margin: 0 auto 20px;
-            letter-spacing: -0.5px;
-        }
-
-        .hero-title .highlight {
-            color: var(--primary-light);
-            position: relative;
-            display: inline-block;
-        }
-
-        .hero-description {
-            font-size: 1.12rem;
-            color: var(--text-muted);
-            max-width: 720px;
-            margin: 0 auto 35px;
-            line-height: 1.9;
-        }
-
-        .hero-cta-group {
+        .header-logo-box {
+            width: 58px;
+            height: 58px;
+            background-color: #ffffff;
+            color: #1e3a8a;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-            margin-bottom: 50px;
+            font-size: 28px;
+            border: 2px solid #f59e0b;
         }
-
-        .btn-cta-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 14px 32px;
-            border-radius: 12px;
-            font-size: 1.02rem;
+        .header-titles h1 {
+            font-size: 22px;
             font-weight: 800;
-            text-decoration: none;
-            display: inline-flex;
+            margin-bottom: 2px;
+            color: #ffffff;
+        }
+        .header-titles p {
+            font-size: 13px;
+            color: #bfdbfe;
+            font-weight: 600;
+        }
+        .header-supervisor {
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px 14px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .header-supervisor .label {
+            font-size: 11px;
+            color: #fef08a;
+            display: block;
+        }
+        .header-supervisor .name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* 3. شريط القوائم الرئيسي (Classic Navbar) */
+        .main-navbar {
+            background-color: #0f172a;
+            border-bottom: 1px solid #334155;
+        }
+        .nav-container {
+            display: flex;
             align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.28);
-            transition: var(--transition);
+            justify-content: space-between;
+            padding: 0 10px;
+            flex-wrap: wrap;
         }
-
-        .btn-cta-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.38);
+        .nav-list {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
         }
-
-        .btn-cta-secondary {
-            background: var(--bg-card);
-            color: var(--text-main);
-            border: 1.5px solid var(--border-color);
-            padding: 14px 28px;
-            border-radius: 12px;
-            font-size: 1.02rem;
+        .nav-list li a {
+            display: block;
+            padding: 10px 14px;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            border-left: 1px solid #1e293b;
+            text-decoration: none;
+            transition: background-color 0.15s;
+        }
+        .nav-list li:first-child a {
+            border-right: 1px solid #1e293b;
+        }
+        .nav-list li a:hover,
+        .nav-list li a.active {
+            background-color: #2563eb;
+            color: #ffffff;
+        }
+        .nav-actions {
+            display: flex;
+            gap: 8px;
+            padding: 6px 0;
+        }
+        .btn-nav-login {
+            background-color: #2563eb;
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            transition: var(--transition);
+            gap: 5px;
+        }
+        .btn-nav-login:hover {
+            background-color: #1d4ed8;
+            text-decoration: none;
+        }
+        .btn-nav-register {
+            background-color: #16a34a;
+            color: #ffffff;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-nav-register:hover {
+            background-color: #15803d;
+            text-decoration: none;
         }
 
-        .btn-cta-secondary:hover {
-            background: #f1f5f9;
-            border-color: var(--border-hover);
-        }
-
-        /* إحصائيات سريعة في الهيرو */
-        .hero-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 18px;
-            max-width: 980px;
-            margin: 0 auto;
-        }
-
-        .hero-stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-        }
-
-        .hero-stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-md);
-            border-color: #bfdbfe;
-        }
-
-        .stat-icon {
-            font-size: 1.6rem;
-            margin-bottom: 8px;
-            display: inline-block;
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--primary-dark);
-            display: block;
-            line-height: 1.2;
-        }
-
-        .stat-label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text-light);
-            margin-top: 4px;
-            display: block;
-        }
-
-        /* 3. رسالة ورؤية المنظومة (Mission Section) */
-        .section-block {
-            padding: 85px 0;
-        }
-
-        .section-header {
-            text-align: center;
-            max-width: 680px;
-            margin: 0 auto 50px;
-        }
-
-        .section-tag {
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: var(--accent);
-            background: #ecfdf5;
-            padding: 4px 14px;
-            border-radius: 50px;
-            display: inline-block;
-            margin-bottom: 12px;
-            border: 1px solid #a7f3d0;
-        }
-
-        .section-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 14px;
-            line-height: 1.35;
-        }
-
-        .section-desc {
-            font-size: 1rem;
-            color: var(--text-muted);
-            line-height: 1.8;
-        }
-
-        .mission-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
-            gap: 24px;
-        }
-
-        .mission-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 32px 28px;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-        }
-
-        .mission-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-md);
-            border-color: #cbd5e1;
-        }
-
-        .mission-icon-wrap {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            background: #eff6ff;
-            color: var(--primary-light);
-            display: grid;
-            place-items: center;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-        .mission-icon-wrap.emerald { background: #ecfdf5; color: var(--accent); }
-        .mission-icon-wrap.amber { background: #fffbeb; color: var(--gold); }
-
-        .mission-card h3 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 12px;
-        }
-
-        .mission-card p {
-            font-size: 0.92rem;
-            color: var(--text-muted);
-            line-height: 1.8;
-        }
-
-        /* 4. الفروع والمراحل الدراسية (Academic Branches) */
-        .branches-section {
-            background: #f1f5f9;
-            border-top: 1px solid var(--border-color);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .branches-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 20px;
-        }
-
-        .branch-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 26px;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .branch-card:hover {
-            transform: translateY(-4px);
-            border-color: var(--primary-light);
-            box-shadow: var(--shadow-md);
-        }
-
-        .branch-pill {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 6px;
-            margin-bottom: 14px;
-        }
-
-        .branch-pill.sci { background: #eff6ff; color: #1d4ed8; }
-        .branch-pill.lit { background: #fdf2f8; color: #be185d; }
-        .branch-pill.bus { background: #ecfdf5; color: #047857; }
-        .branch-pill.ind { background: #fefce8; color: #a16207; }
-
-        .branch-card h3 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-        }
-
-        .branch-card p {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.7;
-            margin-bottom: 16px;
-        }
-
-        .branch-subjects-list {
+        /* 4. شريط الإعلانات والتنبيهات (Notice Bar) */
+        .notice-bar {
+            background-color: #fef3c7;
+            border-bottom: 1px solid #fde68a;
+            color: #92400e;
+            padding: 7px 15px;
+            font-size: 13px;
             display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
+            align-items: center;
+            gap: 10px;
         }
-
-        .branch-sub-tag {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            font-size: 0.76rem;
+        .notice-badge {
+            background-color: #d97706;
+            color: #ffffff;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .notice-text {
             font-weight: 600;
-            padding: 3px 8px;
-            border-radius: 6px;
         }
 
-        /* 5. مميزات المنظومة (Core Features) */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-        }
-
-        .feature-item {
+        /* 5. جسم الصفحة بتوزيع كلاسيكي (عمود رئيسي + عمود جانبي) */
+        .site-body {
+            padding: 16px;
             display: flex;
-            align-items: flex-start;
-            gap: 18px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            transition: var(--transition);
+            gap: 16px;
         }
-
-        .feature-item:hover {
-            border-color: #cbd5e1;
-            box-shadow: var(--shadow-sm);
+        .main-column {
+            flex: 1;
+            min-width: 0;
         }
-
-        .feature-item-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: #eff6ff;
-            color: var(--primary-light);
-            display: grid;
-            place-items: center;
-            font-size: 1.3rem;
+        .side-column {
+            width: 320px;
             flex-shrink: 0;
         }
 
-        .feature-item h4 {
-            font-size: 1.05rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 6px;
-        }
-
-        .feature-item p {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.7;
-        }
-
-        /* 6. بطاقة الدعوة للتسجيل (CTA Box) */
-        .cta-banner-wrap {
-            padding: 40px 0 80px;
-        }
-
-        .cta-banner-card {
-            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
-            border-radius: 28px;
-            padding: 55px 40px;
-            color: white;
-            text-align: center;
-            position: relative;
+        /* 6. الصناديق الكلاسيكية (Classic Panels) */
+        .panel {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            margin-bottom: 16px;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(30, 58, 138, 0.25);
         }
-
-        .cta-banner-card h2 {
-            font-size: 2.2rem;
-            font-weight: 900;
-            margin-bottom: 14px;
-            line-height: 1.35;
-        }
-
-        .cta-banner-card p {
-            font-size: 1.08rem;
-            color: #cbd5e1;
-            max-width: 680px;
-            margin: 0 auto 32px;
-            line-height: 1.8;
-        }
-
-        .cta-banner-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .btn-banner-main {
-            background: #ffffff;
-            color: var(--primary-dark);
-            padding: 13px 30px;
-            border-radius: 12px;
-            font-size: 0.98rem;
-            font-weight: 800;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-        }
-
-        .btn-banner-main:hover {
-            transform: translateY(-2px);
-            background: #f8fafc;
-        }
-
-        .btn-banner-whatsapp {
-            background: #25d366;
-            color: white;
-            padding: 13px 26px;
-            border-radius: 12px;
-            font-size: 0.98rem;
-            font-weight: 800;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-        }
-
-        .btn-banner-whatsapp:hover {
-            background: #1eb956;
-            transform: translateY(-2px);
-        }
-
-        /* 7. تذييل الصفحة (Footer) */
-        .footer-wrap {
-            background: #ffffff;
-            border-top: 1px solid var(--border-color);
-            padding: 50px 0 25px;
-        }
-
-        .footer-top {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        @media (max-width: 768px) {
-            .footer-top {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-        }
-
-        .footer-brand h3 {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 10px;
-        }
-
-        .footer-brand p {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            line-height: 1.8;
-            max-width: 400px;
-        }
-
-        .footer-col h4 {
-            font-size: 0.98rem;
-            font-weight: 800;
-            color: var(--primary-dark);
-            margin-bottom: 14px;
-        }
-
-        .footer-col ul {
-            list-style: none;
-        }
-
-        .footer-col ul li {
-            margin-bottom: 8px;
-        }
-
-        .footer-col ul li a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.86rem;
-            transition: var(--transition);
-        }
-
-        .footer-col ul li a:hover {
-            color: var(--primary-light);
-        }
-
-        .footer-bottom {
-            border-top: 1px solid var(--border-color);
-            padding-top: 22px;
+        .panel-header {
+            background-color: #1e3a8a;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.82rem;
-            color: var(--text-light);
+            border-bottom: 2px solid #f59e0b;
+        }
+        .panel-header.green {
+            background-color: #166534;
+            border-bottom-color: #22c55e;
+        }
+        .panel-header.slate {
+            background-color: #334155;
+            border-bottom-color: #64748b;
+        }
+        .panel-header .title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-body {
+            padding: 14px;
+        }
+
+        /* صندوق الترحيب الكلاسيكي */
+        .welcome-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .welcome-box h2 {
+            font-size: 18px;
+            color: #1e3a8a;
+            font-weight: 800;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #cbd5e1;
+            padding-bottom: 6px;
+        }
+        .welcome-box p {
+            font-size: 13.5px;
+            color: #334155;
+            margin-bottom: 14px;
+            line-height: 1.7;
+        }
+        .welcome-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-action-primary {
+            background-color: #16a34a;
+            color: #ffffff;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #15803d;
+        }
+        .btn-action-primary:hover {
+            background-color: #15803d;
+            text-decoration: none;
+        }
+        .btn-action-secondary {
+            background-color: #1e40af;
+            color: #ffffff;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #1e3a8a;
+        }
+        .btn-action-secondary:hover {
+            background-color: #1e3a8a;
+            text-decoration: none;
+        }
+
+        /* جدول كلاسيكي بسيط */
+        .classic-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .classic-table th, 
+        .classic-table td {
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            text-align: right;
+        }
+        .classic-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+        }
+        .classic-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+        .classic-table tr:hover td {
+            background-color: #eff6ff;
+        }
+
+        /* شبكة الفروع الدراسية الكلاسيكية */
+        .branches-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .branch-item {
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            background-color: #ffffff;
+            padding: 10px 12px;
+            border-right: 4px solid #1e40af;
+        }
+        .branch-item.lit { border-right-color: #059669; }
+        .branch-item.bus { border-right-color: #d97706; }
+        .branch-item.ind { border-right-color: #dc2626; }
+        .branch-item.isl { border-right-color: #7c3aed; }
+        .branch-item h4 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+        .branch-item p {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .branch-subjects-tag {
+            font-size: 11px;
+            color: #1e40af;
+            font-weight: 600;
+            background: #eff6ff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* مميزات المنصة في قائمة واضحة */
+        .features-bullet-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .features-bullet-list li {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .features-bullet-list li:last-child {
+            border-bottom: none;
+        }
+        .features-bullet-list li i {
+            color: #16a34a;
+            margin-top: 3px;
+        }
+
+        /* القوائم الجانبية السريعة */
+        .side-links-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .side-links-list li a {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 13px;
+            color: #334155;
+            font-weight: 600;
+        }
+        .side-links-list li a:hover {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            text-decoration: none;
+        }
+        .side-links-list li:last-child a {
+            border-bottom: none;
+        }
+
+        /* صندوق المشرف والتواصل في الشريط الجانبي */
+        .supervisor-card {
+            text-align: center;
+            padding: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+        .supervisor-card .sup-avatar {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: #1e3a8a;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin-bottom: 8px;
+            border: 2px solid #f59e0b;
+        }
+        .supervisor-card h4 {
+            font-size: 14px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 2px;
+        }
+        .supervisor-card span {
+            font-size: 12px;
+            color: #64748b;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .btn-whatsapp-direct {
+            background-color: #25d366;
+            color: #ffffff;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            border: 1px solid #1eb956;
+        }
+        .btn-whatsapp-direct:hover {
+            background-color: #1eb956;
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        /* 7. التذييل الكلاسيكي (Footer) */
+        .site-footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            font-size: 12px;
+            border-top: 3px solid #1e40af;
+        }
+        .footer-inner {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 10px;
         }
+        .footer-links a {
+            color: #cbd5e1;
+            margin-right: 12px;
+        }
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+        .footer-note {
+            background-color: #020617;
+            padding: 8px 20px;
+            text-align: center;
+            color: #64748b;
+            font-size: 11px;
+            border-top: 1px solid #1e293b;
+        }
 
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 1.95rem;
+        /* استجابة الشاشات الصغيرة */
+        @media (max-width: 860px) {
+            .site-wrapper {
+                margin: 0;
+                border: none;
             }
-            .nav-links {
-                display: none;
+            .main-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+            .header-brand {
+                flex-direction: column;
+            }
+            .header-supervisor {
+                text-align: center;
+            }
+            .site-body {
+                flex-direction: column;
+            }
+            .side-column {
+                width: 100%;
+            }
+            .branches-list {
+                grid-template-columns: 1fr;
+            }
+            .nav-container {
+                flex-direction: column;
+                gap: 6px;
+                padding-bottom: 8px;
+            }
+            .nav-list {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .nav-list li a {
+                border: none;
+                padding: 7px 10px;
+            }
+            .footer-inner {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. شريط التنقل العلوي -->
-    <header class="navbar-wrap">
-        <div class="container navbar-inner">
-            <a href="{{ route('home') }}" class="brand-logo">
-                <div class="brand-icon">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <div class="brand-text">
-                    <h1>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</h1>
-                    <span>فلسطين 🇵🇸 | الثانوية العامة</span>
-                </div>
-            </a>
+<div class="site-wrapper">
 
-            <ul class="nav-links">
-                <li><a href="#hero">الرئيسية</a></li>
-                <li><a href="#mission">رسالتنا</a></li>
-                <li><a href="#branches">الفروع الدراسية</a></li>
-                <li><a href="#features">مميزات المنصة</a></li>
-                <li><a href="#contact">تواصل معنا</a></li>
+    <!-- 1. شريط التاريخ والبسملة في الأعلى -->
+    <div class="top-info-bar">
+        <div class="date-info">
+            <span><i class="fa-regular fa-calendar-days"></i> {{ date('Y/m/d') }} م</span>
+            <span>بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ</span>
+        </div>
+        <div class="top-links">
+            <a href="{{ route('home') }}"><i class="fa-solid fa-house"></i> الرئيسية</a>
+            <a href="{{ route('public.faq') }}"><i class="fa-solid fa-circle-question"></i> الأسئلة الشائعة</a>
+            <a href="{{ route('public.contact') }}"><i class="fa-solid fa-envelope"></i> اتصل بنا</a>
+        </div>
+    </div>
+
+    <!-- 2. الترويسة الرسمية الكلاسيكية -->
+    <header class="main-header">
+        <div class="header-brand">
+            <div class="header-logo-box">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div class="header-titles">
+                <h1>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</h1>
+                <p>بوابة ومنظومة الثانوية العامة لطلبة فلسطين - المنهاج الوزاري المعتمد</p>
+            </div>
+        </div>
+
+        <div class="header-supervisor">
+            <span class="label">المشرف العام على المنصة:</span>
+            <span class="name">أ. أحمد حسين شمالي</span>
+        </div>
+    </header>
+
+    <!-- 3. شريط القوائم الكلاسيكي (Navbar) -->
+    <nav class="main-navbar">
+        <div class="nav-container">
+            <ul class="nav-list">
+                <li><a href="{{ route('home') }}" class="active"><i class="fa-solid fa-house"></i> الرئيسية</a></li>
+                <li><a href="#branches"><i class="fa-solid fa-book-open"></i> فروع التوجيهي</a></li>
+                <li><a href="#services"><i class="fa-solid fa-list-check"></i> خدمات المنصة</a></li>
+                @if(Route::has('tawjihi.archive'))
+                    <li><a href="{{ route('tawjihi.archive') }}"><i class="fa-solid fa-folder-open"></i> بنك الامتحانات الوزارية</a></li>
+                @endif
+                @if(Route::has('tawjihi.calculator'))
+                    <li><a href="{{ route('tawjihi.calculator') }}"><i class="fa-solid fa-calculator"></i> حساب المعدل</a></li>
+                @endif
+                <li><a href="{{ route('public.contact') }}"><i class="fa-solid fa-phone"></i> تواصل مع الإدارة</a></li>
             </ul>
 
             <div class="nav-actions">
                 @if(Auth::guard('student')->check() || Auth::check())
-                    <a href="{{ route('dashboard') }}" class="btn-nav-register">
-                        <i class="fa-solid fa-gauge-high"></i>
-                        <span>لوحة التحكم</span>
+                    <a href="{{ route('dashboard') }}" class="btn-nav-login">
+                        <i class="fa-solid fa-gauge"></i> لوحة التحكم
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="btn-nav-login">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                        <span>تسجيل الدخول</span>
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> تسجيل الدخول
                     </a>
                     <a href="{{ route('students.create') }}" class="btn-nav-register">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span>تسجيل طالب</span>
+                        <i class="fa-solid fa-user-plus"></i> تسجيل طالب جديد
                     </a>
                 @endif
             </div>
         </div>
-    </header>
+    </nav>
 
-    <!-- 2. قسم البطل (Hero Section) -->
-    <section class="hero-section" id="hero">
-        <div class="container">
-            <div class="hero-badge">
-                <i class="fa-solid fa-certificate"></i>
-                <span>المنظومة الأكاديمية الأولى المعتمدة لطلبة الثانوية العامة 2026</span>
-            </div>
-
-            <h1 class="hero-title">
-                طريقك الواثق نحو <span class="highlight">التفوق في التوجيهي</span> برعاية نخبة المعلمين
-            </h1>
-
-            <p class="hero-description">
-                منصة تعليمية متكاملة تواكب المنهاج الوزاري الفلسطيني خطوة بخطوة، تمنحك شروحات منهجية مبسطة، بنك اختبارات وزارية محلولة، ومتابعة أكاديمية مستمرة بإشراف <strong>أ. أحمد حسين شمالي</strong>.
-            </p>
-
-            <div class="hero-cta-group">
-                @if(Auth::guard('student')->check() || Auth::check())
-                    <a href="{{ route('dashboard') }}" class="btn-cta-primary">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span>الانتقال للوحة التحكم التعليمية</span>
-                    </a>
-                @else
-                    <a href="{{ route('students.create') }}" class="btn-cta-primary">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span>ابدأ رحلة النجاح - تسجيل طالب جديد</span>
-                    </a>
-                    <a href="{{ route('login') }}" class="btn-cta-secondary">
-                        <i class="fa-solid fa-key"></i>
-                        <span>تسجيل الدخول للنظام</span>
-                    </a>
-                @endif
-            </div>
-
-            <!-- بطاقات الإحصائيات -->
-            <div class="hero-stats-grid">
-                <div class="hero-stat-card">
-                    <span class="stat-icon">👨‍🎓</span>
-                    <span class="stat-number">{{ number_format($stats['students'] ?? 1200) }}+</span>
-                    <span class="stat-label">طالب وطالبة في المنظومة</span>
-                </div>
-                <div class="hero-stat-card">
-                    <span class="stat-icon">📚</span>
-                    <span class="stat-number">{{ number_format($stats['subjects'] ?? 18) }}</span>
-                    <span class="stat-label">مساقاً تعليمياً وزارياً</span>
-                </div>
-                <div class="hero-stat-card">
-                    <span class="stat-icon">🎥</span>
-                    <span class="stat-number">{{ number_format($stats['lessons'] ?? 350) }}+</span>
-                    <span class="stat-label">شرحاً مرئياً ودرس تفاعلي</span>
-                </div>
-                <div class="hero-stat-card">
-                    <span class="stat-icon">📝</span>
-                    <span class="stat-number">{{ number_format($stats['exams'] ?? 150) }}+</span>
-                    <span class="stat-label">اختباراً ونموذجاً وزارياً محلولاً</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 3. رسالتنا الأكاديمية (Mission) -->
-    <section class="section-block" id="mission">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">رؤيتنا ورسالتنا الأكاديمية</span>
-                <h2 class="section-title">تعليم فلسطيني حديث، مبسط، وفي متناول كل طالب</h2>
-                <p class="section-desc">
-                    انطلقت منصة "منارة التوجيهي" لتكون السند الأكاديمي الحقيقي لكل طالب فلسطيني في القدس والضفة وقطاع غزة، لتذليل صعوبات المنهاج ومساعدته على تحصيل أعلى المعدلات.
-                </p>
-            </div>
-
-            <div class="mission-grid">
-                <div class="mission-card">
-                    <div class="mission-icon-wrap">
-                        <i class="fa-solid fa-chalkboard-user"></i>
-                    </div>
-                    <h3>نخبة المعلمين المعتمدين</h3>
-                    <p>يقوم على المنصة كادر تعليمي متميز من ذوي الخبرة الطويلة في تدريس الثانوية العامة ووضع نماذج الاختبارات الوزارية وتصحيحها.</p>
-                </div>
-
-                <div class="mission-card">
-                    <div class="mission-icon-wrap emerald">
-                        <i class="fa-solid fa-bullseye"></i>
-                    </div>
-                    <h3>تركيز كامل على المنهاج الوزاري</h3>
-                    <p>محتوى أكاديمي دقيق ومطابق 100% لتحديثات وزارة التربية والتعليم الفلسطينية مع التركيز على الأسئلة المتكررة وتوقعات الامتحانات.</p>
-                </div>
-
-                <div class="mission-card">
-                    <div class="mission-icon-wrap amber">
-                        <i class="fa-solid fa-handshake-angle"></i>
-                    </div>
-                    <h3>متابعة مستمرة ومباشرة</h3>
-                    <p>إشراف مباشر من إدارة المنصة لحل الصعوبات، الرد على الاستفسارات الأكاديمية، وتقديم المنح والتسهيلات لطلبة فلسطين الكرام.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 4. الفروع الدراسية (Academic Branches) -->
-    <section class="section-block branches-section" id="branches">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">فروع الثانوية العامة</span>
-                <h2 class="section-title">تغطية شاملة لكافة الفروع والمسارات التعليمية</h2>
-                <p class="section-desc">
-                    اختر فرعك الدراسي لتجد الدروس المجدولة، التلاخيص الاحترافية، ونماذج الامتحانات الوزارية السابقة لكل مادة.
-                </p>
-            </div>
-
-            <div class="branches-grid">
-                <!-- العلمي -->
-                <div class="branch-card">
-                    <span class="branch-pill sci">علمي ⚛️</span>
-                    <h3>الفرع العلمي</h3>
-                    <p>تغطية عميقة ومسائل تفصيلية لقوانين الرياضيات والفيزياء والكيمياء والأحياء بأعلى معايير التفكير العلمي.</p>
-                    <div class="branch-subjects-list">
-                        <span class="branch-sub-tag">الرياضيات</span>
-                        <span class="branch-sub-tag">الفيزياء</span>
-                        <span class="branch-sub-tag">الكيمياء</span>
-                        <span class="branch-sub-tag">العلوم الحياتية</span>
-                    </div>
-                </div>
-
-                <!-- الأدبي -->
-                <div class="branch-card">
-                    <span class="branch-pill lit">أدبي 📜</span>
-                    <h3>الفرع الأدبي</h3>
-                    <p>شروحات وافية للغة العربية والإنجليزية، تبسيط التاريخ والجغرافيا، وتثبيت مفاهيم الدراسات الإسلامية.</p>
-                    <div class="branch-subjects-list">
-                        <span class="branch-sub-tag">اللغة العربية</span>
-                        <span class="branch-sub-tag">التاريخ</span>
-                        <span class="branch-sub-tag">الجغرافيا</span>
-                        <span class="branch-sub-tag">اللغة الإنجليزية</span>
-                    </div>
-                </div>
-
-                <!-- الريادة والأعمال -->
-                <div class="branch-card">
-                    <span class="branch-pill bus">ريادة وأعمال 💼</span>
-                    <h3>فرع الريادة والأعمال</h3>
-                    <p>فهم متكامل لقوانين المحاسبة، المشاريع الصغيرة، والإدارة والاقتصاد لضمان التفوق الأكاديمي.</p>
-                    <div class="branch-subjects-list">
-                        <span class="branch-sub-tag">المحاسبة</span>
-                        <span class="branch-sub-tag">الإدارة والاقتصاد</span>
-                        <span class="branch-sub-tag">المشاريع</span>
-                        <span class="branch-sub-tag">الثقافة العلمية</span>
-                    </div>
-                </div>
-
-                <!-- الصناعي والتكنولوجي -->
-                <div class="branch-card">
-                    <span class="branch-pill ind">مهني وصناعي ⚙️</span>
-                    <h3>الفرع الصناعي</h3>
-                    <p>دروس تطبيقية ومسائل عملية للفيزياء التطبيقية والرياضيات الصناعية والعلوم المهنية المتخصصة.</p>
-                    <div class="branch-subjects-list">
-                        <span class="branch-sub-tag">الرياضيات</span>
-                        <span class="branch-sub-tag">الفيزياء الصناعية</span>
-                        <span class="branch-sub-tag">الرسم الهندسي</span>
-                        <span class="branch-sub-tag">العلوم الصناعية</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 5. مميزات المنصة (Core Features) -->
-    <section class="section-block" id="features">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-tag">لماذا منارة التوجيهي؟</span>
-                <h2 class="section-title">بيئة تعليمية صُممت خصيصاً لتفوقك</h2>
-                <p class="section-desc">
-                    أدوات دراسية ذكية وهادئة تُمكّنك من استثمار وقتك والوصول للمعلومة بأسرع وأسهل طريقة.
-                </p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-solid fa-play"></i></div>
-                    <div>
-                        <h4>دروس مسجلة بجودة عالية</h4>
-                        <p>شروحات تفصيلية منظمة ومرتبة حسب الكتاب الوزاري، يمكنك مشاهدتها بأي وقت ومن أي جهاز.</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-solid fa-clipboard-check"></i></div>
-                    <div>
-                        <h4>نماذج امتحانات وزارية محلولة</h4>
-                        <p>بنك أسئلة للسنوات السابقة مع نماذج الإجابة المعتمدة لمساعدتك على فهم آلية توزيع العلامات.</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-solid fa-layer-group"></i></div>
-                    <div>
-                        <h4>ملخصات وبطاقات استذكار</h4>
-                        <p>ملخصات مكثفة للقوانين والتعاريف وأهم النقاط الوزارية لمراجعتها السريعة قبل الامتحانات.</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-brands fa-whatsapp"></i></div>
-                    <div>
-                        <h4>تواصل مباشر مع المشرف</h4>
-                        <p>إمكانية الاستفسار ومتابعة تفعيل الحساب وحل أي عقبة تقنية أو أكاديمية بكل سهولة عبر WhatsApp.</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-solid fa-wallet"></i></div>
-                    <div>
-                        <h4>طرق دفع فلسطينية ميسرة</h4>
-                        <p>دعم كامل لحسابات بنك فلسطين، بال باي (PalPay)، وجوال باي (Jawwal Pay) ومنح خاصة للمستحقين.</p>
-                    </div>
-                </div>
-
-                <div class="feature-item">
-                    <div class="feature-item-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                    <div>
-                        <h4>حساب محمي وخاص</h4>
-                        <p>نظام تسجيل دخول سلس عبر اسم مستخدم بريدي موحد (@tawjihi.ps) يحفظ خصوصية دراستك وإنجازاتك.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 6. بطاقة الدعوة للتسجيل (CTA Banner) -->
-    <div class="cta-banner-wrap" id="contact">
-        <div class="container">
-            <div class="cta-banner-card">
-                <h2>جاهز لبدء رحلة التميز وحصد معدل أحلامك؟ 🎓</h2>
-                <p>
-                    انضم الآن إلى آلاف زملائك في منصة منارة التوجيهي، واستفد من الشروحات الشاملة والامتحانات الوزارية بإشراف المشرف العام أ. أحمد حسين شمالي.
-                </p>
-
-                <div class="cta-banner-actions">
-                    @if(Auth::guard('student')->check() || Auth::check())
-                        <a href="{{ route('dashboard') }}" class="btn-banner-main">
-                            <i class="fa-solid fa-gauge-high"></i>
-                            <span>الانتقال للوحة التحكم الخاصة بك</span>
-                        </a>
-                    @else
-                        <a href="{{ route('students.create') }}" class="btn-banner-main">
-                            <i class="fa-solid fa-user-plus"></i>
-                            <span>تسجيل حساب طالب جديد</span>
-                        </a>
-                    @endif
-
-                    @php
-                        $waDigits = '970567897212';
-                        $waMsg = urlencode("مرحباً أستاذ أحمد شمالي، أود الاستفسار عن التسجيل والاشتراك في منصة منارة التوجيهي.");
-                    @endphp
-                    <a href="https://wa.me/{{ $waDigits }}?text={{ $waMsg }}" target="_blank" class="btn-banner-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i>
-                        <span>تواصل معنا عبر واتساب (0567897212)</span>
-                    </a>
-                </div>
-            </div>
-        </div>
+    <!-- 4. شريط الإعلانات والتنبيهات المباشر -->
+    <div class="notice-bar">
+        <span class="notice-badge">📢 إعلان هام</span>
+        <span class="notice-text">
+            أهلاً وسهلاً بطلبة الثانوية العامة (التوجيهي) لدورة {{ date('Y') }}. تم تفعيل التسجيل الإلكتروني ومتابعة الحصص والنماذج الوزارية بإشراف نخبة المعلمين.
+        </span>
     </div>
 
-    <!-- 7. تذييل الصفحة (Footer) -->
-    <footer class="footer-wrap">
-        <div class="container">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <h3>🇵🇸 {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</h3>
-                    <p>
-                        المنصة الأكاديمية الفلسطينية الرائدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى توفير بيئة تعليمية هادئة وحديثة تضمن وصول العلم والتفوق لكل بيت فلسطيني.
-                    </p>
-                    <p style="margin-top: 10px; font-weight: 700; color: var(--primary-light);">
-                        المشرف العام: أ. أحمد حسين شمالي
-                    </p>
-                </div>
+    <!-- 5. جسم الصفحة: تقسيم كلاسيكي (محتوى رئيسي + شريط جانبي) -->
+    <div class="site-body">
 
-                <div class="footer-col">
-                    <h4>روابط سريعة</h4>
-                    <ul>
-                        <li><a href="{{ route('home') }}">الصفحة الرئيسية</a></li>
-                        <li><a href="{{ route('login') }}">تسجيل الدخول</a></li>
-                        <li><a href="{{ route('students.create') }}">تسجيل حساب طالب جديد</a></li>
-                        <li><a href="#branches">فروع الثانوية العامة</a></li>
-                    </ul>
-                </div>
+        <!-- العمود الرئيسي (يمين) -->
+        <main class="main-column">
 
-                <div class="footer-col">
-                    <h4>التواصل والدعم</h4>
-                    <ul>
-                        <li><a href="https://wa.me/970567897212" target="_blank"><i class="fa-brands fa-whatsapp text-success me-1"></i> واتساب: 0567897212</a></li>
-                        <li><span style="font-size: 0.86rem; color: var(--text-muted);"><i class="fa-regular fa-envelope me-1"></i> info@tawjihi.ps</span></li>
-                        <li><span style="font-size: 0.86rem; color: var(--text-muted);"><i class="fa-solid fa-location-dot me-1"></i> دولة فلسطين</span></li>
+            <!-- صندوق الترحيب والبدء السريع -->
+            <div class="welcome-box">
+                <h2>مرحباً بكم في منصة منارة التوجيهي التعليمية</h2>
+                <p>
+                    منصة فلسطينية متخصصة تأسست لمساندة طلبة الثانوية العامة (التوجيهي) في كافة محافظات الوطن (القدس، الضفة الغربية، وقطاع غزة). نوفر لكم شروحات منهجية مبسطة، ونماذج امتحانات وزارية سابقة مع نماذج الحل المعتمدة، لتمكينكم من نيل أعلى المعدلات والتفوق بإذن الله.
+                </p>
+
+                <div class="welcome-buttons">
+                    @if(Auth::guard('student')->check() || Auth::check())
+                        <a href="{{ route('dashboard') }}" class="btn-action-primary">
+                            <i class="fa-solid fa-arrow-left"></i> الدخول إلى لوحة التحكم الخاصة بك
+                        </a>
+                    @else
+                        <a href="{{ route('students.create') }}" class="btn-action-primary">
+                            <i class="fa-solid fa-user-pen"></i> تسجيل حساب طالب جديد
+                        </a>
+                        <a href="{{ route('login') }}" class="btn-action-secondary">
+                            <i class="fa-solid fa-key"></i> تسجيل الدخول للنظام
+                        </a>
+                    @endif
+                </div>
+            </div>
+
+            <!-- صندوق فروع الثانوية العامة -->
+            <div class="panel" id="branches">
+                <div class="panel-header">
+                    <div class="title">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                        <span>فروع الثانوية العامة المعتمدة (المنهاج الفلسطيني)</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="branches-list">
+                        <!-- الفرع العلمي -->
+                        <div class="branch-item">
+                            <h4>الفرع العلمي</h4>
+                            <p>شروحات تفصيلية وحل مسائل وتمارين الكتاب الوزاري لمواد التخصص.</p>
+                            <span class="branch-subjects-tag">الرياضيات • الفيزياء • الكيمياء • الأحياء</span>
+                        </div>
+
+                        <!-- الفرع الأدبي -->
+                        <div class="branch-item lit">
+                            <h4>الفرع الأدبي</h4>
+                            <p>تبسيط مفاهيم المنهاج الأدبي وحل أسئلة السنوات السابقة والنصوص الوزارية.</p>
+                            <span class="branch-subjects-tag">اللغة العربية • اللغة الإنجليزية • التاريخ • الجغرافيا</span>
+                        </div>
+
+                        <!-- فرع الريادة والأعمال -->
+                        <div class="branch-item bus">
+                            <h4>فرع الريادة والأعمال</h4>
+                            <p>تغطية شاملة للمسائل المحاسبية، دراسات الجدوى، والإدارة والاقتصاد.</p>
+                            <span class="branch-subjects-tag">المحاسبة • الإدارة والاقتصاد • المشاريع الصغيرة</span>
+                        </div>
+
+                        <!-- الفرع الشرعي والمهني -->
+                        <div class="branch-item isl">
+                            <h4>الفرع الشرعي والصناعي</h4>
+                            <p>متابعة مخصصة للمساقات التخصصية والعلوم الشرعية والمواد المهنية.</p>
+                            <span class="branch-subjects-tag">العلوم الإسلامية • الرياضيات الصناعية • الفيزياء التطبيقية</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- صندوق محتويات وخدمات المنصة -->
+            <div class="panel" id="services">
+                <div class="panel-header slate">
+                    <div class="title">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>خدمات ومحتويات المنظومة للطلبة</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <ul class="features-bullet-list">
+                        <li>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div>
+                                <strong>شروحات مرئية منظمة:</strong> دروس مسجلة بجودة عالية مرتبة حسب فهرس الكتاب المدرسي المقرر من وزارة التربية والتعليم.
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div>
+                                <strong>بنك الامتحانات الوزارية:</strong> نماذج الامتحانات الوزارية الرسمية للأعوام السابقة مع مفاتيح الإجابة النموذجية وطرق توزيع العلامات.
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div>
+                                <strong>تلاخيص وملازم دراسية (PDF):</strong> تلخيص القوانين والقواعد وأهم الأسئلة المتكررة لسهولة المراجعة والطباعة المنزلية.
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div>
+                                <strong>متابعة وإشراف مباشر:</strong> إشراف الأستاذ أحمد حسين شمالي والتواصل لمعالجة أي صعوبة في المناهج أو تفعيل الاشتراكات.
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
 
-            <div class="footer-bottom">
-                <span>جميع الحقوق محفوظة © {{ date('Y') }} {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
-                <span>متوافق تماماً مع منهاج وزارة التربية والتعليم الفلسطينية لدورة 2026.</span>
+            <!-- صندوق خطوات البدء البسيطة -->
+            <div class="panel">
+                <div class="panel-header green">
+                    <div class="title">
+                        <i class="fa-solid fa-shoe-prints"></i>
+                        <span>كيف تبدأ الدراسة في المنصة؟ (٣ خطوات بسيطة)</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <table class="classic-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">الخطوة</th>
+                                <th>الإجراء المطلوب</th>
+                                <th style="width: 140px;">الرابط السريع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>الأولى</strong></td>
+                                <td>إنشاء حساب جديد كطالب وتعبئة بيانات الفرع الدراسي والاسم ورقم الهاتف.</td>
+                                <td><a href="{{ route('students.create') }}">اضغط للتسجيل</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>الثانية</strong></td>
+                                <td>تسجيل الدخول إلى حسابك واختيار المساقات والمواد الدراسية المقررة لفرعك.</td>
+                                <td><a href="{{ route('login') }}">تسجيل الدخول</a></td>
+                            </tr>
+                            <tr>
+                                <td><strong>الثالثة</strong></td>
+                                <td>مشاهدة الشروحات وتحميل الملفات وحل الاختبارات الوزارية بانتظام.</td>
+                                <td><a href="{{ route('dashboard') }}">لوحة التحكم</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- العمود الجانبي (يسار) -->
+        <aside class="side-column">
+
+            <!-- 1. صندوق الحساب والدخول السريع -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="title">
+                        <i class="fa-solid fa-user-lock"></i>
+                        <span>بوابة الحساب والدخول</span>
+                    </div>
+                </div>
+                <div class="panel-body" style="text-align: center;">
+                    @if(Auth::guard('student')->check() || Auth::check())
+                        <div style="margin-bottom: 12px; font-weight: 700; color: #1e3a8a;">
+                            أهلاً بك: 
+                            @if(Auth::guard('student')->check())
+                                {{ Auth::guard('student')->user()->name }}
+                            @else
+                                {{ Auth::user()->name }}
+                            @endif
+                        </div>
+                        <a href="{{ route('dashboard') }}" class="btn-action-primary" style="width: 100%; justify-content: center;">
+                            <i class="fa-solid fa-gauge"></i> الانتقال للوحة التحكم
+                        </a>
+                    @else
+                        <p style="font-size: 12.5px; color: #64748b; margin-bottom: 12px;">
+                            سجل دخولك لمتابعة دروسك واختباراتك أو أنشئ حسابك خلال دقيقة واحدة.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <a href="{{ route('login') }}" class="btn-action-secondary" style="justify-content: center;">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> تسجيل الدخول للنظام
+                            </a>
+                            <a href="{{ route('students.create') }}" class="btn-action-primary" style="justify-content: center;">
+                                <i class="fa-solid fa-user-plus"></i> تسجيل حساب طالب جديد
+                            </a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 2. صندوق إحصائيات المنصة (جدول كلاسيكي مخطط) -->
+            <div class="panel">
+                <div class="panel-header slate">
+                    <div class="title">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span>إحصائيات المنصة</span>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <table class="classic-table" style="border: none;">
+                        <tbody>
+                            <tr>
+                                <td><i class="fa-solid fa-users" style="color: #1e40af;"></i> الطلبة المسجلين</td>
+                                <td style="text-align: left; font-weight: 800; color: #1e3a8a;">
+                                    {{ number_format($stats['students'] ?? 1200) }} طالب
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-book" style="color: #059669;"></i> المساقات الوزارية</td>
+                                <td style="text-align: left; font-weight: 800; color: #059669;">
+                                    {{ number_format($stats['subjects'] ?? 18) }} مساق
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-video" style="color: #d97706;"></i> الدروس والشروحات</td>
+                                <td style="text-align: left; font-weight: 800; color: #d97706;">
+                                    {{ number_format($stats['lessons'] ?? 350) }} درس
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fa-solid fa-file-lines" style="color: #dc2626;"></i> النماذج والامتحانات</td>
+                                <td style="text-align: left; font-weight: 800; color: #dc2626;">
+                                    {{ number_format($stats['exams'] ?? 150) }} نموذج
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 3. بطاقة المشرف العام والتواصل -->
+            <div class="panel">
+                <div class="panel-header green">
+                    <div class="title">
+                        <i class="fa-solid fa-headset"></i>
+                        <span>الإشراف والتواصل المباشر</span>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="supervisor-card">
+                        <div class="sup-avatar">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <h4>أ. أحمد حسين شمالي</h4>
+                        <span>المشرف العام على المنظومة الأكاديمية</span>
+
+                        @php
+                            $waNumber = '970597694385';
+                            $waText = urlencode("السلام عليكم أستاذ أحمد شمالي، أود الاستفسار بخصوص منصة منارة التوجيهي.");
+                        @endphp
+
+                        <a href="https://wa.me/{{ $waNumber }}?text={{ $waText }}" target="_blank" class="btn-whatsapp-direct">
+                            <i class="fa-brands fa-whatsapp"></i> تواصل عبر الواتساب (0597694385)
+                        </a>
+
+                        <div style="font-size: 11.5px; color: #64748b; margin-top: 8px;">
+                            رقم بديل: 0567897212 • فلسطين 🇵🇸
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. روابط مساعدة وسريعة -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="title">
+                        <i class="fa-solid fa-link"></i>
+                        <span>روابط سريعة ومفيدة</span>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding: 0;">
+                    <ul class="side-links-list">
+                        <li>
+                            <a href="{{ route('public.faq') }}">
+                                <i class="fa-solid fa-circle-question" style="color: #1e40af;"></i> الأسئلة المتكررة وإجاباتها
+                            </a>
+                        </li>
+                        @if(Route::has('tawjihi.calculator'))
+                            <li>
+                                <a href="{{ route('tawjihi.calculator') }}">
+                                    <i class="fa-solid fa-calculator" style="color: #059669;"></i> حاسبة معدل التوجيهي التفاعلية
+                                </a>
+                            </li>
+                        @endif
+                        @if(Route::has('tawjihi.archive'))
+                            <li>
+                                <a href="{{ route('tawjihi.archive') }}">
+                                    <i class="fa-solid fa-folder-tree" style="color: #d97706;"></i> أرشيف الامتحانات الوزارية السابقة
+                                </a>
+                            </li>
+                        @endif
+                        <li>
+                            <a href="{{ route('public.terms') }}">
+                                <i class="fa-solid fa-file-contract" style="color: #64748b;"></i> شروط الاستخدام والاشتراك
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('public.contact') }}">
+                                <i class="fa-solid fa-paper-plane" style="color: #dc2626;"></i> تقديم استفسار أو شكوى
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </aside>
+
+    </div>
+
+    <!-- 6. التذييل الكلاسيكي (Footer) -->
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div>
+                <strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</strong>
+                - بوابة ومنظومة الثانوية العامة في فلسطين
+            </div>
+
+            <div class="footer-links">
+                <a href="{{ route('home') }}">الرئيسية</a>
+                <a href="{{ route('login') }}">دخول النظام</a>
+                <a href="{{ route('students.create') }}">تسجيل طالب</a>
+                <a href="{{ route('public.terms') }}">الشروط والأحكام</a>
+                <a href="{{ route('public.privacy') }}">الخصوصية</a>
+                <a href="{{ route('public.contact') }}">اتصل بنا</a>
             </div>
         </div>
+
+        <div class="footer-note">
+            جميع الحقوق محفوظة © {{ date('Y') }} - إشراف الأستاذ: أحمد حسين شمالي | نسأل الله دوام التوفيق والنجاح لطلبتنا الأعزاء في الثانوية العامة.
+        </div>
     </footer>
+
+</div>
 
 </body>
 </html>
