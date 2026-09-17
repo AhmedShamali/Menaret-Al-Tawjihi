@@ -85,6 +85,8 @@
             @endforeach
         </div>
     @endif
+
+    @if($flashcards->count() > 0)
         <!-- منصة البطاقة ثلاثية الأبعاد (3D Stage) -->
         <div class="ed-fc-stage-wrapper">
             <div class="ed-fc-stage" onclick="flipActiveCard()">

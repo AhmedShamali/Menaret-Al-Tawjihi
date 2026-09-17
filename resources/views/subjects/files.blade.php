@@ -49,33 +49,27 @@
     <div class="files-grid" id="filesGrid">
         @forelse($files as $file)
             @php
-                // استخدام مسار ה-PDF المخصص حصراً
                 $filePath = $file->pdf_path;
-
-                // التأكد مما إذا كان المسار رابطاً خارجياً أم ملفاً مرفوعاً على السيرفر
-                $fileUrl = filter_var($filePath, FILTER_VALIDATE_URL)
-                    ? $filePath
-                    : asset('storage/' . $filePath);
-
-                $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+                $fileUrl = filter_var($filePath, FILTER_VALIDATE_URL) ? $filePath : asset('storage/' . $filePath);
+                $ext = $file->file_extension ?? pathinfo($filePath, PATHINFO_EXTENSION) ?: 'pdf';
+                $meta = $file->file_meta ?? [
+                    'icon' => 'fa-solid fa-file-pdf',
+                    'color' => '#ef4444',
+                    'bg' => '#fef2f2',
+                    'label' => strtoupper($ext)
+                ];
             @endphp
 
             <div class="file-card-item" data-title="{{ strtolower($file->title) }}">
-                <div class="file-type-icon">
-                    @if(in_array(strtolower($ext), ['doc', 'docx']))
-                        🔵
-                    @elseif(in_array(strtolower($ext), ['png', 'jpg', 'jpeg']))
-                        🟢
-                    @else
-                        📄
-                    @endif
+                <div class="file-type-icon" style="background: {{ $meta['bg'] }}; color: {{ $meta['color'] }}; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; font-size: 1.3rem;">
+                    <i class="{{ $meta['icon'] }}"></i>
                 </div>
 
                 <div class="file-info-body">
                     <h3 class="file-title" title="{{ $file->title }}">{{ $file->title }}</h3>
                     <div class="file-meta-tags">
-                        <span class="tag-badge format-badge">{{ strtoupper($ext ?: 'PDF') }}</span>
-                        <span class="tag-badge size-badge">{{ $file->file_size ?? 'حجم غير محدد' }}</span>
+                        <span class="tag-badge format-badge" style="color: {{ $meta['color'] }}; background: {{ $meta['bg'] }}; font-weight: 700;">{{ $meta['label'] }}</span>
+                        <span class="tag-badge size-badge">{{ $file->file_size ?? 'غير محدد' }}</span>
                         @if($file->created_at)
                             <span class="file-date">{{ $file->created_at->format('Y-m-d') }}</span>
                         @endif
@@ -83,11 +77,11 @@
                 </div>
 
                 <div class="file-action-buttons">
-                    <a href="{{ $fileUrl }}" target="_blank" class="btn-action-view" title="معاينة الملف">
-                        👁 معاينة
+                    <a href="{{ $fileUrl }}" target="_blank" class="btn-action-view" title="معاينة الملف" style="display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-regular fa-eye"></i> معاينة
                     </a>
-                    <a href="{{ $fileUrl }}" download class="btn-action-download" title="تحميل مباشر">
-                        ⬇ تحميل
+                    <a href="{{ route('content.download', $file->id) }}" class="btn-action-download" title="تحميل مباشر إلى جهازك" style="display:inline-flex; align-items:center; gap:6px; background: var(--ed-primary); color: #fff;">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
                     </a>
                 </div>
             </div>

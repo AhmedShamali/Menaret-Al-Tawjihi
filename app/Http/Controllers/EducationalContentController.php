@@ -26,12 +26,19 @@ class EducationalContentController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->hasFile('video_file')) {
+            return response()->json([
+                'icon'  => 'warning',
+                'title' => 'تم حظر رفع ملفات الفيديو المباشرة! يرجى إدخال رابط YouTube فقط لضمان سرعة المشاهدة واستقرارها.'
+            ], 422);
+        }
+
         $validator = validator($request->all(), [
             'subject_id'      => 'required',
             'title'           => 'required|string|min:3',
             'order'           => 'required|numeric',
             'video_url'       => 'nullable|url',
-            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
             'pdf_url'         => 'nullable|url',
         ]);
 
@@ -42,41 +49,37 @@ class EducationalContentController extends Controller
             ], 400);
         }
 
-        if (auth()->check()) {
-            $subject = Subject::find($request->subject_id);
-            if ($subject) {
-                $subject->user_id = auth()->id();
-                $subject->save();
-            }
-        }
-
         $content = new EducationalContent();
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
         $content->type         = $request->type ?? 'video';
-        $content->channel_name = $request->channel_name ?? 'عام';
+        $content->channel_name = $request->channel_name ?? 'منارة التوجيهي';
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
 
-        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
-            try {
-                $vPath = $request->file('video_file')->store('educational/videos', 'supabase');
-                $content->url_path = Storage::disk('supabase')->url($vPath);
-            } catch (\Throwable $e) {
-                $vPath = $request->file('video_file')->store('educational/videos', 'public');
-                $content->url_path = asset('storage/' . $vPath);
+        // التحقق من صحة رابط اليوتيوب إذا وُجد
+        if ($request->filled('video_url')) {
+            $dummy = new EducationalContent(['url_path' => $request->video_url]);
+            if (!$dummy->youtube_id) {
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'يرجى إدخال رابط YouTube صحيح ومباشر (watch, embed, youtu.be, shorts)'
+                ], 422);
             }
-        } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
-        // --- التخزين مع معالجة الأخطاء والاحتياطي المحلي للـ PDF ---
+        // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
+            $uploaded = $request->file('file_upload_pdf');
+            $sizeKb = round($uploaded->getSize() / 1024);
+            $content->file_size = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
+
             try {
-                $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+                $path = $uploaded->store('educational/files', 'supabase');
                 $content->pdf_path = Storage::disk('supabase')->url($path);
             } catch (\Throwable $e) {
-                $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'public');
+                $path = $uploaded->store('educational/files', 'public');
                 $content->pdf_path = asset('storage/' . $path);
             }
         } elseif ($request->filled('pdf_url')) {
@@ -86,8 +89,16 @@ class EducationalContentController extends Controller
         if (empty($content->url_path) && empty($content->pdf_path)) {
             return response()->json([
                 'icon'  => 'error',
-                'title' => 'يرجى إدخال رابط فيديو أو إرفاق ملف واحد على الأقل!'
+                'title' => 'يرجى إدخال رابط فيديو YouTube أو إرفاق ملف دراسي واحد على الأقل!'
             ], 422);
+        }
+
+        if (auth()->check()) {
+            $subject = Subject::find($request->subject_id);
+            if ($subject && is_null($subject->user_id)) {
+                $subject->user_id = auth()->id();
+                $subject->save();
+            }
         }
 
         $content->save();
@@ -127,6 +138,13 @@ class EducationalContentController extends Controller
 
     public function update(Request $request, $id)
     {
+        if ($request->hasFile('video_file')) {
+            return response()->json([
+                'icon'  => 'warning',
+                'title' => 'تم حظر رفع ملفات الفيديو المباشرة! يرجى إدخال رابط YouTube فقط.'
+            ], 422);
+        }
+
         $attributes = [
             'subject_id'   => 'المادة',
             'title'        => 'العنوان',
@@ -136,20 +154,14 @@ class EducationalContentController extends Controller
             'order'        => 'الترتيب',
         ];
 
-        $messages = [
-            'required' => 'حقل :attribute مطلوب.',
-            'numeric'  => 'يجب أن يكون حقل :attribute رقماً.',
-            'min'      => 'حقل :attribute يجب أن يكون على الأقل :min حروف.',
-        ];
-
         $validator = validator($request->all(), [
             'subject_id'      => 'required',
             'title'           => 'required|string|min:3',
             'order'           => 'required|numeric',
             'video_url'       => 'nullable|url',
-            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx|max:50120',
+            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
             'pdf_url'         => 'nullable|url',
-        ], $messages, $attributes);
+        ], [], $attributes);
 
         if ($validator->fails()) {
             return response()->json([
@@ -158,28 +170,25 @@ class EducationalContentController extends Controller
             ], 400);
         }
 
-        if (auth()->check() && auth()->user()->role === 'teacher') {
-            $subject = Subject::find($request->subject_id);
-            if ($subject && is_null($subject->user_id)) {
-                $subject->user_id = auth()->id();
-                $subject->save();
-            }
-        }
-
         $content = EducationalContent::findOrFail($id);
-
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
         $content->type         = $request->type ?? $content->type;
         $content->channel_name = $request->channel_name ?? $content->channel_name;
-        $content->file_size    = $request->file_size ?? $content->file_size;
         $content->order        = $request->order;
 
         if ($request->filled('video_url')) {
+            $dummy = new EducationalContent(['url_path' => $request->video_url]);
+            if (!$dummy->youtube_id) {
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'يرجى إدخال رابط YouTube صحيح ومباشر (watch, embed, youtu.be, shorts)'
+                ], 422);
+            }
             $content->url_path = $request->video_url;
         }
 
-        // --- تحديث ملف الـ PDF وحذفه القديم من Supabase إن وجد ---
+        // --- تحديث الملف وحذف القديم من التخزين السحابي ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             if ($content->pdf_path) {
                 $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
@@ -187,7 +196,11 @@ class EducationalContentController extends Controller
                     Storage::disk('supabase')->delete($parsedPath);
                 }
             }
-            $path = $request->file('file_upload_pdf')->store('educational/pdfs', 'supabase');
+            $uploaded = $request->file('file_upload_pdf');
+            $sizeKb = round($uploaded->getSize() / 1024);
+            $content->file_size = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
+
+            $path = $uploaded->store('educational/files', 'supabase');
             $content->pdf_path = Storage::disk('supabase')->url($path);
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
@@ -229,32 +242,63 @@ class EducationalContentController extends Controller
 
     public function downloadFile($id)
     {
-        $content = EducationalContent::findOrFail($id);
+        $content = EducationalContent::with('subject')->findOrFail($id);
 
         if (empty($content->pdf_path)) {
             return back()->with('error', 'لا يوجد ملف مرفق لهذا الدرس.');
         }
 
-        $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_\.]/u', '_', $content->title ?? 'ملف_تعليمي');
-        $fileName = $cleanTitle . '.pdf';
+        $ext = $content->file_extension ?? 'pdf';
+        $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'ملف_تعليمي');
+        $cleanTitle = trim(preg_replace('/_+/', '_', $cleanTitle), '_');
+        $fileName = ($cleanTitle ?: 'ملف_تعليمي') . '.' . $ext;
+
+        $mimeTypes = [
+            'pdf'  => 'application/pdf',
+            'doc'  => 'application/msword',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'xls'  => 'application/vnd.ms-excel',
+            'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'ppt'  => 'application/vnd.ms-powerpoint',
+            'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'zip'  => 'application/zip',
+            'rar'  => 'application/x-rar-compressed',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'txt'  => 'text/plain',
+        ];
+        $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
         // 1. إذا كان الملف مخزناً محلياً
         if (Storage::disk('public')->exists($content->pdf_path)) {
-            return Storage::disk('public')->download($content->pdf_path, $fileName);
+            return Storage::disk('public')->download($content->pdf_path, $fileName, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+            ]);
         }
 
         // 2. إذا كان الملف على Supabase
         if (str_contains($content->pdf_path, 'storage.supabase.co')) {
             $parsedPath = preg_replace('#^.*?/educational/#', 'educational/', $content->pdf_path);
             if (Storage::disk('supabase')->exists($parsedPath)) {
-                return Storage::disk('supabase')->download($parsedPath, $fileName);
+                return Storage::disk('supabase')->download($parsedPath, $fileName, [
+                    'Content-Type' => $contentType,
+                    'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+                ]);
             }
         }
 
-        // 3. مسار رابط عام أو مباشر
+        // 3. مسار رابط عام أو مباشر (تدفق آمن يفرض التحميل)
         return response()->streamDownload(function () use ($content) {
             $opts = [
-                'http' => ['method' => 'GET', 'header' => "User-Agent: PHP\r\n"]
+                'http' => [
+                    'method' => 'GET', 
+                    'header' => "User-Agent: TawjihiPlatform/1.0\r\n",
+                    'follow_location' => 1,
+                    'timeout' => 60
+                ]
             ];
             $context = stream_context_create($opts);
             $stream = @fopen($content->pdf_path, 'rb', false, $context);
@@ -263,7 +307,7 @@ class EducationalContentController extends Controller
                 fclose($stream);
             }
         }, $fileName, [
-            'Content-Type' => 'application/pdf',
+            'Content-Type' => $contentType,
             'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
         ]);
     }

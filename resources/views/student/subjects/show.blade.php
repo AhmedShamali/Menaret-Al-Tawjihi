@@ -456,8 +456,10 @@
                                             : asset('storage/' . $video->url_path);
                             @endphp
 
-                            @if(strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false)
-                                <iframe src="{{ str_replace('watch?v=', 'embed/', $videoUrl) }}" allowfullscreen></iframe>
+                            @if($video->youtube_embed_url)
+                                <iframe src="{{ $video->youtube_embed_url }}" style="width:100%; height:100%; border:none;" allowfullscreen loading="lazy"></iframe>
+                            @elseif(strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false)
+                                <iframe src="{{ str_replace('watch?v=', 'embed/', $videoUrl) }}" style="width:100%; height:100%; border:none;" allowfullscreen loading="lazy"></iframe>
                             @else
                                 <video id="player_{{ $video->id }}" controls preload="metadata">
                                     <source src="{{ $videoUrl }}" type="video/mp4">
@@ -519,8 +521,11 @@
                             </div>
 
                             @if(!empty($video->pdf_path))
-                                <a href="{{ route('content.download', $video->id) }}" style="color: #dc2626; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                                    <i class="fa-solid fa-file-arrow-down"></i> ملزمة الدرس (PDF)
+                                @php
+                                    $fileMeta = $video->file_meta ?? ['icon' => 'fa-solid fa-file-pdf', 'label' => 'ملف المرفقات'];
+                                @endphp
+                                <a href="{{ route('content.download', $video->id) }}" style="color: var(--ed-primary, #0284c7); font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: var(--ed-primary-soft, #f0f9ff); padding: 4px 10px; border-radius: 8px;">
+                                    <i class="{{ $fileMeta['icon'] }}"></i> {{ $fileMeta['label'] }} (تنزيل مباشر)
                                 </a>
                             @endif
                         </div>

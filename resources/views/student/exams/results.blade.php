@@ -101,15 +101,82 @@
                 </div>
             @endforeach
 
-            <div style="margin-top: 40px; display: flex; gap: 15px; justify-content: center;">
-                <a href="{{ url('/student/exams') }}" style="background: #4f46e5; color: white; padding: 15px 40px; border-radius: 15px; text-decoration: none; font-weight: 800; transition: 0.3s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='translateY(0)'">
+            {{-- حالة وقرار إعادة الاختبار --}}
+            <div style="margin-top: 30px; padding: 20px; border-radius: 16px; background: var(--ed-surface-alt, #f8fafc); border: 1px solid var(--ed-border, #e2e8f0); text-align: center;">
+                @if($submission->allow_retake)
+                    <div style="color: var(--ed-success, #10b981); margin-bottom: 12px; font-weight: 800; font-size: 1.05rem;">
+                        <i class="fa-solid fa-unlock-keyhole"></i> وافق أستاذ المادة على إعادة هذا الاختبار لك! يمكنك البدء بمحاولة جديدة.
+                    </div>
+                    <a href="{{ route('student.exams.take', $submission->exam_id) }}" style="background: var(--ed-success, #10b981); color: white; padding: 12px 32px; border-radius: 12px; text-decoration: none; font-weight: 800; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-play"></i> بدء محاولة الاختبار الآن
+                    </a>
+                @elseif($submission->retake_requested)
+                    <div style="color: var(--ed-accent, #f97316); font-weight: 800; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-hourglass-half fa-spin"></i> تم إرسال طلب إعادة الاختبار لأستاذ المادة، وهو قيد المراجعة حالياً.
+                    </div>
+                @else
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div style="text-align: right;">
+                            <strong style="color: var(--ed-text-main, #0f172a); font-size: 0.92rem; display: block;">هل واجهت مشكلة أو ترغب في تحسين أدائك؟</strong>
+                            <span style="color: var(--ed-text-muted, #64748b); font-size: 0.8rem;">يمكنك إرسال طلب إلكتروني لمعلم المادة للسماح لك بفرصة إعادة الاختبار.</span>
+                        </div>
+                        <button type="button" onclick="requestRetakePrompt()" style="background: var(--ed-accent-soft, #fff7ed); color: var(--ed-accent, #f97316); border: 1px solid var(--ed-accent-border, #fed7aa); padding: 10px 20px; border-radius: 10px; font-weight: 800; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fa-solid fa-rotate-right"></i> طلب إذن إعادة الاختبار
+                        </button>
+                    </div>
+                @endif
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ route('student.exams.index') }}" style="background: var(--ed-primary, #0284c7); color: white; padding: 12px 30px; border-radius: 12px; text-decoration: none; font-weight: 800; transition: 0.2s;">
                     العودة لقاعة الاختبارات
                 </a>
-                <button onclick="window.print()" style="background: #f1f5f9; color: #475569; padding: 15px 40px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer;">
+                <button onclick="window.print()" style="background: var(--ed-surface, #fff); color: var(--ed-text-body, #475569); border: 1px solid var(--ed-border, #cbd5e1); padding: 12px 28px; border-radius: 12px; font-weight: 800; cursor: pointer;">
                     <i class="fa-solid fa-print"></i> طباعة التقرير
                 </button>
             </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function requestRetakePrompt() {
+    Swal.fire({
+        title: 'طلب إذن إعادة الاختبار',
+        text: 'اكتب سبباً مختصراً أو عذراً لتوضيحه لأستاذ المادة:',
+        input: 'textarea',
+        inputPlaceholder: 'مثال: انقطع الاتصال بالإنترنت، أو أرغب بفرصة ثانية لرفع التحصيل...',
+        showCancelButton: true,
+        confirmButtonText: 'إرسال الطلب للمعلم',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#0284c7',
+        cancelButtonColor: '#64748b',
+        showLoaderOnConfirm: true,
+        preConfirm: (notes) => {
+            return axios.post("{{ route('student.exams.requestRetake', $submission->exam_id) }}", {
+                notes: notes,
+                _token: '{{ csrf_token() }}'
+            }).then(response => {
+                return response.data;
+            }).catch(error => {
+                Swal.showValidationMessage(
+                    error.response?.data?.error || 'تعذر إرسال الطلب، يرجى المحاولة لاحقاً'
+                );
+            });
+        },
+        allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+        if (result.isConfirmed && result.value?.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم الإرسال!',
+                text: result.value.title || 'تم إرسال طلبك للمعلم بنجاح',
+                confirmButtonColor: '#0284c7'
+            }).then(() => location.reload());
+        }
+    });
+}
+</script>
 @endsection

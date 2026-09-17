@@ -285,7 +285,7 @@
                                     @endif
                                 </button>
 
-                                <a href="{{ route((auth()->check() && auth()->user()->role === 'admin' ? 'admin' : 'teacher') . '.students.edit', $student->id) }}"
+                                <a href="{{ route('admin.students.edit', $student->id) }}"
                                    class="action-icon-btn btn-action-edit"
                                    title="تعديل بيانات الطالب ✏️">
                                     <i class="fa-solid fa-pen-to-square"></i>

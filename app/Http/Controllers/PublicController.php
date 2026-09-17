@@ -73,6 +73,21 @@ class PublicController extends Controller
 
         return back()->with('success', 'تم استلام رسالتك وشكواك بنجاح! سيقوم فريق الدعم الفني بمتابعتها والتواصل معك.');
     }
+
+    /**
+     * تبديل لغة المنصة وحفظها في الجلسة والكوكي (عربي / إنجليزي)
+     */
+    public function switchLanguage($locale)
+    {
+        if (!in_array($locale, ['ar', 'en'])) {
+            $locale = 'ar';
+        }
+
+        session(['locale' => $locale]);
+        cookie()->queue('app_locale', $locale, 60 * 24 * 365);
+
+        return redirect()->back();
+    }
 }
 
 

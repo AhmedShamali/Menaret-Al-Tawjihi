@@ -211,24 +211,32 @@
             <div class="editor-card">
                 <div class="card-title">🔗 الروابط والمرفقات</div>
 
-                <!-- قسم الفيديو (رابط فقط لضمان الاستقرار) -->
+                <!-- قسم الفيديو (YouTube حصراً) -->
                 <div class="upload-section">
                     <div class="upload-header">
-                        <span class="field-label" style="margin:0">🎬 رابط فيديو الدرس (YouTube / Drive)</span>
+                        <span class="field-label" style="margin:0"><i class="fa-brands fa-youtube" style="color:#ef4444"></i> رابط فيديو الدرس (YouTube)</span>
                         @if($content->url_path) <span class="badge-present">موجود حالياً ✅</span> @endif
                     </div>
-                    <input type="url" name="video_url" value="{{ $content->url_path }}" class="input-style" placeholder="https://www.youtube.com/watch?v=...">
+                    <input type="url" name="video_url" id="editVideoUrl" value="{{ $content->url_path }}" class="input-style" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
+                    <small style="color: var(--ed-text-muted, #64748b); font-size: 0.78rem; display: block; margin-top: 4px;">يدعم روابط YouTube العادية والمختصرة و Shorts.</small>
+                    
+                    <div id="editYtPreview" style="{{ $content->youtube_id ? 'display:block;' : 'display:none;' }} margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
+                        <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                    </div>
                 </div>
 
-                <!-- قسم الـ PDF (رفع طبيعي للسيرفر) -->
-                <div class="upload-section" style="background:#fef2f2">
+                <!-- قسم الملف (كافة الصيغ) -->
+                <div class="upload-section" style="background:var(--ed-surface-alt, #f8fafc)">
                     <div class="upload-header">
-                        <span class="field-label" style="margin:0; color:#991b1b">📄 ملف PDF (تحميل مباشر)</span>
-                        @if($content->pdf_path) <span class="badge-present" style="background:#fee2e2; color:#991b1b">مرفق حالياً ✅</span> @endif
+                        <span class="field-label" style="margin:0; color:var(--ed-primary, #0284c7)">📄 ملف المادة أو الملزمة المرفقة</span>
+                        @if($content->pdf_path) 
+                            <span class="badge-present" style="background:#eff6ff; color:#1d4ed8">مرفق حالياً ({{ strtoupper($content->file_extension ?? 'ملف') }}) ✅</span> 
+                        @endif
                     </div>
                     <div class="flex-row">
-                        <input type="file" name="file_upload_pdf" class="input-style" accept=".pdf">
+                        <input type="file" name="file_upload_pdf" class="input-style" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.zip,.rar,.txt">
                     </div>
+                    <small style="color: var(--ed-text-muted, #64748b); font-size: 0.78rem; display: block; margin-top: 4px;">يدعم ملفات PDF، Word، Excel، PowerPoint، الصور، والأرشيف المضغوط حتى 100 ميجابايت.</small>
                 </div>
 
                 <!-- التقدم -->
@@ -323,6 +331,25 @@
             progressBox.style.display = 'none';
             Swal.fire({ icon: 'error', title: 'خطأ في الرفع', text: 'تأكد من الحقول وحجم الملفات' });
         });
+    }
+
+    function previewEditYt(url) {
+        if (!url) {
+            document.getElementById('editYtPreview').style.display = 'none';
+            return;
+        }
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        const id = (match && match[2].length === 11) ? match[2] : null;
+        const preview = document.getElementById('editYtPreview');
+        const frame = document.getElementById('editYtFrame');
+        if (id) {
+            frame.src = 'https://www.youtube.com/embed/' + id + '?rel=0';
+            preview.style.display = 'block';
+        } else {
+            frame.src = '';
+            preview.style.display = 'none';
+        }
     }
 </script>
 @endsection

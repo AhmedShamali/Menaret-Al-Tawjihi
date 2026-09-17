@@ -132,14 +132,32 @@
                                     <i class="fa-solid fa-pen-nib"></i> بانتظار إدخال الدرجات
                                 </div>
                             @endif
-                        </div>
+                        @if($s->retake_requested)
+                            <div style="margin-top: 10px; padding: 6px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; font-size: 0.78rem; color: #ea580c; font-weight: 700;">
+                                <i class="fa-solid fa-bell"></i> <strong>طلب إعادة الاختبار:</strong> {{ $s->retake_request_notes ?? 'يرغب الطالب بفرصة إعادة' }}
+                            </div>
+                        @endif
                     </div>
 
-                    <div class="item-footer">
-                        <a href="{{ route(auth()->user()->role . '.submissions.grade', $s->id) }}" class="action-btn-main">
+                    <div class="item-footer" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <a href="{{ route(auth()->user()->role . '.submissions.grade', $s->id) }}" class="action-btn-main" style="flex: 1;">
                             <span>{{ $s->status == 'graded' ? 'مراجعة وتعديل التصحيح' : 'تصحيح الإجابة الآن' }}</span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </a>
+
+                        @if($s->allow_retake)
+                            <button type="button" onclick="denyRetake({{ $s->id }})" title="مسموح له بالإعادة حالياً (انقر لإلغاء الإذن)" style="padding: 10px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-unlock"></i> مسموح بالإعادة
+                            </button>
+                        @elseif($s->retake_requested)
+                            <button type="button" onclick="allowRetake({{ $s->id }})" title="الموافقة على طلب الطالب بإعادة الاختبار" style="padding: 10px 14px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> موافقة على الإعادة
+                            </button>
+                        @else
+                            <button type="button" onclick="allowRetake({{ $s->id }})" title="منح الطالب فرصة لإعادة الاختبار" style="padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-rotate-right"></i> إتاحة الإعادة
+                            </button>
+                        @endif
                     </div>
                 </div>
             @endforeach
@@ -181,6 +199,58 @@
                 card.style.display = 'flex';
             } else {
                 card.style.display = 'none';
+            }
+        });
+    }
+
+    async function allowRetake(submissionId) {
+        Swal.fire({
+            title: 'السماح بإعادة الاختبار',
+            text: 'هل أنت متأكد من منح الطالب فرصة جديدة لتقديم الاختبار؟',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، اسمح بالإعادة',
+            cancelButtonText: 'إلغاء'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const role = '{{ auth()->user()->role }}';
+                    const res = await axios.post(`/${role}/submissions/${submissionId}/allow-retake`, {
+                        _token: '{{ csrf_token() }}'
+                    });
+                    Swal.fire({ icon: 'success', title: 'تمت الموافقة', text: res.data.title, timer: 1500, showConfirmButton: false })
+                        .then(() => location.reload());
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: e.response?.data?.error || 'تعذر معالجة الطلب' });
+                }
+            }
+        });
+    }
+
+    async function denyRetake(submissionId) {
+        Swal.fire({
+            title: 'إلغاء إذن الإعادة',
+            text: 'هل ترغب في قفل الاختبار ومنع إعادة المحاولة لهذا الطالب؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، منع الإعادة',
+            cancelButtonText: 'تراجع'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    const role = '{{ auth()->user()->role }}';
+                    const res = await axios.post(`/${role}/submissions/${submissionId}/deny-retake`, {
+                        _token: '{{ csrf_token() }}'
+                    });
+                    Swal.fire({ icon: 'success', title: 'تم التحديث', text: res.data.title, timer: 1200, showConfirmButton: false })
+                        .then(() => location.reload());
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر إلغاء الإذن' });
+                }
             }
         });
     }

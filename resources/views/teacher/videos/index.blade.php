@@ -31,42 +31,39 @@
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;">
         @forelse($videos as $vid)
             @php
-                $videoUrl = filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path);
-                $isYoutube = strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false;
+                $embedUrl = $vid->youtube_embed_url ?? (filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path));
             @endphp
-            <div style="background: white; border-radius: 18px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="background: var(--ed-surface); border-radius: 16px; border: 1px solid var(--ed-border); overflow: hidden; box-shadow: var(--ed-shadow-card); display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
-                    <div style="position: relative; padding-top: 56.25%; background: #0f172a;">
-                        @if($isYoutube)
-                            <iframe src="{{ str_replace('watch?v=', 'embed/', $videoUrl) }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                    <div style="position: relative; padding-top: 56.25%; background: #000;">
+                        @if($vid->youtube_id)
+                            <iframe src="{{ $vid->youtube_embed_url }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
                         @else
-                            <video controls preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;">
-                                <source src="{{ $videoUrl }}" type="video/mp4">
-                            </video>
+                            <iframe src="{{ $embedUrl }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
                         @endif
                     </div>
                     <div style="padding: 16px 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="background: #eff6ff; color: #1d4ed8; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">
+                            <span style="background: var(--ed-primary-soft); color: var(--ed-primary); padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">
                                 {{ $vid->subject?->name_ar ?? 'عام' }}
                             </span>
-                            <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">الترتيب: #{{ $vid->order }}</span>
+                            <span style="font-size: 0.75rem; color: var(--ed-text-dim); font-weight: 600;">الترتيب: #{{ $vid->order }}</span>
                         </div>
-                        <h3 style="margin: 0 0 8px; font-size: 1.05rem; font-weight: 800; color: #0f172a; line-height: 1.4;">{{ $vid->title }}</h3>
-                        <p style="margin: 0; font-size: 0.78rem; color: #64748b;">{{ $vid->channel_name ?? 'المنهاج الرسمي' }}</p>
+                        <h3 style="margin: 0 0 8px; font-size: 1.02rem; font-weight: 800; color: var(--ed-text-main); line-height: 1.4;">{{ $vid->title }}</h3>
+                        <p style="margin: 0; font-size: 0.78rem; color: var(--ed-text-muted);">{{ $vid->channel_name ?? 'منارة التوجيهي' }}</p>
                     </div>
                 </div>
 
-                <div style="padding: 12px 20px; background: #f8fafc; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 0.78rem; font-weight: 700; color: {{ $vid->is_visible ? '#059669' : '#dc2626' }};">
+                <div style="padding: 12px 20px; background: var(--ed-surface-alt); border-top: 1px solid var(--ed-border); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.78rem; font-weight: 700; color: {{ $vid->is_visible ? 'var(--ed-success)' : 'var(--ed-danger)' }};">
                         <i class="fa-solid {{ $vid->is_visible ? 'fa-eye' : 'fa-eye-slash' }}"></i>
                         {{ $vid->is_visible ? 'متاح للطلبة' : 'محجوب مؤقتاً' }}
                     </span>
                     <div style="display: flex; gap: 8px;">
-                        <a href="{{ route('teacher.educational_contents.edit', $vid->id) }}" style="padding: 6px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; text-decoration: none; font-size: 0.78rem; font-weight: 700;">
+                        <a href="{{ route('teacher.educational_contents.edit', $vid->id) }}" style="padding: 6px 12px; background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: 8px; color: var(--ed-text-body); text-decoration: none; font-size: 0.78rem; font-weight: 700;">
                             <i class="fa-solid fa-pen"></i> تعديل
                         </a>
-                        <button type="button" onclick="deleteContentItem({{ $vid->id }})" style="padding: 6px 10px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; cursor: pointer; font-size: 0.78rem;">
+                        <button type="button" onclick="deleteContentItem({{ $vid->id }})" style="padding: 6px 10px; background: var(--ed-danger-soft); border: 1px solid #fecaca; border-radius: 8px; color: var(--ed-danger); cursor: pointer; font-size: 0.78rem;">
                             <i class="fa-solid fa-trash-alt"></i>
                         </button>
                     </div>
@@ -131,14 +128,21 @@
                 </div>
 
                 <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">رابط الفيديو (يوتيوب أو رابط مباشر) *</label>
-                    <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=..." style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none; direction: ltr; text-align: right;">
+                    <label style="font-size: 0.82rem; font-weight: 700; color: var(--ed-text-main); display: block; margin-bottom: 6px;">
+                        <i class="fa-brands fa-youtube" style="color: #ef4444;"></i> رابط درس YouTube *
+                    </label>
+                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="مثال: https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" style="width: 100%; padding: 10px 14px; border: 1.5px solid var(--ed-border); border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none; direction: ltr; text-align: left; background: var(--ed-surface); color: var(--ed-text-main);">
+                    <small style="color: var(--ed-text-muted); font-size: 0.74rem; display: block; margin-top: 4px;">
+                        يدعم جميع روابط اليوتيوب (العادية، المختصرة youtu.be، والفيديوهات القصيرة Shorts).
+                    </small>
                 </div>
 
-                <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">أو رفع ملف فيديو MP4 مباشر (اختياري)</label>
-                    <input type="file" name="video_file" accept="video/mp4,video/webm" style="width: 100%; padding: 8px; border: 1.5px dashed #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 0.85rem; background: #f8fafc;">
-                    <small style="color: #64748b; font-size: 0.72rem; display: block; margin-top: 4px;">يتم الرفع التلقائي إلى الخادم السحابي المشفر.</small>
+                <!-- معاينة فورية للفيديو -->
+                <div id="ytPreviewContainer" style="display: none; margin-top: 4px;">
+                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--ed-text-muted); display: block; margin-bottom: 4px;">معاينة الفيديو المباشرة:</label>
+                    <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">
+                        <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                    </div>
                 </div>
             </div>
 
@@ -162,6 +166,26 @@ function openUploadVideoModal() {
 }
 function closeUploadVideoModal() {
     document.getElementById('uploadVideoModal').style.display = 'none';
+}
+
+function parseYouTubeId(url) {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function previewYoutube(url) {
+    const videoId = parseYouTubeId(url.trim());
+    const container = document.getElementById('ytPreviewContainer');
+    const frame = document.getElementById('ytPreviewFrame');
+    if (videoId) {
+        frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+        container.style.display = 'block';
+    } else {
+        frame.src = '';
+        container.style.display = 'none';
+    }
 }
 
 async function submitVideoForm(e) {

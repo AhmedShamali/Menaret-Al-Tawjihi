@@ -190,28 +190,41 @@ class CommunicationController extends Controller
         }
     }
 
-    public function fetchMessages($student_id)
+    public function fetchMessages($id)
     {
         try {
-            // وضع علامة مقروء على الرسائل المستلمة
             $isStudent = Auth::guard('student')->check();
+
             if ($isStudent) {
-                Message::where('student_id', $student_id)
+                // عندما يكون المتصل طالباً: $id يمثل admin_id، بينما الطالب هو صاحب الجلسة الحالي
+                $studentId = Auth::guard('student')->id() ?? Auth::id();
+                $adminId = $id;
+
+                Message::where('student_id', $studentId)
+                    ->where('admin_id', $adminId)
                     ->whereNull('teacher_id')
                     ->where('sender_type', '!=', 'student')
                     ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
                     ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+
+                $query = Message::where('student_id', $studentId)
+                    ->where('admin_id', $adminId)
+                    ->whereNull('teacher_id');
             } else {
-                Message::where('student_id', $student_id)
+                // عندما يكون المتصل مديراً: $id يمثل student_id
+                $studentId = $id;
+
+                Message::where('student_id', $studentId)
                     ->whereNull('teacher_id')
                     ->where('sender_type', 'student')
                     ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
                     ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+
+                $query = Message::where('student_id', $studentId)
+                    ->whereNull('teacher_id');
             }
 
-            $messages = Message::where('student_id', $student_id)
-                ->whereNull('teacher_id')
-                ->orderBy('created_at', 'asc')
+            $messages = $query->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
                     return [

@@ -76,24 +76,28 @@
                     </div>
 
                     <div id="video_section" class="attachment-box" style="display: none;">
-                        <h4 class="box-title">🎬 تفاصيل الفيديو</h4>
+                        <h4 class="box-title"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> تفاصيل فيديو YouTube</h4>
                         <div class="form-group">
-                            <label class="f-label">رابط الفيديو (YouTube أو Google Drive)</label>
-                            <input type="url" name="video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=...">
-                            <small style="color: var(--text-muted);">يرجى التأكد من أن رابط الفيديو متاح للجميع (Public).</small>
+                            <label class="f-label">رابط فيديو YouTube المعتمد *</label>
+                            <input type="url" name="video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewCreateYt(this.value)">
+                            <small style="color: var(--ed-text-muted, #64748b);">يدعم جميع صيغ روابط YouTube (العادية والمختصرة و Shorts).</small>
+                            <div id="createYtPreview" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
+                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- تفاصيل الـ PDF -->
+                    <!-- تفاصيل الملف المرفق -->
                     <div id="pdf_section" class="attachment-box" style="display: none;">
-                        <h4 class="box-title">📑 تفاصيل ملف الـ PDF</h4>
+                        <h4 class="box-title">📑 ملف المادة المرفق (كافة الصيغ)</h4>
                         <div class="form-group">
-                            <label class="f-label">رفع ملف المستند (PDF / Document)</label>
-                            <input type="file" name="file_upload_pdf" accept=".pdf,.doc,.docx" class="f-input file-input">
+                            <label class="f-label">رفع ملف المستند أو الملزمة (PDF, Word, Excel, PowerPoint, صور, أرشيف)</label>
+                            <input type="file" name="file_upload_pdf" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.zip,.rar,.txt" class="f-input file-input">
+                            <small style="color: var(--ed-text-muted, #64748b);">يدعم كافة الامتدادات التعليمية حتى 100 ميجابايت.</small>
                         </div>
                         <div class="form-group">
-                            <label class="f-label">أو رابط ملف خارجي (Google Drive)</label>
-                            <input type="text" name="pdf_url" class="f-input" placeholder="https://drive.google.com/file/d/...">
+                            <label class="f-label">أو رابط ملف خارجي سحابي مباشر</label>
+                            <input type="text" name="pdf_url" class="f-input" placeholder="https://...">
                         </div>
                     </div>
 
@@ -230,6 +234,25 @@
             btn.disabled = false;
             btn.textContent = 'حفظ ونشر المحتوى 🚀';
         });
+    }
+
+    function previewCreateYt(url) {
+        if (!url) {
+            document.getElementById('createYtPreview').style.display = 'none';
+            return;
+        }
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        const id = (match && match[2].length === 11) ? match[2] : null;
+        const preview = document.getElementById('createYtPreview');
+        const frame = document.getElementById('createYtFrame');
+        if (id) {
+            frame.src = 'https://www.youtube.com/embed/' + id + '?rel=0';
+            preview.style.display = 'block';
+        } else {
+            frame.src = '';
+            preview.style.display = 'none';
+        }
     }
 </script>
 

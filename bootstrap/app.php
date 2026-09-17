@@ -18,6 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // 1. الثقة ببروكسي Railway لتجنب مشاكل الـ HTTPS والـ 419
         $middleware->trustProxies(at: '*');
 
+        // ضبط لغة المنصة تلقائياً للمستخدم (عربي / English)
+        $middleware->web(append: [
+            \App\Http\Middleware\SetLocale::class,
+        ]);
+
         // 2. تسجيل الـ Aliases للـ Middleware ليتوافق مع ملف routes/web.php
         $middleware->alias([
             'IsAdmin'   => \App\Http\Middleware\IsAdmin::class,

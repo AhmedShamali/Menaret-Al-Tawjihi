@@ -1,22 +1,22 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1d4ed8">
+    <meta name="theme-color" content="#0284c7">
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>@yield('title', 'المنصة التعليمية') | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
+    <title>@yield('title', __('المنصة التعليمية')) | {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</title>
 
-    <!-- Google Fonts: Alexandria & Tajawal (Clean Educational Typography) -->
+    <!-- Google Fonts: Alexandria & Tajawal & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -33,70 +33,116 @@
     
     <style>
         :root {
-            /* نظام ألوان هادئ مخصص للمنصات التعليمية (Calm EdTech Tokens) */
+            /* نظام ألوان هادئ وبسيط بثلاثة ألوان رئيسية فقط (Soft Minimalist EdTech) */
             --ed-bg: #f8fafc;
             --ed-surface: #ffffff;
             --ed-surface-alt: #f1f5f9;
             --ed-border: #e2e8f0;
             --ed-border-subtle: #edf2f7;
-            --ed-border-focus: #3b82f6;
+            --ed-border-focus: #38bdf8;
 
-            --ed-primary: #1d4ed8;         /* أزرق أكاديمي رصين ومريح */
-            --ed-primary-hover: #1e40af;
-            --ed-primary-soft: #eff6ff;
-            --ed-primary-border: #bfdbfe;
+            /* 1. أزرق فاتح / سماوي هادئ (Soft Light Blue - Primary Action & Links) */
+            --ed-primary: #0284c7;
+            --ed-primary-hover: #0369a1;
+            --ed-primary-light: #38bdf8;
+            --ed-primary-soft: #f0f9ff;
+            --ed-primary-border: #bae6fd;
 
-            --ed-accent: #0284c7;
-            --ed-accent-soft: #f0f9ff;
+            /* 2. أورانج فاتح / مشمشي ناعم (Soft Light Orange - Accents, Alerts, Pending) */
+            --ed-accent: #f97316;
+            --ed-accent-hover: #ea580c;
+            --ed-accent-light: #fb923c;
+            --ed-accent-soft: #fff7ed;
+            --ed-accent-border: #fed7aa;
+            --ed-warning: #f97316;
+            --ed-warning-soft: #fff7ed;
 
-            --ed-text-main: #0f172a;       /* كحلي داكن للنصوص الرئيسية وعالي المقروئية */
-            --ed-text-body: #334155;       /* نصوص الشرح والقراءة المريحة */
-            --ed-text-muted: #64748b;      /* نصوص مساعدة ثانوية */
-            --ed-text-dim: #94a3b8;
-
-            --ed-success: #059669;
+            /* 3. أخضر فاتح / نعناعي ناعم (Soft Mint Green - Success, Completed, Paid) */
+            --ed-success: #10b981;
+            --ed-success-hover: #059669;
+            --ed-success-light: #34d399;
             --ed-success-soft: #ecfdf5;
-            --ed-warning: #d97706;
-            --ed-warning-soft: #fffbeb;
-            --ed-danger: #dc2626;
+            --ed-success-border: #a7f3d0;
+
+            /* تنبيهات حرجة بسيطة */
+            --ed-danger: #ef4444;
             --ed-danger-soft: #fef2f2;
+
+            /* نصوص مقروءة ومريحة للعين */
+            --ed-text-main: #0f172a;
+            --ed-text-body: #334155;
+            --ed-text-muted: #64748b;
+            --ed-text-dim: #94a3b8;
 
             --ed-radius-sm: 8px;
             --ed-radius-md: 12px;
             --ed-radius-lg: 16px;
             --ed-radius-xl: 20px;
 
-            --ed-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-            --ed-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-            --ed-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-            --ed-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+            --ed-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+            --ed-shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+            --ed-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06);
+            --ed-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.07);
 
-            --sidebar-width: 270px;
+            --sidebar-width: 260px;
             --topbar-height: 68px;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- أنماط الوضع الليلي الهادئ المريح للعين (Night Mode) --- */
+        /* --- أنماط الوضع الداكن الهادئ المريح للعين (Dark Mode) --- */
         body.dark-theme {
             --ed-bg: #0b1120;
-            --ed-surface: #0f172a;
-            --ed-surface-alt: #1e293b;
-            --ed-border: #1e293b;
+            --ed-surface: #1e293b;
+            --ed-surface-alt: #0f172a;
+            --ed-border: #334155;
             --ed-border-subtle: #1e293b;
-            --ed-border-focus: #60a5fa;
+            --ed-border-focus: #38bdf8;
 
-            --ed-primary: #3b82f6;
-            --ed-primary-hover: #60a5fa;
-            --ed-primary-soft: rgba(59, 130, 246, 0.12);
-            --ed-primary-border: rgba(59, 130, 246, 0.25);
+            --ed-primary: #38bdf8;
+            --ed-primary-hover: #7dd3fc;
+            --ed-primary-soft: rgba(56, 189, 248, 0.12);
+            --ed-primary-border: rgba(56, 189, 248, 0.25);
+
+            --ed-accent: #fb923c;
+            --ed-accent-hover: #fdba74;
+            --ed-accent-soft: rgba(251, 146, 60, 0.12);
+            --ed-accent-border: rgba(251, 146, 60, 0.25);
+
+            --ed-success: #34d399;
+            --ed-success-hover: #6ee7b7;
+            --ed-success-soft: rgba(52, 211, 153, 0.12);
+            --ed-success-border: rgba(52, 211, 153, 0.25);
 
             --ed-text-main: #f8fafc;
             --ed-text-body: #cbd5e1;
             --ed-text-muted: #94a3b8;
             --ed-text-dim: #64748b;
 
-            --ed-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-            --ed-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
+            --ed-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+            --ed-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.35);
+        }
+
+        /* --- دعم اللغة الإنجليزية واتجاه من اليسار لليمين (LTR Support) --- */
+        html[dir="ltr"] aside.sidebar {
+            right: auto;
+            left: 0;
+            border-left: none;
+            border-right: 1px solid var(--ed-border);
+        }
+        html[dir="ltr"] main.main-content {
+            margin-right: 0;
+            margin-left: var(--sidebar-width);
+        }
+        @media (max-width: 1024px) {
+            html[dir="ltr"] aside.sidebar {
+                transform: translateX(-105%);
+            }
+            html[dir="ltr"] aside.sidebar.mobile-active {
+                transform: translateX(0);
+            }
+            html[dir="ltr"] main.main-content {
+                margin-left: 0;
+            }
         }
 
         * {
@@ -602,7 +648,8 @@
                         <li><a href="{{ route('admin.students.index') }}" class="submenu-item">إدارة الطلاب</a></li>
                         <li><a href="{{ route('admin.teachers.index') }}" class="submenu-item">إدارة المعلمين</a></li>
                         <li><a href="{{ route('admin.teachers.salaries') }}" class="submenu-item"><i class="fa-solid fa-money-bill-wave" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> رواتب ومستحقات المعلمين</a></li>
-                        <li><a href="{{ route('admin.teachers.info') }}" class="submenu-item">إضافة معلم جديد</a></li>
+                        <li><a href="{{ route('admin.teachers.create') }}" class="submenu-item">إضافة معلم جديد</a></li>
+                        <li><a href="{{ route('admin.teachers.info') }}" class="submenu-item">دليل المعلمين الموسع</a></li>
                         <li><a href="{{ route('admin.students.profile_all') }}" class="submenu-item">سجل الطلاب الكامل</a></li>
                     </ul>
                 </div>
@@ -764,8 +811,18 @@
                 </div>
             </div>
 
-            <div style="display:flex; align-items:center; gap:12px;">
-                <button type="button" onclick="toggleTheme()" class="theme-toggle-topbar" id="themeToggleBtn" title="تبديل المظهر (فاتح / داكن)" style="background: var(--ed-surface-alt); border: 1px solid var(--ed-border); color: var(--ed-text-main); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); font-size: 1rem;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <!-- زر تبديل اللغة (عربي / English) -->
+                @php $currentLocale = app()->getLocale(); @endphp
+                <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}" 
+                   style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 700; transition: var(--transition-smooth);">
+                    <i class="fa-solid fa-globe" style="color: var(--ed-primary); font-size: 0.95rem;"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
+                </a>
+
+                <!-- زر الوضع الليلي / النهاري -->
+                <button type="button" onclick="toggleTheme()" class="theme-toggle-topbar" id="themeToggleBtn" title="{{ __('تبديل المظهر') }}" style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth); font-size: 1rem;">
                     <i class="fa-regular fa-moon" id="themeIcon"></i>
                 </button>
                 @php
@@ -949,10 +1006,6 @@
                     </div>
                 </div>
 
-                <!-- زر الوضع الليلي / النهاري -->
-                <button id="themeToggleBtn" onclick="toggleTheme()" title="تبديل المظهر" style="background: var(--ed-surface); border: 1px solid var(--ed-border); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; display: grid; place-items: center; transition: var(--transition-smooth); color: var(--ed-text-body);">
-                    <i class="fa-regular fa-moon" id="themeIcon"></i>
-                </button>
 
                 <!-- بطاقة المستخدم -->
                 <div style="display:flex; align-items:center; gap:9px; background: var(--ed-surface); padding: 5px 12px; border-radius: 10px; border: 1px solid var(--ed-border);">

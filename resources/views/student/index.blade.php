@@ -115,21 +115,20 @@
 <script>
     // 1. وظيفة التفعيل والتعطيل (Toggle)
     function performToggle(id) {
-    // السلاش / قبل كلمة students هي اللي بتحل مشكلة الراوت
-    axios.post(`/students/toggle-status/${id}`)
-    .then(function (res) {
-        Swal.fire({
-            icon: res.data.icon,
-            title: res.data.title,
-            showConfirmButton: false,
-            timer: 1500
-        }).then(() => location.reload()); // تحديث الصفحة لرؤية النتيجة
-    })
-    .catch(function (err) {
-        console.error(err); // اطبع الخطأ في الكونسول عشان لو في مشكلة تانية تبين
-        Swal.fire('خطأ في الراوت', 'تأكد من وجود المسار في ملف web.php', 'error');
-    });
-}
+        axios.post(`/admin/students/toggle-status/${id}`)
+        .then(function (res) {
+            Swal.fire({
+                icon: res.data.icon,
+                title: res.data.title,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => location.reload());
+        })
+        .catch(function (err) {
+            console.error(err);
+            Swal.fire('خطأ في العملية', 'تعذر تحديث حالة الطالب', 'error');
+        });
+    }
 
     // 2. وظيفة الحذف (Delete)
     function deleteStudent(id) {
@@ -143,7 +142,7 @@
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`/students/${id}`)
+                axios.delete(`/admin/students/${id}`)
                 .then(res => {
                     if(res.data.success) {
                         document.getElementById(`row_${id}`).remove();

@@ -913,7 +913,10 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر...</span>';
 
-        axios.post("{{ route('teacher.exams.store') }}", formData, {
+        const storeRoute = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.exams.store') : route('teacher.exams.store') }}";
+        const indexRoute = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.exams.index') : route('teacher.exams.index') }}";
+
+        axios.post(storeRoute, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -926,7 +929,7 @@
                 timer: 2000,
                 showConfirmButton: false
             }).then(() => {
-                location.href = "{{ route('teacher.exams.index') }}";
+                location.href = indexRoute;
             });
         })
         .catch(err => {

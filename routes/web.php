@@ -25,6 +25,8 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 Route::get('/', [PublicController::class, 'index'])->name('home');
+Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
+Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -83,7 +85,6 @@ Route::get('/students', function () {
     return view('visitor');
 });
 
-Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::resource('educational_contents', EducationalContentController::class);
 
 // حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي
@@ -132,6 +133,9 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
 
     Route::get('/teachers/chat', [CommunicationController::class, 'teachersChat'])->name('teachers.chat');
     Route::post('/teachers/chat/send', [CommunicationController::class, 'sendFromAdminToTeacher'])->name('teachers.send');
+    Route::get('/teachers/{teacher_id}/chat', [CommunicationController::class, 'adminTeacherChat'])->name('teachers.direct_chat');
+    Route::get('/teachers/{teacher_id}/messages', [CommunicationController::class, 'fetchAdminTeacherMessages'])->name('teachers.messages.fetch');
+    Route::post('/teachers/send', [CommunicationController::class, 'sendFromAdminToTeacher'])->name('teachers.direct_send');
 
     Route::get('/students/add', [AdminManagerController::class, 'studentCreate'])->name('students.add');
     Route::post('/students/save', [AdminManagerController::class, 'studentStore'])->name('students.save');
@@ -176,10 +180,17 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/exams/{exam}/submissions', [ExamController::class, 'submissions'])->name('exams.submissions');
     Route::get('/submissions/{id}/grade', [ExamController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{id}/save-grade', [ExamController::class, 'saveGrade'])->name('submissions.saveGrade');
+    Route::post('/submissions/{id}/allow-retake', [ExamController::class, 'allowRetake'])->name('submissions.allowRetake');
+    Route::post('/submissions/{id}/deny-retake', [ExamController::class, 'denyRetake'])->name('submissions.denyRetake');
     Route::get('/exams/{id}/stats', [ExamController::class, 'stats'])->name('exams.stats');
     Route::resource('exams', ExamController::class);
 
     Route::get('/educational-contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
+    Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
+    Route::post('/educational-contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
+    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
+    Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
+    Route::delete('/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
     Route::get('/teachers', [DashboardController::class, 'teachersIndex'])->name('teachers.index');
 
     // مسارات الطلاب بشكل آمن بدون تعارض
@@ -233,6 +244,8 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/exams/{exam}/submissions', [ExamController::class, 'submissions'])->name('exams.submissions');
     Route::get('/submissions/{submission}/grade', [ExamController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{submission}/save-grade', [ExamController::class, 'saveGrade'])->name('submissions.saveGrade');
+    Route::post('/submissions/{submission}/allow-retake', [ExamController::class, 'allowRetake'])->name('submissions.allowRetake');
+    Route::post('/submissions/{submission}/deny-retake', [ExamController::class, 'denyRetake'])->name('submissions.denyRetake');
     Route::resource('exams', ExamController::class);
 
     Route::get('/educational_contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
@@ -263,8 +276,8 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::post('/send-message', [CommunicationController::class, 'sendFromTeacher'])->name('messages.send');
 
     Route::get('/chat', [CommunicationController::class, 'teacherAdminChat'])->name('teacher.admin.chat');
-    Route::get('/messages', [CommunicationController::class, 'fetchTeacherAdminMessages']);
-    Route::post('/send', [CommunicationController::class, 'sendFromTeacherToAdmin']);
+    Route::get('/messages', [CommunicationController::class, 'fetchTeacherAdminMessages'])->name('admin.chat.messages_legacy');
+    Route::post('/send', [CommunicationController::class, 'sendFromTeacherToAdmin'])->name('admin.chat.send_legacy');
 
     Route::get('/admin/chat', [CommunicationController::class, 'teacherAdminChat'])->name('admin.chat');
     Route::get('/admin/chat/messages', [CommunicationController::class, 'fetchTeacherAdminMessages'])->name('admin.chat.messages');
@@ -293,6 +306,7 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/my-exams', [ExamController::class, 'studentIndex'])->name('exams.index');
     Route::get('/exams/{id}/take', [ExamController::class, 'takeExam'])->name('exams.take');
     Route::post('/exams/{id}/submit', [ExamController::class, 'submitExam'])->name('exams.submit');
+    Route::post('/exams/{id}/request-retake', [ExamController::class, 'requestRetake'])->name('exams.requestRetake');
 
     Route::get('/exams/{id}/result', [ExamController::class, 'showResult'])->name('exams.result');
     Route::get('/results/{id}', [ExamController::class, 'showResult'])->name('exam.results');
@@ -365,8 +379,10 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
 
-// توافقية مسارات الإدارة القديمة والتسليم
-Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
-Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
-Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
+// توافقية مسارات الإدارة القديمة والتسليم (محمية بصلاحيات الأدمن)
+Route::middleware(['auth', 'IsAdmin'])->group(function () {
+    Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
+    Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
+    Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
+});
 Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam'])->name('exams.submit');

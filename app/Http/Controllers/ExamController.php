@@ -211,7 +211,7 @@ class ExamController extends Controller
         return view('admin.exams.stats', compact('exam', 'stats'));
     }
 
-    public function submissions(Request $request)
+    public function submissions(Request $request, $exam = null)
     {
         $user = auth()->user();
         $query = ExamSubmission::with(['student', 'exam.subject']);
@@ -222,8 +222,13 @@ class ExamController extends Controller
             });
         }
 
-        if ($request->has('exam_id')) {
-            $query->where('exam_id', $request->exam_id);
+        $examId = $exam ?? $request->route('exam') ?? $request->exam_id;
+        if ($examId instanceof Exam) {
+            $examId = $examId->id;
+        }
+
+        if ($examId) {
+            $query->where('exam_id', $examId);
         }
 
         $submissions = $query->latest()->get();
@@ -341,13 +346,13 @@ class ExamController extends Controller
             return redirect()->route('student.exams.index')->with('error', 'حساب الطالب غير مرتبط بشكل صحيح.');
         }
 
-        $alreadySubmitted = ExamSubmission::where('exam_id', $examId)->where('student_id', $student->id)->exists();
-        if ($alreadySubmitted) {
-            return redirect()->route('student.exams.index')->with('error', 'عذراً، لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكنك الدخول إليه مرة أخرى.');
+        $submission = ExamSubmission::where('exam_id', $examId)->where('student_id', $student->id)->latest()->first();
+        if ($submission && !$submission->allow_retake) {
+            return redirect()->route('student.exams.results', $submission->id)->with('info', 'عذراً، لقد قمت بتقديم هذا الاختبار مسبقاً. وفقاً للأنظمة الأكاديمية لا يمكن إعادة المحاولة إلا بعد الحصول على إذن من أستاذ المادة.');
         }
 
         $exam = Exam::with(['questions', 'subject', 'stage'])->findOrFail($examId);
-        return view('student.exams.take', compact('exam'));
+        return view('student.exams.take', compact('exam', 'submission'));
     }
 
     public function submitExam(Request $request, $id)
@@ -363,19 +368,29 @@ class ExamController extends Controller
                     return response()->json(['success' => false, 'error' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'], 422);
                 }
 
-                $exists = ExamSubmission::where('student_id', $student->id)->where('exam_id', $id)->exists();
-                if ($exists) {
-                    return response()->json(['success' => false, 'error' => 'لقد قمت بتقديم هذا الاختبار مسبقاً.'], 422);
+                $submission = ExamSubmission::where('student_id', $student->id)->where('exam_id', $id)->latest()->first();
+                if ($submission && !$submission->allow_retake) {
+                    return response()->json(['success' => false, 'error' => 'لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكن إعادته إلا بعد موافقة المعلم.'], 422);
                 }
 
                 $exam = Exam::with('questions')->findOrFail($id);
 
-                $submission = ExamSubmission::create([
-                    'exam_id' => $id,
-                    'student_id' => $student->id,
-                    'status' => 'pending',
-                    'total_earned_grade' => 0
-                ]);
+                if ($submission && $submission->allow_retake) {
+                    $submission->answers()->delete();
+                    $submission->update([
+                        'status' => 'pending',
+                        'total_earned_grade' => 0,
+                        'allow_retake' => false,
+                        'retake_requested' => false,
+                    ]);
+                } else {
+                    $submission = ExamSubmission::create([
+                        'exam_id' => $id,
+                        'student_id' => $student->id,
+                        'status' => 'pending',
+                        'total_earned_grade' => 0
+                    ]);
+                }
 
                 $autoGrade = 0;
                 $answers = $request->input('answers', []);
@@ -495,5 +510,125 @@ class ExamController extends Controller
             ->get();
 
         return view('student.exams.gradebook', compact('submissions'));
+    }
+
+    /**
+     * طلب إذن إعادة الاختبار من المعلم (للطالب)
+     */
+    public function requestRetake(Request $request, $id)
+    {
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
+
+        if (!$student) {
+            return response()->json(['success' => false, 'error' => 'حساب الطالب غير مصرح'], 403);
+        }
+
+        $submission = ExamSubmission::with('exam')->where('exam_id', $id)->where('student_id', $student->id)->latest()->firstOrFail();
+
+        $submission->update([
+            'retake_requested' => true,
+            'retake_request_notes' => $request->notes ?? 'يرغب الطالب في إعادة الاختبار لتحسين تحصيله أو معالجة عذر تقني.'
+        ]);
+
+        try {
+            $exam = $submission->exam;
+            $teacherId = $exam->teacher_id;
+            $studentName = $student->name_ar ?? $student->name ?? 'طالب';
+
+            if ($teacherId) {
+                \App\Services\NotificationService::notifyTeacher(
+                    $teacherId,
+                    'طلب إعادة اختبار من طالب 🔄',
+                    "طلب الطالب ({$studentName}) إذناً لإعادة اختبار: \"{$exam->title}\".",
+                    'exam',
+                    route('teacher.submissions.index', ['exam_id' => $exam->id]),
+                    'fa-rotate-right'
+                );
+            } else {
+                \App\Services\NotificationService::notifyAdmin(
+                    'طلب إعادة اختبار من طالب 🔄',
+                    "طلب الطالب ({$studentName}) إذناً لإعادة اختبار: \"{$exam->title}\".",
+                    'exam',
+                    route('admin.submissions.index')
+                );
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'title' => 'تم إرسال طلب إعادة الاختبار لأستاذ المادة بنجاح! سيصلك تنبيه فور اعتماده.'
+        ]);
+    }
+
+    /**
+     * موافقة المعلم أو الإدارة على إعادة الاختبار للطالب
+     */
+    public function allowRetake($id)
+    {
+        $user = auth()->user();
+        $submission = ExamSubmission::with(['exam', 'student'])->findOrFail($id);
+
+        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح لك بمنح صلاحية الإعادة لهذا الاختبار'], 403);
+        }
+
+        $submission->update([
+            'allow_retake' => true,
+            'retake_requested' => false,
+            'retake_granted_by' => $user->id,
+        ]);
+
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $submission->student_id,
+                'تمت الموافقة على إعادة الاختبار! 🚀',
+                "وافق أستاذ المادة على إعادة اختبار: \"{$submission->exam->title}\". يمكنك الدخول للاختبار الآن وتقديم محاولة جديدة.",
+                'exam',
+                route('student.exams.take', $submission->exam_id),
+                'fa-unlock'
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'title' => 'تمت الموافقة على إعادة الاختبار للطالب بنجاح 🎉'
+        ]);
+    }
+
+    /**
+     * رفض طلب إعادة الاختبار
+     */
+    public function denyRetake($id)
+    {
+        $user = auth()->user();
+        $submission = ExamSubmission::with(['exam', 'student'])->findOrFail($id);
+
+        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح'], 403);
+        }
+
+        $submission->update([
+            'retake_requested' => false,
+            'allow_retake' => false,
+        ]);
+
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $submission->student_id,
+                'بخصوص طلب إعادة الاختبار ⚠️',
+                "تم رفض طلب إعادة اختبار \"{$submission->exam->title}\" من قِبل معلّم المادة.",
+                'exam',
+                route('student.exams.results', $submission->id),
+                'fa-circle-xmark'
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'title' => 'تم رفض طلب الإعادة'
+        ]);
     }
 }

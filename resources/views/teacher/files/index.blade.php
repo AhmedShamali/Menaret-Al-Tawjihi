@@ -30,38 +30,46 @@
     <!-- شبكة الملفات -->
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;">
         @forelse($files as $file)
-            <div style="background: white; border-radius: 18px; border: 1px solid #e2e8f0; padding: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; gap: 16px;">
+            @php
+                $meta = $file->file_meta ?? [
+                    'icon' => 'fa-solid fa-file-pdf',
+                    'color' => '#ef4444',
+                    'bg' => '#fef2f2',
+                    'label' => 'PDF'
+                ];
+            @endphp
+            <div style="background: var(--ed-surface); border-radius: 16px; border: 1px solid var(--ed-border); padding: 22px; box-shadow: var(--ed-shadow-card); display: flex; flex-direction: column; justify-content: space-between; gap: 16px;">
                 <div>
                     <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 14px;">
-                        <div style="width: 52px; height: 52px; border-radius: 14px; background: #fee2e2; color: #dc2626; display: grid; place-items: center; font-size: 1.5rem; flex-shrink: 0;">
-                            <i class="fa-solid fa-file-pdf"></i>
+                        <div style="width: 50px; height: 50px; border-radius: 12px; background: {{ $meta['bg'] }}; color: {{ $meta['color'] }}; display: grid; place-items: center; font-size: 1.4rem; flex-shrink: 0;">
+                            <i class="{{ $meta['icon'] }}"></i>
                         </div>
                         <div style="overflow: hidden;">
-                            <span style="background: #eff6ff; color: #1d4ed8; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block; margin-bottom: 4px;">
-                                {{ $file->subject?->name_ar ?? 'عام' }}
+                            <span style="background: var(--ed-primary-soft); color: var(--ed-primary); padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block; margin-bottom: 4px;">
+                                {{ $file->subject?->name_ar ?? 'عام' }} • {{ $meta['label'] }}
                             </span>
-                            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $file->title }}">
+                            <h3 style="margin: 0; font-size: 1.02rem; font-weight: 800; color: var(--ed-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $file->title }}">
                                 {{ $file->title }}
                             </h3>
                         </div>
                     </div>
 
-                    <div style="font-size: 0.8rem; color: #64748b; line-height: 1.6; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
-                        <div><i class="fa-solid fa-folder" style="color: #d97706;"></i> <strong>القسم:</strong> {{ $file->channel_name ?? 'ملزمة عامة' }}</div>
-                        <div><i class="fa-solid fa-weight-hanging" style="color: #6366f1;"></i> <strong>الحجم:</strong> {{ $file->file_size ?? 'PDF وثيقة' }}</div>
+                    <div style="font-size: 0.8rem; color: var(--ed-text-muted); line-height: 1.6; background: var(--ed-surface-alt); padding: 10px 14px; border-radius: 10px; border: 1px solid var(--ed-border-subtle);">
+                        <div><i class="fa-solid fa-folder" style="color: var(--ed-accent);"></i> <strong>القسم:</strong> {{ $file->channel_name ?? 'ملزمة عامة' }}</div>
+                        <div><i class="fa-solid fa-weight-hanging" style="color: var(--ed-primary);"></i> <strong>الحجم:</strong> {{ $file->file_size ?? 'غير محدد' }}</div>
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; pt: 12px; border-top: 1px solid #f1f5f9; margin-top: 8px;">
-                    <a href="{{ route('content.download', $file->id) }}" target="_blank" style="padding: 8px 16px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 10px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-download"></i> معاينة / تنزيل
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--ed-border); margin-top: 8px;">
+                    <a href="{{ route('content.download', $file->id) }}" target="_blank" style="padding: 8px 16px; background: var(--ed-primary-soft); color: var(--ed-primary); border: 1px solid var(--ed-primary-border); border-radius: 10px; text-decoration: none; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: var(--transition-smooth);">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> تحميل الملف
                     </a>
 
                     <div style="display: flex; gap: 6px;">
-                        <a href="{{ route('teacher.educational_contents.edit', $file->id) }}" style="padding: 8px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 10px; color: #475569; text-decoration: none; font-size: 0.8rem; font-weight: 700;">
+                        <a href="{{ route('teacher.educational_contents.edit', $file->id) }}" style="padding: 8px 12px; background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: 10px; color: var(--ed-text-body); text-decoration: none; font-size: 0.8rem; font-weight: 700;">
                             <i class="fa-solid fa-pen"></i>
                         </a>
-                        <button type="button" onclick="deleteFileItem({{ $file->id }})" style="padding: 8px 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; color: #dc2626; cursor: pointer; font-size: 0.8rem;">
+                        <button type="button" onclick="deleteFileItem({{ $file->id }})" style="padding: 8px 12px; background: var(--ed-danger-soft); border: 1px solid #fecaca; border-radius: 10px; color: var(--ed-danger); cursor: pointer; font-size: 0.8rem;">
                             <i class="fa-solid fa-trash-alt"></i>
                         </button>
                     </div>
@@ -126,9 +134,9 @@
                 </div>
 
                 <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">ملف PDF المعتمد (رفع مباشر) *</label>
-                    <input type="file" name="file_upload_pdf" accept="application/pdf,.doc,.docx" required style="width: 100%; padding: 10px; border: 1.5px dashed #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 0.85rem; background: #f8fafc;">
-                    <small style="color: #64748b; font-size: 0.72rem; display: block; margin-top: 4px;">يدعم ملفات PDF و Word بحد أقصى 50 ميجابايت.</small>
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">ملف المادة / الكراسة التعليمية (رفع مباشر) *</label>
+                    <input type="file" name="file_upload_pdf" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.zip,.rar,.txt" required style="width: 100%; padding: 10px; border: 1.5px dashed #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 0.85rem; background: #f8fafc;">
+                    <small style="color: #64748b; font-size: 0.72rem; display: block; margin-top: 4px;">يدعم ملفات PDF، Word، Excel، PowerPoint، الصور، والأرشيف المضغوط (حتى 100 ميجابايت).</small>
                 </div>
 
                 <div>
