@@ -55,9 +55,9 @@
         }
 
         /* Top Navigation */
-        header.nav-header {
-            background: var(--bg-surface);
-            border-bottom: 1px solid var(--border-subtle);
+        .main-navbar {
+            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+            border-bottom: 3px solid #f59e0b;
             position: sticky;
             top: 0;
             z-index: 40;
@@ -66,7 +66,7 @@
         .nav-inner {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 14px 24px;
+            padding: 12px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -77,7 +77,7 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: var(--text-heading);
+            color: #ffffff;
             font-weight: 700;
             font-size: 1.15rem;
         }
@@ -85,9 +85,10 @@
         .brand-logo-badge {
             width: 38px;
             height: 38px;
-            border-radius: 10px;
-            background: var(--primary);
-            color: #ffffff;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #1e3a8a;
+            border: 2px solid #f59e0b;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -106,19 +107,20 @@
             border-radius: var(--radius-md);
             font-size: 0.88rem;
             font-weight: 600;
-            color: var(--text-body);
+            color: #e2e8f0;
             border: 1px solid transparent;
             transition: all 0.2s ease;
         }
 
         .nav-link-btn:hover {
-            background: var(--primary-soft);
-            color: var(--primary);
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
         }
 
         .nav-link-btn.primary {
             background: var(--primary);
             color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .nav-link-btn.primary:hover {

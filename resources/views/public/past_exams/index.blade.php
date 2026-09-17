@@ -35,19 +35,21 @@
 
         nav {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 18px 8%; background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-card);
+            padding: 14px 5%; background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+            border-bottom: 3px solid #f59e0b;
             position: sticky; top: 0; z-index: 50;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
         }
-        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 800; font-size: 1.25rem; color: var(--text-title); }
+        .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 800; font-size: 1.25rem; color: #ffffff; }
         .logo-badge {
-            width: 42px; height: 42px; border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb, #6366f1);
-            color: white; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            width: 40px; height: 40px; border-radius: 8px;
+            background: #ffffff; color: #1e3a8a; border: 2px solid #f59e0b;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
         }
         .nav-actions { display: flex; align-items: center; gap: 12px; }
-        .btn-nav { text-decoration: none; padding: 8px 18px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); transition: 0.2s ease; }
+        .btn-nav { text-decoration: none; padding: 7px 16px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; color: #cbd5e1; transition: 0.2s ease; }
+        .btn-nav:hover { color: #ffffff; }
         .btn-nav:hover { color: var(--primary); background: var(--primary-light); }
 
         .hero-banner {
@@ -150,13 +152,13 @@
     <!-- Top Navigation -->
     <nav>
         <a href="/" class="nav-logo">
-            <div class="logo-badge">🇵🇸</div>
-            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
+            <div class="logo-badge"><i class="fa-solid fa-graduation-cap"></i></div>
+            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
         </a>
         <div class="nav-actions">
             <a href="/" class="btn-nav"><i class="fas fa-home"></i> الرئيسية</a>
             <a href="{{ route('tawjihi.calculator') }}" class="btn-nav"><i class="fas fa-calculator"></i> حاسبة التوجيهي</a>
-            <a href="{{ route('login') }}" class="btn-nav" style="background: var(--primary); color: white;"><i class="fas fa-sign-in-alt"></i> دخول</a>
+            <a href="{{ route('login') }}" class="btn-nav" style="background: var(--primary); color: white; border: 1px solid rgba(255,255,255,0.2);"><i class="fas fa-sign-in-alt"></i> دخول</a>
         </div>
     </nav>
 
