@@ -1,158 +1,154 @@
 @extends('layouts.app')
 
-@section('title', 'سجل وإدارة الطلاب | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
+@section('title', 'إدارة الطلاب | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
 
 @section('content')
-<div class="students-dashboard-container">
+<div class="students-dashboard-clean">
 
     {{-- 1. رأس الصفحة: العنوان والإحصائيات وزر الإضافة --}}
-    <div class="dashboard-header-block">
+    <div class="page-header-clean">
         <div class="header-titles">
-            <div class="title-emblem">
-                <i class="fa-solid fa-user-graduate"></i>
-            </div>
-            <div>
-                <h1 class="main-page-title">
-                    سجل طلبة الثانوية العامة
-                    <span class="count-badge" id="visibleStudentsCount">{{ count($students) }}</span>
-                </h1>
-                <p class="main-page-subtitle">
-                    إدارة وتفعيل حسابات طلاب {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} لدورة 2026، تخصيص المنح، وتعيين المواد الدراسية.
-                </p>
-            </div>
+            <h1 class="page-title-text">
+                سجل الطلاب
+                <span class="count-pill" id="visibleStudentsCount">{{ count($students) }}</span>
+            </h1>
+            <p class="page-desc-text">
+                إدارة حسابات الطلبة، تفعيل الاشتراكات، وتخصيص المنح لدورة 2026.
+            </p>
         </div>
 
-        <div class="header-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-            <a href="{{ route('admin.students.export') }}" style="background: #059669; color: white; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25); transition: 0.2s;" title="تصدير بيانات جميع الطلاب بصيغة ملف Excel / CSV">
-                <i class="fa-solid fa-file-excel"></i>
-                <span>تصدير إكسل (CSV)</span>
+        <div class="header-actions-group">
+            <a href="{{ route('admin.students.export') }}" class="btn-clean btn-outline" title="تصدير ملف CSV">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                <span>تصدير CSV</span>
             </a>
-            <button type="button" onclick="confirmPurgeAllStudents()" style="background: #dc2626; color: white; border: none; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25); transition: 0.2s;" title="حذف وتصفير جميع الطلاب المسجلين دفعة واحدة">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>حذف جميع الطلاب دفعة واحدة</span>
+            <button type="button" onclick="confirmPurgeAllStudents()" class="btn-clean btn-danger-outline" title="حذف وتصفير جميع الطلاب">
+                <i class="fa-regular fa-trash-can"></i>
+                <span>تصفير الكل</span>
             </button>
-            <a href="{{ route('admin.students.create') }}" class="btn-add-student">
-                <i class="fa-solid fa-user-plus"></i>
-                <span>إضافة طالب جديد</span>
+            <a href="{{ route('admin.students.create') }}" class="btn-clean btn-primary">
+                <i class="fa-solid fa-plus"></i>
+                <span>إضافة طالب</span>
             </a>
         </div>
     </div>
 
-    {{-- 2. بطاقات المؤشرات السريعة (Quick Stats KPI) --}}
-    <div class="kpi-grid">
-        <div class="kpi-card" onclick="setFilterTab('all')">
-            <div class="kpi-icon kpi-blue"><i class="fa-solid fa-users"></i></div>
-            <div class="kpi-info">
-                <span class="kpi-label">إجمالي الطلبة المسجلين</span>
-                <strong class="kpi-num">{{ count($students) }}</strong>
+    {{-- 2. بطاقات المؤشرات البسيطة الأنيقة (Minimalist KPI Cards) --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" onclick="setFilterTab('all')">
+            <span class="stat-label">إجمالي الطلبة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number">{{ count($students) }}</span>
+                <i class="fa-solid fa-users stat-icon"></i>
             </div>
         </div>
 
-        <div class="kpi-card" onclick="setFilterTab('pending')">
-            <div class="kpi-icon kpi-amber"><i class="fa-solid fa-clock"></i></div>
-            <div class="kpi-info">
-                <span class="kpi-label">بانتظار التفعيل والموافقة</span>
-                <strong class="kpi-num" style="color: #d97706;">{{ $students->where('status', '!=', 'active')->count() }}</strong>
+        <div class="stat-card-clean" onclick="setFilterTab('pending')">
+            <span class="stat-label">بانتظار الموافقة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ $students->where('status', '!=', 'active')->count() > 0 ? 'text-amber' : '' }}">
+                    {{ $students->where('status', '!=', 'active')->count() }}
+                </span>
+                <i class="fa-regular fa-clock stat-icon"></i>
             </div>
         </div>
 
-        <div class="kpi-card" onclick="setFilterTab('active')">
-            <div class="kpi-icon kpi-emerald"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="kpi-info">
-                <span class="kpi-label">حسابات نشطة ومعتمدة</span>
-                <strong class="kpi-num" style="color: #059669;">{{ $students->where('status', 'active')->count() }}</strong>
+        <div class="stat-card-clean" onclick="setFilterTab('active')">
+            <span class="stat-label">حسابات نشطة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ $students->where('status', 'active')->count() }}</span>
+                <i class="fa-solid fa-circle-check stat-icon"></i>
             </div>
         </div>
 
-        <div class="kpi-card" onclick="setFilterTab('all')">
-            <div class="kpi-icon kpi-purple"><i class="fa-solid fa-tags"></i></div>
-            <div class="kpi-info">
-                <span class="kpi-label">منح وخصومات مخصصة</span>
-                <strong class="kpi-num" style="color: #7c3aed;">{{ $students->filter(fn($s) => $s->hasDiscount())->count() }}</strong>
+        <div class="stat-card-clean" onclick="setFilterTab('all')">
+            <span class="stat-label">المنح والخصومات</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number">{{ $students->filter(fn($s) => $s->hasDiscount())->count() }}</span>
+                <i class="fa-solid fa-tag stat-icon"></i>
             </div>
         </div>
     </div>
 
-    {{-- 3. شريط البحث التفاعلي والفلاتر السريعة --}}
-    <div class="filter-search-card">
-        <div class="search-input-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="studentSearchInput" placeholder="بحث فوري باسم الطالب، رقم الهوية الوطنية، أو البريد الإلكتروني..." oninput="filterStudents()">
-            <button type="button" id="clearSearchBtn" onclick="clearSearch()" style="display: none;"><i class="fa-solid fa-xmark"></i></button>
+    {{-- 3. شريط البحث والفلاتر الموحد الأنيق --}}
+    <div class="toolbar-clean">
+        <div class="search-box-clean">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="studentSearchInput" placeholder="بحث بالاسم، رقم الهوية، أو البريد الإلكتروني..." oninput="filterStudents()">
+            <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="clear-search" style="display: none;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="filter-tabs-row">
-            <button type="button" class="filter-tab-btn active" data-filter="all" onclick="setFilterTab('all')">الكل ({{ count($students) }})</button>
-            <button type="button" class="filter-tab-btn" data-filter="pending" onclick="setFilterTab('pending')">
-                <span class="dot-amber"></span> بانتظار الموافقة ({{ $students->where('status', '!=', 'active')->count() }})
+        <div class="filter-pills-clean">
+            <button type="button" class="filter-pill active" data-filter="all" onclick="setFilterTab('all')">
+                الكل ({{ count($students) }})
             </button>
-            <button type="button" class="filter-tab-btn" data-filter="active" onclick="setFilterTab('active')">
-                <span class="dot-green"></span> المعتمدون ({{ $students->where('status', 'active')->count() }})
+            <button type="button" class="filter-pill" data-filter="pending" onclick="setFilterTab('pending')">
+                بانتظار الموافقة ({{ $students->where('status', '!=', 'active')->count() }})
             </button>
-            <button type="button" class="filter-tab-btn" data-filter="sci" onclick="setFilterTab('sci')">الفرع العلمي ⚛️</button>
-            <button type="button" class="filter-tab-btn" data-filter="lit" onclick="setFilterTab('lit')">الفرع الأدبي 📜</button>
-            <button type="button" class="filter-tab-btn" data-filter="bus" onclick="setFilterTab('bus')">ريادة وأعمال 💼</button>
+            <button type="button" class="filter-pill" data-filter="active" onclick="setFilterTab('active')">
+                المعتمدون ({{ $students->where('status', 'active')->count() }})
+            </button>
+            <button type="button" class="filter-pill" data-filter="sci" onclick="setFilterTab('sci')">
+                الفرع العلمي
+            </button>
+            <button type="button" class="filter-pill" data-filter="lit" onclick="setFilterTab('lit')">
+                الفرع الأدبي
+            </button>
+            <button type="button" class="filter-pill" data-filter="bus" onclick="setFilterTab('bus')">
+                ريادة وأعمال
+            </button>
         </div>
     </div>
 
-    {{-- شريط التحكم الجماعي بالطلاب المحددين (Bulk Action Bar) --}}
-    <div id="studentBulkBar" style="display: none; background: #1e1b4b; color: white; border-radius: 14px; padding: 12px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 8px 24px rgba(30, 27, 75, 0.3);">
-        <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="background: #4f46e5; width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-weight: 900; font-size: 0.95rem;" id="selectedStudentsCount">0</span>
-            <span style="font-weight: 700; font-size: 0.95rem;">طالب تم تحديدهم بالجدول</span>
+    {{-- شريط التحكم الجماعي (Bulk Action Bar) --}}
+    <div id="studentBulkBar" class="bulk-bar-clean" style="display: none;">
+        <div class="bulk-info">
+            <span class="bulk-count-badge" id="selectedStudentsCount">0</span>
+            <span>طالب محدد في الجدول</span>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" onclick="deselectAllStudents()" style="background: rgba(255,255,255,0.15); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
+        <div class="bulk-actions">
+            <button type="button" onclick="deselectAllStudents()" class="btn-clean btn-ghost-white">
                 إلغاء التحديد
             </button>
-            <button type="button" onclick="deleteSelectedStudents()" style="background: #dc2626; color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);">
-                <i class="fa-solid fa-trash-can"></i>
-                <span>حذف الطلاب المحددين</span>
+            <button type="button" onclick="deleteSelectedStudents()" class="btn-clean btn-danger-solid">
+                <i class="fa-regular fa-trash-can"></i>
+                <span>حذف المحددين</span>
             </button>
         </div>
     </div>
 
-    {{-- 4. بطاقة الجدول المتطورة مع التمرير الأفقي المحمي --}}
-    <div class="table-outer-card">
-        <div class="responsive-table-wrapper">
-            <table class="students-data-table">
+    {{-- 4. جدول الطلاب النظيف والبسيط بدون سكرول أفقي نهائياً --}}
+    <div class="table-card-clean">
+        <div class="table-container-clean">
+            <table class="data-table-clean">
                 <thead>
                     <tr>
-                        <th style="width: 40px; text-align: center;">
-                            <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="تحديد / إلغاء تحديد الكل" style="width: 18px; height: 18px; cursor: pointer; accent-color: #4f46e5;">
+                        <th style="width: 36px; text-align: center;">
+                            <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="تحديد الكل" class="custom-checkbox">
                         </th>
-                        <th>المعلومات الشخصية</th>
-                        <th>الفرع والمرحلة</th>
-                        <th>الهوية الوطنية</th>
-                        <th>حالة الحساب</th>
-                        <th>الخصم والمنحة 🏷️</th>
-                        <th style="text-align: center;">إجراءات التحكم</th>
+                        <th>الطالب</th>
+                        <th style="width: 120px;">الفرع</th>
+                        <th style="width: 110px;">الهوية</th>
+                        <th style="width: 100px;">الحالة</th>
+                        <th style="width: 100px;">الخصم</th>
+                        <th style="width: 145px; text-align: center;">الإجراءات</th>
                     </tr>
                 </thead>
                 <tbody id="studentsTableBody">
                     @forelse($students as $student)
                     @php
-                        $stageLabel = $student->stage->label_ar ?? 'توجيهي';
-                        $branchTag = 'other';
-                        $branchPill = 'توجيهي 2026';
-                        $branchClass = 'badge-stage-blue';
-
+                        $stageLabel = $student->stage->label_ar ?? ($student->stage->name_ar ?? 'توجيهي');
+                        $branchShort = 'عام';
                         if (str_contains($stageLabel, 'علمي')) {
-                            $branchTag = 'sci';
-                            $branchPill = 'الفرع العلمي ⚛️';
-                            $branchClass = 'badge-stage-sci';
+                            $branchShort = 'العلمي';
                         } elseif (str_contains($stageLabel, 'أدبي')) {
-                            $branchTag = 'lit';
-                            $branchPill = 'الفرع الأدبي 📜';
-                            $branchClass = 'badge-stage-lit';
+                            $branchShort = 'الأدبي';
                         } elseif (str_contains($stageLabel, 'ريادة') || str_contains($stageLabel, 'أعمال') || str_contains($stageLabel, 'تجاري')) {
-                            $branchTag = 'bus';
-                            $branchPill = 'ريادة وأعمال 💼';
-                            $branchClass = 'badge-stage-bus';
+                            $branchShort = 'ريادة وأعمال';
                         } elseif (str_contains($stageLabel, 'صناعي')) {
-                            $branchTag = 'ind';
-                            $branchPill = 'الفرع الصناعي ⚙️';
-                            $branchClass = 'badge-stage-ind';
+                            $branchShort = 'الصناعي';
                         }
                     @endphp
                     <tr id="row_{{ $student->id }}" 
@@ -163,156 +159,156 @@
                         data-status="{{ $student->status }}"
                         data-branch="{{ $stageLabel }}">
                         
-                        {{-- خانة التحديد للحذف الجماعي --}}
-                        <td style="text-align: center; vertical-align: middle;">
-                            <input type="checkbox" class="student-row-checkbox" value="{{ $student->id }}" onchange="updateStudentBulkBar()" style="width: 18px; height: 18px; cursor: pointer; accent-color: #4f46e5;">
+                        {{-- تحديد --}}
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="student-row-checkbox custom-checkbox" value="{{ $student->id }}" onchange="updateStudentBulkBar()">
                         </td>
 
-                        {{-- 1. المعلومات الشخصية --}}
+                        {{-- معلومات الطالب --}}
                         <td>
-                            <div class="student-profile-cell">
-                                <div class="student-avatar-wrap">
-                                    <img src="{{ $student->photo ? asset('storage/'.$student->photo) : 'https://ui-avatars.com/api/?name='.urlencode($student->name_ar).'&background=3b82f6&color=fff&bold=true&rounded=true' }}"
-                                         onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar) }}&background=3b82f6&color=fff&bold=true&rounded=true'"
-                                         alt="{{ $student->name_ar }}">
-                                    <span class="avatar-dot {{ $student->status == 'active' ? 'online' : 'offline' }}"></span>
+                            <div class="cell-student-info">
+                                <div class="student-avatar-clean">
+                                    @if(!empty($student->photo))
+                                        <img src="{{ asset('storage/'.$student->photo) }}" alt="{{ $student->name_ar }}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+                                        <span class="avatar-initials" style="display: none;">{{ mb_substr($student->name_ar, 0, 2) }}</span>
+                                    @else
+                                        <span class="avatar-initials">{{ mb_substr($student->name_ar, 0, 2) }}</span>
+                                    @endif
                                 </div>
-                                <div class="student-meta-wrap">
-                                    <a href="{{ route('admin.students.show', $student->id) }}" class="student-name-link" title="فتح الملف الشخصي والمواد الدراسية">
-                                        {{ $student->name_ar }}
-                                    </a>
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 3px;">
-                                        <span class="student-email-sub" dir="ltr">{{ $student->email }}</span>
-                                        <span class="password-badge-display" title="كلمة مرور الطالب للدخول" style="display: inline-flex; align-items: center; gap: 4px; background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 6px; padding: 1px 7px; font-size: 0.74rem; font-weight: 700; font-family: monospace;" dir="ltr">
-                                            <i class="fa-solid fa-key" style="font-size: 0.68rem; color: #d97706;"></i>
-                                            <span>{{ $student->plain_password ?: '123456' }}</span>
-                                            <button type="button" onclick="navigator.clipboard.writeText('{{ $student->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: none; border: none; padding: 0; cursor: pointer; color: #b45309;" title="نسخ">
-                                                <i class="fa-regular fa-copy" style="font-size: 0.68rem;"></i>
-                                            </button>
-                                        </span>
+                                <div class="student-details-clean">
+                                    <div class="name-line">
+                                        <a href="{{ route('admin.students.show', $student->id) }}" class="student-name" title="عرض ملف الطالب">
+                                            {{ $student->name_ar }}
+                                        </a>
+                                    </div>
+                                    <div class="meta-line">
+                                        <span class="student-email" dir="ltr">{{ $student->email }}</span>
+                                        @if($student->plain_password)
+                                            <span class="pwd-snippet" title="كلمة المرور للدخول (انقر للنسخ)" onclick="copyToClipboard('{{ $student->plain_password }}', 'تم نسخ كلمة المرور')">
+                                                <i class="fa-solid fa-key"></i>
+                                                <code>{{ $student->plain_password }}</code>
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         </td>
 
-                        {{-- 2. الفرع والمرحلة --}}
+                        {{-- الفرع --}}
                         <td>
-                            <div class="stage-cell-wrap">
-                                <span class="stage-badge-clean {{ $branchClass }}" title="{{ $stageLabel }}">
-                                    {{ $branchPill }}
-                                </span>
-                            </div>
+                            <span class="branch-tag-clean">{{ $branchShort }}</span>
                         </td>
 
-                        {{-- 3. الهوية الوطنية --}}
+                        {{-- الهوية الوطنية --}}
                         <td>
-                            <span class="nid-clean-pill">
-                                <i class="fa-regular fa-id-card"></i>
-                                <code>{{ $student->nid }}</code>
-                            </span>
+                            <span class="nid-text-clean font-mono">{{ $student->nid ?: '-' }}</span>
                         </td>
 
-                        {{-- 4. حالة الحساب وسبب التجميد --}}
+                        {{-- الحالة --}}
                         <td>
                             @if($student->status === 'active')
-                                <span class="status-clean-badge badge-active">
-                                    <span class="live-dot-green"></span>
-                                    <span>مفعّل ومعتمد</span>
+                                <span class="status-pill status-active">
+                                    <span class="dot"></span>
+                                    <span>نشط</span>
                                 </span>
                             @elseif($student->status === 'suspended' || $student->status === 'frozen' || $student->status === 'inactive')
-                                <span class="status-clean-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
-                                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>
-                                    <span>حساب مجمد 🔒</span>
+                                <span class="status-pill status-frozen" title="{{ $student->freeze_reason ?: 'حساب مجمد' }}">
+                                    <span class="dot"></span>
+                                    <span>مجمد</span>
                                 </span>
-                                @if(!empty($student->freeze_reason))
-                                    <small style="display: block; font-size: 0.73rem; color: #dc2626; font-weight: 700; margin-top: 3px;" title="سبب التجميد المسجل">
-                                        <i class="fa-solid fa-triangle-exclamation"></i> {{ $student->freeze_reason }}
-                                    </small>
-                                @endif
                             @else
-                                <span class="status-clean-badge badge-pending">
-                                    <span class="live-dot-amber"></span>
-                                    <span>بانتظار الموافقة ⏳</span>
+                                <span class="status-pill status-pending">
+                                    <span class="dot"></span>
+                                    <span>بانتظار الموافقة</span>
                                 </span>
                             @endif
                         </td>
 
-                        {{-- 5. الخصم والمنحة --}}
+                        {{-- الخصم والمنحة --}}
                         <td>
-                            <div id="discount_badge_{{ $student->id }}" 
-                                 onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')" 
-                                 class="discount-trigger-pill {{ $student->hasDiscount() ? ((float)($student->custom_discount_percent ?? 0) >= 100 ? 'discount-full' : 'discount-custom') : 'discount-none' }}"
-                                 title="انقر لتعديل الخصم أو المنحة للطالب">
-                                <span>{{ $student->hasDiscount() ? '🏷️' : '➕' }}</span>
-                                <span id="badge_text_{{ $student->id }}">{{ $student->discount_label }}</span>
+                            <div id="discount_badge_{{ $student->id }}">
+                                @if($student->hasDiscount())
+                                    <button type="button" 
+                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')" 
+                                            class="btn-discount-badge"
+                                            title="تعديل الخصم">
+                                        <span id="badge_text_{{ $student->id }}">{{ $student->discount_label }}</span>
+                                    </button>
+                                @else
+                                    <button type="button" 
+                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', 0, 0, '')" 
+                                            class="btn-discount-none"
+                                            title="إضافة خصم أو منحة">
+                                        <span id="badge_text_{{ $student->id }}">بدون خصم</span>
+                                    </button>
+                                @endif
                             </div>
                         </td>
 
-                        {{-- 6. أزرار التحكم --}}
+                        {{-- الإجراءات --}}
                         <td>
-                            <div class="actions-container-row">
+                            <div class="actions-cell-clean">
                                 @if($student->status !== 'active')
                                     <button type="button" 
                                             onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($student->name_ar) }}')"
-                                            class="btn-action-approve"
-                                            title="اعتماد وتفعيل حساب الطالب فورياً">
-                                        <i class="fa-solid fa-check"></i>
-                                        <span>تفعيل</span>
+                                            class="tbl-btn tbl-btn-approve"
+                                            title="تفعيل واعتماد الطالب">
+                                        تفعيل
                                     </button>
                                 @endif
 
-                                <button type="button" 
-                                        onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
-                                        class="action-icon-btn btn-action-discount"
-                                        title="تحديد خصم أو منحة 🏷️">
-                                    <i class="fa-solid fa-tag"></i>
-                                </button>
-
                                 <a href="{{ route('admin.students.show', $student->id) }}"
-                                   class="action-icon-btn btn-action-view"
-                                   title="عرض وتخصيص المواد الدراسية 📚">
-                                    <i class="fa-solid fa-book-open"></i>
+                                   class="tbl-btn-icon"
+                                   title="عرض المواد والملف">
+                                    <i class="fa-regular fa-folder-open"></i>
                                 </a>
 
                                 <button type="button" 
+                                        onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
+                                        class="tbl-btn-icon"
+                                        title="المنحة والخصم">
+                                    <i class="fa-solid fa-tag"></i>
+                                </button>
+
+                                <button type="button" 
                                         onclick="performToggle({{ $student->id }}, '{{ $student->status }}', '{{ addslashes($student->name_ar) }}')"
-                                        class="action-icon-btn {{ $student->status == 'active' ? 'btn-action-lock' : 'btn-action-unlock' }}"
-                                        title="{{ $student->status == 'active' ? 'تجميد الحساب مع ذكر السبب' : 'إلغاء التجميد وتفعيل الحساب' }}">
+                                        class="tbl-btn-icon {{ $student->status == 'active' ? '' : 'text-amber' }}"
+                                        title="{{ $student->status == 'active' ? 'تجميد الحساب' : 'إلغاء التجميد' }}">
                                     @if($student->status == 'active')
-                                        <i class="fa-solid fa-user-slash"></i>
+                                        <i class="fa-solid fa-lock"></i>
                                     @else
-                                        <i class="fa-solid fa-user-check"></i>
+                                        <i class="fa-solid fa-lock-open"></i>
                                     @endif
                                 </button>
 
                                 <a href="{{ route('admin.students.edit', $student->id) }}"
-                                   class="action-icon-btn btn-action-edit"
-                                   title="تعديل بيانات الطالب ✏️">
-                                    <i class="fa-solid fa-pen-to-square"></i>
+                                   class="tbl-btn-icon"
+                                   title="تعديل البيانات">
+                                    <i class="fa-regular fa-pen-to-square"></i>
                                 </a>
 
                                 <button type="button" 
                                         onclick="deleteStudent({{ $student->id }})" 
-                                        class="action-icon-btn btn-action-delete" 
-                                        title="حذف الطالب 🗑️">
-                                    <i class="fa-solid fa-trash-can"></i>
+                                        class="tbl-btn-icon tbl-btn-del" 
+                                        title="حذف الطالب">
+                                    <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
-                            <i class="fa-solid fa-user-xmark" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
-                            <strong>لا يوجد طلاب مسجلون حالياً في المنظومة.</strong>
+                        <td colspan="7" class="empty-state-cell">
+                            <i class="fa-regular fa-user" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                            <span>لا يوجد طلاب مسجلون حالياً.</span>
                         </td>
                     </tr>
                     @endforelse
 
                     <tr id="noResultsRow" style="display: none;">
-                        <td colspan="7" style="text-align: center; padding: 40px; color: #64748b;">
-                            <i class="fa-solid fa-magnifying-glass" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
-                            <strong>لا توجد نتائج مطابقة لبحثك أو الفلتر المحدد.</strong>
+                        <td colspan="7" class="empty-state-cell">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                            <span>لا توجد نتائج مطابقة لشروط البحث.</span>
                         </td>
                     </tr>
                 </tbody>
@@ -322,495 +318,577 @@
 </div>
 
 <style>
-    /* أنماط صفحة إدارة الطلاب الحديثة ومتناسقة مع نظام المنارة */
-    .students-dashboard-container {
-        max-width: 1440px;
-        margin: 0 auto;
-        padding: 24px 20px 60px;
+    /* =========================================================
+       تصميم نظيف، احترافي، وبسيط 100% بدون أي سكرول أفقي
+       Clean, Minimalist, Monochromatic SaaS Design (Zero Scroll)
+       ========================================================= */
+    .students-dashboard-clean {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
-    /* 1. Header */
-    .dashboard-header-block {
+    /* 1. رأس الصفحة */
+    .page-header-clean {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 24px;
-    }
-
-    .header-titles {
-        display: flex;
-        align-items: center;
         gap: 16px;
+        margin-bottom: 20px;
     }
 
-    .title-emblem {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
-        color: #ffffff;
-        display: grid;
-        place-items: center;
-        font-size: 1.4rem;
-        box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
-    }
-
-    .main-page-title {
-        font-size: 1.5rem;
-        font-weight: 800;
+    .page-title-text {
+        font-size: 1.35rem;
+        font-weight: 700;
         color: #0f172a;
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .count-pill {
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    .page-desc-text {
+        font-size: 0.84rem;
+        color: #64748b;
+        margin: 3px 0 0;
+    }
+
+    .header-actions-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* الأزرار الموحدة */
+    .btn-clean {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+        line-height: 1.4;
+    }
+
+    .btn-primary {
+        background: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+    }
+    .btn-primary:hover {
+        background: #1e293b;
+        color: #ffffff;
+    }
+
+    .btn-outline {
+        background: #ffffff;
+        color: #334155;
+        border-color: #e2e8f0;
+    }
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+
+    .btn-danger-outline {
+        background: #ffffff;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+    .btn-danger-outline:hover {
+        background: #fef2f2;
+        border-color: #fca5a5;
+    }
+
+    /* 2. مؤشرات الأرقام البسيطة (KPIs) */
+    .stats-row-clean {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 900px) {
+        .stats-row-clean {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    .stat-card-clean {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+
+    .stat-card-clean:hover {
+        border-color: #cbd5e1;
+        background: #fafafa;
+    }
+
+    .stat-label {
+        font-size: 0.78rem;
+        color: #64748b;
+        font-weight: 500;
+        display: block;
+        margin-bottom: 6px;
+    }
+
+    .stat-value-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .stat-number {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .stat-icon {
+        font-size: 1rem;
+        color: #94a3b8;
+    }
+
+    .text-emerald { color: #059669 !important; }
+    .text-amber { color: #d97706 !important; }
+
+    /* 3. شريط البحث والفلاتر */
+    .toolbar-clean {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .search-box-clean {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 12px;
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    .search-box-clean input {
+        width: 100%;
+        padding: 8px 36px 8px 32px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        font-size: 0.85rem;
+        color: #0f172a;
+        outline: none;
+        transition: all 0.15s;
+        box-sizing: border-box;
+    }
+
+    .search-box-clean input:focus {
+        background: #ffffff;
+        border-color: #94a3b8;
+    }
+
+    .clear-search {
+        position: absolute;
+        left: 10px;
+        background: none;
+        border: none;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 2px;
+    }
+
+    .filter-pills-clean {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .filter-pill {
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .filter-pill:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    .filter-pill.active {
+        background: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+    }
+
+    /* شريط التحديد الجماعي */
+    .bulk-bar-clean {
+        background: #0f172a;
+        color: #ffffff;
+        border-radius: 8px;
+        padding: 10px 16px;
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 0.85rem;
+    }
+
+    .bulk-info {
         display: flex;
         align-items: center;
         gap: 10px;
     }
 
-    .count-badge {
-        font-size: 0.85rem;
+    .bulk-count-badge {
+        background: #334155;
+        padding: 2px 8px;
+        border-radius: 4px;
         font-weight: 700;
-        background: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #bfdbfe;
-        padding: 2px 10px;
-        border-radius: 20px;
     }
 
-    .main-page-subtitle {
-        font-size: 0.88rem;
-        color: #64748b;
-        margin: 4px 0 0;
-    }
-
-    .btn-add-student {
-        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-        color: #ffffff;
-        text-decoration: none;
-        padding: 11px 22px;
-        border-radius: 12px;
-        font-weight: 700;
-        font-size: 0.92rem;
-        display: inline-flex;
-        align-items: center;
+    .bulk-actions {
+        display: flex;
         gap: 8px;
-        box-shadow: 0 4px 14px rgba(29, 78, 216, 0.28);
-        transition: all 0.2s ease;
     }
 
-    .btn-add-student:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(29, 78, 216, 0.38);
+    .btn-ghost-white {
+        background: rgba(255,255,255,0.12);
         color: #ffffff;
     }
-
-    /* 2. KPI Cards */
-    .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 16px;
-        margin-bottom: 24px;
+    .btn-ghost-white:hover {
+        background: rgba(255,255,255,0.2);
     }
 
-    .kpi-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 16px 20px;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .kpi-card:hover {
-        transform: translateY(-2px);
-        border-color: #cbd5e1;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
-    }
-
-    .kpi-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        font-size: 1.25rem;
-    }
-
-    .kpi-blue { background: #eff6ff; color: #1d4ed8; }
-    .kpi-amber { background: #fffbeb; color: #d97706; }
-    .kpi-emerald { background: #ecfdf5; color: #059669; }
-    .kpi-purple { background: #f5f3ff; color: #7c3aed; }
-
-    .kpi-info {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .kpi-label {
-        font-size: 0.78rem;
-        color: #64748b;
-        font-weight: 600;
-    }
-
-    .kpi-num {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: #0f172a;
-        line-height: 1.2;
-    }
-
-    /* 3. Search & Filter Bar */
-    .filter-search-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-
-    .search-input-box {
-        position: relative;
-        display: flex;
-        align-items: center;
-        width: 100%;
-    }
-
-    .search-input-box i {
-        position: absolute;
-        right: 16px;
-        color: #94a3b8;
-        font-size: 0.95rem;
-    }
-
-    .search-input-box input {
-        width: 100%;
-        padding: 12px 42px 12px 36px;
-        border-radius: 12px;
-        border: 1.5px solid #e2e8f0;
-        font-size: 0.92rem;
-        font-family: inherit;
-        background: #f8fafc;
-        outline: none;
-        transition: all 0.2s;
-    }
-
-    .search-input-box input:focus {
-        background: #ffffff;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-    }
-
-    .search-input-box button {
-        position: absolute;
-        left: 12px;
-        background: none;
-        border: none;
-        color: #94a3b8;
-        cursor: pointer;
-        padding: 4px;
-    }
-
-    .filter-tabs-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-    }
-
-    .filter-tab-btn {
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid transparent;
-        padding: 7px 14px;
-        border-radius: 20px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
-        white-space: nowrap;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
-    }
-
-    .filter-tab-btn:hover {
-        background: #e2e8f0;
-        color: #0f172a;
-    }
-
-    .filter-tab-btn.active {
-        background: #1d4ed8;
+    .btn-danger-solid {
+        background: #dc2626;
         color: #ffffff;
-        box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+    }
+    .btn-danger-solid:hover {
+        background: #b91c1c;
     }
 
-    .dot-amber { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; }
-    .dot-green { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
-
-    /* 4. Table Layout */
-    .table-outer-card {
+    /* 4. الجدول النظيف (Zero Horizontal Scroll) */
+    .table-card-clean {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        border-radius: 10px;
         overflow: hidden;
+        width: 100%;
     }
 
-    .responsive-table-wrapper {
+    .table-container-clean {
         width: 100%;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
 
-    .students-data-table {
+    .data-table-clean {
         width: 100%;
         border-collapse: collapse;
         text-align: right;
     }
 
-    .students-data-table th {
+    .data-table-clean th {
         background: #f8fafc;
         color: #475569;
-        padding: 16px 20px;
-        font-size: 0.82rem;
-        font-weight: 800;
-        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        padding: 10px 12px;
+        border-bottom: 1px solid #e2e8f0;
         white-space: nowrap;
     }
 
-    .students-data-table td {
-        padding: 14px 20px;
+    .data-table-clean td {
+        padding: 10px 12px;
         border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
-        font-size: 0.88rem;
+        font-size: 0.84rem;
+        color: #334155;
     }
 
-    .students-data-table tr.student-row:hover {
-        background: #f8faff;
+    .data-table-clean tr.student-row:hover {
+        background: #fafafa;
     }
 
-    /* Student Profile Cell */
-    .student-profile-cell {
+    .custom-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #0f172a;
+    }
+
+    /* خلية الطالب */
+    .cell-student-info {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
-    .student-avatar-wrap {
-        position: relative;
-        width: 44px;
-        height: 44px;
+    .student-avatar-clean {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        display: grid;
+        place-items: center;
         flex-shrink: 0;
+        overflow: hidden;
     }
 
-    .student-avatar-wrap img {
+    .student-avatar-clean img {
         width: 100%;
         height: 100%;
-        border-radius: 12px;
         object-fit: cover;
-        border: 1px solid #e2e8f0;
     }
 
-    .avatar-dot {
-        position: absolute;
-        bottom: -2px;
-        right: -2px;
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        border: 2px solid #ffffff;
+    .avatar-initials {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
     }
 
-    .avatar-dot.online { background: #10b981; }
-    .avatar-dot.offline { background: #94a3b8; }
-
-    .student-meta-wrap {
+    .student-details-clean {
         display: flex;
         flex-direction: column;
         min-width: 0;
     }
 
-    .student-name-link {
-        font-weight: 800;
+    .student-name {
+        font-weight: 600;
         color: #0f172a;
         text-decoration: none;
-        font-size: 0.94rem;
-        transition: color 0.2s;
+        font-size: 0.86rem;
         white-space: nowrap;
     }
-
-    .student-name-link:hover {
-        color: #1d4ed8;
+    .student-name:hover {
+        color: #2563eb;
     }
 
-    .student-email-sub {
-        font-size: 0.78rem;
-        color: #64748b;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Stage Clean Pill */
-    .stage-cell-wrap {
-        white-space: nowrap;
-    }
-
-    .stage-badge-clean {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .badge-stage-sci { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-    .badge-stage-lit { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
-    .badge-stage-bus { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-    .badge-stage-ind { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
-    .badge-stage-blue { background: #f8fafc; color: #334155; border: 1px solid #e2e8f0; }
-
-    /* NID Badge */
-    .nid-clean-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 5px 10px;
-        border-radius: 8px;
-        color: #475569;
-        font-size: 0.82rem;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .nid-clean-pill code {
-        font-family: 'Plus Jakarta Sans', monospace;
-        letter-spacing: 0.5px;
-    }
-
-    /* Status Badge */
-    .status-clean-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 5px 12px;
-        border-radius: 20px;
-        font-size: 0.78rem;
-        font-weight: 800;
-        white-space: nowrap;
-    }
-
-    .badge-active { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
-    .badge-pending { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-
-    .live-dot-green { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
-    .live-dot-amber { width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; }
-
-    /* Discount Trigger Pill */
-    .discount-trigger-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 0.78rem;
-        font-weight: 800;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-    }
-
-    .discount-trigger-pill:hover {
-        transform: scale(1.04);
-    }
-
-    .discount-full { background: #ecfdf5; color: #059669; border: 1.5px solid #a7f3d0; }
-    .discount-custom { background: #f5f3ff; color: #7c3aed; border: 1.5px solid #ddd6fe; }
-    .discount-none { background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1; }
-
-    /* Actions Row */
-    .actions-container-row {
+    .meta-line {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 7px;
+        gap: 8px;
+        margin-top: 1px;
+    }
+
+    .student-email {
+        font-size: 0.73rem;
+        color: #64748b;
         white-space: nowrap;
     }
 
-    .btn-action-approve {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: #ffffff;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        font-family: inherit;
+    .pwd-snippet {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        color: #94a3b8;
+        font-size: 0.7rem;
         cursor: pointer;
+    }
+    .pwd-snippet:hover {
+        color: #475569;
+    }
+    .pwd-snippet code {
+        font-family: monospace;
+        font-size: 0.72rem;
+    }
+
+    /* شارة الفرع */
+    .branch-tag-clean {
+        display: inline-block;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 2px 7px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .nid-text-clean {
+        font-size: 0.8rem;
+        color: #475569;
+        letter-spacing: 0.3px;
+    }
+
+    /* مؤشر الحالة النظيف */
+    .status-pill {
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-        transition: all 0.2s;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        white-space: nowrap;
     }
 
-    .btn-action-approve:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    .status-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
     }
 
-    .action-icon-btn {
-        width: 35px;
-        height: 35px;
-        border-radius: 9px;
+    .status-active {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+    .status-active .dot { background: #16a34a; }
+
+    .status-pending {
+        background: #fffbeb;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
+    .status-pending .dot { background: #d97706; }
+
+    .status-frozen {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+    .status-frozen .dot { background: #dc2626; }
+
+    /* أزرار الخصم النظيفة */
+    .btn-discount-badge {
+        background: #f1f5f9;
+        color: #0f172a;
+        border: 1px solid #cbd5e1;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+    .btn-discount-badge:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-discount-none {
+        background: transparent;
+        color: #94a3b8;
+        border: none;
+        padding: 0;
+        font-size: 0.75rem;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+    .btn-discount-none:hover {
+        color: #475569;
+    }
+
+    /* أزرار الإجراءات */
+    .actions-cell-clean {
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid transparent;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+    .tbl-btn {
+        background: #0f172a;
+        color: #ffffff;
+        border: none;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .tbl-btn:hover {
+        background: #1e293b;
+    }
+
+    .tbl-btn-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 4px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.76rem;
         cursor: pointer;
         text-decoration: none;
-        font-size: 0.88rem;
-        transition: all 0.2s ease;
+        transition: all 0.15s;
     }
 
-    .action-icon-btn:hover {
-        transform: translateY(-2px);
+    .tbl-btn-icon:hover {
+        background: #f8fafc;
+        color: #0f172a;
+        border-color: #cbd5e1;
     }
 
-    .btn-action-discount { background: #f5f3ff; color: #7c3aed; border-color: #ede9fe; }
-    .btn-action-view { background: #eff6ff; color: #1d4ed8; border-color: #dbeafe; }
-    .btn-action-lock { background: #ecfdf5; color: #059669; border-color: #d1fae5; }
-    .btn-action-unlock { background: #fffbeb; color: #d97706; border-color: #fde68a; }
-    .btn-action-edit { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
-    .btn-action-delete { background: #fef2f2; color: #dc2626; border-color: #fee2e2; }
+    .tbl-btn-del:hover {
+        background: #fef2f2;
+        color: #dc2626;
+        border-color: #fecaca;
+    }
+
+    .empty-state-cell {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+        font-size: 0.86rem;
+    }
 </style>
 
-{{-- سكربتات التفاعل والاعتماد والحذف وإدارة الخصومات --}}
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+{{-- السكربتات التفاعلية --}}
 <script>
-    // 1. فلترة وبحث فوري ذكي
     let currentFilter = 'all';
 
     function setFilterTab(filterKey) {
         currentFilter = filterKey;
-        document.querySelectorAll('.filter-tab-btn').forEach(btn => {
+        document.querySelectorAll('.filter-pill').forEach(btn => {
             if (btn.getAttribute('data-filter') === filterKey) {
                 btn.classList.add('active');
             } else {
@@ -873,16 +951,30 @@
         }
     }
 
-    // 2. اعتماد وتفعيل الطالب الفوري
+    function copyToClipboard(text, msg) {
+        navigator.clipboard.writeText(text);
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: msg || 'تم النسخ',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+    }
+
+    // اعتماد وتفعيل الطالب
     function approveStudentDirect(id, name) {
         Swal.fire({
-            title: 'اعتماد تسجيل ودخول الطالب؟',
-            text: `هل تريد الموافقة على تسجيل دخول واشتراك الطالب (${name}) وفتح صلاحيات المنصة له؟`,
+            title: 'تفعيل حساب الطالب؟',
+            text: `هل تريد اعتماد وتفعيل حساب الطالب (${name})؟`,
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#10b981',
+            confirmButtonColor: '#0f172a',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، موافقة وتفعيل',
+            confirmButtonText: 'نعم، تفعيل',
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -890,42 +982,35 @@
                 .then(res => {
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم التفعيل والاعتماد بنجاح! 🎉',
-                        text: res.data.message || 'تم اعتماد الطالب وتفعيل حسابه واشتراكه.',
-                        timer: 1600,
+                        title: 'تم التفعيل بنجاح',
+                        timer: 1400,
                         showConfirmButton: false
                     }).then(() => location.reload());
                 })
-                .catch(err => Swal.fire('خطأ', 'فشلت عملية الاعتماد، يرجى المحاولة ثانية', 'error'));
+                .catch(err => Swal.fire('خطأ', 'فشلت عملية الاعتماد', 'error'));
             }
         });
     }
 
-    // 3. تجميد أو إعادة تفعيل الحساب مع حفظ سبب التجميد (freeze_reason)
+    // تجميد أو إلغاء تجميد الحساب
     function performToggle(id, currentStatus, studentName) {
         if (currentStatus === 'active') {
             Swal.fire({
-                title: `تجميد حساب (${studentName}) 🔒`,
-                text: 'يرجى اختيار أو كتابة سبب تجميد الحساب:',
+                title: `تجميد حساب (${studentName})`,
+                text: 'يرجى اختيار أو كتابة سبب التجميد:',
                 input: 'select',
                 inputOptions: {
-                    'عدم سداد الرسوم الدراسية': '💳 عدم سداد الرسوم الدراسية',
-                    'مخالفة الشروط والضوابط الأكاديمية': '⚠️ مخالفة الشروط والضوابط الأكاديمية',
-                    'طلب ولي الأمر إيقاف الحساب مؤقتاً': '👨‍👩‍👦 بطلب من ولي الأمر',
-                    'أخرى': '📝 سبب آخر (كتابة يدوية)'
+                    'عدم سداد الرسوم الدراسية': 'عدم سداد الرسوم الدراسية',
+                    'مخالفة الشروط والضوابط الأكاديمية': 'مخالفة الضوابط الأكاديمية',
+                    'طلب ولي الأمر': 'طلب ولي الأمر',
+                    'أخرى': 'سبب آخر (كتابة)'
                 },
-                inputPlaceholder: 'اختر سبب التجميد...',
+                inputPlaceholder: 'اختر السبب...',
                 showCancelButton: true,
-                confirmButtonText: 'متابعة وتجميد',
+                confirmButtonText: 'تجميد الحساب',
                 cancelButtonText: 'إلغاء',
                 confirmButtonColor: '#dc2626',
-                preConfirm: (choice) => {
-                    if (!choice) {
-                        Swal.showValidationMessage('يرجى اختيار سبب التجميد');
-                        return false;
-                    }
-                    return choice;
-                }
+                preConfirm: (choice) => choice || false
             }).then((result) => {
                 if (result.isConfirmed) {
                     let reason = result.value;
@@ -933,16 +1018,13 @@
                         Swal.fire({
                             title: 'اكتب سبب التجميد:',
                             input: 'text',
-                            inputPlaceholder: 'اكتب السبب هنا بالتفصيل...',
                             showCancelButton: true,
                             confirmButtonText: 'تأكيد التجميد',
                             cancelButtonText: 'إلغاء',
                             confirmButtonColor: '#dc2626',
-                            preConfirm: (custom) => custom ? custom.trim() : 'إيقاف إداري'
-                        }).then((subRes) => {
-                            if (subRes.isConfirmed) {
-                                executeToggleStatus(id, subRes.value || 'إيقاف إداري');
-                            }
+                            preConfirm: (val) => val ? val.trim() : 'إيقاف إداري'
+                        }).then((sub) => {
+                            if (sub.isConfirmed) executeToggleStatus(id, sub.value || 'إيقاف إداري');
                         });
                     } else {
                         executeToggleStatus(id, reason);
@@ -952,16 +1034,14 @@
         } else {
             Swal.fire({
                 title: 'تأكيد التفعيل',
-                text: `هل تريد إلغاء التجميد وتفعيل حساب (${studentName}) فورياً؟`,
+                text: `هل تريد إلغاء التجميد وتفعيل حساب (${studentName})؟`,
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'نعم، تفعيل الحساب',
+                confirmButtonText: 'تفعيل الحساب',
                 cancelButtonText: 'إلغاء',
-                confirmButtonColor: '#10b981'
+                confirmButtonColor: '#0f172a'
             }).then((result) => {
-                if (result.isConfirmed) {
-                    executeToggleStatus(id, null);
-                }
+                if (result.isConfirmed) executeToggleStatus(id, null);
             });
         }
     }
@@ -972,46 +1052,23 @@
             Swal.fire({
                 icon: 'success',
                 title: 'تم التحديث بنجاح',
-                text: reason ? `تم تجميد الحساب (السبب: ${reason})` : 'تم تفعيل الحساب بنجاح',
-                timer: 1600,
+                timer: 1400,
                 showConfirmButton: false
             }).then(() => location.reload());
         })
         .catch(err => Swal.fire('خطأ', 'فشل تعديل حالة الحساب', 'error'));
     }
 
-    // كشف كلمة مرور الطالب plain_password
-    function revealStudentPassword(name, pwd) {
-        if (!pwd) {
-            Swal.fire({
-                icon: 'info',
-                title: `كلمة مرور الطالب (${name})`,
-                text: 'كلمة المرور مشفرة بالنظام لأمان الحساب، أو تم إنشاؤه بحساب قديم. يمكنك تعيين كلمة جديدة من شاشة التعديل.'
-            });
-            return;
-        }
-        Swal.fire({
-            title: `كلمة مرور (${name}) 🔑`,
-            html: `
-                <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-top: 10px;">
-                    <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 6px;">كلمة المرور الحالية المعتمدة:</span>
-                    <code style="font-size: 1.4rem; font-weight: 900; color: #1e1b4b; letter-spacing: 2px; font-family: monospace;">${pwd}</code>
-                </div>
-            `,
-            confirmButtonText: 'تمت المشاهدة'
-        });
-    }
-
-    // 4. حذف الطالب
+    // حذف طالب فردي
     function deleteStudent(id) {
         Swal.fire({
-            title: 'هل أنت متأكد من حذف الطالب؟',
-            text: "سيتم حذف حساب الطالب وكافة بياناته نهائياً!",
+            title: 'هل أنت متأكد من الحذف؟',
+            text: "سيتم حذف حساب الطالب وبياناته نهائياً.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
+            confirmButtonColor: '#dc2626',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، احذف نهائياً',
+            confirmButtonText: 'نعم، احذف',
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -1020,16 +1077,16 @@
                     const row = document.getElementById(`row_${id}`);
                     if (row) {
                         row.style.opacity = '0';
-                        setTimeout(() => row.remove(), 400);
+                        setTimeout(() => row.remove(), 300);
                     }
-                    Swal.fire('تم الحذف!', 'تمت إزالة حساب الطالب بنجاح', 'success');
+                    Swal.fire('تم الحذف', 'تمت إزالة حساب الطالب بنجاح', 'success');
                 })
                 .catch(err => Swal.fire('خطأ', 'فشلت عملية الحذف', 'error'));
             }
         });
     }
 
-    // 4.1 إدارة التحديد الجماعي وحذف الطلاب المحددين
+    // تحديد جماعي وحذف
     function toggleSelectAllStudents(master) {
         const checkboxes = document.querySelectorAll('.student-row-checkbox');
         checkboxes.forEach(cb => {
@@ -1066,14 +1123,11 @@
         const checked = document.querySelectorAll('.student-row-checkbox:checked');
         const ids = Array.from(checked).map(cb => cb.value);
 
-        if (ids.length === 0) {
-            Swal.fire('تنبيه', 'لم يتم تحديد أي طالب للحذف', 'warning');
-            return;
-        }
+        if (ids.length === 0) return;
 
         Swal.fire({
-            title: `حذف (${ids.length}) طالب محدد؟ ⚠️`,
-            text: 'سيتم حذف حسابات وسجلات واشتراكات هؤلاء الطلاب نهائياً ولا يمكن التراجع عن ذلك!',
+            title: `حذف (${ids.length}) طالب محدد؟`,
+            text: 'سيتم حذف حسابات الطلاب المحددين نهائياً ولا يمكن التراجع.',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonText: `نعم، احذف (${ids.length}) طالب`,
@@ -1081,78 +1135,53 @@
             confirmButtonColor: '#dc2626'
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'جاري الحذف...',
-                    text: 'يرجى الانتظار لحين معالجة البيانات',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
+                Swal.fire({ title: 'جاري الحذف...', didOpen: () => Swal.showLoading() });
                 axios.post("{{ route('admin.students.bulkDelete') }}", { ids: ids })
                 .then(res => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'تم الحذف الجماعي بنجاح ✅',
-                        text: res.data.message
-                    }).then(() => location.reload());
+                    Swal.fire('تم الحذف', res.data.message, 'success')
+                    .then(() => location.reload());
                 })
-                .catch(err => {
-                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء الحذف', 'error');
-                });
+                .catch(err => Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء الحذف', 'error'));
             }
         });
     }
 
-    // 4.2 حذف جميع الطلاب دفعة واحدة (Purge All Students)
+    // تصفير جميع الطلاب
     function confirmPurgeAllStudents() {
         Swal.fire({
-            title: 'حذف جميع الطلاب دفعة واحدة ⚠️',
+            title: 'تصفير وحذف جميع الطلاب؟',
             html: `
-                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
-                    <strong>تحذير أمني شديد:</strong><br>
-                    أنت على وشك حذف <strong>كافة طلاب المنصة وسجلاتهم واشتراكاتهم وامتحاناتهم كاملة بنسبة 100%</strong>.<br>
-                    هذه الخطوة لا يمكن التراجع عنها مطلقاً.
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #991b1b; text-align: right; margin-bottom: 12px;">
+                    أنت على وشك حذف <strong>كافة الطلاب وسجلاتهم بالكامل</strong>. للتأكيد اكتب: <strong>تأكيد الحذف</strong>
                 </div>
-                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، يرجى كتابة العبارة الآتية بدقة:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
             `,
             input: 'text',
             inputPlaceholder: 'اكتب هنا: تأكيد الحذف',
             showCancelButton: true,
-            confirmButtonText: 'تأكيد وحذف جميع الطلاب الآن 🗑️',
-            cancelButtonText: 'تراجع وإلغاء',
+            confirmButtonText: 'تأكيد وحذف الكل',
+            cancelButtonText: 'إلغاء',
             confirmButtonColor: '#dc2626',
-            preConfirm: (inputVal) => {
-                if (inputVal !== 'تأكيد الحذف' && inputVal !== 'DELETE') {
-                    Swal.showValidationMessage('العبارة غير متطابقة! يرجى كتابة (تأكيد الحذف)');
+            preConfirm: (val) => {
+                if (val !== 'تأكيد الحذف' && val !== 'DELETE') {
+                    Swal.showValidationMessage('يرجى كتابة (تأكيد الحذف) بدقة');
                     return false;
                 }
-                return inputVal;
+                return val;
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                Swal.fire({
-                    title: 'جاري تصفير وحذف جميع الطلاب...',
-                    text: 'يرجى الانتظار بضع ثوانٍ لإتمام تفريغ السجلات واشتراكات المواد',
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
+                Swal.fire({ title: 'جاري المعالجة...', didOpen: () => Swal.showLoading() });
                 axios.post("{{ route('admin.students.purgeAll') }}", { confirm_text: result.value })
                 .then(res => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'تم تصفير وحذف جميع الطلاب بنجاح 🎉',
-                        text: res.data.message
-                    }).then(() => location.reload());
+                    Swal.fire('تم التصفير', res.data.message, 'success')
+                    .then(() => location.reload());
                 })
-                .catch(err => {
-                    Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء تصفير الطلاب', 'error');
-                });
+                .catch(err => Swal.fire('خطأ', err.response?.data?.message || 'فشلت عملية التصفير', 'error'));
             }
         });
     }
 
-    // 5. إدارة المنح والخصومات (Discount Modal)
+    // مودال المنح والخصومات
     let currentDiscountStudentId = null;
 
     function openDiscountModal(id, name, percent, fixed, notes) {
@@ -1169,14 +1198,12 @@
             document.getElementById('discountValue').value = percent > 0 ? percent : '';
         }
 
-        const overlay = document.getElementById('discountModalOverlay');
-        overlay.style.display = 'flex';
+        document.getElementById('discountModalOverlay').style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
 
     function closeDiscountModal() {
-        const overlay = document.getElementById('discountModalOverlay');
-        overlay.style.display = 'none';
+        document.getElementById('discountModalOverlay').style.display = 'none';
         document.body.style.overflow = '';
         currentDiscountStudentId = null;
     }
@@ -1188,24 +1215,24 @@
         const unitLabel = document.getElementById('discountUnitLabel');
 
         if (type === 'percent') {
-            btnPercent.style.background = '#7c3aed';
+            btnPercent.style.background = '#0f172a';
             btnPercent.style.color = '#ffffff';
-            btnPercent.style.borderColor = '#7c3aed';
+            btnPercent.style.borderColor = '#0f172a';
             btnFixed.style.background = '#ffffff';
-            btnFixed.style.color = '#64748b';
-            btnFixed.style.borderColor = '#cbd5e1';
-            unitLabel.innerText = '% (نسبة مئوية)';
-            document.getElementById('discountValue').placeholder = 'مثال: 25 أو 50 أو 100';
+            btnFixed.style.color = '#475569';
+            btnFixed.style.borderColor = '#e2e8f0';
+            unitLabel.innerText = '% نسبة مئوية';
+            document.getElementById('discountValue').placeholder = '25 أو 50 أو 100';
             document.getElementById('discountValue').max = '100';
         } else {
-            btnFixed.style.background = '#7c3aed';
+            btnFixed.style.background = '#0f172a';
             btnFixed.style.color = '#ffffff';
-            btnFixed.style.borderColor = '#7c3aed';
+            btnFixed.style.borderColor = '#0f172a';
             btnPercent.style.background = '#ffffff';
-            btnPercent.style.color = '#64748b';
-            btnPercent.style.borderColor = '#cbd5e1';
-            unitLabel.innerText = '₪ (شيكل فلسطيني)';
-            document.getElementById('discountValue').placeholder = 'مثال: 50 أو 100';
+            btnPercent.style.color = '#475569';
+            btnPercent.style.borderColor = '#e2e8f0';
+            unitLabel.innerText = '₪ شيكل';
+            document.getElementById('discountValue').placeholder = '50 أو 100';
             document.getElementById('discountValue').removeAttribute('max');
         }
     }
@@ -1213,11 +1240,7 @@
     function setQuickDiscount(percent, notes) {
         setDiscountType('percent');
         document.getElementById('discountValue').value = percent;
-        if (notes) {
-            document.getElementById('discountNotes').value = notes;
-        } else if (percent === 0) {
-            document.getElementById('discountNotes').value = '';
-        }
+        document.getElementById('discountNotes').value = notes || '';
     }
 
     function handleDiscountSubmit(event) {
@@ -1240,29 +1263,27 @@
         })
         .then(res => {
             const data = res.data;
-            Swal.fire({
-                icon: data.icon || 'success',
-                title: data.title || 'تم تحديث الخصم',
-                text: data.message || '',
-                timer: 1800,
-                showConfirmButton: false
-            });
-
-            // تحديث الشارة بالجدول فورياً
-            const badge = document.getElementById(`discount_badge_${currentDiscountStudentId}`);
-            const badgeText = document.getElementById(`badge_text_${currentDiscountStudentId}`);
-            if (badge && badgeText) {
-                badgeText.innerText = data.discount_label;
-                badge.className = 'discount-trigger-pill ' + (data.has_discount ? (data.percent >= 100 ? 'discount-full' : 'discount-custom') : 'discount-none');
-                badge.querySelector('span:first-child').innerText = data.has_discount ? (data.percent >= 100 ? '✨' : '🏷️') : '➕';
-                badge.setAttribute('onclick', `openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', ${data.percent || 0}, ${data.fixed || 0}, '${(data.notes || '').replace(/'/g, "\\'")}')`);
+            const container = document.getElementById(`discount_badge_${currentDiscountStudentId}`);
+            if (container) {
+                if (data.has_discount) {
+                    container.innerHTML = `<button type="button" onclick="openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', ${data.percent || 0}, ${data.fixed || 0}, '${(data.notes || '').replace(/'/g, "\\'")}')" class="btn-discount-badge"><span id="badge_text_${currentDiscountStudentId}">${data.discount_label}</span></button>`;
+                } else {
+                    container.innerHTML = `<button type="button" onclick="openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', 0, 0, '')" class="btn-discount-none"><span id="badge_text_${currentDiscountStudentId}">بدون خصم</span></button>`;
+                }
             }
 
             closeDiscountModal();
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: data.message || 'تم تحديث الخصم بنجاح',
+                showConfirmButton: false,
+                timer: 1500
+            });
         })
         .catch(err => {
-            const msg = (err.response && err.response.data && err.response.data.title) ? err.response.data.title : 'فشل حفظ الخصم، يرجى المحاولة ثانية';
-            Swal.fire('خطأ', msg, 'error');
+            Swal.fire('خطأ', 'فشل حفظ الخصم', 'error');
         })
         .finally(() => {
             btn.disabled = false;
@@ -1271,75 +1292,64 @@
     }
 </script>
 
-{{-- النافذة المنبثقة للخصومات (Modal) --}}
-<div id="discountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
-    <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: modalIn 0.25s ease-out;">
-        
-        <div style="padding: 20px 24px; background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 42px; height: 42px; border-radius: 12px; background: rgba(255,255,255,0.18); display: grid; place-items: center; font-size: 1.3rem;">
-                    🏷️
-                </div>
-                <div>
-                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">تحديد خصم أو منحة للطالب</h3>
-                    <span id="discountStudentName" style="font-size: 0.85rem; color: #c7d2fe; font-weight: 700;">اسم الطالب</span>
-                </div>
+{{-- مودال الخصم النظيف البسيط --}}
+<div id="discountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 9999; justify-content: center; align-items: center; padding: 16px;" dir="rtl">
+    <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h3 style="font-size: 0.98rem; font-weight: 700; margin: 0; color: #0f172a;">الخصم أو المنحة</h3>
+                <span id="discountStudentName" style="font-size: 0.78rem; color: #64748b;">اسم الطالب</span>
             </div>
-            <button type="button" onclick="closeDiscountModal()" style="background: rgba(255,255,255,0.15); border: none; color: white; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: grid; place-items: center;">✕</button>
+            <button type="button" onclick="closeDiscountModal()" style="background: none; border: none; font-size: 1.1rem; color: #94a3b8; cursor: pointer;">&times;</button>
         </div>
 
-        <form id="discountForm" onsubmit="handleDiscountSubmit(event)" style="padding: 24px;">
+        <form id="discountForm" onsubmit="handleDiscountSubmit(event)" style="padding: 18px;">
             <input type="hidden" id="discountStudentId" value="">
             <input type="hidden" id="discountType" value="percent">
 
-            <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 8px;">نوع الخصم المعتمد:</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button type="button" id="typeBtnPercent" onclick="setDiscountType('percent')" style="padding: 10px; border-radius: 12px; border: 2px solid #7c3aed; background: #7c3aed; color: white; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s;">
+            <div style="margin-bottom: 14px;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 6px;">نوع الخصم:</label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <button type="button" id="typeBtnPercent" onclick="setDiscountType('percent')" style="padding: 8px; border-radius: 6px; border: 1px solid #0f172a; background: #0f172a; color: #ffffff; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
                         نسبة مئوية (%)
                     </button>
-                    <button type="button" id="typeBtnFixed" onclick="setDiscountType('fixed')" style="padding: 10px; border-radius: 12px; border: 2px solid #cbd5e1; background: white; color: #64748b; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s;">
-                        مبلغ نقدي ثابت (₪)
+                    <button type="button" id="typeBtnFixed" onclick="setDiscountType('fixed')" style="padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
+                        مبلغ ثابت (₪)
                     </button>
                 </div>
             </div>
 
-            <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 6px;">خيارات سريعة بنقرة واحدة:</label>
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button type="button" onclick="setQuickDiscount(15, 'خصم تشجيعي')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">15% تشجيعي</button>
-                    <button type="button" onclick="setQuickDiscount(25, 'منحة تفوق دراسي')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">25% تفوق</button>
-                    <button type="button" onclick="setQuickDiscount(50, 'نصف منحة دراسية')" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">50% نصف منحة</button>
-                    <button type="button" onclick="setQuickDiscount(100, 'إعفاء كامل - منحة شاملة 100%')" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">✨ إعفاء كامل 100%</button>
-                    <button type="button" onclick="setQuickDiscount(0, '')" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">❌ إلغاء الخصم</button>
+            <div style="margin-bottom: 14px;">
+                <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <button type="button" onclick="setQuickDiscount(25, 'منحة تفوق')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">25% تفوق</button>
+                    <button type="button" onclick="setQuickDiscount(50, 'نصف منحة')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">50% نصف منحة</button>
+                    <button type="button" onclick="setQuickDiscount(100, 'إعفاء كامل 100%')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;">100% إعفاء كامل</button>
+                    <button type="button" onclick="setQuickDiscount(0, '')" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">إلغاء الخصم</button>
                 </div>
             </div>
 
-            <div style="margin-bottom: 18px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155;">قيمة الخصم:</label>
-                    <span id="discountUnitLabel" style="font-size: 0.75rem; color: #7c3aed; font-weight: 700;">% (نسبة مئوية)</span>
+            <div style="margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: #334155;">قيمة الخصم:</label>
+                    <span id="discountUnitLabel" style="font-size: 0.72rem; color: #64748b;">% نسبة مئوية</span>
                 </div>
-                <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="مثال: 25 أو 50" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 1.05rem; font-weight: 800; font-family: monospace; outline: none; transition: 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#cbd5e1'">
+                <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="مثال: 25 أو 50" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem; font-family: monospace; outline: none; box-sizing: border-box;">
             </div>
 
-            <div style="margin-bottom: 22px;">
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">سبب الخصم أو ملاحظات المنحة (اختياري):</label>
-                <input type="text" id="discountNotes" placeholder="مثال: منحة تفوق توجيهي / إعفاء خاص" style="width: 100%; padding: 10px 14px; border-radius: 12px; border: 1.5px solid #cbd5e1; font-size: 0.85rem; outline: none; transition: 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#cbd5e1'">
-                <small style="color: #64748b; font-size: 0.73rem; display: block; margin-top: 4px;">سيظهر هذا السبب للطالب في إشعاراته وتفاصيل حسابه.</small>
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 4px;">بيان الخصم (اختياري):</label>
+                <input type="text" id="discountNotes" placeholder="مثال: منحة تفوق دراسي" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.82rem; outline: none; box-sizing: border-box;">
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <button type="submit" id="btnSaveDiscount" style="flex: 1; background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); color: white; border: none; padding: 13px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(29, 78, 216, 0.3);">
-                    <span>اعتماد وتطبيق الخصم</span>
-                    <i class="fa-solid fa-check"></i>
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" id="btnSaveDiscount" class="btn-clean btn-primary" style="flex: 1; justify-content: center;">
+                    حفظ التحديث
                 </button>
-                <button type="button" onclick="closeDiscountModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 13px 20px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer;">
+                <button type="button" onclick="closeDiscountModal()" class="btn-clean btn-outline">
                     إلغاء
                 </button>
             </div>
         </form>
     </div>
 </div>
-
 @endsection

@@ -368,84 +368,85 @@
 
     /* Header */
     .matrix-header-card {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        border-radius: 20px;
-        padding: 24px 26px;
-        color: #fff;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        color: #0f172a;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 20px;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.15);
     }
     .badge-tag {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        padding: 4px 10px;
-        border-radius: 20px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 3px 10px;
+        border-radius: 12px;
         font-size: 0.78rem;
-        color: #94a3b8;
+        color: #475569;
         margin-bottom: 6px;
+        font-weight: 600;
     }
     .page-title {
-        font-size: 1.45rem;
-        font-weight: 800;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
         margin: 0 0 4px;
     }
     .page-subtitle {
         margin: 0;
-        color: #cbd5e1;
-        font-size: 0.88rem;
+        color: #64748b;
+        font-size: 0.85rem;
     }
     .year-form {
         display: flex;
         align-items: center;
         gap: 8px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.15);
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         padding: 6px 12px;
-        border-radius: 10px;
+        border-radius: 8px;
     }
-    .year-form label { font-size: 0.82rem; color: #cbd5e1; }
-    .year-select { background: transparent; border: none; color: #fff; font-weight: 800; outline: none; cursor: pointer; }
-    .year-select option { background: #1e293b; color: #fff; }
+    .year-form label { font-size: 0.82rem; color: #475569; font-weight: 600; }
+    .year-select { background: transparent; border: none; color: #0f172a; font-weight: 700; outline: none; cursor: pointer; }
+    .year-select option { background: #ffffff; color: #0f172a; }
 
     /* KPI Cards */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 14px;
+        gap: 12px;
         margin-bottom: 20px;
     }
     .kpi-card {
-        background: #fff;
+        background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 16px 18px;
+        border-radius: 10px;
+        padding: 14px 16px;
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
     }
     .kpi-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
         display: grid;
         place-items: center;
-        font-size: 1.4rem;
+        font-size: 1.1rem;
         flex-shrink: 0;
     }
-    .kpi-card.green .kpi-icon { background: #ecfdf5; color: #059669; }
-    .kpi-card.red .kpi-icon { background: #fef2f2; color: #dc2626; }
-    .kpi-card.amber .kpi-icon { background: #fffbeb; color: #d97706; }
-    .kpi-card.blue .kpi-icon { background: #f0f9ff; color: #0284c7; }
-    .kpi-label { font-size: 0.78rem; color: #64748b; font-weight: 700; display: block; margin-bottom: 2px; }
-    .kpi-num { font-size: 1.35rem; font-weight: 900; color: #0f172a; margin: 0 0 2px; }
+    .kpi-label { font-size: 0.78rem; color: #64748b; font-weight: 500; display: block; margin-bottom: 2px; }
+    .kpi-num { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 0 0 2px; }
     .kpi-desc { font-size: 0.72rem; color: #94a3b8; }
 
     /* Filter Box */

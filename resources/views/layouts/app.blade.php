@@ -113,10 +113,18 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html {
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
         body {
             background-color: var(--ed-bg);
             color: var(--ed-text-body);
             min-height: 100vh;
+            width: 100%;
+            max-width: 100vw;
             overflow-x: hidden;
             display: flex;
             line-height: 1.6;
