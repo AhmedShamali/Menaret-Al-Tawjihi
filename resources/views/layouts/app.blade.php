@@ -149,11 +149,11 @@
 
         .side-brand {
             height: var(--topbar-height);
-            padding: 0 20px;
+            padding: 0 16px;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid var(--ed-border);
-            background: var(--ed-surface);
+            border-bottom: 3px solid #f59e0b;
+            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
         }
 
         .brand-logo {
@@ -161,7 +161,7 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: var(--ed-text-main);
+            color: #ffffff;
             font-weight: 700;
             font-size: 1.05rem;
         }
@@ -169,13 +169,15 @@
         .logo-square {
             width: 38px;
             height: 38px;
-            background: var(--ed-primary);
-            color: #ffffff;
-            border-radius: 10px;
+            background: #ffffff;
+            color: #1e3a8a;
+            border: 2px solid #f59e0b;
+            border-radius: 8px;
             display: grid;
             place-items: center;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 800;
+            flex-shrink: 0;
         }
 
         .menu-wrapper {
@@ -575,6 +577,12 @@
             }
         }
 
+        @media (max-width: 640px) {
+            .supervisor-top-tag {
+                display: none !important;
+            }
+        }
+
         @media (max-width: 480px) {
             .user-info-text {
                 display: none;
@@ -594,9 +602,12 @@
                 @if(\App\Models\Setting::get('site_logo'))
                     <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 38px; max-width: 44px; object-fit: contain; border-radius: 6px;">
                 @else
-                    <div class="logo-square">{{ mb_substr(\App\Models\Setting::get('site_name', 'منارة التوجيهي'), 0, 1) }}</div>
+                    <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
-                <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
+                <div style="display: flex; flex-direction: column;">
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #ffffff; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
+                    <small style="font-size: 0.68rem; color: #fef08a; font-weight: 700;">بوابة الثانوية العامة</small>
+                </div>
             </a>
         </div>
 
@@ -774,8 +785,11 @@
                 <button class="mobile-toggle" id="btnToggleSidebar" aria-label="فتح القائمة">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <div class="date-info" style="color: var(--ed-text-muted); font-weight: 500; font-size: 0.84rem; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-regular fa-calendar" style="color: var(--ed-primary);"></i> {{ date('Y/m/d') }}
+                <div class="date-info" style="color: var(--ed-text-muted); font-weight: 600; font-size: 0.84rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-regular fa-calendar-check" style="color: var(--ed-primary);"></i> {{ date('Y/m/d') }} م
+                </div>
+                <div class="supervisor-top-tag" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">
+                    <i class="fa-solid fa-user-tie"></i> المشرف العام: أ. أحمد حسين شمالي
                 </div>
             </div>
 

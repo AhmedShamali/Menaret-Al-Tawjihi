@@ -69,9 +69,9 @@
         /* الجانب الأيمن (المرئي والإلهامي) */
         .auth-visual-side {
             flex: 1.1;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 27, 75, 0.9) 100%),
-                        url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070') center/cover no-repeat;
-            padding: 60px 8%;
+            background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #1e40af 100%);
+            border-left: 4px solid #f59e0b;
+            padding: 50px 8%;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -87,7 +87,7 @@
             right: -80px;
             width: 350px;
             height: 350px;
-            background: radial-gradient(circle, rgba(37, 99, 235, 0.4) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
@@ -95,22 +95,24 @@
         .brand-logo-badge {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             text-decoration: none;
             color: white;
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 800;
         }
         .brand-icon-box {
             width: 46px;
             height: 46px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #2563eb, #6366f1);
+            border-radius: 12px;
+            background: #ffffff;
+            color: #1e3a8a;
+            border: 2px solid #f59e0b;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+            font-size: 1.3rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .visual-center-content {
@@ -573,9 +575,9 @@
             @if(\App\Models\Setting::get('site_logo'))
                 <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 44px; max-width: 50px; object-fit: contain; border-radius: 8px;">
             @else
-                <div class="brand-icon-box">🇵🇸</div>
+                <div class="brand-icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
             @endif
-            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
+            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
         </a>
 
         <div class="visual-center-content">
@@ -605,9 +607,14 @@
             </div>
         </div>
 
-        <div class="visual-footer">
-            <i class="fas fa-shield-alt"></i>
-            <span>بياناتك الأكاديمية محمية ومؤمنة بأعلى معايير الخصوصية.</span>
+        <div class="visual-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-shield-alt"></i>
+                <span>بياناتك الأكاديمية محمية ومؤمنة بأعلى معايير الخصوصية.</span>
+            </div>
+            <div style="color: #fef08a; font-weight: 700; font-size: 0.82rem;">
+                المشرف العام: أ. أحمد حسين شمالي
+            </div>
         </div>
     </div>
 

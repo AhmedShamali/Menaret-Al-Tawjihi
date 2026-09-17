@@ -379,19 +379,21 @@
         flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 20px;
+        border-right: 5px solid var(--ed-primary, #1d4ed8);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .badge-tag {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        padding: 3px 10px;
-        border-radius: 12px;
-        font-size: 0.78rem;
-        color: #475569;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: #1e40af;
         margin-bottom: 6px;
-        font-weight: 600;
+        font-weight: 700;
     }
     .page-title {
         font-size: 1.35rem;
@@ -488,14 +490,18 @@
         cursor: pointer;
     }
     .btn-filter-submit {
-        background: #0284c7;
+        background: var(--ed-primary, #1d4ed8);
         color: #fff;
         border: none;
-        padding: 8px 16px;
-        border-radius: 10px;
+        padding: 8px 18px;
+        border-radius: 8px;
         font-weight: 700;
         font-size: 0.85rem;
         cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-filter-submit:hover {
+        background: #1e40af;
     }
     .btn-reset-filter { color: #ef4444; font-size: 0.82rem; font-weight: 700; text-decoration: none; }
     .legend-strip {
@@ -520,7 +526,7 @@
     .students-list-wrapper {
         background: #fff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
+        border-radius: 12px;
         padding: 20px;
         width: 100%;
         box-sizing: border-box;
@@ -530,11 +536,12 @@
         grid-template-columns: 230px minmax(0, 1fr) 110px;
         gap: 14px;
         padding: 10px 16px;
-        background: #f8fafc;
-        border-radius: 12px;
-        font-size: 0.8rem;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+        border-bottom: 2px solid #f59e0b;
+        border-radius: 8px;
+        font-size: 0.82rem;
         font-weight: 800;
-        color: #475569;
+        color: #ffffff;
         margin-bottom: 12px;
     }
     .col-head-student { text-align: right; }
