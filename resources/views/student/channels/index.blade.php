@@ -107,7 +107,7 @@
                 <div>
                     <strong>{{ __('Need Technical Help?') }}</strong>
                     <p>{{ __('Contact platform academic support if you face difficulties joining.') }}</p>
-                    <a href="{{ route('student.support.index') }}" class="ed-btn-support">
+                    <a href="{{ route('student.support') }}" class="ed-btn-support">
                         {{ __('Open Support Ticket') }}
                     </a>
                 </div>
