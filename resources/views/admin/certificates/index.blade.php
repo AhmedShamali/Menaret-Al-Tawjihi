@@ -303,7 +303,6 @@
 <style>
     .ed-admin-container {
         padding: 24px 32px 60px;
-        direction: rtl;
         font-family: 'Alexandria', 'Tajawal', sans-serif;
     }
 

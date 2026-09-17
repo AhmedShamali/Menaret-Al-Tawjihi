@@ -9,14 +9,14 @@
         <div class="header-text-block">
             <div class="subs-badge">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>منصة منارة التوجيهي | اشتراكات الطالب الأكاديمية</span>
+                <span>{{ __('Academic Student Subscriptions') }}</span>
             </div>
-            <h1 class="subs-title">سجل ومسير اشتراكاتي الشهرية ({{ $year }})</h1>
-            <p class="subs-subtitle">مرحباً بك يا <strong>{{ $student->name_ar }}</strong>! تابع حالة اشتراكك وأقساطك الشهرية على مدار كامل السنة الدراسية.</p>
+            <h1 class="subs-title">{{ __('Monthly Subscriptions Record') }} ({{ $year }})</h1>
+            <p class="subs-subtitle">{{ __('Welcome, :name! Track your subscription status and monthly installments throughout the academic year.', ['name' => $student->name_ar ?? $student->name]) }}</p>
         </div>
         <div class="header-action-block">
             <a href="{{ route('student.pendingPayment.submit') }}" class="btn-pay-new-month">
-                <i class="fa-solid fa-receipt"></i> إرسال إشعار سداد قسط جديد
+                <i class="fa-solid fa-receipt"></i> {{ __('Submit New Payment Notice') }}
             </a>
         </div>
     </div>
@@ -26,36 +26,36 @@
         <div class="student-sum-card green">
             <div class="sum-icon"><i class="fa-solid fa-circle-check"></i></div>
             <div class="sum-text">
-                <span class="sum-label">الأشهر المسددة</span>
-                <h3 class="sum-val font-mono">{{ $paidCount }} <small class="text-xs">/ 12 شهراً</small></h3>
-                <span class="sum-sub">اشتراك فعال ومعتمد في المواد</span>
+                <span class="sum-label">{{ __('Paid Months') }}</span>
+                <h3 class="sum-val font-mono">{{ $paidCount }} <small class="text-xs">/ 12 {{ __('months') }}</small></h3>
+                <span class="sum-sub">{{ __('Active and approved enrollment in subjects') }}</span>
             </div>
         </div>
 
         <div class="student-sum-card blue">
             <div class="sum-icon"><i class="fa-solid fa-wallet"></i></div>
             <div class="sum-text">
-                <span class="sum-label">إجمالي ما تم سداده</span>
+                <span class="sum-label">{{ __('Total Paid Amount') }}</span>
                 <h3 class="sum-val font-mono">{{ number_format($totalPaidAmount, 2) }} ₪</h3>
-                <span class="sum-sub">دفعات رسمية موثقة في المنصة</span>
+                <span class="sum-sub">{{ __('Officially verified payments') }}</span>
             </div>
         </div>
 
         <div class="student-sum-card amber">
             <div class="sum-icon"><i class="fa-solid fa-hourglass-half"></i></div>
             <div class="sum-text">
-                <span class="sum-label">قيد المطابقة والاعتماد</span>
-                <h3 class="sum-val font-mono">{{ $pendingCount }} <small class="text-xs">شهر</small></h3>
-                <span class="sum-sub">بانتظار مراجعة الإدارة والمشرف</span>
+                <span class="sum-label">{{ __('Under Verification') }}</span>
+                <h3 class="sum-val font-mono">{{ $pendingCount }} <small class="text-xs">{{ __('month') }}</small></h3>
+                <span class="sum-sub">{{ __('Awaiting supervisor verification') }}</span>
             </div>
         </div>
 
         <div class="student-sum-card purple">
             <div class="sum-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
             <div class="sum-text">
-                <span class="sum-label">الأشهر المتبقية المستحقة</span>
-                <h3 class="sum-val font-mono">{{ $unpaidCount }} <small class="text-xs">شهر</small></h3>
-                <span class="sum-sub">أقساط سنوية خلال العام الدراسي</span>
+                <span class="sum-label">{{ __('Remaining Due Months') }}</span>
+                <h3 class="sum-val font-mono">{{ $unpaidCount }} <small class="text-xs">{{ __('month') }}</small></h3>
+                <span class="sum-sub">{{ __('Annual installments during the school year') }}</span>
             </div>
         </div>
     </div>
@@ -64,12 +64,12 @@
     <div class="months-timeline-card">
         <div class="timeline-head">
             <div>
-                <h2 class="timeline-title"><i class="fa-solid fa-calendar-check text-primary"></i> جدول الشهور الـ 12 للعام الدراسي ({{ $year }})</h2>
-                <p class="timeline-sub">انقر على أي شهر للاطلاع على تفاصيل وقيمة القسط الشهري أو إرفاق إشعار الدفع</p>
+                <h2 class="timeline-title"><i class="fa-solid fa-calendar-check text-primary"></i> {{ __('12 Months Schedule for the Academic Year') }} ({{ $year }})</h2>
+                <p class="timeline-sub">{{ __('Click on any month to view installment details or submit proof of payment') }}</p>
             </div>
             <div class="academic-branch-pill">
                 <i class="fa-solid fa-book-bookmark"></i>
-                <span>{{ $student->stage->label_ar ?? ($student->stage->name_ar ?? 'المرحلة الدراسية') }}</span>
+                <span>{{ $student->stage->label_ar ?? ($student->stage->name_ar ?? __('Academic Stage')) }}</span>
             </div>
         </div>
 
@@ -85,19 +85,19 @@
                     <div class="month-card-header">
                         <span class="month-number font-mono">{{ sprintf('%02d', $sub->month) }}</span>
                         <span class="month-state-pill" style="background: {{ $badgeInfo['bg'] }}; color: {{ $badgeInfo['color'] }};">
-                            {{ $badgeInfo['label'] }}
+                            {{ __($badgeInfo['label']) }}
                         </span>
                     </div>
 
                     <div class="month-card-body">
-                        <h4 class="month-name">{{ $sub->month_name_ar }}</h4>
+                        <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10))) }}</h4>
                         <div class="month-amount-row">
-                            <span class="amount-label">قيمة القسط:</span>
+                            <span class="amount-label">{{ __('Installment Amount:') }}</span>
                             <strong class="amount-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
                         </div>
                         @if($isPaid && $sub->paid_at)
                             <div class="paid-date-note font-mono">
-                                <i class="fa-regular fa-calendar-check"></i> تاريخ السداد: {{ $sub->paid_at->format('Y-m-d') }}
+                                <i class="fa-regular fa-calendar-check"></i> {{ __('Payment Date:') }} {{ $sub->paid_at->format('Y-m-d') }}
                             </div>
                         @elseif($sub->notes)
                             <div class="paid-date-note">
@@ -109,22 +109,22 @@
                     <div class="month-card-footer">
                         @if($isPaid)
                             <span class="btn-month-status done">
-                                <i class="fa-solid fa-circle-check"></i> تم السداد بنجاح
+                                <i class="fa-solid fa-circle-check"></i> {{ __('Paid Successfully') }}
                             </span>
                         @elseif($isPending)
                             <span class="btn-month-status waiting">
-                                <i class="fa-solid fa-clock-rotate-left"></i> بانتظار اعتماد المشرف
+                                <i class="fa-solid fa-clock-rotate-left"></i> {{ __('Pending Supervisor Approval') }}
                             </span>
                         @elseif($isWaived)
                             <span class="btn-month-status waived">
-                                <i class="fa-solid fa-tag"></i> منحة وإعفاء كامل
+                                <i class="fa-solid fa-tag"></i> {{ __('Scholarship / Fully Waived') }}
                             </span>
                         @else
                             <div class="unpaid-actions-row">
                                 <a href="{{ route('student.pendingPayment.submit') }}" class="btn-month-status pay" style="flex: 1;">
-                                    <i class="fa-solid fa-receipt"></i> سداد هذا القسط
+                                    <i class="fa-solid fa-receipt"></i> {{ __('Pay this installment') }}
                                 </a>
-                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً أستاذ أحمد شمالي، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . $student->name_ar) }}" target="_blank" class="btn-month-status whatsapp" title="سداد أو استفسار عبر واتساب">
+                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a>
                             </div>

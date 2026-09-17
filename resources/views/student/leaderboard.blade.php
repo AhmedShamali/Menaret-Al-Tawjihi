@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'لوحة الشرف وتحدي الأوائل | منارة التوجيهي')
+@section('title', __('لوحة الشرف وتحدي الأوائل') . ' | ' . __('منارة التوجيهي'))
 
 @section('content')
 <div class="ed-leaderboard-container">
@@ -10,17 +10,17 @@
         <div class="ed-lb-title-box">
             <div class="ed-lb-breadcrumbs">
                 <i class="fas fa-home"></i>
-                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">لوحة الطالب</a>
+                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('لوحة الطالب') }}</a>
                 <i class="fas fa-chevron-left divider"></i>
-                <span class="active">لوحة الشرف</span>
+                <span class="active">{{ __('لوحة الشرف') }}</span>
             </div>
-            <h1>لوحة الشرف وتحدي أوائل الطلبة</h1>
-            <p>الترتيب الأكاديمي للطلبة الأكثر التزاماً وحضوراً وحلاً للاختبارات على المنصة لهذا العام.</p>
+            <h1>{{ __('لوحة الشرف وتحدي أوائل الطلبة') }}</h1>
+            <p>{{ __('الترتيب الأكاديمي للطلبة الأكثر التزاماً وحضوراً وحلاً للاختبارات على المنصة لهذا العام.') }}</p>
         </div>
 
         <div class="ed-lb-badge">
             <i class="fas fa-medal"></i>
-            <span>لوحة المتفوقين في فلسطين 🇵🇸</span>
+            <span>{{ __('لوحة المتفوقين في فلسطين 🇵🇸') }}</span>
         </div>
     </header>
 
@@ -31,7 +31,7 @@
             <!-- المركز الثاني -->
             <div class="ed-podium-card rank-2">
                 <div class="ed-rank-tag silver">
-                    <i class="fas fa-award"></i> المركز الثاني
+                    <i class="fas fa-award"></i> {{ __('المركز الثاني') }}
                 </div>
                 <div class="ed-podium-avatar silver">
                     @if($currentStudent && $currentStudent->id === ($topStudents[1]->id ?? null))
@@ -42,40 +42,40 @@
                 </div>
                 <h3 class="ed-podium-name">
                     @if($currentStudent && $currentStudent->id === ($topStudents[1]->id ?? null))
-                        {{ $topStudents[1]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">(أنت)</span>
+                        {{ $topStudents[1]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">({{ __('أنت') }})</span>
                     @else
-                        طالب متفوق #2
+                        {{ __('طالب متفوق') }} #2
                     @endif
                 </h3>
-                <span class="ed-podium-stage">{{ optional($topStudents[1]->stage)->label_ar ?? 'توجيهي فلسطين' }}</span>
+                <span class="ed-podium-stage">{{ optional($topStudents[1]->stage)->label_ar ?? __('الثانوية العامة - فلسطين') }}</span>
                 <div class="ed-podium-stats">
-                    <span><i class="fas fa-bolt"></i> {{ $topStudents[1]->streak_count ?? 1 }} يوم التزام</span>
+                    <span><i class="fas fa-bolt"></i> {{ $topStudents[1]->streak_count ?? 1 }} {{ __('يوم التزام') }}</span>
                     <span class="ed-stat-divider">•</span>
-                    <strong>{{ $topStudents[1]->total_points ?? 100 }} نقطة</strong>
+                    <strong>{{ $topStudents[1]->total_points ?? 100 }} {{ __('درجة') }}</strong>
                 </div>
             </div>
 
             <!-- المركز الأول (بطل التوجيهي المعلن) -->
             <div class="ed-podium-card rank-1">
                 <div class="ed-rank-tag gold">
-                    <i class="fas fa-crown"></i> المركز الأول (بطل المنصة)
+                    <i class="fas fa-crown"></i> {{ __('المركز الأول (بطل المنصة)') }}
                 </div>
                 <div class="ed-podium-avatar gold">
                     {{ mb_substr($topStudents[0]->name_ar ?? 'طالب', 0, 1) }}
                 </div>
                 <h3 class="ed-podium-name">{{ $topStudents[0]->name_ar }}</h3>
-                <span class="ed-podium-stage">{{ optional($topStudents[0]->stage)->label_ar ?? 'توجيهي فلسطين' }}</span>
+                <span class="ed-podium-stage">{{ optional($topStudents[0]->stage)->label_ar ?? __('الثانوية العامة - فلسطين') }}</span>
                 <div class="ed-podium-stats gold">
-                    <span><i class="fas fa-star"></i> {{ $topStudents[0]->streak_count ?? 1 }} يوم متواصل</span>
+                    <span><i class="fas fa-star"></i> {{ $topStudents[0]->streak_count ?? 1 }} {{ __('يوم متواصل') }}</span>
                     <span class="ed-stat-divider">•</span>
-                    <strong>{{ $topStudents[0]->total_points ?? 150 }} نقطة</strong>
+                    <strong>{{ $topStudents[0]->total_points ?? 150 }} {{ __('درجة') }}</strong>
                 </div>
             </div>
 
             <!-- المركز الثالث -->
             <div class="ed-podium-card rank-3">
                 <div class="ed-rank-tag bronze">
-                    <i class="fas fa-award"></i> المركز الثالث
+                    <i class="fas fa-award"></i> {{ __('المركز الثالث') }}
                 </div>
                 <div class="ed-podium-avatar bronze">
                     @if($currentStudent && $currentStudent->id === ($topStudents[2]->id ?? null))
@@ -86,16 +86,16 @@
                 </div>
                 <h3 class="ed-podium-name">
                     @if($currentStudent && $currentStudent->id === ($topStudents[2]->id ?? null))
-                        {{ $topStudents[2]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">(أنت)</span>
+                        {{ $topStudents[2]->name_ar }} <span style="font-size: 0.75rem; color: #1d4ed8;">({{ __('أنت') }})</span>
                     @else
-                        طالب متفوق #3
+                        {{ __('طالب متفوق') }} #3
                     @endif
                 </h3>
-                <span class="ed-podium-stage">{{ optional($topStudents[2]->stage)->label_ar ?? 'توجيهي فلسطين' }}</span>
+                <span class="ed-podium-stage">{{ optional($topStudents[2]->stage)->label_ar ?? __('الثانوية العامة - فلسطين') }}</span>
                 <div class="ed-podium-stats">
-                    <span><i class="fas fa-bolt"></i> {{ $topStudents[2]->streak_count ?? 1 }} يوم التزام</span>
+                    <span><i class="fas fa-bolt"></i> {{ $topStudents[2]->streak_count ?? 1 }} {{ __('يوم التزام') }}</span>
                     <span class="ed-stat-divider">•</span>
-                    <strong>{{ $topStudents[2]->total_points ?? 80 }} نقطة</strong>
+                    <strong>{{ $topStudents[2]->total_points ?? 80 }} {{ __('درجة') }}</strong>
                 </div>
             </div>
 
@@ -106,11 +106,11 @@
     <div class="ed-card" style="padding: 0; overflow: hidden;">
         <div class="ed-lb-table-header">
             <div>
-                <h2><i class="fas fa-list-ol"></i> قائمة ترتيب الطلبة المتفوقين</h2>
-                <p>يظهر اسم صاحب المركز الأول فقط، وتُحجب أسماء باقي المتفوقين حفاظاً على الخصوصية الأكاديمية.</p>
+                <h2><i class="fas fa-list-ol"></i> {{ __('قائمة ترتيب الطلبة المتفوقين') }}</h2>
+                <p>{{ __('يظهر اسم صاحب المركز الأول فقط، وتُحجب أسماء باقي المتفوقين حفاظاً على الخصوصية الأكاديمية.') }}</p>
             </div>
             <div class="ed-lb-counter">
-                إجمالي الطلبة بالقائمة: <strong>{{ $topStudents->count() }}</strong>
+                {{ __('إجمالي الطلبة بالقائمة:') }} <strong>{{ $topStudents->count() }}</strong>
             </div>
         </div>
 
@@ -118,7 +118,7 @@
             @forelse($topStudents as $index => $stu)
                 @php 
                     $isCurrent = $currentStudent && $currentStudent->id === $stu->id; 
-                    $displayName = ($index === 0 || $isCurrent) ? $stu->name_ar : 'طالب متميز #' . ($index + 1);
+                    $displayName = ($index === 0 || $isCurrent) ? $stu->name_ar : __('طالب متميز') . ' #' . ($index + 1);
                 @endphp
                 <div class="ed-rank-row {{ $isCurrent ? 'current-student' : '' }}">
                     <div class="ed-rank-left">
@@ -129,30 +129,30 @@
                             <div class="name-line">
                                 <strong>{{ $displayName }}</strong>
                                 @if($index === 0)
-                                    <span class="ed-badge ed-badge-amber" style="font-size: 0.72rem; padding: 2px 8px;"><i class="fas fa-crown"></i> بطل المنصة</span>
+                                    <span class="ed-badge ed-badge-amber" style="font-size: 0.72rem; padding: 2px 8px;"><i class="fas fa-crown"></i> {{ __('بطل المنصة') }}</span>
                                 @elseif($isCurrent)
-                                    <span class="ed-badge ed-badge-blue" style="font-size: 0.72rem; padding: 2px 8px;">أنت</span>
+                                    <span class="ed-badge ed-badge-blue" style="font-size: 0.72rem; padding: 2px 8px;">{{ __('أنت') }}</span>
                                 @else
-                                    <span class="ed-badge" style="font-size: 0.68rem; padding: 2px 6px; background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1;"><i class="fas fa-user-shield"></i> محجوب للخصوصية</span>
+                                    <span class="ed-badge" style="font-size: 0.68rem; padding: 2px 6px; background: #f8fafc; color: #94a3b8; border: 1px dashed #cbd5e1;"><i class="fas fa-user-shield"></i> {{ __('محجوب للخصوصية') }}</span>
                                 @endif
                             </div>
-                            <span class="ed-rank-stage">{{ optional($stu->stage)->label_ar ?? 'توجيهي عام' }}</span>
+                            <span class="ed-rank-stage">{{ optional($stu->stage)->label_ar ?? __('توجيهي فلسطين') }}</span>
                         </div>
                     </div>
 
                     <div class="ed-rank-right">
                         <div class="ed-badge ed-badge-amber">
-                            <i class="fas fa-bolt"></i> {{ $stu->streak_count ?? 1 }} يوم
+                            <i class="fas fa-bolt"></i> {{ $stu->streak_count ?? 1 }} {{ __('يوم') }}
                         </div>
                         <div class="ed-points-badge">
-                            <strong>{{ $stu->total_points ?? 50 }}</strong> نقطة
+                            <strong>{{ $stu->total_points ?? 50 }}</strong> {{ __('درجة') }}
                         </div>
                     </div>
                 </div>
             @empty
                 <div class="ed-empty-cell">
                     <i class="fas fa-trophy"></i>
-                    <p>لا توجد بيانات لوحة شرف حالياً، ابدأ بحل الاختبارات لتكون الأول!</p>
+                    <p>{{ __('لا توجد بيانات لوحة شرف حالياً، ابدأ بحل الاختبارات لتكون الأول!') }}</p>
                 </div>
             @endforelse
         </div>
@@ -162,9 +162,9 @@
 
 <style>
     .ed-leaderboard-container {
-        padding: 24px 32px 60px;
-        direction: rtl;
-        font-family: 'Alexandria', 'Tajawal', sans-serif;
+        padding: 0 0 60px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Header */

@@ -1,21 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'مركز المحادثات والتواصل مع الطلاب 📥')
+@section('title', __('Student Inquiries & Chat Center') . ' | ' . config('app.name'))
 
 @section('content')
-<div class="teacher-chat-wrapper" dir="rtl">
+<div class="teacher-chat-wrapper">
     <div class="telegram-inbox-grid">
 
-        <!-- القائمة الجانبية للطلاب (WhatsApp/Telegram Sidebar) -->
+        <!-- القائمة الجانبية للطلاب (Sidebar) -->
         <div class="chat-sidebar-pane">
             <div class="sidebar-top-bar">
                 <div class="sidebar-title-row">
-                    <h2 class="sidebar-headline"><i class="fa-solid fa-comments text-primary"></i> محادثات الطلاب</h2>
-                    <span class="badge-total-students" id="count_badge">{{ count($students) }} محادثة</span>
+                    <h2 class="sidebar-headline"><i class="fa-solid fa-comments" style="color: #1e3a8a;"></i> {{ __('Student Chats') }}</h2>
+                    <span class="badge-total-students" id="count_badge">{{ count($students) }} {{ __('conversations') }}</span>
                 </div>
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="search_student" onkeyup="filterStudents()" placeholder="ابحث باسم الطالب أو الإيميل..." autocomplete="off">
+                    <input type="text" id="search_student" onkeyup="filterStudents()" placeholder="{{ __('Search by student name or email...') }}" autocomplete="off">
                 </div>
             </div>
 
@@ -23,8 +23,8 @@
             <div class="students-scroll-list" id="student_list">
                 @forelse($students as $student)
                 @php
-                    $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: 'طالب توجيهي';
-                    $stageName = $student->stage->name_ar ?? 'فرع الثانوية العامة';
+                    $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: __('Student');
+                    $stageName = $student->stage->name_ar ?? __('High School Branch');
                 @endphp
                 <div onclick="loadChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}')"
                      class="student-thread-card"
@@ -37,7 +37,7 @@
                     <div class="student-thread-meta">
                         <div class="thread-top">
                             <strong class="student-name-text">{{ $studentName }}</strong>
-                            <span class="thread-time-tag">طالب</span>
+                            <span class="thread-time-tag">{{ __('Student') }}</span>
                         </div>
                         <div class="thread-bottom">
                             <span class="student-stage-subtext">{{ $stageName }}</span>
@@ -47,12 +47,12 @@
                 @empty
                 <div class="empty-threads-state">
                     <i class="fa-regular fa-folder-open fa-2x mb-2 text-muted"></i>
-                    <p>لا توجد محادثات طلاب مسجلة حالياً</p>
+                    <p>{{ __('No student chats registered currently') }}</p>
                 </div>
                 @endforelse
                 <div id="no_results" class="empty-threads-state" style="display: none;">
                     <i class="fa-solid fa-user-slash fa-2x mb-2 text-muted"></i>
-                    <p>لم يتم العثور على طالب مطابق للبحث</p>
+                    <p>{{ __('No matching students found') }}</p>
                 </div>
             </div>
         </div>
@@ -63,20 +63,20 @@
             <!-- هيدر المحادثة النشطة -->
             <div id="chat_header" class="active-chat-header" style="display: none;">
                 <div class="header-student-profile">
-                    <div class="header-avatar-circle" id="active_avatar">ط</div>
+                    <div class="header-avatar-circle" id="active_avatar">S</div>
                     <div>
                         <div class="d-flex align-items-center gap-2">
-                            <h3 id="active_user_name" class="active-student-title">اختر طالباً</h3>
-                            <span id="active_stage_tag" class="badge-stage-tag">توجيهي</span>
+                            <h3 id="active_user_name" class="active-student-title">{{ __('Select a student') }}</h3>
+                            <span id="active_stage_tag" class="badge-stage-tag">{{ __('High School') }}</span>
                         </div>
                         <span class="student-online-status">
-                            <span class="status-green-dot"></span> متصل في المنصة
+                            <span class="status-green-dot"></span> {{ __('Online on platform') }}
                         </span>
                     </div>
                 </div>
 
                 <div class="chat-header-actions">
-                    <button type="button" class="action-circle-btn" onclick="scrollToBottom()" title="الانتقال لآخر رسالة">
+                    <button type="button" class="action-circle-btn" onclick="scrollToBottom()" title="{{ __('Jump to latest message') }}">
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                 </div>
@@ -84,22 +84,22 @@
 
             <!-- كبسولات الردود الأكاديمية السريعة للمعلم (Quick Teacher Feedback) -->
             <div id="quick_teacher_prompts" class="teacher-canned-prompts-bar" style="display: none;">
-                <span class="canned-label"><i class="fa-solid fa-wand-magic-sparkles text-warning"></i> ردود سريعة:</span>
+                <span class="canned-label"><i class="fa-solid fa-wand-magic-sparkles text-warning"></i> {{ __('Quick Responses:') }}</span>
                 <div class="canned-scroll-lane">
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('أحسنت يا بطل، إجابتك نموذجية وصحيحة 100%! 👏')">
-                        إجابة نموذجية 👏
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Well done, outstanding and 100% correct answer! 👏') }}')">
+                        {{ __('Model Answer 👏') }}
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('يرجى مراجعة المعطيات وتطبيق القانون الخاص بالدرس خطوة بخطوة ✍️')">
-                        مراجعة القانون والخطوات ✍️
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Please review given parameters and apply rule step by step ✍️') }}')">
+                        {{ __('Review Laws & Steps ✍️') }}
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('هذا السؤال من الأسئلة الهامة جداً والمتكررة وزارياً 🎯')">
-                        سؤال وزاري هام 🎯
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('This is a very important and recurrent ministerial exam question 🎯') }}')">
+                        {{ __('Important Ministerial Question 🎯') }}
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('سأقوم بشرح هذه النقطة بالتفصيل في الحصة القادمة إن شاء الله ⏰')">
-                        شرح في الحصة القادمة ⏰
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('I will explain this point in detail in our next class ⏰') }}')">
+                        {{ __('Explain Next Class ⏰') }}
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('وفقك الله ونفع بك، دوماً نحو الـ 99%! 🌹')">
-                        دعاء وتشجيع 🌹
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Best wishes for your high school excellence and 99%+ marks! 🌹') }}')">
+                        {{ __('Encouragement 🌹') }}
                     </button>
                 </div>
             </div>
@@ -110,8 +110,8 @@
                     <div class="placeholder-icon-circle">
                         <i class="fa-regular fa-comment-dots"></i>
                     </div>
-                    <h3>مرحباً بك في مركز التواصل الأكاديمي</h3>
-                    <p>اختر أحد الطلاب من القائمة الجانبية لاستعراض استفساراته والرد عليه فورياً.</p>
+                    <h3>{{ __('Welcome to Academic Inquiries Center') }}</h3>
+                    <p>{{ __('Select a student from the sidebar to view questions and respond.') }}</p>
                 </div>
             </div>
 
@@ -119,9 +119,9 @@
             <div id="input_area" class="teacher-composer-area" style="display: none;">
                 <form id="chatForm" onsubmit="return false;">
                     <div class="composer-flex-container">
-                        <input type="text" id="msg_input" class="teacher-msg-input" placeholder="اكتب ردك الأكاديمي والتوجيهي للطالب هنا..." autocomplete="off">
+                        <input type="text" id="msg_input" class="teacher-msg-input" placeholder="{{ __('Type your academic response here...') }}" autocomplete="off">
                         <button type="button" class="btn-send-reply" id="btn_send" onclick="sendTeacherReply()">
-                            <span>إرسال الرد</span>
+                            <span>{{ __('Send Reply') }}</span>
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </div>
@@ -135,13 +135,15 @@
 <style>
 :root {
     --side-width: 360px;
-    --app-height: calc(100vh - 110px);
+    --app-height: calc(100vh - 120px);
 }
 
 .teacher-chat-wrapper {
-    max-width: 1300px;
-    margin: 1rem auto;
-    padding: 0 1rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 0 40px;
+    box-sizing: border-box;
 }
 
 .telegram-inbox-grid {
@@ -150,8 +152,8 @@
     display: grid;
     grid-template-columns: var(--side-width) 1fr;
     background: #ffffff;
-    border-radius: 24px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.06);
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     border: 1px solid #e2e8f0;
     overflow: hidden;
 }
@@ -159,15 +161,10 @@
 /* القائمة الجانبية */
 .chat-sidebar-pane {
     background: #f8fafc;
-    border-left: 1px solid #e2e8f0;
+    border-inline-end: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
     height: 100%;
-}
-
-body.dark-theme .chat-sidebar-pane {
-    background: #0f172a;
-    border-left-color: #1e293b;
 }
 
 .sidebar-top-bar {
@@ -175,11 +172,6 @@ body.dark-theme .chat-sidebar-pane {
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     flex-shrink: 0;
-}
-
-body.dark-theme .sidebar-top-bar {
-    background: #0f172a;
-    border-bottom-color: #1e293b;
 }
 
 .sidebar-title-row {
@@ -190,24 +182,23 @@ body.dark-theme .sidebar-top-bar {
 }
 
 .sidebar-headline {
-    font-size: 1.15rem;
+    margin: 0;
+    font-size: 1.1rem;
     font-weight: 800;
     color: #0f172a;
-    margin: 0;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-body.dark-theme .sidebar-headline { color: #f8fafc; }
-
 .badge-total-students {
     background: #eff6ff;
-    color: #0284c7;
-    font-size: 0.75rem;
-    font-weight: 700;
+    color: #1e3a8a;
+    border: 1px solid #bfdbfe;
     padding: 3px 10px;
     border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
 }
 
 .search-input-wrapper {
@@ -216,78 +207,72 @@ body.dark-theme .sidebar-headline { color: #f8fafc; }
 
 .search-icon {
     position: absolute;
-    right: 14px;
+    inset-inline-start: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: #94a3b8;
-    font-size: 0.9rem;
-}
-
-.search-input-wrapper input {
-    width: 100%;
-    padding: 9px 38px 9px 14px;
-    border-radius: 12px;
-    border: 1px solid #cbd5e1;
-    background: #f1f5f9;
     font-size: 0.85rem;
+}
+
+#search_student {
+    width: 100%;
+    padding: 8px 12px 8px 36px;
+    padding-inline-start: 36px;
+    padding-inline-end: 12px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 0.84rem;
     outline: none;
-    transition: 0.2s;
+    box-sizing: border-box;
 }
 
-.search-input-wrapper input:focus {
+#search_student:focus {
+    border-color: #1e3a8a;
     background: #ffffff;
-    border-color: #0284c7;
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
 }
 
+/* قائمة كروت الطلاب */
 .students-scroll-list {
     flex: 1;
     overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .student-thread-card {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 18px;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 10px 14px;
+    border-radius: 12px;
     cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-body.dark-theme .student-thread-card {
-    border-bottom-color: #1e293b;
+    transition: all 0.2s;
+    background: #ffffff;
+    border: 1px solid transparent;
 }
 
 .student-thread-card:hover {
     background: #f1f5f9;
 }
 
-body.dark-theme .student-thread-card:hover {
-    background: #1e293b;
-}
-
 .student-thread-card.active {
-    background: #f0f9ff;
-    border-right: 4px solid #0284c7;
-}
-
-body.dark-theme .student-thread-card.active {
-    background: #1e293b;
-    border-right-color: #38bdf8;
+    background: #eff6ff;
+    border-color: #bfdbfe;
 }
 
 .student-avatar-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #1e3a8a;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
     font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 
@@ -304,14 +289,13 @@ body.dark-theme .student-thread-card.active {
 }
 
 .student-name-text {
+    font-size: 0.88rem;
+    font-weight: 800;
     color: #0f172a;
-    font-size: 0.92rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
-
-body.dark-theme .student-name-text { color: #f8fafc; }
 
 .thread-time-tag {
     font-size: 0.7rem;
@@ -319,41 +303,26 @@ body.dark-theme .student-name-text { color: #f8fafc; }
 }
 
 .student-stage-subtext {
-    font-size: 0.75rem;
+    font-size: 0.74rem;
     color: #64748b;
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
-/* الساحة الرئيسية للمحادثة */
+/* ساحة المحادثة */
 .chat-viewport-pane {
     display: flex;
     flex-direction: column;
-    background: #f8fafc;
     height: 100%;
-    position: relative;
-    overflow: hidden;
-}
-
-body.dark-theme .chat-viewport-pane {
-    background: #0b141a;
+    background: #f8fafc;
 }
 
 .active-chat-header {
-    padding: 12px 24px;
+    padding: 14px 20px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-}
-
-body.dark-theme .active-chat-header {
-    background: #0f172a;
-    border-bottom-color: #1e293b;
 }
 
 .header-student-profile {
@@ -363,16 +332,15 @@ body.dark-theme .active-chat-header {
 }
 
 .header-avatar-circle {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: white;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: #1e3a8a;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
     font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
 }
 
 .active-student-title {
@@ -382,24 +350,21 @@ body.dark-theme .active-chat-header {
     color: #0f172a;
 }
 
-body.dark-theme .active-student-title { color: #f8fafc; }
-
 .badge-stage-tag {
     background: #eff6ff;
-    color: #0284c7;
+    color: #1e3a8a;
+    padding: 2px 8px;
+    border-radius: 6px;
     font-size: 0.72rem;
     font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 12px;
 }
 
 .student-online-status {
-    font-size: 0.75rem;
-    color: #10b981;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-top: 2px;
+    font-size: 0.74rem;
+    color: #059669;
 }
 
 .status-green-dot {
@@ -414,21 +379,20 @@ body.dark-theme .active-student-title { color: #f8fafc; }
     height: 36px;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
-    background: #f8fafc;
+    background: #ffffff;
     color: #64748b;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s;
 }
 
 .action-circle-btn:hover {
-    color: #0284c7;
-    background: #f0f9ff;
+    color: #1e3a8a;
+    border-color: #1e3a8a;
 }
 
-/* شريط الردود السريعة للمعلم */
+/* Canned Prompts */
 .teacher-canned-prompts-bar {
     background: #ffffff;
     border-bottom: 1px solid #f1f5f9;
@@ -437,11 +401,6 @@ body.dark-theme .active-student-title { color: #f8fafc; }
     align-items: center;
     gap: 10px;
     flex-shrink: 0;
-}
-
-body.dark-theme .teacher-canned-prompts-bar {
-    background: #0f172a;
-    border-bottom-color: #1e293b;
 }
 
 .canned-label {
@@ -461,7 +420,7 @@ body.dark-theme .teacher-canned-prompts-bar {
 .canned-scroll-lane::-webkit-scrollbar { display: none; }
 
 .canned-pill {
-    background: #f1f5f9;
+    background: #f8fafc;
     color: #334155;
     border: 1px solid #e2e8f0;
     padding: 4px 12px;
@@ -470,19 +429,19 @@ body.dark-theme .teacher-canned-prompts-bar {
     font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .canned-pill:hover {
-    background: #0284c7;
-    color: white;
-    border-color: #0284c7;
+    background: #1e3a8a;
+    color: #ffffff;
+    border-color: #1e3a8a;
 }
 
-/* ساحة الرسائل */
+/* Messages Canvas */
 .messages-flow-canvas {
     flex: 1;
-    padding: 20px 24px;
+    padding: 20px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -497,39 +456,32 @@ body.dark-theme .teacher-canned-prompts-bar {
 }
 
 .placeholder-icon-circle {
-    width: 70px;
-    height: 70px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
-    background: #e0f2fe;
-    color: #0284c7;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 1rem;
+    background: #eff6ff;
+    color: #1e3a8a;
+    display: grid;
+    place-items: center;
+    font-size: 1.8rem;
+    margin: 0 auto 14px;
 }
 
 .bubble-item {
     max-width: 72%;
     padding: 10px 16px;
-    border-radius: 18px;
-    font-size: 0.92rem;
+    border-radius: 14px;
+    font-size: 0.9rem;
     line-height: 1.5;
     word-break: break-word;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    animation: fadeInMsg 0.2s ease-out;
-}
-
-@keyframes fadeInMsg {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: translateY(0); }
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
 }
 
 .bubble-item.teacher-sent {
     align-self: flex-start;
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
-    border-bottom-right-radius: 4px;
+    background: #1e3a8a;
+    color: #ffffff;
+    border-bottom-inline-start-radius: 2px;
 }
 
 .bubble-item.student-incoming {
@@ -537,24 +489,17 @@ body.dark-theme .teacher-canned-prompts-bar {
     background: #ffffff;
     color: #0f172a;
     border: 1px solid #e2e8f0;
-    border-bottom-left-radius: 4px;
-}
-
-body.dark-theme .bubble-item.student-incoming {
-    background: #1e293b;
-    color: #f8fafc;
-    border-color: #334155;
+    border-bottom-inline-end-radius: 2px;
 }
 
 .msg-time-tag {
     display: block;
     font-size: 0.68rem;
     margin-top: 4px;
-    text-align: left;
     opacity: 0.8;
 }
 
-/* صندوق الإدخال */
+/* Composer Area */
 .teacher-composer-area {
     padding: 12px 20px;
     background: #ffffff;
@@ -562,24 +507,14 @@ body.dark-theme .bubble-item.student-incoming {
     flex-shrink: 0;
 }
 
-body.dark-theme .teacher-composer-area {
-    background: #0f172a;
-    border-top-color: #1e293b;
-}
-
 .composer-flex-container {
     display: flex;
     gap: 10px;
     align-items: center;
     background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 5px 12px;
-}
-
-body.dark-theme .composer-flex-container {
-    background: #1e293b;
-    border-color: #334155;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    padding: 6px 12px;
 }
 
 .teacher-msg-input {
@@ -587,29 +522,27 @@ body.dark-theme .composer-flex-container {
     border: none;
     background: transparent;
     outline: none;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: #0f172a;
 }
 
-body.dark-theme .teacher-msg-input { color: #f8fafc; }
-
 .btn-send-reply {
-    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-    color: white;
+    background: #1e3a8a;
+    color: #ffffff;
     border: none;
     padding: 9px 20px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 700;
+    font-size: 0.85rem;
     cursor: pointer;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: 0.2s;
+    transition: all 0.2s;
 }
 
 .btn-send-reply:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
+    background: #172554;
 }
 
 .empty-threads-state {
@@ -622,9 +555,6 @@ body.dark-theme .teacher-msg-input { color: #f8fafc; }
 @media (max-width: 820px) {
     .telegram-inbox-grid {
         grid-template-columns: 1fr;
-    }
-    .chat-sidebar-pane {
-        display: block;
     }
 }
 </style>
@@ -642,7 +572,7 @@ body.dark-theme .teacher-msg-input { color: #f8fafc; }
         box.innerHTML = `
             <div class="text-center my-auto py-5 text-muted">
                 <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
-                <p class="mt-2" style="font-size: 0.85rem;">جاري مزامنة أسئلة الطالب...</p>
+                <p class="mt-2" style="font-size: 0.85rem;">{{ __('Syncing student inquiries...') }}</p>
             </div>`;
 
         document.getElementById('chat_header').style.display = 'flex';
@@ -681,8 +611,8 @@ body.dark-theme .teacher-msg-input { color: #f8fafc; }
                     box.innerHTML = `
                         <div class="no-selection-placeholder">
                             <div class="placeholder-icon-circle"><i class="fa-solid fa-graduation-cap"></i></div>
-                            <h3>لا توجد رسائل سابقة مع الطالب</h3>
-                            <p>بإمكانك إرسال إرشادات أو متابعة أكاديمية للطالب الآن.</p>
+                            <h3>{{ __('No previous messages with student') }}</h3>
+                            <p>{{ __('You can send guidance or study follow-up now.') }}</p>
                         </div>`;
                     return;
                 }
@@ -717,7 +647,7 @@ body.dark-theme .teacher-msg-input { color: #f8fafc; }
         if (!text || !activeStudentId) return;
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> إرسال...`;
+        sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> {{ __('Sending...') }}`;
 
         axios.post('/teacher/send-message', {
             student_id: activeStudentId,
@@ -735,11 +665,11 @@ body.dark-theme .teacher-msg-input { color: #f8fafc; }
             fetchMessages(true);
         })
         .catch(err => {
-            alert('حدث خطأ أثناء إرسال الرد، يرجى المحاولة ثانية.');
+            alert('{{ __("Error sending reply, please try again.") }}');
         })
         .finally(() => {
             sendBtn.disabled = false;
-            sendBtn.innerHTML = `<span>إرسال الرد</span> <i class="fa-solid fa-paper-plane"></i>`;
+            sendBtn.innerHTML = `<span>{{ __('Send Reply') }}</span> <i class="fa-solid fa-paper-plane"></i>`;
             input.focus();
         });
     }

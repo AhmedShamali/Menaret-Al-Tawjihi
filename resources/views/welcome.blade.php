@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} | بوابة ومنظومة الثانوية العامة لدولة فلسطين 🇵🇸</title>
+    <title>{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }} 🇵🇸</title>
     <meta name="description" content="المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج الوزاري، بنك اختبارات وزارية محلولة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.">
 
     <!-- الخطوط الموحدة للمنظومة (Alexandria & Tajawal) -->
@@ -78,9 +78,17 @@
             color: var(--ed-text-body);
             font-size: 14.5px;
             line-height: 1.65;
+            overflow-x: hidden;
+        }
+
+        html[dir="rtl"] body {
             direction: rtl;
             text-align: right;
-            overflow-x: hidden;
+        }
+
+        html[dir="ltr"] body {
+            direction: ltr;
+            text-align: left;
         }
 
         a {
@@ -904,35 +912,44 @@
     <!-- 3. شريط القوائم الرئيسي: المكان الرسمي والوحيد للتنقل وأزرار الحساب -->
     <nav class="main-navbar">
         <div class="navbar-inner">
-            <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="القائمة">
-                <i class="fa-solid fa-bars"></i> القائمة
+            <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="{{ __('القائمة') }}">
+                <i class="fa-solid fa-bars"></i> {{ __('القائمة') }}
             </button>
 
             <ul class="nav-menu" id="mainNavMenu">
-                <li class="nav-item"><a href="{{ route('home') }}" class="nav-link active"><i class="fa-solid fa-house"></i> الرئيسية</a></li>
-                <li class="nav-item"><a href="#branches" class="nav-link"><i class="fa-solid fa-book-bookmark"></i> فروع التوجيهي</a></li>
-                <li class="nav-item"><a href="#features" class="nav-link"><i class="fa-solid fa-list-check"></i> خدمات المنصة</a></li>
+                <li class="nav-item"><a href="{{ route('home') }}" class="nav-link active"><i class="fa-solid fa-house"></i> {{ __('الرئيسية') }}</a></li>
+                <li class="nav-item"><a href="#branches" class="nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
+                <li class="nav-item"><a href="#features" class="nav-link"><i class="fa-solid fa-list-check"></i> {{ __('خدمات المنصة') }}</a></li>
                 @if(Route::has('tawjihi.archive'))
-                    <li class="nav-item"><a href="{{ route('tawjihi.archive') }}" class="nav-link"><i class="fa-solid fa-folder-open"></i> بنك الامتحانات الوزارية</a></li>
+                    <li class="nav-item"><a href="{{ route('tawjihi.archive') }}" class="nav-link"><i class="fa-solid fa-folder-open"></i> {{ __('بنك الامتحانات الوزارية') }}</a></li>
                 @endif
                 @if(Route::has('tawjihi.calculator'))
-                    <li class="nav-item"><a href="{{ route('tawjihi.calculator') }}" class="nav-link"><i class="fa-solid fa-calculator"></i> حساب المعدل</a></li>
+                    <li class="nav-item"><a href="{{ route('tawjihi.calculator') }}" class="nav-link"><i class="fa-solid fa-calculator"></i> {{ __('حساب المعدل') }}</a></li>
                 @endif
-                <li class="nav-item"><a href="{{ route('public.faq') }}" class="nav-link"><i class="fa-solid fa-circle-question"></i> الأسئلة الشائعة</a></li>
-                <li class="nav-item"><a href="{{ route('public.contact') }}" class="nav-link"><i class="fa-solid fa-phone"></i> تواصل مع الإدارة</a></li>
+                <li class="nav-item"><a href="{{ route('public.faq') }}" class="nav-link"><i class="fa-solid fa-circle-question"></i> {{ __('الأسئلة الشائعة') }}</a></li>
+                <li class="nav-item"><a href="{{ route('public.contact') }}" class="nav-link"><i class="fa-solid fa-phone"></i> {{ __('تواصل مع الإدارة') }}</a></li>
             </ul>
 
             <div class="nav-actions">
+                <!-- زر تبديل اللغة (عربي / English) -->
+                @php $currentLocale = app()->getLocale(); @endphp
+                <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}" 
+                   style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                    <i class="fa-solid fa-globe" style="color: var(--ed-accent-gold);"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
+                </a>
+
                 @if(Auth::guard('student')->check() || Auth::check())
                     <a href="{{ route('dashboard') }}" class="btn-nav-login">
-                        <i class="fa-solid fa-gauge-high"></i> لوحة التحكم
+                        <i class="fa-solid fa-gauge-high"></i> {{ __('لوحة التحكم') }}
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="btn-nav-login">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> تسجيل الدخول
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> {{ __('تسجيل الدخول') }}
                     </a>
                     <a href="{{ route('students.create') }}" class="btn-nav-register">
-                        <i class="fa-solid fa-user-plus"></i> تسجيل طالب جديد
+                        <i class="fa-solid fa-user-plus"></i> {{ __('تسجيل طالب جديد') }}
                     </a>
                 @endif
             </div>

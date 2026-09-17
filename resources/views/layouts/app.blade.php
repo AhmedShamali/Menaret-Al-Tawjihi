@@ -605,165 +605,165 @@
                     <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 800; font-size: 0.98rem; color: #ffffff; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
-                    <small style="font-size: 0.68rem; color: #fef08a; font-weight: 700;">بوابة الثانوية العامة</small>
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #ffffff; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</span>
+                    <small style="font-size: 0.68rem; color: #fef08a; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>
         </div>
 
         <div class="menu-wrapper">
             @if(auth()->check() && auth()->user()->role === 'admin')
-                <span class="group-label">الإدارة العامة</span>
+                <span class="group-label">{{ __('الإدارة العامة') }}</span>
                 <a href="{{ route('admin.dashboard') }}" class="nav-item {{ Request::is('admin/dashboard*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chart-pie"></i> <span>لوحة الإحصائيات</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chart-pie"></i> <span>{{ __('لوحة الإحصائيات') }}</span></div></div>
                 </a>
 
                 <div class="nav-item has-sub {{ Request::is('admin/students*') || Request::is('admin/teachers*') ? 'open' : '' }}">
                     <div class="nav-link" onclick="toggleSub(this)">
-                        <div class="link-main"><i class="fa-solid fa-user-gear"></i> <span>القبول والكادر</span></div>
+                        <div class="link-main"><i class="fa-solid fa-user-gear"></i> <span>{{ __('القبول والكادر') }}</span></div>
                         <i class="fa-solid fa-chevron-left nav-arrow"></i>
                     </div>
                     <ul class="submenu">
-                        <li><a href="{{ route('admin.students.index') }}" class="submenu-item">إدارة الطلاب</a></li>
-                        <li><a href="{{ route('admin.teachers.index') }}" class="submenu-item">إدارة المعلمين</a></li>
-                        <li><a href="{{ route('admin.teachers.salaries') }}" class="submenu-item"><i class="fa-solid fa-money-bill-wave" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> رواتب ومستحقات المعلمين</a></li>
-                        <li><a href="{{ route('admin.teachers.create') }}" class="submenu-item">إضافة معلم جديد</a></li>
-                        <li><a href="{{ route('admin.teachers.info') }}" class="submenu-item">دليل المعلمين الموسع</a></li>
-                        <li><a href="{{ route('admin.students.profile_all') }}" class="submenu-item">سجل الطلاب الكامل</a></li>
+                        <li><a href="{{ route('admin.students.index') }}" class="submenu-item">{{ __('إدارة الطلاب') }}</a></li>
+                        <li><a href="{{ route('admin.teachers.index') }}" class="submenu-item">{{ __('إدارة المعلمين') }}</a></li>
+                        <li><a href="{{ route('admin.teachers.salaries') }}" class="submenu-item"><i class="fa-solid fa-money-bill-wave" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> {{ __('رواتب ومستحقات المعلمين') }}</a></li>
+                        <li><a href="{{ route('admin.teachers.create') }}" class="submenu-item">{{ __('إضافة معلم جديد') }}</a></li>
+                        <li><a href="{{ route('admin.teachers.info') }}" class="submenu-item">{{ __('دليل المعلمين الموسع') }}</a></li>
+                        <li><a href="{{ route('admin.students.profile_all') }}" class="submenu-item">{{ __('سجل الطلاب الكامل') }}</a></li>
                     </ul>
                 </div>
 
                 <a href="{{ route('admin.certificates.index') }}" class="nav-item {{ Request::is('admin/certificates*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-graduation-cap" style="color: #4f46e5;"></i> <span>الشهادات والنتائج</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-graduation-cap" style="color: #4f46e5;"></i> <span>{{ __('الشهادات والنتائج') }}</span></div></div>
                 </a>
 
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-tags" style="color: #059669;"></i> <span>تسعير المواد</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-tags" style="color: #059669;"></i> <span>{{ __('تسعير المواد') }}</span></div></div>
                 </a>
 
                 <div class="nav-item has-sub {{ Request::is('admin/payments*') || Request::is('admin/subscriptions*') ? 'open' : '' }}">
                     <div class="nav-link" onclick="toggleSub(this)">
-                        <div class="link-main"><i class="fa-solid fa-wallet" style="color: #d97706;"></i> <span>الاشتراكات والمدفوعات</span></div>
+                        <div class="link-main"><i class="fa-solid fa-wallet" style="color: #d97706;"></i> <span>{{ __('الاشتراكات والمدفوعات') }}</span></div>
                         <i class="fa-solid fa-chevron-left nav-arrow"></i>
                     </div>
                     <ul class="submenu">
-                        <li><a href="{{ route('admin.subscriptions.monthly') }}" class="submenu-item"><i class="fa-solid fa-calendar-days" style="font-size: 0.8rem; margin-left: 6px; color: #0284c7;"></i> مصفوفة اشتراكات الطلاب (12 شهراً)</a></li>
-                        <li><a href="{{ route('admin.payments.index') }}" class="submenu-item"><i class="fa-solid fa-receipt" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> إشعارات الدفع والتحويلات</a></li>
+                        <li><a href="{{ route('admin.subscriptions.monthly') }}" class="submenu-item"><i class="fa-solid fa-calendar-days" style="font-size: 0.8rem; margin-left: 6px; color: #0284c7;"></i> {{ __('مصفوفة اشتراكات الطلاب (12 شهراً)') }}</a></li>
+                        <li><a href="{{ route('admin.payments.index') }}" class="submenu-item"><i class="fa-solid fa-receipt" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> {{ __('إشعارات الدفع والتحويلات') }}</a></li>
                     </ul>
                 </div>
 
-                <span class="group-label">التواصل والدعم</span>
+                <span class="group-label">{{ __('التواصل والدعم') }}</span>
                 <a href="{{ route('admin.inquiries.index') }}" class="nav-item {{ Request::is('admin/academic-inquiries*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-clipboard-question" style="color: #2563eb;"></i> <span>الاستفسار الأكاديمي والشكاوى</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-clipboard-question" style="color: #2563eb;"></i> <span>{{ __('الاستفسار الأكاديمي والشكاوى') }}</span></div></div>
                 </a>
                 <a href="{{ route('admin.messages.index') }}" class="nav-item {{ Request::is('admin/inbox*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>رسائل الطلاب</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>{{ __('رسائل الطلاب') }}</span></div></div>
                 </a>
                 <a href="{{ route('admin.teachers.chat') }}" class="nav-item {{ Request::is('admin/teachers/chat*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chalkboard-user"></i> <span>مراسلة المعلمين</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chalkboard-user"></i> <span>{{ __('مراسلة المعلمين') }}</span></div></div>
                 </a>
                 <a href="{{ route('admin.settings.index') }}" class="nav-item {{ Request::is('admin/settings*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-gear"></i> <span>إعدادات النظام</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-gear"></i> <span>{{ __('إعدادات النظام') }}</span></div></div>
                 </a>
             @endif
 
             @if(auth()->check() && auth()->user()->role === 'teacher')
-                <span class="group-label">بوابة المعلم</span>
+                <span class="group-label">{{ __('بوابة المعلم') }}</span>
                 <a href="{{ route('teacher.dashboard') }}" class="nav-item {{ Request::is('teacher/dashboard*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-house"></i> <span>لوحة التحكم</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-house"></i> <span>{{ __('لوحة التحكم') }}</span></div></div>
                 </a>
 
                 <div class="nav-item has-sub {{ Request::is('teacher/exams*') || Request::is('teacher/submissions*') ? 'open' : '' }}">
                     <div class="nav-link" onclick="toggleSub(this)">
-                        <div class="link-main"><i class="fa-solid fa-file-pen"></i> <span>إدارة الاختبارات</span></div>
+                        <div class="link-main"><i class="fa-solid fa-file-pen"></i> <span>{{ __('إدارة الاختبارات') }}</span></div>
                         <i class="fa-solid fa-chevron-left nav-arrow"></i>
                     </div>
                     <ul class="submenu">
-                        <li><a href="{{ route('teacher.exams.index') }}" class="submenu-item">قائمة الاختبارات</a></li>
-                        <li><a href="{{ route('teacher.exams.create') }}" class="submenu-item">بناء اختبار جديد</a></li>
-                        <li><a href="{{ route('teacher.submissions.index') }}" class="submenu-item">رصد درجات الطلاب</a></li>
+                        <li><a href="{{ route('teacher.exams.index') }}" class="submenu-item">{{ __('قائمة الاختبارات') }}</a></li>
+                        <li><a href="{{ route('teacher.exams.create') }}" class="submenu-item">{{ __('بناء اختبار جديد') }}</a></li>
+                        <li><a href="{{ route('teacher.submissions.index') }}" class="submenu-item">{{ __('رصد درجات الطلاب') }}</a></li>
                     </ul>
                 </div>
 
                 <div class="nav-item has-sub {{ Request::is('teacher/videos*') || Request::is('teacher/files*') || Request::is('teacher/visibility*') || Request::is('teacher/educational_contents*') ? 'open' : '' }}">
                     <div class="nav-link" onclick="toggleSub(this)">
-                        <div class="link-main"><i class="fa-solid fa-photo-film"></i> <span>إدارة المحتوى الأكاديمي</span></div>
+                        <div class="link-main"><i class="fa-solid fa-photo-film"></i> <span>{{ __('إدارة المحتوى الأكاديمي') }}</span></div>
                         <i class="fa-solid fa-chevron-left nav-arrow"></i>
                     </div>
                     <ul class="submenu">
-                        <li><a href="{{ route('teacher.videos') }}" class="submenu-item"><i class="fa-solid fa-video" style="font-size: 0.8rem; margin-left: 6px; color: #1d4ed8;"></i> رفع وإدارة الفيديوهات</a></li>
-                        <li><a href="{{ route('teacher.files') }}" class="submenu-item"><i class="fa-solid fa-file-pdf" style="font-size: 0.8rem; margin-left: 6px; color: #dc2626;"></i> رفع الملازم والملفات</a></li>
-                        <li><a href="{{ route('teacher.visibility') }}" class="submenu-item"><i class="fa-solid fa-toggle-on" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> التحكم بظهور المحتوى</a></li>
+                        <li><a href="{{ route('teacher.videos') }}" class="submenu-item"><i class="fa-solid fa-video" style="font-size: 0.8rem; margin-left: 6px; color: #1d4ed8;"></i> {{ __('رفع وإدارة الفيديوهات') }}</a></li>
+                        <li><a href="{{ route('teacher.files') }}" class="submenu-item"><i class="fa-solid fa-file-pdf" style="font-size: 0.8rem; margin-left: 6px; color: #dc2626;"></i> {{ __('رفع الملازم والملفات') }}</a></li>
+                        <li><a href="{{ route('teacher.visibility') }}" class="submenu-item"><i class="fa-solid fa-toggle-on" style="font-size: 0.8rem; margin-left: 6px; color: #059669;"></i> {{ __('التحكم بظهور المحتوى') }}</a></li>
                     </ul>
                 </div>
 
                 <a href="{{ route('teacher.access.index') }}" class="nav-item {{ Request::is('teacher/access*') || Request::is('teacher/students*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-check"></i> <span>اشتراكات وصلاحيات الطلاب</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-check"></i> <span>{{ __('اشتراكات وصلاحيات الطلاب') }}</span></div></div>
                 </a>
 
                 <a href="{{ route('teacher.messages.index') }}" class="nav-item {{ Request::is('teacher/inbox*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>رسائل الطلاب</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-comments"></i> <span>{{ __('رسائل الطلاب') }}</span></div></div>
                 </a>
 
                 <a href="{{ route('teacher.salaries.index') }}" class="nav-item {{ Request::is('teacher/salaries*') || Request::is('teacher/salary*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-file-invoice-dollar" style="color: #10b981;"></i> <span>مسير الرواتب والمستحقات</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-file-invoice-dollar" style="color: #10b981;"></i> <span>{{ __('مسير الرواتب والمستحقات') }}</span></div></div>
                 </a>
 
                 <a href="{{ route('teacher.admin.chat') }}" class="nav-item {{ Request::is('teacher/admin/chat*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-shield-halved"></i> <span>مراسلة الإدارة</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-shield-halved"></i> <span>{{ __('مراسلة الإدارة') }}</span></div></div>
                 </a>
             @endif
 
             @if(auth('student')->check() || (auth()->check() && auth()->user()->role === 'student'))
-                <span class="group-label">المساحة التعليمية</span>
+                <span class="group-label">{{ __('المساحة التعليمية') }}</span>
                 <a href="{{ route('student.dashboard') }}" class="nav-item {{ Request::is('student/dashboard*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-house-chimney"></i> <span>الرئيسية</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-house-chimney"></i> <span>{{ __('الرئيسية') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.subjects.index') }}" class="nav-item {{ request()->routeIs('student.subjects.*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-book-open"></i> <span>المواد والدروس</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-book-open"></i> <span>{{ __('المواد والدروس') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.subscriptions.index') }}" class="nav-item {{ Request::is('student/subscriptions*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-days" style="color: #059669;"></i> <span>سجل اشتراكاتي الشهرية (12 شهراً)</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-days" style="color: #059669;"></i> <span>{{ __('سجل اشتراكاتي الشهرية (12 شهراً)') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.exams.index') }}" class="nav-item {{ Request::is('student/my-exams*') || Request::is('student/exams*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-pen-ruler"></i> <span>اختباراتي</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-pen-ruler"></i> <span>{{ __('اختباراتي') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.courses.catalog') }}" class="nav-item {{ Request::is('student/courses/catalog*') || Request::is('student/checkout*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-layer-group"></i> <span>باقات المواد والاشتراك</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-layer-group"></i> <span>{{ __('باقات المواد والاشتراك') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.notifications.index') }}" class="nav-item {{ Request::is('student/notifications*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bell"></i> <span>مركز التنبيهات</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bell"></i> <span>{{ __('مركز التنبيهات') }}</span></div></div>
                 </a>
 
-                <span class="group-label">أدوات التفوق الدراسي</span>
+                <span class="group-label">{{ __('أدوات التفوق الدراسي') }}</span>
                 <a href="{{ route('student.planner.index') }}" class="nav-item {{ Request::is('student/study-planner*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-check" style="color: #0284c7;"></i> <span>جدول المراجعة</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calendar-check" style="color: #0284c7;"></i> <span>{{ __('جدول المراجعة') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.achievements') }}" class="nav-item {{ Request::is('student/achievements*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-award" style="color: #059669;"></i> <span>الشهادات والإنجازات</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-award" style="color: #059669;"></i> <span>{{ __('الشهادات والإنجازات') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.flashcards.index') }}" class="nav-item {{ Request::is('student/flashcards*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bolt" style="color: #a21caf;"></i> <span>بطاقات الاستذكار السريع</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-bolt" style="color: #a21caf;"></i> <span>{{ __('بطاقات الاستذكار السريع') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.leaderboard') }}" class="nav-item {{ Request::is('student/leaderboard*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-trophy" style="color: #ea580c;"></i> <span>لوحة الشرف وتحدي الأوائل</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-trophy" style="color: #ea580c;"></i> <span>{{ __('لوحة الشرف وتحدي الأوائل') }}</span></div></div>
                 </a>
                 <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="nav-item">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calculator" style="color: #1d4ed8;"></i> <span>حاسبة المعدل الجامعي</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-calculator" style="color: #1d4ed8;"></i> <span>{{ __('حاسبة المعدل الجامعي') }}</span></div></div>
                 </a>
                 <a href="{{ route('tawjihi.formulas') }}" target="_blank" class="nav-item">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-square-root-variable" style="color: #7c3aed;"></i> <span>دليل القوانين الوزارية</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-square-root-variable" style="color: #7c3aed;"></i> <span>{{ __('دليل القوانين الوزارية') }}</span></div></div>
                 </a>
 
-                <span class="group-label">الحساب والتواصل</span>
+                <span class="group-label">{{ __('الحساب والتواصل') }}</span>
                 <a href="{{ route('student.teachers.index') }}" class="nav-item {{ Request::is('student/teachers*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chalkboard-user"></i> <span>معلمو مرحلتي</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-chalkboard-user"></i> <span>{{ __('معلمو مرحلتي') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.support') }}" class="nav-item {{ Request::is('student/support*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-headset"></i> <span>المساعدة والدعم</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-headset"></i> <span>{{ __('المساعدة والدعم') }}</span></div></div>
                 </a>
                 <a href="{{ route('student.profile') }}" class="nav-item {{ Request::is('student/profile*') ? 'active' : '' }}">
-                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-gear"></i> <span>الملف الشخصي</span></div></div>
+                    <div class="nav-link"><div class="link-main"><i class="fa-solid fa-user-gear"></i> <span>{{ __('الملف الشخصي') }}</span></div></div>
                 </a>
             @endif
         </div>
@@ -772,7 +772,7 @@
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
                 <button type="submit" style="background:none; border:none; color: var(--ed-danger); cursor:pointer; font-weight:600; font-size:0.86rem; display:flex; align-items:center; gap:10px; width:100%; padding: 6px 8px; border-radius: var(--ed-radius-sm); transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-danger-soft)'" onmouseout="this.style.background='none'">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> تسجيل الخروج
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> {{ __('تسجيل الخروج') }}
                 </button>
             </form>
         </div>
@@ -789,7 +789,7 @@
                     <i class="fa-regular fa-calendar-check" style="color: var(--ed-primary);"></i> {{ date('Y/m/d') }} م
                 </div>
                 <div class="supervisor-top-tag" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">
-                    <i class="fa-solid fa-user-tie"></i> المشرف العام: أ. أحمد حسين شمالي
+                    <i class="fa-solid fa-user-tie"></i> {{ __('المشرف العام: أ. أحمد حسين شمالي') }}
                 </div>
             </div>
 
@@ -938,11 +938,11 @@
                     <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 48px; width: 340px; background: var(--ed-surface); border-radius: var(--ed-radius-md); box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); z-index: 1000; overflow: hidden;">
                         <div style="padding: 12px 16px; background: var(--ed-surface-alt); border-bottom: 1px solid var(--ed-border); display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-weight: 700; font-size: 0.88rem; color: var(--ed-text-main); display: flex; align-items: center; gap: 8px;">
-                                <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> مركز التنبيهات
+                                <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> {{ __('مركز التنبيهات') }}
                             </span>
                             @if(auth()->check() || auth('student')->check())
                                 <button onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.74rem; color: var(--ed-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                    <i class="fa-solid fa-check-double"></i> تحديد الكل كمقروء
+                                    <i class="fa-solid fa-check-double"></i> {{ __('تحديد الكل كمقروء') }}
                                 </button>
                             @endif
                         </div>
@@ -968,7 +968,7 @@
                             @empty
                                 <div style="padding: 28px 16px; text-align: center; color: var(--ed-text-muted);">
                                     <i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success); opacity: 0.8;"></i>
-                                    <span style="font-size: 0.84rem; font-weight: 500;">لا توجد تنبيهات جديدة</span>
+                                    <span style="font-size: 0.84rem; font-weight: 500;">{{ __('لا توجد تنبيهات جديدة') }}</span>
                                 </div>
                             @endforelse
                         </div>
@@ -976,7 +976,7 @@
                         @if(isset($isStudent) && $isStudent)
                             <div style="padding: 10px; background: var(--ed-surface-alt); border-top: 1px solid var(--ed-border); text-align: center;">
                                 <a href="{{ route('student.notifications.index') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--ed-primary); text-decoration: none;">
-                                    عرض كافة التنبيهات ←
+                                    {{ __('عرض كافة التنبيهات ←') }}
                                 </a>
                             </div>
                         @endif
@@ -990,7 +990,7 @@
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <span class="user-info-text" style="font-size: 0.84rem; font-weight: 600; color: var(--ed-text-main);">
-                        {{ auth()->user()->name ?? auth('student')->user()->name_ar ?? auth('student')->user()->name ?? 'حسابي' }}
+                        {{ auth()->user()->name ?? auth('student')->user()->name_ar ?? auth('student')->user()->name ?? __('حسابي') }}
                     </span>
                 </div>
             </div>
@@ -1006,40 +1006,40 @@
         @if(auth('student')->check())
             <a href="{{ route('student.dashboard') }}" class="bottom-nav-item {{ Request::is('student/dashboard*') ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
-                <span>الرئيسية</span>
+                <span>{{ __('الرئيسية') }}</span>
             </a>
             <a href="{{ route('student.subjects.index') }}" class="bottom-nav-item {{ Request::is('student/subjects*') ? 'active' : '' }}">
                 <i class="fa-solid fa-book-open"></i>
-                <span>المواد</span>
+                <span>{{ __('المواد') }}</span>
             </a>
             <a href="{{ route('student.exams.index') }}" class="bottom-nav-item {{ Request::is('student/my-exams*') || Request::is('student/exams*') ? 'active' : '' }}">
                 <i class="fa-solid fa-pen-to-square"></i>
-                <span>اختباراتي</span>
+                <span>{{ __('اختباراتي') }}</span>
             </a>
             <a href="{{ route('student.achievements') }}" class="bottom-nav-item {{ Request::is('student/achievements*') ? 'active' : '' }}">
                 <i class="fa-solid fa-award"></i>
-                <span>الشهادات</span>
+                <span>{{ __('الشهادات') }}</span>
             </a>
             <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ Request::is('student/profile*') ? 'active' : '' }}">
                 <i class="fa-solid fa-user"></i>
-                <span>حسابي</span>
+                <span>{{ __('حسابي') }}</span>
             </a>
         @elseif(auth()->check() && auth()->user()->role === 'admin')
             <a href="{{ route('admin.dashboard') }}" class="bottom-nav-item {{ Request::is('admin/dashboard*') ? 'active' : '' }}">
                 <i class="fa-solid fa-chart-pie"></i>
-                <span>اللوحة</span>
+                <span>{{ __('اللوحة') }}</span>
             </a>
             <a href="{{ route('admin.students.index') }}" class="bottom-nav-item {{ Request::is('admin/students*') ? 'active' : '' }}">
                 <i class="fa-solid fa-users"></i>
-                <span>الطلاب</span>
+                <span>{{ __('الطلاب') }}</span>
             </a>
             <a href="{{ route('admin.certificates.index') }}" class="bottom-nav-item {{ Request::is('admin/certificates*') ? 'active' : '' }}">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>الشهادات</span>
+                <span>{{ __('الشهادات') }}</span>
             </a>
             <a href="{{ route('admin.payments.index') }}" class="bottom-nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
                 <i class="fa-solid fa-wallet"></i>
-                <span>المدفوعات</span>
+                <span>{{ __('المدفوعات') }}</span>
             </a>
             <a href="{{ route('admin.settings.index') }}" class="bottom-nav-item {{ Request::is('admin/settings*') ? 'active' : '' }}">
                 <i class="fa-solid fa-gear"></i>

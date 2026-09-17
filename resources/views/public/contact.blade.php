@@ -3,7 +3,7 @@
 @section('title', 'مركز الدعم الفني والشكاوى الأكاديمية | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
 
 @section('content')
-<div class="contact-page-wrapper" dir="rtl">
+<div class="contact-page-wrapper">
     
     <!-- الترويسة الرئيسية -->
     <div class="contact-hero-card">

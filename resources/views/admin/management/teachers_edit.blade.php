@@ -1,325 +1,333 @@
 @extends('layouts.app')
 
+@section('title', __('تعديل ملف المعلم') . ' - ' . __('إدارة المنصة'))
+
 @section('content')
-<style>
-    /* استيراد خط كاييرو للمظهر العصري */
-    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+<div class="teacher-edit-wrapper">
 
-    :root {
-        --main-bg: #f0f2f5;
-        --primary-grad: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --accent-color: #764ba2;
-        --success-bg: #ecfdf5;
-        --success-text: #065f46;
-        --success-border: #10b981;
-        --text-dark: #2d3436;
-        --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    body {
-        background-color: var(--main-bg);
-        font-family: 'Cairo', sans-serif;
-    }
-
-    .wrapper {
-        max-width: 900px;
-        margin: 50px auto;
-        padding: 0 20px;
-    }
-
-    /* تصميم رسالة النجاح */
-    .alert-custom {
-        padding: 15px 20px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        border-right: 5px solid var(--success-border);
-        background: var(--success-bg);
-        color: var(--success-text);
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        animation: slideIn 0.5s ease-out;
-    }
-
-    @keyframes slideIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* الرأس الأنيق */
-    .header-section {
-        background: var(--primary-grad);
-        padding: 40px;
-        border-radius: 20px 20px 0 0;
-        color: white;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .header-section::before {
-        content: '';
-        position: absolute;
-        top: -50px;
-        left: -50px;
-        width: 150px;
-        height: 150px;
-        background: rgba(255,255,255,0.1);
-        border-radius: 50%;
-    }
-
-    .header-title h2 {
-        margin: 0;
-        font-weight: 700;
-        font-size: 1.8rem;
-    }
-
-    .header-title p {
-        margin: 5px 0 0;
-        opacity: 0.8;
-        font-size: 0.9rem;
-    }
-
-    .btn-return {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        text-decoration: none;
-        padding: 10px 20px;
-        border-radius: 12px;
-        backdrop-filter: blur(10px);
-        transition: 0.3s;
-        border: 1px solid rgba(255,255,255,0.3);
-        font-size: 0.9rem;
-    }
-
-    .btn-return:hover {
-        background: white;
-        color: var(--accent-color);
-    }
-
-    /* جسم البطاقة */
-    .main-card {
-        background: white;
-        border-radius: 0 0 20px 20px;
-        box-shadow: var(--card-shadow);
-        padding: 40px;
-    }
-
-    /* تنسيق الحقول */
-    .input-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 25px;
-    }
-
-    .input-box {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .input-box.full {
-        grid-column: span 2;
-    }
-
-    .input-box label {
-        color: var(--text-dark);
-        font-weight: 600;
-        font-size: 0.95rem;
-        margin-right: 5px;
-    }
-
-    .input-box input, .input-box textarea, .input-box select {
-        border: 2px solid #edf2f7;
-        padding: 12px 15px;
-        border-radius: 12px;
-        font-family: 'Cairo', sans-serif;
-        font-size: 1rem;
-        transition: 0.3s;
-        background: #f8fafc;
-    }
-
-    .input-box input:focus, .input-box textarea:focus, .input-box select:focus {
-        border-color: var(--accent-color);
-        background: white;
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
-    }
-
-    /* قسم الصورة */
-    .photo-section {
-        background: #fdfcfe;
-        border: 2px dashed #d1d5db;
-        padding: 20px;
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-
-    .preview-img {
-        width: 80px;
-        height: 80px;
-        border-radius: 15px;
-        object-fit: cover;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    }
-
-    /* أزرار التحكم */
-    .action-area {
-        margin-top: 40px;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-    }
-
-    .btn-save {
-        background: var(--primary-grad);
-        color: white;
-        border: none;
-        padding: 15px 40px;
-        border-radius: 15px;
-        font-weight: 700;
-        cursor: pointer;
-        font-size: 1.1rem;
-        transition: 0.3s;
-        box-shadow: 0 10px 15px -3px rgba(118, 75, 162, 0.4);
-    }
-
-    .btn-save:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 20px -3px rgba(118, 75, 162, 0.5);
-    }
-
-    .btn-cancel {
-        background: #fff;
-        color: #64748b;
-        border: 2px solid #e2e8f0;
-        padding: 15px 40px;
-        border-radius: 15px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: 0.3s;
-    }
-
-    .btn-cancel:hover {
-        background: #f1f5f9;
-        color: #1e293b;
-    }
-
-    /* تنبيهات الخطأ */
-    .error-tag {
-        color: #e53e3e;
-        font-size: 0.8rem;
-        margin-top: 4px;
-    }
-
-    @media (max-width: 768px) {
-        .input-grid { grid-template-columns: 1fr; }
-        .input-box.full { grid-column: span 1; }
-        .header-section { flex-direction: column; text-align: center; gap: 20px; }
-    }
-</style>
-
-<div class="wrapper" dir="rtl">
-
-    <!-- رسالة النجاح -->
+    {{-- رسالة النجاح --}}
     @if(session('success'))
-    <div class="alert-custom">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    <div class="academic-alert-success">
+        <i class="fa-solid fa-circle-check"></i>
         <span>{{ session('success') }}</span>
     </div>
     @endif
 
-    <!-- الرأس -->
-    <div class="header-section">
-        <div class="header-title">
-            <h2>تعديل ملف المعلم</h2>
-            <p>تحديث المعلومات الشخصية والمهنية للمستخدم: {{ $teacher->name }}</p>
+    {{-- الرأس الأكاديمي الكلاسيكي --}}
+    <div class="academic-header-card">
+        <div>
+            <div class="badge-tag">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <span>{{ __('إدارة الكادر التعليمي') }}</span>
+            </div>
+            <h1 class="header-title">{{ __('تعديل ملف المعلم') }}</h1>
+            <p class="header-subtitle">{{ __('تحديث المعلومات الشخصية والمهنية للمستخدم:') }} <strong>{{ $teacher->name }}</strong></p>
         </div>
-        <a href="{{ route('admin.teachers.info') }}" class="btn-return">
-            رجوع للسجل &larr;
+        <a href="{{ route('admin.teachers.info') }}" class="btn-classic-return">
+            <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('رجوع للسجل') }}
         </a>
     </div>
 
-    <!-- البطاقة الرئيسية -->
-    <div class="main-card">
+    {{-- بطاقة النموذج --}}
+    <div class="academic-form-card">
         <form action="{{ route('admin.teachers.update', $teacher->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
-            <div class="input-grid">
-                <div class="input-box">
-                    <label>اسم المعلم</label>
-                    <input type="text" name="name" value="{{ old('name', $teacher->name) }}" required>
-                    @error('name') <span class="error-tag">{{ $message }}</span> @enderror
+            <div class="input-fields-grid">
+                <div class="field-item">
+                    <label class="academic-label">{{ __('اسم المعلم') }} <span class="req-star">*</span></label>
+                    <input type="text" name="name" value="{{ old('name', $teacher->name) }}" class="academic-input" required>
+                    @error('name') <span class="field-error-text">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="input-box">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" dir="ltr" style="text-align: right;" name="email" value="{{ old('email', $teacher->email) }}" required>
-                    @error('email') <span class="error-tag">{{ $message }}</span> @enderror
+                <div class="field-item">
+                    <label class="academic-label">{{ __('البريد الإلكتروني') }} <span class="req-star">*</span></label>
+                    <input type="email" name="email" value="{{ old('email', $teacher->email) }}" class="academic-input font-mono" required>
+                    @error('email') <span class="field-error-text">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="input-box">
-                    <label>رقم الهاتف</label>
-                    <input type="text" dir="ltr" style="text-align: right;" name="phone" value="{{ old('phone', $teacher->phone) }}">
-                    @error('phone') <span class="error-tag">{{ $message }}</span> @enderror
+                <div class="field-item">
+                    <label class="academic-label">{{ __('رقم الهاتف') }}</label>
+                    <input type="text" name="phone" value="{{ old('phone', $teacher->phone) }}" class="academic-input font-mono">
+                    @error('phone') <span class="field-error-text">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="input-box">
-                    <label>التخصص الأكاديمي</label>
-                    <input type="text" name="major" value="{{ old('major', $teacher->major) }}">
-                    @error('major') <span class="error-tag">{{ $message }}</span> @enderror
+                <div class="field-item">
+                    <label class="academic-label">{{ __('التخصص الأكاديمي') }}</label>
+                    <input type="text" name="major" value="{{ old('major', $teacher->major) }}" class="academic-input">
+                    @error('major') <span class="field-error-text">{{ $message }}</span> @enderror
                 </div>
 
-                <!-- حقل المادة الدراسية المرتبطة -->
-                <div class="input-box">
-                    <label>المادة الدراسية</label>
-                    <select name="subject_id">
-                        <option value="">اختر المادة الدراسية</option>
+                {{-- حقل المادة الدراسية --}}
+                <div class="field-item">
+                    <label class="academic-label">{{ __('المادة الدراسية') }}</label>
+                    <select name="subject_id" class="academic-select">
+                        <option value="">{{ __('اختر المادة الدراسية') }}</option>
                         @foreach($stages as $stage)
-                            <optgroup label="{{ $stage->name }}">
+                            <optgroup label="{{ $stage->label_ar ?? $stage->name }}">
                                 @foreach($stage->subjects as $subject)
                                     <option value="{{ $subject->id }}" {{ old('subject_id', $teacher->subject_id) == $subject->id ? 'selected' : '' }}>
-                                        {{ $subject->name }}
+                                        {{ $subject->name_ar ?? $subject->name }}
                                     </option>
                                 @endforeach
                             </optgroup>
                         @endforeach
                     </select>
-                    @error('subject_id') <span class="error-tag">{{ $message }}</span> @enderror
+                    @error('subject_id') <span class="field-error-text">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="input-box">
-                    <label>كلمة المرور (اختياري)</label>
-                    <input type="password" name="password" placeholder="اتركها فارغة للأمان">
+                <div class="field-item">
+                    <label class="academic-label">{{ __('كلمة المرور الجديدة (اختياري)') }}</label>
+                    <input type="password" name="password" placeholder="{{ __('اتركها فارغة إذا لم ترغب بتغييرها') }}" class="academic-input">
                 </div>
 
-                <div class="input-box">
-                    <label>الصورة الشخصية</label>
-                    <div class="photo-section">
+                <div class="field-item full-width">
+                    <label class="academic-label">{{ __('الصورة الشخصية للمعلم') }}</label>
+                    <div class="photo-upload-box">
                         @if($teacher->photo)
-                            <img src="{{ asset('storage/' . $teacher->photo) }}" class="preview-img">
+                            <img src="{{ asset('storage/' . $teacher->photo) }}" class="teacher-preview-thumb" alt="{{ $teacher->name }}">
+                        @else
+                            <div class="teacher-placeholder-thumb">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
                         @endif
-                        <input type="file" name="photo">
+                        <div class="upload-field-wrap">
+                            <input type="file" name="photo" accept="image/*" class="file-input-clean">
+                            <small class="upload-hint">{{ __('يدعم صيغ الصور (JPG, PNG, WebP). يفضل صورة شخصية مربعة عالية الوضوح.') }}</small>
+                        </div>
                     </div>
                 </div>
 
-                <div class="input-box full">
-                    <label>نبذة تعريفية قصيرة</label>
-                    <textarea name="bio" rows="4">{{ old('bio', $teacher->bio) }}</textarea>
+                <div class="field-item full-width">
+                    <label class="academic-label">{{ __('نبذة تعريفية قصيرة (Bio)') }}</label>
+                    <textarea name="bio" rows="4" class="academic-textarea" placeholder="{{ __('اكتب نبذة عن مؤهلات المعلم وخبرته الأكاديمية...') }}">{{ old('bio', $teacher->bio) }}</textarea>
                 </div>
             </div>
 
-            <div class="action-area">
-                <button type="submit" class="btn-save">حفظ التغييرات الآن</button>
-                <a href="{{ route('admin.teachers.info') }}" class="btn-cancel">إلغاء الأمر</a>
+            <div class="form-actions-bar">
+                <button type="submit" class="btn-save-primary">
+                    <i class="fa-solid fa-check"></i> {{ __('حفظ التغييرات الآن') }}
+                </button>
+                <a href="{{ route('admin.teachers.info') }}" class="btn-cancel-secondary">
+                    {{ __('إلغاء الأمر') }}
+                </a>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .teacher-edit-wrapper {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
+    }
+
+    .academic-alert-success {
+        padding: 14px 18px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-inline-start: 5px solid #10b981;
+        background: #ecfdf5;
+        color: #065f46;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .academic-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 22px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .header-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 4px;
+    }
+    .header-subtitle {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+    .btn-classic-return {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
+    }
+    .btn-classic-return:hover {
+        background: #f8fafc;
+        color: #0f172a;
+    }
+
+    .academic-form-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        padding: 28px;
+    }
+
+    .input-fields-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 22px;
+    }
+    .field-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .field-item.full-width {
+        grid-column: span 2;
+    }
+
+    .academic-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .req-star { color: #ef4444; }
+
+    .academic-input, .academic-select, .academic-textarea {
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        background: #f8fafc;
+        outline: none;
+        transition: border-color 0.15s;
+        box-sizing: border-box;
+        font-family: inherit;
+    }
+    .academic-input:focus, .academic-select:focus, .academic-textarea:focus {
+        border-color: #1e3a8a;
+        background: #ffffff;
+    }
+
+    .photo-upload-box {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        padding: 16px 20px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+    .teacher-preview-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 2px solid #e2e8f0;
+        flex-shrink: 0;
+    }
+    .teacher-placeholder-thumb {
+        width: 70px;
+        height: 70px;
+        border-radius: 10px;
+        background: #e2e8f0;
+        color: #94a3b8;
+        display: grid;
+        place-items: center;
+        font-size: 1.6rem;
+        flex-shrink: 0;
+    }
+    .upload-field-wrap { flex: 1; min-width: 240px; }
+    .file-input-clean { font-size: 0.85rem; color: #475569; }
+    .upload-hint {
+        display: block;
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-top: 6px;
+    }
+
+    .form-actions-bar {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+    .btn-save-primary {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        padding: 11px 26px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
+    }
+    .btn-save-primary:hover { background: #172554; }
+    .btn-cancel-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        padding: 11px 22px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-cancel-secondary:hover { background: #e2e8f0; color: #0f172a; }
+
+    .field-error-text {
+        color: #dc2626;
+        font-size: 0.78rem;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .input-fields-grid { grid-template-columns: 1fr; }
+        .field-item.full-width { grid-column: span 1; }
+        .form-actions-bar { flex-direction: column; width: 100%; }
+        .btn-save-primary, .btn-cancel-secondary { width: 100%; justify-content: center; text-align: center; }
+    }
+</style>
 @endsection

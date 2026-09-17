@@ -3,7 +3,7 @@
 @section('title', 'سجل الإنجاز والشهادات الأكاديمية | منارة التوجيهي')
 
 @section('content')
-<div class="achievements-page-wrapper" dir="rtl">
+<div class="achievements-page-wrapper">
 
     <!-- 1. ترويسة سجل الإنجاز الأكاديمي -->
     <div class="calm-achievements-hero">

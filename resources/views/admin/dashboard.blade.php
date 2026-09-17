@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'لوحة الإدارة المركزية')
+@section('title', __('Central Admin Dashboard') . ' | ' . config('app.name'))
 
 @section('content')
 <div class="ed-admin-container">
@@ -10,18 +10,18 @@
         <div class="ed-admin-title-box">
             <div class="ed-admin-breadcrumbs">
                 <i class="fas fa-home"></i>
-                <span>الرئيسية</span>
-                <i class="fas fa-chevron-left divider"></i>
-                <span class="active">لوحة التحكم الأكاديمية</span>
+                <span>{{ __('Home') }}</span>
+                <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} divider"></i>
+                <span class="active">{{ __('Academic Control Panel') }}</span>
             </div>
-            <h1>لوحة الإدارة المركزية</h1>
-            <p>مرحباً بك، إليك ملخص مؤشرات الأداء، وإدارة الكادر التعليمي، والعمليات الحالية للمنصة.</p>
+            <h1>{{ __('Central Admin Dashboard') }}</h1>
+            <p>{{ __('Welcome, here is your summary of performance indicators, academic staff management, and active platform operations.') }}</p>
         </div>
 
         <div class="ed-admin-status-wrap">
             <div class="ed-status-chip">
                 <span class="ed-live-dot"></span>
-                <span>النظام: متصل ومستقر</span>
+                <span>{{ __('System: Online & Stable') }}</span>
             </div>
             <div class="ed-date-chip">
                 <i class="far fa-calendar-alt"></i>
@@ -34,36 +34,36 @@
     @php
         $kpis = [
             [
-                'label' => 'إجمالي المعلمين',
+                'label' => __('Total Teachers'),
                 'val' => $data['total_teachers'] ?? 0,
                 'icon' => 'fas fa-chalkboard-teacher',
-                'color' => '#1d4ed8',
+                'color' => '#1e3a8a',
                 'bg' => '#eff6ff',
-                'desc' => 'كادر تعليمي معتمد'
+                'desc' => __('Certified Teaching Staff')
             ],
             [
-                'label' => 'الطلبة المسجلين',
+                'label' => __('Registered Students'),
                 'val' => $data['total_students'] ?? 0,
                 'icon' => 'fas fa-user-graduate',
                 'color' => '#059669',
                 'bg' => '#ecfdf5',
-                'desc' => 'طالب في مختلف الفروع'
+                'desc' => __('Students across all branches')
             ],
             [
-                'label' => 'المحتوى والملفات',
+                'label' => __('Content & Files'),
                 'val' => $data['total_files'] ?? 0,
                 'icon' => 'fas fa-folder-open',
                 'color' => '#d97706',
                 'bg' => '#fffbeb',
-                'desc' => 'ملف ومصدر دراسي'
+                'desc' => __('Academic files & resources')
             ],
             [
-                'label' => 'حالة الخادم والأمان',
+                'label' => __('Server & Security Status'),
                 'val' => '99.9%',
                 'icon' => 'fas fa-shield-alt',
                 'color' => '#475569',
                 'bg' => '#f1f5f9',
-                'desc' => 'حماية وتوافرية كاملة'
+                'desc' => __('Full Protection & High Availability')
             ],
         ];
     @endphp
@@ -94,56 +94,56 @@
                 <div class="ed-card-header">
                     <div class="ed-card-title">
                         <i class="fas fa-th-large"></i>
-                        <span>إجراءات ووصول سريع</span>
+                        <span>{{ __('Quick Actions & Access') }}</span>
                     </div>
                 </div>
                 <div class="ed-quick-actions-grid">
                     <a href="{{ route('admin.subjects.pricing') }}" class="ed-quick-btn">
-                        <div class="ed-qb-icon" style="background: #eff6ff; color: #1d4ed8;">
+                        <div class="ed-qb-icon" style="background: #eff6ff; color: #1e3a8a;">
                             <i class="fas fa-tags"></i>
                         </div>
-                        <span class="ed-qb-title">تسعير المواد</span>
-                        <small class="ed-qb-desc">إدارة خطط الاشتراكات</small>
+                        <span class="ed-qb-title">{{ __('Subject Pricing') }}</span>
+                        <small class="ed-qb-desc">{{ __('Manage Subscription Plans') }}</small>
                     </a>
 
                     <a href="{{ route('admin.payments.index') }}" class="ed-quick-btn">
                         <div class="ed-qb-icon" style="background: #ecfdf5; color: #059669;">
                             <i class="fas fa-wallet"></i>
                         </div>
-                        <span class="ed-qb-title">الاشتراكات والمالية</span>
-                        <small class="ed-qb-desc">العمليات والمدفوعات</small>
+                        <span class="ed-qb-title">{{ __('Subscriptions & Finance') }}</span>
+                        <small class="ed-qb-desc">{{ __('Transactions & Payments') }}</small>
                     </a>
 
                     <a href="{{ route('admin.certificates.index') }}" class="ed-quick-btn">
                         <div class="ed-qb-icon" style="background: #fffbeb; color: #d97706;">
                             <i class="fas fa-certificate"></i>
                         </div>
-                        <span class="ed-qb-title">إصدار الشهادات</span>
-                        <small class="ed-qb-desc">شهادات التميز والإتمام</small>
+                        <span class="ed-qb-title">{{ __('Issue Certificates') }}</span>
+                        <small class="ed-qb-desc">{{ __('Honors & Completion Diplomas') }}</small>
                     </a>
 
                     <a href="{{ route('admin.teachers.create') }}" class="ed-quick-btn">
                         <div class="ed-qb-icon" style="background: #f5f3ff; color: #7c3aed;">
                             <i class="fas fa-user-plus"></i>
                         </div>
-                        <span class="ed-qb-title">إضافة مدرس</span>
-                        <small class="ed-qb-desc">إنشاء وتعيين الصلاحيات</small>
+                        <span class="ed-qb-title">{{ __('Add Teacher') }}</span>
+                        <small class="ed-qb-desc">{{ __('Create & Assign Permissions') }}</small>
                     </a>
 
                     <a href="{{ route('admin.students.create') }}" class="ed-quick-btn">
                         <div class="ed-qb-icon" style="background: #e0f2fe; color: #0284c7;">
                             <i class="fas fa-user-graduate"></i>
                         </div>
-                        <span class="ed-qb-title">إضافة طالب</span>
-                        <small class="ed-qb-desc">تسجيل طالب جديد</small>
+                        <span class="ed-qb-title">{{ __('Add Student') }}</span>
+                        <small class="ed-qb-desc">{{ __('Register New Student') }}</small>
                     </a>
 
                     <a href="{{ route('admin.settings.index') }}" class="ed-quick-btn">
                         <div class="ed-qb-icon" style="background: #f1f5f9; color: #334155;">
                             <i class="fas fa-cog"></i>
                         </div>
-                        <span class="ed-qb-title">إعدادات المنصة</span>
-                        <small class="ed-qb-desc">خيارات وهوية النظام</small>
+                        <span class="ed-qb-title">{{ __('Platform Settings') }}</span>
+                        <small class="ed-qb-desc">{{ __('System & Brand Configurations') }}</small>
                     </a>
                 </div>
             </div>
@@ -153,7 +153,7 @@
                 <div class="ed-card-header">
                     <div class="ed-card-title">
                         <i class="fas fa-users-cog"></i>
-                        <span>إدارة المستخدمين والأكاديميين</span>
+                        <span>{{ __('Users & Faculty Management') }}</span>
                     </div>
                 </div>
 
@@ -165,16 +165,16 @@
                                 <i class="fas fa-chalkboard-teacher"></i>
                             </div>
                             <div class="ed-gi-text">
-                                <strong>كادر المعلمين</strong>
-                                <p>إدارة الحسابات، صلاحيات المواد، والمجموعات التعليمية</p>
+                                <strong>{{ __('Teachers Faculty') }}</strong>
+                                <p>{{ __('Manage accounts, subject permissions, and classes') }}</p>
                             </div>
                         </div>
                         <div class="ed-gi-actions">
                             <a href="{{ route('admin.teachers.create') }}" class="ed-btn ed-btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">
-                                <i class="fas fa-plus"></i> إضافة
+                                <i class="fas fa-plus"></i> {{ __('Add') }}
                             </a>
                             <a href="{{ route('admin.teachers.index') }}" class="ed-btn ed-btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
-                                عرض الكل
+                                {{ __('View All') }}
                             </a>
                         </div>
                     </div>
@@ -186,16 +186,16 @@
                                 <i class="fas fa-user-graduate"></i>
                             </div>
                             <div class="ed-gi-text">
-                                <strong>قاعدة بيانات الطلبة</strong>
-                                <p>متابعة الفروع الأكاديمية، والتحاق المواد، والتقدم الدراسي</p>
+                                <strong>{{ __('Students Database') }}</strong>
+                                <p>{{ __('Track academic branches, enrollments, and study progress') }}</p>
                             </div>
                         </div>
                         <div class="ed-gi-actions">
                             <a href="{{ route('admin.students.create') }}" class="ed-btn ed-btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">
-                                <i class="fas fa-plus"></i> إضافة
+                                <i class="fas fa-plus"></i> {{ __('Add') }}
                             </a>
                             <a href="{{ route('admin.students.index') }}" class="ed-btn ed-btn-primary" style="font-size: 0.8rem; padding: 6px 12px;">
-                                عرض الكل
+                                {{ __('View All') }}
                             </a>
                         </div>
                     </div>
@@ -212,27 +212,27 @@
                 <div class="ed-card-header">
                     <div class="ed-card-title">
                         <i class="fas fa-sliders-h"></i>
-                        <span>بوابة التحكم والتسجيل</span>
+                        <span>{{ __('System Control & Admissions') }}</span>
                     </div>
-                    <span class="ed-badge ed-badge-blue">إشراف عام</span>
+                    <span class="ed-badge ed-badge-blue">{{ __('Super Admin') }}</span>
                 </div>
 
                 <div class="ed-side-section">
-                    <label class="ed-side-label">حالة تسجيل الطلبة الجدد</label>
+                    <label class="ed-side-label">{{ __('New Student Registration Status') }}</label>
                     @if(class_exists(\App\Models\Setting::class) && \App\Models\Setting::get('registration_status') == 'open')
                         <div class="ed-status-indicator active">
                             <i class="fas fa-check-circle"></i>
                             <div>
-                                <strong>التسجيل متاح حالياً</strong>
-                                <p>يمكن للطلبة الجدد إنشاء حساباتهم ذاتياً</p>
+                                <strong>{{ __('Registration is Open') }}</strong>
+                                <p>{{ __('New students can self-register online') }}</p>
                             </div>
                         </div>
                     @else
                         <div class="ed-status-indicator inactive">
                             <i class="fas fa-lock"></i>
                             <div>
-                                <strong>التسجيل مغلق مؤقتاً</strong>
-                                <p>التسجيل يتم فقط عبر لوحة الإدارة</p>
+                                <strong>{{ __('Registration Temporarily Closed') }}</strong>
+                                <p>{{ __('Registration managed via admin panel only') }}</p>
                             </div>
                         </div>
                     @endif
@@ -240,18 +240,18 @@
 
                 <div class="ed-side-section">
                     <div class="ed-side-flex-label">
-                        <label class="ed-side-label">سعة التخزين والسيرفر</label>
+                        <label class="ed-side-label">{{ __('Storage & Server Capacity') }}</label>
                         <span class="ed-usage-pct">82%</span>
                     </div>
                     <div class="ed-progress-track">
                         <div class="ed-progress-bar" style="width: 82%;"></div>
                     </div>
-                    <span class="ed-usage-info">تم استخدام 164 جيجابايت من إجمالي 200 جيجابايت</span>
+                    <span class="ed-usage-info">{{ __('164 GB used of 200 GB total') }}</span>
                 </div>
 
                 <div class="ed-side-note">
                     <i class="fas fa-info-circle"></i>
-                    <p>أنت تعمل بصلاحيات المشرف العام. جميع التعديلات والإجراءات مؤمنة ومسجلة في سجل تدقيق النظام.</p>
+                    <p>{{ __('Operating with General Supervisor permissions. All changes are logged in system audit.') }}</p>
                 </div>
             </div>
 
@@ -260,13 +260,13 @@
                 <div class="ed-card-header">
                     <div class="ed-card-title">
                         <i class="fas fa-headset"></i>
-                        <span>قنوات التواصل والدعم</span>
+                        <span>{{ __('Support & Inquiries Channels') }}</span>
                     </div>
                 </div>
                 <div class="ed-support-summary">
-                    <p>مركز التواصل يتيح لك متابعة استفسارات ومشاكل الطلبة والمعلمين مباشرة.</p>
+                    <p>{{ __('Communications center allows you to track student and teacher inquiries directly.') }}</p>
                     <a href="{{ route('admin.settings.index') }}" class="ed-btn ed-btn-outline" style="width: 100%; justify-content: center;">
-                        <i class="fas fa-sliders-h"></i> ضبط إعدادات المنصة
+                        <i class="fas fa-sliders-h"></i> {{ __('Configure Platform Settings') }}
                     </a>
                 </div>
             </div>
@@ -279,9 +279,11 @@
 
 <style>
     .ed-admin-container {
-        padding: 24px 32px 60px;
-        direction: rtl;
-        font-family: 'Alexandria', 'Tajawal', sans-serif;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 0 60px;
+        box-sizing: border-box;
     }
 
     /* Header */
@@ -309,21 +311,23 @@
     }
 
     .ed-admin-breadcrumbs .active {
-        color: #1d4ed8;
+        color: #1e3a8a;
         font-weight: 600;
     }
 
     .ed-admin-title-box h1 {
-        font-size: 1.75rem;
+        font-size: 1.65rem;
         font-weight: 800;
         color: #0f172a;
         margin: 0 0 6px;
     }
 
     .ed-admin-title-box p {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: #64748b;
         margin: 0;
+        line-height: 1.6;
+        max-width: 780px;
     }
 
     .ed-admin-status-wrap {
@@ -469,7 +473,7 @@
     }
 
     .ed-card-title i {
-        color: #1d4ed8;
+        color: #1e3a8a;
     }
 
     /* Quick Actions */
@@ -560,7 +564,7 @@
 
     .ed-gi-avatar.teacher {
         background: #eff6ff;
-        color: #1d4ed8;
+        color: #1e3a8a;
     }
 
     .ed-gi-avatar.student {
@@ -588,6 +592,38 @@
         gap: 8px;
     }
 
+    .ed-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: none;
+        cursor: pointer;
+    }
+
+    .ed-btn-primary {
+        background: #1e3a8a;
+        color: #ffffff;
+    }
+
+    .ed-btn-primary:hover {
+        background: #172554;
+    }
+
+    .ed-btn-outline {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+    }
+
+    .ed-btn-outline:hover {
+        border-color: #1e3a8a;
+        color: #1e3a8a;
+    }
+
     /* Side Column Items */
     .ed-side-section {
         margin-bottom: 20px;
@@ -611,7 +647,7 @@
     .ed-usage-pct {
         font-size: 0.85rem;
         font-weight: 800;
-        color: #1d4ed8;
+        color: #1e3a8a;
     }
 
     .ed-progress-track {
@@ -624,7 +660,7 @@
 
     .ed-progress-bar {
         height: 100%;
-        background: #1d4ed8;
+        background: #1e3a8a;
         border-radius: 999px;
     }
 
@@ -703,6 +739,15 @@
         margin-bottom: 16px;
     }
 
+    .ed-badge {
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .ed-badge-blue { background: #eff6ff; color: #1e3a8a; }
+
     /* Responsive adjustments */
     @media (max-width: 1200px) {
         .ed-kpi-grid {
@@ -711,9 +756,6 @@
     }
 
     @media (max-width: 992px) {
-        .ed-admin-container {
-            padding: 18px 16px 60px;
-        }
         .ed-admin-grid {
             grid-template-columns: 1fr;
         }

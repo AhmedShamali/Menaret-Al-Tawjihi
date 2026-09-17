@@ -1,164 +1,167 @@
 @extends('layouts.app')
 
-@section('title', 'الاستفسارات والشكاوى الأكاديمية | إدارة المنصة')
+@section('title', __('الاستفسارات والشكاوى الأكاديمية') . ' - ' . __('إدارة المنصة'))
 
 @section('content')
-<div style="max-width: 1350px; margin: 0 auto; padding: 10px 0 40px;" dir="rtl">
+<div class="inquiries-page-wrapper">
 
-    {{-- رأس الصفحة --}}
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+    {{-- رأس الصفحة الكلاسيكي الأكاديمي --}}
+    <div class="inquiries-header-card">
         <div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-                <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 800;">
-                    🇵🇸 الدعم الأكاديمي والوزاري
-                </span>
+            <div class="academic-badge-tag">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>{{ __('الدعم الأكاديمي والوزاري') }}</span>
             </div>
-            <h1 style="font-size: 1.9rem; font-weight: 900; color: #0f172a; margin: 0 0 4px;">
-                الاستفسارات الأكاديمية وشكاوى الطلبة 💬
-            </h1>
-            <p style="color: #64748b; font-size: 0.92rem; margin: 0;">
-                متابعة تذاكر واستفسارات طلبة التوجيهي وأولياء الأمور والمعلمين، والرد عليها فورياً.
-            </p>
+            <h1 class="inquiries-title">{{ __('الاستفسارات الأكاديمية وشكاوى الطلبة') }}</h1>
+            <p class="inquiries-subtitle">{{ __('متابعة تذاكر واستفسارات طلبة التوجيهي وأولياء الأمور والمعلمين، والرد عليها فورياً.') }}</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('admin.dashboard') }}" style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fas fa-arrow-right"></i> لوحة الإدارة
+        <div class="header-action-tools">
+            <a href="{{ route('admin.dashboard') }}" class="btn-classic-nav">
+                <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('لوحة الإدارة') }}
             </a>
         </div>
     </div>
 
-    {{-- بطاقات الإحصائيات السريعة --}}
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 25px;">
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; color: #2563eb; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fas fa-inbox"></i>
+    {{-- بطاقات الإحصائيات الأكاديمية --}}
+    <div class="stats-kpi-grid">
+        <div class="stat-card">
+            <div class="stat-icon-box blue">
+                <i class="fa-solid fa-inbox"></i>
             </div>
-            <div>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; display: block;">إجمالي التذاكر</span>
-                <strong style="font-size: 1.4rem; color: #0f172a;">{{ $stats['total'] }}</strong>
-            </div>
-        </div>
-
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #fef2f2; color: #dc2626; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; display: block;">بانتظار المعالجة والرد</span>
-                <strong style="font-size: 1.4rem; color: #dc2626;">{{ $stats['pending'] }}</strong>
+            <div class="stat-content">
+                <span class="stat-label">{{ __('إجمالي التذاكر') }}</span>
+                <strong class="stat-number font-mono">{{ $stats['total'] }}</strong>
             </div>
         </div>
 
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fas fa-check-circle"></i>
+        <div class="stat-card">
+            <div class="stat-icon-box amber">
+                <i class="fa-solid fa-clock-rotate-left"></i>
             </div>
-            <div>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; display: block;">تم الرد عليها</span>
-                <strong style="font-size: 1.4rem; color: #059669;">{{ $stats['replied'] }}</strong>
+            <div class="stat-content">
+                <span class="stat-label">{{ __('بانتظار المعالجة والرد') }}</span>
+                <strong class="stat-number font-mono text-amber">{{ $stats['pending'] }}</strong>
             </div>
         </div>
 
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #faf5ff; color: #7c3aed; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fas fa-book-bookmark"></i>
+        <div class="stat-card">
+            <div class="stat-icon-box emerald">
+                <i class="fa-solid fa-circle-check"></i>
             </div>
-            <div>
-                <span style="font-size: 0.8rem; color: #64748b; font-weight: 700; display: block;">استفسارات المواد والدروس</span>
-                <strong style="font-size: 1.4rem; color: #7c3aed;">{{ $stats['academics'] }}</strong>
+            <div class="stat-content">
+                <span class="stat-label">{{ __('تم الرد عليها') }}</span>
+                <strong class="stat-number font-mono text-emerald">{{ $stats['replied'] }}</strong>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon-box navy">
+                <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-label">{{ __('استفسارات المواد والدروس') }}</span>
+                <strong class="stat-number font-mono text-navy">{{ $stats['academics'] }}</strong>
             </div>
         </div>
     </div>
 
     {{-- شريط التصفية والبحث --}}
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
-        <form method="GET" action="{{ route('admin.inquiries.index') }}" style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; flex: 1;">
-            <input type="text" name="search" value="{{ request('search') }}" placeholder="ابحث باسم الطالب، البريد، أو نص الرسالة..." style="padding: 9px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.88rem; width: 280px; font-family: inherit; outline: none;">
+    <div class="filters-card-wrapper">
+        <form method="GET" action="{{ route('admin.inquiries.index') }}" class="filters-action-form">
+            <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث باسم الطالب، البريد، أو نص الرسالة...') }}" class="search-input-field">
+            </div>
             
-            <select name="category" onchange="this.form.submit()" style="padding: 9px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.88rem; font-family: inherit; outline: none; background: white;">
-                <option value="all">كافة التصنيفات</option>
-                <option value="استفسار أكاديمي عن المساقات" {{ request('category') == 'استفسار أكاديمي عن المساقات' ? 'selected' : '' }}>📚 استفسار أكاديمي عن المساقات</option>
-                <option value="مشكلة فنية أو تقنية في المنصة" {{ request('category') == 'مشكلة فنية أو تقنية في المنصة' ? 'selected' : '' }}>⚙️ مشكلة تقنية</option>
-                <option value="طلب تفعيل حساب أو اشتراك" {{ request('category') == 'طلب تفعيل حساب أو اشتراك' ? 'selected' : '' }}>💳 تفعيل حساب / اشتراك</option>
-                <option value="اقتراح تطويري للمنصة" {{ request('category') == 'اقتراح تطويري للمنصة' ? 'selected' : '' }}>💡 اقتراح تطويري</option>
-                <option value="شكوى خاصة أخرى" {{ request('category') == 'شكوى خاصة أخرى' ? 'selected' : '' }}>📌 أخرى</option>
-            </select>
+            <div class="select-field-wrap">
+                <select name="category" onchange="this.form.submit()" class="filter-select-field">
+                    <option value="all">{{ __('كافة التصنيفات') }}</option>
+                    <option value="استفسار أكاديمي عن المساقات" {{ request('category') == 'استفسار أكاديمي عن المساقات' ? 'selected' : '' }}>📚 {{ __('استفسار أكاديمي عن المساقات') }}</option>
+                    <option value="مشكلة فنية أو تقنية في المنصة" {{ request('category') == 'مشكلة فنية أو تقنية في المنصة' ? 'selected' : '' }}>⚙️ {{ __('مشكلة تقنية') }}</option>
+                    <option value="طلب تفعيل حساب أو اشتراك" {{ request('category') == 'طلب تفعيل حساب أو اشتراك' ? 'selected' : '' }}>💳 {{ __('تفعيل حساب / اشتراك') }}</option>
+                    <option value="اقتراح تطويري للمنصة" {{ request('category') == 'اقتراح تطويري للمنصة' ? 'selected' : '' }}>💡 {{ __('اقتراح تطويري') }}</option>
+                    <option value="شكوى خاصة أخرى" {{ request('category') == 'شكوى خاصة أخرى' ? 'selected' : '' }}>📌 {{ __('أخرى') }}</option>
+                </select>
+            </div>
 
-            <select name="status" onchange="this.form.submit()" style="padding: 9px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-size: 0.88rem; font-family: inherit; outline: none; background: white;">
-                <option value="all">كافة الحالات</option>
-                <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>🔴 جديدة (قيد الانتظار)</option>
-                <option value="replied" {{ request('status') == 'replied' ? 'selected' : '' }}>🟢 تم الرد</option>
-            </select>
+            <div class="select-field-wrap">
+                <select name="status" onchange="this.form.submit()" class="filter-select-field">
+                    <option value="all">{{ __('كافة الحالات') }}</option>
+                    <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>🔴 {{ __('جديدة (قيد الانتظار)') }}</option>
+                    <option value="replied" {{ request('status') == 'replied' ? 'selected' : '' }}>🟢 {{ __('تم الرد') }}</option>
+                </select>
+            </div>
 
-            <button type="submit" style="background: #2563eb; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">
-                تصفية
+            <button type="submit" class="btn-filter-apply">
+                <i class="fa-solid fa-filter"></i> {{ __('تصفية') }}
             </button>
+
             @if(request()->hasAny(['search', 'category', 'status']))
-                <a href="{{ route('admin.inquiries.index') }}" style="color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: underline; margin-right: 6px;">إلغاء الفلتر</a>
+                <a href="{{ route('admin.inquiries.index') }}" class="btn-reset-filter">
+                    {{ __('إلغاء الفلتر') }}
+                </a>
             @endif
         </form>
     </div>
 
     {{-- جدول التذاكر والاستفسارات --}}
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-        <div style="overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.9rem;">
+    <div class="inquiries-table-card">
+        <div class="table-responsive-box">
+            <table class="academic-table">
                 <thead>
-                    <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0; color: #475569; font-size: 0.82rem; text-transform: uppercase;">
-                        <th style="padding: 14px 18px;">المُرسل</th>
-                        <th style="padding: 14px 18px;">التصنيف والموضوع</th>
-                        <th style="padding: 14px 18px;">مقتطف الرسالة</th>
-                        <th style="padding: 14px 18px;">الحالة</th>
-                        <th style="padding: 14px 18px;">التاريخ</th>
-                        <th style="padding: 14px 18px; text-align: center;">الإجراءات</th>
+                    <tr>
+                        <th>{{ __('المُرسل') }}</th>
+                        <th>{{ __('التصنيف والموضوع') }}</th>
+                        <th>{{ __('مقتطف الرسالة') }}</th>
+                        <th>{{ __('الحالة') }}</th>
+                        <th>{{ __('التاريخ') }}</th>
+                        <th style="text-align: center;">{{ __('الإجراءات') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($inquiries as $inq)
-                        <tr style="border-bottom: 1px solid #f1f5f9; transition: 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                            <td style="padding: 14px 18px;">
-                                <div style="font-weight: 800; color: #0f172a;">{{ $inq->name }}</div>
-                                <div style="font-size: 0.78rem; color: #64748b; direction: ltr; text-align: right;">
-                                    {{ $inq->email }}
-                                    @if($inq->phone)
-                                        <br><span style="color: #10b981;">{{ $inq->phone }}</span>
-                                    @endif
-                                </div>
+                        <tr>
+                            <td>
+                                <div class="sender-name">{{ $inq->name }}</div>
+                                <div class="sender-email font-mono">{{ $inq->email }}</div>
+                                @if($inq->phone)
+                                    <div class="sender-phone font-mono">{{ $inq->phone }}</div>
+                                @endif
                             </td>
-                            <td style="padding: 14px 18px;">
-                                <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; display: inline-block; margin-bottom: 3px;">
-                                    {{ $inq->category ?? 'استفسار عام' }}
+                            <td>
+                                <span class="category-badge">
+                                    {{ $inq->category ? __($inq->category) : __('استفسار عام') }}
                                 </span>
-                                <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b;">{{ $inq->subject ?? 'بدون عنوان' }}</div>
+                                <div class="subject-title">{{ $inq->subject ?? __('بدون عنوان') }}</div>
                             </td>
-                            <td style="padding: 14px 18px; max-width: 320px;">
-                                <div style="font-size: 0.84rem; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            <td class="message-preview-cell">
+                                <div class="message-preview-text">
                                     {{ $inq->message }}
                                 </div>
                                 @if($inq->reply)
-                                    <small style="color: #059669; font-size: 0.75rem; display: block; margin-top: 2px;">
-                                        <i class="fas fa-check-double"></i> تم إرسال رد الإدارة
+                                    <small class="reply-sent-indicator">
+                                        <i class="fa-solid fa-check-double"></i> {{ __('تم إرسال رد الإدارة') }}
                                     </small>
                                 @endif
                             </td>
-                            <td style="padding: 14px 18px;">
+                            <td>
                                 @if($inq->status === 'replied')
-                                    <span style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;">
-                                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981;"></span> تم الرد
+                                    <span class="status-badge-replied">
+                                        <span class="dot-green"></span> {{ __('تم الرد') }}
                                     </span>
                                 @else
-                                    <span style="background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;">
-                                        <span style="width: 7px; height: 7px; border-radius: 50%; background: #ef4444;"></span> جديد (بانتظار الرد)
+                                    <span class="status-badge-pending">
+                                        <span class="dot-red"></span> {{ __('جديد (بانتظار الرد)') }}
                                     </span>
                                 @endif
                             </td>
-                            <td style="padding: 14px 18px; font-size: 0.8rem; color: #64748b;">
+                            <td class="date-cell">
                                 {{ $inq->created_at ? $inq->created_at->diffForHumans() : '' }}
                             </td>
-                            <td style="padding: 14px 18px; text-align: center;">
-                                <div style="display: inline-flex; gap: 6px;">
-                                    <button type="button" onclick="openReplyModal({{ json_encode($inq) }})" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;" title="قراءة التذكرة والرد">
-                                        <i class="fas fa-reply"></i> رد
+                            <td style="text-align: center;">
+                                <div class="action-buttons-group">
+                                    <button type="button" onclick="openReplyModal({{ json_encode($inq) }})" class="btn-reply-action" title="{{ __('قراءة التذكرة والرد') }}">
+                                        <i class="fa-solid fa-reply"></i> {{ __('رد') }}
                                     </button>
 
                                     @if($inq->phone)
@@ -166,16 +169,16 @@
                                             $wa = preg_replace('/[^0-9]/', '', $inq->phone);
                                             if (str_starts_with($wa, '05')) $wa = '970' . substr($wa, 1);
                                         @endphp
-                                        <a href="https://wa.me/{{ $wa }}?text={{ urlencode('أهلاً بك أ. ' . $inq->name . '، بخصوص استفسارك في منارة التوجيهي:') }}" target="_blank" style="background: #22c55e; color: white; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; text-decoration: none;" title="مراسلة سريعة عبر واتساب">
-                                            <i class="fab fa-whatsapp"></i>
+                                        <a href="https://wa.me/{{ $wa }}?text={{ urlencode(__('أهلاً بك أ. :name، بخصوص استفسارك في منارة التوجيهي:', ['name' => $inq->name])) }}" target="_blank" class="btn-whatsapp-action" title="{{ __('مراسلة سريعة عبر واتساب') }}">
+                                            <i class="fa-brands fa-whatsapp"></i>
                                         </a>
                                     @endif
 
-                                    <form action="{{ route('admin.inquiries.destroy', $inq->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذه التذكرة؟');" style="margin: 0; display: inline;">
+                                    <form action="{{ route('admin.inquiries.destroy', $inq->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه التذكرة؟') }}');" style="margin: 0; display: inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" style="background: #fee2e2; color: #dc2626; border: none; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer;" title="حذف">
-                                            <i class="fas fa-trash-alt"></i>
+                                        <button type="submit" class="btn-delete-action" title="{{ __('حذف') }}">
+                                            <i class="fa-solid fa-trash-can"></i>
                                         </button>
                                     </form>
                                 </div>
@@ -183,10 +186,10 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="text-align: center; padding: 60px 20px; color: #94a3b8;">
-                                <i class="fas fa-inbox fa-3x" style="margin-bottom: 12px; display: block; opacity: 0.5;"></i>
-                                <h4 style="font-size: 1.1rem; color: #475569; margin-bottom: 4px;">لا توجد استفسارات أو شكاوى مطابقة</h4>
-                                <p style="font-size: 0.85rem; margin: 0;">كافة استفسارات الطلبة والزوار تم الرد عليها بنجاح.</p>
+                            <td colspan="6" class="empty-inquiries-state">
+                                <i class="fa-solid fa-inbox empty-icon"></i>
+                                <h4 class="empty-title">{{ __('لا توجد استفسارات أو شكاوى مطابقة') }}</h4>
+                                <p class="empty-desc">{{ __('كافة استفسارات الطلبة والزوار تم الرد عليها بنجاح.') }}</p>
                             </td>
                         </tr>
                     @endforelse
@@ -195,59 +198,59 @@
         </div>
 
         @if($inquiries->hasPages())
-            <div style="padding: 16px 20px; border-top: 1px solid #f1f5f9;">
+            <div class="pagination-footer-box">
                 {{ $inquiries->links() }}
             </div>
         @endif
     </div>
 </div>
 
-{{-- نافذة استعراض التذكرة والرد --}}
-<div id="replyModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
-    <div style="background: white; border-radius: 20px; width: 100%; max-width: 600px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: fadeIn 0.2s ease;">
-        <div style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+{{-- نافذة استعراض التذكرة والرد الكلاسيكية --}}
+<div id="replyModalOverlay" class="inquiry-modal-overlay" style="display: none;">
+    <div class="inquiry-modal-card">
+        <div class="inquiry-modal-header">
             <div>
-                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">تفاصيل الاستفسار والرد الأكاديمي</h3>
-                <span id="modalInqSender" style="font-size: 0.8rem; color: #64748b;">اسم الطالب</span>
+                <h3 class="modal-main-title">{{ __('تفاصيل الاستفسار والرد الأكاديمي') }}</h3>
+                <span id="modalInqSender" class="modal-sender-sub"></span>
             </div>
-            <button type="button" onclick="closeReplyModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">✕</button>
+            <button type="button" onclick="closeReplyModal()" class="modal-btn-close">&times;</button>
         </div>
 
-        <div style="padding: 24px; max-height: 75vh; overflow-y: auto;">
+        <div class="inquiry-modal-body">
             <!-- نص رسالة الطالب -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 18px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                    <span id="modalInqCategory" style="font-size: 0.78rem; font-weight: 700; color: #2563eb;"></span>
-                    <span id="modalInqDate" style="font-size: 0.74rem; color: #94a3b8;"></span>
+            <div class="student-message-preview-box">
+                <div class="message-meta-row">
+                    <span id="modalInqCategory" class="message-category-tag"></span>
+                    <span id="modalInqDate" class="message-date-tag"></span>
                 </div>
-                <h4 id="modalInqSubject" style="margin: 0 0 8px; font-size: 0.95rem; color: #0f172a; font-weight: 800;"></h4>
-                <p id="modalInqMessage" style="margin: 0; font-size: 0.88rem; color: #334155; line-height: 1.6; white-space: pre-wrap;"></p>
+                <h4 id="modalInqSubject" class="message-subject-tag"></h4>
+                <p id="modalInqMessage" class="message-body-tag"></p>
             </div>
 
             <form id="replyForm" onsubmit="submitReply(event)">
                 <input type="hidden" id="modalInqId" value="">
 
-                <div style="margin-bottom: 14px;">
-                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #0f172a; margin-bottom: 6px;">
-                        رد الإدارة / المشرف الأكاديمي <span style="color: #ef4444;">*</span>
+                <div class="form-group-block">
+                    <label class="field-label-bold">
+                        {{ __('رد الإدارة / المشرف الأكاديمي') }} <span class="required-star">*</span>
                     </label>
-                    <textarea id="modalReplyText" rows="4" placeholder="اكتب ردك الوافي على استفسار الطالب هنا..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box;" required></textarea>
+                    <textarea id="modalReplyText" rows="4" placeholder="{{ __('اكتب ردك الوافي على استفسار الطالب هنا...') }}" class="textarea-academic-input" required></textarea>
                 </div>
 
-                <div style="margin-bottom: 18px;">
-                    <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 6px;">
-                        ملاحظات إدارية داخلية (اختياري - للإدارة فقط):
+                <div class="form-group-block">
+                    <label class="field-label-muted">
+                        {{ __('ملاحظات إدارية داخلية (اختياري - للإدارة فقط):') }}
                     </label>
-                    <input type="text" id="modalAdminNotes" placeholder="مثال: تم التواصل هاتفياً وحل الإشكالية" style="width: 100%; padding: 10px; border-radius: 10px; border: 1.5px solid #cbd5e1; font-family: inherit; font-size: 0.85rem; outline: none; box-sizing: border-box;">
+                    <input type="text" id="modalAdminNotes" placeholder="{{ __('مثال: تم التواصل هاتفياً وحل الإشكالية') }}" class="text-academic-input">
                 </div>
 
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeReplyModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">
-                        إغلاق
+                <div class="modal-actions-row">
+                    <button type="button" onclick="closeReplyModal()" class="btn-cancel-modal">
+                        {{ __('إلغاء') }}
                     </button>
-                    <button type="submit" id="btnSubmitReply" style="background: #2563eb; color: white; border: none; padding: 10px 22px; border-radius: 10px; font-weight: 800; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-                        <span>حفظ الرد واعتماده</span>
-                        <i class="fas fa-paper-plane"></i>
+                    <button type="submit" id="btnSubmitReply" class="btn-submit-modal">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>{{ __('حفظ الرد واعتماده') }}</span>
                     </button>
                 </div>
             </form>
@@ -259,10 +262,10 @@
 <script>
     function openReplyModal(inq) {
         document.getElementById('modalInqId').value = inq.id;
-        document.getElementById('modalInqSender').innerText = `${inq.name} (${inq.email})`;
-        document.getElementById('modalInqCategory').innerText = inq.category || 'استفسار عام';
+        document.getElementById('modalInqSender').innerText = inq.name + ' (' + inq.email + ')';
+        document.getElementById('modalInqCategory').innerText = inq.category || '{{ __('استفسار عام') }}';
         document.getElementById('modalInqDate').innerText = inq.created_at ? inq.created_at.substring(0, 10) : '';
-        document.getElementById('modalInqSubject').innerText = inq.subject || 'بدون عنوان';
+        document.getElementById('modalInqSubject').innerText = inq.subject || '{{ __('بدون عنوان') }}';
         document.getElementById('modalInqMessage').innerText = inq.message;
         document.getElementById('modalReplyText').value = inq.reply || '';
         document.getElementById('modalAdminNotes').value = inq.admin_notes || '';
@@ -284,7 +287,7 @@
 
         const btn = document.getElementById('btnSubmitReply');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
 
         axios.post(`{{ url('admin/academic-inquiries') }}/${id}/reply`, {
             reply: reply,
@@ -301,9 +304,462 @@
         })
         .catch(err => {
             btn.disabled = false;
-            btn.innerHTML = '<span>حفظ الرد واعتماده</span> <i class="fas fa-paper-plane"></i>';
-            Swal.fire('خطأ', err.response?.data?.message || 'فشل حفظ الرد.', 'error');
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>{{ __('حفظ الرد واعتماده') }}</span>';
+            Swal.fire('{{ __('خطأ') }}', err.response?.data?.message || '{{ __('فشل حفظ الرد.') }}', 'error');
         });
     }
+
+    window.onclick = function(e) {
+        const modal = document.getElementById('replyModalOverlay');
+        if (e.target === modal) closeReplyModal();
+    }
 </script>
+
+<style>
+    .inquiries-page-wrapper {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
+    }
+
+    .inquiries-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 22px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .academic-badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .inquiries-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 4px;
+    }
+    .inquiries-subtitle {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+    .btn-classic-nav {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
+    }
+    .btn-classic-nav:hover {
+        background: #f8fafc;
+        color: #0f172a;
+    }
+
+    /* KPI Grid */
+    .stats-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+    .stat-icon-box {
+        width: 46px;
+        height: 46px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .stat-icon-box.blue { background: #eff6ff; color: #1d4ed8; }
+    .stat-icon-box.amber { background: #fffbeb; color: #d97706; }
+    .stat-icon-box.emerald { background: #ecfdf5; color: #059669; }
+    .stat-icon-box.navy { background: #f1f5f9; color: #1e3a8a; }
+    .stat-label { font-size: 0.8rem; color: #64748b; font-weight: 600; display: block; margin-bottom: 2px; }
+    .stat-number { font-size: 1.45rem; font-weight: 700; color: #0f172a; }
+    .text-amber { color: #d97706 !important; }
+    .text-emerald { color: #059669 !important; }
+    .text-navy { color: #1e3a8a !important; }
+
+    /* Filters */
+    .filters-card-wrapper {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+    }
+    .filters-action-form {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .search-input-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 250px;
+    }
+    .search-icon {
+        position: absolute;
+        inset-inline-start: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+    .search-input-field {
+        width: 100%;
+        padding: 9px 12px 9px 36px;
+        padding-inline-start: 36px;
+        padding-inline-end: 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.85rem;
+        outline: none;
+        box-sizing: border-box;
+        background: #f8fafc;
+    }
+    .search-input-field:focus {
+        border-color: #1e3a8a;
+        background: #ffffff;
+    }
+    .filter-select-field {
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.85rem;
+        outline: none;
+        background: #ffffff;
+        color: #0f172a;
+    }
+    .btn-filter-apply {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-filter-apply:hover { background: #172554; }
+    .btn-reset-filter {
+        color: #64748b;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: underline;
+        margin-inline-start: 4px;
+    }
+
+    /* Table */
+    .inquiries-table-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+    }
+    .table-responsive-box { overflow-x: auto; }
+    .academic-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: start;
+        font-size: 0.88rem;
+    }
+    .academic-table thead tr {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.8rem;
+        font-weight: 700;
+    }
+    .academic-table th { padding: 12px 18px; }
+    .academic-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+    .academic-table tbody tr:hover { background: #f8fafc; }
+    .academic-table td { padding: 14px 18px; vertical-align: middle; }
+
+    .sender-name { font-weight: 700; color: #0f172a; margin-bottom: 2px; }
+    .sender-email { font-size: 0.78rem; color: #64748b; }
+    .sender-phone { font-size: 0.78rem; color: #059669; font-weight: 600; }
+
+    .category-badge {
+        background: #eff6ff;
+        color: #1e40af;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 4px;
+    }
+    .subject-title { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+
+    .message-preview-cell { max-width: 340px; }
+    .message-preview-text {
+        color: #475569;
+        font-size: 0.84rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .reply-sent-indicator {
+        color: #059669;
+        font-size: 0.75rem;
+        display: block;
+        margin-top: 3px;
+        font-weight: 600;
+    }
+
+    .status-badge-replied {
+        background: #ecfdf5;
+        color: #065f46;
+        border: 1px solid #a7f3d0;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .dot-green { width: 7px; height: 7px; border-radius: 50%; background: #10b981; }
+
+    .status-badge-pending {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .dot-red { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; }
+
+    .date-cell { font-size: 0.78rem; color: #64748b; white-space: nowrap; }
+
+    .action-buttons-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-reply-action {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-reply-action:hover { background: #172554; }
+    .btn-whatsapp-action {
+        background: #22c55e;
+        color: #ffffff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    .btn-delete-action {
+        background: #fee2e2;
+        color: #dc2626;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        cursor: pointer;
+    }
+
+    .empty-inquiries-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+    .empty-title { font-size: 1.05rem; color: #475569; margin: 0 0 6px; }
+    .empty-desc { font-size: 0.82rem; margin: 0; }
+
+    .pagination-footer-box {
+        padding: 14px 20px;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    /* Modal */
+    .inquiry-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 99999;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+    }
+    .inquiry-modal-card {
+        background: #ffffff;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 20px 30px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+    }
+    .inquiry-modal-header {
+        padding: 16px 22px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .modal-main-title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #0f172a; }
+    .modal-sender-sub { font-size: 0.78rem; color: #64748b; }
+    .modal-btn-close {
+        background: none;
+        border: none;
+        font-size: 1.3rem;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+    .inquiry-modal-body {
+        padding: 22px;
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+    .student-message-preview-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 18px;
+    }
+    .message-meta-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+    }
+    .message-category-tag { font-size: 0.76rem; font-weight: 700; color: #1e40af; }
+    .message-date-tag { font-size: 0.72rem; color: #94a3b8; }
+    .message-subject-tag { margin: 0 0 6px; font-size: 0.9rem; color: #0f172a; font-weight: 700; }
+    .message-body-tag { margin: 0; font-size: 0.85rem; color: #334155; line-height: 1.6; white-space: pre-wrap; }
+
+    .form-group-block { margin-bottom: 16px; }
+    .field-label-bold {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+    .field-label-muted {
+        display: block;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 6px;
+    }
+    .required-star { color: #ef4444; }
+    .textarea-academic-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.88rem;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .textarea-academic-input:focus { border-color: #1e3a8a; }
+    .text-academic-input {
+        width: 100%;
+        padding: 9px 12px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        font-size: 0.85rem;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .modal-actions-row {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+    .btn-cancel-modal {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .btn-submit-modal {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        padding: 9px 20px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-submit-modal:hover { background: #172554; }
+</style>
 @endsection

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>إنشاء حساب طالب جديد | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
+    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</title>
 
     <!-- Google Fonts: Alexandria -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,7 +57,31 @@
             min-height: 100vh;
             display: flex;
             align-items: stretch;
+        }
+
+        html[dir="rtl"] body {
             direction: rtl;
+            text-align: right;
+        }
+
+        html[dir="ltr"] body {
+            direction: ltr;
+            text-align: left;
+        }
+
+        html[dir="ltr"] .lead-icon {
+            right: auto;
+            left: 14px;
+        }
+
+        html[dir="ltr"] .form-input {
+            padding-right: 14px;
+            padding-left: 38px;
+        }
+
+        html[dir="ltr"] .password-toggle-btn {
+            left: auto;
+            right: 12px;
         }
 
         .auth-split-wrapper {

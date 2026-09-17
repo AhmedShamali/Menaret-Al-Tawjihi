@@ -1,50 +1,44 @@
 @extends('layouts.app')
 
+@section('title', __('المحادثات المباشرة مع المعلمين') . ' - ' . __('إدارة المنصة'))
+
 @section('content')
 <style>
-    :root {
-        --primary-color: #4361ee;
-        --bg-light: #f8f9fa;
-        --text-dark: #2b2d42;
-        --text-muted: #8d99ae;
-        --white: #ffffff;
-        --border-color: #edf2f4;
-        --admin-bubble: #4361ee;
-        --teacher-bubble: #e9ecef;
-    }
-
     .chat-wrapper {
         display: flex;
-        height: 85vh;
+        height: 84vh;
         gap: 20px;
-        padding: 20px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        direction: rtl;
-        max-width: 1400px;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
         margin: 0 auto;
+        box-sizing: border-box;
     }
 
-    /* القائمة الجانبية */
+    /* القائمة الجانبية للمعلمين */
     .teachers-sidebar {
-        flex: 0 0 350px;
-        background: var(--white);
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        flex: 0 0 340px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         display: flex;
         flex-direction: column;
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
 
     .sidebar-header {
-        padding: 20px;
-        background: var(--primary-color);
-        color: white;
-        font-weight: bold;
-        font-size: 1.1rem;
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 1rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        border-inline-start: 4px solid var(--ed-primary, #1e3a8a);
     }
 
     .teachers-list {
@@ -55,43 +49,68 @@
     .teacher-item {
         display: flex;
         align-items: center;
-        padding: 15px;
+        padding: 14px 18px;
         text-decoration: none;
-        color: var(--text-dark);
-        border-bottom: 1px solid var(--border-color);
-        transition: 0.3s;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+        transition: 0.15s;
+        gap: 12px;
     }
 
     .teacher-item:hover {
-        background-color: #f0f3ff;
-        color: var(--primary-color);
+        background-color: #f8fafc;
+        color: #1e3a8a;
     }
 
     .teacher-item.active {
-        background-color: #edf2ff;
-        border-right: 4px solid var(--primary-color);
+        background-color: #eff6ff;
+        border-inline-start: 4px solid #1e3a8a;
+        color: #1e3a8a;
     }
 
     .avatar {
-        width: 45px;
-        height: 45px;
+        width: 42px;
+        height: 42px;
         border-radius: 50%;
-        background: var(--primary-color);
+        background: #1e3a8a;
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: bold;
-        margin-left: 12px;
+        font-weight: 700;
         flex-shrink: 0;
+        font-size: 0.95rem;
     }
 
-    /* منطقة المحادثة */
+    .teacher-info {
+        flex: 1;
+        min-width: 0;
+    }
+    .teacher-info h6 {
+        margin: 0 0 2px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0f172a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .teacher-info small {
+        font-size: 0.75rem;
+        color: #64748b;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* منطقة المحادثة الرئيسية */
     .chat-main {
         flex: 1;
-        background: var(--white);
-        border-radius: 15px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -99,131 +118,152 @@
     }
 
     .chat-header {
-        padding: 15px 20px;
-        border-bottom: 1px solid var(--border-color);
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
         display: flex;
         align-items: center;
-        background: #fff;
+        background: #f8fafc;
+        gap: 12px;
     }
 
     .back-btn {
-        display: none; /* يظهر فقط في الجوال */
+        display: none;
         background: none;
         border: none;
-        font-size: 1.2rem;
-        color: var(--primary-color);
-        margin-left: 10px;
+        font-size: 1.1rem;
+        color: #1e3a8a;
         cursor: pointer;
+        padding: 4px;
     }
 
     .messages-body {
         flex: 1;
         padding: 20px;
         overflow-y: auto;
-        background-color: #fdfdfd;
+        background-color: #fafbfd;
         display: flex;
         flex-direction: column;
-        gap: 15px;
+        gap: 14px;
+    }
+
+    .message-row {
+        display: flex;
+        width: 100%;
     }
 
     .bubble {
-        max-width: 80%;
-        padding: 10px 15px;
-        border-radius: 15px;
-        font-size: 0.95rem;
-        line-height: 1.4;
+        max-width: 75%;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        position: relative;
+        word-break: break-word;
     }
 
-    .msg-admin { justify-content: flex-start; }
+    .msg-admin {
+        justify-content: flex-end;
+    }
     .msg-admin .bubble {
-        background: var(--admin-bubble);
-        color: white;
-        border-bottom-right-radius: 4px;
+        background: #1e3a8a;
+        color: #ffffff;
+        border-end-end-radius: 2px;
     }
 
-    .msg-teacher { justify-content: flex-end; }
+    .msg-teacher {
+        justify-content: flex-start;
+    }
     .msg-teacher .bubble {
-        background: var(--teacher-bubble);
-        color: var(--text-dark);
-        border-bottom-left-radius: 4px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        color: #0f172a;
+        border-end-start-radius: 2px;
     }
 
     .time {
         display: block;
         font-size: 0.7rem;
-        margin-top: 5px;
-        opacity: 0.7;
+        margin-top: 4px;
+        opacity: 0.75;
+        text-align: end;
     }
 
     .chat-footer {
-        padding: 15px;
-        background: #fff;
-        border-top: 1px solid var(--border-color);
+        padding: 14px 18px;
+        background: #ffffff;
+        border-top: 1px solid #e2e8f0;
     }
 
     .input-group {
         display: flex;
         gap: 10px;
+        align-items: center;
     }
 
     .input-group input {
         flex: 1;
-        padding: 12px 20px;
-        border: 1px solid #ddd;
-        border-radius: 25px;
+        padding: 10px 16px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
         outline: none;
+        font-size: 0.88rem;
+        background: #f8fafc;
+    }
+    .input-group input:focus {
+        border-color: #1e3a8a;
+        background: #ffffff;
     }
 
     .send-btn {
-        background: var(--primary-color);
+        background: #1e3a8a;
         color: white;
         border: none;
-        padding: 0 20px;
-        border-radius: 25px;
+        padding: 10px 20px;
+        border-radius: 8px;
         cursor: pointer;
+        font-weight: 600;
+        font-size: 0.88rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .send-btn:hover { background: #172554; }
+
+    .empty-state {
+        margin: auto;
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 12px;
+        opacity: 0.4;
+    }
+    .empty-state h4 {
+        color: #475569;
+        font-size: 1.1rem;
+        margin-bottom: 6px;
+        font-weight: 700;
     }
 
-    /* === Media Queries (التجاوب مع الجوال) === */
+    /* Media queries */
     @media (max-width: 768px) {
         .chat-wrapper {
             padding: 0;
-            height: 90vh; /* زيادة الارتفاع قليلاً في الجوال */
+            height: calc(100vh - 140px);
             gap: 0;
         }
-
-        /* إذا تم اختيار معلم: إخفاء القائمة الجانبية وإظهار الشات */
         @isset($selectedTeacher)
-            .teachers-sidebar {
-                display: none;
-            }
-            .chat-main {
-                display: flex;
-            }
-            .back-btn {
-                display: block;
-            }
+            .teachers-sidebar { display: none; }
+            .chat-main { display: flex; }
+            .back-btn { display: block; }
         @else
-            /* إذا لم يتم اختيار معلم: إظهار القائمة وإخفاء الشات الفارغ */
-            .teachers-sidebar {
-                flex: 1;
-                border-radius: 0;
-            }
-            .chat-main {
-                display: none;
-            }
+            .teachers-sidebar { flex: 1; border-radius: 0; }
+            .chat-main { display: none; }
         @endisset
-
-        .bubble {
-            max-width: 90%;
-        }
-
-        .chat-header {
-            padding: 10px 15px;
-        }
+        .bubble { max-width: 88%; }
     }
-
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
 </style>
 
 <div class="chat-wrapper">
@@ -231,7 +271,7 @@
     {{-- قائمة المعلمين --}}
     <aside class="teachers-sidebar">
         <div class="sidebar-header">
-            <span>المحادثات</span>
+            <span><i class="fa-solid fa-comments"></i> {{ __('المحادثات الأكاديمية') }}</span>
         </div>
         <div class="teachers-list">
             @forelse($teachers as $teacher)
@@ -241,12 +281,14 @@
                         {{ mb_substr($teacher->name, 0, 1) }}
                     </div>
                     <div class="teacher-info">
-                        <h6 class="mb-0">{{ $teacher->name }}</h6>
-                        <small>{{ $teacher->email ?? 'معلم معتمد' }}</small>
+                        <h6>{{ $teacher->name }}</h6>
+                        <small>{{ $teacher->email ?? __('معلم معتمد') }}</small>
                     </div>
                 </a>
             @empty
-                <div class="p-4 text-center text-muted">لا يوجد معلمون</div>
+                <div class="empty-state">
+                    <p>{{ __('لا يوجد معلمون مسجلون') }}</p>
+                </div>
             @endforelse
         </div>
     </aside>
@@ -255,17 +297,16 @@
     <main class="chat-main">
         @if(isset($selectedTeacher))
             <div class="chat-header">
-                {{-- زر الرجوع للجوال فقط --}}
-                <button class="back-btn" onclick="window.location.href='{{ route('admin.teachers.chat') }}'">
-                    <i class="fas fa-arrow-right"></i> →
+                <button type="button" class="back-btn" onclick="window.location.href='{{ route('admin.teachers.chat') }}'" title="{{ __('رجوع') }}">
+                    <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i>
                 </button>
 
-                <div class="avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">
+                <div class="avatar" style="width: 38px; height: 38px; font-size: 0.88rem;">
                     {{ mb_substr($selectedTeacher->name, 0, 1) }}
                 </div>
-                <div class="teacher-info mr-3">
-                    <h6 class="mb-0" style="font-weight: bold;">{{ $selectedTeacher->name }}</h6>
-                    <small class="text-success">نشط الآن</small>
+                <div class="teacher-info">
+                    <h6 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #0f172a;">{{ $selectedTeacher->name }}</h6>
+                    <small style="color: #059669; font-weight: 600;"><i class="fa-solid fa-circle" style="font-size: 0.55rem;"></i> {{ __('نشط للمراسلة') }}</small>
                 </div>
             </div>
 
@@ -274,14 +315,16 @@
                     <div class="message-row {{ $msg->sender_type === 'admin' ? 'msg-admin' : 'msg-teacher' }}">
                         <div class="bubble">
                             {{ $msg->message }}
-                            <span class="time">
+                            <span class="time font-mono">
                                 {{ $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : '' }}
                             </span>
                         </div>
                     </div>
                 @empty
-                    <div class="empty-state text-center my-auto" id="no-messages-text">
-                        <p class="text-muted">لا توجد رسائل سابقة. ابدأ المحادثة الآن.</p>
+                    <div class="empty-state" id="no-messages-text">
+                        <i class="fa-regular fa-comment-dots"></i>
+                        <h4>{{ __('لا توجد رسائل سابقة') }}</h4>
+                        <p>{{ __('ابدأ المحادثة مع المعلم الآن.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -290,25 +333,23 @@
                 <form id="send-message-form" class="input-group">
                     @csrf
                     <input type="hidden" name="teacher_id" id="teacher_id" value="{{ $selectedTeacher->id }}">
-                    <input type="text" name="message" id="message-input" placeholder="اكتب رسالتك هنا..." autocomplete="off" required>
+                    <input type="text" name="message" id="message-input" placeholder="{{ __('اكتب رسالتك للمعلم هنا...') }}" autocomplete="off" required>
                     <button type="submit" class="send-btn">
-                        <i class="fas fa-paper-plane"></i> إرسال
+                        <i class="fa-solid fa-paper-plane"></i>
+                        <span>{{ __('إرسال') }}</span>
                     </button>
                 </form>
             </div>
         @else
-            <div class="empty-state m-auto text-center">
-                <div class="mb-3">
-                    <i class="far fa-comments fa-4x text-light"></i>
-                </div>
-                <h4>مرحباً بك في نظام المحادثات</h4>
-                <p class="text-muted">اختر معلماً من القائمة الجانبية لبدء المراسلة</p>
+            <div class="empty-state">
+                <i class="fa-solid fa-comments"></i>
+                <h4>{{ __('مرحباً بك في نظام محادثات الكادر التعليمي') }}</h4>
+                <p>{{ __('اختر معلماً من القائمة الجانبية لبدء المحادثة المباشرة.') }}</p>
             </div>
         @endif
     </main>
 </div>
 
-{{-- سكربت الـ AJAX والتحديث التلقائي يبقى كما هو مع تعديلات طفيفة لضمان السلاسة --}}
 @if(isset($selectedTeacher))
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -352,7 +393,7 @@
                             <div class="message-row msg-admin">
                                 <div class="bubble">
                                     ${escapeHtml(messageText)}
-                                    <span class="time">${timeNow}</span>
+                                    <span class="time font-mono">${timeNow}</span>
                                 </div>
                             </div>`;
                         chatBox.insertAdjacentHTML('beforeend', messageHtml);
@@ -362,7 +403,7 @@
             });
         }
 
-        // تحديث المحتوى كل 4 ثوانٍ
+        // Auto poll every 4 seconds
         setInterval(function() {
             if (document.activeElement === messageInput && messageInput.value.trim() !== '') return;
 

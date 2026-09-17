@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'قاعة الاختبارات والتقييم الأكاديمي | منارة التوجيهي')
+@section('title', __('قاعة الاختبارات والتقييم الأكاديمي') . ' | ' . __('منارة التوجيهي'))
 
 @section('content')
 <div class="ed-exams-container">
@@ -10,20 +10,20 @@
         <div class="ed-exams-title-box">
             <div class="ed-exams-breadcrumbs">
                 <i class="fas fa-home"></i>
-                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">لوحة الطالب</a>
+                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('لوحة الطالب') }}</a>
                 <i class="fas fa-chevron-left divider"></i>
-                <span class="active">الاختبارات الأكاديمية</span>
+                <span class="active">{{ __('الاختبارات الأكاديمية') }}</span>
             </div>
-            <h1>قاعة الاختبارات والتقييم الأكاديمي</h1>
+            <h1>{{ __('قاعة الاختبارات والتقييم الأكاديمي') }}</h1>
             <p>
-                مرحباً بك <strong style="color: #0f172a;">{{ optional($student)->name_ar ?? auth()->user()->name }}</strong>، إليك جدول الاختبارات والتقييمات المعتمدة لمسيرتك الدراسية.
+                {{ __('مرحباً بك') }} <strong style="color: #0f172a;">{{ optional($student)->name_ar ?? auth()->user()->name }}</strong>، {{ __('إليك جدول الاختبارات والتقييمات المعتمدة لمسيرتك الدراسية.') }}
             </p>
         </div>
 
         <div class="ed-exams-header-meta">
             <div class="ed-stage-tag">
                 <i class="fas fa-layer-group"></i>
-                <span>المرحلة: <strong>{{ $currentStageName ?? 'غير محددة' }}</strong></span>
+                <span>{{ __('المرحلة:') }} <strong>{{ $currentStageName ?? __('غير محددة') }}</strong></span>
             </div>
             <div class="ed-date-tag">
                 <i class="far fa-calendar-alt"></i>
@@ -37,8 +37,8 @@
         <div class="ed-alert warning">
             <i class="fas fa-exclamation-triangle"></i>
             <div>
-                <strong>تنبيه أكاديمي:</strong>
-                <span>حسابك غير مرتبط بفرع دراسي محدد في قاعدة البيانات، يرجى مراجعة إدارة المنصة لضبط مرحلتك الدراسية.</span>
+                <strong>{{ __('تنبيه أكاديمي:') }}</strong>
+                <span>{{ __('حسابك غير مرتبط بفرع دراسي محدد في قاعدة البيانات، يرجى مراجعة إدارة المنصة لضبط مرحلتك الدراسية.') }}</span>
             </div>
         </div>
     @endif
@@ -62,10 +62,10 @@
     <div class="ed-section-bar">
         <div class="ed-section-title">
             <i class="fas fa-clipboard-check"></i>
-            <span>الاختبارات والتقييمات المتاحة لمرحلتك</span>
+            <span>{{ __('الاختبارات والتقييمات المتاحة لمرحلتك') }}</span>
         </div>
         <span class="ed-count-badge">
-            إجمالي الاختبارات: <strong>{{ isset($exams) ? $exams->count() : 0 }}</strong>
+            {{ __('إجمالي الاختبارات:') }} <strong>{{ isset($exams) ? $exams->count() : 0 }}</strong>
         </span>
     </div>
 
@@ -80,27 +80,27 @@
                 <div class="ed-exam-card-body">
                     <div class="ed-exam-tags">
                         <span class="ed-badge ed-badge-blue">
-                            {{ optional($exam->subject)->name_ar ?? (optional($exam->subject)->name ?? 'مادة دراسية') }}
+                            {{ optional($exam->subject)->name_ar ?? (optional($exam->subject)->name ?? __('مادة دراسية')) }}
                         </span>
                         <span class="ed-badge ed-badge-gray">
-                            {{ optional($exam->stage)->name_ar ?? (optional($exam->stage)->name ?? 'عام') }}
+                            {{ optional($exam->stage)->name_ar ?? (optional($exam->stage)->name ?? __('عام')) }}
                         </span>
                     </div>
 
                     <h3 class="ed-exam-title">{{ $exam->title }}</h3>
 
                     <p class="ed-exam-desc">
-                        {{ $exam->description ?? 'اختبار معتمد ضمن خطتك الدراسية لهذا الفصل، يرجى الالتزام بالوقت المخصص وقراءة الأسئلة بعناية.' }}
+                        {{ $exam->description ?? __('اختبار معتمد ضمن خطتك الدراسية لهذا الفصل، يرجى الالتزام بالوقت المخصص وقراءة الأسئلة بعناية.') }}
                     </p>
 
                     <div class="ed-exam-meta-grid">
                         <div class="ed-meta-item">
-                            <span class="meta-label">المدة المخصصة</span>
-                            <span class="meta-val"><i class="far fa-clock"></i> {{ $exam->duration_minutes }} دقيقة</span>
+                            <span class="meta-label">{{ __('المدة المخصصة') }}</span>
+                            <span class="meta-val"><i class="far fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</span>
                         </div>
                         <div class="ed-meta-item">
-                            <span class="meta-label">عدد الأسئلة</span>
-                            <span class="meta-val"><i class="far fa-question-circle"></i> {{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} سؤال</span>
+                            <span class="meta-label">{{ __('عدد الأسئلة') }}</span>
+                            <span class="meta-val"><i class="far fa-question-circle"></i> {{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} {{ __('سؤال') }}</span>
                         </div>
                     </div>
                 </div>
@@ -109,18 +109,18 @@
                     @if($hasSubmitted)
                         <div class="ed-submitted-actions">
                             <span class="ed-btn ed-btn-completed">
-                                <i class="fas fa-check"></i> تم التقديم
+                                <i class="fas fa-check"></i> {{ __('تم التقديم') }}
                             </span>
                             @if($submissionRecord)
                                 <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.85rem; padding: 10px 16px;">
-                                    عرض النتيجة
+                                    {{ __('عرض النتيجة') }}
                                 </a>
                             @endif
                         </div>
                     @else
                         <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="ed-btn ed-btn-primary" style="width: 100%; justify-content: center;">
-                            <span>بدء الاختبار الآن</span>
-                            <i class="fas fa-arrow-left"></i>
+                            <span>{{ __('بدء الاختبار الآن') }}</span>
+                            <i class="fas fa-arrow-left arrow-icon"></i>
                         </button>
                     @endif
                 </div>
@@ -128,8 +128,8 @@
         @empty
             <div class="ed-empty-card">
                 <div class="ed-empty-icon"><i class="fas fa-folder-open"></i></div>
-                <h3>لا توجد اختبارات متاحة حالياً</h3>
-                <p>لم يتم طرح أي اختبارات جديدة لمرحلتك الدراسية في الوقت الحالي، تابع لوحتك دورياً للاطلاع على أي تحديثات.</p>
+                <h3>{{ __('لا توجد اختبارات متاحة حالياً') }}</h3>
+                <p>{{ __('لم يتم طرح أي اختبارات جديدة لمرحلتك الدراسية في الوقت الحالي، تابع لوحتك دورياً للاطلاع على أي تحديثات.') }}</p>
             </div>
         @endforelse
     </div>
@@ -138,9 +138,9 @@
 
 <style>
     .ed-exams-container {
-        padding: 24px 32px 60px;
-        direction: rtl;
-        font-family: 'Alexandria', 'Tajawal', sans-serif;
+        padding: 0 0 60px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Header */

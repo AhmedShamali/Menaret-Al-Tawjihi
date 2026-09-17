@@ -1,207 +1,622 @@
 @extends('layouts.app')
 
-@section('title', 'ملفي الشخصي | ' . ($student->name_ar ?? auth()->user()->name ?? 'طالب'))
+@section('title', __('الملف الشخصي') . ' | ' . ($student->name_ar ?? auth()->user()->name ?? __('طالب')))
 
 @section('content')
-<div style="max-width: 1100px; margin: 0 auto; animation: fadeIn 0.8s ease;">
+<div class="ed-profile-container">
 
-    <!-- ترويسة الصفحة -->
-    <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <!-- ترويسة الصفحة الكلاسيكية -->
+    <div class="ed-profile-header">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
-                ملفي الشخصي وبيانات الطالب 🎓
+            <h1 class="ed-profile-title">
+                {{ __('ملفي الشخصي وبيانات الطالب') }}
             </h1>
-            <p style="color: #64748b; font-size: 0.88rem;">متابعة إعدادات الحساب، مسارك في توجيهي فلسطين، ودرع الالتزام اليومي</p>
+            <p class="ed-profile-subtitle">
+                {{ __('متابعة إعدادات الحساب، مسارك في توجيهي فلسطين، ودرع الالتزام اليومي') }}
+            </p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <a href="{{ route('student.dashboard') }}" style="padding: 10px 20px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 0.85rem; font-weight: 700; color: #1e293b; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-arrow-right"></i> العودة للرئيسية
+        <div>
+            <a href="{{ route('student.dashboard') }}" class="ed-btn-home">
+                <i class="fa-solid fa-arrow-right arrow-icon"></i>
+                <span>{{ __('العودة للرئيسية') }}</span>
             </a>
         </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: 340px 1fr; gap: 25px; align-items: start;">
+    <div class="ed-profile-layout">
 
-        <!-- الجانب الأيمن: كرت التعريف والدرع -->
-        <aside style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 35px 25px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
-            <div style="position: relative; display: inline-block; margin-bottom: 18px;">
+        <!-- الجانب الأول: بطاقة السجل الأكاديمي للطالب -->
+        <aside class="ed-profile-card">
+            <div class="ed-avatar-wrapper">
                 @php
                     $photoPath = $student->photo ?? null;
                     $fullPath = $photoPath ? public_path('storage/' . $photoPath) : null;
                 @endphp
 
                 @if(!empty($photoPath) && file_exists($fullPath))
-                    <img src="{{ asset('storage/' . $photoPath) }}" style="width: 125px; height: 125px; border-radius: 35px; object-fit: cover; border: 4px solid #f0f9ff; box-shadow: 0 8px 24px rgba(2,132,199,0.15);">
+                    <img src="{{ asset('storage/' . $photoPath) }}" class="ed-student-photo" alt="{{ $student->name_ar ?? 'طالب' }}">
                 @else
-                    <div style="width: 125px; height: 125px; border-radius: 35px; background: linear-gradient(135deg, #0284c7, #6366f1); color: white; display: flex; align-items: center; justify-content: center; font-size: 3rem; border: 4px solid #f0f9ff; box-shadow: 0 8px 24px rgba(2,132,199,0.15); margin: 0 auto;">
+                    <div class="ed-student-avatar-fallback">
                         👨‍🎓
                     </div>
                 @endif
-                <div style="position: absolute; bottom: -2px; right: -2px; width: 34px; height: 34px; background: #10b981; color: white; border-radius: 50%; display: grid; place-items: center; border: 3px solid white; font-size: 0.9rem;" title="حساب مفعل وموثق">
+                <div class="ed-verified-badge" title="{{ __('نشط') }}">
                     <i class="fa-solid fa-check"></i>
                 </div>
             </div>
 
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin-bottom: 6px;">{{ $student->name_ar ?? auth()->user()->name }}</h2>
-            <div style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #0284c7; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 20px;">
-                <i class="fa-solid fa-flag"></i> {{ optional(optional($student)->stage)->label_ar ?? 'توجيهي فلسطين' }}
+            <h2 class="ed-student-name">{{ $student->name_ar ?? auth()->user()->name }}</h2>
+            <div class="ed-stage-badge">
+                <i class="fa-solid fa-flag"></i>
+                <span>{{ optional(optional($student)->stage)->label_ar ?? __('الثانوية العامة - فلسطين') }}</span>
             </div>
 
-            <!-- إحصائيات سريعة للالتزام -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
-                <div style="background: #fff7ed; border: 1px solid #ffedd5; padding: 14px; border-radius: 14px; text-align: center;">
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #ea580c; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <!-- إحصائيات الالتزام الكلاسيكية -->
+            <div class="ed-kpi-row">
+                <div class="ed-kpi-box orange">
+                    <div class="kpi-val">
                         <span>{{ $student->streak_count ?? 1 }}</span>
                         <i class="fa-solid fa-fire"></i>
                     </div>
-                    <span style="font-size: 0.75rem; color: #9a3412; font-weight: 700;">أيام متتالية 🔥</span>
+                    <span class="kpi-lbl">{{ __('أيام متتالية') }}</span>
                 </div>
-                <div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 14px; border-radius: 14px; text-align: center;">
-                    <div style="font-size: 1.4rem; font-weight: 800; color: #16a34a; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                <div class="ed-kpi-box green">
+                    <div class="kpi-val">
                         <span>{{ $student->total_points ?? 50 }}</span>
                         <i class="fa-solid fa-trophy"></i>
                     </div>
-                    <span style="font-size: 0.75rem; color: #166534; font-weight: 700;">نقاط التميز 🏆</span>
+                    <span class="kpi-lbl">{{ __('نقاط التميز') }}</span>
                 </div>
             </div>
 
             <!-- تفاصيل الحساب الأكاديمي -->
-            <div style="text-align: right; border-top: 1px solid #f1f5f9; padding-top: 20px; display: flex; flex-direction: column; gap: 14px;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-id-card" style="margin-left: 6px; color: #94a3b8;"></i> رقم الهوية:</span>
-                    <strong style="color: #0f172a; font-family: monospace; font-size: 0.95rem;">{{ $student->nid ?? 'غير مسجل' }}</strong>
+            <div class="ed-details-list">
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-id-card"></i> {{ __('رقم الهوية:') }}</span>
+                    <strong class="detail-value font-mono">{{ $student->nid ?? __('غير مسجل') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-location-dot" style="margin-left: 6px; color: #0284c7;"></i> المدينة / المحافظة:</span>
-                    <strong style="color: #0f172a;">{{ $student->city ?? 'فلسطين' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-location-dot"></i> {{ __('المدينة / المحافظة:') }}</span>
+                    <strong class="detail-value">{{ $student->city ?? __('فلسطين') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-school" style="margin-left: 6px; color: #6366f1;"></i> المدرسة:</span>
-                    <strong style="color: #0f172a;">{{ $student->school_name ?? 'غير محددة' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-school"></i> {{ __('المدرسة:') }}</span>
+                    <strong class="detail-value">{{ $student->school_name ?? __('غير محددة') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-envelope" style="margin-left: 6px; color: #94a3b8;"></i> البريد:</span>
-                    <strong style="color: #0f172a; font-size: 0.82rem;">{{ $student->email ?? auth()->user()->email }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-envelope"></i> {{ __('البريد:') }}</span>
+                    <strong class="detail-value font-mono text-sm">{{ $student->email ?? auth()->user()->email }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-phone" style="margin-left: 6px; color: #94a3b8;"></i> الجوال:</span>
-                    <strong style="color: #0f172a; font-family: monospace;">{{ $student->phone ?? 'غير متوفر' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-phone"></i> {{ __('الجوال:') }}</span>
+                    <strong class="detail-value font-mono">{{ $student->phone ?? __('غير متوفر') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-user-shield" style="margin-left: 6px; color: #f59e0b;"></i> جوال ولي الأمر:</span>
-                    <strong style="color: #0f172a; font-family: monospace;">{{ $student->guardian_phone ?? 'غير متوفر' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-user-shield"></i> {{ __('جوال ولي الأمر:') }}</span>
+                    <strong class="detail-value font-mono">{{ $student->guardian_phone ?? __('غير متوفر') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-brands fa-whatsapp" style="margin-left: 6px; color: #10b981;"></i> واتساب:</span>
-                    <strong style="color: #0f172a; font-family: monospace;">{{ $student->whatsapp ?? $student->phone ?? 'غير متوفر' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-brands fa-whatsapp"></i> {{ __('واتساب:') }}</span>
+                    <strong class="detail-value font-mono">{{ $student->whatsapp ?? $student->phone ?? __('غير متوفر') }}</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-address-card" style="margin-left: 6px; color: #0284c7;"></i> بطاقة الهوية:</span>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-address-card"></i> {{ __('بطاقة الهوية:') }}</span>
                     @if(!empty($student->id_photo))
-                        <span style="background: #ecfdf5; color: #059669; font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
-                            <i class="fa-solid fa-circle-check"></i> مرفقة ومعتمدة
-                        </span>
+                        <span class="ed-badge-status green"><i class="fa-solid fa-circle-check"></i> {{ __('مرفقة ومعتمدة') }}</span>
                     @else
-                        <span style="background: #fff1f2; color: #e11d48; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
-                            <i class="fa-solid fa-circle-exclamation"></i> غير مرفقة
-                        </span>
+                        <span class="ed-badge-status red"><i class="fa-solid fa-circle-exclamation"></i> {{ __('غير مرفقة') }}</span>
                     @endif
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
-                    <span style="color: #64748b; font-weight: 600;"><i class="fa-solid fa-calendar-check" style="margin-left: 6px; color: #94a3b8;"></i> تاريخ الانضمام:</span>
-                    <strong style="color: #0f172a;">{{ $student->created_at ? $student->created_at->format('Y/m/d') : 'حديثاً' }}</strong>
+                <div class="ed-detail-row">
+                    <span class="detail-label"><i class="fa-solid fa-calendar-check"></i> {{ __('تاريخ الانضمام:') }}</span>
+                    <strong class="detail-value font-mono">{{ $student->created_at ? $student->created_at->format('Y/m/d') : __('حديثاً') }}</strong>
                 </div>
             </div>
         </aside>
 
-        <!-- الجانب الأيسر: إعدادات الأمان وأدوات التوجيهي السريعة -->
-        <main style="display: flex; flex-direction: column; gap: 25px;">
+        <!-- الجانب الثاني: اختصارات الأدوات وتحديث كلمة المرور -->
+        <main class="ed-profile-main">
 
-            <!-- اختصارات أدوات التوجيهي -->
-            <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 25px 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
-                <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 18px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-wand-magic-sparkles" style="color: #0284c7;"></i>
-                    أدواتي الدراسية النشطة
+            <!-- اختصارات أدوات التوجيهي الكلاسيكية -->
+            <div class="ed-card-section">
+                <h3 class="ed-section-heading">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>{{ __('أدواتي الدراسية النشطة') }}</span>
                 </h3>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px;">
-                    <a href="{{ route('student.subjects.index') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-book-open"></i></div>
+                <div class="ed-tools-grid">
+                    <a href="{{ route('student.subjects.index') }}" class="ed-tool-item">
+                        <div class="tool-icon blue"><i class="fa-solid fa-book-open"></i></div>
                         <div>
-                            <strong style="font-size: 0.85rem; display: block;">مناهجي ومقرراتي</strong>
-                            <small style="color: #64748b; font-size: 0.72rem;">المواد والشروحات</small>
+                            <strong>{{ __('مناهجي ومقرراتي') }}</strong>
+                            <small>{{ __('المواد والدروس') }}</small>
                         </div>
                     </a>
 
-                    <a href="{{ route('student.planner.index') }}" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#0284c7'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-calendar-days"></i></div>
+                    <a href="{{ route('student.planner.index') }}" class="ed-tool-item">
+                        <div class="tool-icon blue"><i class="fa-solid fa-calendar-days"></i></div>
                         <div>
-                            <strong style="font-size: 0.85rem; display: block;">جدول المراجعة</strong>
-                            <small style="color: #64748b; font-size: 0.72rem;">تنظيم جدول الدراسة</small>
+                            <strong>{{ __('جدول المراجعة') }}</strong>
+                            <small>{{ __('خطة دراسية للأيام المتبقية') }}</small>
                         </div>
                     </a>
 
-                    <a href="{{ route('tawjihi.calculator') }}" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#10b981'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #d1fae5; color: #059669; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-calculator"></i></div>
+                    <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="ed-tool-item">
+                        <div class="tool-icon green"><i class="fa-solid fa-calculator"></i></div>
                         <div>
-                            <strong style="font-size: 0.85rem; display: block;">حاسبة المعدل</strong>
-                            <small style="color: #64748b; font-size: 0.72rem;">تنسيق الجامعات</small>
+                            <strong>{{ __('حاسبة المعدل') }}</strong>
+                            <small>{{ __('دليل التنسيق والقبول الجامعي') }}</small>
                         </div>
                     </a>
 
-                    <a href="{{ route('tawjihi.archive') }}" target="_blank" style="display: flex; align-items: center; gap: 12px; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; text-decoration: none; color: #1e293b; transition: 0.2s;" onmouseover="this.style.borderColor='#f43f5e'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateY(0)'">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #ffe4e6; color: #e11d48; display: grid; place-items: center; font-size: 1.1rem;"><i class="fa-solid fa-file-invoice"></i></div>
+                    <a href="{{ route('tawjihi.archive') }}" target="_blank" class="ed-tool-item">
+                        <div class="tool-icon red"><i class="fa-solid fa-file-invoice"></i></div>
                         <div>
-                            <strong style="font-size: 0.85rem; display: block;">بنك الامتحانات</strong>
-                            <small style="color: #64748b; font-size: 0.72rem;">نماذج الإجابة الوزارية</small>
+                            <strong>{{ __('بنك الامتحانات الوزارية') }}</strong>
+                            <small>{{ __('نماذج وزارية وامتحانات محاكية') }}</small>
                         </div>
                     </a>
                 </div>
             </div>
 
             <!-- كرت تغيير كلمة المرور والأمان -->
-            <div style="background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
-                <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i>
-                    أمان الحساب وتغيير كلمة المرور
+            <div class="ed-card-section">
+                <h3 class="ed-section-heading">
+                    <i class="fa-solid fa-shield-halved text-green"></i>
+                    <span>{{ __('أمان الحساب وتغيير كلمة المرور') }}</span>
                 </h3>
 
                 <form id="profilePassForm" onsubmit="handlePasswordUpdate(event)">
                     @csrf
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
-                        <div>
-                            <label style="display:block; font-size:0.82rem; font-weight:700; color:#475569; margin-bottom:8px;">كلمة المرور الحالية</label>
-                            <input type="password" id="old_password" name="old_password" required placeholder="••••••••" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.9rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#0284c7'">
+                    <div class="ed-form-grid">
+                        <div class="ed-form-field">
+                            <label>{{ __('كلمة المرور الحالية') }}</label>
+                            <input type="password" id="old_password" name="old_password" required placeholder="••••••••" class="ed-input">
                         </div>
-                        <div>
-                            <label style="display:block; font-size:0.82rem; font-weight:700; color:#475569; margin-bottom:8px;">كلمة المرور الجديدة</label>
-                            <input type="password" id="new_password" name="new_password" required minlength="6" placeholder="لا تقل عن 6 خانات" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 0.9rem; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#0284c7'">
+                        <div class="ed-form-field">
+                            <label>{{ __('كلمة المرور الجديدة') }}</label>
+                            <input type="password" id="new_password" name="new_password" required minlength="6" placeholder="{{ __('لا تقل عن 6 خانات') }}" class="ed-input">
                         </div>
                     </div>
 
-                    <div style="margin-top: 22px; display: flex; justify-content: flex-end;">
-                        <button type="submit" id="btnUpdatePass" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border: none; padding: 12px 28px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(2,132,199,0.25); transition: 0.2s;">
+                    <div class="ed-form-footer">
+                        <button type="submit" id="btnUpdatePass" class="ed-btn-submit">
                             <i class="fa-solid fa-lock"></i>
-                            <span>حفظ وتحديث كلمة المرور</span>
+                            <span>{{ __('حفظ وتحديث كلمة المرور') }}</span>
                         </button>
                     </div>
                 </form>
             </div>
 
             <!-- الدعم والمساعدة -->
-            <div style="background: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0; padding: 22px 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div class="ed-support-banner">
                 <div>
-                    <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">هل تحتاج لتعديل فرعك أو بياناتك الرسمية؟</h4>
-                    <p style="font-size: 0.82rem; color: #64748b;">تواصل مع فريق الدعم الفني والإرشاد التربوي لمساعدتك على الفور.</p>
+                    <h4>{{ __('هل تحتاج لتعديل فرعك أو بياناتك الرسمية؟') }}</h4>
+                    <p>{{ __('تواصل مع فريق الدعم الفني والإرشاد التربوي لمساعدتك على الفور.') }}</p>
                 </div>
-                <a href="{{ route('student.support') }}" style="padding: 10px 22px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; color: #0284c7; text-decoration: none; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-headset"></i> محادثة الدعم
+                <a href="{{ route('student.support') }}" class="ed-btn-support">
+                    <i class="fa-solid fa-headset"></i>
+                    <span>{{ __('محادثة الدعم') }}</span>
                 </a>
             </div>
 
         </main>
     </div>
 </div>
+
+<style>
+/* ==========================================================
+   CLASSIC ACADEMIC STUDENT PROFILE STYLES (100% RESPONSIVE)
+   ========================================================== */
+.ed-profile-container {
+    width: 100%;
+    margin: 0;
+    padding: 0 0 60px;
+    box-sizing: border-box;
+}
+
+.ed-profile-header {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.ed-profile-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+
+.ed-profile-subtitle {
+    font-size: 0.86rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.ed-btn-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    text-decoration: none;
+    transition: 0.15s;
+}
+
+.ed-btn-home:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.ed-profile-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* Sidebar Card */
+.ed-profile-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.ed-avatar-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 14px;
+}
+
+.ed-student-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 3px solid #eff6ff;
+}
+
+.ed-student-avatar-fallback {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    display: grid;
+    place-items: center;
+    font-size: 2.5rem;
+    border: 3px solid #bfdbfe;
+    margin: 0 auto;
+}
+
+.ed-verified-badge {
+    position: absolute;
+    bottom: -4px;
+    right: -4px;
+    width: 26px;
+    height: 26px;
+    background: #16a34a;
+    color: #ffffff;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    border: 2px solid #ffffff;
+    font-size: 0.75rem;
+}
+
+.ed-student-name {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px;
+}
+
+.ed-stage-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border: 1px solid #bfdbfe;
+    padding: 3px 12px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.ed-kpi-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.ed-kpi-box {
+    border-radius: 8px;
+    padding: 10px 8px;
+    text-align: center;
+}
+
+.ed-kpi-box.orange {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+}
+
+.ed-kpi-box.green {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+}
+
+.kpi-val {
+    font-size: 1.2rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: monospace;
+}
+
+.ed-kpi-box.orange .kpi-val { color: #ea580c; }
+.ed-kpi-box.green .kpi-val { color: #16a34a; }
+
+.kpi-lbl {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    display: block;
+    margin-top: 2px;
+}
+
+.ed-details-list {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ed-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+}
+
+.detail-label {
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.detail-label i { font-size: 0.85rem; color: #94a3b8; }
+
+.detail-value {
+    color: #0f172a;
+    font-weight: 700;
+}
+
+.text-sm { font-size: 0.76rem; }
+
+.ed-badge-status {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ed-badge-status.green { background: #dcfce7; color: #15803d; }
+.ed-badge-status.red { background: #fee2e2; color: #b91c1c; }
+
+/* Main sections */
+.ed-profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.ed-card-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.ed-section-heading {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ed-section-heading i { color: #1e3a8a; }
+.ed-section-heading .text-green { color: #16a34a; }
+
+.ed-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.ed-tool-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #1e293b;
+    transition: 0.15s;
+}
+
+.ed-tool-item:hover {
+    border-color: #1e3a8a;
+    background: #ffffff;
+}
+
+.tool-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.tool-icon.blue { background: #eff6ff; color: #1e3a8a; }
+.tool-icon.green { background: #f0fdf4; color: #16a34a; }
+.tool-icon.red { background: #fee2e2; color: #dc2626; }
+
+.ed-tool-item strong {
+    font-size: 0.84rem;
+    display: block;
+    color: #0f172a;
+}
+
+.ed-tool-item small {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+/* Password Form */
+.ed-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.ed-form-field label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.ed-input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    font-size: 0.88rem;
+    box-sizing: border-box;
+    outline: none;
+    transition: 0.15s;
+}
+
+.ed-input:focus {
+    border-color: #1e3a8a;
+    background: #ffffff;
+}
+
+.ed-form-footer {
+    margin-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.ed-btn-submit {
+    background: #1e3a8a;
+    color: #ffffff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.86rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.15s;
+}
+
+.ed-btn-submit:hover {
+    background: #172554;
+}
+
+/* Support banner */
+.ed-support-banner {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 18px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.ed-support-banner h4 {
+    margin: 0 0 4px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ed-support-banner p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.ed-btn-support {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    padding: 8px 18px;
+    border-radius: 8px;
+    color: #1e3a8a;
+    font-weight: 700;
+    font-size: 0.84rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+html[dir="ltr"] .arrow-icon {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 860px) {
+    .ed-profile-layout {
+        grid-template-columns: 1fr;
+    }
+    .ed-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 
 <script>
 function handlePasswordUpdate(e) {
@@ -211,17 +626,17 @@ function handlePasswordUpdate(e) {
     const newPass = document.getElementById('new_password').value;
 
     if (!oldPass || !newPass) {
-        Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى ملء حقلي كلمة المرور.' });
+        Swal.fire({ icon: 'warning', title: '{{ __("تنبيه") }}', text: '{{ __("يرجى ملء كافة الحقول المطلوبة") }}' });
         return;
     }
 
     if (newPass.length < 6) {
-        Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'كلمة المرور الجديدة يجب أن لا تقل عن 6 خانات.' });
+        Swal.fire({ icon: 'warning', title: '{{ __("تنبيه") }}', text: '{{ __("كلمة المرور الجديدة يجب أن لا تقل عن 6 خانات.") }}' });
         return;
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحديث...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري المعالجة...") }}';
 
     axios.post('{{ route("student.profile.updatePassword") }}', {
         old_password: oldPass,
@@ -229,24 +644,24 @@ function handlePasswordUpdate(e) {
     })
     .then(res => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-lock"></i> <span>حفظ وتحديث كلمة المرور</span>';
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> <span>{{ __("حفظ وتحديث كلمة المرور") }}</span>';
         document.getElementById('profilePassForm').reset();
 
         Swal.fire({
             icon: 'success',
-            title: 'تم التحديث بنجاح!',
-            text: res.data.message || 'تم تحديث كلمة المرور الخاصة بك بنجاح.',
+            title: '{{ __("تم بنجاح") }}',
+            text: res.data.message || '{{ __("تم تحديث كلمة المرور الخاصة بك بنجاح.") }}',
             timer: 2000,
             showConfirmButton: false
         });
     })
     .catch(err => {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-lock"></i> <span>حفظ وتحديث كلمة المرور</span>';
-        const msg = err.response?.data?.message || err.response?.data?.title || 'تعذر تحديث كلمة المرور، يرجى التأكد من كلمة المرور الحالية.';
+        btn.innerHTML = '<i class="fa-solid fa-lock"></i> <span>{{ __("حفظ وتحديث كلمة المرور") }}</span>';
+        const msg = err.response?.data?.message || err.response?.data?.title || '{{ __("تعذر تحديث كلمة المرور، يرجى التأكد من كلمة المرور الحالية.") }}';
         Swal.fire({
             icon: 'error',
-            title: 'خطأ',
+            title: '{{ __("خطأ") }}',
             text: msg
         });
     });

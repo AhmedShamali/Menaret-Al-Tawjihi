@@ -3,7 +3,7 @@
 @section('title', 'محادثة الأستاذ ' . $teacher->name)
 
 @section('content')
-<div class="chat-page-wrapper" dir="rtl">
+<div class="chat-page-wrapper">
     <div class="chat-app-container">
 
         <!-- ترويسة المحادثة التفاعلية (Telegram / WhatsApp Style Header) -->

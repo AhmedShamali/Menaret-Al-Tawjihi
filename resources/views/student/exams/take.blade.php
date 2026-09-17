@@ -1,60 +1,60 @@
 @extends('layouts.app')
 
-@section('title', 'قاعة الاختبار الرقمية | ' . $exam->title)
+@section('title', __('قاعة الاختبار الرقمية') . ' | ' . $exam->title)
 
 @section('content')
 <div class="ed-exam-take-wrapper">
 
     <!-- شاشة تأكيد البدء الأكاديمية (University Pre-flight Modal) -->
     <div id="examPreflightModal" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: var(--ed-surface, #ffffff); border-radius: 24px; max-width: 600px; width: 100%; padding: 32px; box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); text-align: center;">
-            <div style="width: 64px; height: 64px; border-radius: 20px; background: var(--ed-primary-soft, #f0f9ff); color: var(--ed-primary, #0284c7); display: grid; place-items: center; font-size: 1.8rem; margin: 0 auto 16px;">
+        <div style="background: var(--ed-surface, #ffffff); border-radius: 20px; max-width: 600px; width: 100%; padding: 32px; box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 20px; background: #eff6ff; color: #1e3a8a; display: grid; place-items: center; font-size: 1.8rem; margin: 0 auto 16px;">
                 <i class="fa-solid fa-graduation-cap"></i>
             </div>
 
-            <span style="background: var(--ed-primary-soft, #f0f9ff); color: var(--ed-primary, #0284c7); padding: 4px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 8px;">
-                {{ $exam->subject->name_ar ?? 'مادة دراسية' }}
+            <span style="background: #eff6ff; color: #1e3a8a; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 8px;">
+                {{ $exam->subject->name_ar ?? __('مادة دراسية') }}
             </span>
-            <h2 style="font-size: 1.35rem; font-weight: 900; color: var(--ed-text-main, #0f172a); margin: 0 0 10px;">{{ $exam->title }}</h2>
-            <p style="color: var(--ed-text-muted, #64748b); font-size: 0.86rem; margin: 0 0 20px;">يرجى مراجعة تفاصيل وتعليمات الاختبار الأكاديمي قبل بدء الوقت الرسمي.</p>
+            <h2 style="font-size: 1.35rem; font-weight: 900; color: #0f172a; margin: 0 0 10px;">{{ $exam->title }}</h2>
+            <p style="color: #64748b; font-size: 0.86rem; margin: 0 0 20px;">{{ __('يرجى مراجعة تفاصيل وتعليمات الاختبار الأكاديمي قبل بدء الوقت الرسمي.') }}</p>
 
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px;">
-                <div style="background: var(--ed-surface-alt, #f8fafc); padding: 12px 8px; border-radius: 12px; border: 1px solid var(--ed-border-subtle, #f1f5f9);">
-                    <i class="fa-regular fa-clock" style="color: var(--ed-accent, #f97316); font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
-                    <strong style="font-size: 0.95rem; color: var(--ed-text-main, #0f172a); display: block;">{{ $exam->duration_minutes }} دقيقة</strong>
-                    <span style="font-size: 0.72rem; color: var(--ed-text-muted, #64748b);">المدة الزمنية</span>
+                <div style="background: #f8fafc; padding: 12px 8px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <i class="fa-regular fa-clock" style="color: #ea580c; font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
+                    <strong style="font-size: 0.95rem; color: #0f172a; display: block;">{{ $exam->duration_minutes }} {{ __('دقيقة') }}</strong>
+                    <span style="font-size: 0.72rem; color: #64748b;">{{ __('المدة الزمنية') }}</span>
                 </div>
-                <div style="background: var(--ed-surface-alt, #f8fafc); padding: 12px 8px; border-radius: 12px; border: 1px solid var(--ed-border-subtle, #f1f5f9);">
-                    <i class="fa-solid fa-list-check" style="color: var(--ed-primary, #0284c7); font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
-                    <strong style="font-size: 0.95rem; color: var(--ed-text-main, #0f172a); display: block;">{{ count($exam->questions) }} أسئلة</strong>
-                    <span style="font-size: 0.72rem; color: var(--ed-text-muted, #64748b);">إجمالي الأسئلة</span>
+                <div style="background: #f8fafc; padding: 12px 8px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <i class="fa-solid fa-list-check" style="color: #1e3a8a; font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
+                    <strong style="font-size: 0.95rem; color: #0f172a; display: block;">{{ count($exam->questions) }} {{ __('أسئلة') }}</strong>
+                    <span style="font-size: 0.72rem; color: #64748b;">{{ __('إجمالي الأسئلة') }}</span>
                 </div>
-                <div style="background: var(--ed-surface-alt, #f8fafc); padding: 12px 8px; border-radius: 12px; border: 1px solid var(--ed-border-subtle, #f1f5f9);">
-                    <i class="fa-solid fa-star" style="color: var(--ed-success, #10b981); font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
-                    <strong style="font-size: 0.95rem; color: var(--ed-text-main, #0f172a); display: block;">{{ $exam->total_grade ?? $exam->questions->sum('points') }} درجة</strong>
-                    <span style="font-size: 0.72rem; color: var(--ed-text-muted, #64748b);">الدرجة الكلية</span>
+                <div style="background: #f8fafc; padding: 12px 8px; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <i class="fa-solid fa-star" style="color: #16a34a; font-size: 1.1rem; margin-bottom: 4px; display: block;"></i>
+                    <strong style="font-size: 0.95rem; color: #0f172a; display: block;">{{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('درجة') }}</strong>
+                    <span style="font-size: 0.72rem; color: #64748b;">{{ __('الدرجة الكلية') }}</span>
                 </div>
             </div>
 
-            <div style="background: var(--ed-surface-alt, #f8fafc); border-radius: 14px; padding: 16px; text-align: right; margin-bottom: 24px; border: 1px solid var(--ed-border, #e2e8f0);">
-                <h4 style="margin: 0 0 8px; font-size: 0.84rem; font-weight: 800; color: var(--ed-text-main, #0f172a); display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-circle-info" style="color: var(--ed-primary, #0284c7);"></i> الإرشادات والتعليمات الجامعية:
+            <div style="background: #f8fafc; border-radius: 10px; padding: 16px; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+                <h4 style="margin: 0 0 8px; font-size: 0.84rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-info" style="color: #1e3a8a;"></i> {{ __('الإرشادات والتعليمات الجامعية:') }}
                 </h4>
-                <ul style="margin: 0; padding-right: 18px; font-size: 0.8rem; color: var(--ed-text-body, #334155); line-height: 1.7;">
-                    <li>يبدأ العداد التنازلي فور النقر على زر "أوافق وأبدأ الاختبار الآن".</li>
-                    <li>يُمنع تحديث الصفحة أو إغلاقها أثناء تقديم الامتحان حتى لا تفقد إجاباتك.</li>
-                    <li>لن تتمكن من إعادة الاختبار بعد تسليمه إلا بموافقة رسمية من معلّم المادة.</li>
-                    <li>عند انتهاء الوقت سيتم تسليم إجاباتك تلقائياً وبشكل فوري.</li>
+                <ul style="margin: 0; padding-inline-start: 18px; font-size: 0.8rem; color: #334155; line-height: 1.7;">
+                    <li>{{ __('يبدأ العداد التنازلي فور النقر على زر "أوافق وأبدأ الاختبار الآن".') }}</li>
+                    <li>{{ __('يُمنع تحديث الصفحة أو إغلاقها أثناء تقديم الامتحان حتى لا تفقد إجاباتك.') }}</li>
+                    <li>{{ __('لن تتمكن من إعادة الاختبار بعد تسليمه إلا بموافقة رسمية من معلّم المادة.') }}</li>
+                    <li>{{ __('عند انتهاء الوقت سيتم تسليم إجاباتك تلقائياً وبشكل فوري.') }}</li>
                 </ul>
             </div>
 
             <div style="display: flex; gap: 12px; justify-content: center;">
-                <a href="{{ route('student.exams.index') }}" style="padding: 12px 22px; border-radius: 12px; background: var(--ed-surface-alt, #f8fafc); color: var(--ed-text-muted, #64748b); border: 1px solid var(--ed-border, #e2e8f0); text-decoration: none; font-weight: 700; font-size: 0.88rem;">
-                    العودة لاحقاً
+                <a href="{{ route('student.exams.index') }}" style="padding: 10px 20px; border-radius: 8px; background: #f8fafc; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none; font-weight: 700; font-size: 0.86rem;">
+                    {{ __('العودة لاحقاً') }}
                 </a>
-                <button type="button" onclick="startExamOfficially()" style="padding: 12px 32px; border-radius: 12px; background: var(--ed-primary, #0284c7); color: #fff; border: none; font-weight: 800; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.25);">
+                <button type="button" onclick="startExamOfficially()" style="padding: 10px 24px; border-radius: 8px; background: #1e3a8a; color: #fff; border: none; font-weight: 800; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                     <i class="fa-solid fa-stopwatch"></i>
-                    <span>أوافق وأبدأ الاختبار الآن</span>
+                    <span>{{ __('أوافق وأبدأ الاختبار الآن') }}</span>
                 </button>
             </div>
         </div>
@@ -66,13 +66,13 @@
             <div class="ed-exam-meta-block">
                 <div class="ed-exam-badge-tag">
                     <i class="fas fa-file-signature"></i>
-                    <span>{{ $exam->subject->name_ar ?? $exam->subject->name ?? 'مادة دراسية' }}</span>
+                    <span>{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</span>
                 </div>
                 <h2>{{ $exam->title }}</h2>
             </div>
 
             <div class="ed-timer-block">
-                <span class="timer-label"><i class="far fa-clock"></i> الوقت المتبقي</span>
+                <span class="timer-label"><i class="far fa-clock"></i> {{ __('الوقت المتبقي') }}</span>
                 <div id="countdown_timer">00:00</div>
             </div>
         </div>
@@ -226,11 +226,11 @@
 
 <style>
     .ed-exam-take-wrapper {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px 20px 80px;
-        direction: rtl;
-        font-family: 'Alexandria', 'Tajawal', sans-serif;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0 0 80px;
+        box-sizing: border-box;
     }
 
     /* Fixed Topbar */

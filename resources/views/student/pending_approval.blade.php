@@ -3,7 +3,7 @@
 @section('title', 'بانتظار موافقة الإدارة وتفعيل الاشتراك | منارة التوجيهي')
 
 @section('content')
-<div class="pending-approval-wrapper" dir="rtl">
+<div class="pending-approval-wrapper">
 
     <div class="pending-approval-card">
         <!-- أيقونة الحالة المتحركة -->

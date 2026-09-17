@@ -188,7 +188,7 @@
     }
 </style>
 
-<div class="container-fluid py-3" dir="rtl">
+<div class="container-fluid py-3">
     <div class="support-container">
 
         <!-- القائمة الجانبية -->

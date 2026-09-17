@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'مصفوفة ومتابعة الاشتراكات الشهرية للطلاب (12 شهراً) - منصة منارة التوجيهي')
+@section('title', __('مصفوفة الاشتراكات الشهرية للطلاب (12 شهراً)') . ' - ' . __('منارة التوجيهي'))
 
 @section('content')
 <div class="subs-matrix-wrapper">
@@ -9,14 +9,14 @@
         <div class="header-info">
             <div class="badge-tag">
                 <i class="fa-solid fa-calendar-days"></i>
-                <span>الإدارة المالية ومتابعة الاشتراكات السنوية</span>
+                <span>{{ __('الإدارة المالية ومتابعة الاشتراكات السنوية') }}</span>
             </div>
-            <h1 class="page-title">مصفوفة الاشتراكات الشهرية للطلاب (12 شهراً)</h1>
-            <p class="page-subtitle">متابعة دفعات وأقساط الطلاب شهراً بشهر لكامل السنة الدراسية وتحديث الحالات فورياً بدون تعقيد</p>
+            <h1 class="page-title">{{ __('مصفوفة الاشتراكات الشهرية للطلاب (12 شهراً)') }}</h1>
+            <p class="page-subtitle">{{ __('متابعة دفعات وأقساط الطلاب شهراً بشهر لكامل السنة الدراسية وتحديث الحالات فورياً بدون تعقيد') }}</p>
         </div>
         <div class="header-tools">
             <form method="GET" action="{{ route('admin.subscriptions.monthly') }}" class="year-form">
-                <label>العام الدراسي:</label>
+                <label>{{ __('العام الدراسي:') }}</label>
                 <select name="year" class="year-select" onchange="this.form.submit()">
                     <option value="2026-2027" {{ $year === '2026-2027' ? 'selected' : '' }}>2026 / 2027 م</option>
                     <option value="2025-2026" {{ $year === '2025-2026' ? 'selected' : '' }}>2025 / 2026 م</option>
@@ -30,36 +30,36 @@
         <div class="kpi-card green">
             <div class="kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
             <div class="kpi-data">
-                <span class="kpi-label">المحصل الفعلي المعتمد</span>
+                <span class="kpi-label">{{ __('المحصل الفعلي المعتمد') }}</span>
                 <h3 class="kpi-num font-mono">{{ number_format($stats['total_collected'], 2) }} ₪</h3>
-                <small class="kpi-desc">تم تأكيد سداده ({{ $stats['paid_count'] }} قسط)</small>
+                <small class="kpi-desc">{{ __('تم تأكيد سداده') }} ({{ $stats['paid_count'] }} قسط)</small>
             </div>
         </div>
 
         <div class="kpi-card red">
             <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
             <div class="kpi-data">
-                <span class="kpi-label">المتأخرات غير المسددة</span>
+                <span class="kpi-label">{{ __('المتأخرات غير المسددة') }}</span>
                 <h3 class="kpi-num font-mono">{{ number_format($stats['total_unpaid'], 2) }} ₪</h3>
-                <small class="kpi-desc">أقساط مستحقة ({{ $stats['unpaid_count'] }} شهر)</small>
+                <small class="kpi-desc">{{ __('أقساط مستحقة') }} ({{ $stats['unpaid_count'] }} {{ __('شهراً') }})</small>
             </div>
         </div>
 
         <div class="kpi-card amber">
             <div class="kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
             <div class="kpi-data">
-                <span class="kpi-label">إشعارات قيد المراجعة</span>
+                <span class="kpi-label">{{ __('إشعارات قيد المراجعة') }}</span>
                 <h3 class="kpi-num font-mono">{{ number_format($stats['total_pending'], 2) }} ₪</h3>
-                <small class="kpi-desc">بحاجة لاعتمادك ({{ $stats['pending_count'] }} إشعار)</small>
+                <small class="kpi-desc">{{ __('بحاجة لاعتمادك') }} ({{ $stats['pending_count'] }} {{ __('إشعار') }})</small>
             </div>
         </div>
 
         <div class="kpi-card blue">
             <div class="kpi-icon"><i class="fa-solid fa-percent"></i></div>
             <div class="kpi-data">
-                <span class="kpi-label">نسبة الالتزام المالي</span>
+                <span class="kpi-label">{{ __('نسبة الالتزام المالي') }}</span>
                 <h3 class="kpi-num font-mono">{{ $stats['collection_rate'] }}%</h3>
-                <small class="kpi-desc">المستحق: {{ number_format($stats['total_expected'], 0) }} ₪</small>
+                <small class="kpi-desc">{{ __('المستحق:') }} {{ number_format($stats['total_expected'], 0) }} ₪</small>
             </div>
         </div>
     </div>
@@ -71,12 +71,12 @@
 
             <div class="search-cell">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" name="search" value="{{ $search }}" placeholder="ابحث باسم الطالب، الهاتف، أو الهوية..." class="search-input">
+                <input type="text" name="search" value="{{ $search }}" placeholder="{{ __('ابحث باسم الطالب، الهاتف، أو الهوية...') }}" class="search-input">
             </div>
 
             <div class="filter-cell">
                 <select name="stage_id" class="filter-select" onchange="this.form.submit()">
-                    <option value="">كافة الفروع والمراحل</option>
+                    <option value="">{{ __('كافة الفروع والمراحل') }}</option>
                     @foreach($stages as $st)
                         <option value="{{ $st->id }}" {{ $stageId == $st->id ? 'selected' : '' }}>{{ $st->label_ar ?? $st->name_ar }}</option>
                     @endforeach
@@ -85,7 +85,7 @@
 
             <div class="filter-cell">
                 <select name="month" class="filter-select">
-                    <option value="">كل الأشهر</option>
+                    <option value="">{{ __('كل الأشهر') }}</option>
                     @foreach($monthsNames as $mNum => $mLabel)
                         <option value="{{ $mNum }}" {{ $monthFilter == $mNum ? 'selected' : '' }}>{{ $mLabel }}</option>
                     @endforeach
@@ -94,36 +94,36 @@
 
             <div class="filter-cell">
                 <select name="status" class="filter-select">
-                    <option value="">كافة الحالات</option>
-                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>مسدد وخالص ✅</option>
-                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>قيد المراجعة ⏳</option>
-                    <option value="unpaid" {{ $statusFilter === 'unpaid' ? 'selected' : '' }}>غير مسدد ❌</option>
-                    <option value="waived" {{ $statusFilter === 'waived' ? 'selected' : '' }}>إعفاء / منحة 🏷️</option>
+                    <option value="">{{ __('كافة الحالات') }}</option>
+                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('مسدد وخالص') }} ✅</option>
+                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>{{ __('قيد المراجعة') }} ⏳</option>
+                    <option value="unpaid" {{ $statusFilter === 'unpaid' ? 'selected' : '' }}>{{ __('غير مسدد') }} ❌</option>
+                    <option value="waived" {{ $statusFilter === 'waived' ? 'selected' : '' }}>{{ __('إعفاء / منحة') }} 🏷️</option>
                 </select>
             </div>
 
-            <button type="submit" class="btn-filter-submit"><i class="fa-solid fa-filter"></i> تطبيق</button>
+            <button type="submit" class="btn-filter-submit"><i class="fa-solid fa-filter"></i> {{ __('تطبيق') }}</button>
 
             @if($search || $stageId || $monthFilter || $statusFilter)
-                <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="btn-reset-filter">تصفير</a>
+                <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="btn-reset-filter">{{ __('تصفير') }}</a>
             @endif
         </form>
 
         <div class="legend-strip">
-            <span class="legend-title">دليل الحالات:</span>
-            <span class="legend-item"><span class="badge-mini bg-paid"></span> خالص ومسدد (انقر لتعديل أي شهر)</span>
-            <span class="legend-item"><span class="badge-mini bg-pending"></span> قيد المراجعة</span>
-            <span class="legend-item"><span class="badge-mini bg-unpaid"></span> غير مسدد</span>
-            <span class="legend-item"><span class="badge-mini bg-waived"></span> إعفاء / منحة كاملة</span>
+            <span class="legend-title">{{ __('دليل الحالات:') }}</span>
+            <span class="legend-item"><span class="badge-mini bg-paid"></span> {{ __('خالص ومسدد (انقر لتعديل أي شهر)') }}</span>
+            <span class="legend-item"><span class="badge-mini bg-pending"></span> {{ __('قيد المراجعة') }}</span>
+            <span class="legend-item"><span class="badge-mini bg-unpaid"></span> {{ __('غير مسدد') }}</span>
+            <span class="legend-item"><span class="badge-mini bg-waived"></span> {{ __('إعفاء / منحة كاملة') }}</span>
         </div>
     </div>
 
     {{-- 4. قائمة الطلاب الانسيابية بدون سكرول أفقي نهائياً --}}
     <div class="students-list-wrapper">
         <div class="list-header-row">
-            <span class="col-head-student">بيانات الطالب والمرحلة</span>
-            <span class="col-head-timeline">مسير الشهور الـ 12 (انقر على أي شهر لتغيير حالته فورياً)</span>
-            <span class="col-head-progress">نسبة السداد</span>
+            <span class="col-head-student">{{ __('بيانات الطالب والمرحلة') }}</span>
+            <span class="col-head-timeline">{{ __('مسير الشهور الـ 12 (انقر على أي شهر لتغيير حالته فورياً)') }}</span>
+            <span class="col-head-progress">{{ __('نسبة السداد') }}</span>
         </div>
 
         @forelse($students as $student)
@@ -163,7 +163,7 @@
                         <div id="badge_{{ $student->id }}_{{ $m }}" 
                              class="month-micro-badge badge-{{ $st }}"
                              onclick="openEditMonthModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ $m }}, '{{ addslashes($mTitle) }}', '{{ $st }}', {{ $amt }}, '{{ addslashes($notes) }}')"
-                             title="{{ $mTitle }} ({{ round($amt) }} ₪) - انقر للتعديل">
+                             title="{{ $mTitle }} ({{ round($amt) }} ₪) - {{ __('انقر للتعديل') }}">
                             <span class="m-digit font-mono">{{ $m }}</span>
                             @if($st === 'paid')
                                 <i class="fa-solid fa-check badge-icon"></i>
@@ -181,7 +181,7 @@
                 {{-- إحصائية الالتزام --}}
                 <div class="student-progress-block">
                     <div class="progress-ratio font-mono">
-                        <strong>{{ $paidCount }}</strong> / 12 شهراً
+                        <strong>{{ $paidCount }}</strong> / 12 {{ __('شهراً') }}
                     </div>
                     <div class="progress-bar-bg">
                         <div class="progress-bar-fill {{ $isFull ? 'bg-full' : '' }}" style="width: {{ $percent }}%;"></div>
@@ -192,7 +192,7 @@
         @empty
             <div class="empty-matrix-card">
                 <i class="fa-solid fa-users-slash"></i>
-                <p>لم يتم العثور على أي طلاب مطابقين لشروط البحث والفلترة.</p>
+                <p>{{ __('لم يتم العثور على أي طلاب مطابقين لشروط البحث والفلترة.') }}</p>
             </div>
         @endforelse
 
@@ -207,8 +207,8 @@
     <div class="modal-card-box">
         <div class="modal-header-row">
             <div>
-                <h3 id="modalStudentNameTitle" style="margin: 0 0 4px; font-size: 1.2rem; color: #0f172a;">تحديث حالة الاشتراك الشهري</h3>
-                <p id="modalMonthSubtitle" style="margin: 0; font-size: 0.85rem; color: #64748b;">شهر محدد</p>
+                <h3 id="modalStudentNameTitle" style="margin: 0 0 4px; font-size: 1.2rem; color: #0f172a;">{{ __('تحديث حالة الاشتراك الشهري') }}</h3>
+                <p id="modalMonthSubtitle" style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ __('شهر محدد') }}</p>
             </div>
             <button type="button" class="btn-close-x" onclick="closeEditMonthModal()">&times;</button>
         </div>
@@ -221,14 +221,14 @@
 
             <div class="form-body-wrap">
                 <div class="form-field-group">
-                    <label class="field-label">حالة السداد والاشتراك لهذا الشهر <span class="required">*</span></label>
+                    <label class="field-label">{{ __('حالة السداد والاشتراك لهذا الشهر') }} <span class="required">*</span></label>
                     <div class="status-options-grid">
                         <label class="status-option-label opt-paid">
                             <input type="radio" name="status" value="paid" id="optStatusPaid">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-check"></i>
-                                <strong>مسدد وخالص</strong>
-                                <small>تم التحويل والاستلام</small>
+                                <strong>{{ __('مسدد وخالص') }}</strong>
+                                <small>{{ __('تم التحويل والاستلام') }}</small>
                             </div>
                         </label>
 
@@ -236,8 +236,8 @@
                             <input type="radio" name="status" value="pending" id="optStatusPending">
                             <div class="opt-content">
                                 <i class="fa-solid fa-clock-rotate-left"></i>
-                                <strong>قيد المراجعة</strong>
-                                <small>أرسل الطالب إشعاراً</small>
+                                <strong>{{ __('قيد المراجعة') }}</strong>
+                                <small>{{ __('أرسل الطالب إشعاراً') }}</small>
                             </div>
                         </label>
 
@@ -245,8 +245,8 @@
                             <input type="radio" name="status" value="unpaid" id="optStatusUnpaid">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-xmark"></i>
-                                <strong>غير مسدد</strong>
-                                <small>قسط مستحق متأخر</small>
+                                <strong>{{ __('غير مسدد') }}</strong>
+                                <small>{{ __('قسط مستحق متأخر') }}</small>
                             </div>
                         </label>
 
@@ -254,29 +254,29 @@
                             <input type="radio" name="status" value="waived" id="optStatusWaived">
                             <div class="opt-content">
                                 <i class="fa-solid fa-award"></i>
-                                <strong>إعفاء / منحة</strong>
-                                <small>معفى رسمياً من الإدارة</small>
+                                <strong>{{ __('إعفاء / منحة') }}</strong>
+                                <small>{{ __('معفى رسمياً من الإدارة') }}</small>
                             </div>
                         </label>
                     </div>
                 </div>
 
                 <div class="form-field-group">
-                    <label class="field-label">مبلغ الاشتراك للشهر (₪) <span class="required">*</span></label>
+                    <label class="field-label">{{ __('مبلغ الاشتراك للشهر (₪)') }} <span class="required">*</span></label>
                     <input type="number" step="0.01" name="amount" id="formAmount" class="clean-input font-mono" required>
                 </div>
 
                 <div class="form-field-group">
-                    <label class="field-label">ملاحظات وبيان الدفعة (اختياري)</label>
-                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="مثال: تم السداد عبر جوال باي أو خصم إضافي...">
+                    <label class="field-label">{{ __('ملاحظات وبيان الدفعة (اختياري)') }}</label>
+                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="{{ __('مثال: تم السداد عبر جوال باي أو خصم إضافي...') }}">
                 </div>
             </div>
 
             <div class="modal-footer-row">
                 <button type="submit" class="btn-save-sub" id="btnSaveSub">
-                    <i class="fa-solid fa-check"></i> حفظ التحديث فورياً
+                    <i class="fa-solid fa-check"></i> {{ __('حفظ التحديث فورياً') }}
                 </button>
-                <button type="button" class="btn-cancel-sub" onclick="closeEditMonthModal()">إلغاء</button>
+                <button type="button" class="btn-cancel-sub" onclick="closeEditMonthModal()">{{ __('إلغاء') }}</button>
             </div>
         </form>
     </div>
@@ -288,7 +288,7 @@
         document.getElementById('formStudentId').value = studentId;
         document.getElementById('formMonth').value = month;
         document.getElementById('modalStudentNameTitle').innerText = studentName;
-        document.getElementById('modalMonthSubtitle').innerText = `اشتراك ${monthLabel} (${yearString()})`;
+        document.getElementById('modalMonthSubtitle').innerText = '{{ __('اشتراك') }} ' + monthLabel + ' (' + yearString() + ')';
         document.getElementById('formAmount').value = currentAmount;
         document.getElementById('formNotes').value = currentNotes || '';
 
@@ -310,7 +310,7 @@
         e.preventDefault();
         const btn = document.getElementById('btnSaveSub');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
 
         const form = document.getElementById('updateMonthForm');
         const formData = new FormData(form);
@@ -341,11 +341,11 @@
             });
         })
         .catch(err => {
-            Swal.fire('خطأ', err.response?.data?.message || 'فشل تحديث حالة الاشتراك', 'error');
+            Swal.fire('{{ __('خطأ') }}', err.response?.data?.message || '{{ __('فشل تحديث حالة الاشتراك') }}', 'error');
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> حفظ التحديث فورياً';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> {{ __('حفظ التحديث فورياً') }}';
         });
     }
 
@@ -379,7 +379,7 @@
         flex-wrap: wrap;
         gap: 16px;
         margin-bottom: 20px;
-        border-right: 5px solid var(--ed-primary, #1d4ed8);
+        border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .badge-tag {

@@ -174,7 +174,7 @@
     }
 </style>
 
-<div class="dashboard-container" dir="rtl">
+<div class="dashboard-container">
 
     <!-- رأس الصفحة -->
     <div class="page-header">

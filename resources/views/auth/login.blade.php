@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>تسجيل الدخول | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
+    <title>{{ __('تسجيل الدخول') }} | {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</title>
 
     <!-- الخطوط الموحدة للمنظومة (Alexandria & Tajawal) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,11 +67,32 @@
             color: var(--ed-text-body);
             font-size: 14.5px;
             line-height: 1.6;
-            direction: rtl;
-            text-align: right;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+        }
+
+        html[dir="rtl"] body {
+            direction: rtl;
+            text-align: right;
+        }
+
+        html[dir="ltr"] body {
+            direction: ltr;
+            text-align: left;
+        }
+
+        html[dir="ltr"] .input-wrap .input-icon {
+            right: auto;
+            left: 14px;
+        }
+        html[dir="ltr"] .input-wrap .form-control {
+            padding-right: 14px;
+            padding-left: 42px;
+        }
+        html[dir="ltr"] .input-wrap .toggle-pw-btn {
+            left: auto;
+            right: 12px;
         }
 
         a {
@@ -478,8 +499,17 @@
     <!-- 1. الشريط العلوي الرفيع -->
     <div class="top-info-bar">
         <div class="top-bar-inner">
-            <span><i class="fa-regular fa-calendar-check text-warning"></i> اليوم: {{ date('Y/m/d') }} م • بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ</span>
-            <a href="{{ route('home') }}" style="color: #93c5fd;"><i class="fa-solid fa-arrow-right"></i> العودة للرئيسية</a>
+            <span><i class="fa-regular fa-calendar-check text-warning"></i> {{ __('اليوم:') }} {{ date('Y/m/d') }} م • {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</span>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                @php $currentLocale = app()->getLocale(); @endphp
+                <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}" 
+                   style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 3px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                    <i class="fa-solid fa-globe" style="color: var(--ed-accent-gold);"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
+                </a>
+                <a href="{{ route('home') }}" style="color: #93c5fd;"><i class="fa-solid fa-arrow-right"></i> {{ __('العودة للرئيسية') }}</a>
+            </div>
         </div>
     </div>
 
@@ -491,13 +521,13 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div class="brand-titles">
-                    <h1>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</h1>
-                    <p>بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد</p>
+                    <h1>{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</h1>
+                    <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</p>
                 </div>
             </a>
 
             <div class="supervisor-pill">
-                <span>المشرف العام:</span> أ. أحمد حسين شمالي
+                <span>{{ __('المشرف العام على المنظومة:') }}</span> {{ __('أ. أحمد حسين شمالي') }}
             </div>
         </div>
     </header>
@@ -506,8 +536,8 @@
     <main class="auth-container">
         <div class="auth-card">
             <div class="auth-card-header">
-                <h2>تسجيل الدخول للمنظومة</h2>
-                <p>أدخل بيانات اعتمادك للمتابعة الأكاديمية</p>
+                <h2>{{ __('تسجيل الدخول للمنظومة') }}</h2>
+                <p>{{ __('أدخل بيانات اعتمادك للمتابعة الأكاديمية') }}</p>
             </div>
 
             <div class="auth-card-body">
@@ -515,20 +545,20 @@
                 <!-- أزرار تبديل نوع الحساب -->
                 <div class="role-tabs-grid">
                     <button type="button" class="role-tab-btn active" data-role="student" onclick="switchRole('student')">
-                        <i class="fa-solid fa-user-graduate"></i> طالب
+                        <i class="fa-solid fa-user-graduate"></i> {{ __('طالب') }}
                     </button>
                     <button type="button" class="role-tab-btn" data-role="teacher" onclick="switchRole('teacher')">
-                        <i class="fa-solid fa-chalkboard-user"></i> معلم
+                        <i class="fa-solid fa-chalkboard-user"></i> {{ __('معلم') }}
                     </button>
                     <button type="button" class="role-tab-btn" data-role="admin" onclick="switchRole('admin')">
-                        <i class="fa-solid fa-shield-halved"></i> إدارة
+                        <i class="fa-solid fa-shield-halved"></i> {{ __('إدارة') }}
                     </button>
                 </div>
 
                 <!-- شريط توضيحي للدور -->
                 <div class="role-info-alert" id="roleAlertBox">
                     <i class="fa-solid fa-circle-info" id="roleIcon"></i>
-                    <span id="roleText">بوابة دخول الطلبة — أهلاً بك لمتابعة مساقاتك واختباراتك اليومية.</span>
+                    <span id="roleText">{{ __('بوابة دخول الطلبة — أهلاً بك لمتابعة مساقاتك واختباراتك اليومية.') }}</span>
                 </div>
 
                 <!-- تنبيهات الأخطاء -->
@@ -552,7 +582,7 @@
                     <input type="hidden" name="role" id="role_input" value="student">
 
                     <div class="form-group">
-                        <label class="form-label" id="usernameLabel">البريد الإلكتروني أو اسم المستخدم</label>
+                        <label class="form-label" id="usernameLabel">{{ __('البريد الإلكتروني أو اسم المستخدم') }}</label>
                         <div class="input-wrap">
                             <i class="fa-regular fa-envelope input-icon"></i>
                             <input type="text" name="email" id="email_field" class="form-control" placeholder="student@example.com" value="{{ old('email') }}" required autofocus>
@@ -560,11 +590,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">كلمة المرور</label>
+                        <label class="form-label">{{ __('كلمة المرور') }}</label>
                         <div class="input-wrap">
                             <i class="fa-solid fa-lock input-icon"></i>
                             <input type="password" name="password" id="password_field" class="form-control" placeholder="••••••••" required>
-                            <button type="button" class="toggle-pw-btn" onclick="togglePasswordVisibility()" aria-label="عرض كلمة المرور">
+                            <button type="button" class="toggle-pw-btn" onclick="togglePasswordVisibility()" aria-label="{{ __('كلمة المرور') }}">
                                 <i class="fa-regular fa-eye" id="eye_icon"></i>
                             </button>
                         </div>
@@ -573,21 +603,21 @@
                     <div class="form-meta-row">
                         <label class="remember-label">
                             <input type="checkbox" name="remember" value="1">
-                            <span>تذكرني على هذا الجهاز</span>
+                            <span>{{ __('تذكرني على هذا الجهاز') }}</span>
                         </label>
-                        <a href="javascript:void(0)" onclick="openForgotModal()" class="forgot-link">نسيت كلمة المرور؟</a>
+                        <a href="javascript:void(0)" onclick="openForgotModal()" class="forgot-link">{{ __('نسيت كلمة المرور؟') }}</a>
                     </div>
 
                     <button type="submit" class="btn-submit-login" id="submitBtn">
                         <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                        <span id="submitLabel">تسجيل الدخول كطالب</span>
+                        <span id="submitLabel">{{ __('تسجيل الدخول كطالب') }}</span>
                     </button>
                 </form>
 
                 <!-- خيار الدخول السريع عبر Google للطلبة -->
                 <div id="googleAuthSection" class="google-auth-box">
                     <div class="divider-strip">
-                        <span>أو المتابعة السريعة عبر</span>
+                        <span>{{ __('أو المتابعة السريعة عبر') }}</span>
                     </div>
                     <a href="{{ route('auth.google') }}" class="btn-google-login">
                         <svg width="18" height="18" viewBox="0 0 24 24">
@@ -596,14 +626,14 @@
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                         </svg>
-                        <span>الدخول بحساب Google</span>
+                        <span>{{ __('الدخول بحساب Google') }}</span>
                     </a>
                 </div>
 
                 <!-- رابط إنشاء حساب جديد -->
                 <div class="auth-card-footer" id="studentRegisterFooter">
-                    <span>ليس لديك حساب بعد؟</span>
-                    <a href="{{ route('students.create') }}" class="btn-to-register">إنشاء حساب طالب جديد ←</a>
+                    <span>{{ __('ليس لديك حساب بعد؟') }}</span>
+                    <a href="{{ route('students.create') }}" class="btn-to-register">{{ __('إنشاء حساب طالب جديد ←') }}</a>
                 </div>
 
             </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'بطاقات الاستذكار السريع والقوانين | منارة التوجيهي')
+@section('title', __('Flashcards & Laws') . ' | ' . config('app.name'))
 
 @section('content')
 <div class="ed-fc-container">
@@ -10,17 +10,17 @@
         <div class="ed-fc-title-box">
             <div class="ed-fc-breadcrumbs">
                 <i class="fas fa-home"></i>
-                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">لوحة الطالب</a>
-                <i class="fas fa-chevron-left divider"></i>
-                <span class="active">بطاقات الاستذكار السريع</span>
+                <a href="{{ route('student.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('Student Portal') }}</a>
+                <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} divider"></i>
+                <span class="active">{{ __('Flashcards & Laws') }}</span>
             </div>
-            <h1>بطاقات استذكار المفاهيم والقوانين الوزارية</h1>
-            <p>راجع القوانين الفيزيائية، المتطابقات الرياضية، والتواريخ التاريخية بلمسة واحدة بأسلوب التكرار المتباعد الذكي.</p>
+            <h1>{{ __('Ministerial Concepts & Laws Flashcards') }}</h1>
+            <p>{{ __('Review physics laws, mathematical identities, and key concepts through intelligent spaced repetition.') }}</p>
         </div>
 
         <div class="ed-fc-hint-tag">
             <i class="fas fa-keyboard"></i>
-            <span>اختصار: مسطرة (Space) للقلب • الأسهم للتنقل</span>
+            <span>{{ __('Shortcuts: Space to flip • Arrow keys to navigate') }}</span>
         </div>
     </header>
 
@@ -40,23 +40,23 @@
         <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
             <button type="button" onclick="openAddCardModal()" class="ed-btn ed-btn-primary" style="font-size: 0.82rem; padding: 8px 16px;">
                 <i class="fas fa-plus-circle"></i>
-                <span>إضافة بطاقة جديدة</span>
+                <span>{{ __('Add New Card') }}</span>
             </button>
             @if($flashcards->count() > 0)
-                <button type="button" onclick="openEditCardModal()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #d97706; border-color: #fde68a;" title="تعديل البطاقة الحالية">
+                <button type="button" onclick="openEditCardModal()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #d97706; border-color: #fde68a;" title="{{ __('Edit Current Card') }}">
                     <i class="fas fa-pen"></i>
-                    <span>تعديل الحالية</span>
+                    <span>{{ __('Edit Current') }}</span>
                 </button>
-                <button type="button" onclick="deleteCurrentCard()" class="ed-btn ed-btn-outline danger" style="font-size: 0.82rem; padding: 8px 14px;" title="حذف البطاقة الحالية">
+                <button type="button" onclick="deleteCurrentCard()" class="ed-btn ed-btn-outline danger" style="font-size: 0.82rem; padding: 8px 14px;" title="{{ __('Delete Current Card') }}">
                     <i class="fas fa-trash-alt"></i>
                 </button>
-                <button type="button" onclick="toggleHideCurrentCard()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px;" title="إخفاء من المراجعة">
+                <button type="button" onclick="toggleHideCurrentCard()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px;" title="{{ __('Hide / Restore') }}">
                     <i class="fas fa-eye-slash"></i>
-                    <span>إخفاء/استعادة</span>
+                    <span>{{ __('Hide / Restore') }}</span>
                 </button>
-                <button type="button" onclick="shuffleCards()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #6366f1; border-color: #c7d2fe;" title="ترتيب عشوائي للبطاقات">
+                <button type="button" onclick="shuffleCards()" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 14px; color: #6366f1; border-color: #c7d2fe;" title="{{ __('Shuffle Cards') }}">
                     <i class="fas fa-random"></i>
-                    <span>خلط عشوائي</span>
+                    <span>{{ __('Shuffle') }}</span>
                 </button>
             @endif
         </div>
@@ -65,7 +65,7 @@
             <div>
                 <button type="button" onclick="startMandatoryQuiz()" class="ed-btn ed-btn-primary" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); border: none; font-size: 0.85rem; padding: 9px 20px; box-shadow: 0 4px 12px rgba(5,150,105,0.25);">
                     <i class="fas fa-graduation-cap"></i>
-                    <span>اختبار إلزامي ذكي 🎯</span>
+                    <span>{{ __('Smart Quiz Challenge') }} 🎯</span>
                 </button>
             </div>
         @endif
@@ -74,12 +74,12 @@
     <!-- تصفية المجلدات والأقسام -->
     @if($categories->count() > 0)
         <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; background: #ffffff; padding: 10px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;"><i class="fas fa-folder-open" style="color: #d97706;"></i> تصنيف المجلدات:</span>
-            <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ !request('category') ? '#eff6ff' : '#f8fafc' }}; color: {{ !request('category') ? '#1d4ed8' : '#64748b' }}; border: 1px solid {{ !request('category') ? '#bfdbfe' : '#e2e8f0' }};">
-                كافة المجلدات
+            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b;"><i class="fas fa-folder-open" style="color: #d97706;"></i> {{ __('Categories:') }}</span>
+            <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ !request('category') ? '#eff6ff' : '#f8fafc' }}; color: {{ !request('category') ? '#1e3a8a' : '#64748b' }}; border: 1px solid {{ !request('category') ? '#bfdbfe' : '#e2e8f0' }};">
+                {{ __('All Categories') }}
             </a>
             @foreach($categories as $cat)
-                <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject, 'category' => $cat]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ request('category') === $cat ? '#eff6ff' : '#f8fafc' }}; color: {{ request('category') === $cat ? '#1d4ed8' : '#64748b' }}; border: 1px solid {{ request('category') === $cat ? '#bfdbfe' : '#e2e8f0' }};">
+                <a href="{{ route('student.flashcards.index', ['subject' => $activeSubject, 'category' => $cat]) }}" style="text-decoration: none; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; background: {{ request('category') === $cat ? '#eff6ff' : '#f8fafc' }}; color: {{ request('category') === $cat ? '#1e3a8a' : '#64748b' }}; border: 1px solid {{ request('category') === $cat ? '#bfdbfe' : '#e2e8f0' }};">
                     {{ $cat }}
                 </a>
             @endforeach
@@ -95,28 +95,28 @@
                     <!-- الوجه الأمامي: المفهوم / السؤال -->
                     <div class="ed-fc-face ed-fc-front">
                         <div class="ed-fc-meta-top">
-                            <span class="ed-badge ed-badge-blue" id="cardCategory">قوانين</span>
-                            <span class="ed-fc-counter" id="cardNumber">بطاقة 1 من {{ $flashcards->count() }}</span>
+                            <span class="ed-badge ed-badge-blue" id="cardCategory">{{ __('Laws') }}</span>
+                            <span class="ed-fc-counter" id="cardNumber">{{ __('Card') }} 1 {{ __('of') }} {{ $flashcards->count() }}</span>
                         </div>
                         <div class="ed-fc-main-content">
                             <h2 class="ed-fc-question" id="cardFrontText">...</h2>
                         </div>
                         <div class="ed-fc-hint-bottom">
-                            <i class="fas fa-hand-pointer"></i> اضغط على البطاقة أو اضغط (Space) لإظهار الإجابة
+                            <i class="fas fa-hand-pointer"></i> {{ __('Click card or press (Space) to reveal solution') }}
                         </div>
                     </div>
 
                     <!-- الوجه الخلفي: القانون / الحل النموذجي -->
                     <div class="ed-fc-face ed-fc-back">
                         <div class="ed-fc-meta-top">
-                            <span class="ed-badge ed-badge-emerald"><i class="fas fa-check"></i> الحل النموذجي</span>
-                            <span class="ed-fc-counter"><i class="fas fa-lightbulb" style="color: #fbbf24;"></i> نموذج معتمد</span>
+                            <span class="ed-badge ed-badge-emerald"><i class="fas fa-check"></i> {{ __('Model Solution') }}</span>
+                            <span class="ed-fc-counter"><i class="fas fa-lightbulb" style="color: #fbbf24;"></i> {{ __('Standard Model') }}</span>
                         </div>
                         <div class="ed-fc-main-content">
                             <div class="ed-fc-answer" id="cardBackText">...</div>
                         </div>
                         <div class="ed-fc-hint-bottom">
-                            <i class="fas fa-undo-alt"></i> اضغط للعودة إلى وجه السؤال
+                            <i class="fas fa-undo-alt"></i> {{ __('Click to return to front side') }}
                         </div>
                     </div>
 
@@ -128,18 +128,18 @@
                 
                 <div class="ed-fc-nav-buttons">
                     <button type="button" class="ed-btn ed-btn-outline" onclick="prevCard()">
-                        <i class="fas fa-chevron-right"></i>
-                        <span>السابقة</span>
+                        <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i>
+                        <span>{{ __('Previous') }}</span>
                     </button>
 
                     <button type="button" class="ed-btn ed-btn-primary" onclick="flipActiveCard()" style="padding: 12px 28px;">
                         <i class="fas fa-sync-alt"></i>
-                        <span>قلب البطاقة</span>
+                        <span>{{ __('Flip Card') }}</span>
                     </button>
 
                     <button type="button" class="ed-btn ed-btn-outline" onclick="nextCard()">
-                        <span>التالية</span>
-                        <i class="fas fa-chevron-left"></i>
+                        <span>{{ __('Next') }}</span>
+                        <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
                     </button>
                 </div>
 
@@ -147,18 +147,18 @@
                 <div class="ed-fc-mastery-buttons">
                     <button type="button" class="ed-mastery-btn mastered" onclick="markMastered()">
                         <i class="fas fa-check-circle"></i>
-                        <span>أتقنتها تماماً (<strong id="masteredCount">0</strong>)</span>
+                        <span>{{ __('Mastered Completely') }} (<strong id="masteredCount">0</strong>)</span>
                     </button>
                     <button type="button" class="ed-mastery-btn review" onclick="markReview()">
                         <i class="fas fa-history"></i>
-                        <span>تحتاج لمراجعة لاحقة</span>
+                        <span>{{ __('Needs Revision') }}</span>
                     </button>
                 </div>
 
                 <!-- مؤشر التقدم -->
                 <div class="ed-fc-progress-box">
                     <div class="ed-fc-progress-labels">
-                        <span>معدل استعراض البطاقات</span>
+                        <span>{{ __('Review Progress') }}</span>
                         <strong id="progressText">0%</strong>
                     </div>
                     <div class="ed-progress-track">
@@ -171,8 +171,8 @@
     @else
         <div class="ed-empty-card" style="margin-top: 20px;">
             <div class="ed-empty-icon"><i class="fas fa-box-open"></i></div>
-            <h3>لا توجد بطاقات استذكار لهذه المادة حالياً</h3>
-            <p>اختر مادة دراسية أخرى من الشريط العلوي لاستعراض القوانين والمفاهيم المحفوظة.</p>
+            <h3>{{ __('No flashcards for this subject currently') }}</h3>
+            <p>{{ __('Select another subject from the top bar to browse saved formulas and concepts.') }}</p>
         </div>
     @endif
 
@@ -180,9 +180,11 @@
 
 <style>
     .ed-fc-container {
-        padding: 24px 32px 60px;
-        direction: rtl;
-        font-family: 'Alexandria', 'Tajawal', sans-serif;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 0 60px;
+        box-sizing: border-box;
     }
 
     /* Header */
@@ -210,84 +212,87 @@
     }
 
     .ed-fc-breadcrumbs .active {
-        color: #1d4ed8;
+        color: #1e3a8a;
         font-weight: 600;
     }
 
     .ed-fc-title-box h1 {
-        font-size: 1.75rem;
+        font-size: 1.65rem;
         font-weight: 800;
         color: #0f172a;
         margin: 0 0 6px;
     }
 
     .ed-fc-title-box p {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: #64748b;
         margin: 0;
+        max-width: 760px;
+        line-height: 1.6;
     }
 
     .ed-fc-hint-tag {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 8px 16px;
-        background: #f8fafc;
+        background: #ffffff;
         border: 1px solid #e2e8f0;
         color: #475569;
+        padding: 8px 16px;
         border-radius: 999px;
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         font-weight: 600;
     }
 
-    /* Subjects Navigation */
+    /* Subjects Bar */
     .ed-fc-subjects-bar {
         display: flex;
-        align-items: center;
         gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 30px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        margin-bottom: 24px;
+        scrollbar-width: thin;
     }
 
     .ed-fc-sub-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 18px;
+        padding: 9px 18px;
+        border-radius: 12px;
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
+        color: #475569;
         text-decoration: none;
-        color: #334155;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         font-weight: 700;
-        transition: all 0.2s ease;
+        white-space: nowrap;
+        transition: all 0.2s;
     }
 
     .ed-fc-sub-pill:hover {
-        border-color: #1d4ed8;
-        color: #1d4ed8;
-        transform: translateY(-2px);
+        border-color: #cbd5e1;
+        color: #1e3a8a;
     }
 
     .ed-fc-sub-pill.active {
-        background: #1d4ed8;
-        border-color: #1d4ed8;
+        background: #1e3a8a;
+        border-color: #1e3a8a;
         color: #ffffff;
-        box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
     }
 
-    /* 3D Flashcard Stage */
+    /* 3D Stage */
     .ed-fc-stage-wrapper {
-        max-width: 680px;
+        max-width: 780px;
         margin: 0 auto;
     }
 
     .ed-fc-stage {
         perspective: 1200px;
         height: 380px;
-        margin-bottom: 24px;
         cursor: pointer;
+        margin-bottom: 24px;
     }
 
     .ed-fc-inner {
@@ -305,71 +310,77 @@
 
     .ed-fc-face {
         position: absolute;
-        inset: 0;
         width: 100%;
         height: 100%;
         -webkit-backface-visibility: hidden;
         backface-visibility: hidden;
-        border-radius: 22px;
-        padding: 32px 28px;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        padding: 28px 32px;
+        box-sizing: border-box;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
-        border: 1.5px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     }
 
     .ed-fc-front {
         background: #ffffff;
-        color: #0f172a;
     }
 
     .ed-fc-back {
-        background: #0f172a;
-        color: #f8fafc;
+        background: #f8fafc;
         transform: rotateY(180deg);
-        border-color: #1e293b;
+        border-color: #cbd5e1;
     }
 
     .ed-fc-meta-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 0.82rem;
-        font-weight: 700;
     }
+
+    .ed-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+
+    .ed-badge-blue { background: #eff6ff; color: #1e3a8a; }
+    .ed-badge-emerald { background: #d1fae5; color: #059669; }
 
     .ed-fc-counter {
-        color: #64748b;
-        font-size: 0.8rem;
-    }
-
-    .ed-fc-back .ed-fc-counter {
+        font-size: 0.78rem;
         color: #94a3b8;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .ed-fc-main-content {
+        flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 1;
-        padding: 20px 10px;
+        padding: 20px 0;
     }
 
     .ed-fc-question {
-        font-size: 1.35rem;
+        font-size: 1.5rem;
         font-weight: 800;
         color: #0f172a;
-        line-height: 1.6;
         margin: 0;
+        line-height: 1.5;
     }
 
     .ed-fc-answer {
         font-size: 1.25rem;
-        font-weight: 600;
-        color: #f1f5f9;
-        line-height: 1.8;
-        white-space: pre-line;
+        font-weight: 700;
+        color: #1e3a8a;
+        line-height: 1.6;
+        white-space: pre-wrap;
     }
 
     .ed-fc-hint-bottom {
@@ -381,12 +392,8 @@
         gap: 6px;
     }
 
-    /* Controls Panel */
+    /* Controls */
     .ed-fc-controls {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 20px;
         display: flex;
         flex-direction: column;
         gap: 16px;
@@ -394,55 +401,99 @@
 
     .ed-fc-nav-buttons {
         display: flex;
+        justify-content: center;
         align-items: center;
-        justify-content: space-between;
         gap: 12px;
     }
 
     .ed-fc-mastery-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        justify-content: center;
         gap: 12px;
     }
 
     .ed-mastery-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 12px;
+        padding: 8px 18px;
         border-radius: 12px;
-        font-family: inherit;
-        font-size: 0.88rem;
+        font-size: 0.82rem;
         font-weight: 700;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         transition: all 0.2s;
+        border: 1px solid transparent;
     }
 
     .ed-mastery-btn.mastered {
         background: #ecfdf5;
-        border: 1px solid #a7f3d0;
-        color: #065f46;
+        color: #059669;
+        border-color: #a7f3d0;
     }
 
     .ed-mastery-btn.mastered:hover {
-        background: #d1fae5;
+        background: #059669;
+        color: #ffffff;
     }
 
     .ed-mastery-btn.review {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        color: #475569;
+        background: #fffbeb;
+        color: #d97706;
+        border-color: #fde68a;
     }
 
     .ed-mastery-btn.review:hover {
-        background: #f1f5f9;
+        background: #d97706;
+        color: #ffffff;
     }
 
+    /* Buttons */
+    .ed-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 12px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: none;
+        text-decoration: none;
+    }
+
+    .ed-btn-primary {
+        background: #1e3a8a;
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);
+    }
+
+    .ed-btn-primary:hover {
+        background: #172554;
+    }
+
+    .ed-btn-outline {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        padding: 10px 18px;
+    }
+
+    .ed-btn-outline:hover {
+        border-color: #1e3a8a;
+        color: #1e3a8a;
+    }
+
+    .ed-btn-outline.danger:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+    /* Progress */
     .ed-fc-progress-box {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 18px;
     }
 
     .ed-fc-progress-labels {
@@ -451,10 +502,24 @@
         align-items: center;
         font-size: 0.8rem;
         color: #64748b;
+        margin-bottom: 8px;
     }
 
     .ed-fc-progress-labels strong {
-        color: #1d4ed8;
+        color: #1e3a8a;
+    }
+
+    .ed-progress-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .ed-progress-bar {
+        height: 100%;
+        background: #1e3a8a;
+        transition: width 0.3s ease;
     }
 
     /* Empty Card */
@@ -494,11 +559,7 @@
         line-height: 1.6;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
-        .ed-fc-container {
-            padding: 18px 16px 60px;
-        }
         .ed-fc-stage {
             height: 340px;
         }
@@ -518,8 +579,8 @@
         isFlipped = false;
         document.getElementById('flashcardInner').classList.remove('is-flipped');
 
-        document.getElementById('cardCategory').textContent = card.category || 'عام';
-        document.getElementById('cardNumber').textContent = `بطاقة ${currentIndex + 1} من ${flashcards.length}`;
+        document.getElementById('cardCategory').textContent = card.category || '{{ __("General") }}';
+        document.getElementById('cardNumber').textContent = `{{ __("Card") }} ${currentIndex + 1} {{ __("of") }} ${flashcards.length}`;
         document.getElementById('cardFrontText').textContent = card.front_text;
         document.getElementById('cardBackText').textContent = card.back_text;
 
@@ -568,20 +629,20 @@
         renderCard();
     });
 
-    // اختصارات لوحة المفاتيح
+    // Keyboard shortcuts
     document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
         if (e.code === 'Space') {
             e.preventDefault();
             flipActiveCard();
         } else if (e.code === 'ArrowLeft') {
-            nextCard();
+            '{{ app()->getLocale() }}' === 'ar' ? nextCard() : prevCard();
         } else if (e.code === 'ArrowRight') {
-            prevCard();
+            '{{ app()->getLocale() }}' === 'ar' ? prevCard() : nextCard();
         }
     });
 
-    // خلط البطاقات عشوائياً
+    // Shuffle
     function shuffleCards() {
         if (!flashcards || flashcards.length < 2) return;
         for (let i = flashcards.length - 1; i > 0; i--) {
@@ -592,43 +653,43 @@
         renderCard();
         Swal.fire({
             icon: 'info',
-            title: 'تم الخلط العشوائي 🔀',
-            text: 'أعيد ترتيب البطاقات عشوائياً لتحدي أفضل للذاكرة.',
+            title: '{{ __("Random Shuffle 🔀") }}',
+            text: '{{ __("Cards have been shuffled for a better memory challenge.") }}',
             timer: 1200,
             showConfirmButton: false
         });
     }
 
-    // فتح مودال إضافة بطاقة
+    // Add Card Modal
     function openAddCardModal() {
         Swal.fire({
-            title: 'إضافة بطاقة استذكار جديدة ✨',
+            title: '{{ __("Add New Flashcard ✨") }}',
             html: `
-                <div style="text-align: right; font-family: inherit;">
+                <div style="text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; font-family: inherit;">
                     <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">المجلد / التصنيف</label>
-                        <input type="text" id="swalCatInput" placeholder="مثال: قوانين نيوتن، المتطابقات..." class="swal2-input" style="width: 100%; margin: 0; font-size: 0.9rem;">
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Folder / Category") }}</label>
+                        <input type="text" id="swalCatInput" placeholder="{{ __('e.g. Newton Laws, Identities...') }}" class="swal2-input" style="width: 100%; margin: 0; font-size: 0.9rem;">
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الأمامي (المفهوم / السؤال) *</label>
-                        <textarea id="swalFrontInput" rows="2" placeholder="اكتب السؤال أو المفهوم هنا..." class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Front Side (Concept / Question) *") }}</label>
+                        <textarea id="swalFrontInput" rows="2" placeholder="{{ __('Write question or concept here...') }}" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
                     </div>
                     <div>
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الخلفي (القانون / الحل النموذجي) *</label>
-                        <textarea id="swalBackInput" rows="3" placeholder="اكتب القانون أو الإجابة النموذجية بالتفصيل..." class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Back Side (Law / Model Solution) *") }}</label>
+                        <textarea id="swalBackInput" rows="3" placeholder="{{ __('Write law or detailed solution...') }}" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;"></textarea>
                     </div>
                 </div>
             `,
             showCancelButton: true,
-            confirmButtonText: 'حفظ البطاقة',
-            cancelButtonText: 'إلغاء',
-            confirmButtonColor: '#1d4ed8',
+            confirmButtonText: '{{ __("Save Card") }}',
+            cancelButtonText: '{{ __("Cancel") }}',
+            confirmButtonColor: '#1e3a8a',
             preConfirm: () => {
                 const front = document.getElementById('swalFrontInput').value.trim();
                 const back = document.getElementById('swalBackInput').value.trim();
                 const cat = document.getElementById('swalCatInput').value.trim();
                 if (!front || !back) {
-                    Swal.showValidationMessage('يرجى ملء وجهي البطاقة (السؤال والحل).');
+                    Swal.showValidationMessage('{{ __("Please fill both sides of the card.") }}');
                     return false;
                 }
                 return { front, back, cat };
@@ -645,51 +706,51 @@
                     });
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم الحفظ!',
+                        title: '{{ __("Saved!") }}',
                         text: res.data.message,
                         timer: 1400,
                         showConfirmButton: false
                     }).then(() => location.reload());
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر حفظ البطاقة الجديدة.' });
+                    Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ __("Could not save card.") }}' });
                 }
             }
         });
     }
 
-    // فتح مودال تعديل البطاقة الحالية
+    // Edit Current Card Modal
     function openEditCardModal() {
         if (!flashcards || flashcards.length === 0) return;
         const card = flashcards[currentIndex];
 
         Swal.fire({
-            title: 'تعديل بطاقة الاستذكار 📝',
+            title: '{{ __("Edit Flashcard 📝") }}',
             html: `
-                <div style="text-align: right; font-family: inherit;">
+                <div style="text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; font-family: inherit;">
                     <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">المجلد / التصنيف</label>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Folder / Category") }}</label>
                         <input type="text" id="swalEditCatInput" value="${card.category || ''}" class="swal2-input" style="width: 100%; margin: 0; font-size: 0.9rem;">
                     </div>
                     <div style="margin-bottom: 12px;">
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الأمامي (المفهوم / السؤال) *</label>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Front Side (Concept / Question) *") }}</label>
                         <textarea id="swalEditFrontInput" rows="2" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;">${card.front_text}</textarea>
                     </div>
                     <div>
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">الوجه الخلفي (القانون / الحل النموذجي) *</label>
+                        <label style="font-size: 0.82rem; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">{{ __("Back Side (Law / Model Solution) *") }}</label>
                         <textarea id="swalEditBackInput" rows="3" class="swal2-textarea" style="width: 100%; margin: 0; font-size: 0.9rem; resize: vertical;">${card.back_text}</textarea>
                     </div>
                 </div>
             `,
             showCancelButton: true,
-            confirmButtonText: 'تحديث التعديلات',
-            cancelButtonText: 'إلغاء',
+            confirmButtonText: '{{ __("Update Changes") }}',
+            cancelButtonText: '{{ __("Cancel") }}',
             confirmButtonColor: '#d97706',
             preConfirm: () => {
                 const front = document.getElementById('swalEditFrontInput').value.trim();
                 const back = document.getElementById('swalEditBackInput').value.trim();
                 const cat = document.getElementById('swalEditCatInput').value.trim();
                 if (!front || !back) {
-                    Swal.showValidationMessage('يرجى ملء وجهي البطاقة.');
+                    Swal.showValidationMessage('{{ __("Please fill both sides of the card.") }}');
                     return false;
                 }
                 return { front, back, cat };
@@ -709,32 +770,32 @@
                     renderCard();
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم التعديل!',
+                        title: '{{ __("Updated!") }}',
                         text: res.data.message,
                         timer: 1400,
                         showConfirmButton: false
                     });
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحديث بيانات البطاقة.' });
+                    Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ __("Could not update card.") }}' });
                 }
             }
         });
     }
 
-    // حذف البطاقة الحالية
+    // Delete Current Card
     function deleteCurrentCard() {
         if (!flashcards || flashcards.length === 0) return;
         const card = flashcards[currentIndex];
 
         Swal.fire({
-            title: 'حذف بطاقة الاستذكار',
-            text: 'هل أنت متأكد من رغبتك في حذف هذه البطاقة نهائياً؟',
+            title: '{{ __("Delete Flashcard?") }}',
+            text: '{{ __("Are you sure you want to permanently delete this card?") }}',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، حذف',
-            cancelButtonText: 'تراجع'
+            confirmButtonText: '{{ __("Yes, delete") }}',
+            cancelButtonText: '{{ __("Cancel") }}'
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -746,19 +807,19 @@
                     renderCard();
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم الحذف!',
+                        title: '{{ __("Deleted!") }}',
                         timer: 1200,
                         showConfirmButton: false
                     });
                     if (flashcards.length === 0) location.reload();
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر حذف البطاقة.' });
+                    Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ __("Could not delete card.") }}' });
                 }
             }
         });
     }
 
-    // إخفاء أو استعادة البطاقة
+    // Hide or restore
     async function toggleHideCurrentCard() {
         if (!flashcards || flashcards.length === 0) return;
         const card = flashcards[currentIndex];
@@ -769,22 +830,21 @@
             });
             Swal.fire({
                 icon: 'info',
-                title: 'تحديث حالة العرض',
+                title: '{{ __("Visibility Updated") }}',
                 text: res.data.message,
                 timer: 1400,
                 showConfirmButton: false
             });
         } catch (e) {
-            Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تبديل حالة إخفاء البطاقة.' });
+            Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ __("Could not toggle card visibility.") }}' });
         }
     }
 
-    // اختبار إلزامي ذكي (Mandatory Quiz Mode)
+    // Mandatory Quiz Challenge
     function startMandatoryQuiz() {
         if (!flashcards || flashcards.length === 0) return;
 
         let quizCards = [...flashcards];
-        // shuffle
         for (let i = quizCards.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [quizCards[i], quizCards[j]] = [quizCards[j], quizCards[i]];
@@ -798,16 +858,16 @@
                 const percentage = Math.round((score / quizCards.length) * 100);
                 Swal.fire({
                     icon: percentage >= 70 ? 'success' : 'info',
-                    title: 'انتهى الاختبار الإلزامي! 🏁',
+                    title: '{{ __("Quiz Challenge Finished! 🏁") }}',
                     html: `
                         <div style="text-align: center; font-family: inherit;">
-                            <div style="font-size: 2.2rem; font-weight: 900; color: #1d4ed8; margin-bottom: 8px;">${score} / ${quizCards.length}</div>
-                            <p style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">نسبة إتقان المفاهيم: ${percentage}%</p>
-                            <p style="font-size: 0.85rem; color: #64748b;">${percentage >= 85 ? 'أداء ممتاز مع مرتبة الشرف يا بطل! 🌟' : (percentage >= 60 ? 'أداء جيد، احرص على مراجعة النقاط الصعبة.' : 'تحتاج لمزيد من المراجعة والتركيز.')}</p>
+                            <div style="font-size: 2.2rem; font-weight: 900; color: #1e3a8a; margin-bottom: 8px;">${score} / ${quizCards.length}</div>
+                            <p style="font-size: 1.05rem; font-weight: 700; color: #0f172a;">{{ __("Mastery Percentage:") }} ${percentage}%</p>
+                            <p style="font-size: 0.85rem; color: #64748b;">${percentage >= 85 ? '{{ __("Outstanding performance with honors! 🌟") }}' : (percentage >= 60 ? '{{ __("Good job, remember to revise tricky questions.") }}' : '{{ __("Needs more practice and focus.") }}')}</p>
                         </div>
                     `,
-                    confirmButtonText: 'إغلاق الاختبار',
-                    confirmButtonColor: '#1d4ed8'
+                    confirmButtonText: '{{ __("Close Quiz") }}',
+                    confirmButtonColor: '#1e3a8a'
                 });
                 return;
             }
@@ -815,25 +875,25 @@
             const currentQ = quizCards[qIndex];
 
             Swal.fire({
-                title: `السؤال (${qIndex + 1} من ${quizCards.length})`,
+                title: `{{ __("Question") }} (${qIndex + 1} {{ __("of") }} ${quizCards.length})`,
                 html: `
-                    <div style="text-align: right; font-family: inherit;">
-                        <span style="font-size: 0.75rem; background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${currentQ.category || 'عام'}</span>
+                    <div style="text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; font-family: inherit;">
+                        <span style="font-size: 0.75rem; background: #eff6ff; color: #1e3a8a; padding: 3px 8px; border-radius: 6px; font-weight: 700;">${currentQ.category || '{{ __("General") }}'}</span>
                         <div style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 12px 0 16px; line-height: 1.5;">${currentQ.front_text}</div>
                         <div id="quizAnswerReveal" style="display: none; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 12px; margin-bottom: 12px;">
-                            <span style="font-size: 0.75rem; font-weight: 800; color: #15803d; display: block; margin-bottom: 4px;">الحل الوزاري المعتمد:</span>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #15803d; display: block; margin-bottom: 4px;">{{ __("Standard Approved Solution:") }}</span>
                             <div style="font-size: 0.95rem; color: #166534; font-weight: 700; line-height: 1.5;">${currentQ.back_text}</div>
                         </div>
                         <button type="button" id="btnRevealAnswer" onclick="document.getElementById('quizAnswerReveal').style.display = 'block'; this.style.display = 'none';" style="background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: #475569; cursor: pointer; width: 100%; margin-bottom: 10px;">
-                            <i class="fas fa-eye"></i> كشف الحل النموذجي للتحقق
+                            <i class="fas fa-eye"></i> {{ __("Reveal Model Solution") }}
                         </button>
                     </div>
                 `,
                 showCancelButton: true,
                 showDenyButton: true,
-                confirmButtonText: '<i class="fas fa-check"></i> عرفت الإجابة (+1)',
-                denyButtonText: '<i class="fas fa-times"></i> لم أعرف الإجابة',
-                cancelButtonText: 'إنهاء الاختبار',
+                confirmButtonText: '<i class="fas fa-check"></i> {{ __("I Knew It (+1)") }}',
+                denyButtonText: '<i class="fas fa-times"></i> {{ __("I Did Not Know") }}',
+                cancelButtonText: '{{ __("End Quiz") }}',
                 confirmButtonColor: '#059669',
                 denyButtonColor: '#dc2626',
                 cancelButtonColor: '#64748b'

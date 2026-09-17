@@ -27,54 +27,45 @@
     * { font-family: 'Alexandria', sans-serif; }
 
     .subject-page-wrapper {
-        direction: rtl;
-        max-width: 1350px;
-        margin: 0 auto;
-        padding: 10px 0 40px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0 0 40px;
+        box-sizing: border-box;
     }
 
-    /* Hero Banner */
+    /* Hero Banner - Classic Academic Style */
     .hero-banner {
-        background: linear-gradient(135deg, var(--sub-color) 0%, #1e1b4b 100%);
-        border-radius: 24px;
-        padding: 40px;
-        color: white;
-        margin-bottom: 30px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-top: 4px solid var(--sub-color, #1e3a8a);
+        border-radius: 12px;
+        padding: 26px 30px;
+        color: #0f172a;
+        margin-bottom: 24px;
         position: relative;
-        overflow: hidden;
-        box-shadow: 0 15px 35px rgba(2, 132, 199, 0.15);
-    }
-
-    .hero-banner::after {
-        content: '';
-        position: absolute;
-        bottom: -40px;
-        left: -40px;
-        width: 220px;
-        height: 220px;
-        background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
-        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
 
     .stage-badge {
-        background: rgba(255, 255, 255, 0.15);
-        backdrop-filter: blur(8px);
-        color: white;
-        padding: 6px 16px;
-        border-radius: 30px;
-        font-size: 0.82rem;
+        background: #eff6ff;
+        color: #1e3a8a;
+        padding: 5px 14px;
+        border-radius: 6px;
+        font-size: 0.8rem;
         font-weight: 700;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        margin-bottom: 15px;
-        border: 1px solid rgba(255,255,255,0.2);
+        margin-bottom: 12px;
+        border: 1px solid #bfdbfe;
     }
 
     .hero-title {
-        font-size: 2.3rem;
-        font-weight: 900;
-        margin: 0 0 10px;
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 8px;
         line-height: 1.3;
     }
 
@@ -82,14 +73,14 @@
         display: flex;
         gap: 12px;
         flex-wrap: wrap;
-        margin-top: 25px;
+        margin-top: 20px;
     }
 
     .btn-hero {
-        padding: 11px 22px;
-        border-radius: 12px;
+        padding: 10px 20px;
+        border-radius: 8px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.86rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
@@ -100,21 +91,22 @@
     }
 
     .btn-hero-white {
-        background: white;
-        color: #0f172a;
+        background: #1e3a8a;
+        color: #ffffff;
     }
     .btn-hero-white:hover {
-        background: #f1f5f9;
-        transform: translateY(-2px);
+        background: #172554;
+        color: #ffffff;
     }
 
     .btn-hero-outline {
-        background: rgba(255,255,255,0.12);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.25);
+        background: #f8fafc;
+        color: #334155;
+        border: 1px solid #e2e8f0;
     }
     .btn-hero-outline:hover {
-        background: rgba(255,255,255,0.22);
+        background: #f1f5f9;
+        border-color: #cbd5e1;
     }
 
     /* Layout Grid */
@@ -381,41 +373,41 @@
     <header class="hero-banner animate__animated animate__fadeInDown">
         <div class="stage-badge">
             <i class="fa-solid fa-graduation-cap"></i>
-            {{ optional($subject->stage)->label_ar ?? optional($subject->stage)->name ?? 'الثانوية العامة - فلسطين' }}
+            {{ optional($subject->stage)->label_ar ?? optional($subject->stage)->name ?? __('الثانوية العامة - فلسطين') }}
         </div>
 
         <h1 class="hero-title">{{ $subject->name_ar ?? $subject->name }}</h1>
-        <p style="opacity: 0.9; font-size: 0.95rem; margin: 0; max-width: 600px; line-height: 1.6;">
-            منهاج التوجيهي الوزاري المعتمد في فلسطين — شروحات تفصيلية، ملازم، أوراق عمل وزارية، وإمكانية المشاهدة بدون إنترنت.
+        <p style="color: #64748b; font-size: 0.92rem; margin: 0; max-width: 650px; line-height: 1.6;">
+            {{ __('منهاج التوجيهي الوزاري المعتمد في فلسطين — شروحات تفصيلية، ملازم، أوراق عمل وزارية، وإمكانية المشاهدة بدون إنترنت.') }}
         </p>
 
         <div class="hero-actions">
             @if($enrollment && $enrollment->status === 'pending')
-                <span style="background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fde68a; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-clock-rotate-left"></i> إشعار الدفع قيد المراجعة والاعتماد من الإدارة ⏳
+                <span style="background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-clock-rotate-left"></i> {{ __('إشعار الدفع قيد المراجعة والاعتماد من الإدارة') }} ⏳
                 </span>
             @elseif($enrollment && $enrollment->status === 'active' && $enrollment->access_mode === 'all')
-                <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #a7f3d0; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-crown"></i> اشتراك كامل المنهج مفعّل
+                <span style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-circle-check"></i> {{ __('اشتراك كامل المنهج مفعّل') }}
                 </span>
             @elseif($enrollment && $enrollment->status === 'active' && $enrollment->access_mode === 'custom')
-                <span style="background: rgba(99, 102, 241, 0.2); border: 1px solid #818cf8; color: #c7d2fe; padding: 8px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fa-solid fa-layer-group"></i> اشتراك باقة مخصصة
+                <span style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 8px 18px; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-layer-group"></i> {{ __('اشتراك باقة مخصصة') }}
                 </span>
             @else
                 <button onclick="openRedeemModal()" class="btn-hero btn-hero-white">
-                    <i class="fa-solid fa-ticket"></i> تفعيل كود المادة / بطاقة شحن
+                    <i class="fa-solid fa-ticket"></i> {{ __('تفعيل كود المادة / بطاقة شحن') }}
                 </button>
             @endif
 
             <button onclick="openOfflineDrawer()" class="btn-hero btn-hero-outline">
-                <i class="fa-solid fa-download"></i> فيديوهاتي بدون إنترنت
-                <span id="heroOfflineBadge" style="background: white; color: var(--sub-color); padding: 1px 7px; border-radius: 10px; font-size: 0.75rem; font-weight: 800;">0</span>
+                <i class="fa-solid fa-download"></i> {{ __('فيديوهاتي بدون إنترنت') }}
+                <span id="heroOfflineBadge" style="background: #1e3a8a; color: #ffffff; padding: 1px 7px; border-radius: 10px; font-size: 0.75rem; font-weight: 800;">0</span>
             </button>
 
             @if($subject->hasAssignedTeacher() && $subject->teacher)
                 <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" class="btn-hero btn-hero-outline">
-                    <i class="fa-solid fa-comment-dots"></i> استفسار من المعلم
+                    <i class="fa-solid fa-comment-dots"></i> {{ __('استفسار من المعلم') }}
                 </a>
             @endif
         </div>
@@ -426,11 +418,11 @@
         <main>
             <!-- شريط التبديل بين الحصص المرئية وبنك الامتحانات المعتمدة للمادة -->
             <div style="display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 2px solid var(--border-color); padding-bottom: 12px; flex-wrap: wrap;">
-                <button type="button" id="tabBtnVideos" onclick="switchSubjectTab('videos')" style="padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: var(--sub-color); color: white;">
-                    <i class="fa-solid fa-play"></i> الدروس والحصص المرئية ({{ $videos->count() }})
+                <button type="button" id="tabBtnVideos" onclick="switchSubjectTab('videos')" style="padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.92rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: var(--sub-color); color: white;">
+                    <i class="fa-solid fa-play"></i> {{ __('الدروس والحصص المرئية') }} ({{ $videos->count() }})
                 </button>
-                <button type="button" id="tabBtnExams" onclick="switchSubjectTab('exams')" style="padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 0.95rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: transparent; color: #64748b;">
-                    <i class="fa-solid fa-file-pen"></i> جدار وبنك الامتحانات الإلكترونية ({{ $exams->count() }})
+                <button type="button" id="tabBtnExams" onclick="switchSubjectTab('exams')" style="padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 0.92rem; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: transparent; color: #64748b;">
+                    <i class="fa-solid fa-file-pen"></i> {{ __('جدار وبنك الامتحانات الإلكترونية') }} ({{ $exams->count() }})
                 </button>
             </div>
 
@@ -438,10 +430,10 @@
             <div id="tabContentVideos">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px;">
                     <h2 style="font-size: 1.35rem; font-weight: 800; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 10px;">
-                        <i class="fa-solid fa-play" style="color: var(--sub-color); font-size: 1.1rem;"></i> الدروس والحصص المرئية
+                        <i class="fa-solid fa-play" style="color: var(--sub-color); font-size: 1.1rem;"></i> {{ __('الدروس والحصص المرئية') }}
                     </h2>
-                    <span style="background: white; border: 1px solid var(--border-color); color: #475569; padding: 5px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">
-                        {{ $videos->count() }} درس
+                    <span style="background: white; border: 1px solid var(--border-color); color: #475569; padding: 5px 14px; border-radius: 6px; font-size: 0.8rem; font-weight: 700;">
+                        {{ $videos->count() }} {{ __('دروس') }}
                     </span>
                 </div>
 

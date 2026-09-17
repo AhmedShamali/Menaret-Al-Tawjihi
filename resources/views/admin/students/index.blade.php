@@ -1293,7 +1293,7 @@
 </script>
 
 {{-- مودال الخصم النظيف البسيط --}}
-<div id="discountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 9999; justify-content: center; align-items: center; padding: 16px;" dir="rtl">
+<div id="discountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.45); z-index: 9999; justify-content: center; align-items: center; padding: 16px;">
     <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
             <div>

@@ -122,7 +122,7 @@
     }
 </style>
 
-<div class="container py-5 teachers-section" dir="rtl">
+<div class="container py-5 teachers-section">
 
     <!-- الهيدر -->
     <div class="custom-header d-flex justify-content-between align-items-center flex-wrap gap-3">

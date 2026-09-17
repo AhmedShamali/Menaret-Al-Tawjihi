@@ -22,14 +22,15 @@
                           radial-gradient(at 100% 100%, rgba(30, 58, 138, 0.05) 0px, transparent 50%);
         min-height: 100vh;
         color: var(--text-main);
-        direction: rtl;
     }
 
     /* Container */
     .premium-wrapper {
-        max-width: 1200px;
-        margin: 40px auto;
-        padding: 0 20px;
+        width: 100%;
+        max-width: 100%;
+        margin: 10px auto 40px;
+        padding: 0;
+        box-sizing: border-box;
     }
 
     /* Header Styling */

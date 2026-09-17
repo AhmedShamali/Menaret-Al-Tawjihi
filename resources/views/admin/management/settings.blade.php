@@ -1,24 +1,28 @@
 @extends('layouts.app')
 
-@section('title', 'إعدادات المنصة والهوية وبيانات الدفع')
+@section('title', __('إعدادات المنصة والهوية وبيانات الدفع') . ' - ' . __('إدارة المنصة'))
 
 @section('content')
-<div style="max-width: 1300px; margin: 0 auto; padding: 10px 0 40px; animation: fadeIn 0.5s ease;" dir="rtl">
+<div class="settings-page-wrapper">
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+    <div class="settings-header-card">
         <div>
-            <h1 style="font-size: 2.2rem; font-weight: 900; color: #0f172a; margin: 0 0 6px;">إعدادات المنصة وهوية الدفع المركزية ⚙️</h1>
-            <p style="color: #64748b; font-size: 1rem; margin: 0;">تحكم باسم المنصة، الشعار، بيانات بوابات الدفع الفلسطينية، وأرقام التواصل الرسمية.</p>
+            <div class="badge-tag">
+                <i class="fa-solid fa-gears"></i>
+                <span>{{ __('النظام والإعدادات المركزية') }}</span>
+            </div>
+            <h1 class="settings-title">{{ __('إعدادات المنصة وهوية الدفع المركزية') }}</h1>
+            <p class="settings-subtitle">{{ __('تحكم باسم المنصة، الشعار، بيانات بوابات الدفع الفلسطينية، وأرقام التواصل الرسمية.') }}</p>
         </div>
-        <div class="system-badge" style="background: #ecfdf5; color: #059669; padding: 10px 20px; border-radius: 50px; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; border: 1px solid #bbf7d0;">
-            <span style="width: 10px; height: 10px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
-            المزامنة اللحظية مفعلة
+        <div class="system-badge-live">
+            <span class="live-pulse-dot"></span>
+            {{ __('المزامنة اللحظية مفعلة') }}
         </div>
     </div>
 
     <form id="brandForm">
         @csrf
-        <div style="display: grid; grid-template-columns: 1fr 380px; gap: 30px; align-items: start;">
+        <div class="settings-main-layout-grid">
 
             <div style="display: flex; flex-direction: column; gap: 25px;">
                 
@@ -398,11 +402,86 @@
 </div>
 
 <style>
+.settings-page-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px 0 60px;
+    box-sizing: border-box;
+}
+.settings-header-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 22px 26px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+.badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.settings-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+}
+.settings-subtitle {
+    color: #64748b;
+    font-size: 0.88rem;
+    margin: 0;
+}
+.system-badge-live {
+    background: #ecfdf5;
+    color: #059669;
+    padding: 8px 18px;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #bbf7d0;
+}
+.live-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    display: inline-block;
+}
+.settings-main-layout-grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 25px;
+    align-items: start;
+}
+@media (max-width: 1024px) {
+    .settings-main-layout-grid {
+        grid-template-columns: 1fr;
+    }
+}
 .settings-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 12px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.02);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     overflow: hidden;
 }
 

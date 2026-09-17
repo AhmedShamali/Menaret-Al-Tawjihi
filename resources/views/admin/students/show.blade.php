@@ -3,7 +3,7 @@
 @section('title', 'الملف الشخصي للطالب | ' . ($student->name_ar ?? $student->name ?? 'طالب'))
 
 @section('content')
-<div style="max-width: 1000px; margin: 0 auto; padding-bottom: 50px;" dir="rtl">
+<div style="width: 100%; max-width: 100%; margin: 0 auto; padding-bottom: 50px;">
 
     <!-- شريط التنقل العلوي وزر العودة -->
     <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
@@ -361,7 +361,7 @@
 </div>
 
 <!-- النافذة المنبثقة التفاعلية لإدارة وتعديل مواد الطالب (Modal) -->
-<div id="subjectModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
+<div id="subjectModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
     <div style="background: #ffffff; width: 100%; max-width: 680px; border-radius: 22px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column; animation: modalIn 0.25s ease-out;">
 
         <!-- هيدر المودال -->
@@ -664,7 +664,7 @@
 </script>
 
 <!-- النافذة المنبثقة للخصم في صفحة بروفايل الطالب -->
-<div id="studentDiscountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;" dir="rtl">
+<div id="studentDiscountModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
     <div style="background: #ffffff; width: 100%; max-width: 520px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); overflow: hidden; animation: modalIn 0.25s ease-out;">
         
         <div style="padding: 20px 24px; background: linear-gradient(135deg, #4c1d95 0%, #6d28d9 100%); color: white; display: flex; justify-content: space-between; align-items: center;">
@@ -733,7 +733,7 @@
 </div>
 
 <!-- نافذة تكبير ومعاينة بطاقة الهوية الفلسطينية للتحقق الرسمي -->
-<div id="idPhotoModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" onclick="closeIdModal()" dir="rtl">
+<div id="idPhotoModalOverlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(6px); z-index: 99999; justify-content: center; align-items: center; padding: 20px;" onclick="closeIdModal()">
     <div style="background: #ffffff; width: 100%; max-width: 760px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; animation: modalIn 0.25s ease-out;" onclick="event.stopPropagation()">
         <div style="padding: 18px 24px; background: #0f172a; color: white; display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 12px;">

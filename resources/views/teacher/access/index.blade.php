@@ -3,7 +3,7 @@
 @section('title', 'تحكم صلاحيات وظهور المحتوى والاختبارات للطلاب')
 
 @section('content')
-<div class="access-page-wrapper" dir="rtl">
+<div class="access-page-wrapper">
 
     <!-- كرت الهيدر والأزرار السريعة للمعلم -->
     <div class="access-hero-card">

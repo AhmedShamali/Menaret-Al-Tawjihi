@@ -1,179 +1,222 @@
 @extends('layouts.app')
 
+@section('title', __('سجل الطلاب الأكاديمي') . ' - ' . __('إدارة المنصة'))
+
 @section('content')
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<div class="students-registry-wrapper">
+    <div class="academic-header-card">
+        <div>
+            <div class="badge-tag">
+                <i class="fa-solid fa-users"></i>
+                <span>{{ __('إدارة شؤون الطلبة') }}</span>
+            </div>
+            <h1 class="header-title">{{ __('سجل الطلاب الأكاديمي') }}</h1>
+            <p class="header-subtitle">{{ __('استعراض السجلات الأكاديمية والبيانات العامة لطلبة المنصة.') }}</p>
+        </div>
+        <a href="{{ route('admin.students.index') }}" class="btn-classic-nav">
+            <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('إدارة الطلاب والاشتراكات') }}
+        </a>
+    </div>
+
+    <div class="table-card-box">
+        <div class="table-responsive">
+            <table class="academic-modern-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">#</th>
+                        <th>{{ __('اسم الطالب') }}</th>
+                        <th>{{ __('البريد الإلكتروني') }}</th>
+                        <th>{{ __('تاريخ الانضمام') }}</th>
+                        <th style="text-align: center;">{{ __('الإجراءات') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($students as $student)
+                    <tr>
+                        <td class="id-cell font-mono">#{{ $student->id }}</td>
+                        <td>
+                            <div class="student-info-cell">
+                                <div class="student-avatar-initial">
+                                    {{ mb_substr($student->name_ar ?? $student->name ?? 'ط', 0, 1) }}
+                                </div>
+                                <span class="student-full-name">{{ $student->name_ar ?? $student->name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="email-text font-mono">{{ $student->email }}</span>
+                        </td>
+                        <td>
+                            <div class="date-badge font-mono">
+                                <i class="fa-regular fa-calendar-days"></i>
+                                {{ $student->created_at ? $student->created_at->format('Y-m-d') : '—' }}
+                            </div>
+                        </td>
+                        <td style="text-align: center;">
+                            <a href="{{ route('admin.students.show', $student->id) }}" class="btn-view-profile">
+                                <i class="fa-solid fa-id-card"></i> {{ __('الملف الشخصي') }}
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="empty-state-cell">
+                            <i class="fa-solid fa-users-slash empty-icon"></i>
+                            <h4>{{ __('لا توجد سجلات طلاب حالياً') }}</h4>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($students->hasPages())
+        <div class="pagination-footer-box">
+            {{ $students->links() }}
+        </div>
+        @endif
+    </div>
+</div>
 
 <style>
-    .custom-container {
-        font-family: 'Cairo', sans-serif;
-        padding: 30px;
-        background-color: #fdfeff;
-        direction: rtl;
-        text-align: right;
+    .students-registry-wrapper {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
     }
-    .header-section {
-        margin-bottom: 30px;
+    .academic-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 22px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
-    .title-wrapper h2 {
+    .badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .header-title {
+        font-size: 1.45rem;
         font-weight: 700;
         color: #0f172a;
-        margin-bottom: 5px;
+        margin: 0 0 4px;
     }
-    .btn-add-new {
-        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        color: white;
-        padding: 10px 22px;
-        border-radius: 12px;
-        font-weight: 700;
+    .header-subtitle {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+    .btn-classic-nav {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 9px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-        transition: 0.2s;
+        transition: background 0.15s;
     }
-    .btn-add-new:hover {
-        opacity: 0.95;
-        color: white;
-        transform: translateY(-1px);
-    }
-    .modern-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0 12px;
-    }
-    .modern-table thead th {
-        background: transparent;
-        border: none;
-        color: #64748b;
-        font-weight: 600;
-        font-size: 0.85rem;
-        padding: 10px 20px;
-        text-transform: uppercase;
-    }
-    .modern-table tbody tr {
-        background-color: #ffffff;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-        transition: all 0.2s ease;
-    }
-    .modern-table tbody tr:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-    }
-    .modern-table td {
-        padding: 18px 20px;
-        border: none;
-        vertical-align: middle;
-    }
-    .modern-table td:first-child { border-radius: 0 12px 12px 0; }
-    .modern-table td:last-child { border-radius: 12px 0 0 12px; }
+    .btn-classic-nav:hover { background: #f8fafc; color: #0f172a; }
 
-    .student-row-box {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+    .table-card-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
-    .initial-avatar {
-        width: 40px;
-        height: 40px;
-        background: #f1f5f9;
-        color: #6366f1;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .academic-modern-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: start;
+        font-size: 0.88rem;
+    }
+    .academic-modern-table thead tr {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+        color: #475569;
+        font-size: 0.8rem;
         font-weight: 700;
-        font-size: 1rem;
     }
-    .profile-link-btn {
-        background: #eef2ff;
-        color: #4f46e5;
-        border: 1px solid #e0e7ff;
-        padding: 7px 16px;
+    .academic-modern-table th { padding: 14px 18px; }
+    .academic-modern-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+    }
+    .academic-modern-table tbody tr:hover { background: #f8fafc; }
+    .academic-modern-table td { padding: 14px 18px; vertical-align: middle; }
+
+    .id-cell { font-weight: 700; color: #64748b; }
+    .student-info-cell { display: flex; align-items: center; gap: 12px; }
+    .student-avatar-initial {
+        width: 36px;
+        height: 36px;
+        background: #eff6ff;
+        color: #1e3a8a;
         border-radius: 8px;
+        display: grid;
+        place-items: center;
         font-weight: 700;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        border: 1px solid #bfdbfe;
+        flex-shrink: 0;
+    }
+    .student-full-name { font-weight: 700; color: #0f172a; }
+    .email-text { color: #64748b; font-size: 0.85rem; }
+    .date-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #64748b;
+        font-size: 0.82rem;
+    }
+    .btn-view-profile {
+        background: #eff6ff;
+        color: #1e3a8a;
+        border: 1px solid #bfdbfe;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.82rem;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: 0.2s;
+        transition: background 0.15s;
     }
-    .profile-link-btn:hover {
-        background: #4f46e5;
-        color: white;
+    .btn-view-profile:hover { background: #1e3a8a; color: #ffffff; }
+
+    .empty-state-cell {
+        text-align: center;
+        padding: 50px 20px;
+        color: #94a3b8;
     }
-    .date-box {
-        color: #64748b;
-        font-size: 0.9rem;
+    .empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+
+    .pagination-footer-box {
+        padding: 14px 20px;
+        border-top: 1px solid #f1f5f9;
     }
 </style>
-
-<div class="custom-container">
-    <div class="header-section d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div class="title-wrapper">
-            <h2>سجل الطلاب</h2>
-        </div>
-
-    </div>
-
-    <div class="table-responsive">
-        <table class="modern-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>اسم الطالب</th>
-                    <th>البريد الإلكتروني</th>
-                    <th>تاريخ الانضمام</th>
-                    <th class="text-center">الإجراءات</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($students as $student)
-                <tr>
-                    <td style="font-weight: 700; color: #64748b;">#{{ $student->id }}</td>
-                    <td>
-                        <div class="student-row-box">
-                            <div class="initial-avatar">
-                                {{ mb_substr($student->name_ar ?? $student->name ?? 'ط', 0, 1) }}
-                            </div>
-                            <div>
-                                <span style="font-weight: 700; color: #1e293b; display: block;">{{ $student->name_ar ?? $student->name }}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span style="color: #64748b; font-size: 0.9rem;">{{ $student->email }}</span>
-                    </td>
-                    <td>
-                        <div class="date-box" dir="ltr">
-                            <i class="fa-regular fa-calendar-days me-1" style="color: #94a3b8;"></i>
-                            {{ $student->created_at ? $student->created_at->format('Y-m-d') : '—' }}
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <a href="{{ route('admin.students.show', $student->id) }}" class="profile-link-btn">
-                            <i class="fa-solid fa-id-card"></i> الملف الشخصي
-                        </a>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="5" class="text-center py-5">
-                        <div class="py-4">
-                            <i class="fa-solid fa-users-slash fa-3x text-muted mb-3" style="opacity: 0.4;"></i>
-                            <h5 class="text-muted">لا توجد سجلات طلاب حالياً</h5>
-                        </div>
-                    </td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="d-flex justify-content-center mt-4">
-        {{ $students->links() }}
-    </div>
-</div>
 @endsection

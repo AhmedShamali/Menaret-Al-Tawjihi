@@ -1,17 +1,21 @@
 @extends('layouts.app')
 
-@section('title', 'ملفي الشخصي')
+@section('title', __('الملف الشخصي للطالب') . ' - ' . __('إدارة المنصة'))
 
 @section('content')
 <div class="profile-wrapper">
-    <!-- رأس الصفحة -->
-    <div class="profile-header">
-        <div class="welcome-text">
-            <h1>مرحباً بك، {{ explode(' ', $student->name_ar)[0] ?? 'طالبنا' }} 👋</h1>
-            <p>إليك نظرة عامة على بياناتك المسجلة في النظام</p>
+    <!-- رأس الصفحة الكلاسيكي الأكاديمي -->
+    <div class="academic-header-card">
+        <div>
+            <div class="badge-tag">
+                <i class="fa-solid fa-id-card"></i>
+                <span>{{ __('السجل الأكاديمي للطالب') }}</span>
+            </div>
+            <h1 class="header-title">{{ __('بيانات الطالب:') }} {{ $student->name_ar ?? $student->name }}</h1>
+            <p class="header-subtitle">{{ __('نظرة عامة على البيانات الشخصية والأكاديمية المسجلة في النظام.') }}</p>
         </div>
-        <a href="{{ route('admin.dashboard') }}" class="back-link">
-            <span>&larr;</span> العودة للرئيسية
+        <a href="{{ route('admin.students.index') }}" class="btn-classic-nav">
+            <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('العودة لسجل الطلاب') }}
         </a>
     </div>
 
@@ -19,9 +23,8 @@
         <!-- الكارت الجانبي: الصورة والمعلومات الأساسية -->
         <div class="side-card">
             <div class="avatar-container">
-                {{-- فحص: إذا كانت الصورة موجودة ولا تحتوي على مسار الويندوز المؤقت القديم --}}
                 @if($student->photo && !str_contains($student->photo, 'C:'))
-                    <img src="{{ asset('storage/' . $student->photo) }}" alt="صورة الطالب" class="main-avatar">
+                    <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $student->name_ar }}" class="main-avatar">
                 @else
                     <div class="avatar-placeholder">
                         {{ $student ? mb_substr($student->name_ar, 0, 1) : 'S' }}
@@ -30,27 +33,27 @@
                 <div class="status-indicator {{ $student->status == 'active' ? 'active' : 'pending' }}"></div>
             </div>
 
-            <h2 class="name-display">{{ $student->name_ar ?? 'غير متوفر' }}</h2>
-            <p class="email-display">{{ $student->email ?? 'لا يوجد بريد إلكتروني' }}</p>
+            <h2 class="name-display">{{ $student->name_ar ?? __('غير متوفر') }}</h2>
+            <p class="email-display font-mono">{{ $student->email ?? __('لا يوجد بريد إلكتروني') }}</p>
 
             <div class="badge-group">
-                <span class="badge badge-primary">حساب طالب</span>
+                <span class="badge badge-primary">{{ __('حساب طالب') }}</span>
                 <span class="badge {{ $student->status == 'active' ? 'badge-success' : 'badge-warning' }}">
-                    {{ $student->status == 'active' ? 'حساب نشط' : 'قيد المراجعة' }}
+                    {{ $student->status == 'active' ? __('حساب نشط') : __('قيد المراجعة') }}
                 </span>
             </div>
 
             <!-- صورة الهوية -->
             <div class="id-card-preview">
-                <p>صورة الهوية الوطنية</p>
+                <p class="id-title">{{ __('بطاقة الهوية الوطنية') }}</p>
                 @if($student->id_photo && !str_contains($student->id_photo, 'C:'))
-                    <a href="{{ asset('storage/' . $student->id_photo) }}" target="_blank" title="اضغط للتكبير">
-                        <img src="{{ asset('storage/' . $student->id_photo) }}" alt="الهوية">
+                    <a href="{{ asset('storage/' . $student->id_photo) }}" target="_blank" title="{{ __('اضغط للتكبير') }}">
+                        <img src="{{ asset('storage/' . $student->id_photo) }}" alt="{{ __('الهوية') }}">
                     </a>
                 @else
                     <div class="no-id">
-                        <i>🪪</i>
-                        <span>لا توجد صورة هوية صالحة</span>
+                        <i class="fa-solid fa-id-card"></i>
+                        <span>{{ __('لا توجد صورة هوية مرفقة') }}</span>
                     </div>
                 @endif
             </div>
@@ -61,25 +64,25 @@
             <!-- قسم المعلومات الشخصية -->
             <div class="info-section">
                 <div class="section-title">
-                    <span class="icon">👤</span>
-                    <h3>المعلومات الشخصية</h3>
+                    <span class="icon"><i class="fa-solid fa-user"></i></span>
+                    <h3>{{ __('المعلومات الشخصية') }}</h3>
                 </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>الاسم بالكامل (عربي)</label>
+                        <label>{{ __('الاسم بالكامل (عربي)') }}</label>
                         <p>{{ $student->name_ar ?? '—' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>Full Name (English)</label>
-                        <p>{{ $student->name_en ?? '—' }}</p>
+                        <label>{{ __('الاسم بالإنجليزية') }}</label>
+                        <p class="font-mono">{{ $student->name_en ?? '—' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>الرقم الوطني / الهوية</label>
-                        <p>{{ $student->nid ?? '—' }}</p>
+                        <label>{{ __('الرقم الوطني / الهوية') }}</label>
+                        <p class="font-mono">{{ $student->nid ?? '—' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>رقم الهاتف</label>
-                        <p class="ltr-text">{{ $student->phone ?? '—' }}</p>
+                        <label>{{ __('رقم الهاتف') }}</label>
+                        <p class="font-mono">{{ $student->phone ?? '—' }}</p>
                     </div>
                 </div>
             </div>
@@ -87,25 +90,25 @@
             <!-- قسم المعلومات الأكاديمية -->
             <div class="info-section">
                 <div class="section-title">
-                    <span class="icon">🎓</span>
-                    <h3>المسار الأكاديمي</h3>
+                    <span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                    <h3>{{ __('المسار الأكاديمي') }}</h3>
                 </div>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>المرحلة الدراسية</label>
-                        <p>{{ $student->stage->label_ar ?? 'غير محدد' }}</p>
+                        <label>{{ __('المرحلة الدراسية') }}</label>
+                        <p>{{ $student->stage->label_ar ?? ($student->stage->name_ar ?? __('غير محدد')) }}</p>
                     </div>
                     <div class="info-item">
-                        <label>تاريخ التسجيل في النظام</label>
-                        <p>{{ $student->created_at ? $student->created_at->format('Y/m/d') : '—' }}</p>
+                        <label>{{ __('تاريخ التسجيل في النظام') }}</label>
+                        <p class="font-mono">{{ $student->created_at ? $student->created_at->format('Y/m/d') : '—' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>الجنس</label>
-                        <p>{{ $student->gender ?? '—' }}</p>
+                        <label>{{ __('الجنس') }}</label>
+                        <p>{{ $student->gender ? __($student->gender) : '—' }}</p>
                     </div>
                     <div class="info-item">
-                        <label>العمر</label>
-                        <p>{{ $student->age ?? '—' }} سنة</p>
+                        <label>{{ __('العمر') }}</label>
+                        <p>{{ $student->age ? $student->age . ' ' . __('سنة') : '—' }}</p>
                     </div>
                 </div>
             </div>
@@ -114,142 +117,173 @@
 </div>
 
 <style>
-    /* المتغيرات التصميمية */
-    :root {
-        --primary: #4361ee;
-        --secondary: #3f37c9;
-        --success: #10b981;
-        --warning: #f59e0b;
-        --text-dark: #1e293b;
-        --text-light: #64748b;
-        --bg-body: #f8fafc;
-        --white: #ffffff;
-        --border: #e2e8f0;
-    }
-
     .profile-wrapper {
-        max-width: 1100px;
-        margin: 40px auto;
-        padding: 0 20px;
-        direction: rtl;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 10px 0 60px;
+        box-sizing: border-box;
     }
 
-    .profile-header {
+    .academic-header-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 22px 26px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+        border-inline-start: 5px solid var(--ed-primary, #1e3a8a);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
-    .welcome-text h1 { color: var(--primary); margin: 0; font-size: 1.8rem; font-weight: 800; }
-    .welcome-text p { color: var(--text-light); margin-top: 5px; }
-
-    .back-link {
-        background: var(--white);
-        padding: 10px 20px;
-        border-radius: 12px;
-        text-decoration: none;
-        color: var(--text-dark);
-        border: 1px solid var(--border);
+    .badge-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+    .header-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 4px;
+    }
+    .header-subtitle {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin: 0;
+    }
+    .btn-classic-nav {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 9px 18px;
+        border-radius: 8px;
         font-weight: 600;
-        transition: 0.3s;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background 0.15s;
     }
-    .back-link:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-classic-nav:hover { background: #f8fafc; color: #0f172a; }
 
     /* شبكة العرض */
     .profile-grid {
         display: grid;
         grid-template-columns: 320px 1fr;
-        gap: 25px;
+        gap: 24px;
+        align-items: start;
     }
 
     /* الكارت الجانبي */
     .side-card {
-        background: var(--white);
-        border-radius: 24px;
-        padding: 40px 25px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 30px 20px;
         text-align: center;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-        height: fit-content;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
 
     .avatar-container {
         position: relative;
-        width: 130px;
-        height: 130px;
-        margin: 0 auto 20px;
+        width: 110px;
+        height: 110px;
+        margin: 0 auto 16px;
     }
     .main-avatar {
         width: 100%; height: 100%;
         border-radius: 50%;
         object-fit: cover;
-        border: 4px solid var(--white);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border: 3px solid #e2e8f0;
     }
     .avatar-placeholder {
         width: 100%; height: 100%;
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        background: #1e3a8a;
         color: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 3rem;
+        font-size: 2.4rem;
         font-weight: bold;
     }
     .status-indicator {
-        position: absolute; bottom: 8px; right: 8px;
-        width: 20px; height: 20px;
+        position: absolute; bottom: 4px; inset-inline-end: 4px;
+        width: 18px; height: 18px;
         border-radius: 50%;
-        border: 3px solid var(--white);
+        border: 2px solid #ffffff;
     }
-    .status-indicator.active { background: var(--success); }
-    .status-indicator.pending { background: var(--warning); }
+    .status-indicator.active { background: #10b981; }
+    .status-indicator.pending { background: #f59e0b; }
 
-    .name-display { font-size: 1.4rem; color: var(--text-dark); margin: 10px 0 5px; }
-    .email-display { color: var(--text-light); font-size: 0.9rem; margin-bottom: 20px; }
+    .name-display { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin: 8px 0 4px; }
+    .email-display { color: #64748b; font-size: 0.85rem; margin-bottom: 16px; word-break: break-all; }
 
-    .badge-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 25px; }
-    .badge { padding: 6px 14px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; }
-    .badge-primary { background: #eef2ff; color: var(--primary); }
-    .badge-success { background: #ecfdf5; color: var(--success); }
-    .badge-warning { background: #fffbeb; color: var(--warning); }
+    .badge-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .badge { padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
+    .badge-primary { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 
     .id-card-preview {
-        padding-top: 20px;
-        border-top: 1px dashed var(--border);
+        padding-top: 18px;
+        border-top: 1px dashed #e2e8f0;
     }
-    .id-card-preview p { font-size: 0.9rem; color: var(--text-light); margin-bottom: 12px; font-weight: 600; }
-    .id-card-preview img { width: 100%; border-radius: 12px; cursor: pointer; transition: 0.3s; border: 1px solid var(--border); }
-    .id-card-preview img:hover { transform: scale(1.02); }
-    .no-id { background: #f1f5f9; padding: 20px; border-radius: 12px; color: var(--text-light); display: flex; flex-direction: column; gap: 8px; }
-    .no-id i { font-style: normal; font-size: 1.5rem; }
+    .id-title { font-size: 0.82rem; color: #64748b; margin-bottom: 10px; font-weight: 700; }
+    .id-card-preview img { width: 100%; border-radius: 8px; cursor: pointer; border: 1px solid #e2e8f0; }
+    .no-id {
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        padding: 16px;
+        border-radius: 8px;
+        color: #94a3b8;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.82rem;
+    }
 
     /* كروت التفاصيل */
+    .details-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
     .info-section {
-        background: var(--white);
-        border-radius: 24px;
-        padding: 30px;
-        margin-bottom: 25px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
-    .section-title { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; }
+    .section-title { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
     .section-title .icon {
-        background: #f1f5f9; width: 40px; height: 40px;
+        background: #eff6ff; width: 36px; height: 36px;
         display: flex; align-items: center; justify-content: center;
-        border-radius: 10px; font-size: 1.2rem;
+        border-radius: 8px; font-size: 1rem; color: #1e40af;
     }
-    .section-title h3 { margin: 0; font-size: 1.2rem; font-weight: 800; color: var(--text-dark); }
+    .section-title h3 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #0f172a; }
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
-    .info-item label { display: block; color: var(--text-light); font-size: 0.85rem; margin-bottom: 8px; font-weight: 600; }
-    .info-item p { margin: 0; font-weight: 700; color: var(--text-dark); font-size: 1.05rem; }
-    .ltr-text { direction: ltr; text-align: right; display: block; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .info-item label { display: block; color: #64748b; font-size: 0.8rem; margin-bottom: 6px; font-weight: 600; }
+    .info-item p { margin: 0; font-weight: 700; color: #0f172a; font-size: 0.95rem; }
 
-    /* التجاوب مع الجوال */
-    @media (max-width: 850px) {
+    /* التجاوب مع الشاشات الصغيرة */
+    @media (max-width: 900px) {
         .profile-grid { grid-template-columns: 1fr; }
-        .side-card { order: -1; }
         .info-grid { grid-template-columns: 1fr; }
     }
 </style>

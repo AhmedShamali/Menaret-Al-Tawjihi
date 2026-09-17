@@ -174,7 +174,7 @@
     .chat-feed::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 </style>
 
-<div class="container-fluid p-0" dir="rtl">
+<div class="container-fluid p-0">
     <div class="chat-main-wrapper">
         <!-- الهيدر -->
         <div class="chat-nav">
