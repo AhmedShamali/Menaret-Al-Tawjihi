@@ -190,6 +190,9 @@ class PlatformAuditTest extends TestCase
             'nid' => '400000099',
             'email' => 'delete_me@tawjihi.ps',
             'password' => bcrypt('password123'),
+            'phone' => '0599000099',
+            'age' => 17,
+            'gender' => 'ذكر',
             'stage_id' => $stage->id,
             'status' => 'pending',
         ]);
@@ -232,6 +235,9 @@ class PlatformAuditTest extends TestCase
             'nid' => '400000088',
             'email' => 'pending_std@tawjihi.ps',
             'password' => bcrypt('password123'),
+            'phone' => '0599000088',
+            'age' => 17,
+            'gender' => 'ذكر',
             'stage_id' => $stage->id,
             'status' => 'pending',
         ]);
