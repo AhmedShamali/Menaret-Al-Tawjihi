@@ -292,6 +292,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
 */
 Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('student.')->group(function () {
     Route::get('/pending-approval', [StudentController::class, 'pendingApproval'])->name('pending-approval');
+    Route::get('/pending-payment', [StudentController::class, 'pendingApproval'])->name('pendingPayment.show');
     Route::post('/pending-payment', [StudentController::class, 'submitPendingPayment'])->name('pendingPayment.submit');
     Route::get('/subscriptions', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'studentIndex'])->name('subscriptions.index');
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');

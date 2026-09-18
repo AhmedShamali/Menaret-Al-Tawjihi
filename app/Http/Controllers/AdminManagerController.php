@@ -749,44 +749,98 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            if (\DB::connection()->getDriverName() === 'mysql') {
-                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
-            }
-
             $students = Student::whereIn('id', $ids)->get();
             foreach ($students as $s) {
                 if ($s->photo) Storage::disk('public')->delete($s->photo);
                 if ($s->id_photo) Storage::disk('public')->delete($s->id_photo);
             }
 
-            $idListStr = implode(',', $ids);
+            // 1. حذف التكليفات والامتحانات المرتبطة بالتسجيلات
+            if (\Illuminate\Support\Facades\Schema::hasTable('enrollments') && \Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+                $enrIds = \DB::table('enrollments')->whereIn('student_id', $ids)->pluck('id')->toArray();
+                if (!empty($enrIds)) {
+                    \DB::table('exam_assignments')->whereIn('enrollment_id', $enrIds)->delete();
+                }
+            }
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+                \DB::table('exam_assignments')->whereIn('student_id', $ids)->delete();
+            }
 
-            $tables = [
-                'submission_answers' => "submission_id IN (SELECT id FROM exam_submissions WHERE student_id IN ({$idListStr}))",
-                'exam_submissions'   => "student_id IN ({$idListStr})",
-                'enrollments'        => "student_id IN ({$idListStr})",
-                'certificates'       => "student_id IN ({$idListStr})",
-                'recommendations'    => "student_id IN ({$idListStr})",
-                'activities'         => "student_id IN ({$idListStr})",
-                'payments'           => "student_id IN ({$idListStr})",
-                'channel_requests'   => "student_id IN ({$idListStr})",
-                'placement_results'  => "student_id IN ({$idListStr})",
-                'support_tickets'    => "student_id IN ({$idListStr})",
-                'messages'           => "student_id IN ({$idListStr})",
-                'flashcards'         => "student_id IN ({$idListStr})",
-                'video_notes'        => "student_id IN ({$idListStr})",
-                'student_progress'   => "student_id IN ({$idListStr})",
-                'exam_assignments'   => "student_id IN ({$idListStr})",
-            ];
-
-            foreach ($tables as $tbl => $rawWhere) {
-                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
-                    try {
-                        \DB::table($tbl)->whereRaw($rawWhere)->delete();
-                    } catch (\Throwable $ex) {}
+            // 2. حذف إجابات الامتحانات عبر معرفات التقديم الصحيحة (exam_submission_id)
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_submissions') && \Illuminate\Support\Facades\Schema::hasTable('submission_answers')) {
+                $subIds = \DB::table('exam_submissions')->whereIn('student_id', $ids)->pluck('id')->toArray();
+                if (!empty($subIds)) {
+                    \DB::table('submission_answers')->whereIn('exam_submission_id', $subIds)->delete();
                 }
             }
 
+            // 3. حذف تسليمات الامتحانات
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_submissions')) {
+                \DB::table('exam_submissions')->whereIn('student_id', $ids)->delete();
+            }
+
+            // 4. حذف الاشتراكات الشهرية أولاً قبل المدفوعات لفك القيد الخارجي
+            if (\Illuminate\Support\Facades\Schema::hasTable('student_monthly_subscriptions')) {
+                \DB::table('student_monthly_subscriptions')->whereIn('student_id', $ids)->delete();
+            }
+
+            // 5. حذف المدفوعات والإيصالات
+            if (\Illuminate\Support\Facades\Schema::hasTable('payments')) {
+                \DB::table('payments')->whereIn('student_id', $ids)->delete();
+            }
+
+            // 6. حذف التسجيلات بالمواد
+            if (\Illuminate\Support\Facades\Schema::hasTable('enrollments')) {
+                \DB::table('enrollments')->whereIn('student_id', $ids)->delete();
+            }
+
+            // 7. حذف الجداول التابعة الأخرى
+            $simpleStudentTables = [
+                'certificates',
+                'recommendations',
+                'activities',
+                'channel_requests',
+                'placement_results',
+                'support_tickets',
+                'flashcards',
+                'video_notes',
+                'student_progress',
+            ];
+
+            foreach ($simpleStudentTables as $tbl) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    \DB::table($tbl)->whereIn('student_id', $ids)->delete();
+                }
+            }
+
+            // 8. حذف الرسائل
+            if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
+                \DB::table('messages')
+                    ->whereIn('student_id', $ids)
+                    ->orWhere(function($q) use ($ids) {
+                        $q->where('sender_type', 'student')->whereIn('sender_id', $ids);
+                    })
+                    ->delete();
+            }
+
+            // 9. تفريغ كوبونات الدخول إن استخدمت
+            if (\Illuminate\Support\Facades\Schema::hasTable('access_vouchers')) {
+                \DB::table('access_vouchers')->whereIn('used_by_student_id', $ids)->update([
+                    'used_by_student_id' => null,
+                    'is_used'            => false,
+                    'used_at'            => null,
+                ]);
+            }
+
+            // 10. حذف الإشعارات التابعة للطلاب
+            if (\Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                \DB::table('notifications')
+                    ->where('notifiable_type', 'like', '%Student%')
+                    ->whereIn('notifiable_id', $ids)
+                    ->delete();
+            }
+
+            // 11. حذف الطلاب
             Student::whereIn('id', $ids)->delete();
 
             \DB::commit();
@@ -798,11 +852,7 @@ class AdminManagerController extends Controller {
             ]);
         } catch (\Throwable $e) {
             \DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'حدث خطأ: ' . $e->getMessage()], 500);
-        } finally {
-            if (\DB::connection()->getDriverName() === 'mysql') {
-                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
-            }
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف الطلاب: ' . $e->getMessage()], 500);
         }
     }
 
@@ -821,10 +871,6 @@ class AdminManagerController extends Controller {
 
         \DB::beginTransaction();
         try {
-            if (\DB::connection()->getDriverName() === 'mysql') {
-                try { \DB::statement('SET FOREIGN_KEY_CHECKS=0;'); } catch (\Throwable $e) {}
-            }
-
             $students = Student::all();
             $count = $students->count();
             foreach ($students as $s) {
@@ -832,20 +878,22 @@ class AdminManagerController extends Controller {
                 if ($s->id_photo) Storage::disk('public')->delete($s->id_photo);
             }
 
+            // الترتيب الصحيح للأسبقية لفك القيود الخارجية
             $tablesToClean = [
+                'exam_assignments',
                 'submission_answers',
                 'exam_submissions',
+                'student_monthly_subscriptions',
+                'payments',
                 'enrollments',
                 'certificates',
                 'recommendations',
                 'activities',
-                'payments',
                 'channel_requests',
                 'placement_results',
                 'support_tickets',
                 'video_notes',
                 'student_progress',
-                'exam_assignments',
             ];
 
             foreach ($tablesToClean as $tbl) {
@@ -866,6 +914,14 @@ class AdminManagerController extends Controller {
                 \DB::table('notifications')->where('notifiable_type', 'like', '%Student%')->delete();
             }
 
+            if (\Illuminate\Support\Facades\Schema::hasTable('access_vouchers')) {
+                \DB::table('access_vouchers')->update([
+                    'used_by_student_id' => null,
+                    'is_used'            => false,
+                    'used_at'            => null,
+                ]);
+            }
+
             \DB::table('students')->delete();
 
             \DB::commit();
@@ -878,10 +934,6 @@ class AdminManagerController extends Controller {
         } catch (\Throwable $e) {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء حذف الطلاب: ' . $e->getMessage()], 500);
-        } finally {
-            if (\DB::connection()->getDriverName() === 'mysql') {
-                try { \DB::statement('SET FOREIGN_KEY_CHECKS=1;'); } catch (\Throwable $e) {}
-            }
         }
     }
 

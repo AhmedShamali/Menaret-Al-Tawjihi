@@ -6,23 +6,22 @@
 <div class="pending-approval-wrapper">
 
     <div class="pending-approval-card">
-        <!-- أيقونة الحالة المتحركة -->
+        <!-- أيقونة الاعتماد الأكاديمي الكلاسيكية -->
         <div class="pending-icon-bubble">
-            <div class="pulse-ring"></div>
-            <i class="fa-solid fa-hourglass-half"></i>
+            <i class="fa-solid fa-graduation-cap"></i>
         </div>
 
-        <!-- شارات الحالة -->
+        <!-- شارات الحالة الرسمية -->
         <div class="status-badges-row">
-            <span class="badge-tag pending"><i class="fa-solid fa-clock"></i> بانتظار موافقة المشرف العام</span>
-            <span class="badge-tag palestine">🇵🇸 منارة التوجيهي</span>
+            <span class="badge-tag pending"><i class="fa-solid fa-clock-rotate-left"></i> قيد المراجعة والاعتماد الأكاديمي</span>
+            <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> منارة التوجيهي - فلسطين</span>
         </div>
 
-        <h1 class="card-title">طلبك قيد المراجعة والاعتماد الأكاديمي ⏳</h1>
+        <h1 class="card-title">طلب التحاق الطالب قيد الاعتماد الأكاديمي</h1>
         
         <p class="card-desc">
-            أهلاً بك يا <strong>{{ $student->name_ar ?? $student->name ?? 'بطل التوجيهي' }}</strong>! تم استلام طلبك واكتمال تسجيلك بنجاح.
-            يقوم المشرف العام <strong>(أ. أحمد حسين شمالي)</strong> بمراجعة بياناتك وتأكيد اشتراكك في المساقات التعليمية فور سداد الرسوم الأكاديمية المقررة.
+            أهلاً بك يا <strong>{{ $student->name_ar ?? $student->name ?? 'طالبنا العزيز' }}</strong>! تم استلام طلب التحاقك واكتمال تسجيلك المبدئي بنجاح.
+            يقوم المشرف العام <strong>(أ. أحمد حسين شمالي)</strong> بمراجعة بياناتك واعتماد اشتراكك في المواد التعليمية فور تسديد الرسوم الأكاديمية المقررة.
         </p>
 
         <!-- بطاقة تفاصيل الطالب المسجلة -->
@@ -41,7 +40,7 @@
             </div>
             <div class="info-cell">
                 <small>حالة الحساب</small>
-                <span class="status-pill-warning">بانتظار التفعيل ⏳</span>
+                <span class="status-pill-warning"><i class="fa-solid fa-clock-rotate-left"></i> بانتظار الاعتماد</span>
             </div>
         </div>
 
@@ -87,10 +86,10 @@
             <div class="channels-grid">
                 <!-- بنك فلسطين -->
                 <div class="channel-card">
-                    <div class="channel-icon bank">🏛️</div>
+                    <div class="channel-icon bank"><i class="fa-solid fa-building-columns"></i></div>
                     <div class="channel-details">
                         <strong>بنك فلسطين (Bank of Palestine)</strong>
-                        <span class="account-holder">المستفيد: أحمد حسين شمالي</span>
+                        <span class="account-holder">المستفيد المعتمد: أ. أحمد حسين شمالي</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', 'رقم بنك فلسطين')">
@@ -102,10 +101,10 @@
 
                 <!-- بال باي -->
                 <div class="channel-card">
-                    <div class="channel-icon palpay">🇵🇸</div>
+                    <div class="channel-icon palpay"><i class="fa-solid fa-credit-card"></i></div>
                     <div class="channel-details">
                         <strong>بال باي (PalPay)</strong>
-                        <span class="account-holder">المستفيد: أحمد حسين شمالي</span>
+                        <span class="account-holder">المستفيد المعتمد: أ. أحمد حسين شمالي</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', 'رقم PalPay')">
@@ -117,10 +116,10 @@
 
                 <!-- جوال باي -->
                 <div class="channel-card">
-                    <div class="channel-icon jpay">📱</div>
+                    <div class="channel-icon jpay"><i class="fa-solid fa-mobile-screen-button"></i></div>
                     <div class="channel-details">
                         <strong>جوال باي (Jawwal Pay)</strong>
-                        <span class="account-holder">المستفيد: أحمد حسين شمالي</span>
+                        <span class="account-holder">المستفيد المعتمد: أ. أحمد حسين شمالي</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', 'رقم جوال باي')">
@@ -199,7 +198,7 @@
 
                 <button type="submit" class="btn-submit-receipt" id="btnSubmitReceipt">
                     <i class="fa-solid fa-paper-plane"></i>
-                    <span id="submitBtnText">تأكيد إرسال الإشعار للإدارة لتفعيل الحساب</span>
+                    <span id="submitBtnText">إرسال إشعار السداد ورفع الإيصال للاعتماد</span>
                 </button>
             </form>
         </div>
@@ -268,15 +267,15 @@
     }
 
     function validatePaymentForm(e) {
+        e.preventDefault();
         const fileInput = document.getElementById('receiptFileInput');
         if (!fileInput.files || fileInput.files.length === 0) {
-            e.preventDefault();
             Swal.fire({
                 icon: 'warning',
-                title: 'يرجى إرفاق الإيصال 📄',
+                title: 'يرجى إرفاق الإيصال أولاً',
                 text: 'يرجى النقر على مربع رفع الملف واختيار صورة إيصال التحويل أو ملف PDF ليتمكن المشرف من مطابقة ومراجعة سدادك فوراً.',
                 confirmButtonText: 'حسناً، سأقوم برفع الإيصال',
-                confirmButtonColor: '#2563eb'
+                confirmButtonColor: '#1e3a8a'
             });
             return false;
         }
@@ -289,7 +288,54 @@
             btn.style.cursor = 'not-allowed';
             if (text) text.innerText = 'جاري إرسال الإشعار ورفع الإيصال للإدارة...';
         }
-        return true;
+
+        const form = document.getElementById('pendingPaymentForm');
+        const formData = new FormData(form);
+
+        axios.post("{{ route('student.pendingPayment.submit') }}", formData)
+            .then(res => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم إرسال إشعار السداد بنجاح!',
+                    text: res.data?.message || 'تم تسليم إشعار السداد والإيصال للمشرف العام، وسيقوم بمطابقته وتفعيل اشتراكك وحسابك فورياً.',
+                    confirmButtonText: 'حسناً، تم الاطلاع',
+                    confirmButtonColor: '#1e3a8a'
+                }).then(() => {
+                    window.location.reload();
+                });
+            })
+            .catch(err => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                    if (text) text.innerText = 'إرسال إشعار السداد ورفع الإيصال للاعتماد';
+                }
+
+                if (err.response && err.response.status === 419) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'انتهت صلاحية الجلسة المؤقتة',
+                        text: 'حرصاً على أمان بياناتك تم تجديد الصفحة، يرجى إعادة المحاولة الآن.',
+                        confirmButtonText: 'تحديث ومتابعة',
+                        confirmButtonColor: '#1e3a8a'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                    return;
+                }
+
+                const msg = err.response?.data?.message || err.response?.data?.title || 'تعذر إرسال الإشعار، يرجى التأكد من نوع وحجم الملف والمحاولة ثانية.';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'تعذر إرسال الإشعار',
+                    text: msg,
+                    confirmButtonText: 'حسناً',
+                    confirmButtonColor: '#dc2626'
+                });
+            });
+
+        return false;
     }
 
     function checkStatusRefresh() {
@@ -319,42 +365,31 @@
 
     .pending-approval-card {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 26px;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
         padding: 40px 32px;
-        max-width: 760px;
+        max-width: 780px;
         width: 100%;
         text-align: center;
-        box-shadow: 0 15px 35px -10px rgba(15, 23, 42, 0.07);
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
         position: relative;
     }
 
-    /* الأيقونة النباضة */
+    /* الأيقونة الأكاديمية الكلاسيكية */
     .pending-icon-bubble {
-        width: 84px;
-        height: 84px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #f59e0b, #d97706);
-        color: white;
+        width: 76px;
+        height: 76px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+        border: 2px solid #d97706;
+        color: #f59e0b;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.3rem;
+        font-size: 2.2rem;
         margin-bottom: 18px;
         position: relative;
-        box-shadow: 0 10px 22px rgba(245, 158, 11, 0.3);
-    }
-    .pulse-ring {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 3px solid #f59e0b;
-        animation: pulseRing 2s infinite ease-out;
-    }
-    @keyframes pulseRing {
-        0% { transform: scale(1); opacity: 0.8; }
-        100% { transform: scale(1.35); opacity: 0; }
+        box-shadow: 0 6px 18px rgba(30, 58, 138, 0.25);
     }
 
     .status-badges-row {

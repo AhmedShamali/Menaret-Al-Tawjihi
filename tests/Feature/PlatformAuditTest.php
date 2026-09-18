@@ -173,5 +173,77 @@ class PlatformAuditTest extends TestCase
         $this->get('/auth/google')->assertStatus(404);
         $this->get('/auth/google/callback')->assertStatus(404);
     }
+
+    public function test_student_deletion_with_all_cascading_relations_succeeds(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin User',
+            'email' => 'admin_test_del@menaret-tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب للحذف',
+            'name_en' => 'Delete Student',
+            'nid' => '400000099',
+            'email' => 'delete_me@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'stage_id' => $stage->id,
+            'status' => 'pending',
+        ]);
+
+        // Create child records
+        $payment = \App\Models\Payment::create([
+            'student_id' => $student->id,
+            'transaction_number' => 'TXN-TEST-123',
+            'gateway' => 'jawwal_pay',
+            'amount' => 150,
+            'currency' => 'ILS',
+            'status' => 'pending',
+        ]);
+
+        if (\Illuminate\Support\Facades\Schema::hasTable('student_monthly_subscriptions')) {
+            \App\Models\StudentMonthlySubscription::create([
+                'student_id' => $student->id,
+                'academic_year' => 2026,
+                'month' => 9,
+                'month_name_ar' => 'أيلول',
+                'status' => 'waiting_approval',
+                'payment_id' => $payment->id,
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->deleteJson("/admin/students/{$student->id}");
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->assertDatabaseMissing('students', ['id' => $student->id]);
+        $this->assertDatabaseMissing('payments', ['id' => $payment->id]);
+    }
+
+    public function test_pending_payment_page_and_routes_accessible_for_pending_student(): void
+    {
+        $stage = Stage::first();
+        $pendingStudent = Student::create([
+            'name_ar' => 'طالب معلق',
+            'name_en' => 'Pending Student',
+            'nid' => '400000088',
+            'email' => 'pending_std@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'stage_id' => $stage->id,
+            'status' => 'pending',
+        ]);
+
+        auth('student')->login($pendingStudent);
+
+        // GET /student/pending-approval must be 200 OK
+        $this->get('/student/pending-approval')->assertStatus(200);
+
+        // GET /student/pending-payment must also be 200 OK (no 405 / 419)
+        $this->get('/student/pending-payment')->assertStatus(200);
+    }
 }
+
 

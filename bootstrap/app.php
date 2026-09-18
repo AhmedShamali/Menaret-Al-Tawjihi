@@ -54,7 +54,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, Request $request) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'انتهت صلاحية الجلسة المؤقتة، يرجى تحديث الصفحة وإعادة المحاولة.',
+                ], 419);
+            }
+            return redirect()->back()
+                ->withInput($request->except(['_token', 'password', 'password_confirmation', 'receipt_photo', 'receipt_file']))
+                ->with('error', 'انتهت صلاحية الجلسة المؤقتة، يرجى إعادة المحاولة.');
+        });
     })->create();
 
 

@@ -24,6 +24,8 @@ class IsStudent
                 // السماح لصفحة انتظار الاعتماد، ونموذج إرسال إشعار السداد، وتسجيل الخروج
                 if ($request->routeIs('student.pending-approval') || 
                     $request->routeIs('student.pendingPayment.submit') || 
+                    $request->routeIs('student.pendingPayment.show') || 
+                    $request->is('student/pending-payment*') || 
                     $request->is('logout') || 
                     $request->is('student/logout')) {
                     return $next($request);

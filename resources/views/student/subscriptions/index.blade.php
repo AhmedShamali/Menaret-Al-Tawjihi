@@ -15,7 +15,7 @@
             <p class="subs-subtitle">{{ __('Welcome, :name! Track your subscription status and monthly installments throughout the academic year.', ['name' => $student->name_ar ?? $student->name]) }}</p>
         </div>
         <div class="header-action-block">
-            <a href="{{ route('student.pendingPayment.submit') }}" class="btn-pay-new-month">
+            <a href="{{ route('student.pendingPayment.show') }}" class="btn-pay-new-month">
                 <i class="fa-solid fa-receipt"></i> {{ __('Submit New Payment Notice') }}
             </a>
         </div>
@@ -121,7 +121,7 @@
                             </span>
                         @else
                             <div class="unpaid-actions-row">
-                                <a href="{{ route('student.pendingPayment.submit') }}" class="btn-month-status pay" style="flex: 1;">
+                                <a href="{{ route('student.pendingPayment.show') }}" class="btn-month-status pay" style="flex: 1;">
                                     <i class="fa-solid fa-receipt"></i> {{ __('Pay this installment') }}
                                 </a>
                                 <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">

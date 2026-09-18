@@ -678,36 +678,96 @@ class StudentController extends Controller
 
         \DB::beginTransaction();
         try {
-            $tables = [
-                'submission_answers' => "submission_id IN (SELECT id FROM exam_submissions WHERE student_id = {$studentId})",
-                'exam_submissions'   => "student_id = {$studentId}",
-                'enrollments'        => "student_id = {$studentId}",
-                'certificates'       => "student_id = {$studentId}",
-                'recommendations'    => "student_id = {$studentId}",
-                'activities'         => "student_id = {$studentId}",
-                'payments'           => "student_id = {$studentId}",
-                'channel_requests'   => "student_id = {$studentId}",
-                'placement_results'  => "student_id = {$studentId}",
-                'support_tickets'    => "student_id = {$studentId}",
-                'messages'           => "student_id = {$studentId}",
-                'flashcards'         => "student_id = {$studentId}",
-                'video_notes'        => "student_id = {$studentId}",
-                'student_progress'   => "student_id = {$studentId}",
-                'exam_assignments'   => "student_id = {$studentId}",
-            ];
+            // 1. حذف التكليفات والامتحانات التابعة للتسجيلات
+            if (\Illuminate\Support\Facades\Schema::hasTable('enrollments') && \Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+                $enrIds = \DB::table('enrollments')->where('student_id', $studentId)->pluck('id')->toArray();
+                if (!empty($enrIds)) {
+                    \DB::table('exam_assignments')->whereIn('enrollment_id', $enrIds)->delete();
+                }
+            }
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+                \DB::table('exam_assignments')->where('student_id', $studentId)->delete();
+            }
 
-            foreach ($tables as $tbl => $rawWhere) {
-                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
-                    try {
-                        \DB::table($tbl)->whereRaw($rawWhere)->delete();
-                    } catch (\Throwable $ex) {}
+            // 2. حذف إجابات الامتحانات عبر معرفات التقديم الصحيحة (exam_submission_id)
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_submissions') && \Illuminate\Support\Facades\Schema::hasTable('submission_answers')) {
+                $subIds = \DB::table('exam_submissions')->where('student_id', $studentId)->pluck('id')->toArray();
+                if (!empty($subIds)) {
+                    \DB::table('submission_answers')->whereIn('exam_submission_id', $subIds)->delete();
                 }
             }
 
+            // 3. حذف تسليمات الامتحانات
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_submissions')) {
+                \DB::table('exam_submissions')->where('student_id', $studentId)->delete();
+            }
+
+            // 4. حذف الاشتراكات الشهرية أولاً قبل المدفوعات لفك القيد الخارجي
+            if (\Illuminate\Support\Facades\Schema::hasTable('student_monthly_subscriptions')) {
+                \DB::table('student_monthly_subscriptions')->where('student_id', $studentId)->delete();
+            }
+
+            // 5. حذف المدفوعات والإيصالات
+            if (\Illuminate\Support\Facades\Schema::hasTable('payments')) {
+                \DB::table('payments')->where('student_id', $studentId)->delete();
+            }
+
+            // 6. حذف التسجيلات بالمواد
+            if (\Illuminate\Support\Facades\Schema::hasTable('enrollments')) {
+                \DB::table('enrollments')->where('student_id', $studentId)->delete();
+            }
+
+            // 7. حذف الجداول التابعة الأخرى
+            $simpleStudentTables = [
+                'certificates',
+                'recommendations',
+                'activities',
+                'channel_requests',
+                'placement_results',
+                'support_tickets',
+                'flashcards',
+                'video_notes',
+                'student_progress',
+            ];
+
+            foreach ($simpleStudentTables as $tbl) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                    \DB::table($tbl)->where('student_id', $studentId)->delete();
+                }
+            }
+
+            // 8. حذف الرسائل
+            if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
+                \DB::table('messages')
+                    ->where('student_id', $studentId)
+                    ->orWhere(function($q) use ($studentId) {
+                        $q->where('sender_type', 'student')->where('sender_id', $studentId);
+                    })
+                    ->delete();
+            }
+
+            // 9. تفريغ كوبونات الدخول إن استخدمت
+            if (\Illuminate\Support\Facades\Schema::hasTable('access_vouchers')) {
+                \DB::table('access_vouchers')->where('used_by_student_id', $studentId)->update([
+                    'used_by_student_id' => null,
+                    'is_used'            => false,
+                    'used_at'            => null,
+                ]);
+            }
+
+            // 10. حذف الإشعارات التابعة للطالب
+            if (\Illuminate\Support\Facades\Schema::hasTable('notifications')) {
+                \DB::table('notifications')
+                    ->where('notifiable_type', 'like', '%Student%')
+                    ->where('notifiable_id', $studentId)
+                    ->delete();
+            }
+
+            // 11. حذف سجل الطالب النهائي
             $student->delete();
             \DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'تم حذف الطالب وكافة سجلاته بنجاح']);
+            return response()->json(['success' => true, 'message' => 'تم حذف حساب الطالب وكافة سجلاته واشتراكاته بنجاح']);
         } catch (\Throwable $e) {
             \DB::rollBack();
             return response()->json(['success' => false, 'message' => 'تعذر حذف الطالب: ' . $e->getMessage()], 500);

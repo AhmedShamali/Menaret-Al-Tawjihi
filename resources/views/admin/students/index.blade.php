@@ -33,39 +33,39 @@
         </div>
     </div>
 
-    {{-- 2. بطاقات المؤشرات البسيطة الأنيقة (Minimalist KPI Cards) --}}
+    {{-- 2. بطاقات المؤشرات الأكاديمية الكلاسيكية --}}
     <div class="stats-row-clean">
-        <div class="stat-card-clean" onclick="setFilterTab('all')">
-            <span class="stat-label">إجمالي الطلبة</span>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;" onclick="setFilterTab('all')">
+            <span class="stat-label">إجمالي الطلبة المسجلين</span>
             <div class="stat-value-wrap">
-                <span class="stat-number">{{ count($students) }}</span>
-                <i class="fa-solid fa-users stat-icon"></i>
+                <span class="stat-number text-navy">{{ count($students) }}</span>
+                <i class="fa-solid fa-users stat-icon text-navy"></i>
             </div>
         </div>
 
-        <div class="stat-card-clean" onclick="setFilterTab('pending')">
-            <span class="stat-label">بانتظار الموافقة</span>
+        <div class="stat-card-clean" style="--card-accent: #d97706;" onclick="setFilterTab('pending')">
+            <span class="stat-label">بانتظار الاعتماد الأكاديمي</span>
             <div class="stat-value-wrap">
                 <span class="stat-number {{ $students->where('status', '!=', 'active')->count() > 0 ? 'text-amber' : '' }}">
                     {{ $students->where('status', '!=', 'active')->count() }}
                 </span>
-                <i class="fa-regular fa-clock stat-icon"></i>
+                <i class="fa-solid fa-clock-rotate-left stat-icon text-amber"></i>
             </div>
         </div>
 
-        <div class="stat-card-clean" onclick="setFilterTab('active')">
-            <span class="stat-label">حسابات نشطة</span>
+        <div class="stat-card-clean" style="--card-accent: #059669;" onclick="setFilterTab('active')">
+            <span class="stat-label">حسابات نشطة ومعتمدة</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-emerald">{{ $students->where('status', 'active')->count() }}</span>
-                <i class="fa-solid fa-circle-check stat-icon"></i>
+                <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
             </div>
         </div>
 
-        <div class="stat-card-clean" onclick="setFilterTab('all')">
-            <span class="stat-label">المنح والخصومات</span>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;" onclick="setFilterTab('all')">
+            <span class="stat-label">المنح والخصومات المعتمدة</span>
             <div class="stat-value-wrap">
-                <span class="stat-number">{{ $students->filter(fn($s) => $s->hasDiscount())->count() }}</span>
-                <i class="fa-solid fa-tag stat-icon"></i>
+                <span class="stat-number text-indigo">{{ $students->filter(fn($s) => $s->hasDiscount())->count() }}</span>
+                <i class="fa-solid fa-award stat-icon text-indigo"></i>
             </div>
         </div>
     </div>
@@ -388,12 +388,14 @@
     }
 
     .btn-primary {
-        background: #0f172a;
+        background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
         color: #ffffff;
-        border-color: #0f172a;
+        border: 1px solid #1e3a8a;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
     }
     .btn-primary:hover {
-        background: #1e293b;
+        background: #1e3a8a;
+        transform: translateY(-1px);
         color: #ffffff;
     }
 
@@ -434,22 +436,25 @@
 
     .stat-card-clean {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
+        border-top: 3.5px solid var(--card-accent, #1e3a8a);
         border-radius: 10px;
-        padding: 14px 16px;
+        padding: 16px 18px;
         cursor: pointer;
-        transition: border-color 0.15s ease;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
     }
 
     .stat-card-clean:hover {
-        border-color: #cbd5e1;
-        background: #fafafa;
+        border-color: #94a3b8;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
     }
 
     .stat-label {
-        font-size: 0.78rem;
-        color: #64748b;
-        font-weight: 500;
+        font-size: 0.8rem;
+        color: #475569;
+        font-weight: 700;
         display: block;
         margin-bottom: 6px;
     }
@@ -461,19 +466,20 @@
     }
 
     .stat-number {
-        font-size: 1.35rem;
-        font-weight: 700;
+        font-size: 1.45rem;
+        font-weight: 800;
         color: #0f172a;
         line-height: 1.2;
     }
 
     .stat-icon {
-        font-size: 1rem;
-        color: #94a3b8;
+        font-size: 1.15rem;
     }
 
+    .text-navy { color: #1e3a8a !important; }
     .text-emerald { color: #059669 !important; }
     .text-amber { color: #d97706 !important; }
+    .text-indigo { color: #6366f1 !important; }
 
     /* 3. شريط البحث والفلاتر */
     .toolbar-clean {
@@ -554,9 +560,11 @@
     }
 
     .filter-pill.active {
-        background: #0f172a;
+        background: #1e3a8a;
         color: #ffffff;
-        border-color: #0f172a;
+        border-color: #1e3a8a;
+        font-weight: 700;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
     }
 
     /* شريط التحديد الجماعي */
@@ -628,27 +636,30 @@
     }
 
     .data-table-clean th {
-        background: #f8fafc;
-        color: #475569;
-        font-size: 0.76rem;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+        color: #ffffff;
+        font-size: 0.82rem;
         font-weight: 700;
-        text-transform: uppercase;
         letter-spacing: 0.3px;
-        padding: 10px 12px;
-        border-bottom: 1px solid #e2e8f0;
+        padding: 12px 14px;
+        border-bottom: 2.5px solid #d97706;
         white-space: nowrap;
     }
 
+    .data-table-clean th input.custom-checkbox {
+        accent-color: #f59e0b;
+    }
+
     .data-table-clean td {
-        padding: 10px 12px;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 11px 14px;
+        border-bottom: 1px solid #e2e8f0;
         vertical-align: middle;
-        font-size: 0.84rem;
-        color: #334155;
+        font-size: 0.86rem;
+        color: #1e293b;
     }
 
     .data-table-clean tr.student-row:hover {
-        background: #fafafa;
+        background: #f8fafc;
     }
 
     .custom-checkbox {
@@ -1079,9 +1090,12 @@
                         row.style.opacity = '0';
                         setTimeout(() => row.remove(), 300);
                     }
-                    Swal.fire('تم الحذف', 'تمت إزالة حساب الطالب بنجاح', 'success');
+                    Swal.fire('تم الحذف', res.data?.message || 'تمت إزالة حساب الطالب بنجاح', 'success');
                 })
-                .catch(err => Swal.fire('خطأ', 'فشلت عملية الحذف', 'error'));
+                .catch(err => {
+                    const msg = err.response?.data?.message || 'فشلت عملية الحذف، يرجى التحقق وإعادة المحاولة.';
+                    Swal.fire('خطأ', msg, 'error');
+                });
             }
         });
     }
