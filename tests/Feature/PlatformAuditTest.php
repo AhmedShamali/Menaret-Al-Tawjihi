@@ -152,4 +152,26 @@ class PlatformAuditTest extends TestCase
             $this->assertContains($response->getStatusCode(), [200, 302], "Student route {$route} returned {$response->getStatusCode()}");
         }
     }
+
+    public function test_google_auth_and_registration_are_completely_removed(): void
+    {
+        // 1. Verify login page does not contain Google OAuth button or route
+        $loginRes = $this->get('/login');
+        $loginRes->assertStatus(200);
+        $loginRes->assertDontSee('auth.google');
+        $loginRes->assertDontSee('الدخول بحساب Google');
+        $loginRes->assertDontSee('googleAuthSection');
+
+        // 2. Verify register page does not contain Google ID or Google badge
+        $regRes = $this->get('/register');
+        $regRes->assertStatus(200);
+        $regRes->assertDontSee('name="google_id"', false);
+        $regRes->assertDontSee('btn-google-auth');
+        $regRes->assertDontSee('صورة Google المعتمدة');
+
+        // 3. Verify Google auth routes are unregistered (404)
+        $this->get('/auth/google')->assertStatus(404);
+        $this->get('/auth/google/callback')->assertStatus(404);
+    }
 }
+

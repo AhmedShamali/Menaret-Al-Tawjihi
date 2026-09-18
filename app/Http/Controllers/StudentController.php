@@ -62,8 +62,7 @@ class StudentController extends Controller
             return view('admin.management.students_create', compact('stages'));
         }
 
-        $googleProfile = session('google_profile');
-        return view('students.create', compact('stages', 'googleProfile'));
+        return view('students.create', compact('stages'));
     }
 
     public function showSubject($id)
@@ -160,11 +159,6 @@ class StudentController extends Controller
         $isAdmin = Auth::guard('web')->check();
         $accountStatus = $isAdmin ? 'active' : 'pending';
 
-        $socialProfile = session('google_profile', []);
-        $googleId = $request->input('google_id') ?: ($socialProfile['google_id'] ?? null);
-        $avatarUrl = $request->input('avatar_url') ?: ($socialProfile['picture'] ?? null);
-        $provider = $googleId ? 'google' : null;
-
         // إعداد مصفوفة بيانات الطالب
         $studentData = [
             'name_ar'            => $request->name_ar,
@@ -183,9 +177,9 @@ class StudentController extends Controller
             'gender'             => $gender,
             'photo'              => $photoPath,
             'id_photo'           => $idPhotoPath,
-            'avatar_url'         => $avatarUrl,
-            'google_id'          => $googleId,
-            'provider'           => $provider,
+            'avatar_url'         => null,
+            'google_id'          => null,
+            'provider'           => null,
             'status'             => $accountStatus,
             'streak_count'       => 1,
             'total_points'       => 50,
@@ -205,7 +199,6 @@ class StudentController extends Controller
             $student = Student::create($studentData);
         }
 
-        session()->forget('google_profile');
 
         // إذا اختار الطالب مواد محددة عند التسجيل، تسجل بحالة معلقة pending بانتظار موافقة وسداد الإدارة
         if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {

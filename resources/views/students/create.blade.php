@@ -246,137 +246,7 @@
             color: var(--text-muted);
         }
 
-        /* تنسيقات التسجيل السريع عبر Google وباقي الحسابات */
-        .social-auth-section {
-            margin-bottom: 22px;
-        }
-        .btn-social-auth {
-            width: 100%;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            font-size: 0.92rem;
-            font-weight: 700;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            box-sizing: border-box;
-        }
-        .btn-google-auth {
-            background: #ffffff;
-            color: #1e293b;
-            border: 1.5px solid #e2e8f0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-        }
-        .btn-google-auth:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-            color: #0f172a;
-        }
-        .social-mini-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .btn-social-mini {
-            height: 40px;
-            border-radius: 10px;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            color: #475569;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-        .btn-social-mini:hover {
-            background: #ffffff;
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-            color: #0f172a;
-        }
-        .social-auth-divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0 18px;
-            color: #94a3b8;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .social-auth-divider::before,
-        .social-auth-divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1.5px solid #e2e8f0;
-        }
-        .social-auth-divider span {
-            padding: 0 12px;
-        }
-        .social-connected-card {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            border: 1.5px solid #bfdbfe;
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.08);
-        }
-        .social-connected-main {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .social-connected-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            border: 2px solid white;
-            object-fit: cover;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .social-connected-info .title {
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: #1e3a8a;
-        }
-        .social-connected-info .desc {
-            font-size: 0.78rem;
-            color: #2563eb;
-            font-weight: 600;
-        }
-        .btn-disconnect-social {
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-        .btn-disconnect-social:hover {
-            background: #ef4444;
-            color: white;
-        }
+
         .verified-badge-label {
             background: #ecfdf5;
             color: #059669;
@@ -672,21 +542,15 @@
 
             <form id="registerForm" onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
                 @csrf
-                <input type="hidden" name="google_id" id="google_id" value="{{ $googleProfile['google_id'] ?? '' }}">
-                <input type="hidden" name="avatar_url" id="avatar_url" value="{{ $googleProfile['picture'] ?? '' }}">
-
                 <!-- الاسم الكامل ورقم الهوية -->
                 <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="name_ar">
                             <span>الاسم الرباعي (بالعربية) <span class="req">*</span></span>
-                            @if(!empty($googleProfile['name_ar']))
-                                <span class="verified-badge-label"><i class="fas fa-check"></i> من Google</span>
-                            @endif
                         </label>
                         <div class="input-control-wrap">
                             <i class="fas fa-user lead-icon"></i>
-                            <input type="text" name="name_ar" id="name_ar" class="form-input" value="{{ old('name_ar', $googleProfile['name_ar'] ?? '') }}" placeholder="مثال: أحمد محمد خليل علي" required>
+                            <input type="text" name="name_ar" id="name_ar" class="form-input" value="{{ old('name_ar') }}" placeholder="مثال: أحمد محمد خليل علي" required>
                         </div>
                     </div>
 
@@ -1075,27 +939,6 @@
             });
     }
 
-    // استعراض صورة حساب Google إن توفرت
-    @if(isset($googleProfile) && !empty($googleProfile['picture']))
-        document.addEventListener('DOMContentLoaded', () => {
-            const previewImg = document.getElementById('previewPhotoImg');
-            const iconCircle = document.getElementById('iconPhotoCircle');
-            const box = document.getElementById('boxPhoto');
-            const subText = document.getElementById('photoSubText');
-            const statusBadge = document.getElementById('photoStatusBadge');
-            if (previewImg && box) {
-                previewImg.src = "{{ $googleProfile['picture'] }}";
-                previewImg.style.display = 'block';
-                if (iconCircle) iconCircle.style.display = 'none';
-                box.classList.add('has-file');
-                if (subText) subText.textContent = 'تم استيراد الصورة الشخصية من حساب Google';
-                if (statusBadge) {
-                    statusBadge.style.display = 'block';
-                    statusBadge.innerHTML = '<i class="fab fa-google"></i> صورة Google المعتمدة';
-                }
-            }
-        });
-    @endif
 
 </script>
 

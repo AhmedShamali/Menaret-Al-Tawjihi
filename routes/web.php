@@ -37,11 +37,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/register/verify-otp', [StudentController::class, 'verifyRegistrationOtp'])->name('register.verifyOtp');
     Route::post('/forgot-password', [AuthController::class, 'handleForgot'])->name('password.forgot');
 
-    // مسارات التسجيل والدخول السريع عبر Google وباقي الحسابات
-    Route::get('/auth/google', [\App\Http\Controllers\SocialAuthController::class, 'redirectToGoogle'])->name('auth.google');
-    Route::get('/auth/google/callback', [\App\Http\Controllers\SocialAuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
-    Route::post('/auth/google/onetap', [\App\Http\Controllers\SocialAuthController::class, 'handleOneTap'])->name('auth.google.onetap');
-    Route::post('/auth/social/quick-fill', [\App\Http\Controllers\SocialAuthController::class, 'quickFill'])->name('auth.social.quickFill');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
