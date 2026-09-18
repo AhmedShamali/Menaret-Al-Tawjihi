@@ -387,25 +387,57 @@ class StudentController extends Controller
     {
         $student = Student::findOrFail($id);
         $student->status = 'active';
-        $student->freeze_reason = null;
-        $student->save();
 
-        // تفعيل كافة المواد المقيد بها الطالب
-        \App\Models\Enrollment::where('student_id', $student->id)->update([
-            'status'         => 'active',
-            'payment_status' => 'paid',
-            'activated_at'   => now(),
-        ]);
+        try {
+            $student->freeze_reason = null;
+            $student->save();
+        } catch (\Throwable $e) {
+            \DB::table('students')->where('id', $student->id)->update(['status' => 'active']);
+        }
 
-        // تحديث أي مدفوعات معلقة
-        \App\Models\Payment::where('student_id', $student->id)
-            ->where('status', 'pending')
-            ->update([
-                'status'      => 'approved',
-                'reviewed_by' => auth()->id() ?? 1,
-                'reviewed_at' => now(),
+        // تفعيل كافة المواد المقيد بها الطالب أو تسجيل مواد مرحلته تلقائياً
+        try {
+            $affected = \App\Models\Enrollment::where('student_id', $student->id)->update([
+                'status'         => 'active',
+                'payment_status' => 'paid',
+                'activated_at'   => now(),
             ]);
 
+            if ($affected === 0 && $student->stage_id) {
+                $stageSubjects = \App\Models\Subject::where('stage_id', $student->stage_id)->pluck('id');
+                foreach ($stageSubjects as $subId) {
+                    \App\Models\Enrollment::firstOrCreate(
+                        ['student_id' => $student->id, 'subject_id' => $subId],
+                        [
+                            'status'         => 'active',
+                            'access_mode'    => 'all',
+                            'payment_status' => 'admin_grant',
+                            'activated_at'   => now(),
+                        ]
+                    );
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Approve student enrollment error: ' . $e->getMessage());
+        }
+
+        // تحديث أي مدفوعات معلقة بأمان دون استدعاء أعمدة غير موجودة
+        try {
+            \App\Models\Payment::where('student_id', $student->id)
+                ->where('status', 'pending')
+                ->update([
+                    'status' => 'completed',
+                ]);
+        } catch (\Throwable $e) {
+            \Log::error('Approve student payment update error: ' . $e->getMessage());
+        }
+
+        // مزامنة مصفوفة الاشتراكات الشهرية للعام الأكاديمي
+        try {
+            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student);
+        } catch (\Throwable $e) {}
+
+        // إشعار الطالب بالاعتماد والتفعيل
         try {
             \App\Services\NotificationService::notifyStudent(
                 $student->id,

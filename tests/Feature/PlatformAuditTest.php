@@ -250,6 +250,48 @@ class PlatformAuditTest extends TestCase
         // GET /student/pending-payment must also be 200 OK (no 405 / 419)
         $this->get('/student/pending-payment')->assertStatus(200);
     }
+
+    public function test_admin_can_approve_pending_student_successfully(): void
+    {
+        $admin = User::create([
+            'name' => 'Super Admin',
+            'email' => 'admin_approve@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب تحت المراجعة',
+            'name_en' => 'Review Student',
+            'nid' => '400112233',
+            'email' => 'review_std@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599112233',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'pending',
+        ]);
+
+        $payment = \App\Models\Payment::create([
+            'student_id' => $student->id,
+            'transaction_number' => 'TXN-APPROVE-TEST',
+            'gateway' => 'jawwal_pay',
+            'amount' => 150,
+            'currency' => 'ILS',
+            'status' => 'pending',
+        ]);
+
+        $response = $this->actingAs($admin)->postJson("/admin/students/{$student->id}/approve");
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true]);
+
+        $this->assertEquals('active', $student->fresh()->status);
+        $this->assertEquals('completed', $payment->fresh()->status);
+    }
 }
+
 
 

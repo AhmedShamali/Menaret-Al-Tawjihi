@@ -993,12 +993,15 @@
                 .then(res => {
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم التفعيل بنجاح',
+                        title: res.data?.message || 'تم التفعيل والاعتماد بنجاح',
                         timer: 1400,
                         showConfirmButton: false
                     }).then(() => location.reload());
                 })
-                .catch(err => Swal.fire('خطأ', 'فشلت عملية الاعتماد', 'error'));
+                .catch(err => {
+                    const msg = err.response?.data?.message || err.response?.data?.error || 'فشلت عملية الاعتماد، يرجى المحاولة لاحقاً';
+                    Swal.fire('خطأ', msg, 'error');
+                });
             }
         });
     }
