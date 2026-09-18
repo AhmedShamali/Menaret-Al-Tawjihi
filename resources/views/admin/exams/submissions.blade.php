@@ -21,33 +21,30 @@
         $pendingCount = $totalSubmissions - $gradedCount;
     @endphp
 
-    <!-- مؤشرات الأداء المتطورة -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon total-icon"><i class="fa-solid fa-layer-group"></i></div>
-            <div class="metric-body">
-                <span class="metric-label">إجمالي التسليمات</span>
-                <span class="metric-num">{{ $totalSubmissions }}</span>
+    <!-- مؤشرات الأداء الكلاسيكية -->
+    <div class="stats-row-clean" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">إجمالي التسليمات المسجلة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ $totalSubmissions }}</span>
+                <i class="fa-solid fa-layer-group stat-icon text-navy"></i>
             </div>
-            <div class="metric-bar-bg"><div class="metric-bar-fill" style="width: 100%;"></div></div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon pending-icon"><i class="fa-solid fa-hourglass-start"></i></div>
-            <div class="metric-body">
-                <span class="metric-label">بانتظار التقييم</span>
-                <span class="metric-num">{{ $pendingCount }}</span>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">بانتظار التقييم والتصحيح</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ $pendingCount > 0 ? 'text-amber' : '' }}">{{ $pendingCount }}</span>
+                <i class="fa-solid fa-hourglass-start stat-icon text-amber"></i>
             </div>
-            <div class="metric-bar-bg"><div class="metric-bar-fill pending-fill" style="width: {{ $totalSubmissions > 0 ? ($pendingCount / $totalSubmissions) * 100 : 0 }}%;"></div></div>
         </div>
 
-        <div class="metric-card">
-            <div class="metric-icon success-icon"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="metric-body">
-                <span class="metric-label">تم تصحيحها</span>
-                <span class="metric-num">{{ $gradedCount }}</span>
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">تم تصحيحها واعتمادها</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ $gradedCount }}</span>
+                <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
             </div>
-            <div class="metric-bar-bg"><div class="metric-bar-fill success-fill" style="width: {{ $totalSubmissions > 0 ? ($gradedCount / $totalSubmissions) * 100 : 0 }}%;"></div></div>
         </div>
     </div>
 

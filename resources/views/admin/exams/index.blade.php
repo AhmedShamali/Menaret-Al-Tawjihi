@@ -364,9 +364,22 @@ function confirmDelete(id) {
     .badge-count { background: #f1f5f9; color: var(--text-muted); padding: 4px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; }
 
     .table-responsive { width: 100%; overflow-x: auto; }
-    .custom-table { width: 100%; border-collapse: collapse; text-align: right; }
-    .custom-table th, .custom-table td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; }
-    .custom-table th { background: #f8fafc; color: var(--text-muted); font-weight: 700; }
+    .custom-table th {
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        padding: 12px 16px !important;
+        border-bottom: 2.5px solid #d97706 !important;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+    }
+    .custom-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.88rem;
+        vertical-align: middle;
+    }
     .subject-tag { background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 600; color: #334155; }
     .actions-group { display: flex; gap: 8px; align-items: center; }
     .btn-action { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: none; cursor: pointer; transition: all 0.2s; }

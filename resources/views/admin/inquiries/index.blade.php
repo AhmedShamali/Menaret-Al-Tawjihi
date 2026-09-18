@@ -22,45 +22,37 @@
         </div>
     </div>
 
-    {{-- بطاقات الإحصائيات الأكاديمية --}}
-    <div class="stats-kpi-grid">
-        <div class="stat-card">
-            <div class="stat-icon-box blue">
-                <i class="fa-solid fa-inbox"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">{{ __('إجمالي التذاكر') }}</span>
-                <strong class="stat-number font-mono">{{ $stats['total'] }}</strong>
+    {{-- بطاقات الإحصائيات الأكاديمية الكلاسيكية --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">{{ __('إجمالي التذاكر المسجلة') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ $stats['total'] }}</span>
+                <i class="fa-solid fa-inbox stat-icon text-navy"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon-box amber">
-                <i class="fa-solid fa-clock-rotate-left"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">{{ __('بانتظار المعالجة والرد') }}</span>
-                <strong class="stat-number font-mono text-amber">{{ $stats['pending'] }}</strong>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">{{ __('بانتظار المعالجة والرد') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ $stats['pending'] > 0 ? 'text-amber' : '' }}">{{ $stats['pending'] }}</span>
+                <i class="fa-solid fa-clock-rotate-left stat-icon text-amber"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon-box emerald">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">{{ __('تم الرد عليها') }}</span>
-                <strong class="stat-number font-mono text-emerald">{{ $stats['replied'] }}</strong>
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">{{ __('تم الرد عليها بنجاح') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ $stats['replied'] }}</span>
+                <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon-box navy">
-                <i class="fa-solid fa-book-bookmark"></i>
-            </div>
-            <div class="stat-content">
-                <span class="stat-label">{{ __('استفسارات المواد والدروس') }}</span>
-                <strong class="stat-number font-mono text-navy">{{ $stats['academics'] }}</strong>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">{{ __('استفسارات المواد والدروس') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">{{ $stats['academics'] }}</span>
+                <i class="fa-solid fa-book-bookmark stat-icon text-indigo"></i>
             </div>
         </div>
     </div>
@@ -506,14 +498,16 @@
         text-align: start;
         font-size: 0.88rem;
     }
-    .academic-table thead tr {
-        background: #f8fafc;
-        border-bottom: 2px solid #e2e8f0;
-        color: #475569;
-        font-size: 0.8rem;
+    .academic-table thead th {
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+        border-bottom: 2.5px solid #d97706 !important;
+        color: #ffffff !important;
+        font-size: 0.82rem;
         font-weight: 700;
+        padding: 12px 16px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
-    .academic-table th { padding: 12px 18px; }
     .academic-table tbody tr {
         border-bottom: 1px solid #f1f5f9;
         transition: background 0.15s;

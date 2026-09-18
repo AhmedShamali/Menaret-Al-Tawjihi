@@ -43,40 +43,40 @@
             </div>
         </div>
 
-        {{-- إحصائيات الطالب الحية --}}
+        {{-- إحصائيات الطالب الحية الكلاسيكية --}}
         @php $currentStudent = Auth::guard('student')->user() ?? $student; @endphp
-        <div class="ed-header-stats-grid">
-            <div class="ed-stat-box streak">
-                <div class="stat-top">
-                    <span class="stat-label">{{ __('الالتزام المتتالي') }}</span>
-                    <i class="fas fa-fire stat-icon"></i>
+        <div class="stats-row-clean" style="grid-template-columns: repeat(3, 1fr); margin-top: 18px;">
+            <div class="stat-card-clean" style="--card-accent: #d97706;">
+                <span class="stat-label">{{ __('الالتزام المتتالي') }}</span>
+                <div class="stat-value-wrap">
+                    <span class="stat-number text-amber">{{ $currentStudent->streak_count ?? 1 }} <small style="font-size: 0.85rem; color: #64748b;">{{ __('أيام') }}</small></span>
+                    <i class="fas fa-fire stat-icon text-amber"></i>
                 </div>
-                <div class="stat-number">{{ $currentStudent->streak_count ?? 1 }} <small>{{ __('أيام') }}</small></div>
-                <span class="stat-note">{{ __('حضور وتفاعل يومي') }}</span>
+                <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('حضور وتفاعل يومي') }}</small>
             </div>
 
-            <div class="ed-stat-box gpa">
-                <div class="stat-top">
-                    <span class="stat-label">{{ __('المعدل العام') }}</span>
-                    <i class="fas fa-chart-line stat-icon"></i>
+            <div class="stat-card-clean" style="--card-accent: #059669;">
+                <span class="stat-label">{{ __('المعدل العام') }}</span>
+                <div class="stat-value-wrap">
+                    <span class="stat-number text-emerald">{{ number_format($my_stats['avg_grade'] ?? 0, 1) }}%</span>
+                    <i class="fas fa-chart-line stat-icon text-emerald"></i>
                 </div>
-                <div class="stat-number">{{ number_format($my_stats['avg_grade'] ?? 0, 1) }}%</div>
-                <span class="stat-note">{{ __('متوسط الدرجات المحرزة') }}</span>
+                <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('متوسط الدرجات المحرزة') }}</small>
             </div>
 
-            <div class="ed-stat-box exams">
-                <div class="stat-top">
-                    <span class="stat-label">{{ __('امتحانات منجزة') }}</span>
-                    <i class="fas fa-clipboard-check stat-icon"></i>
+            <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+                <span class="stat-label">{{ __('امتحانات منجزة') }}</span>
+                <div class="stat-value-wrap">
+                    <span class="stat-number text-navy">{{ $my_stats['completed_exams'] ?? 0 }} <small style="font-size: 0.85rem; color: #64748b;">{{ __('منجز') }}</small></span>
+                    <i class="fas fa-clipboard-check stat-icon text-navy"></i>
                 </div>
-                <div class="stat-number">{{ $my_stats['completed_exams'] ?? 0 }} <small>{{ __('منجز') }}</small></div>
-                @if(($my_stats['available_exams_count'] ?? 0) > 0)
-                    <span class="stat-note active-note">
+                <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                    @if(($my_stats['available_exams_count'] ?? 0) > 0)
                         ({{ $my_stats['available_exams_count'] }} {{ __('اختبار بانتظارك') }})
-                    </span>
-                @else
-                    <span class="stat-note">{{ __('جميع النماذج مكتملة') }}</span>
-                @endif
+                    @else
+                        {{ __('جميع النماذج مكتملة') }}
+                    @endif
+                </small>
             </div>
         </div>
     </div>

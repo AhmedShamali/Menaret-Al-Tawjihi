@@ -30,57 +30,43 @@
         </div>
     </header>
 
-    <!-- بطاقات المؤشرات الأكاديمية (KPIs) -->
-    @php
-        $kpis = [
-            [
-                'label' => __('Total Teachers'),
-                'val' => $data['total_teachers'] ?? 0,
-                'icon' => 'fas fa-chalkboard-teacher',
-                'color' => '#1e3a8a',
-                'bg' => '#eff6ff',
-                'desc' => __('Certified Teaching Staff')
-            ],
-            [
-                'label' => __('Registered Students'),
-                'val' => $data['total_students'] ?? 0,
-                'icon' => 'fas fa-user-graduate',
-                'color' => '#059669',
-                'bg' => '#ecfdf5',
-                'desc' => __('Students across all branches')
-            ],
-            [
-                'label' => __('Content & Files'),
-                'val' => $data['total_files'] ?? 0,
-                'icon' => 'fas fa-folder-open',
-                'color' => '#d97706',
-                'bg' => '#fffbeb',
-                'desc' => __('Academic files & resources')
-            ],
-            [
-                'label' => __('Server & Security Status'),
-                'val' => '99.9%',
-                'icon' => 'fas fa-shield-alt',
-                'color' => '#475569',
-                'bg' => '#f1f5f9',
-                'desc' => __('Full Protection & High Availability')
-            ],
-        ];
-    @endphp
-
-    <div class="ed-kpi-grid">
-        @foreach($kpis as $item)
-        <div class="ed-kpi-card">
-            <div class="ed-kpi-icon-box" style="background-color: {{ $item['bg'] }}; color: {{ $item['color'] }};">
-                <i class="{{ $item['icon'] }}"></i>
+    <!-- بطاقات المؤشرات الأكاديمية الكلاسيكية (KPIs) -->
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">{{ __('Total Teachers') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ number_format($data['total_teachers'] ?? 0) }}</span>
+                <i class="fas fa-chalkboard-teacher stat-icon text-navy"></i>
             </div>
-            <div class="ed-kpi-info">
-                <span class="ed-kpi-title">{{ $item['label'] }}</span>
-                <div class="ed-kpi-number">{{ is_numeric($item['val']) ? number_format($item['val']) : $item['val'] }}</div>
-                <span class="ed-kpi-desc">{{ $item['desc'] }}</span>
-            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Certified Teaching Staff') }}</small>
         </div>
-        @endforeach
+
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">{{ __('Registered Students') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ number_format($data['total_students'] ?? 0) }}</span>
+                <i class="fas fa-user-graduate stat-icon text-emerald"></i>
+            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Students across all branches') }}</small>
+        </div>
+
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">{{ __('Content & Files') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-amber">{{ number_format($data['total_files'] ?? 0) }}</span>
+                <i class="fas fa-folder-open stat-icon text-amber"></i>
+            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Academic files & resources') }}</small>
+        </div>
+
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">{{ __('Server & Security Status') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">99.9%</span>
+                <i class="fas fa-shield-alt stat-icon text-indigo"></i>
+            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Full Protection & High Availability') }}</small>
+        </div>
     </div>
 
     <!-- شبكة المحتوى الرئيسي -->

@@ -21,42 +21,42 @@
         </div>
     </div>
 
-    {{-- بطاقات الملخص السريع للطالب --}}
-    <div class="student-summary-grid">
-        <div class="student-sum-card green">
-            <div class="sum-icon"><i class="fa-solid fa-circle-check"></i></div>
-            <div class="sum-text">
-                <span class="sum-label">{{ __('Paid Months') }}</span>
-                <h3 class="sum-val font-mono">{{ $paidCount }} <small class="text-xs">/ 12 {{ __('months') }}</small></h3>
-                <span class="sum-sub">{{ __('Active and approved enrollment in subjects') }}</span>
+    {{-- بطاقات الملخص الكلاسيكية للطالب --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">{{ __('Paid Months') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
+                <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Active and approved enrollment in subjects') }}</small>
         </div>
 
-        <div class="student-sum-card blue">
-            <div class="sum-icon"><i class="fa-solid fa-wallet"></i></div>
-            <div class="sum-text">
-                <span class="sum-label">{{ __('Total Paid Amount') }}</span>
-                <h3 class="sum-val font-mono">{{ number_format($totalPaidAmount, 2) }} ₪</h3>
-                <span class="sum-sub">{{ __('Officially verified payments') }}</span>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">{{ __('Total Paid Amount') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ number_format($totalPaidAmount, 2) }} ₪</span>
+                <i class="fa-solid fa-wallet stat-icon text-navy"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Officially verified payments') }}</small>
         </div>
 
-        <div class="student-sum-card amber">
-            <div class="sum-icon"><i class="fa-solid fa-hourglass-half"></i></div>
-            <div class="sum-text">
-                <span class="sum-label">{{ __('Under Verification') }}</span>
-                <h3 class="sum-val font-mono">{{ $pendingCount }} <small class="text-xs">{{ __('month') }}</small></h3>
-                <span class="sum-sub">{{ __('Awaiting supervisor verification') }}</span>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">{{ __('Under Verification') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ $pendingCount > 0 ? 'text-amber' : '' }}">{{ $pendingCount }}</span>
+                <i class="fa-solid fa-hourglass-half stat-icon text-amber"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Awaiting supervisor verification') }}</small>
         </div>
 
-        <div class="student-sum-card purple">
-            <div class="sum-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
-            <div class="sum-text">
-                <span class="sum-label">{{ __('Remaining Due Months') }}</span>
-                <h3 class="sum-val font-mono">{{ $unpaidCount }} <small class="text-xs">{{ __('month') }}</small></h3>
-                <span class="sum-sub">{{ __('Annual installments during the school year') }}</span>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">{{ __('Remaining Due Months') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">{{ $unpaidCount }}</span>
+                <i class="fa-solid fa-calendar-xmark stat-icon text-indigo"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Annual installments during the school year') }}</small>
         </div>
     </div>
 
@@ -132,6 +132,76 @@
                     </div>
                 </div>
             @endforeach
+        </div>
+    </div>
+
+    {{-- جدول كشف الأقساط الكلاسيكي المعتمد --}}
+    <div class="table-card-clean" style="margin-top: 24px;">
+        <div class="table-container-clean">
+            <table class="data-table-clean">
+                <thead>
+                    <tr>
+                        <th style="width: 70px; text-align: center;">#</th>
+                        <th>{{ __('الشهر الدراسي') }}</th>
+                        <th style="width: 140px;">{{ __('قيمة القسط') }}</th>
+                        <th>{{ __('تاريخ السداد / الملاحظات') }}</th>
+                        <th style="width: 150px; text-align: center;">{{ __('الحالة') }}</th>
+                        <th style="width: 140px; text-align: center;">{{ __('الإجراء') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($subscriptions as $sub)
+                        @php
+                            $isPaid = $sub->status === 'paid';
+                            $isPending = $sub->status === 'pending';
+                            $isWaived = $sub->status === 'waived';
+                            $monthTitle = app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10)));
+                        @endphp
+                        <tr>
+                            <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
+                                {{ sprintf('%02d', $sub->month) }}
+                            </td>
+                            <td>
+                                <strong>{{ $monthTitle }}</strong>
+                            </td>
+                            <td style="font-family: monospace; font-weight: 700; color: #0f172a;">
+                                {{ number_format($sub->amount, 2) }} ₪
+                            </td>
+                            <td style="color: #64748b; font-size: 0.82rem;">
+                                @if($isPaid && $sub->paid_at)
+                                    <i class="fa-regular fa-calendar-check text-emerald"></i> {{ $sub->paid_at->format('Y-m-d') }}
+                                @elseif($sub->notes)
+                                    {{ $sub->notes }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td style="text-align: center;">
+                                @if($isPaid)
+                                    <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد وخالص') }}</span>
+                                @elseif($isPending)
+                                    <span class="status-pill status-pending"><span class="dot"></span> {{ __('قيد المراجعة') }}</span>
+                                @elseif($isWaived)
+                                    <span class="status-pill status-info"><span class="dot"></span> {{ __('إعفاء / منحة') }}</span>
+                                @else
+                                    <span class="status-pill status-frozen"><span class="dot"></span> {{ __('مستحق') }}</span>
+                                @endif
+                            </td>
+                            <td style="text-align: center;">
+                                @if(!$isPaid && !$isWaived)
+                                    <a href="{{ route('student.pendingPayment.show') }}" class="tbl-btn" style="background: #1e3a8a;">
+                                        <i class="fa-solid fa-receipt"></i> {{ __('رفع إشعار') }}
+                                    </a>
+                                @else
+                                    <span style="color: #16a34a; font-size: 0.8rem; font-weight: 700;">
+                                        <i class="fa-solid fa-check-double"></i> {{ __('معتمد') }}
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
 </div>

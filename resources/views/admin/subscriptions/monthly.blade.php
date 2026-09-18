@@ -25,42 +25,42 @@
         </div>
     </div>
 
-    {{-- 2. إحصائيات المؤشرات --}}
-    <div class="kpi-grid">
-        <div class="kpi-card green">
-            <div class="kpi-icon"><i class="fa-solid fa-circle-dollar-to-slot"></i></div>
-            <div class="kpi-data">
-                <span class="kpi-label">{{ __('المحصل الفعلي المعتمد') }}</span>
-                <h3 class="kpi-num font-mono">{{ number_format($stats['total_collected'], 2) }} ₪</h3>
-                <small class="kpi-desc">{{ __('تم تأكيد سداده') }} ({{ $stats['paid_count'] }} قسط)</small>
+    {{-- 2. إحصائيات المؤشرات الكلاسيكية --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">{{ __('المحصل الفعلي المعتمد') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ number_format($stats['total_collected'], 2) }} ₪</span>
+                <i class="fa-solid fa-circle-dollar-to-slot stat-icon text-emerald"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('تم تأكيد سداده') }} ({{ $stats['paid_count'] }} {{ __('قسط') }})</small>
         </div>
 
-        <div class="kpi-card red">
-            <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <div class="kpi-data">
-                <span class="kpi-label">{{ __('المتأخرات غير المسددة') }}</span>
-                <h3 class="kpi-num font-mono">{{ number_format($stats['total_unpaid'], 2) }} ₪</h3>
-                <small class="kpi-desc">{{ __('أقساط مستحقة') }} ({{ $stats['unpaid_count'] }} {{ __('شهراً') }})</small>
+        <div class="stat-card-clean" style="--card-accent: #dc2626;">
+            <span class="stat-label">{{ __('المتأخرات غير المسددة') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-rose">{{ number_format($stats['total_unpaid'], 2) }} ₪</span>
+                <i class="fa-solid fa-triangle-exclamation stat-icon text-rose"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('أقساط مستحقة') }} ({{ $stats['unpaid_count'] }} {{ __('شهراً') }})</small>
         </div>
 
-        <div class="kpi-card amber">
-            <div class="kpi-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-            <div class="kpi-data">
-                <span class="kpi-label">{{ __('إشعارات قيد المراجعة') }}</span>
-                <h3 class="kpi-num font-mono">{{ number_format($stats['total_pending'], 2) }} ₪</h3>
-                <small class="kpi-desc">{{ __('بحاجة لاعتمادك') }} ({{ $stats['pending_count'] }} {{ __('إشعار') }})</small>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">{{ __('إشعارات قيد المراجعة') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ $stats['pending_count'] > 0 ? 'text-amber' : '' }}">{{ number_format($stats['total_pending'], 2) }} ₪</span>
+                <i class="fa-solid fa-clock-rotate-left stat-icon text-amber"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('بحاجة لاعتمادك') }} ({{ $stats['pending_count'] }} {{ __('إشعار') }})</small>
         </div>
 
-        <div class="kpi-card blue">
-            <div class="kpi-icon"><i class="fa-solid fa-percent"></i></div>
-            <div class="kpi-data">
-                <span class="kpi-label">{{ __('نسبة الالتزام المالي') }}</span>
-                <h3 class="kpi-num font-mono">{{ $stats['collection_rate'] }}%</h3>
-                <small class="kpi-desc">{{ __('المستحق:') }} {{ number_format($stats['total_expected'], 0) }} ₪</small>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">{{ __('نسبة الالتزام المالي') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ $stats['collection_rate'] }}%</span>
+                <i class="fa-solid fa-percent stat-icon text-navy"></i>
             </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('المستحق:') }} {{ number_format($stats['total_expected'], 0) }} ₪</small>
         </div>
     </div>
 

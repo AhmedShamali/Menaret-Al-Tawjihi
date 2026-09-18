@@ -569,18 +569,14 @@ body.dark-theme .table-header-row {
 }
 
 .access-data-table th {
-    background: #f1f5f9;
-    padding: 12px 20px;
+    background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+    padding: 12px 18px;
     font-size: 0.82rem;
-    font-weight: 800;
-    color: #475569;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-body.dark-theme .access-data-table th {
-    background: #1e293b;
-    color: #94a3b8;
-    border-color: #334155;
+    font-weight: 700;
+    color: #ffffff !important;
+    border-bottom: 2.5px solid #d97706 !important;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
 .access-data-table td {

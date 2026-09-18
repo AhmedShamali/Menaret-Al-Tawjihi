@@ -28,80 +28,73 @@
         </div>
     @endif
 
-    <!-- كروت الإحصائيات السريعة -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px;">
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fa-solid fa-book-bookmark"></i>
-            </div>
-            <div>
-                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">إجمالي المواد</span>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #0f172a;">{{ $pricingStats['total_subjects'] }}</div>
+    <!-- كروت الإحصائيات الكلاسيكية -->
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">إجمالي المواد الدراسية</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ $pricingStats['total_subjects'] }}</span>
+                <i class="fa-solid fa-book-bookmark stat-icon text-navy"></i>
             </div>
         </div>
 
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #fef3c7; color: #d97706; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fa-solid fa-fire"></i>
-            </div>
-            <div>
-                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">مواد عليها عروض مخفضة</span>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #d97706;">{{ $pricingStats['discounted'] }}</div>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">مواد عليها عروض مخفضة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-amber">{{ $pricingStats['discounted'] }}</span>
+                <i class="fa-solid fa-fire stat-icon text-amber"></i>
             </div>
         </div>
 
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #dcfce7; color: #16a34a; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fa-solid fa-gift"></i>
-            </div>
-            <div>
-                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">مواد مجانية / تجريبية</span>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #16a34a;">{{ $pricingStats['free_subjects'] }}</div>
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">مواد مجانية / تجريبية</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ $pricingStats['free_subjects'] }}</span>
+                <i class="fa-solid fa-gift stat-icon text-emerald"></i>
             </div>
         </div>
 
-        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.02);">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: 1.3rem;">
-                <i class="fa-solid fa-shekel-sign"></i>
-            </div>
-            <div>
-                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">متوسط سعر المادة</span>
-                <div style="font-size: 1.5rem; font-weight: 900; color: #7c3aed;">{{ round($pricingStats['avg_price']) }} ₪</div>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">متوسط سعر المادة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">{{ round($pricingStats['avg_price']) }} ₪</span>
+                <i class="fa-solid fa-shekel-sign stat-icon text-indigo"></i>
             </div>
         </div>
     </div>
 
-    <!-- فلتر المرحلة -->
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 18px; padding: 18px 24px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-filter" style="color: #64748b;"></i>
-            <span style="font-weight: 700; font-size: 0.88rem; color: #1e293b;">تصفية حسب المرحلة والفرع:</span>
+    <!-- فلتر المرحلة النظيف -->
+    <div class="toolbar-clean">
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-filter" style="color: #64748b; font-size: 0.85rem;"></i>
+            <span style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">تصفية حسب الفرع:</span>
         </div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <a href="{{ route('admin.subjects.pricing') }}" style="text-decoration: none; padding: 6px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; {{ empty($stageId) ? 'background: #0284c7; color: white;' : 'background: #f1f5f9; color: #475569;' }}">
+        <div class="filter-pills-clean">
+            <a href="{{ route('admin.subjects.pricing') }}" class="filter-pill {{ empty($stageId) ? 'active' : '' }}">
                 جميع الفروع
             </a>
             @foreach($stages as $stg)
-                <a href="{{ route('admin.subjects.pricing', ['stage_id' => $stg->id]) }}" style="text-decoration: none; padding: 6px 14px; border-radius: 10px; font-size: 0.82rem; font-weight: 700; {{ $stageId == $stg->id ? 'background: #0284c7; color: white;' : 'background: #f1f5f9; color: #475569;' }}">
+                <a href="{{ route('admin.subjects.pricing', ['stage_id' => $stg->id]) }}" class="filter-pill {{ $stageId == $stg->id ? 'active' : '' }}">
                     {{ $stg->name ?? $stg->name_ar ?? 'المرحلة' }}
                 </a>
             @endforeach
         </div>
     </div>
 
-    <!-- جدول الأسعار -->
-    <div style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
-        <table style="width: 100%; border-collapse: collapse; text-align: right;">
-            <thead>
-                <tr style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.82rem; font-weight: 700;">
-                    <th style="padding: 16px 20px;">المادة الدراسية</th>
-                    <th style="padding: 16px 20px;">الفرع / المرحلة</th>
-                    <th style="padding: 16px 20px;">السعر الأساسي (₪)</th>
-                    <th style="padding: 16px 20px;">سعر العرض (₪)</th>
-                    <th style="padding: 16px 20px;">الحالة والتسعير الفعلي</th>
-                    <th style="padding: 16px 20px; text-align: center;">إجراءات التعديل</th>
-                </tr>
-            </thead>
+    <!-- جدول الأسعار الكلاسيكي -->
+    <div class="table-card-clean">
+        <div class="table-container-clean">
+            <table class="data-table-clean">
+                <thead>
+                    <tr>
+                        <th>المادة الدراسية</th>
+                        <th style="width: 140px;">الفرع / المرحلة</th>
+                        <th style="width: 130px;">السعر الأساسي (₪)</th>
+                        <th style="width: 130px;">سعر العرض (₪)</th>
+                        <th style="width: 170px;">الحالة والتسعير الفعلي</th>
+                        <th style="width: 130px; text-align: center;">إجراءات التعديل</th>
+                    </tr>
+                </thead>
             <tbody>
                 @forelse($subjects as $sub)
                     <tr style="border-bottom: 1px solid #f1f5f9; transition: 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
@@ -166,6 +159,7 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 
 </div>

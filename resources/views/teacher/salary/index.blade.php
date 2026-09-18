@@ -42,50 +42,42 @@
         </div>
     </div>
 
-    {{-- 2. بطاقات المؤشرات المالية العامة (Financial KPIs) --}}
-    <div class="kpi-cards-grid">
-        <div class="kpi-card card-emerald">
-            <div class="kpi-icon-bubble">
-                <i class="fa-solid fa-hand-holding-dollar"></i>
+    {{-- 2. بطاقات المؤشرات المالية الكلاسيكية --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">إجمالي المستلم لعام {{ $year }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ number_format($totalPaid, 2) }} ₪</span>
+                <i class="fa-solid fa-hand-holding-dollar stat-icon text-emerald"></i>
             </div>
-            <div class="kpi-info">
-                <span class="kpi-label">إجمالي المستلم لعام {{ $year }}</span>
-                <h3 class="kpi-value font-mono">{{ number_format($totalPaid, 2) }} ₪</h3>
-                <span class="kpi-subtext"><i class="fa-solid fa-circle-check"></i> مستحقات تم إيداعها وتأكيدها</span>
-            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">مستحقات تم إيداعها وتأكيدها</small>
         </div>
 
-        <div class="kpi-card card-blue">
-            <div class="kpi-icon-bubble">
-                <i class="fa-solid fa-gift"></i>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">إجمالي المكافآت والحوافز</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ number_format($totalBonus, 2) }} ₪</span>
+                <i class="fa-solid fa-gift stat-icon text-navy"></i>
             </div>
-            <div class="kpi-info">
-                <span class="kpi-label">إجمالي المكافآت والحوافز</span>
-                <h3 class="kpi-value font-mono">{{ number_format($totalBonus, 2) }} ₪</h3>
-                <span class="kpi-subtext"><i class="fa-solid fa-award"></i> تقدير إنجازاتك وجهودك المباركة</span>
-            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">تقدير إنجازاتك وجهودك</small>
         </div>
 
-        <div class="kpi-card card-amber">
-            <div class="kpi-icon-bubble">
-                <i class="fa-solid fa-clock-rotate-left"></i>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">مستحقات قيد الاعتماد</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-amber">{{ number_format($pendingAmount, 2) }} ₪</span>
+                <i class="fa-solid fa-clock-rotate-left stat-icon text-amber"></i>
             </div>
-            <div class="kpi-info">
-                <span class="kpi-label">مستحقات قيد الاعتماد</span>
-                <h3 class="kpi-value font-mono">{{ number_format($pendingAmount, 2) }} ₪</h3>
-                <span class="kpi-subtext"><i class="fa-solid fa-hourglass-half"></i> جاري الصرف من الإدارة</span>
-            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">جاري الصرف من الإدارة</small>
         </div>
 
-        <div class="kpi-card card-purple">
-            <div class="kpi-icon-bubble">
-                <i class="fa-solid fa-calendar-check"></i>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">الأشهر المصروفة</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">{{ $paidMonthsCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
+                <i class="fa-solid fa-calendar-check stat-icon text-indigo"></i>
             </div>
-            <div class="kpi-info">
-                <span class="kpi-label">الأشهر المصروفة</span>
-                <h3 class="kpi-value font-mono">{{ $paidMonthsCount }} <small class="text-sm">/ 12 شهراً</small></h3>
-                <span class="kpi-subtext"><i class="fa-solid fa-chart-pie"></i> نسبة الالتزام والتسديد</span>
-            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">نسبة الالتزام والتسديد</small>
         </div>
     </div>
 
@@ -799,12 +791,13 @@
         text-align: right;
     }
     .salary-luxury-table th {
-        background: #f8fafc;
-        color: #475569;
-        font-weight: 800;
-        font-size: 0.85rem;
-        padding: 14px 16px;
-        border-bottom: 2px solid #e2e8f0;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+        color: #ffffff !important;
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 12px 16px;
+        border-bottom: 2.5px solid #d97706 !important;
+        letter-spacing: 0.3px;
         white-space: nowrap;
     }
     .salary-luxury-table td {

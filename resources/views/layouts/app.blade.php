@@ -583,10 +583,421 @@
             }
         }
 
-        @media (max-width: 480px) {
-            .user-info-text {
-                display: none;
+        /* ====================================================================
+           نظام التصميم الأكاديمي الملكي الكلاسيكي الموحد لجميع جداول وواجهات المنصة
+           Master Classic Royal Academic Design System (Navy/Gold/Clean)
+           ==================================================================== */
+        
+        /* 1. الجداول الكلاسيكية الموحدة (Universal Royal Classic Tables) */
+        .data-table-clean, 
+        .classic-table, 
+        table.data-table, 
+        table.table-custom, 
+        table.payroll-table, 
+        table.ed-custom-table,
+        table.payments-table,
+        table.clean-matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            box-sizing: border-box;
+        }
+        html[dir="ltr"] .data-table-clean,
+        html[dir="ltr"] .classic-table,
+        html[dir="ltr"] table.data-table,
+        html[dir="ltr"] table.table-custom,
+        html[dir="ltr"] table.payroll-table,
+        html[dir="ltr"] table.ed-custom-table,
+        html[dir="ltr"] table.payments-table,
+        html[dir="ltr"] table.clean-matrix-table {
+            text-align: left;
+        }
+
+        .data-table-clean th,
+        .classic-table th,
+        table.data-table th,
+        table.table-custom th,
+        table.payroll-table th,
+        table.ed-custom-table th,
+        table.payments-table th,
+        table.clean-matrix-table th {
+            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+            color: #ffffff !important;
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.3px !important;
+            padding: 12px 14px !important;
+            border-bottom: 2.5px solid #d97706 !important;
+            white-space: nowrap !important;
+            vertical-align: middle !important;
+        }
+
+        .data-table-clean th a,
+        .classic-table th a,
+        table.data-table th a,
+        table.payroll-table th a,
+        table.ed-custom-table th a {
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+
+        .data-table-clean td,
+        .classic-table td,
+        table.data-table td,
+        table.table-custom td,
+        table.payroll-table td,
+        table.ed-custom-table td,
+        table.payments-table td,
+        table.clean-matrix-table td {
+            padding: 11px 14px !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            vertical-align: middle !important;
+            font-size: 0.86rem !important;
+            color: #1e293b !important;
+            background: transparent;
+        }
+
+        .data-table-clean tbody tr:hover,
+        .classic-table tbody tr:hover,
+        table.data-table tbody tr:hover,
+        table.table-custom tbody tr:hover,
+        table.payroll-table tbody tr:hover,
+        table.ed-custom-table tbody tr:hover,
+        table.payments-table tbody tr:hover,
+        table.clean-matrix-table tbody tr:hover {
+            background-color: #f8fafc !important;
+        }
+
+        .table-card-clean {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            width: 100%;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            margin-bottom: 20px;
+        }
+
+        .table-container-clean {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 2. مؤشرات الأرقام والبطاقات الكلاسيكية (Classic Metric KPI Cards) */
+        .stats-row-clean {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        @media (max-width: 960px) {
+            .stats-row-clean {
+                grid-template-columns: repeat(2, 1fr);
             }
+        }
+        @media (max-width: 480px) {
+            .stats-row-clean {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card-clean {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 3.5px solid var(--card-accent, #1e3a8a);
+            border-radius: 10px;
+            padding: 16px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card-clean:hover {
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+        }
+
+        .stat-card-clean .stat-label {
+            font-size: 0.8rem;
+            color: #475569;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .stat-card-clean .stat-value-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card-clean .stat-number {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .stat-card-clean .stat-icon {
+            font-size: 1.15rem;
+        }
+
+        /* فئات الألوان الكلاسيكية */
+        .text-navy { color: #1e3a8a !important; }
+        .text-emerald { color: #059669 !important; }
+        .text-amber { color: #d97706 !important; }
+        .text-indigo { color: #6366f1 !important; }
+        .text-rose { color: #dc2626 !important; }
+
+        /* 3. شريط البحث والفلاتر النظيف (Clean Search & Filter Toolbar) */
+        .toolbar-clean {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .search-box-clean {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .search-box-clean .search-icon {
+            position: absolute;
+            right: 12px;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+        html[dir="ltr"] .search-box-clean .search-icon {
+            right: auto;
+            left: 12px;
+        }
+
+        .search-box-clean input {
+            width: 100%;
+            padding: 8px 36px 8px 32px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 0.85rem;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.15s;
+            box-sizing: border-box;
+        }
+        html[dir="ltr"] .search-box-clean input {
+            padding: 8px 32px 8px 36px;
+        }
+
+        .search-box-clean input:focus {
+            background: #ffffff;
+            border-color: #94a3b8;
+        }
+
+        .search-box-clean .clear-search {
+            position: absolute;
+            left: 10px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 2px;
+        }
+        html[dir="ltr"] .search-box-clean .clear-search {
+            left: auto;
+            right: 10px;
+        }
+
+        .filter-pills-clean {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-pill:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .filter-pill.active {
+            background: #1e3a8a;
+            color: #ffffff;
+            border-color: #1e3a8a;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+        }
+
+        /* 4. كبسولات الحالة النظيفة (Status Dot Pills) */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-pill .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-active, .status-completed, .status-approved {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .status-active .dot, .status-completed .dot, .status-approved .dot { background: #16a34a; }
+
+        .status-pending, .status-waiting {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+        .status-pending .dot, .status-waiting .dot { background: #d97706; }
+
+        .status-frozen, .status-rejected, .status-cancelled {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .status-frozen .dot, .status-rejected .dot, .status-cancelled .dot { background: #dc2626; }
+
+        .status-info, .status-review {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        .status-info .dot, .status-review .dot { background: #2563eb; }
+
+        /* 5. الأزرار الموحدة (Unified Action Buttons) */
+        .btn-clean {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            line-height: 1.4;
+        }
+
+        .btn-clean.btn-primary {
+            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            color: #ffffff !important;
+            border: 1px solid #1e3a8a;
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+        }
+        .btn-clean.btn-primary:hover {
+            background: #1e3a8a;
+            transform: translateY(-1px);
+            color: #ffffff !important;
+        }
+
+        .btn-clean.btn-outline {
+            background: #ffffff;
+            color: #334155 !important;
+            border-color: #e2e8f0;
+        }
+        .btn-clean.btn-outline:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #0f172a !important;
+        }
+
+        .btn-clean.btn-danger-outline {
+            background: #ffffff;
+            color: #dc2626 !important;
+            border-color: #fecaca;
+        }
+        .btn-clean.btn-danger-outline:hover {
+            background: #fef2f2;
+            border-color: #fca5a5;
+        }
+
+        .tbl-btn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #64748b !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.78rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .tbl-btn-icon:hover {
+            background: #f8fafc;
+            color: #0f172a !important;
+            border-color: #cbd5e1;
+        }
+
+        .tbl-btn-icon.tbl-btn-del:hover {
+            background: #fef2f2;
+            color: #dc2626 !important;
+            border-color: #fecaca;
+        }
+
+        .tbl-btn {
+            background: #0f172a;
+            color: #ffffff !important;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .tbl-btn:hover {
+            background: #1e293b;
         }
     </style>
 </head>

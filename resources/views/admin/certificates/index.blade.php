@@ -455,19 +455,22 @@
     }
 
     .ed-custom-table th {
-        background: #f8fafc;
-        padding: 14px 20px;
-        font-size: 0.8rem;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+        padding: 12px 16px;
+        font-size: 0.82rem;
         font-weight: 700;
-        color: #475569;
-        border-bottom: 1px solid #e2e8f0;
+        color: #ffffff !important;
+        border-bottom: 2.5px solid #d97706 !important;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
 
     .ed-custom-table td {
-        padding: 14px 20px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 0.88rem;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.86rem;
         vertical-align: middle;
+        color: #1e293b;
     }
 
     .ed-custom-table tr:hover td {

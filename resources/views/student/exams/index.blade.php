@@ -134,6 +134,92 @@
         @endforelse
     </div>
 
+    <!-- جدول الاختبارات الكلاسيكي الرسمي -->
+    <div class="table-card-clean" style="margin-top: 24px;">
+        <div class="table-container-clean">
+            <table class="data-table-clean">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>{{ __('عنوان الاختبار الأكاديمي') }}</th>
+                        <th style="width: 170px;">{{ __('المادة الدراسية') }}</th>
+                        <th style="width: 120px;">{{ __('المدة') }}</th>
+                        <th style="width: 110px;">{{ __('الأسئلة') }}</th>
+                        <th style="width: 140px; text-align: center;">{{ __('الحالة والنتيجة') }}</th>
+                        <th style="width: 130px; text-align: center;">{{ __('الإجراء') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($exams as $exam)
+                        @php
+                            $hasSubmitted = $student && $exam->submissions && $exam->submissions->where('student_id', $student->id)->isNotEmpty();
+                            $submissionRecord = $hasSubmitted ? $exam->submissions->where('student_id', $student->id)->first() : null;
+                        @endphp
+                        <tr>
+                            <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td>
+                                <strong style="color: #0f172a; font-size: 0.9rem;">{{ $exam->title }}</strong>
+                            </td>
+                            <td>
+                                <span class="status-pill status-info">
+                                    <span class="dot"></span>
+                                    {{ optional($exam->subject)->name_ar ?? (optional($exam->subject)->name ?? __('مادة عامة')) }}
+                                </span>
+                            </td>
+                            <td style="color: #475569; font-size: 0.84rem;">
+                                <i class="fa-regular fa-clock" style="color: #94a3b8; margin-inline-end: 4px;"></i>
+                                {{ $exam->duration_minutes }} {{ __('دقيقة') }}
+                            </td>
+                            <td style="color: #475569; font-size: 0.84rem;">
+                                {{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} {{ __('سؤال') }}
+                            </td>
+                            <td style="text-align: center;">
+                                @if($hasSubmitted)
+                                    <span class="status-pill status-active">
+                                        <span class="dot"></span>
+                                        {{ __('تم التقديم') }}
+                                        @if($submissionRecord && $submissionRecord->status === 'graded')
+                                            ({{ $submissionRecord->total_earned_grade }} علامة)
+                                        @endif
+                                    </span>
+                                @else
+                                    <span class="status-pill status-pending">
+                                        <span class="dot"></span>
+                                        {{ __('متاح للبدء') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td style="text-align: center;">
+                                @if($hasSubmitted)
+                                    @if($submissionRecord)
+                                        <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="tbl-btn" style="background: #059669;">
+                                            <i class="fa-solid fa-square-poll-vertical"></i> {{ __('النتيجة') }}
+                                        </a>
+                                    @else
+                                        <span style="color: #16a34a; font-size: 0.8rem; font-weight: 700;">
+                                            <i class="fa-solid fa-check"></i> {{ __('مكتمل') }}
+                                        </span>
+                                    @endif
+                                @else
+                                    <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="tbl-btn" style="background: #1e3a8a;">
+                                        <i class="fa-solid fa-play"></i> {{ __('بدء الاختبار') }}
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                {{ __('لا توجد اختبارات متاحة حالياً لمرحلتك الدراسية.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <style>

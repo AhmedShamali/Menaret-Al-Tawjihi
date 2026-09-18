@@ -146,19 +146,22 @@
     }
 
     table.payments-tbl th {
-        background: #f8fafc;
-        padding: 14px 18px;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
+        padding: 12px 16px;
         font-size: 0.82rem;
-        font-weight: 800;
-        color: #475569;
-        border-bottom: 1px solid #e2e8f0;
+        font-weight: 700;
+        color: #ffffff !important;
+        border-bottom: 2.5px solid #d97706 !important;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
 
     table.payments-tbl td {
-        padding: 14px 18px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 0.88rem;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.86rem;
         color: #1e293b;
+        vertical-align: middle;
     }
 
     table.payments-tbl tr:hover {
@@ -416,36 +419,36 @@
 </div>
 
 <!-- KPI Cards -->
-<div class="kpi-row">
-    <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-coins"></i></div>
-        <div class="kpi-info">
-            <h4>إجمالي الإيرادات المعتمدة</h4>
-            <div class="val">{{ number_format($stats['total_revenue']) }} ₪</div>
+<div class="stats-row-clean">
+    <div class="stat-card-clean" style="--card-accent: #059669;">
+        <span class="stat-label">إجمالي الإيرادات المعتمدة</span>
+        <div class="stat-value-wrap">
+            <span class="stat-number text-emerald">{{ number_format($stats['total_revenue']) }} ₪</span>
+            <i class="fas fa-coins stat-icon text-emerald"></i>
         </div>
     </div>
 
-    <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: #eff6ff; color: #0284c7;"><i class="fas fa-receipt"></i></div>
-        <div class="kpi-info">
-            <h4>إجمالي العمليات</h4>
-            <div class="val">{{ $stats['total_count'] }} عملية</div>
+    <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+        <span class="stat-label">إجمالي العمليات المسجلة</span>
+        <div class="stat-value-wrap">
+            <span class="stat-number text-navy">{{ $stats['total_count'] }}</span>
+            <i class="fas fa-receipt stat-icon text-navy"></i>
         </div>
     </div>
 
-    <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: #fffbeb; color: #f59e0b;"><i class="fas fa-clock"></i></div>
-        <div class="kpi-info">
-            <h4>بانتظار التأكيد</h4>
-            <div class="val">{{ $stats['pending_count'] }} عملية</div>
+    <div class="stat-card-clean" style="--card-accent: #d97706;">
+        <span class="stat-label">بانتظار التأكيد والاعتماد</span>
+        <div class="stat-value-wrap">
+            <span class="stat-number {{ $stats['pending_count'] > 0 ? 'text-amber' : '' }}">{{ $stats['pending_count'] }}</span>
+            <i class="fas fa-clock stat-icon text-amber"></i>
         </div>
     </div>
 
-    <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: #f5f3ff; color: #8b5cf6;"><i class="fas fa-mobile-screen"></i></div>
-        <div class="kpi-info">
-            <h4>جوال باي / بال باي</h4>
-            <div class="val">{{ number_format($stats['jawwal_pay_revenue'] + $stats['palpay_revenue']) }} ₪</div>
+    <div class="stat-card-clean" style="--card-accent: #6366f1;">
+        <span class="stat-label">إيرادات جوال باي / بال باي</span>
+        <div class="stat-value-wrap">
+            <span class="stat-number text-indigo">{{ number_format($stats['jawwal_pay_revenue'] + $stats['palpay_revenue']) }} ₪</span>
+            <i class="fas fa-mobile-screen stat-icon text-indigo"></i>
         </div>
     </div>
 </div>

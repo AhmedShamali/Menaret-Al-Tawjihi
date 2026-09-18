@@ -21,37 +21,37 @@
         </div>
     </div>
 
-    {{-- 2. إحصائيات الرواتب --}}
-    <div class="stats-cards-grid">
-        <div class="stat-card">
-            <div class="stat-icon emerald"><i class="fa-solid fa-vault"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">إجمالي الرواتب المصروفة (عام {{ $year }})</span>
-                <h3 class="stat-value font-mono">{{ number_format($stats['total_disbursed'], 2) }} ₪</h3>
+    {{-- 2. إحصائيات الرواتب الكلاسيكية --}}
+    <div class="stats-row-clean">
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">إجمالي الرواتب المصروفة (عام {{ $year }})</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ number_format($stats['total_disbursed'], 2) }} ₪</span>
+                <i class="fa-solid fa-vault stat-icon text-emerald"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon amber"><i class="fa-solid fa-hourglass-start"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">مستحقات قيد الاعتماد والصرف</span>
-                <h3 class="stat-value font-mono">{{ number_format($stats['total_pending'], 2) }} ₪</h3>
+        <div class="stat-card-clean" style="--card-accent: #d97706;">
+            <span class="stat-label">مستحقات قيد الاعتماد والصرف</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-amber">{{ number_format($stats['total_pending'], 2) }} ₪</span>
+                <i class="fa-solid fa-hourglass-start stat-icon text-amber"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon blue"><i class="fa-solid fa-award"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">إجمالي المكافآت والحوافز</span>
-                <h3 class="stat-value font-mono">{{ number_format($stats['total_bonus'], 2) }} ₪</h3>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">إجمالي المكافآت والحوافز</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-navy">{{ number_format($stats['total_bonus'], 2) }} ₪</span>
+                <i class="fa-solid fa-award stat-icon text-navy"></i>
             </div>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-icon purple"><i class="fa-solid fa-users-rectangle"></i></div>
-            <div class="stat-info">
-                <span class="stat-label">عدد المعلمين المسجلين</span>
-                <h3 class="stat-value font-mono">{{ $stats['teachers_count'] }} معلماً</h3>
+        <div class="stat-card-clean" style="--card-accent: #6366f1;">
+            <span class="stat-label">عدد المعلمين المسجلين</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-indigo">{{ $stats['teachers_count'] }} معلماً</span>
+                <i class="fa-solid fa-users-rectangle stat-icon text-indigo"></i>
             </div>
         </div>
     </div>
@@ -617,18 +617,21 @@
         text-align: right;
     }
     .payroll-table th {
-        background: #f8fafc;
+        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
         padding: 12px 14px;
-        font-size: 0.85rem;
-        font-weight: 800;
-        color: #475569;
-        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #ffffff !important;
+        border-bottom: 2.5px solid #d97706 !important;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
     }
     .payroll-table td {
-        padding: 14px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 0.9rem;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.86rem;
         vertical-align: middle;
+        color: #1e293b;
     }
     .teacher-meta-cell {
         display: flex;
