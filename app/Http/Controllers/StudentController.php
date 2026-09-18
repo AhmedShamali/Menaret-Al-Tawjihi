@@ -467,7 +467,7 @@ class StudentController extends Controller
 
         $student->status = $newStatus;
         if ($newStatus === 'suspended') {
-            $student->freeze_reason = $reason ?: 'تم تجميد الحساب من قبل الإدارة لمراجعة النشاط الدراسي والالتزام.';
+            $student->freeze_reason = $reason ?: 'عدم سداد الرسوم الدراسية أو مراجعة النشاط الأكاديمي والالتزام.';
         } else {
             $student->freeze_reason = null;
         }
@@ -476,8 +476,34 @@ class StudentController extends Controller
             $student->save();
         } catch (\Throwable $e) {
             // استبعاد حقل freeze_reason إذا لم تكتمل الهجرة
-            \DB::table('students')->where('id', $student->id)->update(['status' => $newStatus]);
+            \DB::table('students')->where('id', $student->id)->update([
+                'status' => $newStatus,
+                'freeze_reason' => $newStatus === 'suspended' ? ($reason ?: 'عدم سداد الرسوم الدراسية') : null
+            ]);
         }
+
+        // إرسال إشعار فوري للطالب بحالة حسابه
+        try {
+            if ($newStatus === 'suspended') {
+                \App\Services\NotificationService::notifyStudent(
+                    $student->id,
+                    'تنبيه رسمي: تم تجميد الحساب مؤقتاً 🔒',
+                    "نحيطك علماً بأنه قد تم تجميد حسابك الدراسي. سبب التجميد: " . ($student->freeze_reason),
+                    'system',
+                    route('student.pending-approval'),
+                    'fa-lock'
+                );
+            } else {
+                \App\Services\NotificationService::notifyStudent(
+                    $student->id,
+                    'تم إلغاء تجميد الحساب وتفعيله بنجاح! 🎉',
+                    "أهلاً بك يا {$student->name_ar}! قامت إدارة المنصة برفع التجميد وتفعيل حسابك، وبإمكانك استئناف دراستك الآن.",
+                    'account',
+                    route('student.dashboard'),
+                    'fa-circle-check'
+                );
+            }
+        } catch (\Throwable $e) {}
 
         return response()->json([
             'success' => true,

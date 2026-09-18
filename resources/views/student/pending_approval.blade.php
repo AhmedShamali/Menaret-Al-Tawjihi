@@ -1,46 +1,109 @@
 @extends('layouts.app')
 
-@section('title', 'بانتظار موافقة الإدارة وتفعيل الاشتراك | منارة التوجيهي')
+@php
+    $isFrozen = in_array($student->status, ['suspended', 'frozen', 'inactive']);
+@endphp
+
+@section('title', $isFrozen ? __('الحساب مجمد مؤقتاً | منارة التوجيهي') : __('بانتظار موافقة الإدارة وتفعيل الاشتراك | منارة التوجيهي'))
 
 @section('content')
 <div class="pending-approval-wrapper">
 
-    <div class="pending-approval-card">
-        <!-- أيقونة الاعتماد الأكاديمي الكلاسيكية -->
-        <div class="pending-icon-bubble">
-            <i class="fa-solid fa-graduation-cap"></i>
-        </div>
+    <div class="pending-approval-card {{ $isFrozen ? 'frozen-card-border' : '' }}">
+        @if($isFrozen)
+            <!-- أيقونة الحساب المجمد -->
+            <div class="pending-icon-bubble frozen-bubble">
+                <i class="fa-solid fa-user-lock"></i>
+            </div>
 
-        <!-- شارات الحالة الرسمية -->
-        <div class="status-badges-row">
-            <span class="badge-tag pending"><i class="fa-solid fa-clock-rotate-left"></i> قيد المراجعة والاعتماد الأكاديمي</span>
-            <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> منارة التوجيهي - فلسطين</span>
-        </div>
+            <!-- شارات الحالة الرسمية -->
+            <div class="status-badges-row">
+                <span class="badge-tag danger"><i class="fa-solid fa-lock"></i> {{ __('الحساب مجمد بقرار إداري') }}</span>
+                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('منارة التوجيهي - فلسطين') }}</span>
+            </div>
 
-        <h1 class="card-title">طلب التحاق الطالب قيد الاعتماد الأكاديمي</h1>
-        
-        <p class="card-desc">
-            أهلاً بك يا <strong>{{ $student->name_ar ?? $student->name ?? 'طالبنا العزيز' }}</strong>! تم استلام طلب التحاقك واكتمال تسجيلك المبدئي بنجاح.
-            يقوم المشرف العام <strong>(أ. أحمد حسين شمالي)</strong> بمراجعة بياناتك واعتماد اشتراكك في المواد التعليمية فور تسديد الرسوم الأكاديمية المقررة.
-        </p>
+            <h1 class="card-title text-danger">{{ __('تم تجميد حساب الطالب مؤقتاً') }}</h1>
+            
+            <p class="card-desc">
+                {{ __('نحيطك علماً يا') }} <strong>{{ $student->name_ar ?? $student->name ?? __('طالبنا العزيز') }}</strong> {{ __('بأنه قد تم إيقاف وتجميد صلاحيات حسابك الدراسي مؤقتاً بقرار من إدارة المنصة.') }}
+            </p>
+
+            <!-- صندوق سبب التجميد الرسمي البارز -->
+            <div class="freeze-reason-official-card">
+                <div class="freeze-reason-header">
+                    <div class="freeze-icon-wrap">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="freeze-header-title">{{ __('سبب التجميد المسجل لدى إدارة المنصة:') }}</h3>
+                        <p class="freeze-header-sub">{{ __('بيان إداري رسمي صادر عن المشرف العام') }}</p>
+                    </div>
+                </div>
+
+                <div class="freeze-reason-quote-box">
+                    <i class="fa-solid fa-quote-right quote-mark"></i>
+                    <div class="freeze-reason-statement">
+                        {{ $student->freeze_reason ?: __('عدم سداد الرسوم الدراسية أو مراجعة النشاط الأكاديمي والالتزام.') }}
+                    </div>
+                </div>
+
+                <div class="freeze-impact-note">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>{{ __('يترتب على هذا الإجراء إيقاف مؤقت للوصول إلى الدروس المصورة، الملازم، وبنك الامتحانات حتى مراجعة الإدارة وفك التجميد.') }}</span>
+                </div>
+            </div>
+
+            <!-- زر التواصل المباشر مع المشرف العام عبر واتساب لفك التجميد -->
+            <div class="unfreeze-actions-strip">
+                <a href="https://wa.me/970567897212?text={{ urlencode('السلام عليكم أ. أحمد شمالي، أنا الطالب (' . ($student->name_ar ?? $student->name) . ') ورقم هويتي (' . ($student->nid ?? '-') . ')، حسابي مجمد على المنصة بسبب: [' . ($student->freeze_reason ?: 'عدم سداد الرسوم أو مراجعة الإدارة') . ']. أرجو التكرم بمساعدتي لفك التجميد وإعادة تفعيل الحساب.') }}" 
+                   target="_blank" 
+                   class="btn-whatsapp-unfreeze">
+                    <i class="fa-brands fa-whatsapp"></i>
+                    <span>{{ __('تواصل مباشرة مع المشرف العام لفك التجميد (واتساب: 0567897212)') }}</span>
+                </a>
+            </div>
+
+        @else
+            <!-- أيقونة الاعتماد الأكاديمي الكلاسيكية -->
+            <div class="pending-icon-bubble">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <!-- شارات الحالة الرسمية -->
+            <div class="status-badges-row">
+                <span class="badge-tag pending"><i class="fa-solid fa-clock-rotate-left"></i> {{ __('قيد المراجعة والاعتماد الأكاديمي') }}</span>
+                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('منارة التوجيهي - فلسطين') }}</span>
+            </div>
+
+            <h1 class="card-title">{{ __('طلب التحاق الطالب قيد الاعتماد الأكاديمي') }}</h1>
+            
+            <p class="card-desc">
+                {{ __('أهلاً بك يا') }} <strong>{{ $student->name_ar ?? $student->name ?? __('طالبنا العزيز') }}</strong>! {{ __('تم استلام طلب التحاقك واكتمال تسجيلك المبدئي بنجاح.') }}
+                {{ __('يقوم المشرف العام') }} <strong>({{ __('أ. أحمد حسين شمالي') }})</strong> {{ __('بمراجعة بياناتك واعتماد اشتراكك في المواد التعليمية فور تسديد الرسوم الأكاديمية المقررة.') }}
+            </p>
+        @endif
 
         <!-- بطاقة تفاصيل الطالب المسجلة -->
         <div class="student-info-strip">
             <div class="info-cell">
-                <small>اسم الطالب</small>
+                <small>{{ __('اسم الطالب') }}</small>
                 <strong>{{ $student->name_ar ?? $student->name }}</strong>
             </div>
             <div class="info-cell">
-                <small>المرحلة والفرع</small>
-                <strong>{{ optional($student->stage)->label_ar ?? optional($student->stage)->name_ar ?? 'الثانوية العامة (التوجيهي)' }}</strong>
+                <small>{{ __('المرحلة والفرع') }}</small>
+                <strong>{{ optional($student->stage)->label_ar ?? optional($student->stage)->name_ar ?? __('الثانوية العامة (التوجيهي)') }}</strong>
             </div>
             <div class="info-cell">
-                <small>رقم الهاتف</small>
+                <small>{{ __('رقم الهاتف') }}</small>
                 <strong dir="ltr">{{ $student->phone ?? '—' }}</strong>
             </div>
             <div class="info-cell">
-                <small>حالة الحساب</small>
-                <span class="status-pill-warning"><i class="fa-solid fa-clock-rotate-left"></i> بانتظار الاعتماد</span>
+                <small>{{ __('حالة الحساب') }}</small>
+                @if($isFrozen)
+                    <span class="status-pill-danger"><i class="fa-solid fa-lock"></i> {{ __('مجمد مؤقتاً') }}</span>
+                @else
+                    <span class="status-pill-warning"><i class="fa-solid fa-clock-rotate-left"></i> {{ __('بانتظار الاعتماد') }}</span>
+                @endif
             </div>
         </div>
 
@@ -461,6 +524,142 @@
         font-size: 0.8rem;
         padding: 3px 10px;
         border-radius: 6px;
+    }
+    .status-pill-danger {
+        display: inline-block;
+        background: #fef2f2;
+        color: #b91c1c;
+        font-weight: 800;
+        font-size: 0.8rem;
+        padding: 3px 10px;
+        border-radius: 6px;
+        border: 1px solid #fca5a5;
+    }
+
+    /* أنماط بطاقة الحساب المجمد */
+    .frozen-card-border {
+        border-top: 4px solid #dc2626 !important;
+    }
+    .pending-icon-bubble.frozen-bubble {
+        background: linear-gradient(135deg, #991b1b 0%, #450a0a 100%);
+        border: 2px solid #ef4444;
+        color: #fee2e2;
+        box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35);
+    }
+    .badge-tag.danger {
+        background: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+    .text-danger {
+        color: #b91c1c !important;
+    }
+
+    /* صندوق سبب التجميد الأكاديمي الرسمي */
+    .freeze-reason-official-card {
+        background: #fff5f5;
+        border: 2px solid #f87171;
+        border-radius: 16px;
+        padding: 22px 24px;
+        margin-bottom: 24px;
+        text-align: right;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.08);
+        position: relative;
+    }
+    .freeze-reason-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #fecaca;
+        padding-bottom: 12px;
+    }
+    .freeze-icon-wrap {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #fee2e2;
+        color: #dc2626;
+        display: grid;
+        place-items: center;
+        font-size: 1.35rem;
+        flex-shrink: 0;
+    }
+    .freeze-header-title {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 900;
+        color: #991b1b;
+    }
+    .freeze-header-sub {
+        margin: 0;
+        font-size: 0.78rem;
+        color: #b91c1c;
+        font-weight: 600;
+    }
+    .freeze-reason-quote-box {
+        position: relative;
+        background: #ffffff;
+        border-right: 4px solid #dc2626;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .freeze-reason-statement {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #1e293b;
+        line-height: 1.6;
+    }
+    .quote-mark {
+        position: absolute;
+        top: 10px;
+        left: 12px;
+        font-size: 1.6rem;
+        color: #fca5a5;
+        opacity: 0.5;
+    }
+    .freeze-impact-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #7f1d1d;
+        line-height: 1.5;
+    }
+
+    /* زر الواتساب لإلغاء التجميد */
+    .unfreeze-actions-strip {
+        margin-bottom: 24px;
+    }
+    .btn-whatsapp-unfreeze {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+        color: #ffffff;
+        border: 2px solid #22c55e;
+        padding: 14px 20px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 800;
+        text-decoration: none;
+        box-shadow: 0 4px 14px rgba(22, 101, 52, 0.3);
+        transition: all 0.2s ease;
+    }
+    .btn-whatsapp-unfreeze:hover {
+        background: #166534;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(22, 101, 52, 0.4);
+        color: #ffffff;
+    }
+    .btn-whatsapp-unfreeze i {
+        font-size: 1.35rem;
+        color: #86efac;
     }
 
     /* بطاقة تفاصيل الرسوم */

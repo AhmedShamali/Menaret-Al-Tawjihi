@@ -997,6 +997,22 @@
         </header>
 
         <div class="content-body">
+            @if(auth('student')->check() && in_array(auth('student')->user()->status, ['suspended', 'frozen', 'inactive']))
+                <div style="background: #fef2f2; border: 1.5px solid #f87171; border-radius: 12px; padding: 14px 20px; margin-bottom: 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: #fee2e2; color: #dc2626; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <div>
+                            <strong style="color: #991b1b; font-size: 0.92rem; display: block;">{{ __('تنبيه إداري: تم تجميد حسابك الدراسي مؤقتاً 🔒') }}</strong>
+                            <span style="color: #b91c1c; font-size: 0.84rem;"><strong>{{ __('سبب التجميد:') }}</strong> {{ __(auth('student')->user()->freeze_reason ?: 'عدم سداد الرسوم الدراسية أو مراجعة النشاط الأكاديمي والالتزام.') }}</span>
+                        </div>
+                    </div>
+                    <a href="{{ route('student.pending-approval') }}" style="display: inline-flex; align-items: center; gap: 6px; background: #dc2626; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; transition: background 0.15s;">
+                        <i class="fa-solid fa-shield-halved"></i> {{ __('عرض تفاصيل التجميد وإجراءات التفعيل') }}
+                    </a>
+                </div>
+            @endif
             @yield('content')
         </div>
     </main>

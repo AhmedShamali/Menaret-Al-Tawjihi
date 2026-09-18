@@ -291,7 +291,55 @@ class PlatformAuditTest extends TestCase
         $this->assertEquals('active', $student->fresh()->status);
         $this->assertEquals('completed', $payment->fresh()->status);
     }
+
+    public function test_student_freeze_workflow_displays_reason_and_restricts_access(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Freeze',
+            'email' => 'admin_freeze@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'أحمد المجمد',
+            'name_en' => 'Ahmed Frozen',
+            'nid' => '400998877',
+            'email' => 'frozen_std@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599998877',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+        ]);
+
+        // 1. Admin freezes the student with a specific reason
+        $reason = 'عدم سداد الرسوم الدراسية لشهر أيلول';
+        $freezeResponse = $this->actingAs($admin)->postJson("/admin/students/toggle-status/{$student->id}", [
+            'freeze_reason' => $reason
+        ]);
+        $freezeResponse->assertStatus(200);
+        $freezeResponse->assertJson(['success' => true, 'status' => 'suspended']);
+
+        $refreshedStudent = $student->fresh();
+        $this->assertEquals('suspended', $refreshedStudent->status);
+        $this->assertEquals($reason, $refreshedStudent->freeze_reason);
+
+        // 2. Student logs in or attempts to visit /student/dashboard
+        auth('student')->login($refreshedStudent);
+        $dashResponse = $this->get('/student/dashboard');
+        $dashResponse->assertRedirect('/student/pending-approval');
+
+        // 3. Student visits /student/pending-approval and sees the freeze reason
+        $pendingPage = $this->get('/student/pending-approval');
+        $pendingPage->assertStatus(200);
+        $pendingPage->assertSee($reason);
+        $pendingPage->assertSee('0567897212'); // WhatsApp supervisor contact
+    }
 }
+
 
 
 
