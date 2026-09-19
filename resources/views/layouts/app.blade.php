@@ -1805,16 +1805,18 @@
                             $msgNotifs = \App\Models\Message::whereNull('teacher_id')
                                 ->where('sender_type', 'student')
                                 ->where('is_read', false)
+                                ->with('student')
                                 ->latest()
                                 ->take(4)
                                 ->get()
                                 ->map(function($m) {
+                                    $studentName = $m->student ? ($m->student->name_ar ?? $m->student->name ?? 'طالب') : 'طالب';
                                     return (object)[
                                         'id'      => 'msg_' . $m->id,
-                                        'title'   => 'تذكرة / رسالة جديدة من طالب 💬',
+                                        'title'   => 'رسالة جديدة من ' . $studentName,
                                         'message' => $m->message,
                                         'icon'    => 'fa-comment-dots',
-                                        'url'     => route('admin.messages.index'),
+                                        'url'     => route('admin.messages.index', ['student_id' => $m->student_id]),
                                         'time'    => $m->created_at ? $m->created_at->diffForHumans() : 'الآن',
                                     ];
                                 });
@@ -1842,16 +1844,18 @@
                             $msgNotifs = \App\Models\Message::where('teacher_id', $teacherUser->id)
                                 ->where('sender_type', 'student')
                                 ->where('is_read', false)
+                                ->with('student')
                                 ->latest()
                                 ->take(4)
                                 ->get()
                                 ->map(function($m) {
+                                    $studentName = $m->student ? ($m->student->name_ar ?? $m->student->name ?? 'طالب') : 'طالب';
                                     return (object)[
                                         'id'      => 'msg_' . $m->id,
-                                        'title'   => 'استفسار دراسي من طالب 💬',
+                                        'title'   => 'استفسار دراسي من ' . $studentName,
                                         'message' => $m->message,
                                         'icon'    => 'fa-comments',
-                                        'url'     => route('teacher.messages.index'),
+                                        'url'     => route('teacher.messages.index', ['student_id' => $m->student_id]),
                                         'time'    => $m->created_at ? $m->created_at->diffForHumans() : 'الآن',
                                     ];
                                 });

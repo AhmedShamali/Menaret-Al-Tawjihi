@@ -122,8 +122,8 @@ class NotificationController extends Controller
                         : route('student.support');
                 } elseif ($user) {
                     $targetUrl = ($user->role === 'teacher')
-                        ? route('teacher.messages.index')
-                        : route('admin.messages.index');
+                        ? route('teacher.messages.index', ['student_id' => $msg->student_id])
+                        : route('admin.messages.index', ['student_id' => $msg->student_id]);
                 }
             }
         } else {
@@ -141,11 +141,21 @@ class NotificationController extends Controller
                     DB::table('notifications')->where('id', $id)->update(['read_at' => now(), 'updated_at' => now()]);
                     $data = is_array($rawNotif->data) ? $rawNotif->data : json_decode($rawNotif->data, true) ?? [];
                     $targetUrl = $data['action_url'] ?? $data['url'] ?? null;
+                    if (empty($targetUrl) && isset($data['student_id'])) {
+                        $targetUrl = ($user && $user->role === 'teacher')
+                            ? route('teacher.messages.index', ['student_id' => $data['student_id']])
+                            : route('admin.messages.index', ['student_id' => $data['student_id']]);
+                    }
                 }
             } else {
                 $notification->markAsRead();
                 $data = is_array($notification->data) ? $notification->data : json_decode($notification->data, true) ?? [];
                 $targetUrl = $data['action_url'] ?? $data['url'] ?? null;
+                if (empty($targetUrl) && isset($data['student_id'])) {
+                    $targetUrl = ($user && $user->role === 'teacher')
+                        ? route('teacher.messages.index', ['student_id' => $data['student_id']])
+                        : route('admin.messages.index', ['student_id' => $data['student_id']]);
+                }
             }
         }
 

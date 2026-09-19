@@ -719,5 +719,17 @@
         div.textContent = text;
         return div.innerHTML.replace(/\n/g, '<br>');
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sid = urlParams.get('student_id');
+        if (sid) {
+            const card = document.getElementById('user_' + sid);
+            if (card) {
+                card.click();
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
 </script>
 @endsection

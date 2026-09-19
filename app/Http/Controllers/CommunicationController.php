@@ -22,15 +22,63 @@ class CommunicationController extends Controller
     // 1. الجزء الخاص بالأدمن والدعم الفني (Support)
     // ==========================================
 
-    public function index()
+    public function index(Request $request = null)
     {
-        $chats = Student::latest()->get();
-        return view('admin.management.inbox', compact('chats'));
+        $selectedStudentId = $request ? $request->query('student_id') : null;
+
+        $students = Student::with('stage')
+            ->withCount([
+                'messages as unread_count' => function ($q) {
+                    $q->whereNull('teacher_id')
+                      ->where('sender_type', 'student')
+                      ->where(function($sub) {
+                          $sub->where('is_read', false)->orWhereNull('is_read');
+                      });
+                }
+            ])
+            ->get();
+
+        $students->each(function ($st) {
+            $lastMsg = Message::where('student_id', $st->id)
+                ->whereNull('teacher_id')
+                ->latest()
+                ->first();
+            $st->last_message = $lastMsg ? $lastMsg->message : null;
+            $st->last_message_time = $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->diffForHumans() : null;
+            $st->last_message_at = $lastMsg ? $lastMsg->created_at : null;
+            $st->last_sender_type = $lastMsg ? $lastMsg->sender_type : null;
+        });
+
+        $chats = $students->sort(function ($a, $b) use ($selectedStudentId) {
+            if ($selectedStudentId) {
+                if ($a->id == $selectedStudentId) return -1;
+                if ($b->id == $selectedStudentId) return 1;
+            }
+            if ($a->unread_count !== $b->unread_count) {
+                return $b->unread_count <=> $a->unread_count;
+            }
+            if ($a->last_message_at && $b->last_message_at) {
+                return $b->last_message_at <=> $a->last_message_at;
+            }
+            if ($a->last_message_at && !$b->last_message_at) return -1;
+            if (!$a->last_message_at && $b->last_message_at) return 1;
+            return $b->id <=> $a->id;
+        })->values();
+
+        $selectedStudent = null;
+        if ($selectedStudentId) {
+            $selectedStudent = $chats->firstWhere('id', (int)$selectedStudentId);
+            if (!$selectedStudent) {
+                $selectedStudent = Student::with('stage')->find($selectedStudentId);
+            }
+        }
+
+        return view('admin.management.inbox', compact('chats', 'selectedStudentId', 'selectedStudent'));
     }
 
-    public function adminInbox()
+    public function adminInbox(Request $request = null)
     {
-        return $this->index();
+        return $this->index($request);
     }
 
     public function studentChat()
@@ -121,10 +169,10 @@ class CommunicationController extends Controller
             try {
                 $student = Student::find($studentId);
                 NotificationService::notifyAdmin(
-                    'رسالة جديدة من طالب في الدعم 💬',
-                    "أرسل الطالب ({$student?->name_ar}): " . Str::limit($request->message, 70),
+                    'رسالة جديدة من طالب في الدعم',
+                    "أرسل الطالب (" . ($student?->name_ar ?? $student?->name ?? 'طالب') . "): " . Str::limit($request->message, 70),
                     'support',
-                    route('admin.messages.index'),
+                    route('admin.messages.index', ['student_id' => $studentId]),
                     'fa-comment-dots'
                 );
             } catch (\Throwable $e) {}
@@ -169,10 +217,10 @@ class CommunicationController extends Controller
             try {
                 $student = Student::find($studentId);
                 NotificationService::notifyAdmin(
-                    'تذكرة دعم فني جديدة 🎧',
-                    "أرسل الطالب ({$student?->name_ar}) تذكرة دعم فني: " . Str::limit($request->message, 70),
+                    'تذكرة دعم فني جديدة',
+                    "أرسل الطالب (" . ($student?->name_ar ?? $student?->name ?? 'طالب') . ") تذكرة دعم فني: " . Str::limit($request->message, 70),
                     'support',
-                    route('admin.messages.index'),
+                    route('admin.messages.index', ['student_id' => $studentId]),
                     'fa-headset'
                 );
             } catch (\Throwable $e) {}
@@ -204,8 +252,10 @@ class CommunicationController extends Controller
                     ->where('admin_id', $adminId)
                     ->whereNull('teacher_id')
                     ->where('sender_type', '!=', 'student')
-                    ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
-                    ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+                    ->where(function($q) {
+                        $q->where('is_read', false)->orWhereNull('is_read');
+                    })
+                    ->update(['is_read' => true]);
 
                 $query = Message::where('student_id', $studentId)
                     ->where('admin_id', $adminId)
@@ -217,8 +267,10 @@ class CommunicationController extends Controller
                 Message::where('student_id', $studentId)
                     ->whereNull('teacher_id')
                     ->where('sender_type', 'student')
-                    ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
-                    ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+                    ->where(function($q) {
+                        $q->where('is_read', false)->orWhereNull('is_read');
+                    })
+                    ->update(['is_read' => true]);
 
                 $query = Message::where('student_id', $studentId)
                     ->whereNull('teacher_id');
@@ -231,13 +283,33 @@ class CommunicationController extends Controller
                         'id'                    => $msg->id,
                         'message'               => $msg->message,
                         'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
-                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : '',
+                        'created_at_human'      => $msg->created_at ? $msg->created_at->diffForHumans() : '',
                     ];
                 });
 
+            $studentInfo = null;
+            if (!$isStudent) {
+                $st = Student::with('stage')->find($studentId);
+                if ($st) {
+                    $studentInfo = [
+                        'id'          => $st->id,
+                        'name'        => $st->name_ar ?? $st->name ?? trim(($st->first_name ?? '') . ' ' . ($st->last_name ?? '')) ?: 'طالب',
+                        'email'       => $st->email,
+                        'phone'       => $st->phone ?? $st->whatsapp ?? '',
+                        'whatsapp'    => $st->whatsapp ?? $st->phone ?? '',
+                        'stage'       => $st->stage ? ($st->stage->name_ar ?? $st->stage->name ?? 'توجيهي') : 'توجيهي',
+                        'school_name' => $st->school_name ?? '',
+                        'city'        => $st->city ?? '',
+                        'status'      => $st->status ?? 'active',
+                    ];
+                }
+            }
+
             return response()->json([
                 'status'   => 'success',
-                'messages' => $messages
+                'messages' => $messages,
+                'student'  => $studentInfo
             ]);
         } catch (\Exception $e) {
             Log::error('Fetch Messages Error: ' . $e->getMessage());
@@ -258,16 +330,28 @@ class CommunicationController extends Controller
         ]);
 
         try {
+            $adminUser = Auth::guard('web')->user() ?? Auth::user();
+            $adminId = $adminUser ? $adminUser->id : 1;
+
             $message = Message::create([
                 'student_id'  => $request->student_id,
-                'admin_id'    => Auth::id(),
+                'admin_id'    => $adminId,
                 'sender_type' => 'admin',
                 'message'     => trim($request->message),
+                'is_read'     => false,
             ]);
 
-            $student = Student::find($request->student_id);
-            if ($student) {
-                $student->notify(new NewSupportMessageNotification($message));
+            try {
+                NotificationService::notifyStudent(
+                    (int)$request->student_id,
+                    'رد جديد من إدارة المنصة 💬',
+                    Str::limit($request->message, 70),
+                    'message',
+                    route('student.support'),
+                    'fa-comment-dots'
+                );
+            } catch (\Throwable $ne) {
+                Log::warning('Send notification to student failed: ' . $ne->getMessage());
             }
 
             return response()->json([
@@ -275,7 +359,7 @@ class CommunicationController extends Controller
                 'data'   => [
                     'id'                   => $message->id,
                     'message'              => $message->message,
-                    'sender_type'          => $message->sender_type,
+                    'sender_type'          => 'admin',
                     'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
                 ]
             ]);
@@ -579,17 +663,19 @@ class CommunicationController extends Controller
 
             NotificationService::notifyTeacher(
                 $request->teacher_id,
-                'استفسار وسؤال جديد من طالب 💬',
+                'استفسار وسؤال جديد من طالب',
                 "أرسل الطالب ({$student->name_ar}): " . Str::limit($request->message, 70),
                 'message',
-                route('teacher.messages.index'),
+                route('teacher.messages.index', ['student_id' => $student->id]),
                 'fa-comments'
             );
 
             NotificationService::notifyAdmin(
                 'استفسار دراسي جديد من طالب',
                 "قام الطالب {$student->name_ar} بإرسال استفسار دراسي لمعلم المادة: " . Str::limit($request->message, 70),
-                'message'
+                'message',
+                route('admin.messages.index', ['student_id' => $student->id]),
+                'fa-comments'
             );
 
             return response()->json([
