@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إدارة الطلاب | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
+@section('title', __('إدارة الطلاب') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
 <div class="students-dashboard-clean">
@@ -9,26 +9,26 @@
     <div class="page-header-clean">
         <div class="header-titles">
             <h1 class="page-title-text">
-                سجل الطلاب
+                {{ __('سجل الطلاب') }}
                 <span class="count-pill" id="visibleStudentsCount">{{ count($students) }}</span>
             </h1>
             <p class="page-desc-text">
-                إدارة حسابات الطلبة، تفعيل الاشتراكات، وتخصيص المنح لدورة 2026.
+                {{ __('إدارة حسابات الطلبة، تفعيل الاشتراكات، وتخصيص المنح لدورة 2026.') }}
             </p>
         </div>
 
         <div class="header-actions-group">
-            <a href="{{ route('admin.students.export') }}" class="btn-clean btn-outline" title="تصدير ملف CSV">
+            <a href="{{ route('admin.students.export') }}" class="btn-clean btn-outline" title="{{ __('تصدير ملف CSV') }}">
                 <i class="fa-solid fa-arrow-up-from-bracket"></i>
-                <span>تصدير CSV</span>
+                <span>{{ __('تصدير CSV') }}</span>
             </a>
-            <button type="button" onclick="confirmPurgeAllStudents()" class="btn-clean btn-danger-outline" title="حذف وتصفير جميع الطلاب">
+            <button type="button" onclick="confirmPurgeAllStudents()" class="btn-clean btn-danger-outline" title="{{ __('حذف وتصفير جميع الطلاب') }}">
                 <i class="fa-regular fa-trash-can"></i>
-                <span>تصفير الكل</span>
+                <span>{{ __('تصفير الكل') }}</span>
             </button>
             <a href="{{ route('admin.students.create') }}" class="btn-clean btn-primary">
                 <i class="fa-solid fa-plus"></i>
-                <span>إضافة طالب</span>
+                <span>{{ __('إضافة طالب') }}</span>
             </a>
         </div>
     </div>
@@ -36,7 +36,7 @@
     {{-- 2. بطاقات المؤشرات الأكاديمية الكلاسيكية --}}
     <div class="stats-row-clean">
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;" onclick="setFilterTab('all')">
-            <span class="stat-label">إجمالي الطلبة المسجلين</span>
+            <span class="stat-label">{{ __('إجمالي الطلبة المسجلين') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-navy">{{ count($students) }}</span>
                 <i class="fa-solid fa-users stat-icon text-navy"></i>
@@ -44,7 +44,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #d97706;" onclick="setFilterTab('pending')">
-            <span class="stat-label">بانتظار الاعتماد الأكاديمي</span>
+            <span class="stat-label">{{ __('بانتظار الاعتماد الأكاديمي') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number {{ $students->where('status', '!=', 'active')->count() > 0 ? 'text-amber' : '' }}">
                     {{ $students->where('status', '!=', 'active')->count() }}
@@ -54,7 +54,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #059669;" onclick="setFilterTab('active')">
-            <span class="stat-label">حسابات نشطة ومعتمدة</span>
+            <span class="stat-label">{{ __('حسابات نشطة ومعتمدة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-emerald">{{ $students->where('status', 'active')->count() }}</span>
                 <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
@@ -62,7 +62,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;" onclick="setFilterTab('all')">
-            <span class="stat-label">المنح والخصومات المعتمدة</span>
+            <span class="stat-label">{{ __('المنح والخصومات المعتمدة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-indigo">{{ $students->filter(fn($s) => $s->hasDiscount())->count() }}</span>
                 <i class="fa-solid fa-award stat-icon text-indigo"></i>
@@ -74,7 +74,7 @@
     <div class="toolbar-clean">
         <div class="search-box-clean">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
-            <input type="text" id="studentSearchInput" placeholder="بحث بالاسم، رقم الهوية، أو البريد الإلكتروني..." oninput="filterStudents()">
+            <input type="text" id="studentSearchInput" placeholder="{{ __('بحث بالاسم، رقم الهوية، أو البريد الإلكتروني...') }}" oninput="filterStudents()">
             <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="clear-search" style="display: none;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -82,22 +82,22 @@
 
         <div class="filter-pills-clean">
             <button type="button" class="filter-pill active" data-filter="all" onclick="setFilterTab('all')">
-                الكل ({{ count($students) }})
+                {{ __('الكل') }} ({{ count($students) }})
             </button>
             <button type="button" class="filter-pill" data-filter="pending" onclick="setFilterTab('pending')">
-                بانتظار الموافقة ({{ $students->where('status', '!=', 'active')->count() }})
+                {{ __('بانتظار الموافقة') }} ({{ $students->where('status', '!=', 'active')->count() }})
             </button>
             <button type="button" class="filter-pill" data-filter="active" onclick="setFilterTab('active')">
-                المعتمدون ({{ $students->where('status', 'active')->count() }})
+                {{ __('المعتمدون') }} ({{ $students->where('status', 'active')->count() }})
             </button>
             <button type="button" class="filter-pill" data-filter="sci" onclick="setFilterTab('sci')">
-                الفرع العلمي
+                {{ __('الفرع العلمي') }}
             </button>
             <button type="button" class="filter-pill" data-filter="lit" onclick="setFilterTab('lit')">
-                الفرع الأدبي
+                {{ __('الفرع الأدبي') }}
             </button>
             <button type="button" class="filter-pill" data-filter="bus" onclick="setFilterTab('bus')">
-                ريادة وأعمال
+                {{ __('ريادة وأعمال') }}
             </button>
         </div>
     </div>
@@ -106,15 +106,15 @@
     <div id="studentBulkBar" class="bulk-bar-clean" style="display: none;">
         <div class="bulk-info">
             <span class="bulk-count-badge" id="selectedStudentsCount">0</span>
-            <span>طالب محدد في الجدول</span>
+            <span>{{ __('طالب محدد في الجدول') }}</span>
         </div>
         <div class="bulk-actions">
             <button type="button" onclick="deselectAllStudents()" class="btn-clean btn-ghost-white">
-                إلغاء التحديد
+                {{ __('إلغاء التحديد') }}
             </button>
             <button type="button" onclick="deleteSelectedStudents()" class="btn-clean btn-danger-solid">
                 <i class="fa-regular fa-trash-can"></i>
-                <span>حذف المحددين</span>
+                <span>{{ __('حذف المحددين') }}</span>
             </button>
         </div>
     </div>
@@ -126,14 +126,14 @@
                 <thead>
                     <tr>
                         <th style="width: 36px; text-align: center;">
-                            <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="تحديد الكل" class="custom-checkbox">
+                            <input type="checkbox" id="selectAllStudentsCheckbox" onchange="toggleSelectAllStudents(this)" title="{{ __('تحديد الكل') }}" class="custom-checkbox">
                         </th>
-                        <th>الطالب</th>
-                        <th style="width: 120px;">الفرع</th>
-                        <th style="width: 110px;">الهوية</th>
-                        <th style="width: 100px;">الحالة</th>
-                        <th style="width: 100px;">الخصم</th>
-                        <th style="width: 145px; text-align: center;">الإجراءات</th>
+                        <th>{{ __('الطالب') }}</th>
+                        <th style="width: 120px;">{{ __('الفرع') }}</th>
+                        <th style="width: 110px;">{{ __('الهوية') }}</th>
+                        <th style="width: 100px;">{{ __('الحالة') }}</th>
+                        <th style="width: 100px;">{{ __('الخصم') }}</th>
+                        <th style="width: 145px; text-align: center;">{{ __('الإجراءات') }}</th>
                     </tr>
                 </thead>
                 <tbody id="studentsTableBody">
@@ -150,10 +150,11 @@
                         } elseif (str_contains($stageLabel, 'صناعي')) {
                             $branchShort = 'الصناعي';
                         }
+                        $studentDispName = (app()->getLocale() === 'en' && !empty($student->name_en)) ? $student->name_en : $student->name_ar;
                     @endphp
                     <tr id="row_{{ $student->id }}" 
                         class="student-row"
-                        data-name="{{ mb_strtolower($student->name_ar) }}"
+                        data-name="{{ mb_strtolower($student->name_ar . ' ' . ($student->name_en ?? '')) }}"
                         data-email="{{ strtolower($student->email) }}"
                         data-nid="{{ $student->nid }}"
                         data-status="{{ $student->status }}"
@@ -169,22 +170,22 @@
                             <div class="cell-student-info">
                                 <div class="student-avatar-clean">
                                     @if(!empty($student->photo))
-                                        <img src="{{ asset('storage/'.$student->photo) }}" alt="{{ $student->name_ar }}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
-                                        <span class="avatar-initials" style="display: none;">{{ mb_substr($student->name_ar, 0, 2) }}</span>
+                                        <img src="{{ asset('storage/'.$student->photo) }}" alt="{{ $studentDispName }}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+                                        <span class="avatar-initials" style="display: none;">{{ mb_substr($studentDispName, 0, 2) }}</span>
                                     @else
-                                        <span class="avatar-initials">{{ mb_substr($student->name_ar, 0, 2) }}</span>
+                                        <span class="avatar-initials">{{ mb_substr($studentDispName, 0, 2) }}</span>
                                     @endif
                                 </div>
                                 <div class="student-details-clean">
                                     <div class="name-line">
-                                        <a href="{{ route('admin.students.show', $student->id) }}" class="student-name" title="عرض ملف الطالب">
-                                            {{ $student->name_ar }}
+                                        <a href="{{ route('admin.students.show', $student->id) }}" class="student-name" title="{{ __('عرض ملف الطالب') }}">
+                                            {{ $studentDispName }}
                                         </a>
                                     </div>
                                     <div class="meta-line">
                                         <span class="student-email" dir="ltr">{{ $student->email }}</span>
                                         @if($student->plain_password)
-                                            <span class="pwd-snippet" title="كلمة المرور للدخول (انقر للنسخ)" onclick="copyToClipboard('{{ $student->plain_password }}', 'تم نسخ كلمة المرور')">
+                                            <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password }}', '{{ __('تم نسخ كلمة المرور') }}')">
                                                 <i class="fa-solid fa-key"></i>
                                                 <code>{{ $student->plain_password }}</code>
                                             </span>
@@ -196,7 +197,7 @@
 
                         {{-- الفرع --}}
                         <td>
-                            <span class="branch-tag-clean">{{ $branchShort }}</span>
+                            <span class="branch-tag-clean">{{ __($branchShort) }}</span>
                         </td>
 
                         {{-- الهوية الوطنية --}}
@@ -209,17 +210,17 @@
                             @if($student->status === 'active')
                                 <span class="status-pill status-active">
                                     <span class="dot"></span>
-                                    <span>نشط</span>
+                                    <span>{{ __('نشط') }}</span>
                                 </span>
                             @elseif($student->status === 'suspended' || $student->status === 'frozen' || $student->status === 'inactive')
-                                <span class="status-pill status-frozen" title="{{ $student->freeze_reason ?: 'حساب مجمد' }}">
+                                <span class="status-pill status-frozen" title="{{ $student->freeze_reason ?: __('مجمد') }}">
                                     <span class="dot"></span>
-                                    <span>مجمد</span>
+                                    <span>{{ __('مجمد') }}</span>
                                 </span>
                             @else
                                 <span class="status-pill status-pending">
                                     <span class="dot"></span>
-                                    <span>بانتظار الموافقة</span>
+                                    <span>{{ __('بانتظار الموافقة') }}</span>
                                 </span>
                             @endif
                         </td>
@@ -229,17 +230,17 @@
                             <div id="discount_badge_{{ $student->id }}">
                                 @if($student->hasDiscount())
                                     <button type="button" 
-                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')" 
+                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($studentDispName) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')" 
                                             class="btn-discount-badge"
-                                            title="تعديل الخصم">
+                                            title="{{ __('تعديل الخصم') }}">
                                         <span id="badge_text_{{ $student->id }}">{{ $student->discount_label }}</span>
                                     </button>
                                 @else
                                     <button type="button" 
-                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', 0, 0, '')" 
+                                            onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($studentDispName) }}', 0, 0, '')" 
                                             class="btn-discount-none"
-                                            title="إضافة خصم أو منحة">
-                                        <span id="badge_text_{{ $student->id }}">بدون خصم</span>
+                                            title="{{ __('إضافة خصم أو منحة') }}">
+                                        <span id="badge_text_{{ $student->id }}">{{ __('بدون خصم') }}</span>
                                     </button>
                                 @endif
                             </div>
@@ -250,30 +251,30 @@
                             <div class="actions-cell-clean">
                                 @if($student->status !== 'active')
                                     <button type="button" 
-                                            onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($student->name_ar) }}')"
+                                            onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($studentDispName) }}')"
                                             class="tbl-btn tbl-btn-approve"
-                                            title="تفعيل واعتماد الطالب">
-                                        تفعيل
+                                            title="{{ __('تفعيل واعتماد الطالب') }}">
+                                        {{ __('تفعيل') }}
                                     </button>
                                 @endif
 
                                 <a href="{{ route('admin.students.show', $student->id) }}"
                                    class="tbl-btn-icon"
-                                   title="عرض المواد والملف">
+                                   title="{{ __('عرض المواد والملف') }}">
                                     <i class="fa-regular fa-folder-open"></i>
                                 </a>
 
                                 <button type="button" 
-                                        onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
+                                        onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($studentDispName) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
                                         class="tbl-btn-icon"
-                                        title="المنحة والخصم">
+                                        title="{{ __('المنحة والخصم') }}">
                                     <i class="fa-solid fa-tag"></i>
                                 </button>
 
                                 <button type="button" 
-                                        onclick="performToggle({{ $student->id }}, '{{ $student->status }}', '{{ addslashes($student->name_ar) }}')"
+                                        onclick="performToggle({{ $student->id }}, '{{ $student->status }}', '{{ addslashes($studentDispName) }}')"
                                         class="tbl-btn-icon {{ $student->status == 'active' ? '' : 'text-amber' }}"
-                                        title="{{ $student->status == 'active' ? 'تجميد الحساب' : 'إلغاء التجميد' }}">
+                                        title="{{ $student->status == 'active' ? __('تجميد الحساب') : __('إلغاء التجميد') }}">
                                     @if($student->status == 'active')
                                         <i class="fa-solid fa-lock"></i>
                                     @else
@@ -283,14 +284,14 @@
 
                                 <a href="{{ route('admin.students.edit', $student->id) }}"
                                    class="tbl-btn-icon"
-                                   title="تعديل البيانات">
+                                   title="{{ __('تعديل البيانات') }}">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                 </a>
 
                                 <button type="button" 
                                         onclick="deleteStudent({{ $student->id }})" 
                                         class="tbl-btn-icon tbl-btn-del" 
-                                        title="حذف الطالب">
+                                        title="{{ __('حذف الطالب') }}">
                                     <i class="fa-regular fa-trash-can"></i>
                                 </button>
                             </div>
@@ -300,7 +301,7 @@
                     <tr>
                         <td colspan="7" class="empty-state-cell">
                             <i class="fa-regular fa-user" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
-                            <span>لا يوجد طلاب مسجلون حالياً.</span>
+                            <span>{{ __('لا يوجد طلاب مسجلون حالياً.') }}</span>
                         </td>
                     </tr>
                     @endforelse
@@ -308,7 +309,7 @@
                     <tr id="noResultsRow" style="display: none;">
                         <td colspan="7" class="empty-state-cell">
                             <i class="fa-solid fa-magnifying-glass" style="font-size: 1.8rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
-                            <span>لا توجد نتائج مطابقة لشروط البحث.</span>
+                            <span>{{ __('لا توجد نتائج مطابقة لشروط البحث.') }}</span>
                         </td>
                     </tr>
                 </tbody>
@@ -1314,8 +1315,8 @@
     <div style="background: #ffffff; width: 100%; max-width: 440px; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 10px 25px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h3 style="font-size: 0.98rem; font-weight: 700; margin: 0; color: #0f172a;">الخصم أو المنحة</h3>
-                <span id="discountStudentName" style="font-size: 0.78rem; color: #64748b;">اسم الطالب</span>
+                <h3 style="font-size: 0.98rem; font-weight: 700; margin: 0; color: #0f172a;">{{ __('الخصم أو المنحة') }}</h3>
+                <span id="discountStudentName" style="font-size: 0.78rem; color: #64748b;">{{ __('اسم الطالب') }}</span>
             </div>
             <button type="button" onclick="closeDiscountModal()" style="background: none; border: none; font-size: 1.1rem; color: #94a3b8; cursor: pointer;">&times;</button>
         </div>
@@ -1325,45 +1326,45 @@
             <input type="hidden" id="discountType" value="percent">
 
             <div style="margin-bottom: 14px;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 6px;">نوع الخصم:</label>
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 6px;">{{ __('نوع الخصم:') }}</label>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                     <button type="button" id="typeBtnPercent" onclick="setDiscountType('percent')" style="padding: 8px; border-radius: 6px; border: 1px solid #0f172a; background: #0f172a; color: #ffffff; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
-                        نسبة مئوية (%)
+                        {{ __('نسبة مئوية (%)') }}
                     </button>
                     <button type="button" id="typeBtnFixed" onclick="setDiscountType('fixed')" style="padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; background: #ffffff; color: #475569; font-weight: 600; font-size: 0.8rem; cursor: pointer;">
-                        مبلغ ثابت (₪)
+                        {{ __('مبلغ ثابت (₪)') }}
                     </button>
                 </div>
             </div>
 
             <div style="margin-bottom: 14px;">
                 <div style="display: flex; gap: 4px; flex-wrap: wrap;">
-                    <button type="button" onclick="setQuickDiscount(25, 'منحة تفوق')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">25% تفوق</button>
-                    <button type="button" onclick="setQuickDiscount(50, 'نصف منحة')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">50% نصف منحة</button>
-                    <button type="button" onclick="setQuickDiscount(100, 'إعفاء كامل 100%')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;">100% إعفاء كامل</button>
-                    <button type="button" onclick="setQuickDiscount(0, '')" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">إلغاء الخصم</button>
+                    <button type="button" onclick="setQuickDiscount(25, 'منحة تفوق')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">{{ __('25% تفوق') }}</button>
+                    <button type="button" onclick="setQuickDiscount(50, 'نصف منحة')" style="background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">{{ __('50% نصف منحة') }}</button>
+                    <button type="button" onclick="setQuickDiscount(100, 'إعفاء كامل 100%')" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; cursor: pointer;">{{ __('100% إعفاء كامل') }}</button>
+                    <button type="button" onclick="setQuickDiscount(0, '')" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 4px 8px; border-radius: 4px; font-size: 0.72rem; cursor: pointer;">{{ __('إلغاء الخصم') }}</button>
                 </div>
             </div>
 
             <div style="margin-bottom: 14px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                    <label style="font-size: 0.78rem; font-weight: 600; color: #334155;">قيمة الخصم:</label>
-                    <span id="discountUnitLabel" style="font-size: 0.72rem; color: #64748b;">% نسبة مئوية</span>
+                    <label style="font-size: 0.78rem; font-weight: 600; color: #334155;">{{ __('قيمة الخصم:') }}</label>
+                    <span id="discountUnitLabel" style="font-size: 0.72rem; color: #64748b;">{{ __('% نسبة مئوية') }}</span>
                 </div>
                 <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="مثال: 25 أو 50" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem; font-family: monospace; outline: none; box-sizing: border-box;">
             </div>
 
             <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 4px;">بيان الخصم (اختياري):</label>
-                <input type="text" id="discountNotes" placeholder="مثال: منحة تفوق دراسي" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.82rem; outline: none; box-sizing: border-box;">
+                <label style="display: block; font-size: 0.78rem; font-weight: 600; color: #334155; margin-bottom: 4px;">{{ __('بيان الخصم (اختياري):') }}</label>
+                <input type="text" id="discountNotes" placeholder="{{ __('مثال: منحة تفوق دراسي') }}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.82rem; outline: none; box-sizing: border-box;">
             </div>
 
             <div style="display: flex; gap: 8px;">
                 <button type="submit" id="btnSaveDiscount" class="btn-clean btn-primary" style="flex: 1; justify-content: center;">
-                    حفظ التحديث
+                    {{ __('حفظ التحديث') }}
                 </button>
                 <button type="button" onclick="closeDiscountModal()" class="btn-clean btn-outline">
-                    إلغاء
+                    {{ __('إلغاء') }}
                 </button>
             </div>
         </form>

@@ -43,17 +43,6 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $teacher = \App\Models\User::firstOrCreate(
-            ['email' => 'teacher@tawjihi.ps'],
-            [
-                'name' => 'أ. عصام الشريف',
-                'password' => bcrypt('123456789'),
-                'role' => 'teacher',
-                'phone' => '0599000001',
-                'major' => 'العلوم الفيزيائية والرياضيات',
-                'bio' => 'معلم أول لمبحث الفيزياء للثانوية العامة بخبرة 15 عاماً',
-            ]
-        );
 
         // 3. إعدادات المنصة والهوية الرسمية وبوابات الدفع
         $this->call(SettingSeeder::class);

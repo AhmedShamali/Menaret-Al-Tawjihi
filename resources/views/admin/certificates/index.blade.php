@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إدارة واعتماد الشهادات والنتائج | منارة التوجيهي')
+@section('title', __('إدارة الشهادات والنتائج') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
 <div class="ed-admin-container">
@@ -10,18 +10,18 @@
         <div class="ed-admin-title-box">
             <div class="ed-admin-breadcrumbs">
                 <i class="fas fa-home"></i>
-                <a href="{{ route('admin.dashboard') }}" style="color: inherit; text-decoration: none;">لوحة التحكم</a>
-                <i class="fas fa-chevron-left divider"></i>
-                <span class="active">إدارة الشهادات والنتائج</span>
+                <a href="{{ route('admin.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('لوحة التحكم') }}</a>
+                <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} divider"></i>
+                <span class="active">{{ __('إدارة الشهادات والنتائج') }}</span>
             </div>
-            <h1>إدارة واعتماد الشهادات والنتائج الأكاديمية</h1>
-            <p>إعلان نتائج التخرج، اعتماد المعدلات الفعلية للطلبة، وإصدار وثائق التخرج الرسمية المؤمنة.</p>
+            <h1>{{ __('إدارة واعتماد الشهادات والنتائج الأكاديمية') }}</h1>
+            <p>{{ __('إعلان نتائج التخرج، اعتماد المعدلات الفعلية للطلبة، وإصدار وثائق التخرج الرسمية المؤمنة.') }}</p>
         </div>
 
         <div class="ed-admin-status-wrap">
             <button type="button" onclick="openIssueModal()" class="ed-btn ed-btn-primary">
                 <i class="fas fa-award"></i>
-                <span>اعتماد ورصد شهادة جديدة</span>
+                <span>{{ __('اعتماد ورصد شهادة جديدة') }}</span>
             </button>
         </div>
     </header>
@@ -37,20 +37,20 @@
                         <i class="fas {{ $yearEndPublished ? 'fa-lock-open' : 'fa-lock' }}"></i>
                     </div>
                     <div>
-                        <h3>إعلان شهادات نهاية العام</h3>
+                        <h3>{{ __('إعلان شهادات نهاية العام') }}</h3>
                         <span class="ed-control-status" style="color: {{ $yearEndPublished ? '#059669' : '#dc2626' }};">
-                            {{ $yearEndPublished ? 'معلنة ومنشورة رسمياً للطلبة 🎓' : 'محجوبة بقرار الإدارة الأكاديمية 🔒' }}
+                            {{ $yearEndPublished ? __('معلنة ومنشورة رسمياً للطلبة 🎓') : __('محجوبة بقرار الإدارة الأكاديمية 🔒') }}
                         </span>
                     </div>
                 </div>
                 <p class="ed-control-desc">
-                    الشهادات محجوبة طوال العام الدراسي افتراضياً. عند تفعيل هذا الخيار بنهاية العام، ستظهر الشهادات المعتمدة في حسابات الطلبة.
+                    {{ __('الشهادات محجوبة طوال العام الدراسي افتراضياً. عند تفعيل هذا الخيار بنهاية العام، ستظهر الشهادات المعتمدة في حسابات الطلبة.') }}
                 </p>
             </div>
 
             <button type="button" onclick="togglePublishState()" id="btnTogglePublish" class="ed-btn {{ $yearEndPublished ? 'ed-btn-outline danger' : 'ed-btn-primary' }}" style="width: 100%; justify-content: center;">
                 <i class="fas {{ $yearEndPublished ? 'fa-eye-slash' : 'fa-bullhorn' }}"></i>
-                <span>{{ $yearEndPublished ? 'حجب الشهادات وإغلاق الإعلان' : 'إعلان ونشر الشهادات للطلبة الآن' }}</span>
+                <span>{{ $yearEndPublished ? __('حجب الشهادات وإغلاق الإعلان') : __('إعلان ونشر الشهادات للطلبة الآن') }}</span>
             </button>
         </div>
 
@@ -62,20 +62,20 @@
                         <i class="fas fa-calculator"></i>
                     </div>
                     <div>
-                        <h3>حساب المعدل النهائي للطلبة</h3>
+                        <h3>{{ __('حساب المعدل النهائي للطلبة') }}</h3>
                         <span class="ed-control-status" style="color: {{ $allowStudentGpa ? '#1d4ed8' : '#64748b' }};">
-                            {{ $allowStudentGpa ? 'متاح للطلبة احتساب المعدل ✅' : 'مقيد ومحجوب بقرار الإدارة 🔒' }}
+                            {{ $allowStudentGpa ? __('متاح للطلبة احتساب المعدل ✅') : __('مقيد ومحجوب بقرار الإدارة 🔒') }}
                         </span>
                     </div>
                 </div>
                 <p class="ed-control-desc">
-                    التحكم في إمكانية استخدام الطلبة لحاسبة المعدل واستخراج درجات التخرج، بحيث تتاح فقط عند اعتماد الإدارة للفترة الرسمية.
+                    {{ __('التحكم في إمكانية استخدام الطلبة لحاسبة المعدل واستخراج درجات التخرج، بحيث تتاح فقط عند اعتماد الإدارة للفترة الرسمية.') }}
                 </p>
             </div>
 
             <button type="button" onclick="toggleGpaState()" id="btnToggleGpa" class="ed-btn {{ $allowStudentGpa ? 'ed-btn-outline' : 'ed-btn-primary' }}" style="width: 100%; justify-content: center;">
                 <i class="fas {{ $allowStudentGpa ? 'fa-lock' : 'fa-check' }}"></i>
-                <span>{{ $allowStudentGpa ? 'قفل حاسبة المعدل عن الطلبة' : 'إتاحة حاسبة المعدل للطلبة' }}</span>
+                <span>{{ $allowStudentGpa ? __('قفل حاسبة المعدل عن الطلبة') : __('إتاحة حاسبة المعدل للطلبة') }}</span>
             </button>
         </div>
 
@@ -87,25 +87,25 @@
                         <i class="fas fa-chart-pie"></i>
                     </div>
                     <div>
-                        <h3>إحصائيات الاعتماد والتخرج</h3>
-                        <span class="ed-control-status" style="color: #64748b;">العام الأكاديمي: 2025 / 2026</span>
+                        <h3>{{ __('إحصائيات الاعتماد والتخرج') }}</h3>
+                        <span class="ed-control-status" style="color: #64748b;">{{ __('العام الأكاديمي: 2025 / 2026') }}</span>
                     </div>
                 </div>
 
                 <div class="ed-cert-stats-flex">
                     <div class="ed-cert-mini-stat">
-                        <span class="lbl">الشهادات الصادرة</span>
+                        <span class="lbl">{{ __('الشهادات الصادرة') }}</span>
                         <span class="val amber" id="statCertCount">{{ $stats['total_certificates'] }}</span>
                     </div>
                     <div class="ed-cert-mini-stat">
-                        <span class="lbl">إجمالي الطلبة</span>
+                        <span class="lbl">{{ __('إجمالي الطلبة') }}</span>
                         <span class="val">{{ $stats['total_students'] }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="ed-cert-security-hint">
-                <i class="fas fa-shield-alt"></i> وثائق رسمية مؤمنة برقم تسلسلي ورمز QR موثق
+                <i class="fas fa-shield-alt"></i> {{ __('وثائق رسمية مؤمنة برقم تسلسلي ورمز QR موثق') }}
             </div>
         </div>
 
@@ -115,11 +115,11 @@
     <div class="ed-card" style="padding: 0; overflow: hidden;">
         <div class="ed-table-header-bar">
             <div>
-                <h2>سجل درجات وشهادات الطلبة</h2>
-                <p>قائمة طلبة الثانوية العامة مع رصد المعدلات الفعلية وحالة اعتماد الشهادة الرسمية</p>
+                <h2>{{ __('سجل درجات وشهادات الطلبة') }}</h2>
+                <p>{{ __('قائمة طلبة الثانوية العامة مع رصد المعدلات الفعلية وحالة اعتماد الشهادة الرسمية') }}</p>
             </div>
             <div class="ed-table-counter">
-                إجمالي الطلبة: <strong>{{ $students->total() }}</strong>
+                {{ __('إجمالي الطلبة:') }} <strong>{{ $students->total() }}</strong>
             </div>
         </div>
 
@@ -127,33 +127,34 @@
             <table class="ed-custom-table">
                 <thead>
                     <tr>
-                        <th>بيانات الطالب</th>
-                        <th>الفرع الأكاديمي</th>
-                        <th>رقم الهوية الوطنية</th>
-                        <th>المعدل وحالة الاعتماد</th>
-                        <th style="text-align: center;">الإجراءات والشهادة</th>
+                        <th>{{ __('بيانات الطالب') }}</th>
+                        <th>{{ __('الفرع الأكاديمي') }}</th>
+                        <th>{{ __('رقم الهوية الوطنية') }}</th>
+                        <th>{{ __('المعدل وحالة الاعتماد') }}</th>
+                        <th style="text-align: center;">{{ __('الإجراءات والشهادة') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($students as $st)
                         @php
                             $latestCert = $st->certificates->first();
+                            $stDispName = (app()->getLocale() === 'en' && !empty($st->name_en)) ? $st->name_en : $st->name_ar;
                         @endphp
                         <tr id="row_student_{{ $st->id }}">
                             <td>
                                 <div class="ed-user-cell">
                                     <div class="ed-user-avatar">
-                                        {{ mb_substr($st->name_ar, 0, 1) }}
+                                        {{ mb_substr($stDispName, 0, 1) }}
                                     </div>
                                     <div>
-                                        <div class="ed-user-name">{{ $st->name_ar }}</div>
+                                        <div class="ed-user-name">{{ $stDispName }}</div>
                                         <div class="ed-user-sub">{{ $st->email }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <span class="ed-badge ed-badge-blue">
-                                    {{ $st->stage?->label_ar ?? 'توجيهي عام' }}
+                                    {{ $st->stage?->label_ar ? __($st->stage->label_ar) : __('توجيهي عام') }}
                                 </span>
                             </td>
                             <td>
@@ -163,43 +164,43 @@
                                 @if($latestCert)
                                     <div class="ed-grade-cell">
                                         <span class="ed-badge ed-badge-amber">
-                                            <i class="fas fa-star"></i> المعدل: {{ $latestCert->final_grade }}%
+                                            <i class="fas fa-star"></i> {{ __('المعدل:') }} {{ $latestCert->final_grade }}%
                                         </span>
                                         <span class="ed-subject-tag">
-                                            ({{ $latestCert->subject?->name_ar ?? 'شهادة توجيهي عامة' }})
+                                            ({{ $latestCert->subject?->name_ar ? __($latestCert->subject->name_ar) : __('شهادة توجيهي عامة') }})
                                         </span>
                                     </div>
                                 @else
                                     <span class="ed-badge" style="background: #f1f5f9; color: #94a3b8; border: 1px dashed #cbd5e1;">
-                                        <i class="fas fa-hourglass-start"></i> بانتظار الرصد والاعتماد
+                                        <i class="fas fa-hourglass-start"></i> {{ __('بانتظار الرصد والاعتماد') }}
                                     </span>
                                 @endif
                             </td>
                             <td style="text-align: center;">
                                 <div class="ed-table-actions">
                                     <!-- دفتر علامات سريع ومباشر -->
-                                    <div style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #e2e8f0;" title="رصد وتعديل سريع للعلامة">
+                                    <div style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; padding: 3px 6px; border-radius: 8px; border: 1px solid #e2e8f0;" title="{{ __('رصد وتعديل سريع للعلامة') }}">
                                         <input type="number" id="quick_grade_{{ $st->id }}" min="0" max="100" step="0.5" value="{{ $latestCert ? $latestCert->final_grade : '' }}" placeholder="%" style="width: 55px; padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 800; font-size: 0.82rem; text-align: center; color: #1d4ed8; background: #fff;">
-                                        <button type="button" onclick="quickSaveCertGrade({{ $st->id }}, this)" class="ed-btn ed-btn-primary" style="padding: 5px 8px; font-size: 0.75rem;" title="حفظ العلامة فوراً">
+                                        <button type="button" onclick="quickSaveCertGrade({{ $st->id }}, this)" class="ed-btn ed-btn-primary" style="padding: 5px 8px; font-size: 0.75rem;" title="{{ __('حفظ العلامة فوراً') }}">
                                             <i class="fas fa-check"></i>
                                         </button>
                                     </div>
 
                                     @if($latestCert)
-                                        <a href="{{ route('certificates.show', $latestCert->id) }}" target="_blank" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px;" title="معاينة وطباعة الشهادة الأكاديمية">
-                                            <i class="fas fa-external-link-alt"></i> معاينة
+                                        <a href="{{ route('certificates.show', $latestCert->id) }}" target="_blank" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px;" title="{{ __('معاينة وطباعة الشهادة الأكاديمية') }}">
+                                            <i class="fas fa-external-link-alt"></i> {{ __('معاينة') }}
                                         </a>
 
-                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}', {{ $latestCert->final_grade }}, {{ $latestCert->subject_id ?? 'null' }})" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #d97706; border-color: #fde68a;" title="تعديل تفصيلي">
+                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($stDispName) }}', {{ $latestCert->final_grade }}, {{ $latestCert->subject_id ?? 'null' }})" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #d97706; border-color: #fde68a;" title="{{ __('تعديل تفصيلي') }}">
                                             <i class="fas fa-pen"></i>
                                         </button>
 
-                                        <button type="button" onclick="deleteCert({{ $latestCert->id }}, '{{ addslashes($st->name_ar) }}')" class="ed-btn ed-btn-outline danger" style="font-size: 0.78rem; padding: 6px 10px;" title="حذف الشهادة">
+                                        <button type="button" onclick="deleteCert({{ $latestCert->id }}, '{{ addslashes($stDispName) }}')" class="ed-btn ed-btn-outline danger" style="font-size: 0.78rem; padding: 6px 10px;" title="{{ __('حذف الشهادة') }}">
                                             <i class="fas fa-trash-alt"></i>
                                         </button>
                                     @else
-                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($st->name_ar) }}')" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #1d4ed8; border-color: #bfdbfe;">
-                                            <i class="fas fa-award"></i> تفصيلي
+                                        <button type="button" onclick="openIssueModal({{ $st->id }}, '{{ addslashes($stDispName) }}')" class="ed-btn ed-btn-outline" style="font-size: 0.78rem; padding: 6px 10px; color: #1d4ed8; border-color: #bfdbfe;">
+                                            <i class="fas fa-award"></i> {{ __('تفصيلي') }}
                                         </button>
                                     @endif
                                 </div>
@@ -209,7 +210,7 @@
                         <tr>
                             <td colspan="5" class="ed-empty-cell">
                                 <i class="fas fa-inbox"></i>
-                                <p>لا يوجد طلبة مسجلون حالياً في النظام.</p>
+                                <p>{{ __('لا يوجد طلبة مسجلون حالياً في النظام.') }}</p>
                             </td>
                         </tr>
                     @endforelse
@@ -233,8 +234,8 @@
             <div class="ed-modal-title">
                 <div class="ed-modal-icon"><i class="fas fa-award"></i></div>
                 <div>
-                    <h3>اعتماد ورصد الشهادة الأكاديمية</h3>
-                    <p>إصدار وتوثيق شهادة إتمام وتفوق رسمية معتمدة من الإدارة</p>
+                    <h3>{{ __('اعتماد ورصد الشهادة الأكاديمية') }}</h3>
+                    <p>{{ __('إصدار وتوثيق شهادة إتمام وتفوق رسمية معتمدة من الإدارة') }}</p>
                 </div>
             </div>
             <button type="button" onclick="closeIssueModal()" class="ed-modal-close">✕</button>
@@ -246,29 +247,31 @@
 
                 <!-- اختيار الطالب -->
                 <div class="ed-input-group">
-                    <label for="modalStudentSelect">الطالب المراد اعتماد شهادته *</label>
+                    <label for="modalStudentSelect">{{ __('الطالب المراد اعتماد شهادته *') }}</label>
                     <select name="student_id" id="modalStudentSelect" required class="ed-select">
-                        <option value="" disabled selected>اختر الطالب...</option>
+                        <option value="" disabled selected>{{ __('اختر الطالب...') }}</option>
                         @foreach($students as $stu)
-                            <option value="{{ $stu->id }}">{{ $stu->name_ar }} ({{ $stu->stage?->label_ar ?? 'توجيهي' }})</option>
+                            @php $stuDisp = (app()->getLocale() === 'en' && !empty($stu->name_en)) ? $stu->name_en : $stu->name_ar; @endphp
+                            <option value="{{ $stu->id }}">{{ $stuDisp }} ({{ $stu->stage?->label_ar ? __($stu->stage->label_ar) : __('توجيهي') }})</option>
                         @endforeach
                     </select>
                 </div>
 
                 <!-- اختيار المادة -->
                 <div class="ed-input-group">
-                    <label for="modalSubjectSelect">المادة أو التخصص الأكاديمي</label>
+                    <label for="modalSubjectSelect">{{ __('المادة أو التخصص الأكاديمي') }}</label>
                     <select name="subject_id" id="modalSubjectSelect" class="ed-select">
-                        <option value="">شهادة تفوق وإتمام عامة في الثانوية العامة</option>
+                        <option value="">{{ __('شهادة تفوق وإتمام عامة في الثانوية العامة') }}</option>
                         @foreach($subjects as $sb)
-                            <option value="{{ $sb->id }}">{{ $sb->name_ar }}</option>
+                            @php $sbDisp = (app()->getLocale() === 'en' && !empty($sb->name_en)) ? $sb->name_en : $sb->name_ar; @endphp
+                            <option value="{{ $sb->id }}">{{ $sbDisp }}</option>
                         @endforeach
                     </select>
                 </div>
 
                 <!-- رصد المعدل الفعلي -->
                 <div class="ed-input-group">
-                    <label for="modalFinalGrade">المعدل أو النسبة المئوية المعتمدة (من 0 إلى 100) *</label>
+                    <label for="modalFinalGrade">{{ __('المعدل أو النسبة المئوية المعتمدة (من 0 إلى 100) *') }}</label>
                     <input 
                         type="number" 
                         name="final_grade" 
@@ -277,12 +280,12 @@
                         max="100" 
                         step="0.1" 
                         required 
-                        placeholder="مثال: 94.5" 
+                        placeholder="{{ __('مثال: 94.5') }}" 
                         class="ed-input"
                         style="font-size: 1.1rem; font-weight: 800; color: #1d4ed8;"
                     >
                     <span class="ed-input-hint">
-                        * يرجى إدخال المعدل الفعلي الحقيقي؛ لن يتم اعتماد أي درجات عشوائية أو غير رسمية.
+                        {{ __('* يرجى إدخال المعدل الفعلي الحقيقي؛ لن يتم اعتماد أي درجات عشوائية أو غير رسمية.') }}
                     </span>
                 </div>
 
@@ -290,10 +293,10 @@
 
             <!-- أزرار المودال -->
             <div class="ed-modal-actions">
-                <button type="button" onclick="closeIssueModal()" class="ed-btn ed-btn-outline">إلغاء</button>
+                <button type="button" onclick="closeIssueModal()" class="ed-btn ed-btn-outline">{{ __('إلغاء') }}</button>
                 <button type="button" onclick="submitIssueCert()" id="btnSubmitIssue" class="ed-btn ed-btn-primary">
                     <i class="fas fa-check"></i>
-                    <span>اعتماد وحفظ الشهادة</span>
+                    <span>{{ __('اعتماد وحفظ الشهادة') }}</span>
                 </button>
             </div>
         </form>
@@ -746,13 +749,13 @@
                 title: res.data.title,
                 text: res.data.message,
                 confirmButtonColor: '#1d4ed8',
-                confirmButtonText: 'حسناً'
+                confirmButtonText: @json(__('حسناً'))
             }).then(() => {
                 location.reload();
             });
         } catch (e) {
             btn.disabled = false;
-            Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحديث حالة إعلان الشهادات.' });
+            Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: @json(__('تعذر تحديث حالة إعلان الشهادات.')) });
         }
     }
 
@@ -771,13 +774,13 @@
                 title: res.data.title,
                 text: res.data.message,
                 confirmButtonColor: '#1d4ed8',
-                confirmButtonText: 'حسناً'
+                confirmButtonText: @json(__('حسناً'))
             }).then(() => {
                 location.reload();
             });
         } catch (e) {
             btn.disabled = false;
-            Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر تحديث إعدادات حاسبة المعدل.' });
+            Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: @json(__('تعذر تحديث إعدادات حاسبة المعدل.')) });
         }
     }
 
@@ -792,7 +795,7 @@
         const btn = document.getElementById('btnSubmitIssue');
         btn.disabled = true;
         const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الاعتماد...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + @json(__('جاري الاعتماد...'));
 
         const formData = new FormData(form);
 
@@ -803,12 +806,12 @@
                 title: res.data.title,
                 text: res.data.message,
                 confirmButtonColor: '#059669',
-                confirmButtonText: 'عرض وتحديث'
+                confirmButtonText: @json(__('عرض وتحديث'))
             }).then(() => {
                 location.reload();
             });
         } catch (error) {
-            let msg = 'حدث خطأ أثناء رصد الشهادة.';
+            let msg = @json(__('حدث خطأ أثناء رصد الشهادة.'));
             if (error.response && error.response.data) {
                 if (error.response.data.message) {
                     msg = error.response.data.message;
@@ -817,7 +820,7 @@
                     msg = Object.values(error.response.data.errors).flat().join('<br>');
                 }
             }
-            Swal.fire({ icon: 'error', title: 'فشل الاعتماد', html: msg });
+            Swal.fire({ icon: 'error', title: @json(__('فشل الاعتماد')), html: msg });
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalText;
@@ -829,7 +832,7 @@
         const input = document.getElementById(`quick_grade_${studentId}`);
         const val = parseFloat(input.value);
         if (isNaN(val) || val < 0 || val > 100) {
-            Swal.fire({ icon: 'warning', title: 'تنبيه', text: 'يرجى إدخال درجة صحيحة بين 0 و 100.' });
+            Swal.fire({ icon: 'warning', title: @json(__('تنبيه')), text: @json(__('يرجى إدخال درجة صحيحة بين 0 و 100.')) });
             return;
         }
 
@@ -845,7 +848,7 @@
             });
             Swal.fire({
                 icon: 'success',
-                title: 'تم رصد العلامة بنجاح 🌟',
+                title: @json(__('تم رصد العلامة بنجاح 🌟')),
                 text: res.data.message,
                 timer: 1500,
                 showConfirmButton: false
@@ -855,25 +858,25 @@
         } catch (e) {
             btnEl.disabled = false;
             btnEl.innerHTML = originalHtml;
-            let errMsg = 'تعذر رصد العلامة.';
+            let errMsg = @json(__('تعذر رصد العلامة.'));
             if (e.response && e.response.data && e.response.data.message) {
                 errMsg = e.response.data.message;
             }
-            Swal.fire({ icon: 'error', title: 'خطأ', text: errMsg });
+            Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: errMsg });
         }
     }
 
     // حذف شهادة
     function deleteCert(certId, studentName) {
         Swal.fire({
-            title: 'حذف وإلغاء الشهادة',
-            text: `هل أنت متأكد من رغبتك في سحب شهادة الطالب (${studentName})؟`,
+            title: @json(__('حذف وإلغاء الشهادة')),
+            text: `${@json(__('هل أنت متأكد من رغبتك في سحب شهادة الطالب'))} (${studentName})؟`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، حذف الشهادة',
-            cancelButtonText: 'تراجع'
+            confirmButtonText: @json(__('نعم، حذف الشهادة')),
+            cancelButtonText: @json(__('تراجع'))
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -882,14 +885,14 @@
                     });
                     Swal.fire({
                         icon: 'success',
-                        title: 'تم الحذف بنجاح',
+                        title: @json(__('تم الحذف بنجاح')),
                         timer: 1400,
                         showConfirmButton: false
                     }).then(() => {
                         location.reload();
                     });
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر حذف الشهادة.' });
+                    Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: @json(__('تعذر حذف الشهادة.')) });
                 }
             }
         });

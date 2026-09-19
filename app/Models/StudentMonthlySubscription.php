@@ -44,6 +44,27 @@ class StudentMonthlySubscription extends Model
         ];
     }
 
+    public static function monthNames(): array
+    {
+        if (app()->getLocale() === 'en') {
+            return [
+                1  => 'Month 1 (Enrollment Start)',
+                2  => 'Month 2',
+                3  => 'Month 3',
+                4  => 'Month 4',
+                5  => 'Month 5',
+                6  => 'Month 6',
+                7  => 'Month 7',
+                8  => 'Month 8',
+                9  => 'Month 9',
+                10 => 'Month 10',
+                11 => 'Month 11',
+                12 => 'Month 12',
+            ];
+        }
+        return self::monthNamesAr();
+    }
+
     public function getMonthNameArAttribute(): string
     {
         return self::monthNamesAr()[$this->month] ?? "الشهر {$this->month}";

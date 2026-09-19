@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('لوحة الإدارة المركزية') . ' | ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('لوحة الإدارة المركزية') . ' | ' . __(config('app.name', 'منارة التوجيهي')))
 
 @section('content')
 <div class="dash-wrapper">
@@ -13,7 +13,7 @@
                 {{ __('لوحة الإدارة المركزية') }}
             </h1>
             <div class="dash-breadcrumbs">
-                <span>{{ config('app.name', 'منارة التوجيهي') }}</span>
+                <span>{{ __(config('app.name', 'منارة التوجيهي')) }}</span>
                 <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} sep"></i>
                 <span class="active">{{ __('المؤشرات العامة ومتابعة المنصة') }}</span>
             </div>
@@ -22,7 +22,7 @@
         <div class="dash-header-meta">
             <div class="dash-pill date-pill">
                 <i class="fa-regular fa-calendar-check text-muted"></i>
-                <span>{{ now()->translatedFormat('l، j F Y') }} م</span>
+                <span>{{ now()->translatedFormat('l، j F Y') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }}</span>
             </div>
             <div class="dash-pill status-pill">
                 <span class="live-status-dot"></span>

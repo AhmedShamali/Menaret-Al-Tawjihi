@@ -8,10 +8,8 @@
     <meta name="theme-color" content="#0284c7">
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
-    @else
-        <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>@yield('title', __('المنصة التعليمية')) | {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</title>
+    <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
 
     <!-- Google Fonts: Alexandria & Tajawal & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1307,12 +1305,12 @@
         <div class="side-brand">
             <a href="/" class="brand-logo">
                 @if(\App\Models\Setting::get('site_logo'))
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 38px; max-width: 44px; object-fit: contain; border-radius: 6px;">
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}" style="max-height: 38px; max-width: 44px; object-fit: contain; border-radius: 6px;">
                 @else
                     <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</span>
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
                     <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>
@@ -1712,7 +1710,7 @@
         <div class="sidebar-footer">
             @php
                 $currentUser = auth('student')->user() ?? auth()->user();
-                $userName = $currentUser->name ?? __('مستخدم المنصة');
+                $userName = (app()->getLocale() === 'en' && !empty($currentUser->name_en)) ? $currentUser->name_en : ($currentUser->name ?? $currentUser->name_ar ?? __('مستخدم المنصة'));
                 $userInitial = mb_substr($userName, 0, 1, 'UTF-8');
                 $userRole = 'student';
                 if (auth()->check()) {
@@ -1751,11 +1749,11 @@
     <main class="main-content">
         <header class="top-bar">
             <div style="display: flex; align-items: center; gap: 14px;">
-                <button class="mobile-toggle" id="btnToggleSidebar" aria-label="فتح القائمة">
+                <button class="mobile-toggle" id="btnToggleSidebar" aria-label="{{ __('فتح القائمة') }}">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="date-info" style="color: var(--ed-text-muted); font-weight: 600; font-size: 0.84rem; display: flex; align-items: center; gap: 8px;">
-                    <i class="fa-regular fa-calendar-check" style="color: var(--ed-primary);"></i> {{ date('Y/m/d') }} م
+                    <i class="fa-regular fa-calendar-check" style="color: var(--ed-primary);"></i> {{ date('Y/m/d') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }}
                 </div>
                 <div class="supervisor-top-tag" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 4px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700;">
                     <i class="fa-solid fa-user-tie"></i> {{ __('المشرف العام: أ. أحمد حسين شمالي') }}
@@ -1766,10 +1764,10 @@
                 <!-- زر تبديل اللغة (عربي / English) -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
-                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}" 
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'Switch to Arabic' }}" 
                    style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 700; transition: var(--transition-smooth);">
                     <i class="fa-solid fa-globe" style="color: var(--ed-primary); font-size: 0.95rem;"></i>
-                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
                 @php
                     $unreadCount = 0; 
@@ -1924,13 +1922,13 @@
                                     </div>
                                     <div style="flex: 1; min-width: 0;">
                                         <div style="font-size: 0.82rem; font-weight: 700; color: var(--ed-text-main); margin-bottom: 2px;">
-                                            {{ $item->title }}
+                                            {{ __($item->title) }}
                                         </div>
                                         <div style="font-size: 0.78rem; font-weight: 500; color: var(--ed-text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">
-                                            {{ $item->message }}
+                                            {{ __($item->message) }}
                                         </div>
                                         <span style="font-size: 0.7rem; color: var(--ed-text-dim); display: flex; align-items: center; gap: 4px;">
-                                            <i class="fa-regular fa-clock" style="font-size: 0.65rem;"></i> {{ $item->time }}
+                                            <i class="fa-regular fa-clock" style="font-size: 0.65rem;"></i> {{ __($item->time) }}
                                         </span>
                                     </div>
                                 </a>
@@ -1952,14 +1950,17 @@
                     </div>
                 </div>
 
-
                 <!-- بطاقة المستخدم -->
+                @php
+                    $topUser = auth('student')->user() ?? auth()->user();
+                    $topUserName = (app()->getLocale() === 'en' && !empty($topUser?->name_en)) ? $topUser->name_en : ($topUser?->name ?? $topUser?->name_ar ?? __('حسابي'));
+                @endphp
                 <div style="display:flex; align-items:center; gap:9px; background: var(--ed-surface); padding: 5px 12px; border-radius: 10px; border: 1px solid var(--ed-border);">
                     <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; font-size: 0.85rem; font-weight: 700;">
                         <i class="fa-solid fa-user"></i>
                     </div>
                     <span class="user-info-text" style="font-size: 0.84rem; font-weight: 600; color: var(--ed-text-main);">
-                        {{ auth()->user()->name ?? auth('student')->user()->name_ar ?? auth('student')->user()->name ?? __('حسابي') }}
+                        {{ $topUserName }}
                     </span>
                 </div>
             </div>
@@ -2028,49 +2029,49 @@
             </a>
             <a href="{{ route('admin.settings.index') }}" class="bottom-nav-item {{ Request::is('admin/settings*') ? 'active' : '' }}">
                 <i class="fa-solid fa-gear"></i>
-                <span>الإعدادات</span>
+                <span>{{ __('الإعدادات') }}</span>
             </a>
         @elseif(auth()->check() && auth()->user()->role === 'teacher')
             <a href="{{ route('teacher.dashboard') }}" class="bottom-nav-item {{ Request::is('teacher/dashboard*') ? 'active' : '' }}">
                 <i class="fa-solid fa-chart-pie"></i>
-                <span>اللوحة</span>
+                <span>{{ __('اللوحة') }}</span>
             </a>
             <a href="{{ route('teacher.exams.index') }}" class="bottom-nav-item {{ Request::is('teacher/exams*') ? 'active' : '' }}">
                 <i class="fa-solid fa-file-signature"></i>
-                <span>الاختبارات</span>
+                <span>{{ __('الاختبارات') }}</span>
             </a>
             <a href="{{ route('teacher.submissions.index') }}" class="bottom-nav-item {{ Request::is('teacher/submissions*') ? 'active' : '' }}">
                 <i class="fa-solid fa-marker"></i>
-                <span>التصحيح</span>
+                <span>{{ __('التصحيح') }}</span>
             </a>
             <a href="{{ route('teacher.students.index') }}" class="bottom-nav-item {{ Request::is('teacher/students*') || Request::is('teacher/access*') ? 'active' : '' }}">
                 <i class="fa-solid fa-user-check"></i>
-                <span>الطلاب</span>
+                <span>{{ __('الطلاب') }}</span>
             </a>
             <a href="{{ route('teacher.admin.chat') }}" class="bottom-nav-item {{ Request::is('teacher/admin/chat*') ? 'active' : '' }}">
                 <i class="fa-solid fa-shield-halved"></i>
-                <span>الإدارة</span>
+                <span>{{ __('الإدارة') }}</span>
             </a>
         @else
             <a href="/" class="bottom-nav-item {{ Request::is('/') ? 'active' : '' }}">
                 <i class="fa-solid fa-house"></i>
-                <span>الرئيسية</span>
+                <span>{{ __('الرئيسية') }}</span>
             </a>
             <a href="{{ route('stages.index') }}" class="bottom-nav-item {{ Request::is('stages*') ? 'active' : '' }}">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>الفروع</span>
+                <span>{{ __('الفروع') }}</span>
             </a>
             <a href="{{ route('tawjihi.calculator') }}" class="bottom-nav-item {{ Request::is('tawjihi-calculator*') ? 'active' : '' }}">
                 <i class="fa-solid fa-calculator"></i>
-                <span>الحاسبة</span>
+                <span>{{ __('الحاسبة') }}</span>
             </a>
             <a href="{{ route('contact') }}" class="bottom-nav-item {{ Request::is('contact*') ? 'active' : '' }}">
                 <i class="fa-solid fa-envelope"></i>
-                <span>تواصل</span>
+                <span>{{ __('تواصل') }}</span>
             </a>
             <a href="{{ route('login') }}" class="bottom-nav-item {{ Request::is('login*') ? 'active' : '' }}">
                 <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                <span>دخول</span>
+                <span>{{ __('دخول') }}</span>
             </a>
         @endif
     </nav>
@@ -2158,7 +2159,7 @@
                 if (badge) badge.style.display = 'none';
                 const list = document.getElementById('navNotificationsList');
                 if (list) {
-                    list.innerHTML = '<div style="padding: 24px 16px; text-align: center; color: var(--ed-text-muted);"><i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success);"></i><span style="font-size: 0.84rem; font-weight: 500;">تمت قراءة كافة التنبيهات بنجاح</span></div>';
+                    list.innerHTML = '<div style="padding: 24px 16px; text-align: center; color: var(--ed-text-muted);"><i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success);"></i><span style="font-size: 0.84rem; font-weight: 500;">' + @json(__('تمت قراءة كافة التنبيهات بنجاح')) + '</span></div>';
                 }
             }).catch(err => {
                 console.error('Error marking all notifications read:', err);

@@ -9,12 +9,12 @@
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</title>
+    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
 
-    <!-- Google Fonts: Alexandria -->
+    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -35,230 +35,166 @@
 
     <style>
         :root {
-            --primary: #2563eb;
-            --primary-dark: #1d4ed8;
-            --primary-light: #eff6ff;
-            --emerald: #10b981;
-            --bg-main: #f8fafc;
-            --text-title: #0f172a;
-            --text-body: #334155;
-            --text-muted: #64748b;
-            --border-card: #e2e8f0;
+            --ed-primary: #1d4ed8;
+            --ed-primary-hover: #1e40af;
+            --ed-primary-soft: #eff6ff;
+            --ed-primary-border: #bfdbfe;
+
+            --ed-accent-gold: #d97706;
+            --ed-accent-gold-soft: #fef3c7;
+
+            --ed-success: #16a34a;
+            --ed-success-hover: #15803d;
+            --ed-success-soft: #ecfdf5;
+
+            --ed-bg: #f8fafc;
+            --ed-surface: #ffffff;
+            --ed-surface-alt: #f1f5f9;
+            --ed-border: #e2e8f0;
+            --ed-border-hover: #cbd5e1;
+
+            --ed-text-main: #0f172a;
+            --ed-text-body: #334155;
+            --ed-text-muted: #64748b;
+
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --transition: all 0.2s ease;
         }
 
         * {
             margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Alexandria', sans-serif;
+            font-family: 'Tajawal', 'Alexandria', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            background-color: var(--bg-main);
-            color: var(--text-body);
+            background-color: var(--ed-bg);
+            color: var(--ed-text-body);
+            font-size: 13.5px;
+            line-height: 1.6;
             min-height: 100vh;
-            display: flex;
-            align-items: stretch;
-        }
-
-        html[dir="rtl"] body {
-            direction: rtl;
-            text-align: right;
-        }
-
-        html[dir="ltr"] body {
-            direction: ltr;
-            text-align: left;
-        }
-
-        html[dir="ltr"] .lead-icon {
-            right: auto;
-            left: 14px;
-        }
-
-        html[dir="ltr"] .form-input {
-            padding-right: 14px;
-            padding-left: 38px;
-        }
-
-        html[dir="ltr"] .password-toggle-btn {
-            left: auto;
-            right: 12px;
-        }
-
-        .auth-split-wrapper {
-            display: flex;
-            width: 100vw;
-            min-height: 100vh;
-        }
-
-        /* الجانب الأيمن (المرئي والإلهامي) */
-        .auth-visual-side {
-            flex: 1.1;
-            background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #1e40af 100%);
-            border-left: 4px solid #f59e0b;
-            padding: 50px 8%;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            color: white;
-            position: relative;
-            overflow: hidden;
         }
 
-        .auth-visual-side::after {
-            content: '';
-            position: absolute;
-            bottom: -80px;
-            right: -80px;
-            width: 350px;
-            height: 350px;
-            background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+        html[dir="rtl"] body { direction: rtl; text-align: right; }
+        html[dir="ltr"] body { direction: ltr; text-align: left; }
 
-        .brand-logo-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
+        a {
+            color: var(--ed-primary);
             text-decoration: none;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 800;
+            transition: var(--transition);
         }
-        .brand-icon-box {
-            width: 46px;
-            height: 46px;
-            border-radius: 12px;
+        a:hover { color: var(--ed-primary-hover); }
+
+        /* الشريط العلوي */
+        .top-nav-bar {
             background: #ffffff;
-            color: #1e3a8a;
-            border: 2px solid #f59e0b;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .visual-center-content {
-            margin: 40px 0;
-            max-width: 520px;
-        }
-        .palestine-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #93c5fd;
-        }
-        .visual-center-content h2 {
-            font-size: 2.3rem;
-            font-weight: 900;
-            line-height: 1.3;
-            margin-bottom: 16px;
-        }
-        .visual-center-content p {
-            font-size: 1rem;
-            line-height: 1.8;
-            color: #cbd5e1;
-            margin-bottom: 30px;
-        }
-
-        .features-checklist {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #f1f5f9;
-        }
-        .check-item i {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-        }
-
-        .visual-footer {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* الجانب الأيسر (نموذج التسجيل) */
-        .auth-form-side {
-            flex: 1.3;
-            background: white;
-            padding: 40px 6%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow-y: auto;
-        }
-
-        .form-inner-box {
-            max-width: 600px;
-            margin: 0 auto;
+            border-bottom: 1px solid var(--ed-border);
+            padding: 12px 32px;
             width: 100%;
         }
-
-        .form-head {
-            margin-bottom: 26px;
+        .top-nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .form-head .tag-pill {
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ed-text-main);
+            font-weight: 800;
+            font-size: 16px;
+        }
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
+            border: 1px solid var(--ed-primary-border);
+            border-radius: var(--radius-sm);
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+        }
+        .nav-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-lang {
+            background: #ffffff;
+            border: 1px solid var(--ed-border);
+            color: var(--ed-text-body);
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #dbeafe;
-            color: var(--primary);
-            font-size: 0.78rem;
-            font-weight: 700;
-            padding: 4px 12px;
-            border-radius: 20px;
-            margin-bottom: 10px;
         }
-        .form-head h1 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--text-title);
-            margin-bottom: 6px;
-        }
-        .form-head p {
-            font-size: 0.9rem;
-            color: var(--text-muted);
+        .btn-lang:hover {
+            background: var(--ed-surface-alt);
+            border-color: var(--ed-border-hover);
         }
 
+        /* حاوية التسجيل */
+        .register-page-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 20px 60px;
+        }
+        .register-card-box {
+            background: var(--ed-surface);
+            border: 1px solid var(--ed-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 780px;
+            padding: 36px 40px;
+        }
 
-        .verified-badge-label {
-            background: #ecfdf5;
-            color: #059669;
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 6px;
+        .reg-header {
+            text-align: center;
+            margin-bottom: 26px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--ed-border);
+        }
+        .reg-badge-tag {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 6px;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 3px 12px;
+            border-radius: 50px;
+            margin-bottom: 8px;
+            border: 1px solid var(--ed-primary-border);
+        }
+        .reg-header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--ed-text-main);
+            margin-bottom: 4px;
+        }
+        .reg-header p {
+            font-size: 13px;
+            color: var(--ed-text-muted);
         }
 
+        /* شبكة الحقول */
         .grid-2-cols {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -269,13 +205,13 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 5px;
             margin-bottom: 14px;
         }
         .input-group label {
-            font-size: 0.84rem;
+            font-size: 12.5px;
             font-weight: 700;
-            color: var(--text-title);
+            color: var(--ed-text-main);
             display: flex;
             justify-content: space-between;
         }
@@ -289,256 +225,207 @@
         }
         .input-control-wrap i.lead-icon {
             position: absolute;
-            right: 14px;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            color: var(--ed-text-muted);
+            font-size: 13px;
         }
+        html[dir="rtl"] .input-control-wrap i.lead-icon { right: 12px; }
+        html[dir="ltr"] .input-control-wrap i.lead-icon { left: 12px; }
+
         .form-input {
             width: 100%;
-            padding: 11px 38px 11px 14px;
-            border: 1.5px solid var(--border-card);
-            border-radius: 12px;
-            font-size: 0.92rem;
+            padding: 9px 12px;
+            border: 1px solid var(--ed-border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
             font-family: inherit;
-            color: var(--text-body);
-            background: #f8fafc;
+            color: var(--ed-text-main);
+            background: #ffffff;
             outline: none;
-            transition: all 0.2s ease;
+            transition: var(--transition);
         }
+        html[dir="rtl"] .form-input.has-icon { padding-right: 36px; padding-left: 12px; }
+        html[dir="ltr"] .form-input.has-icon { padding-left: 36px; padding-right: 12px; }
+
         .form-input:focus {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            border-color: var(--ed-primary);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
 
         .password-toggle-btn {
             position: absolute;
-            left: 12px;
             background: none;
             border: none;
-            color: var(--text-muted);
+            color: var(--ed-text-muted);
             cursor: pointer;
-            font-size: 0.95rem;
+            font-size: 13px;
             padding: 4px;
         }
+        html[dir="rtl"] .password-toggle-btn { left: 10px; }
+        html[dir="ltr"] .password-toggle-btn { right: 10px; }
 
-        /* Password Strength Meter */
-        .strength-meter {
-            height: 4px;
-            background: #e2e8f0;
-            border-radius: 4px;
+        /* بطاقات الرفع */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .upload-card-box {
+            background: #ffffff;
+            border: 1px dashed var(--ed-border-hover);
+            border-radius: var(--radius-sm);
+            padding: 12px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .upload-card-box:hover {
+            border-color: var(--ed-primary);
+            background: var(--ed-primary-soft);
+        }
+        .upload-card-box.has-file {
+            border-style: solid;
+            border-color: var(--ed-success);
+            background: var(--ed-success-soft);
+        }
+        .upload-icon-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
+            display: grid;
+            place-items: center;
+            font-size: 15px;
+            margin: 0 auto 6px auto;
+        }
+        .upload-card-box.has-file .upload-icon-circle {
+            background: #dcfce7;
+            color: var(--ed-success);
+        }
+        .upload-thumb-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 0 auto 6px auto;
+            display: none;
+            border: 1px solid var(--ed-border);
+        }
+        .upload-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ed-text-main);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .upload-card-sub {
+            font-size: 11px;
+            color: var(--ed-text-muted);
+            display: block;
+        }
+        .upload-file-status {
+            font-size: 11px;
+            color: var(--ed-success);
+            font-weight: 700;
             margin-top: 4px;
-            overflow: hidden;
-        }
-        .strength-meter-fill {
-            height: 100%;
-            width: 0%;
-            transition: all 0.3s ease;
+            display: none;
         }
 
-        /* Submit Button */
+        /* زر الإرسال */
         .btn-register-submit {
             width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            padding: 11px;
+            border: 1px solid var(--ed-primary);
+            border-radius: var(--radius-sm);
+            background: var(--ed-primary);
             color: white;
-            font-size: 1rem;
-            font-weight: 800;
+            font-size: 13.5px;
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-            margin-top: 8px;
+            gap: 8px;
+            transition: var(--transition);
+            margin-top: 6px;
         }
         .btn-register-submit:hover {
-            filter: brightness(1.1);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+            background: var(--ed-primary-hover);
+            border-color: var(--ed-primary-hover);
         }
 
         .login-switch-footer {
             text-align: center;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-        .login-switch-footer a {
-            color: var(--primary);
-            font-weight: 800;
-            text-decoration: none;
-            margin-right: 4px;
-        }
-        .login-switch-footer a:hover {
-            text-decoration: underline;
+            margin-top: 16px;
+            font-size: 12.5px;
+            color: var(--ed-text-muted);
         }
 
-        /* Upload Cards */
-        .upload-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-        .upload-card-box {
-            background: #ffffff;
-            border: 2px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 16px 12px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-        .upload-card-box:hover {
-            border-color: var(--primary);
-            background: #f0f7ff;
-            transform: translateY(-2px);
-        }
-        .upload-card-box.has-file {
-            border-style: solid;
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        .upload-icon-circle {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #eff6ff;
-            color: var(--primary);
-            display: grid;
-            place-items: center;
-            font-size: 1.3rem;
-            margin: 0 auto 8px auto;
-            transition: all 0.2s ease;
-        }
-        .upload-card-box.has-file .upload-icon-circle {
-            background: #dcfce7;
-            color: #10b981;
-        }
-        .upload-thumb-preview {
-            width: 65px;
-            height: 65px;
-            border-radius: 12px;
-            object-fit: cover;
-            margin: 0 auto 8px auto;
-            display: none;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            border: 2px solid white;
-        }
-        .upload-card-title {
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: var(--text-title);
-            display: block;
-            margin-bottom: 3px;
-        }
-        .upload-card-sub {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            display: block;
-            line-height: 1.3;
-        }
-        .upload-file-status {
-            font-size: 0.72rem;
-            color: #059669;
-            font-weight: 700;
-            margin-top: 6px;
-            display: none;
-        }
-
-        @media (max-width: 950px) {
-            .auth-visual-side { display: none; }
-            .auth-form-side { padding: 40px 20px; }
+        @media (max-width: 680px) {
+            .register-card-box { padding: 24px 18px; }
             .grid-2-cols { grid-template-columns: 1fr; gap: 0; }
             .upload-grid { grid-template-columns: 1fr; }
+            .top-nav-bar { padding: 10px 16px; }
         }
     </style>
 </head>
 <body>
 
-<div class="auth-split-wrapper">
+    <!-- الشريط العلوي الرفيع -->
+    <header class="top-nav-bar">
+        <div class="top-nav-inner">
+            <a href="/" class="brand-link">
+                @if(\App\Models\Setting::get('site_logo'))
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}" style="max-height: 36px; max-width: 44px; object-fit: contain;">
+                @else
+                    <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                @endif
+                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
+            </a>
 
-    <!-- الجانب الأيمن المرئي والإلهامي -->
-    <div class="auth-visual-side">
-        <a href="/" class="brand-logo-badge">
-            @if(\App\Models\Setting::get('site_logo'))
-                <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}" style="max-height: 44px; max-width: 50px; object-fit: contain; border-radius: 8px;">
-            @else
-                <div class="brand-icon-box"><i class="fa-solid fa-graduation-cap"></i></div>
-            @endif
-            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
-        </a>
+            <div class="nav-actions-right">
+                <!-- زر تبديل اللغة (AR / EN) خالي تماماً من الكلمات العربية في وضع الإنجليزية -->
+                @php $currentLocale = app()->getLocale(); @endphp
+                <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
+                   class="btn-lang"
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'Switch to Arabic' }}">
+                    <i class="fa-solid fa-globe" style="color: var(--ed-primary);"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
+                </a>
 
-        <div class="visual-center-content">
-            <div class="palestine-pill">
-                <i class="fas fa-sparkles"></i> المنهاج الفلسطيني المعتمد لعام 2026
-            </div>
-            <h2>طريقك الأضمن نحو التفوق والتميز الوزاري</h2>
-            <p>انضم إلى زملائك في جميع محافظات الوطن (القدس، الضفة الغربية، وقطاع غزة) واستفد من أحدث الشروحات، وبنك الأسئلة، ومتابعة الالتزام اليومي.</p>
-
-            <div class="features-checklist">
-                <div class="check-item">
-                    <i class="fas fa-check"></i>
-                    <span>شروحات فيديو تفاعلية مع إمكانية حفظ الدروس أوفلاين</span>
-                </div>
-                <div class="check-item">
-                    <i class="fas fa-check"></i>
-                    <span>أرشيف الامتحانات الوزارية ونماذج الإجابة الرسمية المعتمدة</span>
-                </div>
-                <div class="check-item">
-                    <i class="fas fa-check"></i>
-                    <span>حاسبة معدل التوجيهي ودليل القبول والتنسيق في الجامعات</span>
-                </div>
-                <div class="check-item">
-                    <i class="fas fa-check"></i>
-                    <span>بطاقات الاستذكار السريع والقوانين ومؤشر الالتزام اليومي 🔥</span>
-                </div>
+                <a href="{{ route('login') }}" class="btn-lang" style="color: var(--ed-primary); font-weight: 700;">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    <span>{{ __('تسجيل الدخول') }}</span>
+                </a>
             </div>
         </div>
+    </header>
 
-        <div class="visual-footer" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <i class="fas fa-shield-alt"></i>
-                <span>بياناتك الأكاديمية محمية ومؤمنة بأعلى معايير الخصوصية.</span>
-            </div>
-            <div style="color: #fef08a; font-weight: 700; font-size: 0.82rem;">
-                المشرف العام: أ. أحمد حسين شمالي
-            </div>
-        </div>
-    </div>
+    <div class="register-page-wrapper">
+        <div class="register-card-box">
 
-    <!-- الجانب الأيسر (نموذج التسجيل السلس) -->
-    <div class="auth-form-side">
-        <div class="form-inner-box">
-
-            <div class="form-head">
-                <div class="tag-pill">
-                    <i class="fas fa-user-plus"></i> عضوية طالب جديدة
+            <div class="reg-header">
+                <div class="reg-badge-tag">
+                    <i class="fas fa-user-plus"></i> {{ __('عضوية طالب جديدة') }}
                 </div>
-                <h1>إنشاء حسابك الأكاديمي</h1>
-                <p>أدخل بياناتك للانضمام فورياً إلى المنصة ومتابعة دروسك</p>
+                <h1>{{ __('إنشاء حسابك الأكاديمي') }}</h1>
+                <p>{{ __('أدخل بياناتك للانضمام فورياً إلى المنصة ومتابعة دروسك') }}</p>
             </div>
 
             @if(session('error'))
-                <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #dc2626; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; color: #dc2626; font-size: 12.5px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-circle-exclamation"></i>
                     <span>{{ session('error') }}</span>
                 </div>
             @endif
 
             @if(session('info'))
-                <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; color: #1d4ed8; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; color: #1d4ed8; font-size: 12.5px; display: flex; align-items: center; gap: 8px;">
                     <i class="fas fa-info-circle"></i>
                     <span>{{ session('info') }}</span>
                 </div>
             @endif
-
-
 
             <form id="registerForm" onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
                 @csrf
@@ -546,48 +433,48 @@
                 <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="name_ar">
-                            <span>الاسم الرباعي (بالعربية) <span class="req">*</span></span>
+                            <span>{{ __('الاسم الرباعي (بالعربية)') }} <span class="req">*</span></span>
                         </label>
                         <div class="input-control-wrap">
                             <i class="fas fa-user lead-icon"></i>
-                            <input type="text" name="name_ar" id="name_ar" class="form-input" value="{{ old('name_ar') }}" placeholder="مثال: أحمد محمد خليل علي" required>
+                            <input type="text" name="name_ar" id="name_ar" class="form-input has-icon" value="{{ old('name_ar') }}" placeholder="{{ __('مثال: أحمد محمد خليل علي') }}" required>
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="nid">رقم الهوية الفلسطينية <span class="req">*</span></label>
+                        <label for="nid"><span>{{ __('رقم الهوية الفلسطينية') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-id-card lead-icon"></i>
-                            <input type="text" name="nid" id="nid" maxlength="9" class="form-input" placeholder="9 أرقام (مثال: 401234567)" required>
+                            <input type="text" name="nid" id="nid" maxlength="9" class="form-input has-icon" placeholder="{{ __('9 أرقام (مثال: 401234567)') }}" required>
                         </div>
                     </div>
                 </div>
 
-                <!-- البريد الرسمي بنطاق tawjihi.ps الثابت ورقم جوال الطالب -->
+                <!-- البريد الرسمي بنطاق tawjihi.ps ورقم جوال الطالب -->
                 <div class="grid-2-cols">
                     <div class="input-group">
                         <label for="email">
-                            <span>اسم المستخدم للبريد الأكاديمي <span class="req">*</span></span>
-                            <span class="verified-badge-label" style="background: #eff6ff; color: #1d4ed8; font-size: 0.75rem;">
-                                🇵🇸 @tawjihi.ps ثابت معتمد
+                            <span>{{ __('اسم المستخدم للبريد الأكاديمي') }} <span class="req">*</span></span>
+                            <span style="color: var(--ed-primary); font-size: 11px; font-weight: 700;">
+                                {{ __('🇵🇸 @tawjihi.ps ثابت معتمد') }}
                             </span>
                         </label>
-                        <div style="display: flex; align-items: stretch; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; overflow: hidden; transition: 0.2s;" id="emailBoxWrapper">
-                            <input type="text" name="email" id="email" class="form-input" style="border: none; background: transparent; flex: 1; padding: 12px 14px; outline: none; font-weight: 700; color: #0f172a; direction: ltr; text-align: left;" placeholder="أدخل اسم المستخدم بالإنجليزية (مثال: ahmed2026)" required oninput="sanitizeUsername(this)">
-                            <div style="background: #e2e8f0; color: #1e293b; font-weight: 800; font-size: 0.9rem; padding: 12px 16px; border-right: 1.5px solid #cbd5e1; user-select: none; direction: ltr; display: flex; align-items: center;">
+                        <div style="display: flex; align-items: stretch; background: #ffffff; border: 1px solid var(--ed-border); border-radius: var(--radius-sm); overflow: hidden;" id="emailBoxWrapper">
+                            <input type="text" name="email" id="email" class="form-input" style="border: none; background: transparent; flex: 1; padding: 9px 12px; outline: none; font-weight: 700; color: #0f172a; direction: ltr; text-align: left;" placeholder="{{ __('أدخل اسم المستخدم بالإنجليزية (مثال: ahmed2026)') }}" required oninput="sanitizeUsername(this)">
+                            <div style="background: var(--ed-surface-alt); color: var(--ed-text-main); font-weight: 700; font-size: 12px; padding: 9px 12px; border-inline-start: 1px solid var(--ed-border); user-select: none; direction: ltr; display: flex; align-items: center;">
                                 @tawjihi.ps
                             </div>
                         </div>
-                        <small style="color: #64748b; font-size: 0.74rem; margin-top: 4px; display: block;">
-                            * اكتب اسم المستخدم فقط، وسيتم اعتماد البريد الرسمي: <strong style="color: #2563eb; direction: ltr;" id="previewFullEmail">username@tawjihi.ps</strong>
+                        <small style="color: var(--ed-text-muted); font-size: 11px; margin-top: 2px; display: block;">
+                            {{ __('* اكتب اسم المستخدم فقط، وسيتم اعتماد البريد الرسمي: :email', ['email' => 'username@tawjihi.ps']) }}
                         </small>
                     </div>
 
                     <div class="input-group">
-                        <label for="phone">رقم جوال الطالب / واتساب <span class="req">*</span></label>
+                        <label for="phone"><span>{{ __('رقم جوال الطالب / واتساب') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-mobile-screen-button lead-icon"></i>
-                            <input type="tel" name="phone" id="phone" class="form-input" placeholder="059XXXXXXX أو 056XXXXXXX" required>
+                            <input type="tel" name="phone" id="phone" class="form-input has-icon" placeholder="059XXXXXXX / 056XXXXXXX" required>
                         </div>
                     </div>
                 </div>
@@ -595,18 +482,18 @@
                 <!-- هاتف ولي الأمر واسم المدرسة -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="guardian_phone">رقم جوال ولي الأمر (للمتابعة الأكاديمية)</label>
+                        <label for="guardian_phone">{{ __('رقم جوال ولي الأمر (للمتابعة الأكاديمية)') }}</label>
                         <div class="input-control-wrap">
                             <i class="fas fa-user-shield lead-icon"></i>
-                            <input type="tel" name="guardian_phone" id="guardian_phone" class="form-input" placeholder="059XXXXXXX أو 056XXXXXXX">
+                            <input type="tel" name="guardian_phone" id="guardian_phone" class="form-input has-icon" placeholder="059XXXXXXX / 056XXXXXXX">
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="school_name">اسم المدرسة الثانوية</label>
+                        <label for="school_name">{{ __('اسم المدرسة الثانوية') }}</label>
                         <div class="input-control-wrap">
                             <i class="fas fa-school lead-icon"></i>
-                            <input type="text" name="school_name" id="school_name" class="form-input" placeholder="مثال: مدرسة الحسين بن علي الثانوية">
+                            <input type="text" name="school_name" id="school_name" class="form-input has-icon" placeholder="{{ __('مثال: مدرسة الحسين بن علي الثانوية') }}">
                         </div>
                     </div>
                 </div>
@@ -614,14 +501,19 @@
                 <!-- المرحلة/الفرع والجنس -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="stage_id">الفرع الأكاديمي (توجيهي فلسطين) <span class="req">*</span></label>
+                        <label for="stage_id"><span>{{ __('الفرع الأكاديمي (توجيهي فلسطين)') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-graduation-cap lead-icon"></i>
-                            <select name="stage_id" id="stage_id" class="form-input" required onchange="onStageChanged(this.value)">
+                            <select name="stage_id" id="stage_id" class="form-input has-icon" required onchange="onStageChanged(this.value)">
                                 @foreach($stages as $stg)
                                     @if($stg->grade_level >= 120)
-                                        <option value="{{ $stg->id }}" data-grade="{{ $stg->grade_level }}" {{ ($stg->grade_level == 122 || str_contains($stg->label_ar, 'علمي')) ? 'selected' : '' }}>
-                                            {{ $stg->icon ?? '🎓' }} {{ $stg->label_ar }}
+                                        @php
+                                            $stgDispName = (app()->getLocale() === 'en' && !empty($stg->name_en)) 
+                                                ? $stg->name_en 
+                                                : ($stg->label_ar ?? $stg->name_ar ?? $stg->name);
+                                        @endphp
+                                        <option value="{{ $stg->id }}" data-grade="{{ $stg->grade_level }}" {{ ($stg->grade_level == 122 || str_contains($stg->label_ar ?? '', 'علمي')) ? 'selected' : '' }}>
+                                            {{ $stg->icon ?? '🎓' }} {{ $stgDispName }}
                                         </option>
                                     @endif
                                 @endforeach
@@ -630,12 +522,12 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="gender">الجنس <span class="req">*</span></label>
+                        <label for="gender"><span>{{ __('الجنس') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-venus-mars lead-icon"></i>
-                            <select name="gender" id="gender" class="form-input" required>
-                                <option value="ذكر" selected>ذكر (طالب)</option>
-                                <option value="أنثى">أنثى (طالبة)</option>
+                            <select name="gender" id="gender" class="form-input has-icon" required>
+                                <option value="ذكر" selected>{{ __('ذكر (طالب)') }}</option>
+                                <option value="أنثى">{{ __('أنثى (طالبة)') }}</option>
                             </select>
                         </div>
                     </div>
@@ -644,126 +536,135 @@
                 <!-- المحافظة والعمر -->
                 <div class="grid-2-cols">
                     <div class="input-group">
-                        <label for="city">المحافظة / المدينة <span class="req">*</span></label>
+                        <label for="city"><span>{{ __('المحافظة / المدينة') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
                             <i class="fas fa-map-marker-alt lead-icon"></i>
-                            <select name="city" id="city" class="form-input">
-                                <option value="القدس">القدس الشريف 🕌</option>
-                                <option value="رام الله والبيرة" selected>رام الله والبيرة</option>
-                                <option value="غزة">غزة العزة 🌿</option>
-                                <option value="نابلس">نابلس (جبل النار)</option>
-                                <option value="الخليل">الخليل</option>
-                                <option value="جنين">جنين القسام</option>
-                                <option value="طولكرم">طولكرم</option>
-                                <option value="قلقيلية">قلقيلية</option>
-                                <option value="بيت لحم">بيت لحم</option>
-                                <option value="سلفيت">سلفيت</option>
-                                <option value="أريحا">أريحا والأغوار</option>
-                                <option value="طوباس">طوباس</option>
-                                <option value="خان يونس">خان يونس</option>
-                                <option value="رفح">رفح</option>
-                                <option value="شمال غزة">شمال غزة (جباليا)</option>
-                                <option value="دير البلح">دير البلح والوسطى</option>
-                                <option value="أخرى">خارج فلسطين / أخرى</option>
+                            <select name="city" id="city" class="form-input has-icon">
+                                <option value="القدس">{{ __('القدس الشريف 🕌') }}</option>
+                                <option value="رام الله والبيرة" selected>{{ __('رام الله والبيرة') }}</option>
+                                <option value="غزة">{{ __('غزة العزة 🌿') }}</option>
+                                <option value="نابلس">{{ __('نابلس (جبل النار)') }}</option>
+                                <option value="الخليل">{{ __('الخليل') }}</option>
+                                <option value="جنين">{{ __('جنين القسام') }}</option>
+                                <option value="طولكرم">{{ __('طولكرم') }}</option>
+                                <option value="قلقيلية">{{ __('قلقيلية') }}</option>
+                                <option value="بيت لحم">{{ __('بيت لحم') }}</option>
+                                <option value="سلفيت">{{ __('سلفيت') }}</option>
+                                <option value="أريحا">{{ __('أريحا والأغوار') }}</option>
+                                <option value="طوباس">{{ __('طوباس') }}</option>
+                                <option value="خان يونس">{{ __('خان يونس') }}</option>
+                                <option value="رفح">{{ __('رفح') }}</option>
+                                <option value="شمال غزة">{{ __('شمال غزة (جباليا)') }}</option>
+                                <option value="دير البلح">{{ __('دير البلح والوسطى') }}</option>
+                                <option value="أخرى">{{ __('خارج فلسطين / أخرى') }}</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="age">العمر</label>
+                        <label for="age">{{ __('العمر') }}</label>
                         <div class="input-control-wrap">
                             <i class="fas fa-calendar-check lead-icon"></i>
-                            <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input">
+                            <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input has-icon">
                         </div>
                     </div>
                 </div>
 
                 <!-- المرفقات والوثائق: الصورة الشخصية وصورة الهوية -->
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <label style="font-size: 0.88rem; font-weight: 800; color: var(--text-title);">
-                            <i class="fas fa-camera" style="color: var(--primary);"></i> الصورة الشخصية وصورة الهوية الفلسطينية:
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                        <label style="font-size: 12.5px; font-weight: 700; color: var(--ed-text-main);">
+                            <i class="fas fa-camera" style="color: var(--ed-primary);"></i> {{ __('الصورة الشخصية وصورة الهوية الفلسطينية:') }}
                         </label>
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">(اختياري وموصى به للاعتماد الرسمي)</span>
+                        <span style="font-size: 11px; color: var(--ed-text-muted);">{{ __('(اختياري وموصى به للاعتماد الرسمي)') }}</span>
                     </div>
 
                     <div class="upload-grid">
                         <!-- 1. صندوق رفع الصورة الشخصية -->
                         <div class="upload-card-box" id="boxPhoto" onclick="document.getElementById('photoInput').click()">
                             <input type="file" name="photo" id="photoInput" accept="image/jpeg,image/png,image/jpg,image/webp" style="display: none;" onchange="previewStudentPhoto(this)">
-                            <img id="previewPhotoImg" class="upload-thumb-preview" alt="معاينة الصورة الشخصية">
+                            <img id="previewPhotoImg" class="upload-thumb-preview" alt="{{ __('الصورة الشخصية للطالب') }}">
                             <div class="upload-icon-circle" id="iconPhotoCircle">
                                 <i class="fas fa-user-circle"></i>
                             </div>
-                            <span class="upload-card-title">الصورة الشخصية للطالب</span>
-                            <span class="upload-card-sub" id="photoSubText">انقر لاختيار صورة واضحة لوجه الطالب (JPG/PNG)</span>
+                            <span class="upload-card-title">{{ __('الصورة الشخصية للطالب') }}</span>
+                            <span class="upload-card-sub" id="photoSubText">{{ __('انقر لاختيار صورة واضحة لوجه الطالب (JPG/PNG)') }}</span>
                             <div class="upload-file-status" id="photoStatusBadge">
-                                <i class="fas fa-check-circle"></i> تم إرفاق الصورة
+                                <i class="fas fa-check-circle"></i> {{ __('تم إرفاق الصورة') }}
                             </div>
                         </div>
 
                         <!-- 2. صندوق رفع صورة الهوية الفلسطينية -->
                         <div class="upload-card-box" id="boxIdPhoto" onclick="document.getElementById('idPhotoInput').click()">
                             <input type="file" name="id_photo" id="idPhotoInput" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" style="display: none;" onchange="previewStudentIdPhoto(this)">
-                            <img id="previewIdPhotoImg" class="upload-thumb-preview" alt="معاينة صورة الهوية">
+                            <img id="previewIdPhotoImg" class="upload-thumb-preview" alt="{{ __('صورة بطاقة الهوية الفلسطينية') }}">
                             <div class="upload-icon-circle" id="iconIdCircle">
                                 <i class="fas fa-id-card"></i>
                             </div>
-                            <span class="upload-card-title">صورة بطاقة الهوية الفلسطينية</span>
-                            <span class="upload-card-sub" id="idSubText">صورة البطاقة أو شهادة الميلاد للمطابقة الرسمية</span>
+                            <span class="upload-card-title">{{ __('صورة بطاقة الهوية الفلسطينية') }}</span>
+                            <span class="upload-card-sub" id="idSubText">{{ __('صورة البطاقة أو شهادة الميلاد للمطابقة الرسمية') }}</span>
                             <div class="upload-file-status" id="idStatusBadge">
-                                <i class="fas fa-check-circle"></i> تم إرفاق الوثيقة
+                                <i class="fas fa-check-circle"></i> {{ __('تم إرفاق الوثيقة') }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- قائمة المواد التابعة للفرع للاشتراك بها -->
-                <div class="input-group" style="margin-bottom: 18px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="font-weight: 700; color: var(--text-title); font-size: 0.88rem;">
-                            <i class="fas fa-book-bookmark" style="color: var(--primary);"></i> المواد المقررة للاشتراك بها في الفرع:
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="font-weight: 700; color: var(--ed-text-main); font-size: 12.5px;">
+                            <i class="fas fa-book-bookmark" style="color: var(--ed-primary);"></i> {{ __('المواد المقررة للاشتراك بها في الفرع:') }}
                         </label>
-                        <span style="font-size: 0.78rem; color: #10b981; font-weight: 700;">(جميع المواد مفعلة تلقائياً أو اختر ما يناسبك)</span>
+                        <span style="font-size: 11px; color: var(--ed-success); font-weight: 700;">{{ __('(جميع المواد مفعلة تلقائياً أو اختر ما يناسبك)') }}</span>
                     </div>
-                    <div id="subjectsSelectionContainer" style="background: #ffffff; border: 1.5px solid var(--border-card); border-radius: 12px; padding: 12px 16px; max-height: 200px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
+                    <div id="subjectsSelectionContainer" style="background: #ffffff; border: 1px solid var(--ed-border); border-radius: var(--radius-sm); padding: 10px 14px; max-height: 180px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                         <!-- يتم ملء المواد ديناميكياً بواسطة جافاسكريبت -->
                     </div>
                 </div>
 
                 <!-- كلمة المرور -->
                 <div class="input-group">
-                    <label for="password">كلمة المرور (6 خانات على الأقل) <span class="req">*</span></label>
+                    <label for="password"><span>{{ __('كلمة المرور (6 خانات على الأقل)') }} <span class="req">*</span></span></label>
                     <div class="input-control-wrap">
                         <i class="fas fa-lock lead-icon"></i>
-                        <input type="password" name="password" id="password" minlength="6" class="form-input" placeholder="••••••••" required oninput="checkPasswordStrength(this.value)">
+                        <input type="password" name="password" id="password" minlength="6" class="form-input has-icon" placeholder="••••••••" required oninput="checkPasswordStrength(this.value)">
                         <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()">
                             <i class="fas fa-eye" id="pwdEye"></i>
                         </button>
                     </div>
-                    <div class="strength-meter">
-                        <div class="strength-meter-fill" id="pwdStrengthFill"></div>
-                    </div>
                 </div>
 
                 <button type="submit" id="btnSubmitRegister" class="btn-register-submit">
-                    <span>إنشاء الحساب وبدء التعلم فورياً</span>
-                    <i class="fas fa-arrow-left"></i>
+                    <span>{{ __('إنشاء الحساب وبدء التعلم فورياً') }}</span>
+                    <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
                 </button>
 
                 <div class="login-switch-footer">
-                    لديك حساب بالفعل؟
-                    <a href="{{ route('login') }}">تسجيل الدخول هنا</a>
+                    {{ __('لديك حساب بالفعل؟') }}
+                    <a href="{{ route('login') }}">{{ __('تسجيل الدخول هنا') }}</a>
                 </div>
             </form>
 
         </div>
     </div>
 
-</div>
-
 <script>
     const stagesData = @json($stages);
+    const isEn = {{ app()->getLocale() === 'en' ? 'true' : 'false' }};
+    const regI18n = {
+        allActivated: "{{ __('سيتم تفعيل كافة مواد المنهاج تلقائياً عند التسجيل.') }}",
+        creating: "{{ __('جاري إنشاء الحساب الأكاديمي...') }}",
+        createdTitle: "{{ __('تم إنشاء حسابك بنجاح! 🎉') }}",
+        confirmBtn: "{{ __('تأكيد واستكمال') }}",
+        errorTitle: "{{ __('تعذر إنشاء الحساب') }}",
+        errorDefault: "{{ __('يرجى مراجعة الحقول وتصحيح الأخطاء.') }}",
+        nidError: "{{ __('رقم الهوية الفلسطينية يجب أن يتكون من 9 أرقام بالضبط.') }}",
+        pwdError: "{{ __('كلمة المرور يجب أن تكون 6 خانات على الأقل.') }}",
+        photoAttached: "{{ __('تم إرفاق الصورة') }}",
+        docAttached: "{{ __('تم إرفاق الوثيقة') }}",
+        currency: "{{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}"
+    };
 
     function onStageChanged(stageId) {
         const container = document.getElementById('subjectsSelectionContainer');
@@ -771,20 +672,21 @@
 
         const currentStage = stagesData.find(s => s.id == stageId || s.grade_level == stageId);
         if (!currentStage || !currentStage.subjects || currentStage.subjects.length === 0) {
-            container.innerHTML = '<div style="color: #64748b; font-size: 0.85rem; padding: 6px;">سيتم تفعيل كافة مواد المنهاج تلقائياً عند التسجيل.</div>';
+            container.innerHTML = `<div style="color: #64748b; font-size: 12px; padding: 6px;">${regI18n.allActivated}</div>`;
             return;
         }
 
         let html = '';
         currentStage.subjects.forEach(sub => {
             const price = sub.discount_price_ils || sub.price_ils || 100;
+            const subTitle = (isEn && sub.name_en) ? sub.name_en : (sub.name_ar || sub.name);
             html += `
-                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
-                    <span style="font-size: 1.1rem;">${sub.icon || '📘'}</span>
+                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; cursor: pointer; user-select: none;">
+                    <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 15px; height: 15px; accent-color: var(--ed-primary); cursor: pointer;">
+                    <span style="font-size: 1rem;">${sub.icon || '📘'}</span>
                     <div style="flex: 1;">
-                        <div style="font-size: 0.85rem; font-weight: 700; color: #0f172a;">${sub.name_ar}</div>
-                        <div style="font-size: 0.72rem; color: #64748b;">${price} ₪</div>
+                        <div style="font-size: 12px; font-weight: 700; color: #0f172a;">${subTitle}</div>
+                        <div style="font-size: 11px; color: #64748b;">${price} ${regI18n.currency}</div>
                     </div>
                 </label>
             `;
@@ -852,45 +754,24 @@
         }
     }
 
-    function togglePasswordVisibility() {
-        const pwdInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('pwdEye');
+    function sanitizeUsername(input) {
+        input.value = input.value.replace(/[^a-zA-Z0-9._-]/g, '').toLowerCase();
+    }
 
-        if (pwdInput.type === 'password') {
-            pwdInput.type = 'text';
-            eyeIcon.classList.remove('fa-eye');
-            eyeIcon.classList.add('fa-eye-slash');
+    function togglePasswordVisibility() {
+        const pwd = document.getElementById('password');
+        const eye = document.getElementById('pwdEye');
+        if (pwd.type === 'password') {
+            pwd.type = 'text';
+            eye.classList.replace('fa-eye', 'fa-eye-slash');
         } else {
-            pwdInput.type = 'password';
-            eyeIcon.classList.remove('fa-eye-slash');
-            eyeIcon.classList.add('fa-eye');
+            pwd.type = 'password';
+            eye.classList.replace('fa-eye-slash', 'fa-eye');
         }
     }
 
     function checkPasswordStrength(val) {
-        const meter = document.getElementById('pwdStrengthFill');
-        let score = 0;
-        if (val.length >= 6) score += 33;
-        if (/[A-Z]/.test(val) || /[a-z]/.test(val)) score += 33;
-        if (/[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) score += 34;
-
-        meter.style.width = score + '%';
-        if (score <= 33) {
-            meter.style.background = '#ef4444';
-        } else if (score <= 66) {
-            meter.style.background = '#f59e0b';
-        } else {
-            meter.style.background = '#10b981';
-        }
-    }
-
-    function sanitizeUsername(input) {
-        let val = input.value.replace(/[^a-zA-Z0-9._-]/g, '').toLowerCase();
-        input.value = val;
-        const preview = document.getElementById('previewFullEmail');
-        if (preview) {
-            preview.innerText = val ? val + '@tawjihi.ps' : 'username@tawjihi.ps';
-        }
+        // strength indicator hook if needed
     }
 
     function handleRegisterSubmit(e) {
@@ -902,14 +783,26 @@
         if (nid.length !== 9 || !/^\d+$/.test(nid)) {
             Swal.fire({
                 icon: 'warning',
-                title: 'تنبيه رقم الهوية',
-                text: 'يرجى التأكد من كتابة رقم الهوية الفلسطينية المكون من 9 أرقام بدقة.'
+                title: regI18n.errorTitle,
+                text: regI18n.nidError,
+                confirmButtonColor: '#1d4ed8'
+            });
+            return;
+        }
+
+        const pwd = document.getElementById('password').value;
+        if (pwd.length < 6) {
+            Swal.fire({
+                icon: 'warning',
+                title: regI18n.errorTitle,
+                text: regI18n.pwdError,
+                confirmButtonColor: '#1d4ed8'
             });
             return;
         }
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري إنشاء حسابك...';
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${regI18n.creating}`;
 
         const formData = new FormData(form);
 
@@ -917,29 +810,36 @@
             .then(res => {
                 Swal.fire({
                     icon: 'success',
-                    title: res.data.title || 'تم إنشاء الحساب بنجاح!',
-                    text: 'أهلاً بك في منصة منارة التوجيهي، جاري نقلك إلى لوحة دراستك...',
-                    timer: 2000,
-                    showConfirmButton: false
+                    title: regI18n.createdTitle,
+                    text: res.data.message || '',
+                    confirmButtonColor: '#1d4ed8',
+                    confirmButtonText: regI18n.confirmBtn
                 }).then(() => {
-                    window.location.href = res.data.redirect || '{{ route("student.dashboard") }}';
+                    if (res.data.redirect) {
+                        window.location.href = res.data.redirect;
+                    } else {
+                        window.location.href = '{{ route("dashboard") }}';
+                    }
                 });
             })
             .catch(err => {
                 btn.disabled = false;
-                btn.innerHTML = '<span>إنشاء الحساب وبدء التعلم فورياً</span> <i class="fas fa-arrow-left"></i>';
-
-                const msg = err.response?.data?.title || err.response?.data?.message || 'حدث خطأ أثناء التسجيل، يرجى مراجعة البيانات.';
+                btn.innerHTML = `<span>{{ __('إنشاء الحساب وبدء التعلم فورياً') }}</span> <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>`;
+                let msg = regI18n.errorDefault;
+                if (err.response?.data?.errors) {
+                    const first = Object.values(err.response.data.errors)[0];
+                    if (Array.isArray(first)) msg = first[0];
+                } else if (err.response?.data?.message) {
+                    msg = err.response.data.message;
+                }
                 Swal.fire({
                     icon: 'error',
-                    title: 'تعذر إتمام التسجيل',
+                    title: regI18n.errorTitle,
                     text: msg,
-                    confirmButtonText: 'حسناً'
+                    confirmButtonColor: '#ef4444'
                 });
             });
     }
-
-
 </script>
 
 </body>

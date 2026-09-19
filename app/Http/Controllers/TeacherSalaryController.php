@@ -22,7 +22,7 @@ class TeacherSalaryController extends Controller
         }
 
         $year = (int)$request->query('year', date('Y'));
-        $monthsNames = TeacherSalary::monthNamesAr();
+        $monthsNames = TeacherSalary::monthNames();
 
         $salaries = TeacherSalary::where('teacher_id', $teacher->id)
             ->where('year', $year)
@@ -124,7 +124,7 @@ class TeacherSalaryController extends Controller
             'teachers_count'  => $teachers->count(),
         ];
 
-        $monthsNames = TeacherSalary::monthNamesAr();
+        $monthsNames = TeacherSalary::monthNames();
 
         return view('admin.teachers.salaries', compact(
             'teachers',

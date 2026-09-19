@@ -18,8 +18,8 @@
             <form method="GET" action="{{ route('admin.subscriptions.monthly') }}" class="year-form">
                 <label>{{ __('العام الدراسي:') }}</label>
                 <select name="year" class="year-select" onchange="this.form.submit()">
-                    <option value="2026-2027" {{ $year === '2026-2027' ? 'selected' : '' }}>2026 / 2027 م</option>
-                    <option value="2025-2026" {{ $year === '2025-2026' ? 'selected' : '' }}>2025 / 2026 م</option>
+                    <option value="2026-2027" {{ $year === '2026-2027' ? 'selected' : '' }}>2026 / 2027 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
+                    <option value="2025-2026" {{ $year === '2025-2026' ? 'selected' : '' }}>2025 / 2026 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
                 </select>
             </form>
         </div>
@@ -78,7 +78,7 @@
                 <select name="stage_id" class="filter-select" onchange="this.form.submit()">
                     <option value="">{{ __('كافة الفروع والمراحل') }}</option>
                     @foreach($stages as $st)
-                        <option value="{{ $st->id }}" {{ $stageId == $st->id ? 'selected' : '' }}>{{ $st->label_ar ?? $st->name_ar }}</option>
+                        <option value="{{ $st->id }}" {{ $stageId == $st->id ? 'selected' : '' }}>{{ (app()->getLocale() === 'en' && !empty($st->name_en)) ? $st->name_en : ($st->label_ar ?? $st->name_ar) }}</option>
                     @endforeach
                 </select>
             </div>
@@ -134,17 +134,19 @@
                 $pendingCount = $student->monthlySubscriptions->where('status', 'pending')->count();
                 $isFull = ($paidCount + $waivedCount) >= 12;
                 $percent = round((($paidCount + $waivedCount) / 12) * 100);
+                $studentDisplayName = (app()->getLocale() === 'en' && !empty($student->name_en)) ? $student->name_en : ($student->name_ar ?? $student->name);
+                $stageDisplayName = (app()->getLocale() === 'en' && !empty($student->stage->name_en)) ? $student->stage->name_en : ($student->stage->label_ar ?? ($student->stage->name_ar ?? __('عام')));
             @endphp
             <div class="student-matrix-row">
                 {{-- تعريف الطالب --}}
                 <div class="student-profile-block">
-                    <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $student->name_ar }}">
+                    <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $studentDisplayName }}">
                     <div class="student-text">
                         <a href="{{ route('admin.students.show', $student->id) }}" class="student-name">
-                            {{ $student->name_ar }}
+                            {{ $studentDisplayName }}
                         </a>
                         <div class="student-sub-line">
-                            <span class="branch-pill">{{ $student->stage->label_ar ?? ($student->stage->name_ar ?? 'عام') }}</span>
+                            <span class="branch-pill">{{ $stageDisplayName }}</span>
                             <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? '-' }}</span>
                         </div>
                     </div>
@@ -158,11 +160,11 @@
                             $st = $sub ? $sub->status : 'unpaid';
                             $amt = $sub ? (float)$sub->amount : 150;
                             $notes = $sub ? ($sub->notes ?? '') : '';
-                            $mTitle = $monthsNames[$m] ?? "شهر $m";
+                            $mTitle = $monthsNames[$m] ?? (app()->getLocale() === 'en' ? "Month $m" : "شهر $m");
                         @endphp
                         <div id="badge_{{ $student->id }}_{{ $m }}" 
                              class="month-micro-badge badge-{{ $st }}"
-                             onclick="openEditMonthModal({{ $student->id }}, '{{ addslashes($student->name_ar) }}', {{ $m }}, '{{ addslashes($mTitle) }}', '{{ $st }}', {{ $amt }}, '{{ addslashes($notes) }}')"
+                             onclick="openEditMonthModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', {{ $m }}, '{{ addslashes($mTitle) }}', '{{ $st }}', {{ $amt }}, '{{ addslashes($notes) }}')"
                              title="{{ $mTitle }} ({{ round($amt) }} ₪) - {{ __('انقر للتعديل') }}">
                             <span class="m-digit font-mono">{{ $m }}</span>
                             @if($st === 'paid')

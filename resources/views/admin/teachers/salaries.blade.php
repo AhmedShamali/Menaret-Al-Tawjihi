@@ -1,56 +1,56 @@
 @extends('layouts.app')
 
-@section('title', 'إدارة مسير وصرف رواتب المعلمين - منصة منارة التوجيهي')
+@section('title', __('إدارة مسير وصرف رواتب المعلمين') . ' - ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
 <div class="admin-payroll-wrapper">
-    {{-- 1. الهيدر --}}
+    {{-- 1. الهيدر الأكاديمي الفاتح --}}
     <div class="payroll-header-box">
         <div>
             <div class="badge-tag">
                 <i class="fa-solid fa-money-bill-transfer"></i>
-                <span>الإدارة المالية وشؤون الكادر التعليمي</span>
+                <span>{{ __('الإدارة المالية وشؤون الكادر التعليمي') }}</span>
             </div>
-            <h1 class="page-title">إدارة ومسير رواتب المعلمين لشهر وعام محدد</h1>
-            <p class="page-subtitle">تسجيل مستحقات المعلمين، صرف الرواتب الشهرية، وإصدار قسائم الراتب الرسمية</p>
+            <h1 class="page-title">{{ __('إدارة ومسير رواتب المعلمين لشهر وعام محدد') }}</h1>
+            <p class="page-subtitle">{{ __('تسجيل مستحقات المعلمين، صرف الرواتب الشهرية، وإصدار قسائم الراتب الرسمية') }}</p>
         </div>
         <div class="header-btns">
             <button type="button" class="btn-create-salary" onclick="openCreateSalaryModal()">
-                <i class="fa-solid fa-plus-circle"></i> تسجيل / صرف راتب معلم جديد
+                <i class="fa-solid fa-circle-plus"></i> {{ __('تسجيل / صرف راتب معلم جديد') }}
             </button>
         </div>
     </div>
 
-    {{-- 2. إحصائيات الرواتب الكلاسيكية --}}
+    {{-- 2. إحصائيات الرواتب الكلاسيكية الفاتحة --}}
     <div class="stats-row-clean">
         <div class="stat-card-clean" style="--card-accent: #059669;">
-            <span class="stat-label">إجمالي الرواتب المصروفة (عام {{ $year }})</span>
+            <span class="stat-label">{{ __('إجمالي الرواتب المصروفة') }} ({{ __('عام') }} {{ $year }})</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-emerald">{{ number_format($stats['total_disbursed'], 2) }} ₪</span>
+                <span class="stat-number text-emerald font-mono">{{ number_format($stats['total_disbursed'], 2) }} ₪</span>
                 <i class="fa-solid fa-vault stat-icon text-emerald"></i>
             </div>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #d97706;">
-            <span class="stat-label">مستحقات قيد الاعتماد والصرف</span>
+            <span class="stat-label">{{ __('مستحقات قيد الاعتماد والصرف') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-amber">{{ number_format($stats['total_pending'], 2) }} ₪</span>
+                <span class="stat-number text-amber font-mono">{{ number_format($stats['total_pending'], 2) }} ₪</span>
                 <i class="fa-solid fa-hourglass-start stat-icon text-amber"></i>
             </div>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
-            <span class="stat-label">إجمالي المكافآت والحوافز</span>
+            <span class="stat-label">{{ __('إجمالي المكافآت والحوافز') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-navy">{{ number_format($stats['total_bonus'], 2) }} ₪</span>
+                <span class="stat-number text-navy font-mono">{{ number_format($stats['total_bonus'], 2) }} ₪</span>
                 <i class="fa-solid fa-award stat-icon text-navy"></i>
             </div>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;">
-            <span class="stat-label">عدد المعلمين المسجلين</span>
+            <span class="stat-label">{{ __('عدد المعلمين المسجلين') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-indigo">{{ $stats['teachers_count'] }} معلماً</span>
+                <span class="stat-number text-indigo font-mono">{{ $stats['teachers_count'] }} {{ __('معلماً') }}</span>
                 <i class="fa-solid fa-users-rectangle stat-icon text-indigo"></i>
             </div>
         </div>
@@ -60,28 +60,32 @@
     <div class="filter-card">
         <form method="GET" action="{{ route('admin.teachers.salaries') }}" class="filter-form">
             <div class="filter-group">
-                <label>السنة:</label>
+                <label>{{ __('السنة:') }}</label>
                 <select name="year" class="form-select-sm" onchange="this.form.submit()">
                     @for($y = date('Y') + 1; $y >= 2024; $y--)
-                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }} م</option>
+                        <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }} {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
                     @endfor
                 </select>
             </div>
 
             <div class="filter-group">
-                <label>المعلم:</label>
+                <label>{{ __('المعلم:') }}</label>
                 <select name="teacher_id" class="form-select-sm" onchange="this.form.submit()">
-                    <option value="">كافة المعلمين</option>
+                    <option value="">{{ __('كافة المعلمين') }}</option>
                     @foreach($teachers as $t)
-                        <option value="{{ $t->id }}" {{ $teacherId == $t->id ? 'selected' : '' }}>{{ $t->name }} ({{ $t->subject->name_ar ?? 'عام' }})</option>
+                        @php
+                            $tName = (app()->getLocale() === 'en' && !empty($t->name_en)) ? $t->name_en : $t->name;
+                            $tSub = (app()->getLocale() === 'en' && !empty($t->subject->name_en)) ? $t->subject->name_en : ($t->subject->name_ar ?? __('عام'));
+                        @endphp
+                        <option value="{{ $t->id }}" {{ $teacherId == $t->id ? 'selected' : '' }}>{{ $tName }} ({{ $tSub }})</option>
                     @endforeach
                 </select>
             </div>
 
             <div class="filter-group">
-                <label>الشهر:</label>
+                <label>{{ __('الشهر:') }}</label>
                 <select name="month" class="form-select-sm" onchange="this.form.submit()">
-                    <option value="">كافة أشهر السنة</option>
+                    <option value="">{{ __('كافة أشهر السنة') }}</option>
                     @foreach($monthsNames as $mNum => $mLabel)
                         <option value="{{ $mNum }}" {{ $monthFilter == $mNum ? 'selected' : '' }}>{{ $mLabel }}</option>
                     @endforeach
@@ -89,48 +93,49 @@
             </div>
 
             <div class="filter-group">
-                <label>الحالة:</label>
+                <label>{{ __('الحالة:') }}</label>
                 <select name="status" class="form-select-sm" onchange="this.form.submit()">
-                    <option value="">الكل</option>
-                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>تم الصرف ✅</option>
-                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>قيد الاعتماد ⏳</option>
+                    <option value="">{{ __('الكل') }}</option>
+                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('تم الصرف ✅') }}</option>
+                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>{{ __('قيد الاعتماد ⏳') }}</option>
                 </select>
             </div>
 
             @if($teacherId || $monthFilter || $statusFilter)
-                <a href="{{ route('admin.teachers.salaries', ['year' => $year]) }}" class="btn-clear-filter">إلغاء الفلترة</a>
+                <a href="{{ route('admin.teachers.salaries', ['year' => $year]) }}" class="btn-clear-filter">{{ __('إلغاء الفلترة') }}</a>
             @endif
         </form>
     </div>
 
-    {{-- 4. جدول وبطاقات الرواتب (خالٍ تماماً من السكرول الأفقي) --}}
+    {{-- 4. جدول وبطاقات الرواتب الفاتحة الأكاديمية --}}
     <div class="table-container-card">
-        {{-- عرض الجدول للشاشات الكبيرة --}}
         <div class="payroll-table-wrap">
             <table class="payroll-table">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">المعلم والمادة</th>
-                        <th style="width: 15%;">الشهر والعام</th>
-                        <th style="width: 22%;">تفاصيل الراتب</th>
-                        <th style="width: 14%;">صافي الراتب</th>
-                        <th style="width: 14%;">حالة وطريقة الصرف</th>
-                        <th style="width: 10%; text-align: center;">إجراءات</th>
+                        <th style="width: 25%;">{{ __('المعلم والمادة') }}</th>
+                        <th style="width: 15%;">{{ __('الشهر والعام') }}</th>
+                        <th style="width: 22%;">{{ __('تفاصيل الراتب') }}</th>
+                        <th style="width: 14%;">{{ __('صافي الراتب') }}</th>
+                        <th style="width: 14%;">{{ __('حالة وطريقة الصرف') }}</th>
+                        <th style="width: 10%; text-align: center;">{{ __('إجراءات') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($salaries as $sal)
                         @php
                             $isPaid = $sal->status === 'paid';
-                            $monthLabel = $monthsNames[$sal->month] ?? "شهر {$sal->month}";
+                            $monthLabel = $monthsNames[$sal->month] ?? (app()->getLocale() === 'en' ? "Month {$sal->month}" : "شهر {$sal->month}");
+                            $teacherDisplayName = (app()->getLocale() === 'en' && !empty($sal->teacher->name_en)) ? $sal->teacher->name_en : $sal->teacher->name;
+                            $subjectDisplayName = (app()->getLocale() === 'en' && !empty($sal->teacher->subject->name_en)) ? $sal->teacher->subject->name_en : ($sal->teacher->subject->name_ar ?? __('كادر التدريس'));
                         @endphp
                         <tr>
                             <td>
                                 <div class="teacher-meta-cell">
-                                    <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($sal->teacher->name) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb">
+                                    <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacherDisplayName) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}">
                                     <div class="teacher-meta-text">
-                                        <strong class="teacher-name-text">{{ $sal->teacher->name }}</strong>
-                                        <span class="teacher-subject-pill">{{ $sal->teacher->subject->name_ar ?? 'كادر التدريس' }}</span>
+                                        <strong class="teacher-name-text">{{ $teacherDisplayName }}</strong>
+                                        <span class="teacher-subject-pill">{{ $subjectDisplayName }}</span>
                                     </div>
                                 </div>
                             </td>
@@ -139,12 +144,12 @@
                             </td>
                             <td>
                                 <div class="salary-breakdown-compact">
-                                    <span class="base-badge font-mono">الأساسي: {{ number_format($sal->basic_salary, 2) }} ₪</span>
+                                    <span class="base-badge font-mono">{{ __('الأساسي:') }} {{ number_format($sal->basic_salary, 2) }} ₪</span>
                                     @if($sal->bonus > 0)
-                                        <span class="bonus-badge font-mono">+{{ number_format($sal->bonus, 2) }} ₪ إضافي</span>
+                                        <span class="bonus-badge font-mono">+{{ number_format($sal->bonus, 2) }} ₪ {{ __('إضافي') }}</span>
                                     @endif
                                     @if($sal->deductions > 0)
-                                        <span class="deduct-badge font-mono">-{{ number_format($sal->deductions, 2) }} ₪ خصم</span>
+                                        <span class="deduct-badge font-mono">-{{ number_format($sal->deductions, 2) }} ₪ {{ __('خصم') }}</span>
                                     @endif
                                 </div>
                             </td>
@@ -156,17 +161,17 @@
                             <td>
                                 <div class="payment-col-wrap">
                                     <span class="status-pill {{ $isPaid ? 'status-paid' : 'status-pending' }}">
-                                        {{ $isPaid ? 'تم الصرف ✅' : 'قيد الصرف ⏳' }}
+                                        {{ $isPaid ? __('تم الصرف ✅') : __('قيد الصرف ⏳') }}
                                     </span>
-                                    <small class="payment-method-label">{{ $sal->payment_method ?: 'تحويل بنكي' }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('m/d') . ')' : '' }}</small>
+                                    <small class="payment-method-label">{{ $sal->payment_method ? __($sal->payment_method) : __('تحويل بنكي') }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('m/d') . ')' : '' }}</small>
                                 </div>
                             </td>
                             <td style="text-align: center;">
                                 <div class="actions-group">
-                                    <button type="button" class="btn-action-edit" onclick='openEditSalaryModal(@json($sal))' title="تعديل بيانات الراتب">
+                                    <button type="button" class="btn-action-edit" onclick='openEditSalaryModal(@json($sal))' title="{{ __('تعديل بيانات الراتب') }}">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
-                                    <button type="button" class="btn-action-delete" onclick="deleteSalaryRecord({{ $sal->id }})" title="حذف السجل">
+                                    <button type="button" class="btn-action-delete" onclick="deleteSalaryRecord({{ $sal->id }})" title="{{ __('حذف السجل') }}">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </div>
@@ -175,8 +180,8 @@
                     @empty
                         <tr>
                             <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-                                <i class="fa-solid fa-receipt" style="font-size: 2.5rem; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
-                                <strong>لا توجد سجلات رواتب مدخلة تطابق معايير الفلترة المحددة.</strong>
+                                <i class="fa-solid fa-receipt" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
+                                <strong>{{ __('لا توجد سجلات رواتب مدخلة تطابق معايير الفلترة المحددة.') }}</strong>
                             </td>
                         </tr>
                     @endforelse
@@ -184,40 +189,42 @@
             </table>
         </div>
 
-        {{-- عرض بطاقات الجوال والأجهزة اللوحية (بدون أي سكرول أفقي نهائياً) --}}
+        {{-- عرض بطاقات الجوال الفاتحة --}}
         <div class="payroll-cards-mobile">
             @forelse($salaries as $sal)
                 @php
                     $isPaid = $sal->status === 'paid';
-                    $monthLabel = $monthsNames[$sal->month] ?? "شهر {$sal->month}";
+                    $monthLabel = $monthsNames[$sal->month] ?? (app()->getLocale() === 'en' ? "Month {$sal->month}" : "شهر {$sal->month}");
+                    $teacherDisplayName = (app()->getLocale() === 'en' && !empty($sal->teacher->name_en)) ? $sal->teacher->name_en : $sal->teacher->name;
+                    $subjectDisplayName = (app()->getLocale() === 'en' && !empty($sal->teacher->subject->name_en)) ? $sal->teacher->subject->name_en : ($sal->teacher->subject->name_ar ?? __('كادر التدريس'));
                 @endphp
                 <div class="payroll-mob-card">
                     <div class="mob-card-header">
                         <div class="teacher-meta-cell">
-                            <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($sal->teacher->name) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb">
+                            <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacherDisplayName) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}">
                             <div>
-                                <strong class="teacher-name-text">{{ $sal->teacher->name }}</strong>
-                                <span class="teacher-subject-pill">{{ $sal->teacher->subject->name_ar ?? 'كادر التدريس' }}</span>
+                                <strong class="teacher-name-text">{{ $teacherDisplayName }}</strong>
+                                <span class="teacher-subject-pill">{{ $subjectDisplayName }}</span>
                             </div>
                         </div>
                         <span class="status-pill {{ $isPaid ? 'status-paid' : 'status-pending' }}">
-                            {{ $isPaid ? 'تم الصرف ✅' : 'قيد الصرف ⏳' }}
+                            {{ $isPaid ? __('تم الصرف ✅') : __('قيد الصرف ⏳') }}
                         </span>
                     </div>
 
                     <div class="mob-card-body">
                         <div class="mob-stat-row">
-                            <span class="mob-label">الشهر والسنة:</span>
+                            <span class="mob-label">{{ __('الشهر والسنة:') }}</span>
                             <span class="month-pill font-mono">{{ $monthLabel }} {{ $sal->year }}</span>
                         </div>
                         <div class="mob-stat-row">
-                            <span class="mob-label">صافي الراتب:</span>
+                            <span class="mob-label">{{ __('صافي الراتب:') }}</span>
                             <strong class="font-mono text-base {{ $isPaid ? 'text-paid' : 'text-pending' }}">{{ number_format($sal->net_salary, 2) }} ₪</strong>
                         </div>
                         <div class="mob-stat-row">
-                            <span class="mob-label">تفاصيل:</span>
+                            <span class="mob-label">{{ __('تفاصيل:') }}</span>
                             <div class="salary-breakdown-compact">
-                                <span class="base-badge font-mono">أساسي: {{ number_format($sal->basic_salary, 0) }} ₪</span>
+                                <span class="base-badge font-mono">{{ __('أساسي:') }} {{ number_format($sal->basic_salary, 0) }} ₪</span>
                                 @if($sal->bonus > 0)
                                     <span class="bonus-badge font-mono">+{{ number_format($sal->bonus, 0) }} ₪</span>
                                 @endif
@@ -227,24 +234,24 @@
                             </div>
                         </div>
                         <div class="mob-stat-row">
-                            <span class="mob-label">الصرف:</span>
-                            <span style="font-size: 0.8rem; color: #64748b;">{{ $sal->payment_method ?: 'تحويل بنكي' }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('Y-m-d') . ')' : '' }}</span>
+                            <span class="mob-label">{{ __('الصرف:') }}</span>
+                            <span style="font-size: 0.8rem; color: #64748b;">{{ $sal->payment_method ? __($sal->payment_method) : __('تحويل بنكي') }} {{ $sal->payment_date ? '(' . $sal->payment_date->format('Y-m-d') . ')' : '' }}</span>
                         </div>
                     </div>
 
                     <div class="mob-card-footer">
                         <button type="button" class="btn-mob-edit" onclick='openEditSalaryModal(@json($sal))'>
-                            <i class="fa-solid fa-pen"></i> تعديل
+                            <i class="fa-solid fa-pen"></i> {{ __('تعديل') }}
                         </button>
                         <button type="button" class="btn-mob-delete" onclick="deleteSalaryRecord({{ $sal->id }})">
-                            <i class="fa-solid fa-trash-can"></i> حذف
+                            <i class="fa-solid fa-trash-can"></i> {{ __('حذف') }}
                         </button>
                     </div>
                 </div>
             @empty
                 <div style="text-align: center; padding: 30px; color: #64748b;">
                     <i class="fa-solid fa-receipt" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 8px;"></i>
-                    <strong>لا توجد سجلات رواتب مدخلة.</strong>
+                    <strong>{{ __('لا توجد سجلات رواتب مدخلة.') }}</strong>
                 </div>
             @endforelse
         </div>
@@ -255,11 +262,11 @@
     </div>
 </div>
 
-{{-- 5. مودال تسجيل أو تعديل راتب معلم --}}
+{{-- 5. مودال تسجيل أو تعديل راتب معلم الفاتح --}}
 <div id="salaryFormModal" class="modal-overlay" style="display: none;">
     <div class="modal-box">
         <div class="modal-header">
-            <h3 id="modalSalaryTitle">تسجيل وصرف راتب معلم</h3>
+            <h3 id="modalSalaryTitle">{{ __('تسجيل وصرف راتب معلم') }}</h3>
             <button type="button" class="btn-close-modal" onclick="closeSalaryModal()">&times;</button>
         </div>
 
@@ -268,24 +275,28 @@
             <div class="modal-body-form">
                 <div class="form-row-2">
                     <div class="form-col">
-                        <label class="form-label">المعلم <span class="required">*</span></label>
+                        <label class="form-label">{{ __('المعلم') }} <span class="required" style="color: #dc2626;">*</span></label>
                         <select name="teacher_id" id="modalTeacherId" class="modal-input" required>
-                            <option value="">اختر المعلم</option>
+                            <option value="">{{ __('اختر المعلم') }}</option>
                             @foreach($teachers as $t)
-                                <option value="{{ $t->id }}">{{ $t->name }} ({{ $t->subject->name_ar ?? 'عام' }})</option>
+                                @php
+                                    $tName = (app()->getLocale() === 'en' && !empty($t->name_en)) ? $t->name_en : $t->name;
+                                    $tSub = (app()->getLocale() === 'en' && !empty($t->subject->name_en)) ? $t->subject->name_en : ($t->subject->name_ar ?? __('عام'));
+                                @endphp
+                                <option value="{{ $t->id }}">{{ $tName }} ({{ $tSub }})</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="form-col">
-                        <label class="form-label">السنة المالية <span class="required">*</span></label>
-                        <input type="number" name="year" id="modalYear" class="modal-input" value="{{ $year }}" required min="2024" max="2030">
+                        <label class="form-label">{{ __('السنة المالية') }} <span class="required" style="color: #dc2626;">*</span></label>
+                        <input type="number" name="year" id="modalYear" class="modal-input font-mono" value="{{ $year }}" required min="2024" max="2030">
                     </div>
                 </div>
 
                 <div class="form-row-2">
                     <div class="form-col">
-                        <label class="form-label">شهر الراتب <span class="required">*</span></label>
+                        <label class="form-label">{{ __('شهر الراتب') }} <span class="required" style="color: #dc2626;">*</span></label>
                         <select name="month" id="modalMonth" class="modal-input" required>
                             @foreach($monthsNames as $mNum => $mLabel)
                                 <option value="{{ $mNum }}" {{ date('n') == $mNum ? 'selected' : '' }}>{{ $mLabel }}</option>
@@ -294,70 +305,70 @@
                     </div>
 
                     <div class="form-col">
-                        <label class="form-label">حالة الصرف <span class="required">*</span></label>
+                        <label class="form-label">{{ __('حالة الصرف') }} <span class="required" style="color: #dc2626;">*</span></label>
                         <select name="status" id="modalStatus" class="modal-input" required>
-                            <option value="paid">تم الصرف والاستلام ✅</option>
-                            <option value="pending">قيد الاعتماد والإجراء ⏳</option>
+                            <option value="paid">{{ __('تم الصرف والاستلام ✅') }}</option>
+                            <option value="pending">{{ __('قيد الاعتماد والإجراء ⏳') }}</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="form-row-3">
                     <div class="form-col">
-                        <label class="form-label">الراتب الأساسي (₪) <span class="required">*</span></label>
-                        <input type="number" step="0.01" name="basic_salary" id="modalBasicSalary" class="modal-input" placeholder="0.00" required oninput="calcNetSalary()">
+                        <label class="form-label">{{ __('الراتب الأساسي (₪)') }} <span class="required" style="color: #dc2626;">*</span></label>
+                        <input type="number" step="0.01" name="basic_salary" id="modalBasicSalary" class="modal-input font-mono" placeholder="0.00" required oninput="calcNetSalary()">
                     </div>
 
                     <div class="form-col">
-                        <label class="form-label">المكافآت والحوافز (₪)</label>
-                        <input type="number" step="0.01" name="bonus" id="modalBonus" class="modal-input" value="0.00" oninput="calcNetSalary()">
+                        <label class="form-label">{{ __('المكافآت والحوافز (₪)') }}</label>
+                        <input type="number" step="0.01" name="bonus" id="modalBonus" class="modal-input font-mono" value="0.00" oninput="calcNetSalary()">
                     </div>
 
                     <div class="form-col">
-                        <label class="form-label">الخصومات (₪)</label>
-                        <input type="number" step="0.01" name="deductions" id="modalDeductions" class="modal-input" value="0.00" oninput="calcNetSalary()">
+                        <label class="form-label">{{ __('الخصومات (₪)') }}</label>
+                        <input type="number" step="0.01" name="deductions" id="modalDeductions" class="modal-input font-mono" value="0.00" oninput="calcNetSalary()">
                     </div>
                 </div>
 
                 <div class="net-calc-box">
-                    <span>صافي الراتب المستحق تلقائياً:</span>
+                    <span>{{ __('صافي الراتب المستحق تلقائياً:') }}</span>
                     <strong id="modalNetDisplay" class="font-mono">0.00 ₪</strong>
                 </div>
 
                 <div class="form-row-2">
                     <div class="form-col">
-                        <label class="form-label">طريقة الصرف</label>
+                        <label class="form-label">{{ __('طريقة الصرف') }}</label>
                         <select name="payment_method" id="modalPaymentMethod" class="modal-input">
-                            <option value="تحويل بنكي">تحويل بنكي</option>
-                            <option value="جوال باي (Jawwal Pay)">جوال باي (Jawwal Pay)</option>
-                            <option value="بال باي (PalPay)">بال باي (PalPay)</option>
-                            <option value="سداد نقدي (كاش)">سداد نقدي (كاش)</option>
-                            <option value="شيك بنكي">شيك بنكي</option>
+                            <option value="تحويل بنكي">{{ __('تحويل بنكي') }}</option>
+                            <option value="جوال باي (Jawwal Pay)">{{ __('جوال باي (Jawwal Pay)') }}</option>
+                            <option value="بال باي (PalPay)">{{ __('بال باي (PalPay)') }}</option>
+                            <option value="سداد نقدي (كاش)">{{ __('سداد نقدي (كاش)') }}</option>
+                            <option value="شيك بنكي">{{ __('شيك بنكي') }}</option>
                         </select>
                     </div>
 
                     <div class="form-col">
-                        <label class="form-label">تاريخ الصرف</label>
-                        <input type="date" name="payment_date" id="modalPaymentDate" class="modal-input" value="{{ date('Y-m-d') }}">
+                        <label class="form-label">{{ __('تاريخ الصرف') }}</label>
+                        <input type="date" name="payment_date" id="modalPaymentDate" class="modal-input font-mono" value="{{ date('Y-m-d') }}">
                     </div>
                 </div>
 
                 <div class="form-row-full">
-                    <label class="form-label">رقم السند / المرجع</label>
-                    <input type="text" name="reference_no" id="modalReferenceNo" class="modal-input" placeholder="مثال: REF-9842">
+                    <label class="form-label">{{ __('رقم السند / المرجع') }}</label>
+                    <input type="text" name="reference_no" id="modalReferenceNo" class="modal-input" placeholder="{{ __('مثال: REF-9842') }}">
                 </div>
 
                 <div class="form-row-full">
-                    <label class="form-label">ملاحظات وبيان الصرف</label>
-                    <textarea name="notes" id="modalNotes" rows="2" class="modal-input" placeholder="أي تفاصيل أو ملاحظات تخص الصرف..."></textarea>
+                    <label class="form-label">{{ __('ملاحظات وبيان الصرف') }}</label>
+                    <textarea name="notes" id="modalNotes" rows="2" class="modal-input" placeholder="{{ __('أي تفاصيل أو ملاحظات تخص الصرف...') }}"></textarea>
                 </div>
             </div>
 
             <div class="modal-footer">
                 <button type="submit" class="btn-modal-save" id="btnSaveSalary">
-                    <i class="fa-solid fa-check"></i> حفظ واعتماد الراتب
+                    <i class="fa-solid fa-check"></i> {{ __('حفظ واعتماد الراتب') }}
                 </button>
-                <button type="button" class="btn-modal-cancel" onclick="closeSalaryModal()">إلغاء</button>
+                <button type="button" class="btn-modal-cancel" onclick="closeSalaryModal()">{{ __('إلغاء') }}</button>
             </div>
         </form>
     </div>
@@ -365,6 +376,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    const payrollI18n = {
+        titleCreate: "{{ __('تسجيل وصرف راتب معلم جديد') }}",
+        titleEdit: "{{ __('تعديل مسير راتب المعلم') }}",
+        saving: "{{ __('جاري الحفظ...') }}",
+        saveBtn: "{{ __('حفظ واعتماد الراتب') }}",
+        successTitle: "{{ __('تم الحفظ بنجاح') }}",
+        errorTitle: "{{ __('خطأ') }}",
+        deleteConfirmTitle: "{{ __('هل أنت متأكد من حذف السجل؟') }}",
+        deleteConfirmText: "{{ __('سيتم حذف سجل مسير الراتب نهائياً!') }}",
+        deleteConfirmBtn: "{{ __('نعم، احذف') }}",
+        cancelBtn: "{{ __('إلغاء') }}",
+        deletedSuccess: "{{ __('تم الحذف بنجاح') }}",
+        deleteFailed: "{{ __('فشل حذف السجل') }}"
+    };
+
     function calcNetSalary() {
         const basic = parseFloat(document.getElementById('modalBasicSalary').value || 0);
         const bonus = parseFloat(document.getElementById('modalBonus').value || 0);
@@ -374,7 +400,7 @@
     }
 
     function openCreateSalaryModal() {
-        document.getElementById('modalSalaryTitle').innerText = 'تسجيل وصرف راتب معلم جديد';
+        document.getElementById('modalSalaryTitle').innerText = payrollI18n.titleCreate;
         document.getElementById('salarySaveForm').reset();
         document.getElementById('modalYear').value = '{{ $year }}';
         document.getElementById('modalPaymentDate').value = '{{ date("Y-m-d") }}';
@@ -386,7 +412,7 @@
     }
 
     function openEditSalaryModal(salary) {
-        document.getElementById('modalSalaryTitle').innerText = 'تعديل مسير راتب المعلم';
+        document.getElementById('modalSalaryTitle').innerText = payrollI18n.titleEdit;
         document.getElementById('modalTeacherId').value = salary.teacher_id;
         document.getElementById('modalYear').value = salary.year;
         document.getElementById('modalMonth').value = salary.month;
@@ -410,7 +436,7 @@
         e.preventDefault();
         const btn = document.getElementById('btnSaveSalary');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + payrollI18n.saving;
 
         const form = document.getElementById('salarySaveForm');
         const formData = new FormData(form);
@@ -420,36 +446,36 @@
             closeSalaryModal();
             Swal.fire({
                 icon: 'success',
-                title: 'تم الحفظ بنجاح',
+                title: payrollI18n.successTitle,
                 text: res.data.message,
                 confirmButtonColor: '#059669'
             }).then(() => location.reload());
         })
         .catch(err => {
-            Swal.fire('خطأ', err.response?.data?.message || 'حدث خطأ أثناء حفظ الراتب', 'error');
+            Swal.fire(payrollI18n.errorTitle, err.response?.data?.message || 'Error occurred', 'error');
         })
         .finally(() => {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> حفظ واعتماد الراتب';
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> ' + payrollI18n.saveBtn;
         });
     }
 
     function deleteSalaryRecord(id) {
         Swal.fire({
-            title: 'هل أنت متأكد من حذف السجل؟',
-            text: 'سيتم حذف سجل مسير الراتب نهائياً!',
+            title: payrollI18n.deleteConfirmTitle,
+            text: payrollI18n.deleteConfirmText,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
-            confirmButtonText: 'نعم، احذف',
-            cancelButtonText: 'إلغاء'
+            confirmButtonText: payrollI18n.deleteConfirmBtn,
+            cancelButtonText: payrollI18n.cancelBtn
         }).then((result) => {
             if (result.isConfirmed) {
                 axios.delete(`{{ url('admin/teachers/salaries') }}/${id}`)
                 .then(res => {
-                    Swal.fire('تم الحذف', res.data.message, 'success').then(() => location.reload());
+                    Swal.fire(payrollI18n.deletedSuccess, res.data.message, 'success').then(() => location.reload());
                 })
-                .catch(err => Swal.fire('خطأ', 'فشل حذف السجل', 'error'));
+                .catch(err => Swal.fire(payrollI18n.errorTitle, payrollI18n.deleteFailed, 'error'));
             }
         });
     }
@@ -465,110 +491,120 @@
         overflow-x: hidden;
     }
     .payroll-header-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        color: #0f172a;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 24px;
+        gap: 16px;
+        margin-bottom: 20px;
+        border-inline-start: 5px solid var(--ed-primary, #1d4ed8);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .badge-tag {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: #f1f5f9;
-        color: #475569;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
         padding: 4px 12px;
-        border-radius: 20px;
+        border-radius: 6px;
         font-size: 0.8rem;
         font-weight: 700;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
     .page-title {
-        font-size: 1.6rem;
+        font-size: 1.35rem;
         font-weight: 800;
         color: #0f172a;
-        margin: 0 0 6px;
+        margin: 0 0 4px;
     }
     .page-subtitle {
         margin: 0;
         color: #64748b;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
     }
     .btn-create-salary {
-        background: linear-gradient(135deg, #0284c7, #0369a1);
+        background: var(--ed-primary, #1d4ed8);
         color: #fff;
-        border: none;
-        padding: 12px 22px;
-        border-radius: 14px;
+        border: 1px solid #1e40af;
+        padding: 10px 20px;
+        border-radius: 8px;
         font-weight: 700;
+        font-size: 0.88rem;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: 0.2s;
+        transition: 0.2s ease;
+        box-shadow: 0 1px 3px rgba(29, 78, 216, 0.2);
     }
     .btn-create-salary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 18px rgba(2, 132, 199, 0.35);
+        background: #1e40af;
+        transform: translateY(-1px);
     }
 
     /* Stats Cards */
-    .stats-cards-grid {
+    .stats-row-clean {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 18px;
-        margin-bottom: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
     }
-    .stat-card {
+    .stat-card-clean {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 10px;
+        padding: 16px 20px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        border-top: 3px solid var(--card-accent, #1d4ed8);
         display: flex;
-        align-items: center;
-        gap: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .stat-icon {
-        width: 54px;
-        height: 54px;
-        border-radius: 14px;
-        display: grid;
-        place-items: center;
-        font-size: 1.5rem;
-    }
-    .stat-icon.emerald { background: #ecfdf5; color: #059669; }
-    .stat-icon.amber { background: #fffbeb; color: #d97706; }
-    .stat-icon.blue { background: #f0f9ff; color: #0284c7; }
-    .stat-icon.purple { background: #faf5ff; color: #9333ea; }
     .stat-label {
-        font-size: 0.8rem;
-        color: #64748b;
+        font-size: 0.82rem;
         font-weight: 700;
-        display: block;
-        margin-bottom: 4px;
+        color: #64748b;
+        margin-bottom: 8px;
     }
-    .stat-value {
+    .stat-value-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .stat-number {
         font-size: 1.45rem;
         font-weight: 800;
-        color: #0f172a;
-        margin: 0;
     }
+    .stat-icon {
+        font-size: 1.5rem;
+        opacity: 0.85;
+    }
+    .text-emerald { color: #059669; }
+    .text-amber { color: #d97706; }
+    .text-navy { color: #1e3a8a; }
+    .text-indigo { color: #4f46e5; }
 
-    /* Filter */
+    /* Filter Card */
     .filter-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 16px 20px;
-        margin-bottom: 24px;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
     }
     .filter-form {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
+        gap: 14px;
     }
     .filter-group {
         display: flex;
@@ -576,186 +612,185 @@
         gap: 8px;
     }
     .filter-group label {
-        font-size: 0.85rem;
+        font-size: 0.84rem;
         font-weight: 700;
-        color: #475569;
+        color: #334155;
     }
     .form-select-sm {
         background: #f8fafc;
         border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        padding: 7px 12px;
-        font-size: 0.88rem;
-        font-weight: 600;
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 0.84rem;
+        color: #0f172a;
         outline: none;
-        cursor: pointer;
+    }
+    .form-select-sm:focus {
+        border-color: #1d4ed8;
+        background: #fff;
     }
     .btn-clear-filter {
-        color: #ef4444;
-        font-size: 0.85rem;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.82rem;
         font-weight: 700;
         text-decoration: none;
     }
 
-    /* Table & Container (بدون سكرول أفقي) */
+    /* Table Container */
     .table-container-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 24px;
-        width: 100%;
-        box-sizing: border-box;
-        overflow-x: hidden;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
     .payroll-table-wrap {
-        width: 100%;
-        overflow-x: hidden;
+        overflow-x: auto;
     }
     .payroll-table {
         width: 100%;
         border-collapse: collapse;
-        text-align: right;
+        text-align: start;
+        font-size: 0.88rem;
     }
     .payroll-table th {
-        background: #f8fafc !important;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
         padding: 12px 14px;
+        border-bottom: 1px solid #e2e8f0;
         font-size: 0.82rem;
-        font-weight: 800;
-        color: #0f172a !important;
-        border-bottom: 2px solid #cbd5e1 !important;
-        letter-spacing: 0.3px;
-        white-space: nowrap;
     }
     .payroll-table td {
         padding: 12px 14px;
-        border-bottom: 1px solid #e2e8f0;
-        font-size: 0.86rem;
+        border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
         color: #1e293b;
     }
+    .payroll-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    /* Teacher Cell */
     .teacher-meta-cell {
         display: flex;
         align-items: center;
-        gap: 10px;
-        min-width: 0;
+        gap: 12px;
     }
     .teacher-thumb {
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         object-fit: cover;
-        flex-shrink: 0;
-    }
-    .teacher-meta-text {
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
+        border: 1px solid #cbd5e1;
     }
     .teacher-name-text {
-        font-weight: 800;
+        display: block;
+        font-size: 0.88rem;
         color: #0f172a;
-        font-size: 0.9rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
     .teacher-subject-pill {
+        display: inline-block;
         font-size: 0.72rem;
-        color: #0284c7;
-        background: #f0f9ff;
-        padding: 1px 6px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 2px 8px;
         border-radius: 4px;
-        width: fit-content;
+        font-weight: 600;
         margin-top: 2px;
     }
     .month-pill {
-        background: #f1f5f9;
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.82rem;
-        color: #334155;
-        white-space: nowrap;
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        background: #f1f5f9;
+        color: #334155;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 600;
     }
     .salary-breakdown-compact {
         display: flex;
         flex-direction: column;
         gap: 3px;
+        font-size: 0.76rem;
     }
-    .base-badge { font-size: 0.8rem; color: #334155; font-weight: 600; }
-    .bonus-badge { font-size: 0.72rem; color: #059669; background: #ecfdf5; padding: 1px 6px; border-radius: 4px; display: inline-block; width: fit-content; }
-    .deduct-badge { font-size: 0.72rem; color: #dc2626; background: #fef2f2; padding: 1px 6px; border-radius: 4px; display: inline-block; width: fit-content; }
+    .base-badge { color: #334155; font-weight: 600; }
+    .bonus-badge { color: #059669; font-weight: 700; }
+    .deduct-badge { color: #dc2626; font-weight: 700; }
     .text-paid { color: #059669; }
     .text-pending { color: #d97706; }
+
+    .status-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+    .status-paid { background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; }
+    .status-pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+
     .payment-col-wrap {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 4px;
     }
     .payment-method-label {
-        font-size: 0.74rem;
+        font-size: 0.75rem;
         color: #64748b;
     }
-    .status-pill {
-        display: inline-flex;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        width: fit-content;
-    }
-    .status-paid { background: #ecfdf5; color: #059669; }
-    .status-pending { background: #fffbeb; color: #b45309; }
 
     .actions-group {
         display: flex;
+        align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 6px;
     }
-    .btn-action-edit {
-        background: #f0f9ff;
-        color: #0284c7;
-        border: 1px solid #bae6fd;
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
+    .btn-action-edit, .btn-action-delete {
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
         cursor: pointer;
+        font-size: 0.85rem;
+        transition: 0.15s ease;
     }
-    .btn-action-delete {
-        background: #fef2f2;
-        color: #ef4444;
-        border: 1px solid #fecaca;
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        cursor: pointer;
-    }
+    .btn-action-edit { color: #0284c7; }
+    .btn-action-edit:hover { background: #eff6ff; border-color: #bfdbfe; }
+    .btn-action-delete { color: #dc2626; }
+    .btn-action-delete:hover { background: #fef2f2; border-color: #fecaca; }
 
-    /* بطاقات الجوال بدون سكرول نهائياً */
+    /* Mobile Cards */
     .payroll-cards-mobile {
         display: none;
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 900px) {
         .payroll-table-wrap { display: none; }
         .payroll-cards-mobile {
-            display: grid;
-            grid-template-columns: 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 14px;
-            width: 100%;
         }
         .payroll-mob-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 16px;
+            border-radius: 10px;
             padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
         }
         .mob-card-header {
             display: flex;
@@ -763,7 +798,7 @@
             align-items: center;
             gap: 10px;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
         }
         .mob-card-body {
             display: flex;
@@ -774,66 +809,42 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
         }
         .mob-label {
             font-weight: 700;
             color: #64748b;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
         }
         .mob-card-footer {
             display: flex;
             gap: 8px;
             border-top: 1px solid #f1f5f9;
-            padding-top: 12px;
+            padding-top: 10px;
         }
-        .btn-mob-edit {
+        .btn-mob-edit, .btn-mob-delete {
             flex: 1;
-            background: #f0f9ff;
-            color: #0284c7;
-            border: 1px solid #bae6fd;
             padding: 8px;
-            border-radius: 10px;
+            border-radius: 6px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            font-size: 0.84rem;
+            font-size: 0.82rem;
+            border: 1px solid #e2e8f0;
         }
-        .btn-mob-delete {
-            flex: 1;
-            background: #fef2f2;
-            color: #ef4444;
-            border: 1px solid #fecaca;
-            padding: 8px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.84rem;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .stats-cards-grid {
-            grid-template-columns: 1fr;
-        }
-        .form-row-2, .form-row-3 {
-            grid-template-columns: 1fr;
-        }
+        .btn-mob-edit { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .btn-mob-delete { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
     }
 
     /* Modal */
     .modal-overlay {
         position: fixed;
         inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(4px);
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(2px);
         z-index: 9999;
         display: flex;
         align-items: center;
@@ -842,48 +853,54 @@
     }
     .modal-box {
         background: #ffffff;
-        border-radius: 20px;
-        max-width: 680px;
+        border-radius: 12px;
+        max-width: 640px;
         width: 100%;
         max-height: 90vh;
         overflow-y: auto;
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
     }
     .modal-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 20px 24px;
+        padding: 18px 24px;
         border-bottom: 1px solid #e2e8f0;
     }
     .modal-header h3 {
         margin: 0;
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         font-weight: 800;
         color: #0f172a;
     }
     .btn-close-modal {
         background: transparent;
         border: none;
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         cursor: pointer;
         color: #64748b;
     }
     .modal-body-form {
-        padding: 24px;
+        padding: 20px 24px;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
     }
     .form-row-2 {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        gap: 14px;
     }
     .form-row-3 {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
-        gap: 14px;
+        gap: 12px;
+    }
+    .form-row-full {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
     }
     .form-col {
         display: flex;
@@ -891,62 +908,66 @@
         gap: 6px;
     }
     .form-label {
-        font-size: 0.85rem;
+        font-size: 0.84rem;
         font-weight: 700;
         color: #334155;
     }
     .modal-input {
-        background: #f8fafc;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 0.92rem;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 9px 12px;
+        font-size: 0.88rem;
         outline: none;
         font-family: inherit;
         box-sizing: border-box;
     }
     .modal-input:focus {
-        border-color: #0284c7;
-        background: #fff;
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
     }
     .net-calc-box {
         background: #f0fdf4;
         border: 1px solid #bbf7d0;
-        padding: 12px 18px;
-        border-radius: 12px;
+        padding: 12px 16px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: #166534;
-        font-size: 0.92rem;
+        font-size: 0.88rem;
+        font-weight: 700;
     }
     .net-calc-box strong {
-        font-size: 1.3rem;
+        font-size: 1.25rem;
         color: #15803d;
     }
     .modal-footer {
-        padding: 18px 24px;
+        padding: 16px 24px;
         border-top: 1px solid #e2e8f0;
         display: flex;
         justify-content: flex-end;
         gap: 10px;
     }
     .btn-modal-save {
-        background: #0284c7;
+        background: var(--ed-primary, #1d4ed8);
         color: #fff;
-        border: none;
-        padding: 10px 22px;
-        border-radius: 10px;
+        border: 1px solid #1e40af;
+        padding: 9px 20px;
+        border-radius: 6px;
         font-weight: 700;
         cursor: pointer;
+        font-size: 0.88rem;
     }
     .btn-modal-cancel {
         background: #f1f5f9;
         border: 1px solid #cbd5e1;
-        padding: 10px 18px;
-        border-radius: 10px;
+        color: #475569;
+        padding: 9px 16px;
+        border-radius: 6px;
         font-weight: 700;
         cursor: pointer;
+        font-size: 0.88rem;
     }
 </style>
 @endsection

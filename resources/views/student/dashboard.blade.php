@@ -11,7 +11,7 @@
             <div class="ed-header-badges">
                 <span class="ed-badge-item stage">
                     <i class="fas fa-graduation-cap"></i>
-                    <span>{{ $student->stage->name_ar ?? $student->stage->label_ar ?? __('الثانوية العامة فلسطين 🇵🇸') }}</span>
+                    <span>{{ (app()->getLocale() === 'en' && !empty($student->stage->name_en)) ? $student->stage->name_en : ($student->stage->name_ar ?? $student->stage->label_ar ?? __('الثانوية العامة فلسطين 🇵🇸')) }}</span>
                 </span>
                 <span class="ed-badge-item term">
                     <span class="pulse-dot"></span>
@@ -24,11 +24,11 @@
             </div>
 
             <h1 class="ed-welcome-title">
-                {{ __('مرحباً بك،') }} <span>{{ $student->name_ar ?? __('طالبنا المتميز') }}</span>
+                {{ __('مرحباً بك،') }} <span>{{ (app()->getLocale() === 'en' && !empty($student->name_en)) ? $student->name_en : ($student->name_ar ?? $student->name ?? __('طالبنا المتميز')) }}</span>
             </h1>
 
             <p class="ed-welcome-quote" id="dailyTipText">
-                💡 ركز على تنظيم ساعات دراستك اليومية وحل نماذج الامتحانات الاسترشادية باستمرار لضمان التفوق.
+                {{ __('💡 ركز على تنظيم ساعات دراستك اليومية وحل نماذج الامتحانات الاسترشادية باستمرار لضمان التفوق.') }}
             </p>
 
             <div class="ed-welcome-actions">
@@ -88,9 +88,9 @@
                 <div class="ed-ab-content">
                     <div class="ed-ab-icon"><i class="fas fa-hourglass-half"></i></div>
                     <div>
-                        <h4>إشعار سداد قيد المراجعة (معاملة #{{ $pendingPay->transaction_number }})</h4>
+                        <h4>{{ __('إشعار سداد قيد المراجعة') }} ({{ __('معاملة') }} #{{ $pendingPay->transaction_number }})</h4>
                         <p>
-                            تم استلام إشعار الدفع بمبلغ <strong>{{ number_format($pendingPay->amount, 0) }} ₪</strong> عبر {{ $pendingPay->gateway_name_ar }}. سيقوم المشرف بمطابقته وتفعيل المواد لحسابك رسمياً.
+                            {{ __('تم استلام إشعار الدفع بمبلغ') }} <strong>{{ number_format($pendingPay->amount, 0) }} ₪</strong> {{ __('عبر') }} {{ __($pendingPay->gateway_name_ar) }}. {{ __('سيقوم المشرف بمطابقته وتفعيل المواد لحسابك رسمياً.') }}
                         </p>
                     </div>
                 </div>
@@ -264,10 +264,13 @@
 
             <div class="ed-panel-body">
                 @forelse($available_exams as $ex)
+                    @php
+                        $subjectName = (app()->getLocale() === 'en' && !empty($ex->subject->name_en)) ? $ex->subject->name_en : ($ex->subject->name_ar ?? __('مبحث دراسي'));
+                    @endphp
                     <div class="ed-exam-item-row">
                         <div class="exam-info">
                             <span class="exam-subject-tag">
-                                {{ $ex->subject->name_ar ?? 'مبحث دراسي' }}
+                                {{ $subjectName }}
                             </span>
                             <h4>{{ $ex->title }}</h4>
                             <div class="exam-meta">
@@ -284,8 +287,8 @@
                 @empty
                     <div class="ed-empty-state">
                         <i class="fas fa-check-circle" style="color: #16a34a; font-size: 2.2rem; margin-bottom: 8px;"></i>
-                        <h4>رائع جداً! لا توجد اختبارات معلقة</h4>
-                        <p>أكملت كافة النماذج المتاحة لمرحلتك حالياً، تابع دراسة الوحدات الجديدة.</p>
+                        <h4>{{ __('رائع جداً! لا توجد اختبارات معلقة') }}</h4>
+                        <p>{{ __('أكملت كافة النماذج المتاحة لمرحلتك حالياً، تابع دراسة الوحدات الجديدة.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -309,7 +312,7 @@
                         <strong class="val">98.5% +</strong>
                     </div>
                     <p class="goal-quote">
-                        "كل جهد تبذله في المراجعة وحل المسائل يرفع فرصك في الحصول على المقعد الجامعي الذي تحلم به."
+                        "{{ __('كل جهد تبذله في المراجعة وحل المسائل يرفع فرصك في الحصول على المقعد الجامعي الذي تحلم به.') }}"
                     </p>
                     <a href="{{ route('student.achievements') }}" class="ed-btn-classic secondary" style="width: 100%; justify-content: center; font-size: 0.84rem; padding: 9px;">
                         <i class="fas fa-hourglass-start"></i> {{ __('بدء جلسة تركيز (بومودورو)') }}
@@ -331,11 +334,11 @@
                         <div class="ed-completed-row">
                             <div>
                                 <strong class="title">{{ $done_exam->exam->title ?? $done_exam->title }}</strong>
-                                <span class="date">{{ $done_exam->created_at ? $done_exam->created_at->format('Y/m/d') : 'مؤخراً' }}</span>
+                                <span class="date font-mono">{{ $done_exam->created_at ? $done_exam->created_at->format('Y/m/d') : __('مؤخراً') }}</span>
                             </div>
                             <div>
                                 @if($done_exam->status == 'graded')
-                                    <span class="grade-badge passed">
+                                    <span class="grade-badge passed font-mono">
                                         {{ number_format($done_exam->total_earned_grade, 1) }}%
                                     </span>
                                 @else
@@ -348,7 +351,7 @@
                     @empty
                         <div class="ed-empty-state" style="padding: 20px 10px;">
                             <i class="far fa-folder-open" style="font-size: 1.6rem; opacity: 0.5; margin-bottom: 6px;"></i>
-                            <p style="margin: 0; font-size: 0.84rem;">لم تقم بتسليم أي اختبارات بعد.</p>
+                            <p style="margin: 0; font-size: 0.84rem;">{{ __('لم تقم بتسليم أي اختبارات بعد.') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -1065,11 +1068,11 @@
         }
 
         const tips = [
-            "💡 نصيحة اليوم: حل نماذج امتحانات الإنجاز الوزارية والأسئلة الشاملة لضبط إدارة الوقت في القاعة.",
-            "💡 نصيحة اليوم: استخدم بطاقات الاستذكار لحفظ القوانين والمصطلحات الصعبة قبل النوم لتثبيتها في الذاكرة.",
-            "💡 نصيحة اليوم: خصص استراحة 5 دقائق لكل 25 دقيقة دراسة (تقنية بومودورو) لتحافظ على تركيزك.",
-            "💡 نصيحة اليوم: تأكد من مراجعة أسئلة نهاية كل وحدة في الكتب المدرسية فهي مصدر أساسي للأسئلة.",
-            "💡 نصيحة اليوم: تواصل مع معلمك في المنصة لمساعدتك في أي مسألة أو قانون تجد فيه صعوبة."
+            "{{ __('💡 نصيحة اليوم: حل نماذج امتحانات الإنجاز الوزارية والأسئلة الشاملة لضبط إدارة الوقت في القاعة.') }}",
+            "{{ __('💡 نصيحة اليوم: استخدم بطاقات الاستذكار لحفظ القوانين والمصطلحات الصعبة قبل النوم لتثبيتها في الذاكرة.') }}",
+            "{{ __('💡 نصيحة اليوم: خصص استراحة 5 دقائق لكل 25 دقيقة دراسة (تقنية بومودورو) لتحافظ على تركيزك.') }}",
+            "{{ __('💡 نصيحة اليوم: تأكد من مراجعة أسئلة نهاية كل وحدة في الكتب المدرسية فهي مصدر أساسي للأسئلة.') }}",
+            "{{ __('💡 نصيحة اليوم: تواصل مع معلمك في المنصة لمساعدتك في أي مسألة أو قانون تجد فيه صعوبة.') }}"
         ];
         const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
         const tipEl = document.getElementById('dailyTipText');

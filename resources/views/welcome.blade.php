@@ -11,39 +11,38 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }} 🇵🇸</title>
-    <meta name="description" content="المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج الوزاري، بنك اختبارات وزارية محلولة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.">
+    <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }} 🇵🇸</title>
+    <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج الوزاري، بنك اختبارات وزارية محلولة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.') }}">
 
-    <!-- الخطوط الموحدة للمنظومة (Alexandria & Tajawal) -->
+    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- أيقونات FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
         /* ==========================================================================
-           نظام التصميم الموحد النظيف (Clean Universal EdTech Design - No Redundancy)
-           - كامل العرض 100% بدون هوامش ميتة
-           - ريسبنسيف كامل لجميع الشاشات
-           - بدون أي تكرار للأزرار أو الروابط
+           نظام التصميم الأكاديمي الفاتح (Light Academic University Portal Design)
+           - فواتح بالكامل: خلفيات بيضاء ورمادية ناعمة
+           - حدود ناعمة #e2e8f0 وخطوط واضحة وصغيرة 13-14.5px
+           - أسلوب بوابات الجامعات الكلاسيكية الأنيقة
            ========================================================================== */
         :root {
             --ed-primary: #1d4ed8;
-            --ed-primary-dark: #1e3a8a;
-            --ed-primary-deep: #0f172a;
             --ed-primary-hover: #1e40af;
             --ed-primary-soft: #eff6ff;
             --ed-primary-border: #bfdbfe;
 
-            --ed-accent-gold: #f59e0b;
-            --ed-accent-gold-dark: #d97706;
+            --ed-accent-gold: #d97706;
             --ed-accent-gold-soft: #fef3c7;
+            --ed-accent-gold-border: #fde68a;
 
             --ed-success: #16a34a;
             --ed-success-hover: #15803d;
             --ed-success-soft: #ecfdf5;
+            --ed-success-border: #a7f3d0;
 
             --ed-bg: #f8fafc;
             --ed-surface: #ffffff;
@@ -56,10 +55,10 @@
             --ed-text-muted: #64748b;
 
             --radius-sm: 6px;
-            --radius-md: 10px;
+            --radius-md: 8px;
 
-            --shadow-card: 0 2px 5px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
-            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
             --transition: all 0.2s ease;
         }
 
@@ -67,7 +66,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Alexandria', 'Tajawal', sans-serif;
+            font-family: 'Tajawal', 'Alexandria', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -76,20 +75,13 @@
             min-height: 100vh;
             background-color: var(--ed-bg);
             color: var(--ed-text-body);
-            font-size: 14.5px;
-            line-height: 1.65;
+            font-size: 13.5px;
+            line-height: 1.6;
             overflow-x: hidden;
         }
 
-        html[dir="rtl"] body {
-            direction: rtl;
-            text-align: right;
-        }
-
-        html[dir="ltr"] body {
-            direction: ltr;
-            text-align: left;
-        }
+        html[dir="rtl"] body { direction: rtl; text-align: right; }
+        html[dir="ltr"] body { direction: ltr; text-align: left; }
 
         a {
             color: var(--ed-primary);
@@ -100,18 +92,18 @@
             color: var(--ed-primary-hover);
         }
 
-        /* 1. الشريط العلوي الرفيع - مخصص للمعلومات الرسمية فقط بدون تكرار روابط */
+        /* 1. الشريط العلوي الرفيع - معلومات وتاريخ */
         .top-info-bar {
             width: 100%;
-            background-color: var(--ed-primary-deep);
-            color: #cbd5e1;
-            padding: 7px 32px;
-            font-size: 12.5px;
-            border-bottom: 1px solid #1e293b;
+            background-color: #ffffff;
+            color: var(--ed-text-muted);
+            padding: 6px 32px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--ed-border);
         }
         .top-bar-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -122,7 +114,7 @@
         .top-info-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
         }
         .top-info-right span {
             display: inline-flex;
@@ -133,23 +125,22 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            color: #93c5fd;
+            color: var(--ed-text-body);
             font-size: 12px;
             font-weight: 600;
         }
 
-        /* 2. الترويسة الرئيسية الرسمية على كامل العرض */
+        /* 2. الترويسة الرئيسية الرسمية - فاتحة ونظيفة */
         .main-header {
             width: 100%;
-            background: linear-gradient(135deg, #172554 0%, #1e3a8a 50%, #1e40af 100%);
-            color: #ffffff;
-            padding: 20px 32px;
-            border-bottom: 4px solid var(--ed-accent-gold);
-            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.12);
+            background: #ffffff;
+            color: var(--ed-text-main);
+            padding: 18px 32px;
+            border-bottom: 1px solid var(--ed-border);
         }
         .header-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -160,87 +151,86 @@
         .header-brand {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 14px;
         }
         .header-logo-icon {
-            width: 60px;
-            height: 60px;
-            background: #ffffff;
-            color: var(--ed-primary-dark);
+            width: 52px;
+            height: 52px;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
             border-radius: var(--radius-md);
             display: grid;
             place-items: center;
-            font-size: 32px;
-            border: 2px solid var(--ed-accent-gold);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            font-size: 26px;
+            border: 1px solid var(--ed-primary-border);
             flex-shrink: 0;
         }
         .header-titles h1 {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 800;
-            color: #ffffff;
+            color: var(--ed-text-main);
             line-height: 1.3;
         }
         .header-titles p {
-            font-size: 13.5px;
-            color: #bfdbfe;
+            font-size: 13px;
+            color: var(--ed-text-muted);
             font-weight: 500;
-            margin-top: 3px;
+            margin-top: 2px;
         }
         .header-supervisor-badge {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: #f8fafc;
+            border: 1px solid var(--ed-border);
             border-radius: var(--radius-md);
-            padding: 10px 18px;
+            padding: 8px 16px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            backdrop-filter: blur(4px);
+            gap: 12px;
         }
         .supervisor-avatar {
-            width: 42px;
-            height: 42px;
-            background: var(--ed-accent-gold);
-            color: var(--ed-primary-deep);
+            width: 38px;
+            height: 38px;
+            background: #eff6ff;
+            color: var(--ed-primary);
+            border: 1px solid var(--ed-primary-border);
             border-radius: 50%;
             display: grid;
             place-items: center;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 800;
             flex-shrink: 0;
         }
         .supervisor-meta .sup-title {
-            font-size: 11.5px;
-            color: var(--ed-accent-gold);
-            font-weight: 700;
+            font-size: 11px;
+            color: var(--ed-text-muted);
+            font-weight: 600;
             display: block;
         }
         .supervisor-meta .sup-name {
-            font-size: 15px;
-            font-weight: 800;
-            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--ed-text-main);
             display: block;
         }
 
-        /* 3. شريط التنقل المتناسق والوحيد لتسجيل الدخول والروابط */
+        /* 3. شريط التنقل المتناسق - فاتح وأنيق */
         .main-navbar {
             width: 100%;
-            background-color: var(--ed-primary-deep);
-            border-bottom: 1px solid #1e293b;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--ed-border);
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.03);
         }
         .navbar-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             padding: 0 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 52px;
+            height: 48px;
         }
         .nav-menu {
             display: flex;
@@ -249,6 +239,7 @@
             height: 100%;
             margin: 0;
             padding: 0;
+            gap: 4px;
         }
         .nav-item {
             height: 100%;
@@ -258,103 +249,119 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 8px;
-            padding: 0 16px;
-            height: 100%;
-            color: #f1f5f9;
-            font-size: 13.5px;
+            gap: 6px;
+            padding: 6px 14px;
+            color: var(--ed-text-body);
+            font-size: 13px;
             font-weight: 600;
-            text-decoration: none;
-            border-left: 1px solid #1e293b;
+            border-radius: var(--radius-sm);
             transition: var(--transition);
         }
-        .nav-item:first-child .nav-link {
-            border-right: 1px solid #1e293b;
+        .nav-link:hover {
+            background-color: var(--ed-surface-alt);
+            color: var(--ed-primary);
         }
-        .nav-link:hover,
         .nav-link.active {
-            background-color: var(--ed-primary);
-            color: #ffffff;
-            text-decoration: none;
+            background-color: var(--ed-primary-soft);
+            color: var(--ed-primary);
+            font-weight: 700;
         }
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        /* أزرار الحساب في النافبار (المكان الوحيد والرسمي لها) */
+        /* أزرار الحساب في النافبار */
         .btn-nav-login {
-            background-color: var(--ed-primary);
-            color: #ffffff;
-            padding: 7px 16px;
+            background-color: #ffffff;
+            color: var(--ed-text-main);
+            padding: 6px 14px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: var(--transition);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--ed-border);
         }
         .btn-nav-login:hover {
-            background-color: var(--ed-primary-hover);
-            color: #ffffff;
-            text-decoration: none;
+            background-color: var(--ed-surface-alt);
+            border-color: var(--ed-border-hover);
+            color: var(--ed-primary);
         }
         .btn-nav-register {
-            background-color: var(--ed-success);
+            background-color: var(--ed-primary);
             color: #ffffff;
-            padding: 7px 18px;
+            padding: 6px 14px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             transition: var(--transition);
-            border: 1px solid #15803d;
+            border: 1px solid var(--ed-primary);
         }
         .btn-nav-register:hover {
-            background-color: var(--ed-success-hover);
+            background-color: var(--ed-primary-hover);
             color: #ffffff;
-            text-decoration: none;
+        }
+
+        .btn-lang-toggle {
+            background: #ffffff;
+            border: 1px solid var(--ed-border);
+            color: var(--ed-text-body);
+            padding: 5px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition);
+        }
+        .btn-lang-toggle:hover {
+            background: var(--ed-surface-alt);
+            border-color: var(--ed-border-hover);
         }
 
         .mobile-menu-btn {
             display: none;
-            background: #1e293b;
-            color: #ffffff;
-            border: 1px solid #334155;
-            padding: 6px 12px;
+            background: #ffffff;
+            color: var(--ed-text-main);
+            border: 1px solid var(--ed-border);
+            padding: 5px 10px;
             border-radius: var(--radius-sm);
-            font-size: 15px;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
         }
 
         /* 4. شريط الإعلانات والتنبيهات المباشر */
         .notice-ticker-bar {
             width: 100%;
-            background-color: var(--ed-accent-gold-soft);
-            border-bottom: 1px solid #fde68a;
-            color: #92400e;
-            padding: 8px 32px;
+            background-color: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
+            color: #1e40af;
+            padding: 7px 32px;
         }
         .notice-ticker-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 13.5px;
+            font-size: 12.5px;
         }
         .notice-tag {
-            background-color: var(--ed-accent-gold-dark);
+            background-color: var(--ed-primary);
             color: #ffffff;
-            font-size: 11.5px;
-            font-weight: 800;
-            padding: 3px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
             border-radius: 4px;
             white-space: nowrap;
             display: inline-flex;
@@ -362,33 +369,33 @@
             gap: 5px;
         }
         .notice-content {
-            font-weight: 600;
+            font-weight: 500;
             flex: 1;
         }
 
         /* 5. الحاوية العامة على كامل الشاشة */
         .page-container {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 24px 32px 50px;
+            padding: 20px 32px 40px;
         }
         .layout-grid {
             display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 24px;
+            grid-template-columns: 1fr 320px;
+            gap: 20px;
             align-items: start;
         }
         .main-content-flow {
             min-width: 0;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
         .sidebar-flow {
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 20px;
         }
 
         /* 6. البطاقات الموحدة (Ed-Cards) */
@@ -406,67 +413,59 @@
         }
 
         .ed-card-header {
-            padding: 12px 18px;
-            background-color: var(--ed-primary-dark);
-            color: #ffffff;
+            padding: 10px 16px;
+            background-color: #ffffff;
+            color: var(--ed-text-main);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border-bottom: 3px solid var(--ed-accent-gold);
-        }
-        .ed-card-header.emerald {
-            background-color: #166534;
-            border-bottom-color: #22c55e;
-        }
-        .ed-card-header.slate {
-            background-color: #334155;
-            border-bottom-color: #94a3b8;
+            border-bottom: 1px solid var(--ed-border);
         }
         .ed-card-header h2,
         .ed-card-header h3 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 700;
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: #ffffff;
+            gap: 8px;
+            color: var(--ed-text-main);
         }
         .ed-card-body {
-            padding: 18px;
+            padding: 16px;
         }
 
-        /* الصندوق الترحيبي الرئيسي (Clean Welcome Hero - بدون تكرار أزرار) */
+        /* الصندوق الترحيبي الرئيسي */
         .welcome-hero-card {
-            background: linear-gradient(to bottom, #ffffff, var(--ed-surface-alt));
+            background: #ffffff;
             border: 1px solid var(--ed-border);
             border-radius: var(--radius-md);
-            padding: 22px 24px;
-            border-right: 5px solid var(--ed-primary);
+            padding: 18px 20px;
+            border-top: 3px solid var(--ed-primary);
         }
         .welcome-hero-card h2 {
-            font-size: 20px;
+            font-size: 16.5px;
             font-weight: 800;
-            color: var(--ed-primary-dark);
-            margin-bottom: 8px;
+            color: var(--ed-text-main);
+            margin-bottom: 6px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .welcome-hero-card p {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--ed-text-body);
-            line-height: 1.8;
-            margin-bottom: 16px;
+            line-height: 1.7;
+            margin-bottom: 14px;
         }
         .hero-features-strip {
             display: flex;
             align-items: center;
             gap: 16px;
             flex-wrap: wrap;
-            padding-top: 12px;
+            padding-top: 10px;
             border-top: 1px dashed var(--ed-border);
-            font-size: 13px;
+            font-size: 12px;
             color: var(--ed-text-muted);
         }
         .hero-features-strip span {
@@ -478,21 +477,21 @@
         /* شبكة الفروع الدراسية */
         .branches-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 14px;
         }
         .branch-box {
             background: #ffffff;
             border: 1px solid var(--ed-border);
             border-radius: var(--radius-md);
-            padding: 16px;
-            border-right: 4px solid var(--ed-primary);
+            padding: 14px;
+            border-top: 3px solid var(--ed-primary);
             transition: var(--transition);
         }
-        .branch-box.sci { border-right-color: #2563eb; }
-        .branch-box.lit { border-right-color: #059669; }
-        .branch-box.bus { border-right-color: #d97706; }
-        .branch-box.voc { border-right-color: #dc2626; }
+        .branch-box.sci { border-top-color: #2563eb; }
+        .branch-box.lit { border-top-color: #059669; }
+        .branch-box.bus { border-top-color: #d97706; }
+        .branch-box.voc { border-top-color: #dc2626; }
         .branch-box:hover {
             border-color: var(--ed-border-hover);
             transform: translateY(-2px);
@@ -502,26 +501,26 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .branch-box-head h4 {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 700;
             color: var(--ed-text-main);
         }
         .branch-badge {
             font-size: 11px;
-            font-weight: 700;
-            padding: 2px 8px;
+            font-weight: 600;
+            padding: 2px 6px;
             border-radius: 4px;
             background: var(--ed-surface-alt);
             color: var(--ed-text-muted);
         }
         .branch-box p {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--ed-text-muted);
             line-height: 1.6;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .branch-tags-list {
             display: flex;
@@ -529,9 +528,9 @@
             gap: 6px;
         }
         .branch-tag {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 600;
-            padding: 3px 8px;
+            padding: 2px 7px;
             border-radius: 4px;
             background: var(--ed-primary-soft);
             color: var(--ed-primary);
@@ -541,50 +540,50 @@
         /* شبكة الخدمات والمميزات */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 14px;
         }
         .feature-card {
             background: var(--ed-surface);
             border: 1px solid var(--ed-border);
             border-radius: var(--radius-sm);
-            padding: 16px;
+            padding: 14px;
             display: flex;
-            gap: 14px;
+            gap: 12px;
             align-items: flex-start;
         }
         .feature-icon-wrap {
-            width: 42px;
-            height: 42px;
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius-sm);
             background: var(--ed-primary-soft);
             color: var(--ed-primary);
             display: grid;
             place-items: center;
-            font-size: 18px;
+            font-size: 15px;
             flex-shrink: 0;
             border: 1px solid var(--ed-primary-border);
         }
         .feature-icon-wrap.green {
             background: var(--ed-success-soft);
             color: var(--ed-success);
-            border-color: #a7f3d0;
+            border-color: var(--ed-success-border);
         }
         .feature-icon-wrap.gold {
             background: var(--ed-accent-gold-soft);
-            color: var(--ed-accent-gold-dark);
-            border-color: #fde68a;
+            color: var(--ed-accent-gold);
+            border-color: var(--ed-accent-gold-border);
         }
         .feature-text h4 {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: var(--ed-text-main);
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         .feature-text p {
-            font-size: 12.5px;
+            font-size: 12px;
             color: var(--ed-text-muted);
-            line-height: 1.6;
+            line-height: 1.55;
         }
 
         /* جدول كلاسيكي كامل العرض */
@@ -595,158 +594,162 @@
         .classic-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 13.5px;
+            font-size: 13px;
         }
         .classic-table th,
         .classic-table td {
-            padding: 10px 14px;
+            padding: 9px 12px;
             border: 1px solid var(--ed-border);
-            text-align: right;
         }
+        html[dir="rtl"] .classic-table th,
+        html[dir="rtl"] .classic-table td { text-align: right; }
+        html[dir="ltr"] .classic-table th,
+        html[dir="ltr"] .classic-table td { text-align: left; }
+
         .classic-table th {
             background-color: var(--ed-surface-alt);
             color: var(--ed-text-main);
             font-weight: 700;
         }
         .classic-table tr:nth-child(even) td {
-            background-color: #fcfdfe;
+            background-color: #fafbfc;
         }
         .classic-table tr:hover td {
             background-color: #eff6ff;
         }
 
-        /* مكونات الشريط الجانبي غير المكررة */
+        /* مكونات الشريط الجانبي */
         .stats-table {
             width: 100%;
             border-collapse: collapse;
         }
         .stats-table td {
-            padding: 10px 14px;
+            padding: 9px 12px;
             border-bottom: 1px solid var(--ed-border);
-            font-size: 13px;
+            font-size: 12.5px;
         }
         .stats-table tr:last-child td {
             border-bottom: none;
         }
         .stat-val {
-            text-align: left;
-            font-weight: 800;
-            color: var(--ed-primary-dark);
-            font-size: 14px;
+            font-weight: 700;
+            color: var(--ed-primary);
+            font-size: 13px;
         }
+        html[dir="rtl"] .stat-val { text-align: left; }
+        html[dir="ltr"] .stat-val { text-align: right; }
 
         /* بطاقة المشرف والتواصل بالواتساب */
         .supervisor-profile-card {
             text-align: center;
-            padding: 6px 0;
+            padding: 4px 0;
         }
         .supervisor-avatar-lg {
-            width: 58px;
-            height: 58px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            background: var(--ed-primary-dark);
-            color: #ffffff;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
             display: inline-grid;
             place-items: center;
-            font-size: 24px;
-            margin-bottom: 10px;
-            border: 3px solid var(--ed-accent-gold);
+            font-size: 20px;
+            margin-bottom: 8px;
+            border: 2px solid var(--ed-primary-border);
         }
         .supervisor-profile-card h4 {
-            font-size: 15px;
-            font-weight: 800;
+            font-size: 14px;
+            font-weight: 700;
             color: var(--ed-text-main);
             margin-bottom: 2px;
         }
         .supervisor-profile-card span {
-            font-size: 12.5px;
+            font-size: 12px;
             color: var(--ed-text-muted);
             display: block;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .btn-whatsapp-full {
-            background-color: #25d366;
+            background-color: #16a34a;
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 10px 14px;
+            gap: 6px;
+            padding: 8px 12px;
             border-radius: var(--radius-sm);
-            font-size: 13.5px;
+            font-size: 12.5px;
             font-weight: 700;
-            border: 1px solid #1eb956;
+            border: 1px solid #15803d;
             transition: var(--transition);
         }
         .btn-whatsapp-full:hover {
-            background-color: #1eb956;
+            background-color: #15803d;
             color: #ffffff;
-            text-decoration: none;
         }
 
-        /* بطاقة نصائح دراسية للتوجيهي (محتوى مفيد غير مكرر) */
+        /* بطاقة نصائح دراسية */
         .study-tip-box {
             background: #fffbeb;
-            border: 1px solid #fde68a;
+            border: 1px solid var(--ed-accent-gold-border);
             border-radius: var(--radius-sm);
-            padding: 14px;
+            padding: 12px;
             color: #92400e;
         }
         .study-tip-box h5 {
-            font-size: 13px;
-            font-weight: 800;
-            margin-bottom: 6px;
+            font-size: 12.5px;
+            font-weight: 700;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 6px;
         }
         .study-tip-box p {
-            font-size: 12.5px;
-            line-height: 1.6;
+            font-size: 12px;
+            line-height: 1.55;
             color: #78350f;
             margin: 0;
         }
 
-        /* 7. تذييل الصفحة الشامل */
+        /* 7. تذييل الصفحة الشامل - فاتح وأنيق */
         .main-footer {
             width: 100%;
-            background-color: var(--ed-primary-deep);
-            color: #94a3b8;
-            border-top: 4px solid var(--ed-primary);
-            padding: 36px 32px 0;
-            margin-top: 40px;
+            background-color: #ffffff;
+            color: var(--ed-text-muted);
+            border-top: 1px solid var(--ed-border);
+            padding: 30px 32px 0;
+            margin-top: 30px;
         }
         .footer-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
-            gap: 36px;
-            padding-bottom: 28px;
+            gap: 30px;
+            padding-bottom: 24px;
         }
         .footer-brand h3 {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 10px;
+            color: var(--ed-text-main);
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
         .footer-brand p {
-            font-size: 13px;
-            line-height: 1.8;
-            color: #cbd5e1;
-            max-width: 500px;
+            font-size: 12.5px;
+            line-height: 1.7;
+            color: var(--ed-text-body);
+            max-width: 480px;
         }
         .footer-col h4 {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 6px;
+            color: var(--ed-text-main);
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--ed-border);
+            padding-bottom: 4px;
         }
         .footer-links-list {
             list-style: none;
@@ -754,49 +757,42 @@
             margin: 0;
         }
         .footer-links-list li {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .footer-links-list li a {
-            color: #94a3b8;
-            font-size: 13px;
+            color: var(--ed-text-muted);
+            font-size: 12.5px;
             display: inline-flex;
             align-items: center;
             gap: 6px;
         }
         .footer-links-list li a:hover {
-            color: #ffffff;
-            text-decoration: none;
+            color: var(--ed-primary);
         }
         .footer-bottom-bar {
-            border-top: 1px solid #1e293b;
-            padding: 16px 32px;
-            background-color: #020617;
+            border-top: 1px solid var(--ed-border);
+            padding: 14px 32px;
+            background-color: var(--ed-surface-alt);
             margin: 0 -32px;
         }
         .footer-bottom-inner {
             width: 100%;
-            max-width: 1560px;
+            max-width: 1440px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 12px;
-            font-size: 12.5px;
-            color: #64748b;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--ed-text-muted);
         }
 
         /* الريسبنسيف */
         @media (max-width: 1080px) {
-            .layout-grid {
-                grid-template-columns: 1fr;
-            }
-            .sidebar-flow {
-                order: 2;
-            }
-            .footer-inner {
-                grid-template-columns: 1fr 1fr;
-            }
+            .layout-grid { grid-template-columns: 1fr; }
+            .sidebar-flow { order: 2; }
+            .footer-inner { grid-template-columns: 1fr 1fr; }
         }
 
         @media (max-width: 860px) {
@@ -813,7 +809,7 @@
             .header-inner {
                 flex-direction: column;
                 text-align: center;
-                gap: 14px;
+                gap: 12px;
             }
             .header-brand {
                 flex-direction: column;
@@ -831,15 +827,17 @@
             .nav-menu {
                 display: none;
                 position: absolute;
-                top: 52px;
+                top: 48px;
+                left: 0;
                 right: 0;
                 width: 100%;
-                background-color: var(--ed-primary-deep);
+                background-color: #ffffff;
                 flex-direction: column;
                 height: auto;
-                border-top: 1px solid #334155;
-                box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+                border-top: 1px solid var(--ed-border);
+                box-shadow: 0 8px 16px rgba(0,0,0,0.08);
                 z-index: 1100;
+                padding: 10px 0;
             }
             .nav-menu.active {
                 display: flex;
@@ -850,14 +848,13 @@
             }
             .nav-link {
                 width: 100%;
-                padding: 12px 20px;
-                border: none;
-                border-bottom: 1px solid #1e293b;
+                padding: 10px 20px;
+                border-radius: 0;
             }
             .btn-nav-login,
             .btn-nav-register {
-                padding: 6px 12px;
-                font-size: 12px;
+                padding: 5px 10px;
+                font-size: 11.5px;
             }
             .footer-inner {
                 grid-template-columns: 1fr;
@@ -871,20 +868,20 @@
 </head>
 <body>
 
-    <!-- 1. الشريط العلوي الرفيع: معلومات وتاريخ فقط بدون تكرار روابط -->
+    <!-- 1. الشريط العلوي الرفيع: معلومات وتاريخ فقط -->
     <div class="top-info-bar">
         <div class="top-bar-inner">
             <div class="top-info-right">
-                <span><i class="fa-regular fa-calendar-check text-warning"></i> {{ date('Y/m/d') }} م</span>
-                <span>بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ</span>
+                <span><i class="fa-regular fa-calendar-check" style="color: var(--ed-accent-gold);"></i> {{ date('Y/m/d') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }}</span>
+                <span>{{ __('بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ') }}</span>
             </div>
             <div class="top-info-left">
-                <span><i class="fa-solid fa-flag text-danger"></i> المنهاج الفلسطيني المعتمد - دورة {{ date('Y') }}</span>
+                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ date('Y') }}</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. الترويسة الرسمية على كامل عرض الشاشة -->
+    <!-- 2. الترويسة الرسمية على كامل عرض الشاشة - فاتحة وأنيقة -->
     <header class="main-header">
         <div class="header-inner">
             <div class="header-brand">
@@ -892,8 +889,8 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div class="header-titles">
-                    <h1>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</h1>
-                    <p>بوابة ومنظومة الثانوية العامة لدولة فلسطين | المناهج الوزارية ونماذج الاختبارات المعتمدة</p>
+                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</h1>
+                    <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المناهج الوزارية ونماذج الاختبارات المعتمدة') }}</p>
                 </div>
             </div>
 
@@ -902,14 +899,14 @@
                     <i class="fa-solid fa-user-tie"></i>
                 </div>
                 <div class="supervisor-meta">
-                    <span class="sup-title">المشرف العام على المنظومة:</span>
-                    <span class="sup-name">أ. أحمد حسين شمالي</span>
+                    <span class="sup-title">{{ __('المشرف العام على المنظومة:') }}</span>
+                    <span class="sup-name">{{ __('أ. أحمد حسين شمالي') }}</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- 3. شريط القوائم الرئيسي: المكان الرسمي والوحيد للتنقل وأزرار الحساب -->
+    <!-- 3. شريط القوائم الرئيسي -->
     <nav class="main-navbar">
         <div class="navbar-inner">
             <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="{{ __('القائمة') }}">
@@ -931,17 +928,17 @@
             </ul>
 
             <div class="nav-actions">
-                <!-- زر تبديل اللغة (عربي / English) -->
+                <!-- زر تبديل اللغة (AR / EN) خالي تماماً من الكلمات العربية في وضع الإنجليزية -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
-                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'التبديل إلى العربية' }}" 
-                   style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 6px 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                    <i class="fa-solid fa-globe" style="color: var(--ed-accent-gold);"></i>
-                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'عربي' }}</span>
+                   class="btn-lang-toggle"
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'Switch to Arabic' }}">
+                    <i class="fa-solid fa-globe" style="color: var(--ed-primary);"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
 
                 @if(Auth::guard('student')->check() || Auth::check())
-                    <a href="{{ route('dashboard') }}" class="btn-nav-login">
+                    <a href="{{ route('dashboard') }}" class="btn-nav-register">
                         <i class="fa-solid fa-gauge-high"></i> {{ __('لوحة التحكم') }}
                     </a>
                 @else
@@ -959,34 +956,34 @@
     <!-- 4. شريط الإعلانات والتنبيهات المباشر -->
     <div class="notice-ticker-bar">
         <div class="notice-ticker-inner">
-            <span class="notice-tag"><i class="fa-solid fa-bullhorn"></i> إعلان هام</span>
+            <span class="notice-tag"><i class="fa-solid fa-bullhorn"></i> {{ __('إعلان هام') }}</span>
             <span class="notice-content">
-                أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين لدورة {{ date('Y') }}. تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات بإشراف نخبة من المعلمين المعتمدين.
+                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين لدورة :year. تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات بإشراف نخبة من المعلمين المعتمدين.', ['year' => date('Y')]) }}
             </span>
         </div>
     </div>
 
-    <!-- 5. الحاوية العامة على كامل الشاشة (بدون تكرار أزرار الدخول) -->
+    <!-- 5. الحاوية العامة على كامل الشاشة -->
     <div class="page-container">
         <div class="layout-grid">
 
-            <!-- العمود الرئيسي الأيمن للمحتوى -->
+            <!-- العمود الرئيسي للمحتوى -->
             <main class="main-content-flow">
 
-                <!-- الصندوق الترحيبي (نظيف ومركّز على رسالة المنظومة بدون تكرار أزرار الدخول) -->
+                <!-- الصندوق الترحيبي -->
                 <div class="welcome-hero-card">
                     <h2>
-                        <i class="fa-solid fa-graduation-cap text-primary"></i>
-                        مرحباً بكم في منصة منارة التوجيهي التعليمية
+                        <i class="fa-solid fa-graduation-cap" style="color: var(--ed-primary);"></i>
+                        {{ __('مرحباً بكم في منصة منارة التوجيهي التعليمية') }}
                     </h2>
                     <p>
-                        المنظومة الأكاديمية الفلسطينية المتخصصة في مرافقة طلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). تقدم المنصة شروحات منهجية مبسطة، بنك نماذج اختبارات وزارية محلولة، ومتابعة دراسية دقيقة لمساعدة كل طالب على نيل أعلى المراتب والتفوق بإذن الله.
+                        {{ __('المنظومة الأكاديمية الفلسطينية المتخصصة في مرافقة طلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). تقدم المنصة شروحات منهجية مبسطة، بنك نماذج اختبارات وزارية محلولة، ومتابعة دراسية دقيقة لمساعدة كل طالب على نيل أعلى المراتب والتفوق بإذن الله.') }}
                     </p>
 
                     <div class="hero-features-strip">
-                        <span><i class="fa-solid fa-check text-success"></i> منهاج وزارة التربية والتعليم المعتمد</span>
-                        <span><i class="fa-solid fa-check text-success"></i> بنك أسئلة ونماذج وزارية سابقة</span>
-                        <span><i class="fa-solid fa-check text-success"></i> ملازم وتلاخيص PDF للتحميل</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('منهاج وزارة التربية والتعليم المعتمد') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('بنك أسئلة ونماذج وزارية سابقة') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('ملازم وتلاخيص PDF للتحميل') }}</span>
                     </div>
                 </div>
 
@@ -994,68 +991,68 @@
                 <div class="ed-card" id="branches">
                     <div class="ed-card-header">
                         <h2>
-                            <i class="fa-solid fa-book-open"></i>
-                            فروع ومسارات الثانوية العامة المعتمدة (المنهاج الفلسطيني)
+                            <i class="fa-solid fa-book-open" style="color: var(--ed-primary);"></i>
+                            {{ __('فروع ومسارات الثانوية العامة المعتمدة (المنهاج الفلسطيني)') }}
                         </h2>
-                        <span style="font-size: 12px; color: #fef08a;">تغطية شاملة 100%</span>
+                        <span style="font-size: 11.5px; font-weight: 700; color: var(--ed-primary);">{{ __('تغطية شاملة 100%') }}</span>
                     </div>
                     <div class="ed-card-body">
                         <div class="branches-grid">
                             <!-- العلمي -->
                             <div class="branch-box sci">
                                 <div class="branch-box-head">
-                                    <h4>الفرع العلمي</h4>
-                                    <span class="branch-badge">مسار علمي ⚛️</span>
+                                    <h4>{{ __('الفرع العلمي') }}</h4>
+                                    <span class="branch-badge">{{ __('مسار علمي ⚛️') }}</span>
                                 </div>
-                                <p>شروحات عميقة وتمارين تفصيلية لقوانين المساقات العلمية ونماذج التوجيهي الوزارية.</p>
+                                <p>{{ __('شروحات عميقة وتمارين تفصيلية لقوانين المساقات العلمية ونماذج التوجيهي الوزارية.') }}</p>
                                 <div class="branch-tags-list">
-                                    <span class="branch-tag">الرياضيات</span>
-                                    <span class="branch-tag">الفيزياء</span>
-                                    <span class="branch-tag">الكيمياء</span>
-                                    <span class="branch-tag">العلوم الحياتية</span>
+                                    <span class="branch-tag">{{ __('الرياضيات') }}</span>
+                                    <span class="branch-tag">{{ __('الفيزياء') }}</span>
+                                    <span class="branch-tag">{{ __('الكيمياء') }}</span>
+                                    <span class="branch-tag">{{ __('العلوم الحياتية') }}</span>
                                 </div>
                             </div>
 
                             <!-- الأدبي -->
                             <div class="branch-box lit">
                                 <div class="branch-box-head">
-                                    <h4>الفرع الأدبي</h4>
-                                    <span class="branch-badge">مسار أدبي 📜</span>
+                                    <h4>{{ __('الفرع الأدبي') }}</h4>
+                                    <span class="branch-badge">{{ __('مسار أدبي 📜') }}</span>
                                 </div>
-                                <p>تبسيط شامل لقواعد وقصائد اللغة العربية والإنجليزية، وتلخيص التاريخ والجغرافيا.</p>
+                                <p>{{ __('تبسيط شامل لقواعد وقصائد اللغة العربية والإنجليزية، وتلخيص التاريخ والجغرافيا.') }}</p>
                                 <div class="branch-tags-list">
-                                    <span class="branch-tag">اللغة العربية</span>
-                                    <span class="branch-tag">اللغة الإنجليزية</span>
-                                    <span class="branch-tag">التاريخ</span>
-                                    <span class="branch-tag">الجغرافيا</span>
+                                    <span class="branch-tag">{{ __('اللغة العربية') }}</span>
+                                    <span class="branch-tag">{{ __('اللغة الإنجليزية') }}</span>
+                                    <span class="branch-tag">{{ __('التاريخ') }}</span>
+                                    <span class="branch-tag">{{ __('الجغرافيا') }}</span>
                                 </div>
                             </div>
 
                             <!-- الريادة والأعمال -->
                             <div class="branch-box bus">
                                 <div class="branch-box-head">
-                                    <h4>فرع الريادة والأعمال</h4>
-                                    <span class="branch-badge">ريادة واقتصاد 💼</span>
+                                    <h4>{{ __('فرع الريادة والأعمال') }}</h4>
+                                    <span class="branch-badge">{{ __('ريادة واقتصاد 💼') }}</span>
                                 </div>
-                                <p>مسائل تطبيقية في المحاسبة المالية، دراسات الجدوى، والإدارة والاقتصاد والمشاريع.</p>
+                                <p>{{ __('مسائل تطبيقية في المحاسبة المالية، دراسات الجدوى، والإدارة والاقتصاد والمشاريع.') }}</p>
                                 <div class="branch-tags-list">
-                                    <span class="branch-tag">المحاسبة</span>
-                                    <span class="branch-tag">الإدارة والاقتصاد</span>
-                                    <span class="branch-tag">المشاريع الصغيرة</span>
+                                    <span class="branch-tag">{{ __('المحاسبة') }}</span>
+                                    <span class="branch-tag">{{ __('الإدارة والاقتصاد') }}</span>
+                                    <span class="branch-tag">{{ __('المشاريع الصغيرة') }}</span>
                                 </div>
                             </div>
 
                             <!-- الشرعي والصناعي -->
                             <div class="branch-box voc">
                                 <div class="branch-box-head">
-                                    <h4>الفرع الشرعي والصناعي</h4>
-                                    <span class="branch-badge">مسارات مهنية وشرعية ⚙️</span>
+                                    <h4>{{ __('الفرع الشرعي والصناعي') }}</h4>
+                                    <span class="branch-badge">{{ __('مسارات مهنية وشرعية ⚙️') }}</span>
                                 </div>
-                                <p>تغطية مساقات العلوم الشرعية والحديث والفقه، بجانب الرياضيات والفيزياء التطبيقية الصناعية.</p>
+                                <p>{{ __('تغطية مساقات العلوم الشرعية والحديث والفقه، بجانب الرياضيات والفيزياء التطبيقية الصناعية.') }}</p>
                                 <div class="branch-tags-list">
-                                    <span class="branch-tag">العلوم الإسلامية</span>
-                                    <span class="branch-tag">الرياضيات الصناعية</span>
-                                    <span class="branch-tag">الفيزياء التطبيقية</span>
+                                    <span class="branch-tag">{{ __('العلوم الإسلامية') }}</span>
+                                    <span class="branch-tag">{{ __('الرياضيات الصناعية') }}</span>
+                                    <span class="branch-tag">{{ __('الفيزياء التطبيقية') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -1064,44 +1061,44 @@
 
                 <!-- صندوق خدمات ومميزات المنظومة -->
                 <div class="ed-card" id="features">
-                    <div class="ed-card-header emerald">
+                    <div class="ed-card-header">
                         <h3>
-                            <i class="fa-solid fa-star"></i>
-                            مميزات المنظومة التعليمية للطالب الفلسطيني
+                            <i class="fa-solid fa-star" style="color: var(--ed-accent-gold);"></i>
+                            {{ __('مميزات المنظومة التعليمية للطالب الفلسطيني') }}
                         </h3>
-                        <span style="font-size: 12px; color: #bbf7d0;">بيئة دراسية متكاملة</span>
+                        <span style="font-size: 11.5px; font-weight: 700; color: var(--ed-success);">{{ __('بيئة دراسية متكاملة') }}</span>
                     </div>
                     <div class="ed-card-body">
                         <div class="features-grid">
                             <div class="feature-card">
                                 <div class="feature-icon-wrap"><i class="fa-solid fa-play"></i></div>
                                 <div class="feature-text">
-                                    <h4>شروحات مرئية منظمة</h4>
-                                    <p>دروس مصورة عالية الجودة مرتبة ترتيباً دقيقاً حسب فهرس ووحدات الكتاب الوزاري الفلسطيني.</p>
+                                    <h4>{{ __('شروحات مرئية منظمة') }}</h4>
+                                    <p>{{ __('دروس مصورة عالية الجودة مرتبة ترتيباً دقيقاً حسب فهرس ووحدات الكتاب الوزاري الفلسطيني.') }}</p>
                                 </div>
                             </div>
 
                             <div class="feature-card">
                                 <div class="feature-icon-wrap green"><i class="fa-solid fa-clipboard-check"></i></div>
                                 <div class="feature-text">
-                                    <h4>بنك نماذج الامتحانات الوزارية</h4>
-                                    <p>اختبارات السنوات السابقة لجميع الفروع مع نماذج الإجابات الرسمية المعتمدة وتوزيع الدرجات.</p>
+                                    <h4>{{ __('بنك نماذج الامتحانات الوزارية') }}</h4>
+                                    <p>{{ __('اختبارات السنوات السابقة لجميع الفروع مع نماذج الإجابات الرسمية المعتمدة وتوزيع الدرجات.') }}</p>
                                 </div>
                             </div>
 
                             <div class="feature-card">
                                 <div class="feature-icon-wrap gold"><i class="fa-solid fa-file-pdf"></i></div>
                                 <div class="feature-text">
-                                    <h4>ملازم وتلاخيص PDF</h4>
-                                    <p>ملفات دراسية وتلاخيص مكثفة جاهزة للتحميل والطباعة المنزلية لسرعة مراجعة القوانين والقواعد.</p>
+                                    <h4>{{ __('ملازم وتلاخيص PDF') }}</h4>
+                                    <p>{{ __('ملفات دراسية وتلاخيص مكثفة جاهزة للتحميل والطباعة المنزلية لسرعة مراجعة القوانين والقواعد.') }}</p>
                                 </div>
                             </div>
 
                             <div class="feature-card">
                                 <div class="feature-icon-wrap"><i class="fa-solid fa-chalkboard-user"></i></div>
                                 <div class="feature-text">
-                                    <h4>إشراف ومتابعة مستمرة</h4>
-                                    <p>تواصل أكاديمي ومتابعة مباشرة من المشرف أ. أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.</p>
+                                    <h4>{{ __('إشراف ومتابعة مستمرة') }}</h4>
+                                    <p>{{ __('تواصل أكاديمي ومتابعة مباشرة من المشرف أ. أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.') }}</p>
                                 </div>
                             </div>
                         </div>
@@ -1110,10 +1107,10 @@
 
                 <!-- صندوق خطوات البدء والدراسة -->
                 <div class="ed-card">
-                    <div class="ed-card-header slate">
+                    <div class="ed-card-header">
                         <h3>
-                            <i class="fa-solid fa-shoe-prints"></i>
-                            كيف تبدأ رحلة التفوق في المنصة؟ (٣ خطوات ميسرة)
+                            <i class="fa-solid fa-shoe-prints" style="color: var(--ed-primary);"></i>
+                            {{ __('كيف تبدأ رحلة التفوق في المنصة؟ (٣ خطوات ميسرة)') }}
                         </h3>
                     </div>
                     <div class="ed-card-body" style="padding: 0;">
@@ -1121,26 +1118,26 @@
                             <table class="classic-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 100px; text-align: center;">المرحلة</th>
-                                        <th>الإجراء المطلوب من الطالب</th>
-                                        <th style="width: 150px; text-align: center;">الرابط المباشر</th>
+                                        <th style="width: 100px; text-align: center;">{{ __('المرحلة') }}</th>
+                                        <th>{{ __('الإجراء المطلوب من الطالب') }}</th>
+                                        <th style="width: 150px; text-align: center;">{{ __('الرابط المباشر') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="text-align: center;"><strong>الخطوة 1</strong></td>
-                                        <td>إنشاء حساب طالب جديد وإدخال بيانات الفرع الدراسي والاسم ورقم الهاتف.</td>
-                                        <td style="text-align: center;"><a href="{{ route('students.create') }}" style="font-weight: 700; color: var(--ed-success);">إنشاء حساب طالب ←</a></td>
+                                        <td style="text-align: center;"><strong>{{ __('الخطوة 1') }}</strong></td>
+                                        <td>{{ __('إنشاء حساب طالب جديد وإدخال بيانات الفرع الدراسي والاسم ورقم الهاتف.') }}</td>
+                                        <td style="text-align: center;"><a href="{{ route('students.create') }}" style="font-weight: 700; color: var(--ed-success);">{{ __('إنشاء حساب طالب ←') }}</a></td>
                                     </tr>
                                     <tr>
-                                        <td style="text-align: center;"><strong>الخطوة 2</strong></td>
-                                        <td>تسجيل الدخول إلى حسابك واختيار المساقات والمواد الدراسية المقررة لفرعك.</td>
-                                        <td style="text-align: center;"><a href="{{ route('login') }}" style="font-weight: 700; color: var(--ed-primary);">دخول النظام ←</a></td>
+                                        <td style="text-align: center;"><strong>{{ __('الخطوة 2') }}</strong></td>
+                                        <td>{{ __('تسجيل الدخول إلى حسابك واختيار المساقات والمواد الدراسية المقررة لفرعك.') }}</td>
+                                        <td style="text-align: center;"><a href="{{ route('login') }}" style="font-weight: 700; color: var(--ed-primary);">{{ __('دخول النظام ←') }}</a></td>
                                     </tr>
                                     <tr>
-                                        <td style="text-align: center;"><strong>الخطوة 3</strong></td>
-                                        <td>مشاهدة الدروس والشروحات، تحميل التلاخيص والملازم، وحل نماذج الامتحانات الوزارية بانتظام.</td>
-                                        <td style="text-align: center;"><a href="{{ route('dashboard') }}" style="font-weight: 700;">لوحة التحكم ←</a></td>
+                                        <td style="text-align: center;"><strong>{{ __('الخطوة 3') }}</strong></td>
+                                        <td>{{ __('مشاهدة الدروس والشروحات، تحميل التلاخيص والملازم، وحل نماذج الامتحانات الوزارية بانتظام.') }}</td>
+                                        <td style="text-align: center;"><a href="{{ route('dashboard') }}" style="font-weight: 700;">{{ __('لوحة التحكم ←') }}</a></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1150,32 +1147,32 @@
 
             </main>
 
-            <!-- العمود الجانبي الأيسر: محتوى فريد ومفيد (بدون صندوق الحساب المكرر) -->
+            <!-- العمود الجانبي -->
             <aside class="sidebar-flow">
 
                 <!-- 1. صندوق إحصائيات المنصة الموحدة -->
                 <div class="ed-card">
-                    <div class="ed-card-header slate">
-                        <h3><i class="fa-solid fa-chart-column"></i> إحصائيات المنظومة</h3>
+                    <div class="ed-card-header">
+                        <h3><i class="fa-solid fa-chart-column" style="color: var(--ed-primary);"></i> {{ __('إحصائيات المنظومة') }}</h3>
                     </div>
                     <div class="ed-card-body" style="padding: 0;">
                         <table class="stats-table">
                             <tbody>
                                 <tr>
-                                    <td><i class="fa-solid fa-users text-primary me-2"></i> الطلبة المسجلين</td>
-                                    <td class="stat-val">{{ number_format($stats['students'] ?? 1200) }} طالب</td>
+                                    <td><i class="fa-solid fa-users" style="color: var(--ed-primary); margin-inline-end: 6px;"></i> {{ __('الطلبة المسجلين') }}</td>
+                                    <td class="stat-val">{{ number_format($stats['students'] ?? 1200) }} {{ __('طالب') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-book-bookmark text-success me-2"></i> المساقات المعتمدة</td>
-                                    <td class="stat-val" style="color: var(--ed-success);">{{ number_format($stats['subjects'] ?? 18) }} مساق</td>
+                                    <td><i class="fa-solid fa-book-bookmark" style="color: var(--ed-success); margin-inline-end: 6px;"></i> {{ __('المساقات المعتمدة') }}</td>
+                                    <td class="stat-val" style="color: var(--ed-success);">{{ number_format($stats['subjects'] ?? 18) }} {{ __('مساق') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-video text-warning me-2"></i> الدروس والشروحات</td>
-                                    <td class="stat-val" style="color: var(--ed-accent-gold-dark);">{{ number_format($stats['lessons'] ?? 350) }} شرح</td>
+                                    <td><i class="fa-solid fa-video" style="color: var(--ed-accent-gold); margin-inline-end: 6px;"></i> {{ __('الدروس والشروحات') }}</td>
+                                    <td class="stat-val" style="color: var(--ed-accent-gold);">{{ number_format($stats['lessons'] ?? 350) }} {{ __('شرح') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-file-signature text-danger me-2"></i> النماذج والاختبارات</td>
-                                    <td class="stat-val" style="color: #dc2626;">{{ number_format($stats['exams'] ?? 150) }} اختبار</td>
+                                    <td><i class="fa-solid fa-file-signature" style="color: #dc2626; margin-inline-end: 6px;"></i> {{ __('النماذج والاختبارات') }}</td>
+                                    <td class="stat-val" style="color: #dc2626;">{{ number_format($stats['exams'] ?? 150) }} {{ __('اختبار') }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1184,43 +1181,45 @@
 
                 <!-- 2. بطاقة المشرف العام والتواصل المباشر عبر واتساب -->
                 <div class="ed-card">
-                    <div class="ed-card-header emerald">
-                        <h3><i class="fa-solid fa-headset"></i> التواصل المباشر</h3>
+                    <div class="ed-card-header">
+                        <h3><i class="fa-solid fa-headset" style="color: var(--ed-success);"></i> {{ __('التواصل المباشر') }}</h3>
                     </div>
                     <div class="ed-card-body">
                         <div class="supervisor-profile-card">
                             <div class="supervisor-avatar-lg">
                                 <i class="fa-solid fa-chalkboard-user"></i>
                             </div>
-                            <h4>أ. أحمد حسين شمالي</h4>
-                            <span>المشرف العام على المنظومة</span>
+                            <h4>{{ __('أ. أحمد حسين شمالي') }}</h4>
+                            <span>{{ __('المشرف العام على المنظومة') }}</span>
 
                             @php
                                 $waDigits = '970597694385';
-                                $waMsg = urlencode("السلام عليكم أستاذ أحمد شمالي، أود الاستفسار والتسجيل في منصة منارة التوجيهي.");
+                                $waMsg = urlencode(app()->getLocale() === 'ar' 
+                                    ? "السلام عليكم أستاذ أحمد شمالي، أود الاستفسار والتسجيل في منصة منارة التوجيهي." 
+                                    : "Hello Mr. Ahmed Shamali, I would like to inquire and register in Menaret Al-Tawjihi platform.");
                             @endphp
 
                             <a href="https://wa.me/{{ $waDigits }}?text={{ $waMsg }}" target="_blank" class="btn-whatsapp-full">
-                                <i class="fa-brands fa-whatsapp fa-lg"></i> مراسلة عبر الواتساب (0597694385)
+                                <i class="fa-brands fa-whatsapp fa-lg"></i> {{ __('مراسلة عبر الواتساب (0597694385)') }}
                             </a>
 
                             <div style="font-size: 11.5px; color: var(--ed-text-muted); margin-top: 10px;">
-                                رقم بديل: 0567897212 • دولة فلسطين 🇵🇸
+                                {{ __('رقم بديل: 0567897212 • دولة فلسطين 🇵🇸') }}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. صندوق إرشادات دراسية للتفوق (محتوى قيّم يحل محل الروابط المكررة) -->
+                <!-- 3. صندوق إرشادات دراسية للتفوق -->
                 <div class="ed-card">
                     <div class="ed-card-header">
-                        <h3><i class="fa-solid fa-lightbulb text-warning"></i> إضاءات نحو التفوق</h3>
+                        <h3><i class="fa-solid fa-lightbulb" style="color: var(--ed-accent-gold);"></i> {{ __('إضاءات نحو التفوق') }}</h3>
                     </div>
                     <div class="ed-card-body">
                         <div class="study-tip-box">
-                            <h5><i class="fa-solid fa-star"></i> سر النجاح في التوجيهي:</h5>
+                            <h5><i class="fa-solid fa-star"></i> {{ __('سر النجاح في التوجيهي:') }}</h5>
                             <p>
-                                التركيز اليومي المتواصل، حل أسئلة الكتاب المدرسي الوزاري بدقة، والتدرب على نماذج السنوات السابقة يضمن لك ثبات المعلومة وتجنب مفاجآت الامتحانات الوزارية.
+                                {{ __('التركيز اليومي المتواصل، حل أسئلة الكتاب المدرسي الوزاري بدقة، والتدرب على نماذج السنوات السابقة يضمن لك ثبات المعلومة وتجنب مفاجآت الامتحانات الوزارية.') }}
                             </p>
                         </div>
                     </div>
@@ -1231,46 +1230,46 @@
         </div>
     </div>
 
-    <!-- 6. تذييل الصفحة الشامل على كامل العرض -->
+    <!-- 6. تذييل الصفحة الشامل على كامل العرض - فاتح وأنيق -->
     <footer class="main-footer">
         <div class="footer-inner">
             <div class="footer-brand">
-                <h3>🇵🇸 {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</h3>
+                <h3>🇵🇸 {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h3>
                 <p>
-                    المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى تيسير وصول العلم والشروحات النموذجية المتوافقة مع تحديثات وزارة التربية والتعليم لكافة بيوت فلسطين.
+                    {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى تيسير وصول العلم والشروحات النموذجية المتوافقة مع تحديثات وزارة التربية والتعليم لكافة بيوت فلسطين.') }}
                 </p>
-                <div style="margin-top: 10px; color: #93c5fd; font-weight: 700; font-size: 13px;">
-                    إشراف ومتابعة: الأستاذ أحمد حسين شمالي
+                <div style="margin-top: 8px; color: var(--ed-primary); font-weight: 700; font-size: 12.5px;">
+                    {{ __('إشراف ومتابعة: الأستاذ أحمد حسين شمالي') }}
                 </div>
             </div>
 
             <div class="footer-col">
-                <h4>روابط سريعة</h4>
+                <h4>{{ __('روابط سريعة') }}</h4>
                 <ul class="footer-links-list">
-                    <li><a href="{{ route('home') }}"><i class="fa-solid fa-angle-left"></i> الرئيسية</a></li>
-                    <li><a href="{{ route('public.terms') }}"><i class="fa-solid fa-angle-left"></i> الشروط والأحكام</a></li>
-                    <li><a href="{{ route('public.privacy') }}"><i class="fa-solid fa-angle-left"></i> سياسة الخصوصية</a></li>
-                    <li><a href="{{ route('public.faq') }}"><i class="fa-solid fa-angle-left"></i> الأسئلة الشائعة</a></li>
-                    <li><a href="{{ route('public.contact') }}"><i class="fa-solid fa-angle-left"></i> اتصل بنا</a></li>
+                    <li><a href="{{ route('home') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('الرئيسية') }}</a></li>
+                    <li><a href="{{ route('public.terms') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('الشروط والأحكام') }}</a></li>
+                    <li><a href="{{ route('public.privacy') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('سياسة الخصوصية') }}</a></li>
+                    <li><a href="{{ route('public.faq') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('الأسئلة الشائعة') }}</a></li>
+                    <li><a href="{{ route('public.contact') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('اتصل بنا') }}</a></li>
                 </ul>
             </div>
 
             <div class="footer-col">
-                <h4>التواصل والدعم الفني</h4>
+                <h4>{{ __('التواصل والدعم الفني') }}</h4>
                 <ul class="footer-links-list">
                     <li>
-                        <a href="https://wa.me/970597694385" target="_blank" style="color: #4ade80;">
-                            <i class="fa-brands fa-whatsapp"></i> واتساب: 0597694385
+                        <a href="https://wa.me/970597694385" target="_blank" style="color: var(--ed-success); font-weight: 600;">
+                            <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب: 0597694385') }}
                         </a>
                     </li>
                     <li>
-                        <span style="font-size: 13px; color: #94a3b8;">
-                            <i class="fa-solid fa-phone me-1"></i> هاتف بديل: 0567897212
+                        <span style="font-size: 12.5px; color: var(--ed-text-muted);">
+                            <i class="fa-solid fa-phone" style="margin-inline-end: 4px;"></i> {{ __('هاتف بديل: 0567897212') }}
                         </span>
                     </li>
                     <li>
-                        <span style="font-size: 13px; color: #94a3b8;">
-                            <i class="fa-solid fa-location-dot me-1"></i> دولة فلسطين 🇵🇸
+                        <span style="font-size: 12.5px; color: var(--ed-text-muted);">
+                            <i class="fa-solid fa-location-dot" style="margin-inline-end: 4px;"></i> {{ __('دولة فلسطين 🇵🇸') }}
                         </span>
                     </li>
                 </ul>
@@ -1279,8 +1278,8 @@
 
         <div class="footer-bottom-bar">
             <div class="footer-bottom-inner">
-                <span>جميع الحقوق محفوظة © {{ date('Y') }} - {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
-                <span>متوافق تماماً مع المنهاج الرسمي لوزارة التربية والتعليم الفلسطينية</span>
+                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي'))]) }}</span>
+                <span>{{ __('متوافق تماماً مع المنهاج الرسمي لوزارة التربية والتعليم الفلسطينية') }}</span>
             </div>
         </div>
     </footer>

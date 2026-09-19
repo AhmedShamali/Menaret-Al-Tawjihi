@@ -74,7 +74,7 @@ class AdminSubscriptionController extends Controller
             'collection_rate' => $allSubs->sum('amount') > 0 ? round(($allSubs->where('status', 'paid')->sum('amount') / $allSubs->sum('amount')) * 100, 1) : 0,
         ];
 
-        $monthsNames = StudentMonthlySubscription::monthNamesAr();
+        $monthsNames = StudentMonthlySubscription::monthNames();
 
         return view('admin.subscriptions.monthly', compact('students', 'stages', 'year', 'stats', 'monthsNames', 'stageId', 'search', 'monthFilter', 'statusFilter'));
     }
@@ -145,7 +145,7 @@ class AdminSubscriptionController extends Controller
         // مزامنة وربط الشهور الـ 12 تلقائياً مع مدفوعات الطالب وحالة تسجيله
         $subscriptions = StudentMonthlySubscription::syncWithStudentPayments($student, $year);
 
-        $monthsNames = StudentMonthlySubscription::monthNamesAr();
+        $monthsNames = StudentMonthlySubscription::monthNames();
         $paidCount = $subscriptions->where('status', 'paid')->count();
         $unpaidCount = $subscriptions->where('status', 'unpaid')->count();
         $pendingCount = $subscriptions->where('status', 'pending')->count();

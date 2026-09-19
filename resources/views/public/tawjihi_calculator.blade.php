@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حاسبة معدل التوجيهي ودليل التنسيق الجامعي | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
+    <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق الجامعي') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
@@ -11,10 +11,10 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <!-- Google Fonts: Alexandria & Tajawal -->
+    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -24,40 +24,47 @@
             --bg-page: #f8fafc;
             --bg-surface: #ffffff;
             --border-subtle: #e2e8f0;
-            --border-focus: #3b82f6;
-            --primary: #1e40af;
+            --border-focus: #1d4ed8;
+            --primary: #1d4ed8;
+            --primary-hover: #1e40af;
             --primary-soft: #eff6ff;
             --text-heading: #0f172a;
             --text-body: #334155;
             --text-muted: #64748b;
-            --success: #059669;
+            --success: #16a34a;
             --success-soft: #ecfdf5;
             --warning: #d97706;
             --warning-soft: #fffbeb;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
-            --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06);
+            --transition: all 0.2s ease;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Alexandria', 'Tajawal', sans-serif;
+            font-family: 'Tajawal', 'Alexandria', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-page);
             color: var(--text-body);
+            font-size: 13.5px;
             line-height: 1.6;
             min-height: 100vh;
         }
 
-        /* Top Navigation */
+        html[dir="rtl"] body { direction: rtl; text-align: right; }
+        html[dir="ltr"] body { direction: ltr; text-align: left; }
+
+        /* Top Navigation - فاتح وأنيق */
         .main-navbar {
-            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
-            border-bottom: 3px solid #f59e0b;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-subtle);
             position: sticky;
             top: 0;
             z-index: 40;
@@ -66,7 +73,7 @@
         .nav-inner {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 12px 24px;
+            padding: 10px 24px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -75,96 +82,101 @@
         .nav-brand {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 1.15rem;
+            color: var(--text-heading);
+            font-weight: 800;
+            font-size: 16px;
         }
 
         .brand-logo-badge {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            background: #ffffff;
-            color: #1e3a8a;
-            border: 2px solid #f59e0b;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: var(--primary-soft);
+            color: var(--primary);
+            border: 1px solid #bfdbfe;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 16px;
         }
 
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
 
         .nav-link-btn {
             text-decoration: none;
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: var(--radius-md);
-            font-size: 0.88rem;
+            font-size: 12.5px;
             font-weight: 600;
-            color: #e2e8f0;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
+            color: var(--text-body);
+            border: 1px solid var(--border-subtle);
+            background: #ffffff;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .nav-link-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
+            background: var(--bg-page);
+            color: var(--primary);
+            border-color: #cbd5e1;
         }
 
         .nav-link-btn.primary {
             background: var(--primary);
             color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-color: var(--primary);
+            font-weight: 700;
         }
 
         .nav-link-btn.primary:hover {
-            background: #1d4ed8;
+            background: var(--primary-hover);
         }
 
         /* Main Container */
         .page-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 24px 80px;
+            padding: 24px 24px 60px;
         }
 
-        /* Hero / Introduction Header */
+        /* Header Introduction */
         .calc-header {
             text-align: center;
-            margin-bottom: 36px;
+            margin-bottom: 28px;
         }
 
         .badge-academic {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 5px 14px;
+            gap: 6px;
+            padding: 4px 12px;
             background: var(--primary-soft);
             color: var(--primary);
             border: 1px solid #bfdbfe;
             border-radius: 999px;
-            font-size: 0.82rem;
-            font-weight: 600;
-            margin-bottom: 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
         .calc-header h1 {
-            font-size: 2rem;
+            font-size: 22px;
             font-weight: 800;
             color: var(--text-heading);
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
+            margin-bottom: 6px;
         }
 
         .calc-header p {
             color: var(--text-muted);
-            font-size: 1rem;
+            font-size: 13px;
             max-width: 650px;
             margin: 0 auto;
         }
@@ -173,133 +185,118 @@
         .branch-nav {
             display: flex;
             justify-content: center;
-            gap: 8px;
-            margin: 28px auto 36px;
+            gap: 6px;
+            margin: 20px auto 26px;
             background: #ffffff;
-            padding: 6px;
+            padding: 4px;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            max-width: 580px;
+            max-width: 520px;
             box-shadow: var(--shadow-sm);
         }
 
         .branch-btn {
             flex: 1;
-            padding: 11px 16px;
+            padding: 8px 14px;
             border: none;
             background: transparent;
             color: var(--text-muted);
-            font-size: 0.92rem;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             border-radius: var(--radius-md);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
+            gap: 6px;
+            transition: var(--transition);
+        }
+
+        .branch-btn:hover {
+            color: var(--primary);
+            background: var(--primary-soft);
         }
 
         .branch-btn.active {
             background: var(--primary);
             color: #ffffff;
-            box-shadow: var(--shadow-sm);
         }
 
-        /* Two Columns Layout */
+        /* Calculator Grid */
         .calculator-grid {
             display: grid;
-            grid-template-columns: 1.25fr 0.85fr;
-            gap: 32px;
+            grid-template-columns: 1.4fr 0.9fr;
+            gap: 20px;
             align-items: start;
         }
 
-        @media (max-width: 900px) {
-            .calculator-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Card Panels */
         .card-panel {
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 28px;
+            padding: 22px;
             box-shadow: var(--shadow-sm);
         }
 
         .panel-title {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 22px;
-            padding-bottom: 14px;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-subtle);
         }
 
         .panel-title i {
             color: var(--primary);
-            font-size: 1.2rem;
+            font-size: 18px;
         }
 
         .panel-title h2 {
-            font-size: 1.15rem;
-            font-weight: 700;
+            font-size: 15px;
+            font-weight: 800;
             color: var(--text-heading);
+            margin: 0;
         }
 
         .section-label {
-            font-size: 0.85rem;
+            font-size: 12.5px;
             font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin: 20px 0 12px;
+            color: var(--text-heading);
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
-        .section-label:first-of-type {
-            margin-top: 0;
-        }
-
-        /* Input Grid */
         .inputs-row {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-        }
-
-        @media (max-width: 600px) {
-            .inputs-row {
-                grid-template-columns: 1fr;
-            }
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
         .input-box {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         .input-box label {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--text-heading);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-body);
             display: flex;
             justify-content: space-between;
-            align-items: center;
         }
 
-        .input-box label span.max-tag {
-            font-size: 0.78rem;
-            font-weight: 500;
+        .max-tag {
+            font-size: 11px;
             color: var(--primary);
             background: var(--primary-soft);
-            padding: 2px 8px;
-            border-radius: 6px;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-weight: 600;
         }
 
         .field-wrapper {
@@ -310,27 +307,30 @@
 
         .field-wrapper i {
             position: absolute;
-            right: 14px;
             color: var(--text-muted);
-            font-size: 0.95rem;
+            font-size: 12px;
             pointer-events: none;
         }
+        html[dir="rtl"] .field-wrapper i { right: 12px; }
+        html[dir="ltr"] .field-wrapper i { left: 12px; }
 
         .field-input {
             width: 100%;
-            padding: 10px 42px 10px 14px;
+            padding: 8px 12px;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            font-size: 0.95rem;
+            font-size: 13px;
             color: var(--text-heading);
             background: #ffffff;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: var(--transition);
         }
+        html[dir="rtl"] .field-input { padding-right: 34px; }
+        html[dir="ltr"] .field-input { padding-left: 34px; }
 
         .field-input:focus {
             border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
 
         .field-input.input-error {
@@ -338,78 +338,80 @@
             background: #fff5f5;
         }
 
-        /* Notice / Explanatory Box */
         .info-card {
-            background: #f8fafc;
+            background: var(--bg-page);
             border: 1px solid var(--border-subtle);
-            border-right: 4px solid var(--primary);
             border-radius: var(--radius-md);
-            padding: 14px 18px;
-            margin-top: 24px;
+            padding: 12px 14px;
+            margin-top: 18px;
             display: flex;
-            gap: 12px;
-            font-size: 0.88rem;
+            gap: 10px;
+            font-size: 12px;
             color: var(--text-body);
-            line-height: 1.6;
+            line-height: 1.55;
         }
+        html[dir="rtl"] .info-card { border-right: 3px solid var(--primary); }
+        html[dir="ltr"] .info-card { border-left: 3px solid var(--primary); }
 
         .info-card i {
             color: var(--primary);
-            font-size: 1.1rem;
+            font-size: 14px;
             margin-top: 2px;
         }
 
         /* Result Panel Sticky Card */
         .result-box {
             position: sticky;
-            top: 90px;
+            top: 70px;
         }
 
         .result-badge {
             display: inline-block;
-            font-size: 0.82rem;
+            font-size: 11.5px;
             font-weight: 700;
             color: var(--primary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .score-display {
-            font-size: 3.2rem;
-            font-weight: 800;
+            font-size: 2.8rem;
+            font-weight: 900;
             color: var(--text-heading);
             line-height: 1;
-            margin: 6px 0 10px;
+            margin: 4px 0 8px;
             letter-spacing: -1px;
+            font-family: monospace;
         }
 
         .score-status {
-            font-size: 0.95rem;
+            font-size: 12.5px;
             font-weight: 600;
-            margin-bottom: 22px;
+            margin-bottom: 16px;
             color: var(--text-muted);
         }
 
         .stats-summary {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            padding: 16px 0;
+            gap: 10px;
+            padding: 12px 0;
             border-top: 1px solid var(--border-subtle);
             border-bottom: 1px solid var(--border-subtle);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
 
         .stat-cell h4 {
-            font-size: 0.78rem;
+            font-size: 11px;
             color: var(--text-muted);
             font-weight: 600;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
 
         .stat-cell p {
-            font-size: 1.05rem;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-heading);
+            font-family: monospace;
         }
 
         .btn-view-majors {
@@ -417,21 +419,21 @@
             background: var(--primary);
             color: #ffffff;
             border: none;
-            padding: 12px 18px;
+            padding: 10px 14px;
             border-radius: var(--radius-md);
-            font-size: 0.95rem;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            transition: background 0.2s;
-            margin-bottom: 10px;
+            gap: 6px;
+            transition: var(--transition);
+            margin-bottom: 8px;
         }
 
         .btn-view-majors:hover {
-            background: #1d4ed8;
+            background: var(--primary-hover);
         }
 
         .btn-clear {
@@ -439,71 +441,74 @@
             background: transparent;
             color: var(--text-muted);
             border: 1px solid var(--border-subtle);
-            padding: 10px;
+            padding: 8px;
             border-radius: var(--radius-md);
-            font-size: 0.88rem;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .btn-clear:hover {
-            background: #f1f5f9;
+            background: var(--bg-page);
             color: var(--text-heading);
         }
 
-        /* Majors Recommendations Section */
+        /* Majors Section */
         .majors-panel {
-            margin-top: 40px;
+            margin-top: 28px;
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-lg);
-            padding: 32px;
+            padding: 22px;
             box-shadow: var(--shadow-sm);
         }
 
         .majors-panel-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
+            align-items: flex-start;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
             border-bottom: 1px solid var(--border-subtle);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .majors-panel-header h3 {
-            font-size: 1.25rem;
+            font-size: 15px;
             font-weight: 800;
             color: var(--text-heading);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .count-pill {
             background: var(--primary-soft);
             color: var(--primary);
-            padding: 4px 12px;
-            border-radius: 999px;
-            font-size: 0.85rem;
+            font-size: 11.5px;
             font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 1px solid #bfdbfe;
         }
 
         .majors-list-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 12px;
         }
 
         .major-item-card {
             background: #ffffff;
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-md);
-            padding: 18px;
+            padding: 14px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: var(--transition);
         }
 
         .major-item-card:hover {
@@ -515,68 +520,85 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .major-badge-status {
-            font-size: 0.75rem;
+            font-size: 11px;
             font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 2px 7px;
+            border-radius: 4px;
         }
 
         .major-badge-status.guaranteed {
             background: var(--success-soft);
             color: var(--success);
+            border: 1px solid #bbf7d0;
         }
 
         .major-badge-status.competitive {
             background: var(--warning-soft);
             color: var(--warning);
+            border: 1px solid #fde68a;
         }
 
         .major-item-card h4 {
-            font-size: 1rem;
+            font-size: 13.5px;
             font-weight: 700;
             color: var(--text-heading);
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .major-category {
-            font-size: 0.82rem;
+            font-size: 11.5px;
             color: var(--text-muted);
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
 
         .unis-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 4px;
         }
 
         .uni-chip {
-            background: #f1f5f9;
+            background: var(--bg-page);
             color: var(--text-body);
-            font-size: 0.75rem;
-            padding: 3px 8px;
+            font-size: 11px;
+            padding: 2px 6px;
             border-radius: 4px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        @media (max-width: 900px) {
+            .calculator-grid { grid-template-columns: 1fr; }
+            .result-box { position: static; }
         }
     </style>
 </head>
 <body>
 
     <!-- Top Navigation -->
-    <header class="nav-header">
+    <header class="main-navbar">
         <div class="nav-inner">
             <a href="/" class="nav-brand">
                 <div class="brand-logo-badge">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
-                <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
+                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
             </a>
             <div class="nav-links">
-                <a href="/" class="nav-link-btn"><i class="fas fa-arrow-right"></i> الرئيسية</a>
-                <a href="{{ route('login') }}" class="nav-link-btn primary"><i class="fas fa-user-check"></i> تسجيل الدخول</a>
+                <!-- زر تبديل اللغة خالي من أي كلمة عربية في وضع الإنجليزية -->
+                @php $currentLocale = app()->getLocale(); @endphp
+                <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
+                   class="nav-link-btn"
+                   title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'Switch to Arabic' }}">
+                    <i class="fa-solid fa-globe" style="color: var(--primary);"></i>
+                    <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
+                </a>
+
+                <a href="/" class="nav-link-btn"><i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i> {{ __('الرئيسية') }}</a>
+                <a href="{{ route('login') }}" class="nav-link-btn primary"><i class="fas fa-arrow-right-to-bracket"></i> {{ __('تسجيل الدخول') }}</a>
             </div>
         </div>
     </header>
@@ -588,21 +610,21 @@
         <div class="calc-header">
             <div class="badge-academic">
                 <i class="fas fa-check-circle"></i>
-                <span>المنهاج الفلسطيني الرسمي المعتمد 2026</span>
+                <span>{{ __('المنهاج الفلسطيني الرسمي المعتمد 2026') }}</span>
             </div>
-            <h1>حاسبة معدل التوجيهي ودليل التنسيق</h1>
-            <p>احتساب دقيق لمعدل الثانوية العامة وفق السلم الوزاري الفلسطيني (أعلى مادة اختيارية تلقائياً)، مع استعراض التخصصات المتاحة فورياً.</p>
+            <h1>{{ __('حاسبة معدل التوجيهي ودليل التنسيق') }}</h1>
+            <p>{{ __('احتساب دقيق لمعدل الثانوية العامة وفق السلم الوزاري الفلسطيني (أعلى مادة اختيارية تلقائياً)، مع استعراض التخصصات المتاحة فورياً.') }}</p>
 
             <!-- Branch Nav Selector -->
             <div class="branch-nav">
                 <button type="button" class="branch-btn active" id="btn-scientific" onclick="changeBranch('scientific')">
-                    <i class="fas fa-atom"></i> الفرع العلمي
+                    <i class="fas fa-atom"></i> {{ __('الفرع العلمي') }}
                 </button>
                 <button type="button" class="branch-btn" id="btn-literary" onclick="changeBranch('literary')">
-                    <i class="fas fa-book-open"></i> الفرع الأدبي
+                    <i class="fas fa-book-open"></i> {{ __('الفرع الأدبي') }}
                 </button>
                 <button type="button" class="branch-btn" id="btn-business" onclick="changeBranch('business')">
-                    <i class="fas fa-briefcase"></i> الريادة والأعمال
+                    <i class="fas fa-briefcase"></i> {{ __('فرع الريادة والأعمال') }}
                 </button>
             </div>
         </div>
@@ -615,7 +637,7 @@
                 <div class="panel-title">
                     <i class="fas fa-calculator"></i>
                     <div>
-                        <h2 id="panel-branch-title">علامات الفرع العلمي (المجموع الكلي: 700)</h2>
+                        <h2 id="panel-branch-title">{{ __('علامات الفرع العلمي (المجموع الكلي: 700)') }}</h2>
                     </div>
                 </div>
 
@@ -627,8 +649,8 @@
                     <div class="info-card">
                         <i class="fas fa-info-circle"></i>
                         <div>
-                            <strong>معايير الحساب الرسمية:</strong>
-                            يتم احتساب المواد الإجبارية بالكامل، بينما تُقارن علامات المواد الاختيارية وتُحتسب <strong>أعلى مادة اختيارية فقط</strong> لمنح الطالب أفضل مجموع وزاري ممكن من 700.
+                            <strong>{{ __('معايير الحساب الرسمية:') }}</strong>
+                            {{ __('يتم احتساب المواد الإجبارية بالكامل، بينما تُقارن علامات المواد الاختيارية وتُحتسب أعلى مادة اختيارية فقط لمنح الطالب أفضل مجموع وزاري ممكن من 700.') }}
                         </div>
                     </div>
                 </form>
@@ -636,26 +658,26 @@
 
             <!-- Result Summary Card -->
             <div class="card-panel result-box">
-                <span class="result-badge"><i class="fas fa-chart-line"></i> النتيجة التقديرية</span>
+                <span class="result-badge"><i class="fas fa-chart-line"></i> {{ __('النتيجة التقديرية') }}</span>
                 <div class="score-display" id="display-percentage">0.0%</div>
-                <div class="score-status" id="display-status">في انتظار إدخال العلامات...</div>
+                <div class="score-status" id="display-status">{{ __('في انتظار إدخال العلامات...') }}</div>
 
                 <div class="stats-summary">
                     <div class="stat-cell">
-                        <h4>المجموع الكلي</h4>
+                        <h4>{{ __('المجموع الكلي') }}</h4>
                         <p id="display-total">0 / 700</p>
                     </div>
                     <div class="stat-cell">
-                        <h4>المادة الاختيارية</h4>
-                        <p id="display-elective" style="font-size: 0.9rem;">-</p>
+                        <h4>{{ __('المادة الاختيارية') }}</h4>
+                        <p id="display-elective" style="font-size: 0.85rem;">-</p>
                     </div>
                 </div>
 
                 <button type="button" class="btn-view-majors" onclick="scrollToMajors()">
-                    <i class="fas fa-university"></i> عرض التخصصات المتوافقة
+                    <i class="fas fa-university"></i> {{ __('عرض التخصصات المتوافقة') }}
                 </button>
                 <button type="button" class="btn-clear" onclick="clearInputs()">
-                    <i class="fas fa-redo-alt"></i> إعادة ضبط الحقول
+                    <i class="fas fa-redo-alt"></i> {{ __('إعادة ضبط الحقول') }}
                 </button>
             </div>
 
@@ -665,10 +687,10 @@
         <section class="majors-panel" id="majors-section">
             <div class="majors-panel-header">
                 <div>
-                    <h3><i class="fas fa-compass" style="color: var(--primary);"></i> التخصصات والكليات المتاحة في الجامعات الفلسطينية</h3>
-                    <p style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">مرتبة وفق الحد الأدنى لمفاتيح التنسيق المعتمدة في جامعات الوطن (بيرزيت، النجاح، القدس، خضوري، البوليتكنك، العربية الأمريكية، غزة)</p>
+                    <h3><i class="fas fa-compass" style="color: var(--primary);"></i> {{ __('التخصصات والكليات المتاحة في الجامعات الفلسطينية') }}</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">{{ __('مرتبة وفق الحد الأدنى لمفاتيح التنسيق المعتمدة في جامعات الوطن (بيرزيت، النجاح، القدس، خضوري، البوليتكنك، العربية الأمريكية، غزة)') }}</p>
                 </div>
-                <span class="count-pill" id="majors-count-badge">15 تخصص</span>
+                <span class="count-pill" id="majors-count-badge">0 {{ __('تخصص متاح') }}</span>
             </div>
 
             <div class="majors-list-grid" id="majors-list-container">
@@ -680,58 +702,74 @@
 
     <!-- Interactive Script -->
     <script>
+        const isEn = {{ app()->getLocale() === 'en' ? 'true' : 'false' }};
         let currentBranch = 'scientific';
 
-        // المنهاج الفلسطيني المعتمد
-        // الأدبي: عربي 150، إنجليزي 150، تاريخ 100، جغرافيا 100، إسلامية 100، اختياري 100 -> مجموع 700
-        // العلمي: رياضيات 200، فيزياء 100، عربي 100، إنجليزي 100، إسلامية 100، اختياري 100 -> مجموع 700
+        const calcI18n = {
+            mandatoryLabel: "{{ __('المواد الإجبارية الأساسية') }}",
+            scorePlaceholder: "{{ __('أدخل علامة المادة') }}",
+            outOf: isEn ? "out of " : "من ",
+            passLabel: isEn ? "Pass: " : "النجاح: ",
+            notDetermined: "{{ __('لم تُحدد') }}",
+            statusExcellent: "{{ __('امتياز وتفوق عالي 🌟 فرص قبول لكافة الكليات') }}",
+            statusVeryGood: "{{ __('جيد جداً مرتفع 🎓 فرص ممتازة في التخصصات الهندسية والصحية') }}",
+            statusGood: "{{ __('جيد ✨ خيارات واسعة في تكنولوجيا المعلومات والعلوم الإدارية') }}",
+            statusPass: "{{ __('ناجح ومؤهل للالتحاق بالبرامج الجامعية والدبلوم') }}",
+            statusWaitingRest: "{{ __('في انتظار استكمال إدخال باقي المواد...') }}",
+            statusWaitingStart: "{{ __('في انتظار إدخال العلامات...') }}",
+            majorsUnit: "{{ __('تخصص متاح') }}",
+            noMajorsHint: "{{ __('أدخل علاماتك للاطلاع على التخصصات المتوافقة مع معدلك المحسوب.') }}",
+            guaranteed: "{{ __('مضمون القبول') }}",
+            competitive: "{{ __('منافسة قوية / موازي') }}"
+        };
+
         const configs = {
             scientific: {
-                title: 'علامات الفرع العلمي (المجموع الكلي: 700)',
+                title: "{{ __('علامات الفرع العلمي (المجموع الكلي: 700)') }}",
                 mandatory: [
-                    { id: 'math', label: 'الرياضيات (علمي)', max: 200, pass: 100, icon: 'fa-square-root-variable', note: 'من 200 (النجاح: 100)' },
-                    { id: 'physics', label: 'الفيزياء', max: 100, pass: 50, icon: 'fa-atom', note: 'من 100 (النجاح: 50)' },
-                    { id: 'arabic', label: 'اللغة العربية', max: 100, pass: 50, icon: 'fa-feather-pointed', note: 'من 100 (النجاح: 50)' },
-                    { id: 'english', label: 'اللغة الإنجليزية', max: 100, pass: 50, icon: 'fa-language', note: 'من 100 (النجاح: 50)' },
-                    { id: 'islamic', label: 'التربية الإسلامية', max: 100, pass: 50, icon: 'fa-moon', note: 'من 100 (النجاح: 50)' }
+                    { id: 'math', label: "{{ __('الرياضيات (علمي)') }}", max: 200, pass: 100, icon: 'fa-square-root-variable', note: calcI18n.outOf + '200 (' + calcI18n.passLabel + '100)' },
+                    { id: 'physics', label: "{{ __('الفيزياء') }}", max: 100, pass: 50, icon: 'fa-atom', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' },
+                    { id: 'arabic', label: "{{ __('اللغة العربية') }}", max: 100, pass: 50, icon: 'fa-feather-pointed', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' },
+                    { id: 'english', label: "{{ __('اللغة الإنجليزية') }}", max: 100, pass: 50, icon: 'fa-language', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' },
+                    { id: 'islamic', label: "{{ __('التربية الإسلامية') }}", max: 100, pass: 50, icon: 'fa-moon', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' }
                 ],
-                electiveTitle: 'المواد الاختيارية (أدخل العلامات وسيُحتسب الأعلى تلقائياً):',
+                electiveTitle: "{{ __('المواد الاختيارية (أدخل العلامات وسيُحتسب الأعلى تلقائياً):') }}",
                 electives: [
-                    { id: 'chemistry', label: 'الكيمياء', max: 100, pass: 50, icon: 'fa-flask' },
-                    { id: 'biology', label: 'العلوم الحياتية (الأحياء)', max: 100, pass: 50, icon: 'fa-dna' },
-                    { id: 'tech', label: 'التكنولوجيا', max: 100, pass: 50, icon: 'fa-laptop-code' }
+                    { id: 'chemistry', label: "{{ __('الكيمياء') }}", max: 100, pass: 50, icon: 'fa-flask' },
+                    { id: 'biology', label: "{{ __('العلوم الحياتية (الأحياء)') }}", max: 100, pass: 50, icon: 'fa-dna' },
+                    { id: 'tech', label: "{{ __('التكنولوجيا') }}", max: 100, pass: 50, icon: 'fa-laptop-code' }
                 ]
             },
             literary: {
-                title: 'علامات الفرع الأدبي (المجموع الكلي: 700)',
+                title: "{{ __('علامات الفرع الأدبي (المجموع الكلي: 700)') }}",
                 mandatory: [
-                    { id: 'arabic', label: 'اللغة العربية (أدبي)', max: 150, pass: 75, icon: 'fa-feather-pointed', note: 'من 150 (النجاح: 75)' },
-                    { id: 'english', label: 'اللغة الإنجليزية (أدبي)', max: 150, pass: 75, icon: 'fa-language', note: 'من 150 (النجاح: 75)' },
-                    { id: 'history', label: 'الدراسات التاريخية', max: 100, pass: 50, icon: 'fa-landmark', note: 'من 100 (النجاح: 50)' },
-                    { id: 'geography', label: 'الدراسات الجغرافية', max: 100, pass: 50, icon: 'fa-earth-americas', note: 'من 100 (النجاح: 50)' },
-                    { id: 'islamic', label: 'التربية الإسلامية', max: 100, pass: 50, icon: 'fa-moon', note: 'من 100 (النجاح: 50)' }
+                    { id: 'arabic', label: "{{ __('اللغة العربية') }}", max: 150, pass: 75, icon: 'fa-feather-pointed', note: calcI18n.outOf + '150 (' + calcI18n.passLabel + '75)' },
+                    { id: 'english', label: "{{ __('اللغة الإنجليزية') }}", max: 150, pass: 75, icon: 'fa-language', note: calcI18n.outOf + '150 (' + calcI18n.passLabel + '75)' },
+                    { id: 'history', label: "{{ __('الدراسات التاريخية') }}", max: 100, pass: 50, icon: 'fa-landmark', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' },
+                    { id: 'geography', label: "{{ __('الدراسات الجغرافية') }}", max: 100, pass: 50, icon: 'fa-earth-americas', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' },
+                    { id: 'islamic', label: "{{ __('التربية الإسلامية') }}", max: 100, pass: 50, icon: 'fa-moon', note: calcI18n.outOf + '100 (' + calcI18n.passLabel + '50)' }
                 ],
-                electiveTitle: 'المواد الاختيارية (يُحتسب المبحث الأعلى فقط من 100):',
+                electiveTitle: "{{ __('المواد الاختيارية (يُحتسب المبحث الأعلى فقط من 100):') }}",
                 electives: [
-                    { id: 'math', label: 'الرياضيات (أدبي)', max: 100, pass: 50, icon: 'fa-calculator' },
-                    { id: 'sci_culture', label: 'الثقافة العلمية', max: 100, pass: 50, icon: 'fa-lightbulb' },
-                    { id: 'tech', label: 'التكنولوجيا', max: 100, pass: 50, icon: 'fa-laptop-code' }
+                    { id: 'math', label: "{{ __('الرياضيات (أدبي)') }}", max: 100, pass: 50, icon: 'fa-calculator' },
+                    { id: 'sci_culture', label: "{{ __('الثقافة العلمية') }}", max: 100, pass: 50, icon: 'fa-lightbulb' },
+                    { id: 'tech', label: "{{ __('التكنولوجيا') }}", max: 100, pass: 50, icon: 'fa-laptop-code' }
                 ]
             },
             business: {
-                title: 'علامات فرع الريادة والأعمال (المجموع الكلي: 700)',
+                title: "{{ __('علامات فرع الريادة والأعمال (المجموع الكلي: 700)') }}",
                 mandatory: [
-                    { id: 'projects', label: 'المشاريع الريادية', max: 100, pass: 50, icon: 'fa-chart-pie', note: 'من 100' },
-                    { id: 'accounting', label: 'المحاسبة', max: 100, pass: 50, icon: 'fa-coins', note: 'من 100' },
-                    { id: 'mgmt', label: 'الإدارة والاقتصاد', max: 100, pass: 50, icon: 'fa-briefcase', note: 'من 100' },
-                    { id: 'arabic', label: 'اللغة العربية', max: 100, pass: 50, icon: 'fa-feather-pointed', note: 'من 100' },
-                    { id: 'english', label: 'اللغة الإنجليزية', max: 100, pass: 50, icon: 'fa-language', note: 'من 100' },
-                    { id: 'islamic', label: 'التربية الإسلامية', max: 100, pass: 50, icon: 'fa-moon', note: 'من 100' }
+                    { id: 'projects', label: "{{ __('المشاريع الريادية') }}", max: 100, pass: 50, icon: 'fa-chart-pie', note: calcI18n.outOf + '100' },
+                    { id: 'accounting', label: "{{ __('المحاسبة') }}", max: 100, pass: 50, icon: 'fa-coins', note: calcI18n.outOf + '100' },
+                    { id: 'mgmt', label: "{{ __('الإدارة والاقتصاد') }}", max: 100, pass: 50, icon: 'fa-briefcase', note: calcI18n.outOf + '100' },
+                    { id: 'arabic', label: "{{ __('اللغة العربية') }}", max: 100, pass: 50, icon: 'fa-feather-pointed', note: calcI18n.outOf + '100' },
+                    { id: 'english', label: "{{ __('اللغة الإنجليزية') }}", max: 100, pass: 50, icon: 'fa-language', note: calcI18n.outOf + '100' },
+                    { id: 'islamic', label: "{{ __('التربية الإسلامية') }}", max: 100, pass: 50, icon: 'fa-moon', note: calcI18n.outOf + '100' }
                 ],
-                electiveTitle: 'المواد الاختيارية (يُحتسب المبحث الأعلى فقط من 100):',
+                electiveTitle: "{{ __('المواد الاختيارية (يُحتسب المبحث الأعلى فقط من 100):') }}",
                 electives: [
-                    { id: 'math', label: 'رياضيات الأعمال', max: 100, pass: 50, icon: 'fa-calculator' },
-                    { id: 'tech', label: 'التكنولوجيا', max: 100, pass: 50, icon: 'fa-laptop-code' }
+                    { id: 'math', label: "{{ __('رياضيات الأعمال') }}", max: 100, pass: 50, icon: 'fa-calculator' },
+                    { id: 'tech', label: "{{ __('التكنولوجيا') }}", max: 100, pass: 50, icon: 'fa-laptop-code' }
                 ]
             }
         };
@@ -752,7 +790,7 @@
             const container = document.getElementById('dynamic-inputs-container');
 
             let html = `
-                <div class="section-label"><i class="fas fa-shield-halved" style="color: var(--primary);"></i> المواد الإجبارية الأساسية</div>
+                <div class="section-label"><i class="fas fa-shield-halved" style="color: var(--primary);"></i> ${calcI18n.mandatoryLabel}</div>
                 <div class="inputs-row">
             `;
 
@@ -766,7 +804,7 @@
                         <div class="field-wrapper">
                             <i class="fas ${sub.icon}"></i>
                             <input type="number" id="${sub.id}" class="field-input" min="0" max="${sub.max}" step="0.5"
-                                   placeholder="أدخل علامة المادة" oninput="handleInput(this, ${sub.max})">
+                                   placeholder="${calcI18n.scorePlaceholder}" oninput="handleInput(this, ${sub.max})">
                         </div>
                     </div>
                 `;
@@ -774,7 +812,7 @@
 
             html += `
                 </div>
-                <div class="section-label" style="margin-top: 24px;"><i class="fas fa-star" style="color: var(--warning);"></i> ${conf.electiveTitle}</div>
+                <div class="section-label" style="margin-top: 18px;"><i class="fas fa-star" style="color: var(--warning);"></i> ${conf.electiveTitle}</div>
                 <div class="inputs-row">
             `;
 
@@ -783,12 +821,12 @@
                     <div class="input-box">
                         <label for="${sub.id}">
                             <span>${sub.label}</span>
-                            <span class="max-tag">من ${sub.max}</span>
+                            <span class="max-tag">${calcI18n.outOf}${sub.max}</span>
                         </label>
                         <div class="field-wrapper">
                             <i class="fas ${sub.icon}"></i>
                             <input type="number" id="${sub.id}" class="field-input" min="0" max="${sub.max}" step="0.5"
-                                   placeholder="أدخل علامة المادة" oninput="handleInput(this, ${sub.max})">
+                                   placeholder="${calcI18n.scorePlaceholder}" oninput="handleInput(this, ${sub.max})">
                         </div>
                     </div>
                 `;
@@ -826,7 +864,7 @@
             });
 
             let bestScore = 0;
-            let bestName = 'لم تُحدد';
+            let bestName = calcI18n.notDetermined;
 
             conf.electives.forEach(sub => {
                 const el = document.getElementById(sub.id);
@@ -850,19 +888,19 @@
 
             const statusEl = document.getElementById('display-status');
             if (percentage >= 90) {
-                statusEl.textContent = 'امتياز وتفوق عالي 🌟 فرص قبول لكافة الكليات';
-                statusEl.style.color = '#059669';
+                statusEl.textContent = calcI18n.statusExcellent;
+                statusEl.style.color = '#16a34a';
             } else if (percentage >= 80) {
-                statusEl.textContent = 'جيد جداً مرتفع 🎓 فرص ممتازة في التخصصات الهندسية والصحية';
-                statusEl.style.color = '#2563eb';
+                statusEl.textContent = calcI18n.statusVeryGood;
+                statusEl.style.color = '#1d4ed8';
             } else if (percentage >= 70) {
-                statusEl.textContent = 'جيد ✨ خيارات واسعة في تكنولوجيا المعلومات والعلوم الإدارية';
+                statusEl.textContent = calcI18n.statusGood;
                 statusEl.style.color = '#d97706';
             } else if (percentage >= 50) {
-                statusEl.textContent = 'ناجح ومؤهل للالتحاق بالبرامج الجامعية والدبلوم';
+                statusEl.textContent = calcI18n.statusPass;
                 statusEl.style.color = '#475569';
             } else {
-                statusEl.textContent = enteredAny ? 'في انتظار استكمال إدخال باقي المواد...' : 'في انتظار إدخال العلامات...';
+                statusEl.textContent = enteredAny ? calcI18n.statusWaitingRest : calcI18n.statusWaitingStart;
                 statusEl.style.color = '#94a3b8';
             }
 
@@ -877,13 +915,13 @@
                 return m.allowed_branches.includes(currentBranch) && (percentage >= (m.min_rate - 1.5) || percentage === 0);
             });
 
-            countBadge.textContent = `${filtered.length} تخصص متاح`;
+            countBadge.textContent = `${filtered.length} ${calcI18n.majorsUnit}`;
 
             if (filtered.length === 0) {
                 listEl.innerHTML = `
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
-                        <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 12px; display: block;"></i>
-                        أدخل علاماتك للاطلاع على التخصصات المتوافقة مع معدلك المحسوب.
+                    <div style="grid-column: 1/-1; text-align: center; padding: 30px; color: var(--text-muted);">
+                        <i class="fas fa-search" style="font-size: 1.8rem; margin-bottom: 8px; display: block;"></i>
+                        ${calcI18n.noMajorsHint}
                     </div>
                 `;
                 return;
@@ -893,13 +931,13 @@
             filtered.forEach(m => {
                 const isGuaranteed = percentage >= m.min_rate;
                 const statusClass = isGuaranteed ? 'guaranteed' : 'competitive';
-                const statusText = isGuaranteed ? 'مضمون القبول' : 'منافسة قوية / موازي';
+                const statusText = isGuaranteed ? calcI18n.guaranteed : calcI18n.competitive;
 
                 html += `
                     <div class="major-item-card">
                         <div>
                             <div class="major-top">
-                                <span class="major-badge-status ${statusClass}">${statusText} (مفتاح ${m.min_rate}%)</span>
+                                <span class="major-badge-status ${statusClass}">${statusText} (${m.min_rate}%)</span>
                             </div>
                             <h4>${m.title}</h4>
                             <div class="major-category">${m.category}</div>

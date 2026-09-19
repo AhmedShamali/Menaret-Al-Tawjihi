@@ -1,18 +1,22 @@
 @extends('layouts.app')
 
-@section('title', 'تسليمات الطلاب')
+@section('title', __('تسليمات الطلاب والتقييمات') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
-<div class="luxury-submissions-wrapper">
+<div class="submissions-dashboard-clean">
 
-    <!-- هيدر سينمائي تدرجي -->
-    <div class="hero-banner">
-        <div class="banner-content">
-            <div class="tag-badge"><i class="fa-solid fa-wand-magic-sparkles"></i> لوحة التصحيح الذكية</div>
-            <h1 class="hero-title">تسليمات الطلاب والتقييمات</h1>
-            <p class="hero-sub">استعرض الإجابات، قارن الأداء، وقم برصد الدرجات بلمسة واحدة.</p>
+    {{-- 1. رأس الصفحة: العنوان والإحصائيات --}}
+    <div class="page-header-clean">
+        <div class="header-titles">
+            <h1 class="page-title-text">
+                <i class="fa-solid fa-file-signature text-primary"></i>
+                {{ __('تسليمات الطلاب والتقييمات') }}
+                <span class="count-pill" id="visibleSubmissionsCount">{{ isset($submissions) ? count($submissions) : 0 }}</span>
+            </h1>
+            <p class="page-desc-text">
+                {{ __('استعراض إجابات الطلبة، رصد الدرجات الأكاديمية، وإدارة أذونات الإعادة.') }}
+            </p>
         </div>
-        <div class="banner-glow"></div>
     </div>
 
     @php
@@ -21,26 +25,26 @@
         $pendingCount = $totalSubmissions - $gradedCount;
     @endphp
 
-    <!-- مؤشرات الأداء الكلاسيكية -->
+    {{-- 2. بطاقات المؤشرات الأكاديمية الكلاسيكية --}}
     <div class="stats-row-clean" style="grid-template-columns: repeat(3, 1fr);">
-        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
-            <span class="stat-label">إجمالي التسليمات المسجلة</span>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;" onclick="setFilterTab('all')">
+            <span class="stat-label">{{ __('إجمالي التسليمات المسجلة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-navy">{{ $totalSubmissions }}</span>
                 <i class="fa-solid fa-layer-group stat-icon text-navy"></i>
             </div>
         </div>
 
-        <div class="stat-card-clean" style="--card-accent: #d97706;">
-            <span class="stat-label">بانتظار التقييم والتصحيح</span>
+        <div class="stat-card-clean" style="--card-accent: #d97706;" onclick="setFilterTab('pending')">
+            <span class="stat-label">{{ __('بانتظار التقييم والتصحيح') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number {{ $pendingCount > 0 ? 'text-amber' : '' }}">{{ $pendingCount }}</span>
                 <i class="fa-solid fa-hourglass-start stat-icon text-amber"></i>
             </div>
         </div>
 
-        <div class="stat-card-clean" style="--card-accent: #059669;">
-            <span class="stat-label">تم تصحيحها واعتمادها</span>
+        <div class="stat-card-clean" style="--card-accent: #059669;" onclick="setFilterTab('graded')">
+            <span class="stat-label">{{ __('تم تصحيحها واعتمادها') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-emerald">{{ $gradedCount }}</span>
                 <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
@@ -48,168 +52,353 @@
         </div>
     </div>
 
-    <!-- شريط البحث السريع والفلترة -->
-    <div class="control-panel">
-        <div class="search-field-wrap">
-            <i class="fa-solid fa-magnifying-glass search-ico"></i>
-            <input type="text" id="submissionsSearch" placeholder="ابحث باسم الطالب، البريد، أو عنوان الاختبار..." onkeyup="liveSearch()">
+    {{-- 3. شريط البحث والفلاتر النظيف --}}
+    <div class="toolbar-clean">
+        <div class="search-box-clean">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="submissionsSearch" placeholder="{{ __('ابحث باسم الطالب، البريد، أو عنوان الاختبار...') }}" oninput="filterSubmissions()">
+            <button type="button" id="clearSearchBtn" onclick="clearSearch()" class="clear-search" style="display: none;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="pills-filter">
-            <button class="pill-btn active" onclick="filterCards('all', this)">
-                <span>الكل</span>
-                <span class="pill-count">{{ $totalSubmissions }}</span>
+        <div class="filter-pills-clean">
+            <button type="button" class="filter-pill active" data-filter="all" onclick="setFilterTab('all')">
+                {{ __('الكل') }} ({{ $totalSubmissions }})
             </button>
-            <button class="pill-btn" onclick="filterCards('pending', this)">
-                <span>قيد المراجعة</span>
-                <span class="pill-count pending-c">{{ $pendingCount }}</span>
+            <button type="button" class="filter-pill" data-filter="pending" onclick="setFilterTab('pending')">
+                {{ __('قيد المراجعة') }} ({{ $pendingCount }})
             </button>
-            <button class="pill-btn" onclick="filterCards('graded', this)">
-                <span>تم التصحيح</span>
-                <span class="pill-count graded-c">{{ $gradedCount }}</span>
+            <button type="button" class="filter-pill" data-filter="graded" onclick="setFilterTab('graded')">
+                {{ __('تم التصحيح') }} ({{ $gradedCount }})
             </button>
         </div>
     </div>
 
-    <!-- بطاقات التسليمات الاحترافية -->
-    @if(isset($submissions) && $submissions->count() > 0)
-        <div class="cards-layout" id="cardsContainer">
-            @foreach($submissions as $s)
-                @php
-                    $studentName = $s->student->name_ar ?? $s->student->name ?? 'طالب';
-                    $examTitle = $s->exam->title ?? 'اختبار بدون عنوان';
+    {{-- 4. الجدول النظيف الموحد بنمط رويال أكاديمي --}}
+    <div class="table-card-clean">
+        <div class="table-container-clean">
+            <table class="data-table-clean">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th>{{ __('الطالب') }}</th>
+                        <th>{{ __('الاختبار والمادة') }}</th>
+                        <th style="width: 140px; text-align: center;">{{ __('الدرجة والنسبة') }}</th>
+                        <th style="width: 110px; text-align: center;">{{ __('الحالة') }}</th>
+                        <th style="width: 140px; text-align: center;">{{ __('إذن الإعادة') }}</th>
+                        <th style="width: 130px; text-align: center;">{{ __('الإجراءات') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="submissionsTableBody">
+                    @forelse($submissions ?? [] as $s)
+                    @php
+                        $studentDispName = (app()->getLocale() === 'en' && !empty($s->student?->name_en)) 
+                            ? $s->student->name_en 
+                            : ($s->student?->name_ar ?? ($s->student?->name ?? __('طالب')));
+                        $examTitle = $s->exam?->title ?? __('اختبار بدون عنوان');
 
-                    // الاعتماد الحصري والكامل على مادة المعلم المسجل بها
-                    $teacherSubject = auth()->user()->subject;
-                    $subjectName = $teacherSubject?->name_ar ?? $teacherSubject?->name ?? 'مادة عامة';
-                    $subjectIcon = $teacherSubject?->icon ?? '📚';
+                        $teacherSubject = auth()->user()?->subject;
+                        $subjectName = (app()->getLocale() === 'en' && !empty($teacherSubject?->name_en))
+                            ? $teacherSubject->name_en
+                            : ($teacherSubject?->name_ar ?? ($teacherSubject?->name ?? __('مادة عامة')));
+                        $subjectIcon = $teacherSubject?->icon ?? '📚';
 
-                    $totalPoints = $s->exam->questions_sum_points ?? ($s->exam->questions ? $s->exam->questions->sum('points') : 0);
-                    $percentage = ($totalPoints > 0 && $s->status == 'graded') ? round(($s->total_earned_grade / $totalPoints) * 100) : 0;
-                @endphp
+                        $totalPoints = $s->exam?->questions_sum_points ?? ($s->exam?->questions ? $s->exam->questions->sum('points') : 0);
+                        $percentage = ($totalPoints > 0 && $s->status == 'graded') ? round(($s->total_earned_grade / $totalPoints) * 100) : 0;
+                        $gradeRoute = route(auth()->user()->role . '.submissions.grade', $s->id);
+                    @endphp
+                    <tr id="row_sub_{{ $s->id }}"
+                        class="submission-row"
+                        data-name="{{ mb_strtolower($studentDispName . ' ' . ($s->student?->name_ar ?? '')) }}"
+                        data-email="{{ strtolower($s->student?->email ?? '') }}"
+                        data-exam="{{ mb_strtolower($examTitle) }}"
+                        data-status="{{ $s->status }}">
+                        
+                        <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
+                            #{{ $s->id }}
+                        </td>
 
-                <div class="submission-item-card" data-status="{{ $s->status }}" data-search="{{ strtolower($studentName . ' ' . $s->student->email . ' ' . $examTitle . ' ' . $subjectName) }}">
-                    <div class="item-header">
-                        <div class="user-avatar-badge">
-                            {{ mb_substr($studentName, 0, 1) }}
-                        </div>
-                        <div class="user-meta">
-                            <h4 class="user-name">{{ $studentName }}</h4>
-                            <span class="user-email">{{ $s->student->email ?? 'لا يوجد بريد' }}</span>
-                        </div>
-                        <div class="status-indicator {{ $s->status == 'graded' ? 'status-graded' : 'status-pending' }}">
-                            @if($s->status == 'graded')
-                                <i class="fa-solid fa-check"></i> تم
-                            @else
-                                <i class="fa-solid fa-clock"></i> معلق
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="item-body">
-                        <!-- عرض مادة المعلم المباشرة بشكل صريح -->
-                        <div class="exam-tag">
-                            <span class="subject-badge-pill">
-                                {{ $subjectIcon }} {{ $subjectName }}
-                            </span>
-                            <span class="exam-title-text"><i class="fa-solid fa-file-signature"></i> {{ $examTitle }}</span>
-                        </div>
-
-                        <div class="grade-result-box">
-                            @if($s->status == 'graded')
-                                <div class="score-main">
-                                    <span class="score-earned">{{ $s->total_earned_grade }}</span>
-                                    <span class="score-max">/ {{ $totalPoints }}</span>
+                        {{-- الطالب --}}
+                        <td>
+                            <div class="cell-student-info">
+                                <div class="student-avatar-clean">
+                                    <span class="avatar-initials">{{ mb_substr($studentDispName, 0, 2) }}</span>
                                 </div>
-                                <div class="score-pill {{ $percentage >= 50 ? 'pass-pill' : 'fail-pill' }}">
-                                    {{ $percentage }}%
+                                <div class="student-details-clean">
+                                    <div class="name-line">
+                                        <strong style="color: #0f172a; font-size: 0.88rem;">{{ $studentDispName }}</strong>
+                                    </div>
+                                    <div class="meta-line">
+                                        <span class="student-email" dir="ltr">{{ $s->student?->email ?? __('لا يوجد بريد') }}</span>
+                                    </div>
                                 </div>
-                            @else
-                                <div class="pending-score-notice">
-                                    <i class="fa-solid fa-pen-nib"></i> بانتظار إدخال الدرجات
-                                </div>
-                            @endif
-                        @if($s->retake_requested)
-                            <div style="margin-top: 10px; padding: 6px 12px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; font-size: 0.78rem; color: #ea580c; font-weight: 700;">
-                                <i class="fa-solid fa-bell"></i> <strong>طلب إعادة الاختبار:</strong> {{ $s->retake_request_notes ?? 'يرغب الطالب بفرصة إعادة' }}
                             </div>
-                        @endif
-                    </div>
+                        </td>
 
-                    <div class="item-footer" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <a href="{{ route(auth()->user()->role . '.submissions.grade', $s->id) }}" class="action-btn-main" style="flex: 1;">
-                            <span>{{ $s->status == 'graded' ? 'مراجعة وتعديل التصحيح' : 'تصحيح الإجابة الآن' }}</span>
-                            <i class="fa-solid fa-arrow-left"></i>
-                        </a>
+                        {{-- الاختبار والمادة --}}
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 2px;">
+                                <span style="font-weight: 700; color: #0f172a; font-size: 0.86rem;">
+                                    <i class="fa-solid fa-file-signature text-primary" style="font-size: 0.78rem;"></i> {{ $examTitle }}
+                                </span>
+                                <span style="font-size: 0.72rem; color: #64748b;">
+                                    {{ $subjectIcon }} {{ $subjectName }}
+                                </span>
+                                @if($s->retake_requested)
+                                    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; color: #c2410c; background: #fff7ed; border: 1px solid #fed7aa; padding: 1px 6px; border-radius: 4px; width: fit-content; margin-top: 2px;">
+                                        <i class="fa-solid fa-bell"></i> {{ __('طلب إعادة الاختبار:') }} {{ $s->retake_request_notes ?? __('يرغب الطالب بفرصة إعادة') }}
+                                    </span>
+                                @endif
+                            </div>
+                        </td>
 
-                        @if($s->allow_retake)
-                            <button type="button" onclick="denyRetake({{ $s->id }})" title="مسموح له بالإعادة حالياً (انقر لإلغاء الإذن)" style="padding: 10px 14px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                <i class="fa-solid fa-unlock"></i> مسموح بالإعادة
-                            </button>
-                        @elseif($s->retake_requested)
-                            <button type="button" onclick="allowRetake({{ $s->id }})" title="الموافقة على طلب الطالب بإعادة الاختبار" style="padding: 10px 14px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; border-radius: 12px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                <i class="fa-solid fa-circle-check"></i> موافقة على الإعادة
-                            </button>
-                        @else
-                            <button type="button" onclick="allowRetake({{ $s->id }})" title="منح الطالب فرصة لإعادة الاختبار" style="padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; color: #64748b; border-radius: 12px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                <i class="fa-solid fa-rotate-right"></i> إتاحة الإعادة
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
+                        {{-- الدرجة والنسبة --}}
+                        <td style="text-align: center;">
+                            @if($s->status == 'graded')
+                                <div style="display: inline-flex; flex-direction: column; align-items: center; gap: 2px;">
+                                    <span style="font-weight: 800; font-family: monospace; font-size: 0.95rem; color: #0f172a;">
+                                        {{ $s->total_earned_grade }} <span style="color: #94a3b8; font-size: 0.78rem;">/ {{ $totalPoints }}</span>
+                                    </span>
+                                    <span class="status-pill {{ $percentage >= 50 ? 'status-active' : 'status-frozen' }}" style="font-size: 0.7rem; padding: 1px 6px;">
+                                        {{ $percentage }}%
+                                    </span>
+                                </div>
+                            @else
+                                <span class="status-pill status-pending" style="font-size: 0.74rem;">
+                                    <span class="dot"></span>
+                                    <span>{{ __('بانتظار إدخال الدرجات') }}</span>
+                                </span>
+                            @endif
+                        </td>
+
+                        {{-- الحالة --}}
+                        <td style="text-align: center;">
+                            @if($s->status == 'graded')
+                                <span class="status-pill status-active">
+                                    <span class="dot"></span>
+                                    <span>{{ __('تم التصحيح') }}</span>
+                                </span>
+                            @else
+                                <span class="status-pill status-pending">
+                                    <span class="dot"></span>
+                                    <span>{{ __('قيد المراجعة') }}</span>
+                                </span>
+                            @endif
+                        </td>
+
+                        {{-- إذن الإعادة --}}
+                        <td style="text-align: center;">
+                            @if($s->allow_retake)
+                                <button type="button" onclick="denyRetake({{ $s->id }})" title="{{ __('مسموح له بالإعادة حالياً (انقر لإلغاء الإذن)') }}" class="tbl-btn-pill btn-pill-success">
+                                    <i class="fa-solid fa-unlock"></i> {{ __('مسموح بالإعادة') }}
+                                </button>
+                            @elseif($s->retake_requested)
+                                <button type="button" onclick="allowRetake({{ $s->id }})" title="{{ __('الموافقة على طلب الطالب بإعادة الاختبار') }}" class="tbl-btn-pill btn-pill-warning">
+                                    <i class="fa-solid fa-circle-check"></i> {{ __('موافقة على الإعادة') }}
+                                </button>
+                            @else
+                                <button type="button" onclick="allowRetake({{ $s->id }})" title="{{ __('منح الطالب فرصة لإعادة الاختبار') }}" class="tbl-btn-pill btn-pill-muted">
+                                    <i class="fa-solid fa-rotate-right"></i> {{ __('إتاحة الإعادة') }}
+                                </button>
+                            @endif
+                        </td>
+
+                        {{-- الإجراءات --}}
+                        <td style="text-align: center;">
+                            <a href="{{ $gradeRoute }}" class="tbl-btn tbl-btn-primary" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+                                <span>{{ $s->status == 'graded' ? __('مراجعة') : __('تصحيح') }}</span>
+                                <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}" style="font-size: 0.7rem;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="7" class="empty-state-cell">
+                            <i class="fa-regular fa-folder-open" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                            <span>{{ __('لا توجد أي تسليمات حتى الآن') }}</span>
+                        </td>
+                    </tr>
+                    @endforelse
+
+                    <tr id="noSubmissionsRow" style="display: none;">
+                        <td colspan="7" class="empty-state-cell">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 8px; display: block;"></i>
+                            <span>{{ __('لا توجد نتائج مطابقة لشروط البحث.') }}</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-    @else
-        <div class="empty-state-luxury">
-            <div class="empty-glow-icon">
-                <i class="fa-solid fa-folder-open"></i>
-            </div>
-            <h3>لا توجد أي تسليمات حتى الآن</h3>
-            <p>عند إرسال الطلاب لإجاباتهم الخاصة بالمادة، ستقوم المنصة برصدها وإظهارها هنا فوراً.</p>
-        </div>
-    @endif
-
+    </div>
 </div>
 
-<script>
-    function liveSearch() {
-        const query = document.getElementById('submissionsSearch').value.toLowerCase();
-        const cards = document.querySelectorAll('.submission-item-card');
+<style>
+    .submissions-dashboard-clean {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    .page-header-clean {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .page-title-text {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .count-pill {
+        font-size: 0.78rem;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+    .page-desc-text {
+        font-size: 0.84rem;
+        color: #64748b;
+        margin: 3px 0 0;
+    }
+    .tbl-btn-pill {
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border: 1px solid transparent;
+        transition: all 0.15s;
+    }
+    .btn-pill-success {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #059669;
+    }
+    .btn-pill-success:hover {
+        background: #d1fae5;
+    }
+    .btn-pill-warning {
+        background: #fff7ed;
+        border-color: #fed7aa;
+        color: #ea580c;
+    }
+    .btn-pill-warning:hover {
+        background: #ffedd5;
+    }
+    .btn-pill-muted {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+        color: #64748b;
+    }
+    .btn-pill-muted:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+    .tbl-btn-primary {
+        background: #1d4ed8;
+        color: #ffffff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .tbl-btn-primary:hover {
+        background: #1e40af;
+    }
+    .empty-state-cell {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+        font-size: 0.86rem;
+    }
+</style>
 
-        cards.forEach(card => {
-            const searchContext = card.getAttribute('data-search');
-            if (searchContext.includes(query)) {
-                card.style.display = 'flex';
-            } else {
-                card.style.display = 'none';
-            }
+<script>
+    let currentFilter = 'all';
+
+    function setFilterTab(filterKey) {
+        currentFilter = filterKey;
+        document.querySelectorAll('.filter-pills-clean .filter-pill').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-filter') === filterKey);
         });
+        filterSubmissions();
     }
 
-    function filterCards(status, element) {
-        document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
-        element.classList.add('active');
+    function clearSearch() {
+        const input = document.getElementById('submissionsSearch');
+        if (input) {
+            input.value = '';
+            document.getElementById('clearSearchBtn').style.display = 'none';
+            filterSubmissions();
+        }
+    }
 
-        const cards = document.querySelectorAll('.submission-item-card');
-        cards.forEach(card => {
-            if (status === 'all' || card.getAttribute('data-status') === status) {
-                card.style.display = 'flex';
+    function filterSubmissions() {
+        const query = (document.getElementById('submissionsSearch').value || '').toLowerCase().trim();
+        const clearBtn = document.getElementById('clearSearchBtn');
+        if (clearBtn) clearBtn.style.display = query ? 'block' : 'none';
+
+        const rows = document.querySelectorAll('.submission-row');
+        let count = 0;
+
+        rows.forEach(row => {
+            const name = (row.getAttribute('data-name') || '').toLowerCase();
+            const email = (row.getAttribute('data-email') || '').toLowerCase();
+            const exam = (row.getAttribute('data-exam') || '').toLowerCase();
+            const status = row.getAttribute('data-status') || '';
+
+            const matchQuery = !query || name.includes(query) || email.includes(query) || exam.includes(query);
+            let matchFilter = true;
+
+            if (currentFilter === 'pending') {
+                matchFilter = (status !== 'graded');
+            } else if (currentFilter === 'graded') {
+                matchFilter = (status === 'graded');
+            }
+
+            if (matchQuery && matchFilter) {
+                row.style.display = '';
+                count++;
             } else {
-                card.style.display = 'none';
+                row.style.display = 'none';
             }
         });
+
+        const counterEl = document.getElementById('visibleSubmissionsCount');
+        if (counterEl) counterEl.innerText = count;
+
+        const emptyRow = document.getElementById('noSubmissionsRow');
+        if (emptyRow) {
+            emptyRow.style.display = (count === 0 && rows.length > 0) ? '' : 'none';
+        }
     }
 
     async function allowRetake(submissionId) {
+        if (!window.Swal) return;
         Swal.fire({
-            title: 'السماح بإعادة الاختبار',
-            text: 'هل أنت متأكد من منح الطالب فرصة جديدة لتقديم الاختبار؟',
+            title: @json(__('السماح بإعادة الاختبار')),
+            text: @json(__('هل أنت متأكد من منح الطالب فرصة جديدة لتقديم الاختبار؟')),
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، اسمح بالإعادة',
-            cancelButtonText: 'إلغاء'
+            confirmButtonText: @json(__('نعم، اسمح بالإعادة')),
+            cancelButtonText: @json(__('إلغاء'))
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -217,25 +406,26 @@
                     const res = await axios.post(`/${role}/submissions/${submissionId}/allow-retake`, {
                         _token: '{{ csrf_token() }}'
                     });
-                    Swal.fire({ icon: 'success', title: 'تمت الموافقة', text: res.data.title, timer: 1500, showConfirmButton: false })
+                    Swal.fire({ icon: 'success', title: @json(__('تمت الموافقة')), text: res.data.title, timer: 1500, showConfirmButton: false })
                         .then(() => location.reload());
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: e.response?.data?.error || 'تعذر معالجة الطلب' });
+                    Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: e.response?.data?.error || @json(__('تعذر معالجة الطلب')) });
                 }
             }
         });
     }
 
     async function denyRetake(submissionId) {
+        if (!window.Swal) return;
         Swal.fire({
-            title: 'إلغاء إذن الإعادة',
-            text: 'هل ترغب في قفل الاختبار ومنع إعادة المحاولة لهذا الطالب؟',
+            title: @json(__('إلغاء إذن الإعادة')),
+            text: @json(__('هل ترغب في قفل الاختبار ومنع إعادة المحاولة لهذا الطالب؟')),
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#dc2626',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، منع الإعادة',
-            cancelButtonText: 'تراجع'
+            confirmButtonText: @json(__('نعم، منع الإعادة')),
+            cancelButtonText: @json(__('تراجع'))
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
@@ -243,450 +433,13 @@
                     const res = await axios.post(`/${role}/submissions/${submissionId}/deny-retake`, {
                         _token: '{{ csrf_token() }}'
                     });
-                    Swal.fire({ icon: 'success', title: 'تم التحديث', text: res.data.title, timer: 1200, showConfirmButton: false })
+                    Swal.fire({ icon: 'success', title: @json(__('تم إلغاء الإذن')), text: res.data.title, timer: 1500, showConfirmButton: false })
                         .then(() => location.reload());
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر إلغاء الإذن' });
+                    Swal.fire({ icon: 'error', title: @json(__('خطأ')), text: e.response?.data?.error || @json(__('تعذر معالجة الطلب')) });
                 }
             }
         });
     }
 </script>
-
-<style>
-    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
-
-    .luxury-submissions-wrapper {
-        font-family: 'Tajawal', sans-serif;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 24px;
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-    }
-
-    /* الهيدر الرئيسي السينمائي */
-    .hero-banner {
-        position: relative;
-        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
-        border-radius: 24px;
-        padding: 40px 36px;
-        color: #ffffff;
-        overflow: hidden;
-        box-shadow: 0 20px 40px -15px rgba(30, 27, 75, 0.4);
-    }
-
-    .banner-content {
-        position: relative;
-        z-index: 2;
-    }
-
-    .tag-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(12px);
-        padding: 6px 16px;
-        border-radius: 50px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: #a5b4fc;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        margin-bottom: 14px;
-    }
-
-    .hero-title {
-        font-size: 2.2rem;
-        font-weight: 900;
-        margin: 0 0 10px 0;
-        letter-spacing: -0.5px;
-    }
-
-    .hero-sub {
-        color: #cbd5e1;
-        font-size: 1.05rem;
-        margin: 0;
-    }
-
-    .banner-glow {
-        position: absolute;
-        top: -100px;
-        left: -100px;
-        width: 350px;
-        height: 350px;
-        background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(0,0,0,0) 70%);
-        pointer-events: none;
-    }
-
-    /* مؤشرات الأداء */
-    .metrics-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 20px;
-    }
-
-    .metric-card {
-        background: #ffffff;
-        border-radius: 20px;
-        padding: 24px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.03);
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .metric-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.3rem;
-    }
-
-    .total-icon { background: #e0e7ff; color: #4338ca; }
-    .pending-icon { background: #fef3c7; color: #d97706; }
-    .success-icon { background: #dcfce7; color: #15803d; }
-
-    .metric-body {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .metric-label {
-        font-size: 0.88rem;
-        color: #64748b;
-        font-weight: 700;
-    }
-
-    .metric-num {
-        font-size: 2rem;
-        font-weight: 900;
-        color: #0f172a;
-    }
-
-    .metric-bar-bg {
-        height: 6px;
-        background: #f1f5f9;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .metric-bar-fill {
-        height: 100%;
-        background: #6366f1;
-        border-radius: 10px;
-        transition: width 0.4s ease;
-    }
-
-    .pending-fill { background: #f59e0b; }
-    .success-fill { background: #10b981; }
-
-    /* لوحة التحكم والفلترة */
-    .control-panel {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
-    }
-
-    .search-field-wrap {
-        position: relative;
-        flex: 1;
-        min-width: 300px;
-    }
-
-    .search-ico {
-        position: absolute;
-        right: 20px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-        font-size: 1rem;
-    }
-
-    .search-field-wrap input {
-        width: 100%;
-        padding: 14px 50px 14px 20px;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        background: #ffffff;
-        font-size: 0.95rem;
-        font-weight: 600;
-        outline: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-        transition: all 0.2s ease;
-    }
-
-    .search-field-wrap input:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
-    }
-
-    .pills-filter {
-        display: flex;
-        background: #f1f5f9;
-        padding: 6px;
-        border-radius: 16px;
-        gap: 6px;
-    }
-
-    .pill-btn {
-        border: none;
-        background: transparent;
-        padding: 8px 18px;
-        border-radius: 12px;
-        font-size: 0.88rem;
-        font-weight: 700;
-        color: #64748b;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-    }
-
-    .pill-btn.active {
-        background: #ffffff;
-        color: #0f172a;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-
-    .pill-count {
-        background: #e2e8f0;
-        color: #475569;
-        padding: 2px 8px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-    }
-
-    .pill-btn.active .pill-count { background: #6366f1; color: #ffffff; }
-
-    /* كروت التسليمات */
-    .cards-layout {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-        gap: 24px;
-    }
-
-    .submission-item-card {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1px solid #e2e8f0;
-        padding: 24px;
-        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.04);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        gap: 20px;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .submission-item-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 35px -10px rgba(99, 102, 241, 0.12);
-        border-color: #c7d2fe;
-    }
-
-    .item-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-    }
-
-    .user-avatar-badge {
-        width: 48px;
-        height: 48px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-        color: #ffffff;
-        font-size: 1.2rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        box-shadow: 0 8px 16px -4px rgba(79, 70, 229, 0.3);
-    }
-
-    .user-meta {
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .user-name {
-        margin: 0;
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: #0f172a;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .user-email {
-        font-size: 0.8rem;
-        color: #64748b;
-        display: block;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .status-indicator {
-        padding: 6px 12px;
-        border-radius: 30px;
-        font-size: 0.78rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .status-graded { background: #dcfce7; color: #166534; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-
-    .item-body {
-        background: #f8fafc;
-        border-radius: 18px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        border: 1px solid #f1f5f9;
-    }
-
-    .exam-tag {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        color: #334155;
-        font-weight: 700;
-        font-size: 0.92rem;
-    }
-
-    /* تنسيق باج المادة داخل الكارت */
-    .subject-badge-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #e0e7ff;
-        color: #3730a3;
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        width: fit-content;
-    }
-
-    .exam-title-text {
-        color: #0f172a;
-        font-size: 0.98rem;
-    }
-
-    .exam-title-text i { color: #6366f1; }
-
-    .grade-result-box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 10px;
-        border-top: 1px dashed #e2e8f0;
-    }
-
-    .score-main {
-        font-weight: 900;
-        font-size: 1.3rem;
-    }
-
-    .score-earned { color: #4f46e5; }
-    .score-max { color: #94a3b8; font-size: 0.95rem; }
-
-    .score-pill {
-        padding: 4px 12px;
-        border-radius: 10px;
-        font-weight: 800;
-        font-size: 0.82rem;
-    }
-
-    .pass-pill { background: #d1fae5; color: #065f46; }
-    .fail-pill { background: #fee2e2; color: #991b1b; }
-
-    .pending-score-notice {
-        color: #b45309;
-        font-size: 0.88rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .item-footer {
-        padding-top: 4px;
-    }
-
-    .action-btn-main {
-        width: 100%;
-        background: #0f172a;
-        color: #ffffff;
-        padding: 12px 20px;
-        border-radius: 14px;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.2s ease;
-        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-    }
-
-    .action-btn-main:hover {
-        background: #4f46e5;
-        color: #ffffff;
-        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
-    }
-
-    /* حالة الفراغ */
-    .empty-state-luxury {
-        text-align: center;
-        background: #ffffff;
-        padding: 70px 20px;
-        border-radius: 24px;
-        border: 2px dashed #e2e8f0;
-    }
-
-    .empty-glow-icon {
-        width: 90px;
-        height: 90px;
-        background: #e0e7ff;
-        color: #4338ca;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2.5rem;
-        margin: 0 auto 20px auto;
-    }
-
-    .empty-state-luxury h3 {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-bottom: 8px;
-    }
-
-    .empty-state-luxury p {
-        color: #64748b;
-        margin: 0;
-    }
-</style>
 @endsection

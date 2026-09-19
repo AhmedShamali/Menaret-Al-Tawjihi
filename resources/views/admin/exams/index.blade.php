@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'بوابة المساقات | إدارة التقييمات والاختبارات')
+@section('title', __('إدارة التقييمات والاختبارات') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 <!-- استدعاء مكتبة SweetAlert2 للتنبيهات الفاخرة -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
@@ -8,6 +8,16 @@
 
 @section('content')
 <div class="exams-dashboard-container">
+
+    @php
+        $teacherSub = auth()->user()?->subject;
+        $subName = (app()->getLocale() === 'en' && !empty($teacherSub?->name_en)) 
+            ? $teacherSub->name_en 
+            : ($teacherSub?->name_ar ?? ($teacherSub?->name ?? __('جميع المساقات الأكاديمية')));
+        $authName = (app()->getLocale() === 'en' && !empty(auth()->user()?->name_en)) 
+            ? auth()->user()->name_en 
+            : auth()->user()->name;
+    @endphp
 
     <!-- الهيدر الرئيسي -->
     <header class="dashboard-header">
@@ -17,15 +27,15 @@
             </div>
             <div class="header-text-details">
                 <nav class="breadcrumb-nav">
-                    <span>لوحة التحكم</span>
-                    <i class="fa-solid fa-chevron-left sep"></i>
-                    <span class="current">إدارة التقييمات</span>
+                    <span>{{ __('لوحة التحكم') }}</span>
+                    <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} sep"></i>
+                    <span class="current">{{ __('إدارة التقييمات') }}</span>
                 </nav>
                 <h1 class="dashboard-title">
-                    بوابة مساق: {{ auth()->user()->subject?->name_ar ?? auth()->user()->subject?->name ?? 'جميع المساقات الأكاديمية' }}
+                    {{ __('بوابة مساق:') }} {{ $subName }}
                 </h1>
                 <p class="dashboard-subtitle">
-                    أهلاً بك يا <strong>{{ auth()->user()->name }}</strong>، يمكنك من هنا إدارة كافة الاختبارات وتتبع نتائج الطلاب.
+                    {{ __('أهلاً بك يا') }} <strong>{{ $authName }}</strong>{{ __(', يمكنك من هنا إدارة كافة الاختبارات وتتبع نتائج الطلاب.') }}
                 </p>
             </div>
         </div>
@@ -34,7 +44,7 @@
             <!-- رابط الإنشاء الديناميكي بحسب دور المستخدم -->
             <a href="{{ route(auth()->user()->role . '.exams.create') }}" class="btn-primary-create">
                 <i class="fa-solid fa-plus-circle"></i>
-                <span>إعداد اختبار جديد</span>
+                <span>{{ __('إعداد اختبار جديد') }}</span>
             </a>
         </div>
     </header>
@@ -47,11 +57,11 @@
                 <i class="fa-solid fa-file-circle-plus"></i>
             </div>
             <div class="studio-info">
-                <span class="studio-tag">اختبارات إلكترونية</span>
-                <h4>بناء اختبار جديد</h4>
-                <p>إنشاء أسئلة اختيار من متعدد ومقالية وتحديد المدة والدرجات</p>
+                <span class="studio-tag">{{ __('اختبارات إلكترونية') }}</span>
+                <h4>{{ __('بناء اختبار جديد') }}</h4>
+                <p>{{ __('إنشاء أسئلة اختيار من متعدد ومقالية وتحديد المدة والدرجات') }}</p>
             </div>
-            <span class="studio-badge"><i class="fa-solid fa-arrow-left"></i> إعداد الآن</span>
+            <span class="studio-badge"><i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i> {{ __('إعداد الآن') }}</span>
         </a>
 
         <a href="{{ route('teacher.educational_contents.create') }}" class="studio-card upload-video">
@@ -59,11 +69,11 @@
                 <i class="fa-solid fa-circle-play"></i>
             </div>
             <div class="studio-info">
-                <span class="studio-tag" style="background: #e0f2fe; color: #0369a1;">شروحات فيديو</span>
-                <h4>رفع درس فيديو</h4>
-                <p>رفع تسجيل الحصة أو درس شرح توجيهي بجودة عالية مع حفظ التقدم</p>
+                <span class="studio-tag" style="background: #e0f2fe; color: #0369a1;">{{ __('شروحات فيديو') }}</span>
+                <h4>{{ __('رفع درس فيديو') }}</h4>
+                <p>{{ __('رفع تسجيل الحصة أو درس شرح توجيهي بجودة عالية مع حفظ التقدم') }}</p>
             </div>
-            <span class="studio-badge"><i class="fa-solid fa-cloud-arrow-up"></i> رفع فيديو</span>
+            <span class="studio-badge"><i class="fa-solid fa-cloud-arrow-up"></i> {{ __('رفع فيديو') }}</span>
         </a>
 
         <a href="{{ route('teacher.educational_contents.create') }}" class="studio-card upload-pdf">
@@ -71,11 +81,11 @@
                 <i class="fa-solid fa-file-pdf"></i>
             </div>
             <div class="studio-info">
-                <span class="studio-tag" style="background: #fee2e2; color: #b91c1c;">دوسيات وملازم</span>
-                <h4>إضافة دوسية أو PDF</h4>
-                <p>نشر كراسات الشرح، التلاخيص الوزارية، وأوراق العمل للطلاب</p>
+                <span class="studio-tag" style="background: #fee2e2; color: #b91c1c;">{{ __('دوسيات وملازم') }}</span>
+                <h4>{{ __('إضافة دوسية أو PDF') }}</h4>
+                <p>{{ __('نشر كراسات الشرح، التلاخيص الوزارية، وأوراق العمل للطلاب') }}</p>
             </div>
-            <span class="studio-badge"><i class="fa-solid fa-file-arrow-up"></i> رفع ملخص</span>
+            <span class="studio-badge"><i class="fa-solid fa-file-arrow-up"></i> {{ __('رفع ملخص') }}</span>
         </a>
 
         <a href="{{ route('teacher.access.index') }}" class="studio-card manage-access">
@@ -83,11 +93,11 @@
                 <i class="fa-solid fa-user-check"></i>
             </div>
             <div class="studio-info">
-                <span class="studio-tag" style="background: #d1fae5; color: #047857;">تحكم الطلاب [✓]</span>
-                <h4>التحكم بظهور المحتوى</h4>
-                <p>تحديد من يرى الدروس والاختبارات من الطلاب عبر خانات الاختيار</p>
+                <span class="studio-tag" style="background: #d1fae5; color: #047857;">{{ __('تحكم الطلاب [✓]') }}</span>
+                <h4>{{ __('التحكم بظهور المحتوى') }}</h4>
+                <p>{{ __('تحديد من يرى الدروس والاختبارات من الطلاب عبر خانات الاختيار') }}</p>
             </div>
-            <span class="studio-badge" style="background: #10b981;"><i class="fa-solid fa-sliders"></i> إدارة الظهور [✓]</span>
+            <span class="studio-badge" style="background: #10b981;"><i class="fa-solid fa-sliders"></i> {{ __('إدارة الظهور [✓]') }}</span>
         </a>
     </div>
     @endif
@@ -98,12 +108,12 @@
             <div class="alert-content">
                 <i class="fa-solid fa-triangle-exclamation icon"></i>
                 <div>
-                    <strong>تنبيه إداري:</strong> هذا الحساب غير مرتبط بمادة تعليمية محددة حالياً.
-                    <span class="sub-text">يمكنك إسناد مادة علمية لجميع المعلمين من خلال قسم إعدادات الإدارة.</span>
+                    <strong>{{ __('تنبيه إداري:') }}</strong> {{ __('تنبيه إداري: هذا الحساب غير مرتبط بمادة تعليمية محددة حالياً.') }}
+                    <span class="sub-text">{{ __('يمكنك إسناد مادة علمية لجميع المعلمين من خلال قسم إعدادات الإدارة.') }}</span>
                 </div>
             </div>
             @if(auth()->user()->role === 'admin')
-                <a href="{{ route('admin.management.index') }}" class="btn-link-fix">الانتقال للإدارة وتحديد المادة</a>
+                <a href="{{ route('admin.management.index') }}" class="btn-link-fix">{{ __('الانتقال للإدارة وتحديد المادة') }}</a>
             @endif
         </div>
     @endif
@@ -112,8 +122,8 @@
     <main class="dashboard-content">
         <div class="content-card">
             <div class="card-top-bar">
-                <h3><i class="fa-solid fa-list-check"></i> قائمة التقييمات المنشورة</h3>
-                <span class="badge-count">{{ isset($exams) ? $exams->count() : 0 }} اختبار</span>
+                <h3><i class="fa-solid fa-list-check"></i> {{ __('قائمة التقييمات المنشورة') }}</h3>
+                <span class="badge-count">{{ isset($exams) ? $exams->count() : 0 }} {{ __('اختبار') }}</span>
             </div>
 
             @if(isset($exams) && $exams->count() > 0)
@@ -122,40 +132,45 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>عنوان الاختبار</th>
-                                <th>المادة / المساق</th>
-                                <th>المدة الزمنية</th>
-                                <th>عدد الأسئلة</th>
-                                <th>تاريخ النشر</th>
-                                <th>الإجراءات</th>
+                                <th>{{ __('عنوان الاختبار') }}</th>
+                                <th>{{ __('المادة / المساق') }}</th>
+                                <th>{{ __('المدة الزمنية') }}</th>
+                                <th>{{ __('عدد الأسئلة') }}</th>
+                                <th>{{ __('تاريخ النشر') }}</th>
+                                <th>{{ __('الإجراءات') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($exams as $exam)
+                                @php
+                                    $examSubName = (app()->getLocale() === 'en' && !empty($exam->subject?->name_en)) 
+                                        ? $exam->subject->name_en 
+                                        : ($exam->subject?->name_ar ?? ($exam->subject?->name ?? __('عام')));
+                                @endphp
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td><strong>{{ $exam->title }}</strong></td>
                                     <td>
                                         <span class="subject-tag">
                                             {{ $exam->subject?->icon ?? auth()->user()->subject?->icon ?? '📚' }}
-                                            {{ $exam->subject?->name_ar ?? $exam->subject?->name ?? auth()->user()->subject?->name_ar ?? auth()->user()->subject?->name ?? 'عام' }}
+                                            {{ $examSubName }}
                                         </span>
                                     </td>
-                                    <td><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} دقيقة</td>
-                                    <td>{{ $exam->questions_count ?? 0 }} سؤال</td>
+                                    <td><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</td>
+                                    <td>{{ $exam->questions_count ?? 0 }} {{ __('سؤال') }}</td>
                                     <td>{{ $exam->created_at ? $exam->created_at->format('Y-m-d') : '-' }}</td>
                                     <td>
                                         <div class="actions-group">
                                             @if(auth()->user()->role === 'teacher')
-                                                <a href="{{ route('teacher.access.index') }}?type=exam&id={{ $exam->id }}" class="btn-action access" style="background: #ecfdf5; color: #059669;" title="تحديد ظهور هذا الاختبار للطلاب عبر اختيار صح [✓]">
+                                                <a href="{{ route('teacher.access.index') }}?type=exam&id={{ $exam->id }}" class="btn-action access" style="background: #ecfdf5; color: #059669;" title="{{ __('تحديد ظهور هذا الاختبار للطلاب عبر اختيار صح [✓]') }}">
                                                     <i class="fa-solid fa-user-check"></i>
                                                 </a>
                                             @endif
                                             <!-- روابط الإجراءات الديناميكية بحسب الدور (معلم أو مدير) -->
-                                            <a href="{{ route(auth()->user()->role . '.exams.submissions', $exam->id) }}" class="btn-action view" title="إجابات الطلاب">
+                                            <a href="{{ route(auth()->user()->role . '.exams.submissions', $exam->id) }}" class="btn-action view" title="{{ __('إجابات الطلاب') }}">
                                                 <i class="fa-solid fa-users"></i>
                                             </a>
-                                            <a href="{{ route(auth()->user()->role . '.exams.edit', $exam->id) }}" class="btn-action edit" title="تعديل الاختبار">
+                                            <a href="{{ route(auth()->user()->role . '.exams.edit', $exam->id) }}" class="btn-action edit" title="{{ __('تعديل الاختبار') }}">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
 
@@ -163,7 +178,7 @@
                                             <form id="delete-form-{{ $exam->id }}" action="{{ route(auth()->user()->role . '.exams.destroy', $exam->id) }}" method="POST" style="display: inline;">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" class="btn-action delete" onclick="confirmDelete({{ $exam->id }})" title="حذف الاختبار">
+                                                <button type="button" class="btn-action delete" onclick="confirmDelete({{ $exam->id }})" title="{{ __('حذف الاختبار') }}">
                                                     <i class="fa-solid fa-trash-can"></i>
                                                 </button>
                                             </form>
@@ -177,10 +192,10 @@
             @else
                 <div class="empty-dashboard-state">
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-                    <h3>لا توجد اختبارات منشورة حتى الآن</h3>
-                    <p>يمكنك البدء بإنشاء أول اختبار للطلاب من خلال الضغط على زر "إعداد اختبار جديد".</p>
+                    <h3>{{ __('لا توجد اختبارات منشورة حتى الآن') }}</h3>
+                    <p>{{ __('يمكنك البدء بإنشاء أول اختبار للطلاب من خلال الضغط على زر "إعداد اختبار جديد".') }}</p>
                     <a href="{{ route(auth()->user()->role . '.exams.create') }}" class="btn-secondary-create">
-                        <i class="fa-solid fa-plus"></i> إنشاء اختبار الآن
+                        <i class="fa-solid fa-plus"></i> {{ __('إنشاء اختبار الآن') }}
                     </a>
                 </div>
             @endif
@@ -193,14 +208,14 @@
 <script>
 function confirmDelete(id) {
     Swal.fire({
-        title: 'هل أنت تأكد من رغبتك في حذف هذا الاختبار؟',
-        text: "سيتم حذف جميع الأسئلة والتسليمات المرتبطة به نهائياً!",
+        title: @json(__('هل أنت تأكد من رغبتك في حذف هذا الاختبار؟')),
+        text: @json(__('سيتم حذف جميع الأسئلة والتسليمات المرتبطة به نهائياً!')),
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
         cancelButtonColor: '#64748b',
-        confirmButtonText: 'نعم، قم بالحذف',
-        cancelButtonText: 'إلغاء',
+        confirmButtonText: @json(__('نعم، قم بالحذف')),
+        cancelButtonText: @json(__('إلغاء')),
         reverseButtons: true,
         customClass: {
             popup: 'swal2-custom-popup'
@@ -216,7 +231,7 @@ function confirmDelete(id) {
 @if(session('success'))
     Swal.fire({
         icon: 'success',
-        title: 'تم بنجاح!',
+        title: @json(__('تم بنجاح!')),
         text: "{{ session('success') }}",
         timer: 3000,
         showConfirmButton: false,

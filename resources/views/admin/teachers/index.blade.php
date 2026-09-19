@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('قائمة المعلمين') . ' | ' . \App\Models\Setting::get('site_name', __('منارة التوجيهي')))
+@section('title', __('قائمة المعلمين') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
 <div class="teachers-dashboard-clean">
@@ -110,12 +110,13 @@
                 <tbody id="teachersTableBody">
                     @forelse($teachers as $teacher)
                     @php
-                        $subjectTitle = $teacher->subject->name_ar ?? ($teacher->subject_name ?? __('إشراف عام'));
+                        $subjectTitle = (app()->getLocale() === 'en' && !empty($teacher->subject?->name_en)) ? $teacher->subject->name_en : ($teacher->subject?->name_ar ?? ($teacher->subject_name ?? __('إشراف عام')));
                         $hasSubject = !empty($teacher->subject_id);
+                        $teacherDispName = (app()->getLocale() === 'en' && !empty($teacher->name_en)) ? $teacher->name_en : $teacher->name;
                     @endphp
                     <tr id="row_teacher_{{ $teacher->id }}"
                         class="teacher-row"
-                        data-name="{{ mb_strtolower($teacher->name) }}"
+                        data-name="{{ mb_strtolower($teacher->name . ' ' . ($teacher->name_en ?? '')) }}"
                         data-email="{{ strtolower($teacher->email) }}"
                         data-subject="{{ mb_strtolower($subjectTitle) }}"
                         data-has-subject="{{ $hasSubject ? '1' : '0' }}">
@@ -127,15 +128,15 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 @if(!empty($teacher->photo))
-                                    <img src="{{ asset('storage/' . $teacher->photo) }}" alt="{{ $teacher->name }}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <img src="{{ asset('storage/' . $teacher->photo) }}" alt="{{ $teacherDispName }}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
                                 @else
                                     <div style="width: 34px; height: 34px; border-radius: 50%; background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; display: grid; place-items: center; font-size: 0.8rem; font-weight: 800; flex-shrink: 0;">
-                                        {{ mb_substr($teacher->name, 0, 1) }}
+                                        {{ mb_substr($teacherDispName, 0, 1) }}
                                     </div>
                                 @endif
                                 <div style="display: flex; flex-direction: column;">
                                     <a href="{{ route('admin.teachers.show', $teacher->id) }}" style="color: #0f172a; font-weight: 700; text-decoration: none; font-size: 0.88rem;">
-                                        {{ $teacher->name }}
+                                        {{ $teacherDispName }}
                                     </a>
                                     @if(!empty($teacher->phone))
                                         <span style="font-size: 0.72rem; color: #64748b; font-family: monospace;">{{ $teacher->phone }}</span>
@@ -148,7 +149,7 @@
                             @if($hasSubject)
                                 <span class="status-pill status-info">
                                     <span class="dot"></span>
-                                    {{ $subjectTitle }}
+                                    {{ __($subjectTitle) }}
                                 </span>
                             @else
                                 <span class="status-pill status-pending">
