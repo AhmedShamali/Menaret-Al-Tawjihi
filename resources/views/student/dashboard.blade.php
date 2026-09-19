@@ -17,10 +17,7 @@
                     <span class="pulse-dot"></span>
                     <span>{{ __('الفصل الدراسي الحالي') }}</span>
                 </span>
-                <span class="ed-badge-item sup">
-                    <i class="fa-solid fa-user-tie"></i>
-                    <span>{{ __('المشرف العام: أ. أحمد حسين شمالي') }}</span>
-                </span>
+
             </div>
 
             <h1 class="ed-welcome-title">

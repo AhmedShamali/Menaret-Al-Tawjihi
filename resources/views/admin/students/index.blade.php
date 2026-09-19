@@ -13,7 +13,7 @@
                 <span class="count-pill" id="visibleStudentsCount">{{ count($students) }}</span>
             </h1>
             <p class="page-desc-text">
-                {{ __('إدارة حسابات الطلبة، تفعيل الاشتراكات، وتخصيص المنح لدورة :session (:academic).', ['session' => \App\Models\Setting::tawjihiSession(), 'academic' => \App\Models\Setting::academicYear()]) }}
+                {{ __('إدارة حسابات الطلبة، تفعيل الاشتراكات، وتخصيص المنح الأكاديمية.') }}
             </p>
         </div>
 

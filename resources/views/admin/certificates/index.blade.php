@@ -25,14 +25,10 @@
             <h1 class="registry-main-title">
                 <span class="royal-crest-icon"><i class="fa-solid fa-award"></i></span>
                 <span>{{ __('سجل اعتماد وتوثيق شهادات الثانوية العامة (التوجيهي)') }}</span>
-                <span class="session-year-stamp">{{ __('دورة :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}</span>
             </h1>
 
             <p class="registry-sub-title">
-                {{ __('العام الأكاديمي: :academic • السجل المركزي المعتمد لرصد المعدلات الوزارية النهائية، تدقيق كشوف الدرجات، وإصدار وثائق التخرج الرسمية الموثقة برقم تسلسلي ورمز الاستجابة السريع (QR Code).', [
-                    'session' => \App\Models\Setting::tawjihiSession(),
-                    'academic' => \App\Models\Setting::academicYear()
-                ]) }}
+                {{ __('السجل المركزي المعتمد لرصد المعدلات الوزارية النهائية، تدقيق كشوف الدرجات، وإصدار وثائق التخرج الرسمية الموثقة برقم تسلسلي ورمز الاستجابة السريع (QR Code).') }}
             </p>
         </div>
 
@@ -90,7 +86,7 @@
                 <div class="metric-kpi-item">
                     <span class="metric-kpi-label">{{ __('الدورة الامتحانية') }}</span>
                     <strong class="metric-kpi-val text-navy">
-                        {{ __('دورة :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}
+                        {{ __('معتمدة وزارياً') }}
                     </strong>
                 </div>
             </div>
@@ -169,7 +165,7 @@
                     <i class="fa-solid fa-book-bookmark text-primary"></i>
                     <span>{{ __('دفتر السجل العام وقيد الدرجات والشهادات') }}</span>
                 </h2>
-                <p>{{ __('رصد وتدقيق المعدلات الوزارية الرسمية وحالات اعتماد وثائق التخرج لدورة عام :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}</p>
+                <p>{{ __('رصد وتدقيق المعدلات الوزارية الرسمية وحالات اعتماد وثائق التخرج.') }}</p>
             </div>
 
             <div class="ledger-tools-cluster">
@@ -378,7 +374,7 @@
         <div class="ledger-footer-seal-strip">
             <div class="seal-note">
                 <i class="fa-solid fa-stamp text-amber"></i>
-                <span>{{ __('ختم السجل العام الرسمي • كافة الدرجات والوثائق الصادرة عن هذا السجل معتمدة بموجب بروتوكول الامتحانات العامة لدورة عام :session م، وموثقة برمز استجابة سريع QR مشفر وخاضعة للتدقيق الوزاري المباشر.', ['session' => \App\Models\Setting::tawjihiSession()]) }}</span>
+                <span>{{ __('ختم السجل العام الرسمي • كافة الدرجات والوثائق الصادرة عن هذا السجل معتمدة بموجب بروتوكول الامتحانات العامة، وموثقة برمز استجابة سريع QR مشفر وخاضعة للتدقيق الوزاري المباشر.') }}</span>
             </div>
 
             @if($students->hasPages())

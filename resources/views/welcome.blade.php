@@ -876,7 +876,7 @@
                 <span>{{ __('بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ') }}</span>
             </div>
             <div class="top-info-left">
-                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }})</span>
+                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد لطلبة الثانوية العامة 🇵🇸') }}</span>
             </div>
         </div>
     </div>
@@ -956,7 +956,7 @@
         <div class="notice-ticker-inner">
             <span class="notice-tag"><i class="fa-solid fa-bullhorn"></i> {{ __('إعلان هام') }}</span>
             <span class="notice-content">
-                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين لدورة :session (:year). تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات بإشراف نخبة من المعلمين المعتمدين.', ['session' => \App\Models\Setting::tawjihiSession(), 'year' => \App\Models\Setting::academicYear()]) }}
+                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين. تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات الوزارية بإشراف نخبة من المعلمين المعتمدين.') }}
             </span>
         </div>
     </div>

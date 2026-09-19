@@ -13,11 +13,6 @@
                 <span>{{ __('الثانوية العامة - فلسطين') }}</span>
                 <span class="badge-dot">•</span>
                 <span>{{ __('المنهاج الفلسطيني المعتمد') }}</span>
-                <span class="badge-dot">•</span>
-                <span>{{ __('دورة :session م (:academic)', [
-                    'session' => \App\Models\Setting::tawjihiSession(),
-                    'academic' => \App\Models\Setting::academicYear()
-                ]) }}</span>
             </div>
 
             <h1 class="ed-catalog-title">
@@ -114,7 +109,7 @@
                             </h3>
                             <span class="card-sub-curriculum">
                                 <i class="fa-solid fa-certificate text-amber"></i>
-                                {{ __('المنهاج الفلسطيني المعتمد - دورة :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}
+                                {{ __('المنهاج الفلسطيني المعتمد') }}
                             </span>
                         </div>
                     </div>
@@ -181,7 +176,7 @@
                 <h3>{{ __('سجل المقررات والمباحث الدراسية المعتمدة') }}</h3>
             </div>
             <span class="table-card-sub">
-                {{ __('المنهاج الفلسطيني المعتمد - دورة :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}
+                {{ __('المنهاج الفلسطيني المعتمد') }}
             </span>
         </div>
 

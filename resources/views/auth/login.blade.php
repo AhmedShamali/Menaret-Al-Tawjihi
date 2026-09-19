@@ -590,7 +590,7 @@
             <div class="top-bar-meta">
                 <span><i class="fa-regular fa-calendar-check" style="color: var(--ed-accent-gold);"></i> {{ date('Y/m/d') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }}</span>
                 <span>•</span>
-                <span>{{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }})</span>
+                <span>{{ __('المنهاج الفلسطيني المعتمد') }}</span>
             </div>
             <div class="top-bar-actions">
                 @php $currentLocale = app()->getLocale(); @endphp
@@ -620,8 +620,8 @@
                 </div>
             </a>
 
-            <div class="supervisor-pill">
-                <span>{{ __('المشرف العام على المنظومة:') }}</span> <strong>{{ __('أ. أحمد حسين شمالي') }}</strong>
+            <div class="brand-titles">
+                <span style="font-weight: 700; color: var(--ed-primary); font-size: 0.85rem;">{{ __('بوابة تسجيل الدخول الأكاديمي الموحد') }}</span>
             </div>
         </div>
     </header>
@@ -636,7 +636,7 @@
                     <div class="panel-brand-box">
                         <span class="panel-session-badge">
                             <i class="fa-solid fa-award" style="color: var(--ed-accent-gold);"></i>
-                            {{ __('العام الدراسي:') }} {{ \App\Models\Setting::academicYear() }} • {{ __('دورة') }} {{ \App\Models\Setting::tawjihiSession() }}
+                            {{ __('المنهاج الفلسطيني الوزاري المعتمد') }}
                         </span>
                         <h3 class="panel-title">
                             <i class="fa-solid fa-building-columns" style="color: var(--ed-primary);"></i>
@@ -762,7 +762,7 @@
                 <div class="new-student-box" id="studentRegisterFooter">
                     <span>{{ __('ليس لديك حساب بعد؟') }}</span>
                     <a href="{{ route('students.create') }}" class="btn-to-register">
-                        {{ __('إنشاء حساب طالب جديد لدورة :session ←', ['session' => \App\Models\Setting::tawjihiSession()]) }}
+                        {{ __('إنشاء حساب طالب جديد ←') }}
                     </a>
                 </div>
             </div>

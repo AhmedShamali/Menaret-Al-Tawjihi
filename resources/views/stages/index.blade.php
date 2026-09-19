@@ -9,7 +9,7 @@
     <div style="text-align: center; margin-bottom: 40px;">
         <div style="display: inline-flex; align-items: center; gap: 8px; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 6px 16px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; margin-bottom: 14px;">
             <span>🇵🇸</span>
-            <span>{{ __('المنهاج الفلسطيني الرسمي المعتمد') }} ({{ \App\Models\Setting::academicYear() }})</span>
+            <span>{{ __('المنهاج الفلسطيني الرسمي المعتمد') }}</span>
         </div>
         <h1 style="font-size: 2.3rem; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.5px;">{{ __('فروع الثانوية العامة (التوجيهي)') }}</h1>
         <p style="color: #64748b; font-size: 1.05rem; max-width: 650px; margin: 0 auto; line-height: 1.7;">{{ __('اختر مسارك الدراسي للوصول إلى شروحات المباحث المقررة، أوزان العلامات الوزارية المعتمدة، وبنوك الأسئلة والدروس التفاعلية.') }}</p>
