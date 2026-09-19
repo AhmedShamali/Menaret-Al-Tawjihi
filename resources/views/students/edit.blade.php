@@ -8,13 +8,13 @@
     <!-- Header & Breadcrumb -->
     <div class="page-header">
         <nav class="breadcrumb-nav">
-            <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i> إدارة الطلاب</a>
+            <a href="{{ route('admin.students.index') }}"><i class="fas fa-users"></i>{{ __('إدارة الطلاب') }}</a>
             <span class="sep">/</span>
-            <span class="current">تعديل البيانات</span>
+            <span class="current">{{ __('تعديل البيانات') }}</span>
         </nav>
         <div class="header-title-box">
             <h1>✏️ تعديل بيانات الطالب</h1>
-            <p>أنت تقوم الآن بتحديث ملف: <mark>{{ $student->name_ar }}</mark></p>
+            <p>{{ __('أنت تقوم الآن بتحديث ملف:') }}<mark>{{ $student->name_ar }}</mark></p>
         </div>
     </div>
 
@@ -31,24 +31,24 @@
                 <div class="form-card">
                     <div class="card-header">
                         <div class="card-icon"><i class="fas fa-user"></i></div>
-                        <h3>البيانات الشخصية</h3>
+                        <h3>{{ __('البيانات الشخصية') }}</h3>
                     </div>
                     <div class="card-body grid-2">
                         <div class="f-group">
-                            <label class="f-label">الاسم الرباعي (عربي) <span class="req">*</span></label>
-                            <input type="text" name="name_ar" value="{{ $student->name_ar }}" class="f-input" required placeholder="أدخل الاسم بالعربية">
+                            <label class="f-label">{{ __('الاسم الرباعي (عربي)') }}<span class="req">*</span></label>
+                            <input type="text" name="name_ar" value="{{ $student->name_ar }}" class="f-input" required placeholder="{{ __('أدخل الاسم بالعربية') }}">
                         </div>
                         <div class="f-group">
                             <label class="f-label">Full Name (English) <span class="req">*</span></label>
                             <input type="text" name="name_en" value="{{ $student->name_en }}" class="f-input" required placeholder="Enter full English name">
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الهوية <span class="req">*</span></label>
-                            <input type="text" name="nid" value="{{ $student->nid }}" maxlength="9" class="f-input" required placeholder="9 أرقام">
+                            <label class="f-label">{{ __('رقم الهوية') }}<span class="req">*</span></label>
+                            <input type="text" name="nid" value="{{ $student->nid }}" maxlength="9" class="f-input" required placeholder="{{ __('9 أرقام') }}">
                         </div>
                         <div class="f-group">
-                            <label class="f-label">العمر <span class="req">*</span></label>
-                            <input type="number" name="age" value="{{ $student->age }}" class="f-input" required placeholder="مثال: 18">
+                            <label class="f-label">{{ __('العمر') }}<span class="req">*</span></label>
+                            <input type="number" name="age" value="{{ $student->age }}" class="f-input" required placeholder="{{ __('مثال: 18') }}">
                         </div>
                         <div class="f-group">
                             <label class="f-label">المحافظة / المدينة</label>
@@ -62,8 +62,8 @@
                             </select>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">اسم المدرسة الثانوية</label>
-                            <input type="text" name="school_name" value="{{ $student->school_name }}" class="f-input" placeholder="اسم المدرسة">
+                            <label class="f-label">{{ __('اسم المدرسة الثانوية') }}</label>
+                            <input type="text" name="school_name" value="{{ $student->school_name }}" class="f-input" placeholder="{{ __('اسم المدرسة') }}">
                         </div>
                     </div>
                 </div>
@@ -72,27 +72,27 @@
                 <div class="form-card">
                     <div class="card-header">
                         <div class="card-icon"><i class="fas fa-envelope-open-text"></i></div>
-                        <h3>التواصل والحساب</h3>
+                        <h3>{{ __('التواصل والحساب') }}</h3>
                     </div>
                     <div class="card-body grid-2">
                         <div class="f-group full-width">
-                            <label class="f-label">البريد الإلكتروني <span class="req">*</span></label>
+                            <label class="f-label">{{ __('البريد الإلكتروني') }}<span class="req">*</span></label>
                             <input type="email" name="email" value="{{ $student->email }}" class="f-input" required placeholder="example@domain.com">
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الجوال <span class="req">*</span></label>
+                            <label class="f-label">{{ __('رقم الجوال') }}<span class="req">*</span></label>
                             <input type="tel" name="phone" value="{{ $student->phone }}" class="f-input" required placeholder="05XXXXXXXX">
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الواتساب <span class="req">*</span></label>
+                            <label class="f-label">{{ __('رقم الواتساب') }}<span class="req">*</span></label>
                             <input type="tel" name="whatsapp" value="{{ $student->whatsapp }}" class="f-input" required placeholder="05XXXXXXXX">
                         </div>
                         <div class="f-group full-width">
-                            <label class="f-label">رقم جوال ولي الأمر (للمتابعة الأكاديمية)</label>
+                            <label class="f-label">{{ __('رقم جوال ولي الأمر (للمتابعة الأكاديمية)') }}</label>
                             <input type="tel" name="guardian_phone" value="{{ $student->guardian_phone }}" class="f-input" placeholder="05XXXXXXXX">
                         </div>
                         <div class="f-group full-width">
-                            <label class="f-label">كلمة المرور الجديدة <span class="opt">(اتركها فارغة إذا لم ترد التغيير)</span></label>
+                            <label class="f-label">{{ __('كلمة المرور الجديدة') }}<span class="opt">{{ __('(اتركها فارغة إذا لم ترد التغيير)') }}</span></label>
                             <input type="password" name="password" class="f-input" placeholder="••••••••">
                         </div>
                     </div>
@@ -105,18 +105,16 @@
                             <div class="card-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
                                 <i class="fas fa-book-open"></i>
                             </div>
-                            <h3>المواد الدراسية المشترك بها الطالب</h3>
+                            <h3>{{ __('المواد الدراسية المشترك بها الطالب') }}</h3>
                         </div>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" onclick="toggleEditSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">تحديد الكل</button>
-                            <button type="button" onclick="toggleEditSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">إلغاء التحديد</button>
+                            <button type="button" onclick="toggleEditSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">{{ __('تحديد الكل') }}</button>
+                            <button type="button" onclick="toggleEditSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
                         </div>
                     </div>
                     <div class="card-body">
                         <input type="hidden" name="manage_subjects" value="1">
-                        <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 14px;">
-                            حدد المواد المعتمدة لهذا الطالب في حسابه، سيتم تحديث وتفعيل اشتراكاته فور حفظ البيانات:
-                        </p>
+                        <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 14px;">{{ __('حدد المواد المعتمدة لهذا الطالب في حسابه، سيتم تحديث وتفعيل اشتراكاته فور حفظ البيانات:') }}</p>
                         <div id="editSubjectsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px;">
                             @php
                                 $studentStage = $stages->firstWhere('id', $student->stage_id) ?? $stages->first();
@@ -139,9 +137,7 @@
                                     </label>
                                 @endforeach
                             @else
-                                <div style="color: #94a3b8; font-size: 0.85rem; padding: 15px; text-align: center; grid-column: 1/-1;">
-                                    لا توجد مواد متاحة حالياً لهذه المرحلة.
-                                </div>
+                                <div style="color: #94a3b8; font-size: 0.85rem; padding: 15px; text-align: center; grid-column: 1/-1;">{{ __('لا توجد مواد متاحة حالياً لهذه المرحلة.') }}</div>
                             @endif
                         </div>
                     </div>
@@ -156,7 +152,7 @@
                 <div class="form-card">
                     <div class="card-header">
                         <div class="card-icon"><i class="fas fa-graduation-cap"></i></div>
-                        <h3>المسار الدراسي</h3>
+                        <h3>{{ __('المسار الدراسي') }}</h3>
                     </div>
                     <div class="card-body">
                         <div class="f-group">
@@ -170,10 +166,10 @@
                             </select>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">الجنس <span class="req">*</span></label>
+                            <label class="f-label">{{ __('الجنس') }}<span class="req">*</span></label>
                             <select name="gender" class="f-input">
-                                <option value="ذكر" {{ $student->gender == 'ذكر' ? 'selected' : '' }}>ذكر</option>
-                                <option value="أنثى" {{ $student->gender == 'أنثى' ? 'selected' : '' }}>أنثى</option>
+                                <option value="ذكر" {{ $student->gender == 'ذكر' ? 'selected' : '' }}>{{ __('ذكر') }}</option>
+                                <option value="أنثى" {{ $student->gender == 'أنثى' ? 'selected' : '' }}>{{ __('أنثى') }}</option>
                             </select>
                         </div>
                     </div>
@@ -183,13 +179,13 @@
                 <div class="form-card">
                     <div class="card-header">
                         <div class="card-icon"><i class="fas fa-id-card"></i></div>
-                        <h3>الصور والوثائق</h3>
+                        <h3>{{ __('الصور والوثائق') }}</h3>
                     </div>
                     <div class="card-body">
 
                         <!-- الصورة الشخصية -->
                         <div class="media-upload-item">
-                            <label class="f-label">الصورة الشخصية للطالب</label>
+                            <label class="f-label">{{ __('الصورة الشخصية للطالب') }}</label>
                             <div class="preview-box">
                                 <img id="photo-preview" src="{{ $student->photo_url }}" alt="الشخصية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
                             </div>
@@ -210,7 +206,7 @@
                                 @else
                                     <div id="id-photo-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.8rem; gap: 6px;">
                                         <i class="fas fa-id-card" style="font-size: 2.2rem; color: #cbd5e1;"></i>
-                                        <span>لم تُرفع هوية بعد</span>
+                                        <span>{{ __('لم تُرفع هوية بعد') }}</span>
                                     </div>
                                     <img id="id-photo-preview" src="" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; display: none;">
                                 @endif
@@ -218,8 +214,7 @@
 
                             @if($student->id_photo)
                                 <a href="{{ asset('storage/'.$student->id_photo) }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-top: 8px; background: #e0f2fe; color: #0369a1; border-radius: 10px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
-                                    <i class="fas fa-expand"></i> معاينة الوثيقة بالحجم الكامل
-                                </a>
+                                    <i class="fas fa-expand"></i>{{ __('معاينة الوثيقة بالحجم الكامل') }}</a>
                             @endif
 
                             <input type="file" name="id_photo" id="i_file" class="file-input-hidden" accept="image/*,application/pdf" onchange="previewImage(this, 'id-photo-preview')">
@@ -236,7 +231,7 @@
                 <div class="form-card" style="border: 1.5px solid #ddd6fe; background: #faf5ff;">
                     <div class="card-header" style="background: #f3e8ff;">
                         <div class="card-icon" style="background: #7c3aed; color: white;"><i class="fas fa-tags"></i></div>
-                        <h3 style="color: #6b21a8;">المنح والخصومات الأكاديمية (إدارة)</h3>
+                        <h3 style="color: #6b21a8;">{{ __('المنح والخصومات الأكاديمية (إدارة)') }}</h3>
                     </div>
                     <div class="card-body">
                         <div class="f-group">
@@ -246,10 +241,10 @@
                         </div>
                         <div class="f-group" style="margin-top: 12px;">
                             <label class="f-label">أو خصم بمبلغ نقدي ثابت (₪)</label>
-                            <input type="number" name="custom_discount_fixed" value="{{ (float)($student->custom_discount_fixed ?? 0) }}" min="0" step="any" class="f-input" placeholder="مثال: 50 أو 100">
+                            <input type="number" name="custom_discount_fixed" value="{{ (float)($student->custom_discount_fixed ?? 0) }}" min="0" step="any" class="f-input" placeholder="{{ __('مثال: 50 أو 100') }}">
                         </div>
                         <div class="f-group" style="margin-top: 12px;">
-                            <label class="f-label">سبب الخصم أو ملاحظات المنحة</label>
+                            <label class="f-label">{{ __('سبب الخصم أو ملاحظات المنحة') }}</label>
                             <input type="text" name="discount_notes" value="{{ $student->discount_notes }}" class="f-input" placeholder="مثال: منحة تفوق دراسي / رعاية خاصة">
                         </div>
                     </div>
@@ -262,7 +257,7 @@
                         <span id="btnText">حفظ التغييرات ✅</span>
                         <span id="btnSpinner" class="spinner" style="display:none;"></span>
                     </button>
-                    <a href="{{ route('admin.students.index') }}" class="btn-cancel">إلغاء</a>
+                    <a href="{{ route('admin.students.index') }}" class="btn-cancel">{{ __('إلغاء') }}</a>
                 </div>
 
             </div>

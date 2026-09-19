@@ -14,7 +14,7 @@
         <div class="status-side">
             <div class="live-badge">
                 <span class="pulse-dot"></span>
-                <span class="badge-text">متصل الآن</span>
+                <span class="badge-text">{{ __('متصل الآن') }}</span>
             </div>
         </div>
     </div>
@@ -24,10 +24,10 @@
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th>المستخدم</th>
-                    <th>العملية</th>
-                    <th class="hide-on-mobile">الوقت</th>
-                    <th style="text-align: center;">الجهاز</th>
+                    <th>{{ __('المستخدم') }}</th>
+                    <th>{{ __('العملية') }}</th>
+                    <th class="hide-on-mobile">{{ __('الوقت') }}</th>
+                    <th style="text-align: center;">{{ __('الجهاز') }}</th>
                 </tr>
             </thead>
             <tbody>

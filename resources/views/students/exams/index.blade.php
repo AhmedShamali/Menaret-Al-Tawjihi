@@ -9,10 +9,10 @@
         <table style="width: 100%; border-collapse: collapse; text-align: right;">
             <thead>
                 <tr style="background: var(--primary); color: white;">
-                    <th style="padding: 20px;">الطالب</th>
-                    <th style="padding: 20px;">المرحلة</th>
-                    <th style="padding: 20px;">الحالة</th>
-                    <th style="padding: 20px; text-align: center;">إجراءات</th>
+                    <th style="padding: 20px;">{{ __('الطالب') }}</th>
+                    <th style="padding: 20px;">{{ __('المرحلة') }}</th>
+                    <th style="padding: 20px;">{{ __('الحالة') }}</th>
+                    <th style="padding: 20px; text-align: center;">{{ __('إجراءات') }}</th>
                 </tr>
             </thead>
             <tbody>

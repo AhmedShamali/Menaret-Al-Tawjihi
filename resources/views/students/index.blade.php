@@ -15,14 +15,12 @@
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 </div>
                 <div>
-                    <h1 class="page-title">سجل الطلاب <span class="count-pill">{{ count($students) }}</span></h1>
-                    <p class="page-subtitle">إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية</p>
+                    <h1 class="page-title">{{ __('سجل الطلاب') }}<span class="count-pill">{{ count($students) }}</span></h1>
+                    <p class="page-subtitle">{{ __('إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية') }}</p>
                 </div>
             </div>
             <a href="{{ route('admin.students.create') }}" class="btn-primary-gradient">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                إضافة طالب جديد
-            </a>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>{{ __('إضافة طالب جديد') }}</a>
         </div>
     </div>
 
@@ -32,11 +30,11 @@
             <table class="modern-table">
                 <thead>
                     <tr>
-                        <th>المعلومات الشخصية</th>
-                        <th>المرحلة الدراسية</th>
-                        <th>الهوية الوطنية</th>
-                        <th>حالة الحساب</th>
-                        <th class="text-center">التحكم</th>
+                        <th>{{ __('المعلومات الشخصية') }}</th>
+                        <th>{{ __('المرحلة الدراسية') }}</th>
+                        <th>{{ __('الهوية الوطنية') }}</th>
+                        <th>{{ __('حالة الحساب') }}</th>
+                        <th class="text-center">{{ __('التحكم') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,7 +73,7 @@
                             <div class="action-buttons">
                                 <button onclick="performToggle({{ $student->id }})"
                                         class="btn-icon {{ $student->status == 'active' ? 'btn-active' : 'btn-inactive' }}"
-                                        title="تغيير الحالة">
+                                        title="{{ __('تغيير الحالة') }}">
                                     @if($student->status == 'active')
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                                     @else
@@ -84,11 +82,11 @@
                                 </button>
 
                                 <a href="{{ route('admin.students.edit', $student->id) }}"
-                                   class="btn-icon btn-edit" title="تعديل">
+                                   class="btn-icon btn-edit" title="{{ __('تعديل') }}">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                                 </a>
 
-                                <button onclick="deleteStudent({{ $student->id }})" class="btn-icon btn-delete" title="حذف">
+                                <button onclick="deleteStudent({{ $student->id }})" class="btn-icon btn-delete" title="{{ __('حذف') }}">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>
                             </div>

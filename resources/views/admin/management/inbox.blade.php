@@ -15,7 +15,7 @@
                 </div>
                 <div class="search-box">
                     <i class="search-icon">🔍</i>
-                    <input type="text" id="search_student" onkeyup="filterStudents()" placeholder="ابحث عن اسم الطالب أو البريد...">
+                    <input type="text" id="search_student" onkeyup="filterStudents()" placeholder="{{ __('ابحث عن اسم الطالب أو البريد...') }}">
                 </div>
             </div>
 
@@ -45,10 +45,10 @@
                 @empty
                 <div class="empty-list">
                     <img src="https://cdn-icons-png.flaticon.com/512/5058/5058436.png" width="50" style="opacity: 0.5">
-                    <p>لا يوجد طلاب مسجلين</p>
+                    <p>{{ __('لا يوجد طلاب مسجلين') }}</p>
                 </div>
                 @endforelse
-                <div id="no_results" class="empty-list" style="display: none;">لا يوجد نتائج للبحث</div>
+                <div id="no_results" class="empty-list" style="display: none;">{{ __('لا يوجد نتائج للبحث') }}</div>
             </div>
         </div>
 
@@ -59,8 +59,8 @@
                 <button class="back-btn" onclick="toggleMobileView('sidebar')">🔙</button>
                 <div class="avatar header-avatar" id="active_avatar">ط</div>
                 <div class="active-user-details">
-                    <h4 id="active_user_name">اختر طالباً</h4>
-                    <span class="status-badge"><span class="dot"></span> جاري المراسلة الآن</span>
+                    <h4 id="active_user_name">{{ __('اختر طالباً') }}</h4>
+                    <span class="status-badge"><span class="dot"></span>{{ __('جاري المراسلة الآن') }}</span>
                 </div>
             </div>
 
@@ -68,8 +68,8 @@
             <div id="chat_messages" class="chat-messages">
                 <div class="placeholder-state">
                     <div class="welcome-art">💬</div>
-                    <h3>مرحباً بك في مركز المراسلات</h3>
-                    <p>اختر طالباً من القائمة الجانبية لبدء المحادثة الفورية</p>
+                    <h3>{{ __('مرحباً بك في مركز المراسلات') }}</h3>
+                    <p>{{ __('اختر طالباً من القائمة الجانبية لبدء المحادثة الفورية') }}</p>
                 </div>
             </div>
 
@@ -77,9 +77,9 @@
             <div id="input_area" class="input-area" style="display: none;">
                 <form id="chatForm" onsubmit="event.preventDefault(); sendReply();" class="modern-form">
                     <div class="input-group">
-                        <input type="text" id="msg_input" placeholder="اكتب ردك الأكاديمي هنا..." autocomplete="off" required>
+                        <input type="text" id="msg_input" placeholder="{{ __('اكتب ردك الأكاديمي هنا...') }}" autocomplete="off" required>
                         <button type="submit" class="btn-send" id="btn_send">
-                            <span class="send-text">إرسال</span>
+                            <span class="send-text">{{ __('إرسال') }}</span>
                             <span class="send-icon">🚀</span>
                         </button>
                     </div>
@@ -392,7 +392,7 @@
                 lastMessagesHash = currentHash;
 
                 if(messages.length === 0) {
-                    box.innerHTML = '<div class="placeholder-state"><p>لا توجد رسائل سابقة. كن مبادراً!</p></div>';
+                    box.innerHTML = '<div class="placeholder-state"><p>{{ __('لا توجد رسائل سابقة. كن مبادراً!') }}</p></div>';
                     return;
                 }
 

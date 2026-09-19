@@ -31,7 +31,7 @@
         <form id="replyForm" class="reply-form">
             @csrf
             <input type="hidden" name="student_id" value="{{ $student->id }}">
-            <input type="text" name="message" id="reply_input" placeholder="اكتب ردك الأكاديمي هنا..." required autocomplete="off">
+            <input type="text" name="message" id="reply_input" placeholder="{{ __('اكتب ردك الأكاديمي هنا...') }}" required autocomplete="off">
             <button type="submit" class="btn-primary send-btn">
                 <span class="btn-text">إرسال الرد 🚀</span>
                 <span class="btn-icon">🚀</span>

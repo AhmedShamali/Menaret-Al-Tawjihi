@@ -11,13 +11,13 @@
             <i class="fa-solid fa-award"></i>
         </div>
 
-        <h1 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 8px;">سجل درجات الاختبار الأكاديمي</h1>
+        <h1 style="font-size: 2rem; font-weight: 900; color: #1e293b; margin-bottom: 8px;">{{ __('سجل درجات الاختبار الأكاديمي') }}</h1>
         <p style="color: #64748b; font-size: 1.05rem; font-weight: 600;">{{ $submission->exam->title ?? 'اختبار إلكتروني' }}</p>
 
         {{-- صندوق النتيجة الإجمالية --}}
         <div style="margin: 35px 0; padding: 25px 40px; background: #f8fafc; border-radius: 22px; display: inline-block; border: 1px solid #e2e8f0;">
             <div style="font-size: 3.5rem; font-weight: 900; color: #4f46e5; line-height: 1;">{{ $submission->total_earned_grade ?? 0 }}</div>
-            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-top: 8px; letter-spacing: 1px;">المجموع النهائي المحصل</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-top: 8px; letter-spacing: 1px;">{{ __('المجموع النهائي المحصل') }}</div>
         </div>
 
         {{-- تفاصيل الإجابات بدقة --}}
@@ -41,8 +41,7 @@
                 <p style="font-weight: 700; color: #1e293b; margin-bottom: 15px; font-size: 1.1rem;">{{ $ans->question->question_text ?? '' }}</p>
 
                 <div style="font-size: 0.9rem; color: #64748b; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        الإجابة المسجلة: <strong style="color: #0f172a;">{{ $ans->answer_text ?? 'تم رفع ملف مرفق لهذا السؤال' }}</strong>
+                    <div>{{ __('الإجابة المسجلة:') }}<strong style="color: #0f172a;">{{ $ans->answer_text ?? 'تم رفع ملف مرفق لهذا السؤال' }}</strong>
                     </div>
                 </div>
             </div>
@@ -51,8 +50,7 @@
 
         <div style="margin-top: 40px;">
             <a href="{{ route('student.exams.index') }}" style="background: #eef2ff; color: #4f46e5; padding: 12px 30px; border-radius: 14px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-arrow-right"></i> العودة لقائمة الاختبارات
-            </a>
+                <i class="fa-solid fa-arrow-right"></i>{{ __('العودة لقائمة الاختبارات') }}</a>
         </div>
 
     </div>

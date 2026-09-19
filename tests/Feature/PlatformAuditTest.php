@@ -50,7 +50,7 @@ class PlatformAuditTest extends TestCase
             '/login',
             '/register',
             '/tawjihi-calculator',
-            '/tawjihi-archive',
+            '/catalog',
             '/tawjihi-formulas',
             '/contact',
             '/faq',

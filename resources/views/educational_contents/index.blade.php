@@ -13,16 +13,12 @@
             </div>
             <div class="header-text-details">
                 <nav class="breadcrumb-nav">
-                    <span>لوحة التحكم</span>
+                    <span>{{ __('لوحة التحكم') }}</span>
                     <i class="fa-solid fa-chevron-left sep"></i>
-                    <span class="current">المكتبة التعليمية</span>
+                    <span class="current">{{ __('المكتبة التعليمية') }}</span>
                 </nav>
-                <h1 class="dashboard-title">
-                    المكتبة التعليمية والدروس
-                </h1>
-                <p class="dashboard-subtitle">
-                    تحكم كامل في دروس ومصادر المنصة التعليمية للطلاب.
-                </p>
+                <h1 class="dashboard-title">{{ __('المكتبة التعليمية والدروس') }}</h1>
+                <p class="dashboard-subtitle">{{ __('تحكم كامل في دروس ومصادر المنصة التعليمية للطلاب.') }}</p>
             </div>
         </div>
 
@@ -30,7 +26,7 @@
             <!-- زر الإضافة الديناميكي -->
             <a href="{{ route(auth()->user()->role . '.educational_contents.create') }}" class="btn-primary-create">
                 <i class="fa-solid fa-plus-circle"></i>
-                <span>إضافة محتوى جديد</span>
+                <span>{{ __('إضافة محتوى جديد') }}</span>
             </a>
         </div>
     </header>
@@ -39,7 +35,7 @@
     <main class="dashboard-content">
         <div class="content-card">
             <div class="card-top-bar">
-                <h3><i class="fa-solid fa-folder-tree"></i> قائمة المحتويات والدروس</h3>
+                <h3><i class="fa-solid fa-folder-tree"></i>{{ __('قائمة المحتويات والدروس') }}</h3>
                 <span class="badge-count">{{ isset($contents) ? $contents->count() : 0 }} درس / ملف</span>
             </div>
 
@@ -49,11 +45,11 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>نوع المحتوى</th>
-                                <th>عنوان الدرس</th>
+                                <th>{{ __('نوع المحتوى') }}</th>
+                                <th>{{ __('عنوان الدرس') }}</th>
                                 <th>المادة / المساق</th>
-                                <th>الترتيب</th>
-                                <th>الإجراءات</th>
+                                <th>{{ __('الترتيب') }}</th>
+                                <th>{{ __('الإجراءات') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,14 +81,14 @@
                                                 </a>
                                             @endif
                                             <!-- زر عرض المساق -->
-                                            <a href="{{ route('subject.show', $content->subject_id) }}" class="btn-action view" title="عرض المساق">
+                                            <a href="{{ route('subject.show', $content->subject_id) }}" class="btn-action view" title="{{ __('عرض المساق') }}">
                                                 <i class="fa-solid fa-eye"></i>
                                             </a>
                                             <!-- زر التعديل -->
-                                            <a href="{{ route('teacher.educational_contents.edit', $content->id) }}" class="btn-action edit" title="تعديل">                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            <a href="{{ route('teacher.educational_contents.edit', $content->id) }}" class="btn-action edit" title="{{ __('تعديل') }}">                                                <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
                                             <!-- زر الحذف التفاعلي -->
-                                            <button type="button" onclick="deleteContent({{ $content->id }})" class="btn-action delete" title="حذف">
+                                            <button type="button" onclick="deleteContent({{ $content->id }})" class="btn-action delete" title="{{ __('حذف') }}">
                                                 <i class="fa-solid fa-trash-can"></i>
                                             </button>
                                         </div>
@@ -106,11 +102,10 @@
                 <!-- الحالة الفارغة (Empty State) -->
                 <div class="empty-dashboard-state">
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
-                    <h3>لا يوجد محتوى تعليمي مضاف حتى الآن</h3>
-                    <p>يمكنك البدء بنشر أُولى الفيديوهات والملفات التعليمية لطلابك بضغطة زر.</p>
+                    <h3>{{ __('لا يوجد محتوى تعليمي مضاف حتى الآن') }}</h3>
+                    <p>{{ __('يمكنك البدء بنشر أُولى الفيديوهات والملفات التعليمية لطلابك بضغطة زر.') }}</p>
                     <a href="{{ route(auth()->user()->role . '.educational_contents.create') }}" class="btn-secondary-create">
-                        <i class="fa-solid fa-plus"></i> إضافة محتوى الآن
-                    </a>
+                        <i class="fa-solid fa-plus"></i>{{ __('إضافة محتوى الآن') }}</a>
                 </div>
             @endif
         </div>

@@ -17,8 +17,7 @@
         </div>
 
         <button onclick="openSeasonalModal()" style="background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; padding: 11px 22px; border-radius: 12px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);">
-            <i class="fa-solid fa-percent"></i> تطبيق خصم موسمي شامل
-        </button>
+            <i class="fa-solid fa-percent"></i>{{ __('تطبيق خصم موسمي شامل') }}</button>
     </div>
 
     @if(session('success'))
@@ -31,7 +30,7 @@
     <!-- كروت الإحصائيات الكلاسيكية -->
     <div class="stats-row-clean">
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
-            <span class="stat-label">إجمالي المواد الدراسية</span>
+            <span class="stat-label">{{ __('إجمالي المواد الدراسية') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-navy">{{ $pricingStats['total_subjects'] }}</span>
                 <i class="fa-solid fa-book-bookmark stat-icon text-navy"></i>
@@ -39,7 +38,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #d97706;">
-            <span class="stat-label">مواد عليها عروض مخفضة</span>
+            <span class="stat-label">{{ __('مواد عليها عروض مخفضة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-amber">{{ $pricingStats['discounted'] }}</span>
                 <i class="fa-solid fa-fire stat-icon text-amber"></i>
@@ -55,7 +54,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;">
-            <span class="stat-label">متوسط سعر المادة</span>
+            <span class="stat-label">{{ __('متوسط سعر المادة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-indigo">{{ round($pricingStats['avg_price']) }} ₪</span>
                 <i class="fa-solid fa-shekel-sign stat-icon text-indigo"></i>
@@ -67,12 +66,10 @@
     <div class="toolbar-clean">
         <div style="display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-filter" style="color: #64748b; font-size: 0.85rem;"></i>
-            <span style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">تصفية حسب الفرع:</span>
+            <span style="font-weight: 700; font-size: 0.82rem; color: #1e293b;">{{ __('تصفية حسب الفرع:') }}</span>
         </div>
         <div class="filter-pills-clean">
-            <a href="{{ route('admin.subjects.pricing') }}" class="filter-pill {{ empty($stageId) ? 'active' : '' }}">
-                جميع الفروع
-            </a>
+            <a href="{{ route('admin.subjects.pricing') }}" class="filter-pill {{ empty($stageId) ? 'active' : '' }}">{{ __('جميع الفروع') }}</a>
             @foreach($stages as $stg)
                 <a href="{{ route('admin.subjects.pricing', ['stage_id' => $stg->id]) }}" class="filter-pill {{ $stageId == $stg->id ? 'active' : '' }}">
                     {{ $stg->name ?? $stg->name_ar ?? 'المرحلة' }}
@@ -87,12 +84,12 @@
             <table class="data-table-clean">
                 <thead>
                     <tr>
-                        <th>المادة الدراسية</th>
+                        <th>{{ __('المادة الدراسية') }}</th>
                         <th style="width: 140px;">الفرع / المرحلة</th>
                         <th style="width: 130px;">السعر الأساسي (₪)</th>
                         <th style="width: 130px;">سعر العرض (₪)</th>
-                        <th style="width: 170px;">الحالة والتسعير الفعلي</th>
-                        <th style="width: 130px; text-align: center;">إجراءات التعديل</th>
+                        <th style="width: 170px;">{{ __('الحالة والتسعير الفعلي') }}</th>
+                        <th style="width: 130px; text-align: center;">{{ __('إجراءات التعديل') }}</th>
                     </tr>
                 </thead>
             <tbody>
@@ -124,7 +121,7 @@
                             @if($sub->discount_price_ils > 0)
                                 <span style="color: #ea580c;">{{ number_format($sub->discount_price_ils, 2) }} ₪</span>
                             @else
-                                <span style="color: #94a3b8; font-size: 0.85rem;">لا يوجد خصم</span>
+                                <span style="color: #94a3b8; font-size: 0.85rem;">{{ __('لا يوجد خصم') }}</span>
                             @endif
                         </td>
 
@@ -146,15 +143,12 @@
 
                         <td style="padding: 18px 20px; text-align: center;">
                             <button onclick="editPricing({{ json_encode($sub) }})" style="background: #f1f5f9; color: #0284c7; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#e0f2fe'" onmouseout="this.style.background='#f1f5f9'">
-                                <i class="fa-solid fa-pen-to-square"></i> تعديل السعر
-                            </button>
+                                <i class="fa-solid fa-pen-to-square"></i>{{ __('تعديل السعر') }}</button>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8;">
-                            لا توجد مواد مسجلة مطابقة للبحث.
-                        </td>
+                        <td colspan="6" style="padding: 40px; text-align: center; color: #94a3b8;">{{ __('لا توجد مواد مسجلة مطابقة للبحث.') }}</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -168,7 +162,7 @@
 <div id="editModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
     <div style="background: white; border-radius: 22px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: zoomIn 0.2s ease;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 id="modalSubjectTitle" style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0;">تعديل تسعيرة المادة</h3>
+            <h3 id="modalSubjectTitle" style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تعديل تسعيرة المادة') }}</h3>
             <button onclick="closeEditModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">&times;</button>
         </div>
 
@@ -183,7 +177,7 @@
 
             <div style="margin-bottom: 16px;">
                 <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">سعر الخصم / العرض الترويجي بالشيكل (اختياري)</label>
-                <input type="number" step="0.5" id="modalDiscount" name="discount_price_ils" placeholder="اتركه فارغاً إذا لم يكن هناك تخفيض" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem;">
+                <input type="number" step="0.5" id="modalDiscount" name="discount_price_ils" placeholder="{{ __('اتركه فارغاً إذا لم يكن هناك تخفيض') }}" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.95rem;">
             </div>
 
             <div style="margin-bottom: 18px; display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px 16px; border-radius: 12px; border: 1px solid #e2e8f0;">
@@ -194,13 +188,13 @@
             </div>
 
             <div style="margin-bottom: 22px;">
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">وصف باقة المادة ومميزاتها للطلاب</label>
-                <textarea id="modalDescription" name="description" rows="3" placeholder="مثال: تشمل شرح كامل المنهاج الوزاري، حلول أسئلة السنوات السابقة، وبطاقات المذاكرة السريعة" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; resize: vertical;"></textarea>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('وصف باقة المادة ومميزاتها للطلاب') }}</label>
+                <textarea id="modalDescription" name="description" rows="3" placeholder="{{ __('مثال: تشمل شرح كامل المنهاج الوزاري، حلول أسئلة السنوات السابقة، وبطاقات المذاكرة السريعة') }}" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; resize: vertical;"></textarea>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" onclick="closeEditModal()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">إلغاء</button>
-                <button type="submit" id="btnSavePrice" style="background: #0284c7; color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;">حفظ التغييرات</button>
+                <button type="button" onclick="closeEditModal()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">{{ __('إلغاء') }}</button>
+                <button type="submit" id="btnSavePrice" style="background: #0284c7; color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;">{{ __('حفظ التغييرات') }}</button>
             </div>
         </form>
     </div>
@@ -210,7 +204,7 @@
 <div id="seasonalModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
     <div style="background: white; border-radius: 22px; max-width: 480px; width: 100%; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
-            <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0;">تطبيق خصم موسمي موحد</h3>
+            <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تطبيق خصم موسمي موحد') }}</h3>
             <button onclick="closeSeasonalModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">&times;</button>
         </div>
 
@@ -222,9 +216,9 @@
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">تطبيق الخصم على فرع محدد (اختياري)</label>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('تطبيق الخصم على فرع محدد (اختياري)') }}</label>
                 <select name="stage_id" style="width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; outline: none; font-size: 0.9rem;">
-                    <option value="">جميع فروع الثانوية العامة</option>
+                    <option value="">{{ __('جميع فروع الثانوية العامة') }}</option>
                     @foreach($stages as $stg)
                         <option value="{{ $stg->id }}">{{ $stg->name ?? $stg->name_ar }}</option>
                     @endforeach
@@ -232,8 +226,8 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button type="button" onclick="closeSeasonalModal()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">إلغاء</button>
-                <button type="submit" style="background: #059669; color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;">تطبيق الخصم فوراً</button>
+                <button type="button" onclick="closeSeasonalModal()" style="background: #f1f5f9; color: #475569; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">{{ __('إلغاء') }}</button>
+                <button type="submit" style="background: #059669; color: white; border: none; padding: 10px 24px; border-radius: 10px; font-weight: 700; cursor: pointer;">{{ __('تطبيق الخصم فوراً') }}</button>
             </div>
         </form>
     </div>

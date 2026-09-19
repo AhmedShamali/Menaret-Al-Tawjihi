@@ -9,16 +9,14 @@
     <div class="contact-hero-card">
         <div class="hero-text-side">
             <span class="palestine-badge">🇵🇸 صوتك مسموع ومحل اهتمامنا دائماً</span>
-            <h1 class="hero-title">مركز خدمة المستفيدين <br><span class="gradient-text">والدعم والشكاوى المباشر</span></h1>
-            <p class="hero-desc">
-                سواء كنت طالباً، ولي أمر، أو معلماً؛ إدارة منصة <strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong> والمشرف العام حريصون على متابعة استفساراتك وشكاواك وحلها فورياً لضمان تجربة تعليمية متميزة.
-            </p>
+            <h1 class="hero-title">{{ __('مركز خدمة المستفيدين') }}<br><span class="gradient-text">{{ __('والدعم والشكاوى المباشر') }}</span></h1>
+            <p class="hero-desc">{{ __('سواء كنت طالباً، ولي أمر، أو معلماً؛ إدارة منصة') }}<strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>{{ __('والمشرف العام حريصون على متابعة استفساراتك وشكاواك وحلها فورياً لضمان تجربة تعليمية متميزة.') }}</p>
 
             <div class="quick-contacts-grid">
                 <div class="contact-card-box">
                     <div class="contact-icon email-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
                     <div>
-                        <h4>البريد الرسمي للشكاوى</h4>
+                        <h4>{{ __('البريد الرسمي للشكاوى') }}</h4>
                         <p dir="ltr"><a href="mailto:{{ \App\Models\Setting::get('contact_email', 'support@tawjihi-gaza.ps') }}">{{ \App\Models\Setting::get('contact_email', 'support@tawjihi-gaza.ps') }}</a></p>
                     </div>
                 </div>
@@ -33,7 +31,7 @@
                 <div class="contact-card-box wa-card-box">
                     <div class="contact-icon wa-icon"><i class="fa-brands fa-whatsapp"></i></div>
                     <div>
-                        <h4>واتساب المشرف العام المباشر</h4>
+                        <h4>{{ __('واتساب المشرف العام المباشر') }}</h4>
                         <p dir="ltr"><a href="{{ $waLink }}" target="_blank">{{ $rawWa }}</a></p>
                     </div>
                 </div>
@@ -41,7 +39,7 @@
                 <div class="contact-card-box">
                     <div class="contact-icon loc-icon"><i class="fa-solid fa-location-dot"></i></div>
                     <div>
-                        <h4>الموقع الجغرافي</h4>
+                        <h4>{{ __('الموقع الجغرافي') }}</h4>
                         <p>فلسطين - قطاع غزة والضفة الغربية 🇵🇸</p>
                     </div>
                 </div>
@@ -54,8 +52,8 @@
                 <div class="form-head">
                     <div class="head-icon"><i class="fa-solid fa-paper-plane"></i></div>
                     <div>
-                        <h3>إرسال تذكرة شكوى أو استفسار</h3>
-                        <small>يتم الرد خلال مدة لا تتجاوز ساعتين خلال أوقات الدوام الرسمي</small>
+                        <h3>{{ __('إرسال تذكرة شكوى أو استفسار') }}</h3>
+                        <small>{{ __('يتم الرد خلال مدة لا تتجاوز ساعتين خلال أوقات الدوام الرسمي') }}</small>
                     </div>
                 </div>
 
@@ -78,12 +76,12 @@
                     
                     <div class="input-row-grid">
                         <div class="input-field-wrap">
-                            <label><i class="fa-regular fa-user"></i> الاسم الرباعي <span class="req">*</span></label>
-                            <input type="text" name="name" class="custom-input" placeholder="مثال: أحمد محمد خليل" required value="{{ old('name', auth('student')->user()?->name_ar ?? auth()->user()?->name ?? '') }}">
+                            <label><i class="fa-regular fa-user"></i>{{ __('الاسم الرباعي') }}<span class="req">*</span></label>
+                            <input type="text" name="name" class="custom-input" placeholder="{{ __('مثال: أحمد محمد خليل') }}" required value="{{ old('name', auth('student')->user()?->name_ar ?? auth()->user()?->name ?? '') }}">
                         </div>
 
                         <div class="input-field-wrap">
-                            <label><i class="fa-regular fa-envelope"></i> البريد الإلكتروني <span class="req">*</span></label>
+                            <label><i class="fa-regular fa-envelope"></i>{{ __('البريد الإلكتروني') }}<span class="req">*</span></label>
                             <input type="email" name="email" class="custom-input" placeholder="username@tawjihi-gaza.ps" required value="{{ old('email', auth('student')->user()?->email ?? auth()->user()?->email ?? '') }}">
                         </div>
                     </div>
@@ -95,7 +93,7 @@
                         </div>
 
                         <div class="input-field-wrap">
-                            <label><i class="fa-solid fa-list-check"></i> نوع وتصنيف الرسالة <span class="req">*</span></label>
+                            <label><i class="fa-solid fa-list-check"></i>{{ __('نوع وتصنيف الرسالة') }}<span class="req">*</span></label>
                             <select name="type" class="custom-select" required>
                                 <option value="شكوى خاصة بالحساب وتفعيله" selected>⚠️ شكوى خاصة بالحساب والاعتماد والتفعيل</option>
                                 <option value="مشكلة في الدفع وإشعار السداد">💳 مشكلة في الدفع ورسوم الاشتراك</option>
@@ -107,12 +105,12 @@
                     </div>
 
                     <div class="input-field-wrap">
-                        <label><i class="fa-regular fa-message"></i> تفاصيل الشكوى أو الرسالة <span class="req">*</span></label>
-                        <textarea name="message" rows="5" class="custom-textarea" placeholder="يرجى كتابة تفاصيل ما تواجهه بدقة لمساعدتك بأسرع شكل ممكن..." required>{{ old('message') }}</textarea>
+                        <label><i class="fa-regular fa-message"></i>{{ __('تفاصيل الشكوى أو الرسالة') }}<span class="req">*</span></label>
+                        <textarea name="message" rows="5" class="custom-textarea" placeholder="{{ __('يرجى كتابة تفاصيل ما تواجهه بدقة لمساعدتك بأسرع شكل ممكن...') }}" required>{{ old('message') }}</textarea>
                     </div>
 
                     <button type="submit" class="submit-complaint-btn" id="btnSubmitComplaint">
-                        <span>إرسال التذكرة الآن</span>
+                        <span>{{ __('إرسال التذكرة الآن') }}</span>
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </form>

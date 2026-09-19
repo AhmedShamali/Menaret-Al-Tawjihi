@@ -9,7 +9,7 @@
         <!-- ترويسة المحادثة التفاعلية (Telegram / WhatsApp Style Header) -->
         <div class="chat-top-header">
             <div class="user-meta-group">
-                <a href="{{ route('student.teachers.index') }}" class="back-action-btn" title="العودة لقائمة المعلمين">
+                <a href="{{ route('student.teachers.index') }}" class="back-action-btn" title="{{ __('العودة لقائمة المعلمين') }}">
                     <i class="fa-solid fa-arrow-right"></i>
                 </a>
                 @php
@@ -41,7 +41,7 @@
                 <button type="button" class="tool-btn" id="soundToggleBtn" onclick="toggleAudioChime()" title="كتم/تفعيل صوت الرسائل">
                     <i class="fa-solid fa-volume-high" id="soundIcon"></i>
                 </button>
-                <button type="button" class="tool-btn" onclick="scrollToBottomSmooth()" title="الانتقال لآخر رسالة">
+                <button type="button" class="tool-btn" onclick="scrollToBottomSmooth()" title="{{ __('الانتقال لآخر رسالة') }}">
                     <i class="fa-solid fa-angles-down"></i>
                 </button>
             </div>
@@ -49,7 +49,7 @@
 
         <!-- شريط كبسولات الأسئلة الوزارية السريعة (Quick Tawjihi Prompts) -->
         <div class="quick-prompts-bar">
-            <span class="prompts-label"><i class="fa-solid fa-bolt text-warning"></i> أسئلة سريعة:</span>
+            <span class="prompts-label"><i class="fa-solid fa-bolt text-warning"></i>{{ __('أسئلة سريعة:') }}</span>
             <div class="prompts-scroll-lane">
                 <button type="button" class="prompt-pill" onclick="insertPrompt('أستاذ ممكن توضيح هذه النقطة في الدرس؟ ✍️')">
                     توضيح نقطة في الدرس ✍️
@@ -89,7 +89,7 @@
 
             <div id="loading_messages_state" class="text-center py-5">
                 <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
-                <p class="text-muted mt-2" style="font-size: 0.85rem;">جاري مزامنة المحادثة مع المعلم...</p>
+                <p class="text-muted mt-2" style="font-size: 0.85rem;">{{ __('جاري مزامنة المحادثة مع المعلم...') }}</p>
             </div>
 
             <!-- حاوية الرسائل الديناميكية -->
@@ -100,7 +100,7 @@
                 <div class="typing-dots">
                     <span></span><span></span><span></span>
                 </div>
-                <span class="typing-label">المعلم يكتب الآن...</span>
+                <span class="typing-label">{{ __('المعلم يكتب الآن...') }}</span>
             </div>
         </div>
 
@@ -125,7 +125,7 @@
                     onkeydown="handleTextareaKeydown(event)"></textarea>
 
                 <div class="input-actions-after">
-                    <button type="button" id="sendBtn" class="composer-send-btn" onclick="sendChatMessage()" title="إرسال الرسالة">
+                    <button type="button" id="sendBtn" class="composer-send-btn" onclick="sendChatMessage()" title="{{ __('إرسال الرسالة') }}">
                         <i class="fa-solid fa-paper-plane"></i>
                     </button>
                 </div>
@@ -790,8 +790,8 @@ body.dark-theme .composer-textarea {
                     messagesList.innerHTML = `
                         <div class="text-center py-5 text-muted">
                             <i class="fa-regular fa-comments fa-3x mb-3" style="opacity: 0.3;"></i>
-                            <h5 style="font-weight: 700; color: #64748b;">لا توجد رسائل سابقة مع الأستاذ</h5>
-                            <p style="font-size: 0.85rem;">اختر كبسولة من الأسئلة السريعة بالأعلى أو اكتب سؤالك لبدء المحادثة.</p>
+                            <h5 style="font-weight: 700; color: #64748b;">{{ __('لا توجد رسائل سابقة مع الأستاذ') }}</h5>
+                            <p style="font-size: 0.85rem;">{{ __('اختر كبسولة من الأسئلة السريعة بالأعلى أو اكتب سؤالك لبدء المحادثة.') }}</p>
                         </div>`;
                     isPolling = false;
                     return;
@@ -807,7 +807,7 @@ body.dark-theme .composer-textarea {
                                 <div class="bubble-text-content">${escapeHtml(m.message)}</div>
                                 <div class="bubble-meta-info">
                                     <span>${m.created_at_formatted || 'الآن'}</span>
-                                    ${isMe ? `<i class="fa-solid fa-check-double read-ticks-icon" title="تم التسليم"></i>` : ''}
+                                    ${isMe ? `<i class="fa-solid fa-check-double read-ticks-icon" title="{{ __('تم التسليم') }}"></i>` : ''}
                                 </div>
                             </div>
                         </div>`;

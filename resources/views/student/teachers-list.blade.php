@@ -127,8 +127,8 @@
     <!-- الهيدر -->
     <div class="custom-header d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1">طاقم التدريس للمرحلة</h2>
-            <p class="text-muted mb-0">تواصل مباشرة مع المعلمين المعتمدين لمساعدتك في دروسك.</p>
+            <h2 class="fw-bold mb-1">{{ __('طاقم التدريس للمرحلة') }}</h2>
+            <p class="text-muted mb-0">{{ __('تواصل مباشرة مع المعلمين المعتمدين لمساعدتك في دروسك.') }}</p>
         </div>
         <div class="stage-pill">
             🏫 {{ $studentStage ?? 'المرحلة الدراسية' }}
@@ -148,14 +148,13 @@
                 <div class="teacher-info">معلم متخصص • {{ $studentStage }}</div>
 
                 <a href="{{ route('student.chat.teacher', $teacher->id) }}" class="chat-link">
-                    <span>💬</span> بدء محادثة
-                </a>
+                    <span>💬</span>{{ __('بدء محادثة') }}</a>
             </div>
         @empty
             <!-- حالة عدم وجود بيانات -->
             <div style="grid-column: 1 / -1; text-align: center; padding: 50px;">
                 <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="100" style="opacity: 0.2">
-                <h5 class="mt-3 text-muted">لا يوجد معلمون متاحون لهذه المرحلة حالياً</h5>
+                <h5 class="mt-3 text-muted">{{ __('لا يوجد معلمون متاحون لهذه المرحلة حالياً') }}</h5>
             </div>
         @endforelse
     </div>

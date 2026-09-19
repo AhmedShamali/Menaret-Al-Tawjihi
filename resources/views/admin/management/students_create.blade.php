@@ -67,7 +67,7 @@
     <div class="header-section">
         <div>
             <span class="title-badge">إدارة الأنظمة • الطلاب</span>
-            <h1 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin: 0;">تسجيل طالب جديد <span style="color: #10b981;">.</span></h1>
+            <h1 style="font-size: 1.8rem; font-weight: 900; color: #0f172a; margin: 0;">{{ __('تسجيل طالب جديد') }}<span style="color: #10b981;">.</span></h1>
         </div>
         <a href="{{ route('admin.dashboard') }}" class="btn-cancel">✕ إلغاء العملية</a>
     </div>
@@ -79,52 +79,52 @@
             <div style="display: flex; flex-direction: column; gap: 25px;">
                 <!-- البيانات الشخصية -->
                 <div class="glass-card">
-                    <div class="section-title"><i>👤</i> البيانات الأساسية</div>
+                    <div class="section-title"><i>👤</i>{{ __('البيانات الأساسية') }}</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                         <div>
-                            <label class="form-label">الاسم رباعي (بالعربية) <span>*</span></label>
-                            <input type="text" name="name_ar" class="modern-input" placeholder="مثال: أحمد محمد علي" required>
+                            <label class="form-label">{{ __('الاسم رباعي (بالعربية)') }}<span>*</span></label>
+                            <input type="text" name="name_ar" class="modern-input" placeholder="{{ __('مثال: أحمد محمد علي') }}" required>
                         </div>
                         <div>
-                            <label class="form-label">الاسم بالإنجليزية (اختياري)</label>
+                            <label class="form-label">{{ __('الاسم بالإنجليزية (اختياري)') }}</label>
                             <input type="text" name="name_en" class="modern-input" placeholder="Full Name" style="text-align: left; direction: ltr;">
                         </div>
                         <div>
-                            <label class="form-label">رقم الهوية الفلسطينية (9 أرقام) <span>*</span></label>
-                            <input type="text" name="nid" maxlength="9" class="modern-input" placeholder="9 أرقام" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            <label class="form-label">{{ __('رقم الهوية الفلسطينية (9 أرقام)') }}<span>*</span></label>
+                            <input type="text" name="nid" maxlength="9" class="modern-input" placeholder="{{ __('9 أرقام') }}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div>
-                            <label class="form-label">العمر</label>
-                            <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="18" value="18">
+                            <label class="form-label">{{ __('العمر') }}</label>
+                            <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="{{ __('18') }}" value="18">
                         </div>
                         <div>
                             <label class="form-label">المحافظة / المدينة</label>
                             <select name="city" class="modern-input">
                                 <option value="القدس">القدس الشريف 🕌</option>
-                                <option value="رام الله والبيرة" selected>رام الله والبيرة</option>
+                                <option value="رام الله والبيرة" selected>{{ __('رام الله والبيرة') }}</option>
                                 <option value="غزة">غزة العزة 🌿</option>
-                                <option value="نابلس">نابلس (جبل النار)</option>
-                                <option value="الخليل">الخليل</option>
-                                <option value="جنين">جنين القسام</option>
-                                <option value="طولكرم">طولكرم</option>
-                                <option value="قلقيلية">قلقيلية</option>
-                                <option value="بيت لحم">بيت لحم</option>
-                                <option value="سلفيت">سلفيت</option>
-                                <option value="أريحا">أريحا والأغوار</option>
-                                <option value="طوباس">طوباس</option>
-                                <option value="خان يونس">خان يونس</option>
-                                <option value="رفح">رفح</option>
-                                <option value="شمال غزة">شمال غزة (جباليا)</option>
-                                <option value="دير البلح">دير البلح والوسطى</option>
+                                <option value="نابلس">{{ __('نابلس (جبل النار)') }}</option>
+                                <option value="الخليل">{{ __('الخليل') }}</option>
+                                <option value="جنين">{{ __('جنين القسام') }}</option>
+                                <option value="طولكرم">{{ __('طولكرم') }}</option>
+                                <option value="قلقيلية">{{ __('قلقيلية') }}</option>
+                                <option value="بيت لحم">{{ __('بيت لحم') }}</option>
+                                <option value="سلفيت">{{ __('سلفيت') }}</option>
+                                <option value="أريحا">{{ __('أريحا والأغوار') }}</option>
+                                <option value="طوباس">{{ __('طوباس') }}</option>
+                                <option value="خان يونس">{{ __('خان يونس') }}</option>
+                                <option value="رفح">{{ __('رفح') }}</option>
+                                <option value="شمال غزة">{{ __('شمال غزة (جباليا)') }}</option>
+                                <option value="دير البلح">{{ __('دير البلح والوسطى') }}</option>
                                 <option value="أخرى">خارج فلسطين / أخرى</option>
                             </select>
                         </div>
                         <div>
-                            <label class="form-label">اسم المدرسة الثانوية</label>
-                            <input type="text" name="school_name" class="modern-input" placeholder="مثال: مدرسة الحسين بن علي الثانوية">
+                            <label class="form-label">{{ __('اسم المدرسة الثانوية') }}</label>
+                            <input type="text" name="school_name" class="modern-input" placeholder="{{ __('مثال: مدرسة الحسين بن علي الثانوية') }}">
                         </div>
                         <div>
-                            <label class="form-label">هاتف ولي الأمر (للمتابعة الأكاديمية)</label>
+                            <label class="form-label">{{ __('هاتف ولي الأمر (للمتابعة الأكاديمية)') }}</label>
                             <input type="tel" name="guardian_phone" class="modern-input" placeholder="059xxxxxxx">
                         </div>
                     </div>
@@ -132,10 +132,10 @@
 
                 <!-- حساب الدخول -->
                 <div class="glass-card">
-                    <div class="section-title"><i style="color: #3b82f6; background: #eff6ff;">🔐</i> إعدادات الحساب</div>
+                    <div class="section-title"><i style="color: #3b82f6; background: #eff6ff;">🔐</i>{{ __('إعدادات الحساب') }}</div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
                         <div style="grid-column: span 2;">
-                            <label class="form-label">البريد الإلكتروني <span>*</span></label>
+                            <label class="form-label">{{ __('البريد الإلكتروني') }}<span>*</span></label>
                             <input type="email" name="email" class="modern-input" placeholder="student@example.com" required>
                         </div>
                         <div>
@@ -143,8 +143,8 @@
                             <input type="tel" name="phone" class="modern-input" placeholder="059xxxxxxxx" required>
                         </div>
                         <div>
-                            <label class="form-label">كلمة المرور <span>*</span></label>
-                            <input type="password" name="password" class="modern-input" placeholder="6 خانات على الأقل" required minlength="6">
+                            <label class="form-label">{{ __('كلمة المرور') }}<span>*</span></label>
+                            <input type="password" name="password" class="modern-input" placeholder="{{ __('6 خانات على الأقل') }}" required minlength="6">
                         </div>
                     </div>
                 </div>
@@ -153,16 +153,13 @@
                 <div class="glass-card" id="subjectsSection">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
                         <div class="section-title" style="margin-bottom: 0;">
-                            <i style="color: #4f46e5; background: #eef2ff;">📚</i> المواد الدراسية المراد تسجيل الطالب بها (اختياري)
-                        </div>
+                            <i style="color: #4f46e5; background: #eef2ff;">📚</i>{{ __('المواد الدراسية المراد تسجيل الطالب بها (اختياري)') }}</div>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" onclick="toggleAllSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">تحديد الكل</button>
-                            <button type="button" onclick="toggleAllSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">إلغاء التحديد</button>
+                            <button type="button" onclick="toggleAllSubjects(true)" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">{{ __('تحديد الكل') }}</button>
+                            <button type="button" onclick="toggleAllSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
                         </div>
                     </div>
-                    <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 16px;">
-                        حدد المواد التي ترغب بتسجيل الطالب فيها لتفعيلها فوراً، أو اتركها دون تحديد لتخصيصها لاحقاً.
-                    </p>
+                    <p style="font-size: 0.83rem; color: #64748b; margin-top: 0; margin-bottom: 16px;">{{ __('حدد المواد التي ترغب بتسجيل الطالب فيها لتفعيلها فوراً، أو اتركها دون تحديد لتخصيصها لاحقاً.') }}</p>
                     <div id="subjectsContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <!-- يتم ملؤها تلقائياً بالمواد عند اختيار الفرع -->
                     </div>
@@ -173,22 +170,22 @@
             <div class="sidebar-sticky" style="display: flex; flex-direction: column; gap: 25px;">
                 <!-- التصنيف -->
                 <div class="glass-card" style="background: var(--primary-gradient); color: white;">
-                    <div class="section-title" style="color: white;"><i style="background: rgba(255,255,255,0.1); color: white;">🎓</i> التصنيف الأكاديمي</div>
+                    <div class="section-title" style="color: white;"><i style="background: rgba(255,255,255,0.1); color: white;">🎓</i>{{ __('التصنيف الأكاديمي') }}</div>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         <div>
                             <label class="form-label" style="color: rgba(255,255,255,0.8);">المرحلة / الفرع الدراسي <span>*</span></label>
                             <select name="stage_id" class="modern-input" required>
-                                <option value="" selected disabled>اختر الفرع الأكاديمي...</option>
+                                <option value="" selected disabled>{{ __('اختر الفرع الأكاديمي...') }}</option>
                                 @foreach($stages as $stage)
                                     <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="form-label" style="color: rgba(255,255,255,0.8);">الجنس <span>*</span></label>
+                            <label class="form-label" style="color: rgba(255,255,255,0.8);">{{ __('الجنس') }}<span>*</span></label>
                             <select name="gender" class="modern-input" required>
-                                <option value="ذكر">ذكر</option>
-                                <option value="أنثى">أنثى</option>
+                                <option value="ذكر">{{ __('ذكر') }}</option>
+                                <option value="أنثى">{{ __('أنثى') }}</option>
                             </select>
                         </div>
                     </div>
@@ -196,25 +193,25 @@
 
                 <!-- المرفقات -->
                 <div class="glass-card">
-                    <div class="section-title"><i style="color: #f59e0b; background: #fffbeb;">📂</i> المرفقات (اختياري)</div>
+                    <div class="section-title"><i style="color: #f59e0b; background: #fffbeb;">📂</i>{{ __('المرفقات (اختياري)') }}</div>
                     <div style="display: flex; flex-direction: column; gap: 15px;">
                         <div class="upload-box" id="box-photo" onclick="document.getElementById('p_file').click()">
                             <img id="preview-photo" src="" alt="preview">
                             <input type="file" name="photo" id="p_file" accept="image/*" hidden>
                             <span class="icon">📸</span>
-                            <span class="text">الصورة الشخصية (اختياري)</span>
+                            <span class="text">{{ __('الصورة الشخصية (اختياري)') }}</span>
                         </div>
 
                         <div class="upload-box" id="box-id" onclick="document.getElementById('i_file').click()">
                             <img id="preview-id" src="" alt="preview">
                             <input type="file" name="id_photo" id="i_file" accept="image/*" hidden>
                             <span class="icon">🪪</span>
-                            <span class="text">صورة الهوية (اختياري)</span>
+                            <span class="text">{{ __('صورة الهوية (اختياري)') }}</span>
                         </div>
                     </div>
                 </div>
 
-                <button type="button" onclick="handleRegistration()" id="submitBtn" class="btn-submit">حفظ بيانات الطالب</button>
+                <button type="button" onclick="handleRegistration()" id="submitBtn" class="btn-submit">{{ __('حفظ بيانات الطالب') }}</button>
             </div>
         </div>
     </form>
@@ -260,13 +257,13 @@
         if (!subjectsContainer) return;
 
         if (!stageId) {
-            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">يرجى اختيار الفرع أو المرحلة أولاً لعرض المواد المتاحة.</div>';
+            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">{{ __('يرجى اختيار الفرع أو المرحلة أولاً لعرض المواد المتاحة.') }}</div>';
             return;
         }
 
         const stage = stagesData.find(s => s.id == stageId || s.grade_level == stageId);
         if (!stage || !stage.subjects || stage.subjects.length === 0) {
-            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">لا توجد مواد مسجلة لهذا الفرع حالياً.</div>';
+            subjectsContainer.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 25px; color: #94a3b8; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1; font-size: 0.88rem;">{{ __('لا توجد مواد مسجلة لهذا الفرع حالياً.') }}</div>';
             return;
         }
 
@@ -349,7 +346,7 @@
 
         // 2. تجهيز البيانات
         btn.disabled = true;
-        btn.innerHTML = '<span style="opacity: 0.8"><i class="fas fa-spinner fa-spin"></i> جاري حفظ بيانات الطالب...</span>';
+        btn.innerHTML = '<span style="opacity: 0.8"><i class="fas fa-spinner fa-spin"></i>{{ __('جاري حفظ بيانات الطالب...') }}</span>';
 
         let formData = new FormData(form);
 

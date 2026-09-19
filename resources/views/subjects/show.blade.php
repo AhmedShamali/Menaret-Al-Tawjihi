@@ -9,7 +9,7 @@
     <div class="subject-header-bar">
         <div class="header-titles">
             <nav class="breadcrumb-nav">
-                <a>المراحل</a> /
+                <a>{{ __('المراحل') }}</a> /
                 <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage->label_ar ?? 'المرحلة' }}</a> /
                 <span class="active">{{ $subject->name_ar }}</span>
             </nav>
@@ -22,8 +22,7 @@
         <div class="header-actions">
             <!-- التعديل هنا: زر يوجه مباشرة لصفحة الملفات والملخصات المستقلة -->
             <a href="{{ route('subject.files', $subject->id) }}" class="btn-action btn-outline">
-                <span>📑</span> الملفات والملخصات
-            </a>
+                <span>📑</span>{{ __('الملفات والملخصات') }}</a>
 
 
         </div>
@@ -37,7 +36,7 @@
                     {{ mb_substr($subject->teacher_display_name, 0, 1) }}
                 </div>
                 <div class="teacher-info">
-                    <span class="badge-teacher">معلّم المادة المعتمد</span>
+                    <span class="badge-teacher">{{ __('معلّم المادة المعتمد') }}</span>
                     <h3 class="teacher-name">{{ $subject->teacher_display_name }}</h3>
                     <p class="teacher-desc">مدرس مساق {{ $subject->name_ar }} - {{ $subject->stage->label_ar ?? 'الصف الثاني عشر' }}</p>
                 </div>
@@ -46,8 +45,8 @@
                     ⏳
                 </div>
                 <div class="teacher-info">
-                    <span class="badge-teacher" style="background: #fef3c7; color: #b45309;">قريباً بإذن الله</span>
-                    <h3 class="teacher-name" style="color: #92400e;">نخبة من خيرة معلّمي التوجيهي قريباً</h3>
+                    <span class="badge-teacher" style="background: #fef3c7; color: #b45309;">{{ __('قريباً بإذن الله') }}</span>
+                    <h3 class="teacher-name" style="color: #92400e;">{{ __('نخبة من خيرة معلّمي التوجيهي قريباً') }}</h3>
                     <p class="teacher-desc">نعمل حالياً على اعتماد أفضل الكفاءات التعليمية لمساق {{ $subject->name_ar }} لتوفير تجربة تعليمية استثنائية وشاملة.</p>
                 </div>
             @endif
@@ -56,11 +55,11 @@
         <div class="hero-stats">
             <div class="stat-box">
                 <span class="stat-number">{{ $videos->count() }}</span>
-                <span class="stat-label">دروس فيديو</span>
+                <span class="stat-label">{{ __('دروس فيديو') }}</span>
             </div>
             <div class="stat-box">
                 <span class="stat-number">{{ $files->count() }}</span>
-                <span class="stat-label">ملفات مرفقة</span>
+                <span class="stat-label">{{ __('ملفات مرفقة') }}</span>
             </div>
         </div>
     </div>
@@ -73,8 +72,7 @@
 
             <div class="section-title-wrapper">
                 <h3 class="section-title">
-                    <span class="title-icon">🎥</span> دروس الفيديو الشارحة
-                </h3>
+                    <span class="title-icon">🎥</span>{{ __('دروس الفيديو الشارحة') }}</h3>
                 <span class="chip-count">{{ $videos->count() }} فيديو متوفر</span>
             </div>
 
@@ -123,8 +121,8 @@
                 @empty
                     <div class="empty-state-box">
                         <div class="empty-icon">📂</div>
-                        <h4>لا توجد دروس فيديو مضافة حالياً</h4>
-                        <p>لم يقم المعلم بفرز أو إضافة دروس فيديو لهذه المادة حتى الآن.</p>
+                        <h4>{{ __('لا توجد دروس فيديو مضافة حالياً') }}</h4>
+                        <p>{{ __('لم يقم المعلم بفرز أو إضافة دروس فيديو لهذه المادة حتى الآن.') }}</p>
                     </div>
                 @endforelse
             </div>
@@ -146,7 +144,7 @@
                     <div class="progress-bar-fill" style="width: 35%;"></div>
                 </div>
 
-                <p class="progress-info-text">لقد أكملت <strong>35%</strong> من متطلبات هذه المادة</p>
+                <p class="progress-info-text">{{ __('لقد أكملت') }}<strong>35%</strong>{{ __('من متطلبات هذه المادة') }}</p>
             </div>
 
         </div>
@@ -160,13 +158,11 @@
     <div class="ai-modal-container">
 
         <div class="ai-modal-body" id="aiChatBox">
-            <div class="ai-message system">
-                أهلاً بك! أنا مساعدك الذكي لمادة <strong>{{ $subject->name_ar }}</strong>. كيف يمكنني مساعدتك اليوم؟
-            </div>
+            <div class="ai-message system">{{ __('أهلاً بك! أنا مساعدك الذكي لمادة') }}<strong>{{ $subject->name_ar }}</strong>{{ __('. كيف يمكنني مساعدتك اليوم؟') }}</div>
         </div>
         <div class="ai-modal-footer">
-            <input type="text" id="aiInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleAiKeyPress(event)">
-            <button type="button" class="btn-send-ai" onclick="sendAiMessage()">إرسال</button>
+            <input type="text" id="aiInput" placeholder="{{ __('اكتب سؤالك هنا...') }}" onkeypress="handleAiKeyPress(event)">
+            <button type="button" class="btn-send-ai" onclick="sendAiMessage()">{{ __('إرسال') }}</button>
         </div>
     </div>
 </div>

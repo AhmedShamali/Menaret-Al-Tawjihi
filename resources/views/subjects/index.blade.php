@@ -11,10 +11,10 @@
         <div style="position: relative; z-index: 1;">
             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
                 <span style="width: 12px; height: 12px; background: var(--accent); border-radius: 50%; box-shadow: 0 0 15px var(--accent);"></span>
-                <span style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; font-weight: 700; color: var(--accent);">المنهاج الفلسطيني المحدث</span>
+                <span style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.8rem; font-weight: 700; color: var(--accent);">{{ __('المنهاج الفلسطيني المحدث') }}</span>
             </div>
-            <h1 style="font-size: 3.2rem; font-weight: 800; line-height: 1.1;">المكتبة الرقمية <br><span style="color: var(--accent);">للمواد الدراسية</span></h1>
-            <p style="font-size: 1.1rem; opacity: 0.7; max-width: 550px; margin-top: 20px; line-height: 1.7;">تصفح كافة المساقات التعليمية المصممة لتمكين الطالب الفلسطيني من التفوق والنجاح رقمياً.</p>
+            <h1 style="font-size: 3.2rem; font-weight: 800; line-height: 1.1;">{{ __('المكتبة الرقمية') }}<br><span style="color: var(--accent);">{{ __('للمواد الدراسية') }}</span></h1>
+            <p style="font-size: 1.1rem; opacity: 0.7; max-width: 550px; margin-top: 20px; line-height: 1.7;">{{ __('تصفح كافة المساقات التعليمية المصممة لتمكين الطالب الفلسطيني من التفوق والنجاح رقمياً.') }}</p>
         </div>
     </div>
 
@@ -40,7 +40,7 @@
                         <h4 style="font-size: 1rem; font-weight: 700; color: var(--primary); margin-bottom: 2px;">{{ $subject->name_ar }}</h4>
                         <div style="display: flex; align-items: center; gap: 5px;">
                             <span style="width: 6px; height: 6px; background: {{ $subject->color }}; border-radius: 50%;"></span>
-                            <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 600;">ابدأ الآن</span>
+                            <span style="font-size: 0.7rem; color: var(--text-light); font-weight: 600;">{{ __('ابدأ الآن') }}</span>
                         </div>
                     </div>
                 </div>

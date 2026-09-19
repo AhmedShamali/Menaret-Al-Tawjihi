@@ -1352,7 +1352,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-amber"><i class="fa-solid fa-award"></i></span>
-                            <span>{{ __('الشهادات والنتائج الوزارية') }}</span>
+                            <span>{{ __('الشهادات والنتائج الأكاديمية') }}</span>
                         </div>
                     </div>
                 </a>
@@ -1388,7 +1388,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-purple"><i class="fa-solid fa-file-signature"></i></span>
-                            <span>{{ __('بنك الامتحانات الوزارية') }}</span>
+                            <span>{{ __('إدارة الاختبارات والتقييمات') }}</span>
                         </div>
                     </div>
                 </a>
@@ -1674,7 +1674,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-indigo"><i class="fa-solid fa-square-root-variable"></i></span>
-                            <span>{{ __('دليل القوانين الوزارية') }}</span>
+                            <span>{{ __('دليل القوانين والمفاهيم') }}</span>
                         </div>
                     </div>
                 </a>

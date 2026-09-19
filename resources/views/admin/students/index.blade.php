@@ -1169,8 +1169,7 @@
         Swal.fire({
             title: 'تصفير وحذف جميع الطلاب؟',
             html: `
-                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #991b1b; text-align: right; margin-bottom: 12px;">
-                    أنت على وشك حذف <strong>كافة الطلاب وسجلاتهم بالكامل</strong>. للتأكيد اكتب: <strong>تأكيد الحذف</strong>
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #991b1b; text-align: right; margin-bottom: 12px;">{{ __('أنت على وشك حذف') }}<strong>{{ __('كافة الطلاب وسجلاتهم بالكامل') }}</strong>{{ __('. للتأكيد اكتب:') }}<strong>{{ __('تأكيد الحذف') }}</strong>
                 </div>
             `,
             input: 'text',
@@ -1286,7 +1285,7 @@
                 if (data.has_discount) {
                     container.innerHTML = `<button type="button" onclick="openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', ${data.percent || 0}, ${data.fixed || 0}, '${(data.notes || '').replace(/'/g, "\\'")}')" class="btn-discount-badge"><span id="badge_text_${currentDiscountStudentId}">${data.discount_label}</span></button>`;
                 } else {
-                    container.innerHTML = `<button type="button" onclick="openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', 0, 0, '')" class="btn-discount-none"><span id="badge_text_${currentDiscountStudentId}">بدون خصم</span></button>`;
+                    container.innerHTML = `<button type="button" onclick="openDiscountModal(${currentDiscountStudentId}, '${document.getElementById('discountStudentName').innerText}', 0, 0, '')" class="btn-discount-none"><span id="badge_text_${currentDiscountStudentId}">{{ __('بدون خصم') }}</span></button>`;
                 }
             }
 
@@ -1351,7 +1350,7 @@
                     <label style="font-size: 0.78rem; font-weight: 600; color: #334155;">{{ __('قيمة الخصم:') }}</label>
                     <span id="discountUnitLabel" style="font-size: 0.72rem; color: #64748b;">{{ __('% نسبة مئوية') }}</span>
                 </div>
-                <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="مثال: 25 أو 50" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem; font-family: monospace; outline: none; box-sizing: border-box;">
+                <input type="number" id="discountValue" min="0" max="100" step="any" placeholder="{{ __('مثال: 25 أو 50') }}" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 0.95rem; font-family: monospace; outline: none; box-sizing: border-box;">
             </div>
 
             <div style="margin-bottom: 18px;">

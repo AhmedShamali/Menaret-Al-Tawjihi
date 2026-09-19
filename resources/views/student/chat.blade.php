@@ -189,10 +189,10 @@
         <div class="chat-header">
             <div>
                 <h3>محادثة المدرس 👨‍🏫</h3>
-                <span style="font-size: 0.75rem; opacity: 0.85;">تواصل مباشرة مع معلّم المادة</span>
+                <span style="font-size: 0.75rem; opacity: 0.85;">{{ __('تواصل مباشرة مع معلّم المادة') }}</span>
             </div>
             <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="d-none d-sm-inline" style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">مباشر</span>
+                <span class="d-none d-sm-inline" style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">{{ __('مباشر') }}</span>
                 <a href="javascript:history.back()" style="color: white; text-decoration: none; font-size: 1.2rem;">✕</a>
             </div>
         </div>
@@ -201,7 +201,7 @@
         <div class="chat-body" id="chatBox">
             <div id="loadingState" style="text-align: center; color: #64748b; margin: auto;">
                 <div class="spinner-border spinner-border-sm mb-2" role="status"></div>
-                <div>جاري تحميل المحادثة...</div>
+                <div>{{ __('جاري تحميل المحادثة...') }}</div>
             </div>
         </div>
 
@@ -212,9 +212,9 @@
                 <input type="hidden" id="teacherIdInput" value="{{ $teacher->id ?? 1 }}">
 
                 <div class="chat-input-group">
-                    <input type="text" id="messageInput" class="chat-input" placeholder="اكتب رسالتك..." autocomplete="off">
+                    <input type="text" id="messageInput" class="chat-input" placeholder="{{ __('اكتب رسالتك...') }}" autocomplete="off">
                     <button type="button" id="sendBtn" class="btn-send">
-                        <span>إرسال</span>
+                        <span>{{ __('إرسال') }}</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
                 </div>

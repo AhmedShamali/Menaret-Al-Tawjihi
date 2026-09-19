@@ -13,13 +13,13 @@
             </a>
             <div>
                 <h1 style="font-size: 1.85rem; font-weight: 800; color: #0f172a; margin: 0;">{{ $stage->label_ar }}</h1>
-                <p style="color: #64748b; font-size: 0.9rem; margin: 2px 0 0;">المباحث والمقررات التعليمية الرسمية المعتمدة</p>
+                <p style="color: #64748b; font-size: 0.9rem; margin: 2px 0 0;">{{ __('المباحث والمقررات التعليمية الرسمية المعتمدة') }}</p>
             </div>
         </div>
 
         <a href="{{ route('tawjihi.calculator') }}" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; text-decoration: none; padding: 9px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
             <i class="fas fa-calculator"></i>
-            <span>حاسبة معدل التوجيهي</span>
+            <span>{{ __('حاسبة معدل التوجيهي') }}</span>
         </a>
     </div>
 
@@ -36,17 +36,11 @@
 
                     <!-- Grade Weight Tag -->
                     @if($subject->subject_key === 'math_12_sci')
-                        <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                            من 200 علامة (النجاح: 100)
-                        </span>
+                        <span style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">{{ __('من 200 علامة (النجاح: 100)') }}</span>
                     @elseif(in_array($subject->subject_key, ['arabic_12_lit', 'english_12_lit']))
-                        <span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                            من 150 علامة (النجاح: 75)
-                        </span>
+                        <span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">{{ __('من 150 علامة (النجاح: 75)') }}</span>
                     @else
-                        <span style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                            من 100 علامة (النجاح: 50)
-                        </span>
+                        <span style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-size: 0.76rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">{{ __('من 100 علامة (النجاح: 50)') }}</span>
                     @endif
                 </div>
 
@@ -64,19 +58,19 @@
             <!-- Bottom Pricing & Action -->
             <div style="padding-top: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <span style="font-size: 0.78rem; color: #94a3b8; display: block;">سعر الاشتراك</span>
+                    <span style="font-size: 0.78rem; color: #94a3b8; display: block;">{{ __('سعر الاشتراك') }}</span>
                     <strong style="font-size: 1.15rem; color: #0f172a;">{{ number_format($subject->effective_price ?? 150, 0) }} ₪</strong>
                 </div>
 
                 <a href="{{ route('subject.show', $subject->id) }}" style="background: #1e40af; color: #ffffff; text-decoration: none; padding: 9px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s;">
-                    <span>دخول المبحث</span>
+                    <span>{{ __('دخول المبحث') }}</span>
                     <i class="fas fa-arrow-left"></i>
                 </a>
             </div>
         </div>
         @empty
         <div style="grid-column: 1/-1; text-align: center; padding: 80px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0;">
-            <p style="color: #64748b; font-size: 1.1rem;">سيتم إضافة مقررات هذا الفرع قريباً...</p>
+            <p style="color: #64748b; font-size: 1.1rem;">{{ __('سيتم إضافة مقررات هذا الفرع قريباً...') }}</p>
         </div>
         @endforelse
     </div>

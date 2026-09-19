@@ -149,11 +149,11 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('tawjihi.archive') }}" target="_blank" class="ed-tool-item">
-                        <div class="tool-icon red"><i class="fa-solid fa-file-invoice"></i></div>
+                    <a href="{{ route('student.planner.index') }}" class="ed-tool-item">
+                        <div class="tool-icon purple"><i class="fa-solid fa-calendar-check"></i></div>
                         <div>
-                            <strong>{{ __('بنك الامتحانات الوزارية') }}</strong>
-                            <small>{{ __('نماذج وزارية وامتحانات محاكية') }}</small>
+                            <strong>{{ __('جدول المراجعة والمذاكرة') }}</strong>
+                            <small>{{ __('خطة دراسية وتنظيم الوقت اليومي') }}</small>
                         </div>
                     </a>
                 </div>

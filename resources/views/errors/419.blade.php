@@ -114,25 +114,20 @@
 <body>
     <div class="error-card">
         <div class="error-badge">
-            <i class="fa-solid fa-clock-rotate-left"></i> رمز الخطأ 419: انتهاء الجلسة المؤقتة
-        </div>
+            <i class="fa-solid fa-clock-rotate-left"></i>{{ __('رمز الخطأ 419: انتهاء الجلسة المؤقتة') }}</div>
         <div class="error-icon">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <h1>انتهت صلاحية الصفحة المؤقتة</h1>
-        <p>
-            حرصاً على أمان بياناتك الأكاديمية تم إنهاء الجلسة بسبب عدم النشاط لفترة.
-            يرجى النقر على زر التحديث للمتابعة واستكمال عمليتك بشكل طبيعي.
-        </p>
+        <h1>{{ __('انتهت صلاحية الصفحة المؤقتة') }}</h1>
+        <p>{{ __('حرصاً على أمان بياناتك الأكاديمية تم إنهاء الجلسة بسبب عدم النشاط لفترة.
+            يرجى النقر على زر التحديث للمتابعة واستكمال عمليتك بشكل طبيعي.') }}</p>
         <div>
             <button type="button" onclick="window.location.reload()" class="btn-refresh">
-                <i class="fa-solid fa-rotate-right"></i> تحديث الصفحة والمتابعة
-            </button>
+                <i class="fa-solid fa-rotate-right"></i>{{ __('تحديث الصفحة والمتابعة') }}</button>
         </div>
         <div>
             <a href="/" class="btn-home">
-                <i class="fa-solid fa-arrow-right"></i> العودة للصفحة الرئيسية للمنصة
-            </a>
+                <i class="fa-solid fa-arrow-right"></i>{{ __('العودة للصفحة الرئيسية للمنصة') }}</a>
         </div>
         <div class="institution-footer">
             منصة منارة التوجيهي - الثانوية العامة 🇵🇸 | إشراف الأستاذ أحمد حسين شمالي

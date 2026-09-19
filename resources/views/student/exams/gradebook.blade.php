@@ -9,25 +9,25 @@
     <div style="background: linear-gradient(135deg, var(--primary), #1e293b); color: white; padding: 50px; border-radius: 35px; display: flex; justify-content: space-between; align-items: center; border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.1);">
         <div>
             <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -1px;">سجل الدرجات العام 🎓</h1>
-            <p style="opacity: 0.7; font-size: 1.1rem; margin-top: 10px;">أهلاً بك، إليك تفاصيل أدائك ونتائجك في الاختبارات المكتملة.</p>
+            <p style="opacity: 0.7; font-size: 1.1rem; margin-top: 10px;">{{ __('أهلاً بك، إليك تفاصيل أدائك ونتائجك في الاختبارات المكتملة.') }}</p>
         </div>
         <div style="text-align: center; background: rgba(255,255,255,0.1); padding: 20px 40px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; margin-bottom: 5px;">المعدل التراكمي</div>
+            <div style="font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; margin-bottom: 5px;">{{ __('المعدل التراكمي') }}</div>
             <div style="font-size: 3rem; font-weight: 900; color: #10b981;">{{ number_format($submissions->avg('total_earned_grade'), 1) }}</div>
         </div>
     </div>
 
     {{-- جدول النتائج --}}
     <div class="glass-card" style="padding: 0; overflow: hidden; border: none; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.02);">
-        <div style="padding: 25px 35px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; font-weight: 800; color: var(--primary);">قائمة النتائج التفصيلية</div>
+        <div style="padding: 25px 35px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; font-weight: 800; color: var(--primary);">{{ __('قائمة النتائج التفصيلية') }}</div>
         <table style="width: 100%; border-collapse: collapse; text-align: right;">
             <thead>
                 <tr style="background: #fff; color: #64748b; font-size: 0.85rem; border-bottom: 2px solid #f1f5f9;">
-                    <th style="padding: 20px 35px;">المادة الدراسية</th>
-                    <th style="padding: 20px;">عنوان الاختبار</th>
-                    <th style="padding: 20px;">الدرجة النهائية</th>
-                    <th style="padding: 20px;">الحالة الأكاديمية</th>
-                    <th style="padding: 20px; text-align: center;">التقرير</th>
+                    <th style="padding: 20px 35px;">{{ __('المادة الدراسية') }}</th>
+                    <th style="padding: 20px;">{{ __('عنوان الاختبار') }}</th>
+                    <th style="padding: 20px;">{{ __('الدرجة النهائية') }}</th>
+                    <th style="padding: 20px;">{{ __('الحالة الأكاديمية') }}</th>
+                    <th style="padding: 20px; text-align: center;">{{ __('التقرير') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -59,7 +59,7 @@
                 <tr>
                     <td colspan="5" style="padding: 100px; text-align: center; color: #94a3b8;">
                         <div style="font-size: 3rem; margin-bottom: 15px;">📂</div>
-                        <p>لا يوجد اختبارات مسجلة في سجلك حتى الآن.</p>
+                        <p>{{ __('لا يوجد اختبارات مسجلة في سجلك حتى الآن.') }}</p>
                     </td>
                 </tr>
                 @endforelse

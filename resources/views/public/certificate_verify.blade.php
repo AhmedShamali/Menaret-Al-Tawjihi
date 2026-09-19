@@ -145,15 +145,14 @@
                     <i class="fa-solid fa-shield-check"></i>
                 </div>
             @endif
-            <h2>بوابة التحقق الرسمية</h2>
+            <h2>{{ __('بوابة التحقق الرسمية') }}</h2>
             <p style="opacity: 0.9; font-size: 0.88rem; margin-top: 4px;">{{ $siteName }} • دولة فلسطين 🇵🇸</p>
         </div>
 
         <div class="verify-body">
             @if($certificate)
                 <div class="badge-verified">
-                    <i class="fa-solid fa-circle-check"></i> شهادة أصلية وموثقة بسجلات المنصة
-                </div>
+                    <i class="fa-solid fa-circle-check"></i>{{ __('شهادة أصلية وموثقة بسجلات المنصة') }}</div>
 
                 <div class="info-grid">
                     <div class="info-row">
@@ -161,43 +160,37 @@
                         <span class="info-value" style="color: #007a3d; font-size: 1.05rem; font-weight: 800;">{{ $certificate->student->name_ar ?? $certificate->student->name ?? 'طالب التوجيهي المتميز' }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">المادة الأكاديمية:</span>
+                        <span class="info-label">{{ __('المادة الأكاديمية:') }}</span>
                         <span class="info-value">{{ $certificate->subject->name_ar ?? $certificate->subject->name }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">معدل الاجتياز والتفوق:</span>
+                        <span class="info-label">{{ __('معدل الاجتياز والتفوق:') }}</span>
                         <span class="info-value" style="color: #d97706; font-size: 1.1rem;">{{ $certificate->final_grade }}%</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">رمز الشهادة المرجعي:</span>
+                        <span class="info-label">{{ __('رمز الشهادة المرجعي:') }}</span>
                         <span class="info-value" style="font-family: monospace;">{{ $certificate->certificate_code }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">تاريخ الإصدار:</span>
+                        <span class="info-label">{{ __('تاريخ الإصدار:') }}</span>
                         <span class="info-value">{{ $certificate->created_at ? $certificate->created_at->format('Y-m-d') : date('Y-m-d') }}</span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">المشرف العام المعتمد:</span>
-                        <span class="info-value">أحمد حسين شمالي</span>
+                        <span class="info-label">{{ __('المشرف العام المعتمد:') }}</span>
+                        <span class="info-value">{{ __('أحمد حسين شمالي') }}</span>
                     </div>
                 </div>
 
                 <a href="{{ route('student.certificates.show', $certificate->id) }}" class="btn-home" style="margin-left: 10px;">
-                    <i class="fa-solid fa-eye"></i> استعراض الشهادة
-                </a>
+                    <i class="fa-solid fa-eye"></i>{{ __('استعراض الشهادة') }}</a>
                 <a href="/" class="btn-home" style="background: #e2e8f0; color: #475569;">
-                    <i class="fa-solid fa-house"></i> الرئيسية
-                </a>
+                    <i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
             @else
                 <div class="badge-invalid">
-                    <i class="fa-solid fa-triangle-exclamation"></i> عذراً، هذا الرمز غير صالح أو لم يتم العثور على الشهادة
-                </div>
-                <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 25px;">
-                    الرمز المدخل: <code>{{ $code }}</code> غير مسجل في السجلات الأكاديمية للمنصة.
-                </p>
+                    <i class="fa-solid fa-triangle-exclamation"></i>{{ __('عذراً، هذا الرمز غير صالح أو لم يتم العثور على الشهادة') }}</div>
+                <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 25px;">{{ __('الرمز المدخل:') }}<code>{{ $code }}</code>{{ __('غير مسجل في السجلات الأكاديمية للمنصة.') }}</p>
                 <a href="/" class="btn-home">
-                    <i class="fa-solid fa-house"></i> العودة للرئيسية
-                </a>
+                    <i class="fa-solid fa-house"></i>{{ __('العودة للرئيسية') }}</a>
             @endif
         </div>
     </div>

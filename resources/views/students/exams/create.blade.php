@@ -9,7 +9,7 @@
         <h1 style="font-size: 2.5rem; font-weight: 800; color: var(--primary);">
             {{ isset($student) ? '✏️ تعديل بيانات الطالب' : '🚀 تسجيل طالب جديد' }}
         </h1>
-        <p style="color: var(--text-light);">قم بتعبئة البيانات الـ 10 المطلوبة بدقة لضمان تفعيل الحساب.</p>
+        <p style="color: var(--text-light);">{{ __('قم بتعبئة البيانات الـ 10 المطلوبة بدقة لضمان تفعيل الحساب.') }}</p>
     </div>
 
     <form id="studentForm">
@@ -25,7 +25,7 @@
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div>
-                            <label class="f-label">الاسم الرباعي (بالعربية)</label>
+                            <label class="f-label">{{ __('الاسم الرباعي (بالعربية)') }}</label>
                             <input type="text" name="name_ar" value="{{ $student->name_ar ?? '' }}" class="f-input" required>
                         </div>
                         <div>
@@ -33,11 +33,11 @@
                             <input type="text" name="name_en" value="{{ $student->name_en ?? '' }}" class="f-input" required>
                         </div>
                         <div>
-                            <label class="f-label">رقم الهوية</label>
+                            <label class="f-label">{{ __('رقم الهوية') }}</label>
                             <input type="text" name="nid" value="{{ $student->nid ?? '' }}" maxlength="9" class="f-input" required>
                         </div>
                         <div>
-                            <label class="f-label">العمر</label>
+                            <label class="f-label">{{ __('العمر') }}</label>
                             <input type="number" name="age" value="{{ $student->age ?? '' }}" class="f-input" required>
                         </div>
                     </div>
@@ -45,15 +45,15 @@
                     <h3 style="margin: 35px 0 25px; color: var(--accent); border-right: 4px solid var(--accent); padding-right: 15px;">• التواصل والدخول</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div style="grid-column: span 2;">
-                            <label class="f-label">البريد الإلكتروني</label>
+                            <label class="f-label">{{ __('البريد الإلكتروني') }}</label>
                             <input type="email" name="email" value="{{ $student->email ?? '' }}" class="f-input" placeholder="name@student.ps" required>
                         </div>
                         <div>
-                            <label class="f-label">رقم الجوال</label>
+                            <label class="f-label">{{ __('رقم الجوال') }}</label>
                             <input type="tel" name="phone" value="{{ $student->phone ?? '' }}" class="f-input" required>
                         </div>
                         <div>
-                            <label class="f-label">رقم الواتساب</label>
+                            <label class="f-label">{{ __('رقم الواتساب') }}</label>
                             <input type="tel" name="whatsapp" value="{{ $student->whatsapp ?? '' }}" class="f-input" required>
                         </div>
                         <div style="grid-column: span 2;">
@@ -67,26 +67,26 @@
             <div style="display: flex; flex-direction: column; gap: 25px;">
                 <!-- المسار التعليمي -->
                 <div class="glass-card" style="padding: 30px;">
-                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">المسار الدراسي</h3>
-                    <label class="f-label">الصف الدراسي</label>
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">{{ __('المسار الدراسي') }}</h3>
+                    <label class="f-label">{{ __('الصف الدراسي') }}</label>
                     <select name="stage_id" class="f-input" required>
-                        <option value="">اختر صفك...</option>
+                        <option value="">{{ __('اختر صفك...') }}</option>
                         @foreach($stages as $stage)
                             <option value="{{ $stage->id }}" {{ (isset($student) && $student->stage_id == $stage->id) ? 'selected' : '' }}>
                                 {{ $stage->label_ar }}
                             </option>
                         @endforeach
                     </select>
-                    <label class="f-label" style="margin-top: 15px;">الجنس</label>
+                    <label class="f-label" style="margin-top: 15px;">{{ __('الجنس') }}</label>
                     <select name="gender" class="f-input">
-                        <option {{ (isset($student) && $student->gender == 'ذكر') ? 'selected' : '' }}>ذكر</option>
-                        <option {{ (isset($student) && $student->gender == 'أنثى') ? 'selected' : '' }}>أنثى</option>
+                        <option {{ (isset($student) && $student->gender == 'ذكر') ? 'selected' : '' }}>{{ __('ذكر') }}</option>
+                        <option {{ (isset($student) && $student->gender == 'أنثى') ? 'selected' : '' }}>{{ __('أنثى') }}</option>
                     </select>
                 </div>
 
                 <!-- المرفقات -->
                 <div class="glass-card" style="padding: 30px;">
-                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">الصور والوثائق</h3>
+                    <h3 style="margin-bottom: 20px; font-size: 1.1rem;">{{ __('الصور والوثائق') }}</h3>
                     @if(isset($student))
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                             <img src="{{ asset('storage/'.$student->photo) }}" style="width: 50px; height: 50px; border-radius: 10px;">

@@ -614,7 +614,7 @@
 
                 <div class="form-group">
                     <label class="form-label">{{ __('رقم الهوية الفلسطينية (9 أرقام)') }}</label>
-                    <input type="text" name="nid" maxlength="9" pattern="\d{9}" class="form-control" placeholder="401234567" required style="padding-inline-start: 14px;">
+                    <input type="text" name="nid" maxlength="9" pattern="\d{9}" class="form-control" placeholder="{{ __('401234567') }}" required style="padding-inline-start: 14px;">
                 </div>
 
                 <div class="form-group">

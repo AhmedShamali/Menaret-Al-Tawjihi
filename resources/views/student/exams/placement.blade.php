@@ -240,7 +240,7 @@
     <div id="selection_view">
         <header class="main-header">
             <h1 style="font-weight: 900; font-size: 2.5rem; margin-bottom: 10px;">المنصة الأكاديمية الذكية ✨</h1>
-            <p style="opacity: 0.8; font-size: 1.1rem;">أهلاً بك في نظام التقييم المطور. يرجى اختيار المادة لبدء الاختبار التخصصي.</p>
+            <p style="opacity: 0.8; font-size: 1.1rem;">{{ __('أهلاً بك في نظام التقييم المطور. يرجى اختيار المادة لبدء الاختبار التخصصي.') }}</p>
         </header>
 
         <div class="course-grid">
@@ -283,7 +283,7 @@
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <span style="font-weight: 800; color: #64748b;">السؤال <span id="q_num" style="color: #1e3a8a;">1</span> / 50</span>
+                        <span style="font-weight: 800; color: #64748b;">{{ __('السؤال') }}<span id="q_num" style="color: #1e3a8a;">1</span> / 50</span>
                     </div>
 
                     <h3 id="q_text" style="font-size: 1.6rem; line-height: 1.5; margin-bottom: 40px; color: #0f172a;"></h3>
@@ -293,7 +293,7 @@
                     </div>
 
                     <div style="margin-top: 50px; display: flex; justify-content: space-between;">
-                        <button onclick="move(-1)" class="btn-premium" style="background: #f1f5f9; color: #475569;">السابق</button>
+                        <button onclick="move(-1)" class="btn-premium" style="background: #f1f5f9; color: #475569;">{{ __('السابق') }}</button>
                         <button onclick="move(1)" class="btn-premium btn-main">السؤال التالي ⬅️</button>
                     </div>
                 </div>
@@ -302,13 +302,13 @@
             <aside>
                 <div class="sidebar-panel">
                     <div class="stat-card">
-                        <div style="font-size: 0.8rem; font-weight: 800; color: #991b1b; margin-bottom: 5px;">الوقت المتبقي</div>
+                        <div style="font-size: 0.8rem; font-weight: 800; color: #991b1b; margin-bottom: 5px;">{{ __('الوقت المتبقي') }}</div>
                         <div id="timer" class="timer-text">60:00</div>
                     </div>
 
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.85rem; margin-bottom: 5px;">
-                            <span>الإنجاز الكلي</span>
+                            <span>{{ __('الإنجاز الكلي') }}</span>
                             <span id="progress_pct">0%</span>
                         </div>
                         <div class="progress-bar-wrap">
@@ -330,21 +330,21 @@
     <div id="result_view" style="display: none;">
         <div class="question-box" style="text-align: center; max-width: 700px; margin: 0 auto;">
             <div style="font-size: 5rem;">🏆</div>
-            <h1 style="font-weight: 900; color: #1e3a8a;">اكتمل التقييم بنجاح</h1>
-            <p style="color: #64748b; margin-bottom: 30px;">لقد تم تحليل أدائك الأكاديمي، إليك النتيجة الرسمية:</p>
+            <h1 style="font-weight: 900; color: #1e3a8a;">{{ __('اكتمل التقييم بنجاح') }}</h1>
+            <p style="color: #64748b; margin-bottom: 30px;">{{ __('لقد تم تحليل أدائك الأكاديمي، إليك النتيجة الرسمية:') }}</p>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f8fafc; padding: 30px; border-radius: 20px; border: 1px dashed #cbd5e1;">
                 <div>
-                    <div style="color: #94a3b8; font-weight: 700;">النسبة المئوية</div>
+                    <div style="color: #94a3b8; font-weight: 700;">{{ __('النسبة المئوية') }}</div>
                     <div id="final_pct" style="font-size: 3rem; font-weight: 900; color: #1e3a8a;">0%</div>
                 </div>
                 <div>
-                    <div style="color: #94a3b8; font-weight: 700;">التقدير</div>
+                    <div style="color: #94a3b8; font-weight: 700;">{{ __('التقدير') }}</div>
                     <div id="final_grade" style="font-size: 3rem; font-weight: 900; color: #10b981;">-</div>
                 </div>
             </div>
 
-            <button onclick="location.reload()" class="btn-premium btn-main" style="margin-top: 30px;">العودة للبوابة الأكاديمية</button>
+            <button onclick="location.reload()" class="btn-premium btn-main" style="margin-top: 30px;">{{ __('العودة للبوابة الأكاديمية') }}</button>
         </div>
     </div>
 
@@ -368,10 +368,10 @@
             title: `تأكيد الدخول: ${name}`,
             html: `
                 <div style="text-align: right; padding: 10px;">
-                    <p>أنت على وشك بدء اختبار <b>${code}</b>. يرجى الانتباه للتعليمات التالية:</p>
+                    <p>{{ __('أنت على وشك بدء اختبار') }}<b>${code}</b>{{ __('. يرجى الانتباه للتعليمات التالية:') }}</p>
                     <ul style="line-height: 2;">
-                        <li>مدة الاختبار <b>60 دقيقة</b> ولن يُسمح بالتجاوز.</li>
-                        <li><b>ممنوع التسليم</b> إلا بعد الإجابة على كافة الأسئلة.</li>
+                        <li>{{ __('مدة الاختبار') }}<b>{{ __('60 دقيقة') }}</b>{{ __('ولن يُسمح بالتجاوز.') }}</li>
+                        <li><b>{{ __('ممنوع التسليم') }}</b>{{ __('إلا بعد الإجابة على كافة الأسئلة.') }}</li>
                         <li>سيتم تسجيل عنوان IP الخاص بك لدواعي الأمان الأكاديمي.</li>
                     </ul>
                 </div>

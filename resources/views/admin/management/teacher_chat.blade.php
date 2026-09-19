@@ -13,13 +13,11 @@
                 <div class="teacher-info">
                     <h6 class="teacher-name">المعلم: {{ $teacher->name }}</h6>
                     <div class="status-text">
-                        <span class="dot"></span>
-                        محادثة إدارية نشطة
-                    </div>
+                        <span class="dot"></span>{{ __('محادثة إدارية نشطة') }}</div>
                 </div>
             </div>
             <a href="{{ route('admin.teachers.index') }}" class="close-chat-btn">
-                <span class="btn-text">العودة للقائمة</span>
+                <span class="btn-text">{{ __('العودة للقائمة') }}</span>
                 <span class="btn-icon">🔙</span>
             </a>
         </div>
@@ -28,7 +26,7 @@
         <div class="chat-feed" id="chat_messages">
             <div class="text-center my-auto py-5 text-muted">
                 <div class="loading-art">💬</div>
-                <p>جاري تحميل المحادثة مع المعلم...</p>
+                <p>{{ __('جاري تحميل المحادثة مع المعلم...') }}</p>
             </div>
         </div>
 
@@ -36,11 +34,11 @@
         <div class="chat-input-bar">
             <div class="input-group-custom">
                 <input type="text" id="msg_input"
-                       placeholder="اكتب رسالتك للمعلم هنا..."
+                       placeholder="{{ __('اكتب رسالتك للمعلم هنا...') }}"
                        onkeypress="if(event.key === 'Enter') sendReply()"
                        autocomplete="off">
                 <button class="send-trigger" onclick="sendReply()" id="btn_send">
-                    <span class="send-text">إرسال</span>
+                    <span class="send-text">{{ __('إرسال') }}</span>
                     <i class="send-icon">🚀</i>
                 </button>
             </div>
@@ -271,7 +269,7 @@
             .then(res => {
                 const messages = res.data.messages || [];
                 if(messages.length === 0) {
-                    feed.innerHTML = '<div class="text-center my-auto py-5 text-muted"><p>لا توجد رسائل سابقة. ابدأ المحادثة الآن!</p></div>';
+                    feed.innerHTML = '<div class="text-center my-auto py-5 text-muted"><p>{{ __('لا توجد رسائل سابقة. ابدأ المحادثة الآن!') }}</p></div>';
                     return;
                 }
 

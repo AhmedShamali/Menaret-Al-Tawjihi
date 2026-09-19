@@ -38,83 +38,100 @@
         </div>
     </header>
 
-    {{-- شبكة بطاقات المواد الأكاديمية الكلاسيكية --}}
-    <div class="ed-subjects-grid">
-        @forelse($subjects as $subject)
-            @php
-                $color = $subject->color ?: '#1e3a8a';
-                $lessonsCount = ($subject->educational_contents_count ?? 0) + ($subject->contents_count ?? 0);
-                $examsCount = $subject->exams_count ?? 0;
-            @endphp
-            <article class="ed-subject-card">
-                <div class="ed-card-accent-bar" style="background-color: {{ $color }};"></div>
-
-                <div class="ed-card-header">
-                    <div class="ed-card-meta">
-                        @if(!empty($subject->subject_key))
-                            <span class="ed-subject-code">{{ $subject->subject_key }}</span>
-                        @else
-                            <span class="ed-subject-code">{{ __('مقرر معتمد') }}</span>
-                        @endif
-
-                        @if($subject->stage)
-                            <span class="ed-stage-pill">{{ $subject->stage->label_ar ?? ($subject->stage->name_ar ?? $subject->stage->name) }}</span>
-                        @endif
-                    </div>
-
-                    <div class="ed-subject-icon-box" style="color: {{ $color }}; background-color: {{ $color }}15; border-color: {{ $color }}30;">
-                        <i class="{{ $subject->icon ?: 'fa-solid fa-book-bookmark' }}"></i>
-                    </div>
-                </div>
-
-                <div class="ed-card-body">
-                    <h2 class="ed-subject-name">
-                        <a href="{{ route('student.subjects.show', $subject->id) }}">{{ $subject->name_ar ?? $subject->name }}</a>
-                    </h2>
-
-                    @if(!empty($subject->description))
-                        <p class="ed-subject-desc">{{ Str::limit($subject->description, 95) }}</p>
-                    @endif
-
-                    <div class="ed-metrics-row">
-                        <div class="ed-metric-cell">
-                            <i class="fa-solid fa-circle-play"></i>
-                            <div>
-                                <span class="ed-m-num">{{ $lessonsCount }}</span>
-                                <span class="ed-m-label">{{ __('دروس') }}</span>
-                            </div>
-                        </div>
-
-                        <div class="ed-metric-cell">
-                            <i class="fa-solid fa-file-pen"></i>
-                            <div>
-                                <span class="ed-m-num">{{ $examsCount }}</span>
-                                <span class="ed-m-label">{{ __('اختبارات') }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="ed-card-footer">
-                    <a href="{{ route('student.subjects.show', $subject->id) }}" class="ed-btn-enter">
-                        <span>{{ __('دخول المقرر والدروس') }}</span>
-                        <i class="fa-solid fa-arrow-left arrow-icon"></i>
-                    </a>
-                </div>
-            </article>
-        @empty
-            <div class="ed-empty-catalog">
-                <div class="ed-empty-icon">
-                    <i class="fa-solid fa-folder-open"></i>
-                </div>
-                <h3>{{ __('لا توجد مواد مسجلة حالياً') }}</h3>
-                <p>{{ __('لا توجد مقررات دراسية مسجلة لحسابك حالياً، يرجى مراجعة إدارة المنصة لربط مواد مرحلتك.') }}</p>
-                <a href="{{ route('student.courses.catalog') }}" class="ed-btn-catalog">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>{{ __('باقات المواد والاشتراك') }}</span>
-                </a>
+    {{-- جدول المقررات الأكاديمية الكلاسيكي (بدون كاردات عائمة - طراز جامعي معتمد) --}}
+    <div class="ed-academic-table-container">
+        <div class="table-card-head">
+            <div class="table-card-title">
+                <i class="fa-solid fa-table-list" style="color: #1e3a8a;"></i>
+                <h3>{{ __('سجل المقررات والمباحث الدراسية المقررة') }}</h3>
             </div>
-        @endforelse
+            <span class="table-card-sub">{{ __('المنهاج الفلسطيني المعتمد - دورة') }} 2026</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="academic-roster-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px; text-align: center;">#</th>
+                        <th style="width: 130px;">{{ __('رمز المساق') }}</th>
+                        <th>{{ __('المبحث والمقرر الدراسي') }}</th>
+                        <th>{{ __('الفرع الأكاديمي') }}</th>
+                        <th style="text-align: center; width: 120px;">{{ __('الدروس') }}</th>
+                        <th style="text-align: center; width: 120px;">{{ __('التقييمات') }}</th>
+                        <th style="text-align: center; width: 160px;">{{ __('الإجراء الأكاديمي') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($subjects as $index => $subject)
+                        @php
+                            $color = $subject->color ?: '#1e3a8a';
+                            $lessonsCount = ($subject->educational_contents_count ?? 0) + ($subject->contents_count ?? 0);
+                            $examsCount = $subject->exams_count ?? 0;
+                            $subjectName = (app()->getLocale() === 'en' && !empty($subject->name_en)) ? $subject->name_en : ($subject->name_ar ?? $subject->name);
+                        @endphp
+                        <tr>
+                            <td style="text-align: center; font-weight: 700; color: #64748b;">{{ $index + 1 }}</td>
+                            <td>
+                                <span class="subject-code-tag" style="background: {{ $color }}15; color: {{ $color }}; border: 1px solid {{ $color }}35;">
+                                    {{ $subject->subject_key ?: 'CRS-' . ($subject->id) }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="subject-main-cell">
+                                    <div class="subject-mini-icon" style="color: {{ $color }}; background: {{ $color }}10;">
+                                        <i class="{{ $subject->icon ?: 'fa-solid fa-book-bookmark' }}"></i>
+                                    </div>
+                                    <div>
+                                        <a href="{{ route('student.subjects.show', $subject->id) }}" class="subject-title-link">
+                                            {{ $subjectName }}
+                                        </a>
+                                        @if(!empty($subject->description))
+                                            <p class="subject-mini-desc">{{ Str::limit($subject->description, 80) }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="stage-name-badge">
+                                    {{ $subject->stage->label_ar ?? ($subject->stage->name_ar ?? __('توجيهي')) }}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="metric-pill">
+                                    <i class="fa-solid fa-circle-play" style="color: #1e3a8a;"></i>
+                                    {{ $lessonsCount }} {{ __('درس') }}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <span class="metric-pill">
+                                    <i class="fa-solid fa-file-pen" style="color: #059669;"></i>
+                                    {{ $examsCount }} {{ __('اختبار') }}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <a href="{{ route('student.subjects.show', $subject->id) }}" class="academic-enter-btn">
+                                    <span>{{ __('دخول المقرر') }}</span>
+                                    <i class="fa-solid fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7">
+                                <div class="ed-empty-state-table">
+                                    <i class="fa-solid fa-folder-open" style="font-size: 2.4rem; color: #94a3b8; margin-bottom: 10px;"></i>
+                                    <h4>{{ __('لا توجد مقررات دراسية مسجلة حالياً') }}</h4>
+                                    <p>{{ __('يرجى مراجعة إدارة المنصة لربط مواد مرحلتك أو استعراض باقات الاشتراك.') }}</p>
+                                    <a href="{{ route('courses.catalog') }}" class="academic-enter-btn" style="display: inline-flex; margin-top: 10px;">
+                                        <i class="fa-solid fa-layer-group"></i> {{ __('باقات المواد والاشتراك') }}
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -220,214 +237,190 @@
 .ed-subjects-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-    width: 100%;
-}
-
-/* Card */
-.ed-subject-card {
+/* Container & Table */
+.ed-academic-table-container {
     background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    position: relative;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
 }
 
-.ed-subject-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
-    border-color: #cbd5e1;
-}
-
-.ed-card-accent-bar {
-    height: 4px;
-    width: 100%;
-}
-
-.ed-card-header {
-    padding: 20px 20px 12px;
+.table-card-head {
+    padding: 16px 22px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 12px;
 }
 
-.ed-card-meta {
+.table-card-title {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    gap: 10px;
 }
 
-.ed-subject-code {
-    display: inline-block;
-    background: #f1f5f9;
-    color: #475569;
-    font-size: 0.75rem;
+.table-card-title h3 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.table-card-sub {
+    font-size: 0.8rem;
     font-weight: 700;
+    color: #1e3a8a;
+    background: #eff6ff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #bfdbfe;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.academic-roster-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    color: #1e293b;
+}
+
+.academic-roster-table th {
+    background: #f8fafc;
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 14px 18px;
+    border-bottom: 2px solid #cbd5e1;
+    white-space: nowrap;
+}
+
+.academic-roster-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+.academic-roster-table tr:hover {
+    background: #f8fafc;
+}
+
+.subject-code-tag {
+    display: inline-block;
     font-family: monospace;
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 1px solid #e2e8f0;
-    width: fit-content;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
 }
 
-.ed-stage-pill {
-    font-size: 0.74rem;
-    color: #0284c7;
-    font-weight: 600;
+.subject-main-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.ed-subject-icon-box {
-    width: 46px;
-    height: 46px;
-    border-radius: 10px;
+.subject-mini-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
     display: grid;
     place-items: center;
-    font-size: 1.25rem;
-    border: 1px solid;
+    font-size: 1.1rem;
     flex-shrink: 0;
 }
 
-.ed-card-body {
-    padding: 0 20px 16px;
-    flex: 1;
+.subject-title-link {
+    font-weight: 800;
+    color: #0f172a;
+    text-decoration: none;
+    font-size: 0.95rem;
+    display: block;
+    line-height: 1.3;
 }
 
-.ed-subject-name {
-    font-size: 1.15rem;
-    font-weight: 800;
-    margin: 0 0 8px;
+.subject-title-link:hover {
+    color: #1e3a8a;
+    text-decoration: underline;
+}
+
+.subject-mini-desc {
+    margin: 3px 0 0;
+    font-size: 0.76rem;
+    color: #64748b;
     line-height: 1.35;
 }
 
-.ed-subject-name a {
-    color: #0f172a;
-    text-decoration: none;
-    transition: color 0.15s ease;
-}
-
-.ed-subject-name a:hover {
-    color: #1e3a8a;
-}
-
-.ed-subject-desc {
-    font-size: 0.82rem;
-    color: #64748b;
-    line-height: 1.55;
-    margin: 0 0 16px;
-}
-
-.ed-metrics-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    background: #f8fafc;
-    border: 1px solid #f1f5f9;
-    border-radius: 8px;
-    padding: 10px 14px;
-}
-
-.ed-metric-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.ed-metric-cell i {
-    font-size: 1rem;
-    color: #1e3a8a;
-}
-
-.ed-m-num {
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: #0f172a;
-    font-family: monospace;
-    display: block;
-    line-height: 1.1;
-}
-
-.ed-m-label {
-    font-size: 0.72rem;
-    color: #64748b;
-    font-weight: 600;
-}
-
-.ed-card-footer {
-    padding: 14px 20px;
-    background: #fafafa;
-    border-top: 1px solid #f1f5f9;
-}
-
-.ed-btn-enter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: #1e3a8a;
-    color: #ffffff;
-    text-decoration: none;
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 0.86rem;
+.stage-name-badge {
+    font-size: 0.8rem;
     font-weight: 700;
-    transition: background 0.15s ease, transform 0.15s ease;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    white-space: nowrap;
 }
 
-.ed-btn-enter:hover {
-    background: #172554;
-    color: #ffffff;
+.metric-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #334155;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
 }
 
-html[dir="ltr"] .arrow-icon {
-    transform: rotate(180deg);
-}
-
-/* Empty State */
-.ed-empty-catalog {
-    grid-column: 1 / -1;
-    background: #ffffff;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    padding: 60px 24px;
-    text-align: center;
-}
-
-.ed-empty-icon {
-    font-size: 3rem;
-    color: #94a3b8;
-    margin-bottom: 16px;
-}
-
-.ed-empty-catalog h3 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0 0 8px;
-}
-
-.ed-empty-catalog p {
-    font-size: 0.88rem;
-    color: #64748b;
-    max-width: 480px;
-    margin: 0 auto 20px;
-    line-height: 1.6;
-}
-
-.ed-btn-catalog {
+.academic-enter-btn {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     background: #1e3a8a;
-    color: #ffffff;
+    color: #ffffff !important;
     text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.88rem;
     font-weight: 700;
+    font-size: 0.82rem;
+    padding: 7px 16px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.academic-enter-btn:hover {
+    background: #1e40af;
+}
+
+.ed-empty-state-table {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.ed-empty-state-table h4 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px;
+}
+
+.ed-empty-state-table p {
+    font-size: 0.88rem;
+    color: #64748b;
+    margin: 0 0 16px;
 }
 
 @media (max-width: 768px) {
@@ -441,8 +434,9 @@ html[dir="ltr"] .arrow-icon {
         justify-content: space-around;
         box-sizing: border-box;
     }
-    .ed-subjects-grid {
-        grid-template-columns: 1fr;
+    .academic-roster-table th,
+    .academic-roster-table td {
+        padding: 10px 12px;
     }
 }
 </style>

@@ -115,9 +115,9 @@
             </div>
             <div>
                 <div class="ed-cd-tag">
-                    <i class="fa-solid fa-flag"></i> {{ __('دورة امتحانات فلسطين الوزارية 🇵🇸') }}
+                    <i class="fa-solid fa-flag"></i> {{ __('العام الدراسي للثانوية العامة 🇵🇸') }}
                 </div>
-                <h3>{{ __('العد التنازلي لانطلاق امتحانات التوجيهي') }}</h3>
+                <h3>{{ __('العد التنازلي لاختبارات نهاية العام') }}</h3>
                 <small>{{ __('الوقت يمضي سريعاً، كل دقيقة تقضيها بتركيز تقربك من كليات القمة.') }}</small>
             </div>
         </div>
@@ -145,104 +145,141 @@
         </div>
     </div>
 
-    {{-- 4. أدوات التفوق الدراسي والخدمات الأكاديمية الذكية --}}
+    {{-- 4. أدوات التفوق الدراسي والخدمات الأكاديمية الذكية (طراز جامعي كلاسيكي مسطح) --}}
     <div class="ed-section-box">
         <div class="ed-section-head">
             <div class="ed-sh-title">
-                <i class="fas fa-th-large" style="color: #1e3a8a;"></i>
+                <i class="fas fa-list-check" style="color: #1e3a8a;"></i>
                 <h2>{{ __('أدوات التفوق الدراسي والخدمات الذكية') }}</h2>
             </div>
             <span class="ed-sh-hint">{{ __('وصول مباشر لأقسامك المفضلة') }}</span>
         </div>
 
-        <div class="ed-tools-grid-classic">
-            <a href="{{ route('student.subjects.index') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle blue">
-                    <i class="fas fa-book-open"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('مناهجي ومقرراتي') }}</h4>
-                    <p>{{ __('الدروس والشروحات المعتمدة') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.exams.index') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle green">
-                    <i class="fas fa-file-signature"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('قاعة الاختبارات') }}</h4>
-                    <p>{{ __('نماذج وزارية وامتحانات محاكية') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.planner.index') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle sky">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('جدول المراجعة الذكي') }}</h4>
-                    <p>{{ __('خطة دراسية للأيام المتبقية') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.flashcards.index') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle purple">
-                    <i class="fas fa-bolt"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('بطاقات القوانين') }}</h4>
-                    <p>{{ __('استذكار سريع وتكرار متباعد') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.leaderboard') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle amber">
-                    <i class="fas fa-trophy"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('لوحة الشرف') }}</h4>
-                    <p>{{ __('أوائل طلبة فلسطين ونقاطك') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.achievements') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle gold">
-                    <i class="fas fa-award"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('الشهادات وغرفة التركيز') }}</h4>
-                    <p>{{ __('سجل الإنجاز ومؤقت بومودورو') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="ed-tool-card-classic">
-                <div class="tool-icon-circle rose">
-                    <i class="fas fa-calculator"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('حاسبة المعدل') }}</h4>
-                    <p>{{ __('دليل التنسيق والقبول الجامعي') }}</p>
-                </div>
-                <i class="fas fa-arrow-up-right-from-square tool-arrow"></i>
-            </a>
-
-            <a href="{{ route('student.teachers.index') }}" class="ed-tool-card-classic">
-                <div class="tool-icon-circle violet">
-                    <i class="fas fa-chalkboard-teacher"></i>
-                </div>
-                <div class="tool-info">
-                    <h4>{{ __('معلمو مرحلتي') }}</h4>
-                    <p>{{ __('مراسلة وإرشاد أكاديمي مباشر') }}</p>
-                </div>
-                <i class="fas fa-arrow-left tool-arrow"></i>
-            </a>
+        <div class="table-responsive" style="background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <table class="academic-table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                <tbody>
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px 18px; width: 50%;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle blue" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-book-open"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('مناهجي ومقرراتي') }}</strong>
+                                        <small style="color: #64748b;">{{ __('الدروس والشروحات المعتمدة') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.subjects.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 18px; width: 50%;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle green" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-file-signature"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('قاعة الاختبارات') }}</strong>
+                                        <small style="color: #64748b;">{{ __('اختبارات وتقييمات المناهج الدراسية') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.exams.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle sky" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('جدول المراجعة الذكي') }}</strong>
+                                        <small style="color: #64748b;">{{ __('خطة دراسية للأيام المتبقية') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.planner.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle purple" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('بطاقات القوانين') }}</strong>
+                                        <small style="color: #64748b;">{{ __('استذكار سريع وتكرار متباعد') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.flashcards.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle amber" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-trophy"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('لوحة الشرف') }}</strong>
+                                        <small style="color: #64748b;">{{ __('أوائل طلبة فلسطين ونقاطك') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.leaderboard') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle gold" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-award"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الشهادات وغرفة التركيز') }}</strong>
+                                        <small style="color: #64748b;">{{ __('سجل الإنجاز ومؤقت بومودورو') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.achievements') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle rose" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-calculator"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('حاسبة المعدل') }}</strong>
+                                        <small style="color: #64748b;">{{ __('دليل التنسيق والقبول الجامعي') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="tbl-btn">{{ __('فتح') }} <i class="fas fa-arrow-up-right-from-square"></i></a>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle violet" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('معلمو مرحلتي') }}</strong>
+                                        <small style="color: #64748b;">{{ __('مراسلة وإرشاد أكاديمي مباشر') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('student.teachers.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -1068,7 +1105,7 @@
         }
 
         const tips = [
-            "{{ __('💡 نصيحة اليوم: حل نماذج امتحانات الإنجاز الوزارية والأسئلة الشاملة لضبط إدارة الوقت في القاعة.') }}",
+            "{{ __('💡 نصيحة اليوم: التركيز في مراجعة الدروس وحل التمارين الشاملة لضبط الوقت وفهم الأفكار.') }}",
             "{{ __('💡 نصيحة اليوم: استخدم بطاقات الاستذكار لحفظ القوانين والمصطلحات الصعبة قبل النوم لتثبيتها في الذاكرة.') }}",
             "{{ __('💡 نصيحة اليوم: خصص استراحة 5 دقائق لكل 25 دقيقة دراسة (تقنية بومودورو) لتحافظ على تركيزك.') }}",
             "{{ __('💡 نصيحة اليوم: تأكد من مراجعة أسئلة نهاية كل وحدة في الكتب المدرسية فهي مصدر أساسي للأسئلة.') }}",

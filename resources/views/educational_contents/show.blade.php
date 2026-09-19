@@ -74,12 +74,11 @@
                     <i class="fas fa-graduation-cap me-1"></i> {{ $subject->stage->label_ar ?? 'المرحلة الدراسية' }}
                 </span>
                 <h1 class="fw-bold display-5 mb-2">{{ $subject->name_ar ?? $subject->title }}</h1>
-                <p class="lead opacity-75">مرحباً بك في منصة التعلم. هنا تجد كافة الدروس والمصادر التعليمية المنظمة.</p>
+                <p class="lead opacity-75">{{ __('مرحباً بك في منصة التعلم. هنا تجد كافة الدروس والمصادر التعليمية المنظمة.') }}</p>
             </div>
             <div class="col-md-4 text-md-start mt-4 mt-md-0">
                 <a href="{{ route('educational_contents.create', ['subject' => $subject->id]) }}" class="btn btn-light btn-lg rounded-pill px-4 shadow">
-                    <i class="fas fa-plus-circle text-primary"></i> إضافة محتوى جديد
-                </a>
+                    <i class="fas fa-plus-circle text-primary"></i>{{ __('إضافة محتوى جديد') }}</a>
             </div>
         </div>
     </div>
@@ -114,8 +113,7 @@
                             @endphp
 
                             <div class="d-grid gap-2">
-                                <a href="{{ $videoUrl }}" target="_blank" class="btn btn-primary rounded-3">
-                                    مشاهدة الآن <i class="fas fa-external-link-alt ms-1"></i>
+                                <a href="{{ $videoUrl }}" target="_blank" class="btn btn-primary rounded-3">{{ __('مشاهدة الآن') }}<i class="fas fa-external-link-alt ms-1"></i>
                                 </a>
                                 @if($video->pdf_path)
                                     @php
@@ -135,7 +133,7 @@
                 <div class="col-12">
                     <div class="text-center py-5 bg-light rounded-4">
                         <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" width="80" class="mb-3 opacity-50">
-                        <p class="text-muted">لا توجد دروس مرفوعة حالياً.</p>
+                        <p class="text-muted">{{ __('لا توجد دروس مرفوعة حالياً.') }}</p>
                     </div>
                 </div>
             @endforelse
@@ -172,12 +170,8 @@
                             @endphp
 
                             <div class="d-flex gap-2">
-                                <a href="{{ $pdfUrl }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3">
-                                    عرض
-                                </a>
-                                <a href="{{ $pdfUrl }}" download class="btn btn-danger btn-sm rounded-pill px-3">
-                                    تحميل
-                                </a>
+                                <a href="{{ $pdfUrl }}" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3">{{ __('عرض') }}</a>
+                                <a href="{{ $pdfUrl }}" download class="btn btn-danger btn-sm rounded-pill px-3">{{ __('تحميل') }}</a>
                             </div>
                         </div>
                     </div>
@@ -185,7 +179,7 @@
             @empty
                 <div class="col-12 py-4 text-center text-muted">
                     <i class="fas fa-folder-open fa-3x mb-3 opacity-20"></i>
-                    <p>لا توجد ملفات متوفرة لهذه المادة.</p>
+                    <p>{{ __('لا توجد ملفات متوفرة لهذه المادة.') }}</p>
                 </div>
             @endforelse
         </div>

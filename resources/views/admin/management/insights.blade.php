@@ -4,14 +4,14 @@
     <h1 style="font-size: 2.2rem; font-weight: 900;">تحليلات المحتوى الرقمي 📈</h1>
 
     <div class="glass-card" style="padding: 0; overflow: hidden;">
-        <div style="padding: 20px 30px; background: #f8fafc; font-weight: 800; border-bottom: 1px solid #e2e8f0;">أكثر الدروس مشاهدة</div>
+        <div style="padding: 20px 30px; background: #f8fafc; font-weight: 800; border-bottom: 1px solid #e2e8f0;">{{ __('أكثر الدروس مشاهدة') }}</div>
         <table style="width: 100%; border-collapse: collapse; text-align: right;">
             <thead>
                 <tr style="background: var(--primary); color: white;">
-                    <th style="padding: 20px;">الدرس</th>
-                    <th style="padding: 20px;">المادة</th>
-                    <th style="padding: 20px;">عدد المشاهدات</th>
-                    <th style="padding: 20px;">تفاعل الطلاب</th>
+                    <th style="padding: 20px;">{{ __('الدرس') }}</th>
+                    <th style="padding: 20px;">{{ __('المادة') }}</th>
+                    <th style="padding: 20px;">{{ __('عدد المشاهدات') }}</th>
+                    <th style="padding: 20px;">{{ __('تفاعل الطلاب') }}</th>
                 </tr>
             </thead>
             <tbody>

@@ -10,7 +10,7 @@
             <h1 class="page-title">➕ إضافة محتوى تعليمي جديد</h1>
             <p class="page-subtitle">يمكنك إضافة فيديو، ملف PDF، أو كلاهما معاً للدرس بضغطة واحدة</p>
         </div>
-        <a href="{{ route('teacher.educational_contents.index') }}" class="btn-secondary-custom">إلغاء والعودة</a>
+        <a href="{{ route('teacher.educational_contents.index') }}" class="btn-secondary-custom">{{ __('إلغاء والعودة') }}</a>
     </div>
 
     <form id="createForm" enctype="multipart/form-data">
@@ -25,23 +25,23 @@
 
                     <div class="form-group">
                         <label class="f-label">عنوان الدرس / المحتوى <span class="required">*</span></label>
-                        <input type="text" name="title" class="f-input" placeholder="مثال: الدرس الثالث - الفيزياء" required>
+                        <input type="text" name="title" class="f-input" placeholder="{{ __('مثال: الدرس الثالث - الفيزياء') }}" required>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="f-label">المرحلة الدراسية <span class="required">*</span></label>
+                            <label class="f-label">{{ __('المرحلة الدراسية') }}<span class="required">*</span></label>
                             <select id="stage_select" class="f-input">
-                                <option value="">اختر المرحلة...</option>
+                                <option value="">{{ __('اختر المرحلة...') }}</option>
                                 @foreach($stages as $stage)
                                     <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="f-label">المادة الدراسية <span class="required">*</span></label>
+                            <label class="f-label">{{ __('المادة الدراسية') }}<span class="required">*</span></label>
                             <select name="subject_id" id="subject_select" class="f-input" required disabled>
-                                <option value="">اختر المرحلة أولاً...</option>
+                                <option value="">{{ __('اختر المرحلة أولاً...') }}</option>
                             </select>
                         </div>
                     </div>
@@ -57,8 +57,8 @@
                             <div class="selector-content">
                                 <span class="icon">🎥</span>
                                 <div>
-                                    <strong>فيديو تعليمي</strong>
-                                    <small>رابط يوتيوب أو رفع فيديو مباشرة</small>
+                                    <strong>{{ __('فيديو تعليمي') }}</strong>
+                                    <small>{{ __('رابط يوتيوب أو رفع فيديو مباشرة') }}</small>
                                 </div>
                             </div>
                         </label>
@@ -69,7 +69,7 @@
                                 <span class="icon">📄</span>
                                 <div>
                                     <strong>ملف مرفق (PDF)</strong>
-                                    <small>ملف ملخص، واجب، أو كتاب</small>
+                                    <small>{{ __('ملف ملخص، واجب، أو كتاب') }}</small>
                                 </div>
                             </div>
                         </label>
@@ -93,10 +93,10 @@
                         <div class="form-group">
                             <label class="f-label">رفع ملف المستند أو الملزمة (PDF, Word, Excel, PowerPoint, صور, أرشيف)</label>
                             <input type="file" name="file_upload_pdf" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp,.zip,.rar,.txt" class="f-input file-input">
-                            <small style="color: var(--ed-text-muted, #64748b);">يدعم كافة الامتدادات التعليمية حتى 100 ميجابايت.</small>
+                            <small style="color: var(--ed-text-muted, #64748b);">{{ __('يدعم كافة الامتدادات التعليمية حتى 100 ميجابايت.') }}</small>
                         </div>
                         <div class="form-group">
-                            <label class="f-label">أو رابط ملف خارجي سحابي مباشر</label>
+                            <label class="f-label">{{ __('أو رابط ملف خارجي سحابي مباشر') }}</label>
                             <input type="text" name="pdf_url" class="f-input" placeholder="https://...">
                         </div>
                     </div>
@@ -121,10 +121,10 @@
                     <h3 class="card-title">⚙️ تفاصيل إضافية</h3>
                     <div class="form-group">
                         <label class="f-label">اسم القناة / المصدر</label>
-                        <input type="text" name="channel_name" class="f-input" placeholder="مثال: أ. معتز اسليم">
+                        <input type="text" name="channel_name" class="f-input" placeholder="{{ __('مثال: أ. معتز اسليم') }}">
                     </div>
                     <div class="form-group">
-                        <label class="f-label">ترتيب الدرس</label>
+                        <label class="f-label">{{ __('ترتيب الدرس') }}</label>
                         <input type="number" name="order" value="1" min="1" class="f-input">
                     </div>
                 </div>
@@ -146,7 +146,7 @@
 
     document.getElementById('stage_select').addEventListener('change', function() {
         const subSel = document.getElementById('subject_select');
-        subSel.innerHTML = '<option value="">اختر المادة...</option>';
+        subSel.innerHTML = '<option value="">{{ __('اختر المادة...') }}</option>';
         const stage = stages.find(s => s.id == this.value);
         if (stage && stage.subjects && stage.subjects.length > 0) {
             subSel.disabled = false;

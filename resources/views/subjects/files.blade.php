@@ -8,10 +8,10 @@
     <!-- Header Section & Breadcrumb -->
     <div class="files-header-card">
         <nav class="breadcrumb-nav">
-            <a href="/stages">المراحل التعليمية</a> /
+            <a href="/stages">{{ __('المراحل التعليمية') }}</a> /
             <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage->label_ar ?? 'المرحلة' }}</a> /
             <a href="{{ route('subject.show', $subject->id) }}">{{ $subject->name_ar ?? $subject->title }}</a> /
-            <span class="active">الملفات والملخصات</span>
+            <span class="active">{{ __('الملفات والملخصات') }}</span>
         </nav>
 
         <div class="header-main">
@@ -29,19 +29,18 @@
             </div>
 
             <a href="{{ route('subject.show', $subject->id) }}" class="btn-back-subject">
-                <span>←</span> العودة للمادة
-            </a>
+                <span>←</span>{{ __('العودة للمادة') }}</a>
         </div>
     </div>
 
     <!-- Quick Stats Bar & Search Controls -->
     <div class="files-toolbar">
         <div class="toolbar-stats">
-            <span class="stat-item"><strong>{{ $files->count() }}</strong> ملف متوفر</span>
+            <span class="stat-item"><strong>{{ $files->count() }}</strong>{{ __('ملف متوفر') }}</span>
         </div>
 
         <div class="toolbar-search">
-            <input type="text" id="fileSearchInput" onkeyup="filterFiles()" placeholder="ابحث باسم الملف أو الملخص...">
+            <input type="text" id="fileSearchInput" onkeyup="filterFiles()" placeholder="{{ __('ابحث باسم الملف أو الملخص...') }}">
         </div>
     </div>
 
@@ -77,22 +76,18 @@
                 </div>
 
                 <div class="file-action-buttons">
-                    <a href="{{ $fileUrl }}" target="_blank" class="btn-action-view" title="معاينة الملف" style="display:inline-flex; align-items:center; gap:6px;">
-                        <i class="fa-regular fa-eye"></i> معاينة
-                    </a>
-                    <a href="{{ route('content.download', $file->id) }}" class="btn-action-download" title="تحميل مباشر إلى جهازك" style="display:inline-flex; align-items:center; gap:6px; background: var(--ed-primary); color: #fff;">
-                        <i class="fa-solid fa-cloud-arrow-down"></i> تحميل
-                    </a>
+                    <a href="{{ $fileUrl }}" target="_blank" class="btn-action-view" title="{{ __('معاينة الملف') }}" style="display:inline-flex; align-items:center; gap:6px;">
+                        <i class="fa-regular fa-eye"></i>{{ __('معاينة') }}</a>
+                    <a href="{{ route('content.download', $file->id) }}" class="btn-action-download" title="{{ __('تحميل مباشر إلى جهازك') }}" style="display:inline-flex; align-items:center; gap:6px; background: var(--ed-primary); color: #fff;">
+                        <i class="fa-solid fa-cloud-arrow-down"></i>{{ __('تحميل') }}</a>
                 </div>
             </div>
         @empty
             <div class="empty-state-card">
                 <div class="empty-illustration">📂</div>
-                <h3>لا توجد ملفات أو ملخصات مرفوعة حالياً</h3>
-                <p>لم يقم المعلم بفرز أو رفع أي أوراق عمل لهذه المادة بعد. تحقق لاحقاً!</p>
-                <a href="{{ route('subject.show', $subject->id) }}" class="btn-primary-return">
-                    العودة لصفحة الدروس
-                </a>
+                <h3>{{ __('لا توجد ملفات أو ملخصات مرفوعة حالياً') }}</h3>
+                <p>{{ __('لم يقم المعلم بفرز أو رفع أي أوراق عمل لهذه المادة بعد. تحقق لاحقاً!') }}</p>
+                <a href="{{ route('subject.show', $subject->id) }}" class="btn-primary-return">{{ __('العودة لصفحة الدروس') }}</a>
             </div>
         @endforelse
     </div>

@@ -473,11 +473,9 @@
                 <i class="fa-solid fa-print"></i> طباعة الوثيقة (A4 / PDF)
             </button>
             <button onclick="downloadAsImage()" class="btn-action btn-download" id="btnDownloadImg">
-                <i class="fa-regular fa-image"></i> حفظ كصورة
-            </button>
+                <i class="fa-regular fa-image"></i>{{ __('حفظ كصورة') }}</button>
             <a href="{{ route('student.achievements') }}" class="btn-action btn-back">
-                <i class="fa-solid fa-arrow-right"></i> لوحة الإنجازات
-            </a>
+                <i class="fa-solid fa-arrow-right"></i>{{ __('لوحة الإنجازات') }}</a>
         </div>
     </div>
 
@@ -496,8 +494,8 @@
             <div class="cert-header">
                 <div class="header-col-ar">
                     <h3>دولة فلسطين 🇵🇸</h3>
-                    <p>منظومة منارة التوجيهي للتعليم الأكاديمي</p>
-                    <p style="font-size: 0.72rem; color: #94a3b8;">إشراف ومتابعة الثانوية العامة</p>
+                    <p>{{ __('منظومة منارة التوجيهي للتعليم الأكاديمي') }}</p>
+                    <p style="font-size: 0.72rem; color: #94a3b8;">{{ __('إشراف ومتابعة الثانوية العامة') }}</p>
                 </div>
 
                 <div class="header-emblem">
@@ -510,7 +508,7 @@
                             <i class="fa-solid fa-award"></i>
                         </div>
                     @endif
-                    <span class="emblem-tag">وثيقة تخرج رسمية</span>
+                    <span class="emblem-tag">{{ __('وثيقة تخرج رسمية') }}</span>
                 </div>
 
                 <div class="header-col-en">
@@ -522,7 +520,7 @@
 
             <!-- العنوان الرئيسي -->
             <div class="cert-main-title">
-                <h1>شهادة إتمام وتفوق أكاديمي</h1>
+                <h1>{{ __('شهادة إتمام وتفوق أكاديمي') }}</h1>
                 <div class="cert-sub-title-en">Certificate of Academic Excellence</div>
             </div>
 
@@ -539,8 +537,7 @@
 
                 <div class="cert-detail-text">
                     قد أتمـ/ـت بنجاح واقتدار كافة متطلبات المنهاج والاختبارات الأكاديمية المقررة لمساق:
-                    <strong style="color: #1e3a8a; font-weight: 800;">{{ $subjectNameAr }}</strong>
-                    ضمن مرحلة <strong style="color: #0f172a;">{{ $stageNameAr }}</strong> للعام الدراسي {{ date('Y') }}.
+                    <strong style="color: #1e3a8a; font-weight: 800;">{{ $subjectNameAr }}</strong>{{ __('ضمن مرحلة') }}<strong style="color: #0f172a;">{{ $stageNameAr }}</strong> للعام الدراسي {{ date('Y') }}.
                 </div>
 
                 <div class="cert-meta-pills">
@@ -562,7 +559,7 @@
             <!-- التوقيعات والختم وQR -->
             <div class="cert-footer">
                 <div class="sig-block">
-                    <div class="sig-title">معلم المساق الأكاديمي</div>
+                    <div class="sig-title">{{ __('معلم المساق الأكاديمي') }}</div>
                     @if(\App\Models\Setting::get('teacher_signature'))
                         <div style="height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
                             <img src="{{ asset(\App\Models\Setting::get('teacher_signature')) }}" alt="توقيع المعلم" style="max-height: 42px; max-width: 140px; object-fit: contain;">
@@ -577,11 +574,11 @@
                     @else
                         <div class="official-seal">
                             <i class="fa-solid fa-stamp"></i>
-                            <span>معتمد رسميّاً</span>
+                            <span>{{ __('معتمد رسميّاً') }}</span>
                             <span>OFFICIAL</span>
                         </div>
                     @endif
-                    <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">ختم التوثيق الأكاديمي</span>
+                    <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">{{ __('ختم التوثيق الأكاديمي') }}</span>
                 </div>
 
                 <div class="qr-verify-col">
@@ -589,16 +586,15 @@
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode($verificationUrl) }}" alt="QR Code">
                     </div>
                     <div class="qr-info-text">
-                        <small>رمز الوثيقة المعتمد:</small>
+                        <small>{{ __('رمز الوثيقة المعتمد:') }}</small>
                         <code>{{ $certificate->certificate_code }}</code>
                         <small style="color: #059669; font-weight: 700; margin-top: 2px;">
-                            <i class="fa-solid fa-circle-check"></i> وثيقة أصلية موثقة
-                        </small>
+                            <i class="fa-solid fa-circle-check"></i>{{ __('وثيقة أصلية موثقة') }}</small>
                     </div>
                 </div>
 
                 <div class="sig-block">
-                    <div class="sig-title">المشرف العام وإدارة المنصة</div>
+                    <div class="sig-title">{{ __('المشرف العام وإدارة المنصة') }}</div>
                     @if(\App\Models\Setting::get('admin_signature'))
                         <div style="height: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 4px;">
                             <img src="{{ asset(\App\Models\Setting::get('admin_signature')) }}" alt="توقيع المدير" style="max-height: 42px; max-width: 140px; object-fit: contain;">

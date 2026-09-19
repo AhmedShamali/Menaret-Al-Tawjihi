@@ -8,18 +8,17 @@
     {{-- رأس الصفحة والمسار --}}
     <div class="page-header">
         <nav class="breadcrumb-nav">
-            <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i> الرئيسية</a>
+            <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-            <span>إدارة الكادر</span>
+            <span>{{ __('إدارة الكادر') }}</span>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-            <span class="current">الملف الأكاديمي للمعلم</span>
+            <span class="current">{{ __('الملف الأكاديمي للمعلم') }}</span>
         </nav>
     </div>
 
     {{-- بطاقة رأس الملف الشخصي (Hero Card) --}}
     <div class="profile-hero-card">
-        <div class="profile-id-badge">
-            الرقم التعريفي <br>
+        <div class="profile-id-badge">{{ __('الرقم التعريفي') }}<br>
             <span>#{{ $teacher->id }}</span>
         </div>
 
@@ -35,8 +34,7 @@
 
         <div class="profile-main-info">
             <span class="profile-role-tag">
-                <i class="fa-solid fa-chalkboard-user"></i> عضو هيئة تدريس
-            </span>
+                <i class="fa-solid fa-chalkboard-user"></i>{{ __('عضو هيئة تدريس') }}</span>
             <h1 class="profile-name">{{ $teacher->name }}</h1>
             @if($teacher->major)
                 <p class="profile-major"><i class="fa-solid fa-graduation-cap"></i> {{ $teacher->major }}</p>
@@ -53,7 +51,7 @@
                 <i class="fa-regular fa-envelope"></i>
             </div>
             <div class="info-content">
-                <span class="info-label">البريد الإلكتروني</span>
+                <span class="info-label">{{ __('البريد الإلكتروني') }}</span>
                 <span class="info-value">{{ $teacher->email }}</span>
             </div>
         </div>
@@ -64,7 +62,7 @@
                 <i class="fa-solid fa-school"></i>
             </div>
             <div class="info-content">
-                <span class="info-label">المرحلة الدراسية</span>
+                <span class="info-label">{{ __('المرحلة الدراسية') }}</span>
                 <span class="info-value highlight">
                     {{ optional(optional($teacher->subject)->stage)->label_ar ?? 'غير محددة' }}
                 </span>
@@ -77,7 +75,7 @@
                 <i class="fa-solid fa-book-open"></i>
             </div>
             <div class="info-content">
-                <span class="info-label">المادة الدراسية المسندة</span>
+                <span class="info-label">{{ __('المادة الدراسية المسندة') }}</span>
                 <span class="info-value highlight">
                     {{ optional($teacher->subject)->name_ar ?? optional($teacher->subject)->name ?? 'لم تُسند بعد' }}
                 </span>
@@ -90,7 +88,7 @@
                 <i class="fa-solid fa-calendar-days"></i>
             </div>
             <div class="info-content">
-                <span class="info-label">تاريخ انضمام المعلم</span>
+                <span class="info-label">{{ __('تاريخ انضمام المعلم') }}</span>
                 <span class="info-value">{{ $teacher->created_at->format('Y-m-d') }}</span>
             </div>
         </div>

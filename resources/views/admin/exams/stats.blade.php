@@ -5,28 +5,28 @@
 
     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px;">
         <div class="glass-card" style="padding: 30px; border-right: 6px solid #3b82f6;">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">متوسط درجات الطلاب</span>
+            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">{{ __('متوسط درجات الطلاب') }}</span>
             <h2 style="font-size: 2.5rem; margin-top: 10px; color: #1e293b;">{{ number_format($stats['avg'], 1) }}</h2>
         </div>
         <div class="glass-card" style="padding: 30px; border-right: 6px solid #10b981;">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">أعلى درجة في المساق</span>
+            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">{{ __('أعلى درجة في المساق') }}</span>
             <h2 style="font-size: 2.5rem; margin-top: 10px; color: #1e293b;">{{ $stats['max'] }}</h2>
         </div>
         <div class="glass-card" style="padding: 30px; border-right: 6px solid #f59e0b;">
-            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">إجمالي التسليمات</span>
+            <span style="color: #64748b; font-size: 0.8rem; font-weight: 700;">{{ __('إجمالي التسليمات') }}</span>
             <h2 style="font-size: 2.5rem; margin-top: 10px; color: #1e293b;">{{ $stats['count'] }}</h2>
         </div>
     </div>
 
     {{-- جدول ترتيب الطلاب --}}
     <div class="glass-card" style="padding: 0; overflow: hidden; border: none; border-radius: 30px;">
-        <div style="padding: 20px 30px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 800;">ترتيب المتفوقين</div>
+        <div style="padding: 20px 30px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-weight: 800;">{{ __('ترتيب المتفوقين') }}</div>
         <table style="width: 100%; border-collapse: collapse; text-align: right;">
             <thead>
                 <tr style="color: #64748b; font-size: 0.85rem;">
-                    <th style="padding: 20px;">الطالب</th>
-                    <th style="padding: 20px;">الدرجة</th>
-                    <th style="padding: 20px; text-align: center;">الحالة</th>
+                    <th style="padding: 20px;">{{ __('الطالب') }}</th>
+                    <th style="padding: 20px;">{{ __('الدرجة') }}</th>
+                    <th style="padding: 20px; text-align: center;">{{ __('الحالة') }}</th>
                 </tr>
             </thead>
             <tbody>

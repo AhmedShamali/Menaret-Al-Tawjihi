@@ -194,9 +194,9 @@
         <!-- القائمة الجانبية -->
         <div class="chat-sidebar">
             <div class="sidebar-header">
-                <h4>الدعم الفني</h4>
+                <h4>{{ __('الدعم الفني') }}</h4>
                 <div class="search-box">
-                    <input type="text" id="admin_search" placeholder="بحث عن مشرف...">
+                    <input type="text" id="admin_search" placeholder="{{ __('بحث عن مشرف...') }}">
                 </div>
             </div>
 
@@ -209,11 +209,11 @@
                         <div class="admin-avatar">{{ mb_substr($admin->name, 0, 1) }}</div>
                         <div class="admin-info">
                             <h6>{{ $admin->name }}</h6>
-                            <p>متصل الآن</p>
+                            <p>{{ __('متصل الآن') }}</p>
                         </div>
                     </div>
                     @empty
-                    <p class="text-center p-3 text-muted">لا يوجد مشرفين متاحين</p>
+                    <p class="text-center p-3 text-muted">{{ __('لا يوجد مشرفين متاحين') }}</p>
                     @endforelse
                 @endisset
             </div>
@@ -230,7 +230,7 @@
                         <h6 class="mb-0 fw-bold" id="active_name">
                             {{ isset($support) && $support->count() > 0 ? $support->first()->name : 'اختر مشرفاً' }}
                         </h6>
-                        <small class="text-success" style="font-size: 11px;">نشط الآن</small>
+                        <small class="text-success" style="font-size: 11px;">{{ __('نشط الآن') }}</small>
                     </div>
                 </div>
                 <span class="badge bg-light text-dark border">{{ $studentStage ?? 'طالب' }}</span>
@@ -239,13 +239,13 @@
             <div class="messages-area" id="chat_messages">
                 <div class="welcome-screen">
                     <img src="https://cdn-icons-png.flaticon.com/512/5962/5962463.png" width="80" style="opacity: 0.2;">
-                    <p class="mt-3">اختر مشرفاً لبدء المحادثة</p>
+                    <p class="mt-3">{{ __('اختر مشرفاً لبدء المحادثة') }}</p>
                 </div>
             </div>
 
             <div class="input-area">
-                <input type="text" id="msg_input" placeholder="اكتب رسالتك هنا..." autocomplete="off">
-                <button class="send-btn" onclick="sendSupportMessage()">إرسال</button>
+                <input type="text" id="msg_input" placeholder="{{ __('اكتب رسالتك هنا...') }}" autocomplete="off">
+                <button class="send-btn" onclick="sendSupportMessage()">{{ __('إرسال') }}</button>
             </div>
         </div>
 
@@ -281,7 +281,7 @@
                     let html = '';
                     if(data.messages.length === 0) {
                         html = `<div class="welcome-screen">
-                                    <p class="text-muted">لا توجد رسائل سابقة، ابدأ المحادثة الآن!</p>
+                                    <p class="text-muted">{{ __('لا توجد رسائل سابقة، ابدأ المحادثة الآن!') }}</p>
                                 </div>`;
                     } else {
                         data.messages.forEach(msg => {

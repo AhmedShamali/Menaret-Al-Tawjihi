@@ -47,19 +47,8 @@ class DatabaseSeeder extends Seeder
         // 3. إعدادات المنصة والهوية الرسمية وبوابات الدفع
         $this->call(SettingSeeder::class);
 
-        // 4. إنشاء الطالب النموذجي
-        $this->call(StudentSeeder::class);
-
-        // 5. إنشاء وتحديث المواد الدراسية وربطها بالمراحل
+        // 4. إنشاء وتحديث المواد والمقررات الدراسية الرسمية المعتمدة
         $this->call(SubjectSeeder::class);
-
-        // 6. المحتوى التعليمي، بنك الامتحانات الوزارية، والبطاقات الذكية
-        $this->call([
-            EducationalContentSeeder::class,
-            PastExamSeeder::class,
-            FlashcardSeeder::class,
-            ExamSeeder::class,
-        ]);
 
         // إعادة تفعيل فحص المفاتيح الأجنبية بأمان
         try {

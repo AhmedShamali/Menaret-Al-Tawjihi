@@ -13,9 +13,7 @@
         </div>
         <div class="status-side">
             <div class="status-badge">
-                <span class="pulse-dot"></span>
-                متصل الآن
-            </div>
+                <span class="pulse-dot"></span>{{ __('متصل الآن') }}</div>
         </div>
     </div>
 
@@ -24,10 +22,10 @@
         <table class="responsive-table">
             <thead>
                 <tr>
-                    <th>المستخدم</th>
-                    <th>العملية</th>
-                    <th class="hide-mobile">الوقت</th>
-                    <th style="text-align: center;">الجهاز</th>
+                    <th>{{ __('المستخدم') }}</th>
+                    <th>{{ __('العملية') }}</th>
+                    <th class="hide-mobile">{{ __('الوقت') }}</th>
+                    <th style="text-align: center;">{{ __('الجهاز') }}</th>
                 </tr>
             </thead>
             <tbody>

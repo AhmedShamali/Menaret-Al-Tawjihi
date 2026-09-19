@@ -179,19 +179,17 @@
     <!-- رأس الصفحة -->
     <div class="page-header">
         <div class="page-title">
-            <h2>سجل وبيانات المعلمين</h2>
-            <small style="color: #64748b;">إدارة بيانات الكادر التعليمي، كلمات المرور، والتصدير والاستيراد</small>
+            <h2>{{ __('سجل وبيانات المعلمين') }}</h2>
+            <small style="color: #64748b;">{{ __('إدارة بيانات الكادر التعليمي، كلمات المرور، والتصدير والاستيراد') }}</small>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-            <button type="button" onclick="confirmPurgeAllTeachers()" style="background: #dc2626; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);" title="حذف وتصفير جميع المعلمين دفعة واحدة">
-                <i class="fas fa-trash-can"></i> حذف جميع المعلمين
-            </button>
+            <button type="button" onclick="confirmPurgeAllTeachers()" style="background: #dc2626; color: white; border: none; padding: 9px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);" title="{{ __('حذف وتصفير جميع المعلمين دفعة واحدة') }}">
+                <i class="fas fa-trash-can"></i>{{ __('حذف جميع المعلمين') }}</button>
             <a href="{{ route('admin.teachers.export') }}" class="btn-action" style="background: #059669; color: white; padding: 9px 16px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);" title="تنزيل جدول المعلمين كاملاً إلى ملف Excel/CSV">
                 <i class="fas fa-file-excel"></i> تصدير إكسل (CSV)
             </a>
             <a href="{{ route('admin.teachers.create') }}" class="btn-add-new">
-                <i class="fas fa-plus-circle me-1"></i> إضافة معلم جديد
-            </a>
+                <i class="fas fa-plus-circle me-1"></i>{{ __('إضافة معلم جديد') }}</a>
         </div>
     </div>
 
@@ -207,15 +205,13 @@
     <div id="teacherBulkBar" style="display: none; background: #1e1b4b; color: white; border-radius: 12px; padding: 12px 20px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 15px; box-shadow: 0 4px 14px rgba(30, 27, 75, 0.25);">
         <div style="display: flex; align-items: center; gap: 10px;">
             <span style="background: #4f46e5; width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; font-weight: 900; font-size: 0.9rem;" id="selectedTeachersCount">0</span>
-            <span style="font-weight: 700; font-size: 0.95rem;">معلم تم تحديدهم</span>
+            <span style="font-weight: 700; font-size: 0.95rem;">{{ __('معلم تم تحديدهم') }}</span>
         </div>
         <div style="display: flex; gap: 10px; align-items: center;">
-            <button type="button" onclick="deselectAllTeachers()" style="background: rgba(255,255,255,0.15); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">
-                إلغاء التحديد
-            </button>
+            <button type="button" onclick="deselectAllTeachers()" style="background: rgba(255,255,255,0.15); color: white; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
             <button type="button" onclick="deleteSelectedTeachers()" style="background: #dc2626; color: white; border: none; padding: 7px 16px; border-radius: 6px; font-size: 0.85rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
                 <i class="fas fa-trash-can"></i>
-                <span>حذف المعلمين المحددين</span>
+                <span>{{ __('حذف المعلمين المحددين') }}</span>
             </button>
         </div>
     </div>
@@ -230,12 +226,12 @@
                             <input type="checkbox" id="selectAllTeachersCheckbox" onchange="toggleSelectAllTeachers(this)" title="تحديد / إلغاء تحديد الكل" style="width: 17px; height: 17px; cursor: pointer; accent-color: #4f46e5;">
                         </th>
                         <th style="width: 50px;">#</th>
-                        <th>المعلم</th>
-                        <th>البريد وكلمة المرور</th>
-                        <th>التخصص</th>
-                        <th>المادة المسندة</th>
-                        <th>تاريخ الانضمام</th>
-                        <th style="text-align: center;">التحكم</th>
+                        <th>{{ __('المعلم') }}</th>
+                        <th>{{ __('البريد وكلمة المرور') }}</th>
+                        <th>{{ __('التخصص') }}</th>
+                        <th>{{ __('المادة المسندة') }}</th>
+                        <th>{{ __('تاريخ الانضمام') }}</th>
+                        <th style="text-align: center;">{{ __('التحكم') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -269,7 +265,7 @@
                                     <i class="fas fa-key" style="color: #d97706; font-size: 10px;"></i>
                                     <span>{{ $teacher->plain_password ?: '123456' }}</span>
                                 </span>
-                                <button type="button" onclick="navigator.clipboard.writeText('{{ $teacher->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: #475569;" title="نسخ كلمة المرور">
+                                <button type="button" onclick="navigator.clipboard.writeText('{{ $teacher->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
@@ -286,7 +282,7 @@
                                     {{ $sub->name_ar }}
                                 </span>
                             @else
-                                <span style="color: #94a3b8; font-size: 12px;">غير مسند</span>
+                                <span style="color: #94a3b8; font-size: 12px;">{{ __('غير مسند') }}</span>
                             @endif
                         </td>
                         <td>
@@ -295,16 +291,16 @@
                         </td>
                         <td>
                             <div class="action-group">
-                                <a href="{{ route('admin.teachers.show', $teacher->id) }}" class="action-btn btn-view" title="عرض">
+                                <a href="{{ route('admin.teachers.show', $teacher->id) }}" class="action-btn btn-view" title="{{ __('عرض') }}">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('admin.teachers.edit', $teacher->id) }}" class="action-btn btn-edit" title="تعديل">
+                                <a href="{{ route('admin.teachers.edit', $teacher->id) }}" class="action-btn btn-edit" title="{{ __('تعديل') }}">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <form action="{{ route('admin.teachers.destroy', $teacher->id) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من الحذف؟');" style="margin:0;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="action-btn btn-delete" title="حذف">
+                                    <button type="submit" class="action-btn btn-delete" title="{{ __('حذف') }}">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
@@ -315,7 +311,7 @@
                     <tr>
                         <td colspan="8" style="text-align: center; padding: 50px; color: #94a3b8;">
                             <i class="fas fa-users-slash fa-3x mb-3"></i>
-                            <p>لا يوجد معلمين مسجلين في النظام حتى الآن.</p>
+                            <p>{{ __('لا يوجد معلمين مسجلين في النظام حتى الآن.') }}</p>
                         </td>
                     </tr>
                     @endforelse
@@ -345,7 +341,7 @@
             title: `كلمة مرور المعلم (${name}) 🔑`,
             html: `
                 <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-top: 10px;">
-                    <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 6px;">كلمة المرور الحالية المعتمدة:</span>
+                    <span style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 6px;">{{ __('كلمة المرور الحالية المعتمدة:') }}</span>
                     <code style="font-size: 1.4rem; font-weight: 900; color: #1e1b4b; letter-spacing: 2px; font-family: monospace;">${pwd}</code>
                 </div>
             `,
@@ -427,11 +423,8 @@
             title: 'حذف جميع المعلمين دفعة واحدة ⚠️',
             html: `
                 <div style="background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 12px; padding: 14px; text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #991b1b; line-height: 1.6;">
-                    <strong>تحذير أمني:</strong><br>
-                    أنت على وشك حذف <strong>كافة المعلمين المسجلين في المنصة دفعة واحدة</strong> وإخلاء إسناد المواد الدراسية.<br>
-                    حسابات الإدارة لن تتأثر، ولكن لا يمكن التراجع عن هذه الخطوة.
-                </div>
-                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">للتأكيد، يرجى كتابة العبارة الآتية بدقة:<br><strong style="color: #dc2626; font-size: 1rem;">تأكيد الحذف</strong></p>
+                    <strong>{{ __('تحذير أمني:') }}</strong><br>{{ __('أنت على وشك حذف') }}<strong>{{ __('كافة المعلمين المسجلين في المنصة دفعة واحدة') }}</strong>{{ __('وإخلاء إسناد المواد الدراسية.') }}<br>{{ __('حسابات الإدارة لن تتأثر، ولكن لا يمكن التراجع عن هذه الخطوة.') }}</div>
+                <p style="font-size: 0.85rem; color: #475569; margin-bottom: 8px;">{{ __('للتأكيد، يرجى كتابة العبارة الآتية بدقة:') }}<br><strong style="color: #dc2626; font-size: 1rem;">{{ __('تأكيد الحذف') }}</strong></p>
             `,
             input: 'text',
             inputPlaceholder: 'اكتب هنا: تأكيد الحذف',

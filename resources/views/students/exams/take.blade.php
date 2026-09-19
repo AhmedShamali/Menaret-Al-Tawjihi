@@ -99,7 +99,7 @@
             <span style="font-size: 0.8rem; opacity: 0.8;">الطالب: {{ auth()->user()->name }}</span>
         </div>
         <div class="timer-box">
-            <div style="font-size: 0.6rem; text-transform: uppercase;">الوقت المتبقي</div>
+            <div style="font-size: 0.6rem; text-transform: uppercase;">{{ __('الوقت المتبقي') }}</div>
             <div id="timer" style="font-size: 1.5rem; font-weight: 800; color: var(--success);">{{ $exam->duration_minutes }}:00</div>
         </div>
     </div>
@@ -132,7 +132,7 @@
                 </div>
             @else
                 <textarea name="answers[{{ $q->id }}]" rows="5" class="form-control"
-                    placeholder="اكتب إجابتك هنا..."
+                    placeholder="{{ __('اكتب إجابتك هنا...') }}"
                     style="width: 100%; border-radius: 15px; padding: 15px; border: 2px solid #e2e8f0; outline: none; transition: 0.3s;"></textarea>
 
                 @if($q->require_file)
@@ -148,7 +148,7 @@
 
         <div style="text-align: center; margin-top: 40px; padding-bottom: 50px;">
             <button type="submit" class="submit-btn" onclick="return confirm('هل أنت متأكد من تسليم الإجابات؟ لا يمكنك التراجع بعد ذلك.')">
-                <span>اعتماد وتسليم الاختبار</span>
+                <span>{{ __('اعتماد وتسليم الاختبار') }}</span>
                 <i class="fa-solid fa-paper-plane"></i>
             </button>
         </div>

@@ -316,7 +316,7 @@
                 <div class="form-row-3">
                     <div class="form-col">
                         <label class="form-label">{{ __('الراتب الأساسي (₪)') }} <span class="required" style="color: #dc2626;">*</span></label>
-                        <input type="number" step="0.01" name="basic_salary" id="modalBasicSalary" class="modal-input font-mono" placeholder="0.00" required oninput="calcNetSalary()">
+                        <input type="number" step="0.01" name="basic_salary" id="modalBasicSalary" class="modal-input font-mono" placeholder="{{ __('0.00') }}" required oninput="calcNetSalary()">
                     </div>
 
                     <div class="form-col">

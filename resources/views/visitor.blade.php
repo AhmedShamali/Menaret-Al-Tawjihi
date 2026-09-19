@@ -358,26 +358,20 @@
 
         <div class="header-actions">
             <a href="{{ route('tawjihi.calculator') }}" class="btn-header-link">
-                <i class="fa-solid fa-calculator" style="color: #0284c7;"></i> حاسبة المعدل
-            </a>
+                <i class="fa-solid fa-calculator" style="color: #0284c7;"></i>{{ __('حاسبة المعدل') }}</a>
             <a href="{{ route('tawjihi.archive') }}" class="btn-header-link">
-                <i class="fa-solid fa-file-lines" style="color: #10b981;"></i> بنك الامتحانات
-            </a>
+                <i class="fa-solid fa-file-lines" style="color: #10b981;"></i>{{ __('بنك الامتحانات') }}</a>
             <a href="{{ route('tawjihi.formulas') }}" class="btn-header-link">
-                <i class="fa-solid fa-square-root-variable" style="color: #8b5cf6;"></i> دليل القوانين
-            </a>
+                <i class="fa-solid fa-square-root-variable" style="color: #8b5cf6;"></i>{{ __('دليل القوانين') }}</a>
             @if (Route::has('login'))
                 @auth
                     <a href="{{ url('/dashboard') }}" class="btn-register-header">
-                        <i class="fa-solid fa-gauge-high"></i> لوحة التحكم
-                    </a>
+                        <i class="fa-solid fa-gauge-high"></i>{{ __('لوحة التحكم') }}</a>
                 @else
                     <a href="{{ route('login') }}" class="btn-header-link">
-                        <i class="fa-solid fa-right-to-bracket"></i> دخول
-                    </a>
+                        <i class="fa-solid fa-right-to-bracket"></i>{{ __('دخول') }}</a>
                     <a href="{{ route('students.create') }}" class="btn-register-header">
-                        <i class="fa-solid fa-user-plus"></i> تسجيل طالب
-                    </a>
+                        <i class="fa-solid fa-user-plus"></i>{{ __('تسجيل طالب') }}</a>
                 @endauth
             @endif
         </div>
@@ -389,31 +383,28 @@
             <i class="fa-solid fa-graduation-cap"></i> المنصة التفاعلية الأولى لطلبة التوجيهي في فلسطين 🇵🇸
         </div>
 
-        <h1 class="hero-title">
-            طريقك نحو التفوق والتميز في <br><span>امتحانات الثانوية العامة (التوجيهي)</span>
+        <h1 class="hero-title">{{ __('طريقك نحو التفوق والتميز في') }}<br><span>{{ __('امتحانات الثانوية العامة (التوجيهي)') }}</span>
         </h1>
 
-        <p class="hero-desc">
-            بيئة تعليمية ذكية متكاملة مصممة خصيصاً للمنهاج الفلسطيني المعتمد (العلمي، الأدبي، الريادة والأعمال)، تدعمك ببنك امتحانات الإنجاز الوزارية، بطاقات الاستذكار السريع، وحاسبة التنسيق الجامعي الدقيقة.
-        </p>
+        <p class="hero-desc">{{ __('بيئة تعليمية ذكية متكاملة مصممة خصيصاً للمنهاج الفلسطيني المعتمد (العلمي، الأدبي، الريادة والأعمال)، تدعمك ببنك امتحانات الإنجاز الوزارية، بطاقات الاستذكار السريع، وحاسبة التنسيق الجامعي الدقيقة.') }}</p>
 
         <!-- أزرار الإجراءات الرئيسية -->
         <div class="cta-buttons-container">
             <a href="{{ route('students.create') }}" class="btn-cta-primary">
-                <span>إنشاء حساب طالب جديد</span>
+                <span>{{ __('إنشاء حساب طالب جديد') }}</span>
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
             <a href="{{ route('tawjihi.calculator') }}" class="btn-cta-secondary">
                 <i class="fa-solid fa-calculator" style="color: #0284c7;"></i>
-                <span>حاسبة معدل التوجيهي والقبول الجامعي</span>
+                <span>{{ __('حاسبة معدل التوجيهي والقبول الجامعي') }}</span>
             </a>
-            <a href="{{ route('tawjihi.archive') }}" class="btn-cta-green">
-                <i class="fa-solid fa-book-bookmark"></i>
-                <span>أرشيف الامتحانات الوزارية النموذجية</span>
+            <a href="{{ route('courses.catalog') }}" class="btn-cta-green">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>{{ __('دليل المقررات والمباحث الدراسية') }}</span>
             </a>
             <a href="{{ route('tawjihi.formulas') }}" class="btn-cta-secondary" style="border-color: #c7d2fe; background: #f5f3ff; color: #5b21b6;">
                 <i class="fa-solid fa-square-root-variable" style="color: #7c3aed;"></i>
-                <span>دليل القوانين والقواعد الذهبية</span>
+                <span>{{ __('دليل القوانين والقواعد الذهبية') }}</span>
             </a>
         </div>
 
@@ -421,33 +412,33 @@
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon icon-blue"><i class="fa-solid fa-book-open-reader"></i></div>
-                <h3>المنهاج الفلسطيني الرسمي</h3>
-                <p>شروحات مفصلة، ملفات PDF، وملازم تلخيص تغطي فروع العلمي والأدبي والريادة بدقة واحترافية.</p>
+                <h3>{{ __('المنهاج الفلسطيني الرسمي') }}</h3>
+                <p>{{ __('شروحات مفصلة، ملفات PDF، وملازم تلخيص تغطي فروع العلمي والأدبي والريادة بدقة واحترافية.') }}</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon icon-purple"><i class="fa-solid fa-play"></i></div>
-                <h3>شروحات فيديو تفاعلية وملازم</h3>
-                <p>دروس فيديو متخصصة مع ملخصات شاملة ومتابعة مباشرة مع نخبة من أفضل معلمي فلسطين.</p>
+                <h3>{{ __('شروحات فيديو تفاعلية وملازم') }}</h3>
+                <p>{{ __('دروس فيديو متخصصة مع ملخصات شاملة ومتابعة مباشرة مع نخبة من أفضل معلمي فلسطين.') }}</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon icon-emerald"><i class="fa-solid fa-file-shield"></i></div>
-                <h3>بنك امتحانات الإنجاز الوزارية</h3>
-                <p>نماذج الامتحانات الوزارية من 2020 إلى 2024 مع نماذج الإجابة الرسمية المعتمدة للتحميل المباشر.</p>
+                <h3>{{ __('بنك التدريبات والأنشطة التفاعلية') }}</h3>
+                <p>{{ __('أسئلة وتدريبات تفاعلية شاملة لكافة الوحدات والدروس لترسيخ الفهم والتحضير للاختبارات.') }}</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon icon-amber"><i class="fa-solid fa-scale-balanced"></i></div>
-                <h3>حاسبة القبول الجامعي الموحد</h3>
-                <p>احسب معدلك وفق قواعد وزارة التربية والتعليم وتعرف على التخصصات المتاحة لك في جامعات الوطن.</p>
+                <h3>{{ __('حاسبة القبول الجامعي الموحد') }}</h3>
+                <p>{{ __('احسب معدلك وفق قواعد وزارة التربية والتعليم وتعرف على التخصصات المتاحة لك في جامعات الوطن.') }}</p>
             </div>
         </div>
     </main>
 
     <!-- الفوتر -->
     <footer class="visitor-footer">
-        <p>جميع الحقوق محفوظة © {{ date('Y') }} — {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</p>
+        <p>{{ __('جميع الحقوق محفوظة') }} © {{ date('Y') }} — {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</p>
     </footer>
 
 </body>

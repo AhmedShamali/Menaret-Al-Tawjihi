@@ -9,24 +9,21 @@
     <header class="page-header">
         <div class="header-info">
             <nav class="breadcrumb-nav">
-                <span>البوابة الإدارية</span>
+                <span>{{ __('البوابة الإدارية') }}</span>
                 <i class="fa-solid fa-chevron-left sep"></i>
-                <span>المساقات</span>
+                <span>{{ __('المساقات') }}</span>
                 <i class="fa-solid fa-chevron-left sep"></i>
-                <span class="current">إعداد اختبار جديد</span>
+                <span class="current">{{ __('إعداد اختبار جديد') }}</span>
             </nav>
-            <h1 class="page-title">
-                مركز إعداد التقييمات الأكاديمية
-                <span class="badge-live">
-                    <span class="pulse-dot"></span> مباشر
-                </span>
+            <h1 class="page-title">{{ __('مركز إعداد التقييمات الأكاديمية') }}<span class="badge-live">
+                    <span class="pulse-dot"></span>{{ __('مباشر') }}</span>
             </h1>
-            <p class="page-subtitle">صمم الأسئلة الموضوعية والمقالية واضبط معايير التقييم بدقة وسهولة</p>
+            <p class="page-subtitle">{{ __('صمم الأسئلة الموضوعية والمقالية واضبط معايير التقييم بدقة وسهولة') }}</p>
         </div>
         <div class="header-actions">
             <button type="button" onclick="publishExamNow()" id="publishBtn" class="btn-publish">
                 <i class="fa-solid fa-paper-plane"></i>
-                <span>نشر الاختبار للمساق</span>
+                <span>{{ __('نشر الاختبار للمساق') }}</span>
             </button>
         </div>
     </header>
@@ -43,8 +40,8 @@
                     <div class="empty-icon-wrapper">
                         <i class="fa-solid fa-file-circle-plus"></i>
                     </div>
-                    <h3>قائمة الأسئلة فارغة حالياً</h3>
-                    <p>ابدأ ببناء التقييم عبر اختيار نوع السؤال (موضوعي أو مقالي) من الشريط السفلي.</p>
+                    <h3>{{ __('قائمة الأسئلة فارغة حالياً') }}</h3>
+                    <p>{{ __('ابدأ ببناء التقييم عبر اختيار نوع السؤال (موضوعي أو مقالي) من الشريط السفلي.') }}</p>
                 </div>
 
                 <div id="questions_list" class="questions-list">
@@ -59,7 +56,7 @@
                         </div>
                         <div class="tool-text">
                             <strong>سؤال موضوعي (MCQ)</strong>
-                            <small>تصحيح تلقائي وإجابات متعددة</small>
+                            <small>{{ __('تصحيح تلقائي وإجابات متعددة') }}</small>
                         </div>
                     </button>
 
@@ -71,7 +68,7 @@
                         </div>
                         <div class="tool-text">
                             <strong>سؤال مقالي (Essay)</strong>
-                            <small>إجابة كتابية أو رفع ملفات</small>
+                            <small>{{ __('إجابة كتابية أو رفع ملفات') }}</small>
                         </div>
                     </button>
                 </div>
@@ -84,15 +81,15 @@
                 <div class="builder-card summary-card">
                     <div class="card-header">
                         <i class="fa-solid fa-chart-pie"></i>
-                        <h3>ملخص التقييم اللحظي</h3>
+                        <h3>{{ __('ملخص التقييم اللحظي') }}</h3>
                     </div>
                     <div class="stats-grid">
                         <div class="stat-box">
-                            <span class="stat-label">إجمالي الأسئلة</span>
+                            <span class="stat-label">{{ __('إجمالي الأسئلة') }}</span>
                             <strong id="q_stat_count" class="stat-value">0</strong>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-label">مجموع النقاط</span>
+                            <span class="stat-label">{{ __('مجموع النقاط') }}</span>
                             <strong id="q_stat_points" class="stat-value highlight">0</strong>
                         </div>
                     </div>
@@ -102,18 +99,18 @@
                 <div class="builder-card">
                     <div class="card-header">
                         <i class="fa-solid fa-sliders"></i>
-                        <h3>المعايير الأكاديمية</h3>
+                        <h3>{{ __('المعايير الأكاديمية') }}</h3>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label>عنوان الاختبار الأكاديمي <span class="req">*</span></label>
-                            <input type="text" name="title" class="form-control" placeholder="مثلاً: الامتحان النهائي - 2026" required>
+                            <label>{{ __('عنوان الاختبار الأكاديمي') }}<span class="req">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="{{ __('مثلاً: الامتحان النهائي - 2026') }}" required>
                         </div>
 
                         <div class="form-group">
                             <label>المرحلة / الصف الدراسي <span class="req">*</span></label>
                             <select id="stage_picker" class="form-control form-select" required>
-                                <option value="">اختر الصف الدراسي...</option>
+                                <option value="">{{ __('اختر الصف الدراسي...') }}</option>
                                 @foreach($stages as $stage)
                                     <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
                                 @endforeach
@@ -121,17 +118,17 @@
                         </div>
 
                         <div class="form-group">
-                            <label>المادة التعليمية <span class="req">*</span></label>
+                            <label>{{ __('المادة التعليمية') }}<span class="req">*</span></label>
                             <select name="subject_id" id="subject_picker" class="form-control form-select" disabled required>
-                                <option value="">اختر المرحلة أولاً...</option>
+                                <option value="">{{ __('اختر المرحلة أولاً...') }}</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label>مدة الاختبار</label>
+                            <label>{{ __('مدة الاختبار') }}</label>
                             <div class="input-addon-group">
                                 <input type="number" name="duration_minutes" value="60" class="form-control" min="1">
-                                <span class="addon-text">دقيقة</span>
+                                <span class="addon-text">{{ __('دقيقة') }}</span>
                             </div>
                         </div>
                     </div>
@@ -767,7 +764,7 @@
     // 1. الربط الديناميكي بين المرحلة والمادة
     stagePicker.addEventListener('change', function() {
         const id = this.value;
-        subjectPicker.innerHTML = '<option value="">اختر المادة...</option>';
+        subjectPicker.innerHTML = '<option value="">{{ __('اختر المادة...') }}</option>';
         if (id) {
             const stage = stagesData.find(s => s.id == id);
             if (stage && stage.subjects.length > 0) {
@@ -776,7 +773,7 @@
                 });
                 subjectPicker.disabled = false;
             } else {
-                subjectPicker.innerHTML = '<option value="">لا توجد مواد متاحة</option>';
+                subjectPicker.innerHTML = '<option value="">{{ __('لا توجد مواد متاحة') }}</option>';
                 subjectPicker.disabled = true;
             }
         } else {
@@ -834,28 +831,28 @@
                     <span class="q-badge">سؤال #${qIdx + 1}</span>
                     <div class="q-header-right">
                         <div class="points-input-wrapper">
-                            <label>الدرجة:</label>
+                            <label>{{ __('الدرجة:') }}</label>
                             <input type="number" name="questions[${qIdx}][points]" value="5" min="1" oninput="updateStats()" required>
                         </div>
-                        <button type="button" class="btn-delete-q" onclick="this.closest('.question-card').remove(); updateStats();" title="حذف السؤال">
+                        <button type="button" class="btn-delete-q" onclick="this.closest('.question-card').remove(); updateStats();" title="{{ __('حذف السؤال') }}">
                             <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>نص السؤال الأكاديمي <span class="req">*</span></label>
-                    <textarea name="questions[${qIdx}][question_text]" class="form-control" rows="2" placeholder="اكتب نص السؤال بوضوح هنا..." required></textarea>
+                    <label>{{ __('نص السؤال الأكاديمي') }}<span class="req">*</span></label>
+                    <textarea name="questions[${qIdx}][question_text]" class="form-control" rows="2" placeholder="{{ __('اكتب نص السؤال بوضوح هنا...') }}" required></textarea>
 
                     <div class="q-image-upload-wrapper">
                         <input type="file" name="questions[${qIdx}][image]" id="q_img_input_${qIdx}" accept="image/*" hidden onchange="handleQuestionImage(this, ${qIdx})">
                         <label for="q_img_input_${qIdx}" class="q-img-label">
                             <i class="fa-solid fa-image"></i>
-                            <span>إرفاق صورة مساعدة</span>
+                            <span>{{ __('إرفاق صورة مساعدة') }}</span>
                         </label>
                         <div class="q-image-preview" id="q_img_preview_${qIdx}" style="display: none;">
                             <img id="q_img_${qIdx}" src="" alt="صورة السؤال">
-                            <button type="button" class="btn-remove-img" onclick="removeQuestionImage(${qIdx})" title="حذف الصورة">
+                            <button type="button" class="btn-remove-img" onclick="removeQuestionImage(${qIdx})" title="{{ __('حذف الصورة') }}">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
@@ -866,13 +863,13 @@
         if (type === 'mcq') {
             html += `
                 <div class="mcq-options-grid">
-                    <div class="option-group"><span class="option-badge">A</span><input type="text" name="questions[${qIdx}][a]" class="option-input" placeholder="الخيار الأول" required></div>
-                    <div class="option-group"><span class="option-badge">B</span><input type="text" name="questions[${qIdx}][b]" class="option-input" placeholder="الخيار الثاني" required></div>
-                    <div class="option-group"><span class="option-badge">C</span><input type="text" name="questions[${qIdx}][c]" class="option-input" placeholder="الخيار الثالث" required></div>
-                    <div class="option-group"><span class="option-badge">D</span><input type="text" name="questions[${qIdx}][d]" class="option-input" placeholder="الخيار الرابع" required></div>
+                    <div class="option-group"><span class="option-badge">A</span><input type="text" name="questions[${qIdx}][a]" class="option-input" placeholder="{{ __('الخيار الأول') }}" required></div>
+                    <div class="option-group"><span class="option-badge">B</span><input type="text" name="questions[${qIdx}][b]" class="option-input" placeholder="{{ __('الخيار الثاني') }}" required></div>
+                    <div class="option-group"><span class="option-badge">C</span><input type="text" name="questions[${qIdx}][c]" class="option-input" placeholder="{{ __('الخيار الثالث') }}" required></div>
+                    <div class="option-group"><span class="option-badge">D</span><input type="text" name="questions[${qIdx}][d]" class="option-input" placeholder="{{ __('الخيار الرابع') }}" required></div>
                 </div>
                 <div class="form-group" style="margin-top: 18px; margin-bottom: 0;">
-                    <label>الإجابة الصحيحة (مفتاح التصحيح)</label>
+                    <label>{{ __('الإجابة الصحيحة (مفتاح التصحيح)') }}</label>
                     <select name="questions[${qIdx}][correct_answer]" class="form-control" style="max-width: 200px;">
                         <option value="a">الخيار (A)</option>
                         <option value="b">الخيار (B)</option>
@@ -911,7 +908,7 @@
         }
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري النشر...</span>';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __('جاري النشر...') }}</span>';
 
         const storeRoute = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.exams.store') : route('teacher.exams.store') }}";
         const indexRoute = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.exams.index') : route('teacher.exams.index') }}";
@@ -935,7 +932,7 @@
         .catch(err => {
             Swal.fire('خطأ!', err.response?.data?.message || 'تأكد من إدخال كافة البيانات المطلوبة.', 'error');
             btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>نشر الاختبار للمساق</span>';
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>{{ __('نشر الاختبار للمساق') }}</span>';
         });
     }
 </script>

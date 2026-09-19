@@ -8,11 +8,11 @@
     <!-- رأس الصفحة مع مسار التنقل -->
     <div style="margin-bottom: 35px;">
         <nav style="display: flex; gap: 10px; font-size: 0.85rem; color: var(--text-light); margin-bottom: 10px;">
-            <a href="{{ route('students.index') }}" style="color: inherit; text-decoration: none;">إدارة الطلاب</a> /
-            <span style="color: var(--accent); font-weight: 600;">تعديل البيانات</span>
+            <a href="{{ route('students.index') }}" style="color: inherit; text-decoration: none;">{{ __('إدارة الطلاب') }}</a> /
+            <span style="color: var(--accent); font-weight: 600;">{{ __('تعديل البيانات') }}</span>
         </nav>
         <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">✏️ تحديث بيانات الطالب</h1>
-        <p style="color: var(--text-light);">أنت الآن تقوم بتعديل ملف: <strong style="color: var(--primary);">{{ $student->name_ar }}</strong></p>
+        <p style="color: var(--text-light);">{{ __('أنت الآن تقوم بتعديل ملف:') }}<strong style="color: var(--primary);">{{ $student->name_ar }}</strong></p>
     </div>
 
     <form id="editStudentForm">
@@ -26,12 +26,10 @@
 
                 <!-- القسم الأول: الهوية -->
                 <div class="glass-card" style="padding: 35px;">
-                    <h3 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 25px; border-right: 4px solid var(--accent); padding-right: 15px;">
-                        البيانات الشخصية
-                    </h3>
+                    <h3 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 25px; border-right: 4px solid var(--accent); padding-right: 15px;">{{ __('البيانات الشخصية') }}</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="f-group">
-                            <label class="f-label">الاسم الرباعي (عربي)</label>
+                            <label class="f-label">{{ __('الاسم الرباعي (عربي)') }}</label>
                             <input type="text" name="name_ar" value="{{ $student->name_ar }}" class="f-input" required>
                         </div>
                         <div class="f-group">
@@ -39,11 +37,11 @@
                             <input type="text" name="name_en" value="{{ $student->name_en }}" class="f-input" required>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الهوية</label>
+                            <label class="f-label">{{ __('رقم الهوية') }}</label>
                             <input type="text" name="nid" value="{{ $student->nid }}" maxlength="9" class="f-input" required>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">العمر</label>
+                            <label class="f-label">{{ __('العمر') }}</label>
                             <input type="number" name="age" value="{{ $student->age }}" class="f-input" required>
                         </div>
                     </div>
@@ -51,24 +49,22 @@
 
                 <!-- القسم الثاني: التواصل -->
                 <div class="glass-card" style="padding: 35px;">
-                    <h3 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 25px; border-right: 4px solid var(--accent); padding-right: 15px;">
-                        التواصل والدخول
-                    </h3>
+                    <h3 style="font-size: 1.1rem; color: var(--accent); margin-bottom: 25px; border-right: 4px solid var(--accent); padding-right: 15px;">{{ __('التواصل والدخول') }}</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div class="f-group" style="grid-column: span 2;">
-                            <label class="f-label">البريد الإلكتروني</label>
+                            <label class="f-label">{{ __('البريد الإلكتروني') }}</label>
                             <input type="email" name="email" value="{{ $student->email }}" class="f-input" required>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الجوال</label>
+                            <label class="f-label">{{ __('رقم الجوال') }}</label>
                             <input type="tel" name="phone" value="{{ $student->phone }}" class="f-input" required>
                         </div>
                         <div class="f-group">
-                            <label class="f-label">رقم الواتساب</label>
+                            <label class="f-label">{{ __('رقم الواتساب') }}</label>
                             <input type="tel" name="whatsapp" value="{{ $student->whatsapp }}" class="f-input" required>
                         </div>
                         <div class="f-group" style="grid-column: span 2;">
-                            <label class="f-label">كلمة المرور (اتركها فارغة إذا لم ترد التغيير)</label>
+                            <label class="f-label">{{ __('كلمة المرور (اتركها فارغة إذا لم ترد التغيير)') }}</label>
                             <input type="password" name="password" class="f-input" placeholder="••••••••">
                         </div>
                     </div>
@@ -80,9 +76,9 @@
 
                 <!-- الحالة والمسار -->
                 <div class="glass-card" style="padding: 30px;">
-                    <h3 style="margin-bottom: 20px; font-size: 1rem;">المسار الدراسي</h3>
+                    <h3 style="margin-bottom: 20px; font-size: 1rem;">{{ __('المسار الدراسي') }}</h3>
                     <div class="f-group" style="margin-bottom: 15px;">
-                        <label class="f-label">الصف الحالي</label>
+                        <label class="f-label">{{ __('الصف الحالي') }}</label>
                         <select name="stage_id" class="f-input">
                             @foreach($stages as $stage)
                                 <option value="{{ $stage->id }}" {{ $student->stage_id == $stage->id ? 'selected' : '' }}>
@@ -92,27 +88,27 @@
                         </select>
                     </div>
                     <div class="f-group">
-                        <label class="f-label">الجنس</label>
+                        <label class="f-label">{{ __('الجنس') }}</label>
                         <select name="gender" class="f-input">
-                            <option {{ $student->gender == 'ذكر' ? 'selected' : '' }}>ذكر</option>
-                            <option {{ $student->gender == 'أنثى' ? 'selected' : '' }}>أنثى</option>
+                            <option {{ $student->gender == 'ذكر' ? 'selected' : '' }}>{{ __('ذكر') }}</option>
+                            <option {{ $student->gender == 'أنثى' ? 'selected' : '' }}>{{ __('أنثى') }}</option>
                         </select>
                     </div>
                 </div>
 
                 <!-- المرفقات الحالية والجديدة -->
                 <div class="glass-card" style="padding: 30px;">
-                    <h3 style="margin-bottom: 20px; font-size: 1rem;">الصور والوثائق</h3>
+                    <h3 style="margin-bottom: 20px; font-size: 1rem;">{{ __('الصور والوثائق') }}</h3>
 
                     {{-- عرض الصور الحالية --}}
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <div class="preview-box">
-                            <img src="{{ asset('storage/'.$student->photo) }}" title="الصورة الشخصية">
-                            <span>الشخصية</span>
+                            <img src="{{ asset('storage/'.$student->photo) }}" title="{{ __('الصورة الشخصية') }}">
+                            <span>{{ __('الشخصية') }}</span>
                         </div>
                         <div class="preview-box">
-                            <img src="{{ asset('storage/'.$student->id_photo) }}" title="صورة الهوية">
-                            <span>الهوية</span>
+                            <img src="{{ asset('storage/'.$student->id_photo) }}" title="{{ __('صورة الهوية') }}">
+                            <span>{{ __('الهوية') }}</span>
                         </div>
                     </div>
 

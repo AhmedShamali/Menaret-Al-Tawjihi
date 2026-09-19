@@ -6,11 +6,11 @@
     <div class="monitor-header">
         <div class="title-area">
             <h1 class="main-title">نبض المنصة 🛡️</h1>
-            <p class="sub-title">مراقبة حية للعمليات الأمنية والأكاديمية.</p>
+            <p class="sub-title">{{ __('مراقبة حية للعمليات الأمنية والأكاديمية.') }}</p>
         </div>
         <div class="status-badge">
             <span class="dot"></span> 
-            <span class="badge-text">البث المباشر مفعل</span>
+            <span class="badge-text">{{ __('البث المباشر مفعل') }}</span>
         </div>
     </div>
 
@@ -19,10 +19,10 @@
         <table class="live-table">
             <thead>
                 <tr>
-                    <th>المستخدم</th>
-                    <th>النشاط</th>
+                    <th>{{ __('المستخدم') }}</th>
+                    <th>{{ __('النشاط') }}</th>
                     <th class="hide-mobile">الجهاز/IP</th>
-                    <th>التوقيت</th>
+                    <th>{{ __('التوقيت') }}</th>
                 </tr>
             </thead>
             <tbody>

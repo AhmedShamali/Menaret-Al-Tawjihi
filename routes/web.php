@@ -86,11 +86,9 @@ Route::resource('educational_contents', EducationalContentController::class);
 Route::get('/tawjihi-calculator', [\App\Http\Controllers\TawjihiCalculatorController::class, 'index'])->name('tawjihi.calculator');
 Route::post('/tawjihi-calculator/calculate', [\App\Http\Controllers\TawjihiCalculatorController::class, 'calculate'])->name('tawjihi.calculate');
 
-// أرشيف الامتحانات الوزارية ونماذج الإجابة الرسمية
-Route::get('/tawjihi-archive', [\App\Http\Controllers\PastExamController::class, 'index'])->name('tawjihi.archive');
-Route::get('/past-exams', [\App\Http\Controllers\PastExamController::class, 'index'])->name('past-exams.index');
-Route::get('/tawjihi-archive/paper/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadPaper'])->name('tawjihi.download.paper');
-Route::get('/tawjihi-archive/answer-key/{id}', [\App\Http\Controllers\PastExamController::class, 'downloadAnswerKey'])->name('tawjihi.download.key');
+// إعادة توجيه أرشيف الامتحانات إلى دليل المقررات
+Route::redirect('/tawjihi-archive', '/catalog')->name('tawjihi.archive');
+Route::redirect('/past-exams', '/catalog')->name('past-exams.index');
 
 // بطاقات الاستذكار السريع والقوانين (Flashcards) للعامة والطلاب
 Route::get('/public-flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('smart.learning.flashcards');

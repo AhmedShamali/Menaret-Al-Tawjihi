@@ -33,8 +33,8 @@
             @else
                 <!-- إجابة مقالية -->
                 <div style="margin-bottom: 25px;">
-                    <label class="uni-label">اكتب إجابتك هنا (اختياري)</label>
-                    <textarea name="answer_text" rows="6" class="uni-input" placeholder="ابدأ الكتابة..."></textarea>
+                    <label class="uni-label">{{ __('اكتب إجابتك هنا (اختياري)') }}</label>
+                    <textarea name="answer_text" rows="6" class="uni-input" placeholder="{{ __('ابدأ الكتابة...') }}"></textarea>
                 </div>
 
                 @if($question->require_file)
@@ -42,7 +42,7 @@
                         <input type="file" name="file_attachment" id="f_up" hidden>
                         <label for="f_up" style="cursor: pointer;">
                             <div style="font-size: 2.5rem; margin-bottom: 10px;">📤</div>
-                            <strong style="display: block;">اضغط لرفع ملف الحل</strong>
+                            <strong style="display: block;">{{ __('اضغط لرفع ملف الحل') }}</strong>
                             <span style="font-size: 0.8rem; color: #64748b;">(PDF, JPG, PNG) - الحجم الأقصى 10MB</span>
                         </label>
                     </div>

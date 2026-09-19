@@ -917,9 +917,7 @@
                 <li class="nav-item"><a href="{{ route('home') }}" class="nav-link active"><i class="fa-solid fa-house"></i> {{ __('الرئيسية') }}</a></li>
                 <li class="nav-item"><a href="#branches" class="nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
                 <li class="nav-item"><a href="#features" class="nav-link"><i class="fa-solid fa-list-check"></i> {{ __('خدمات المنصة') }}</a></li>
-                @if(Route::has('tawjihi.archive'))
-                    <li class="nav-item"><a href="{{ route('tawjihi.archive') }}" class="nav-link"><i class="fa-solid fa-folder-open"></i> {{ __('بنك الامتحانات الوزارية') }}</a></li>
-                @endif
+                <li class="nav-item"><a href="{{ route('courses.catalog') }}" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> {{ __('دليل المقررات') }}</a></li>
                 @if(Route::has('tawjihi.calculator'))
                     <li class="nav-item"><a href="{{ route('tawjihi.calculator') }}" class="nav-link"><i class="fa-solid fa-calculator"></i> {{ __('حساب المعدل') }}</a></li>
                 @endif
@@ -977,17 +975,17 @@
                         {{ __('مرحباً بكم في منصة منارة التوجيهي التعليمية') }}
                     </h2>
                     <p>
-                        {{ __('المنظومة الأكاديمية الفلسطينية المتخصصة في مرافقة طلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). تقدم المنصة شروحات منهجية مبسطة، بنك نماذج اختبارات وزارية محلولة، ومتابعة دراسية دقيقة لمساعدة كل طالب على نيل أعلى المراتب والتفوق بإذن الله.') }}
+                        {{ __('المنظومة الأكاديمية الفلسطينية المتخصصة في مرافقة طلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). تقدم المنصة شروحات منهجية مبسطة، تدريبات تفاعلية شاملة، ومتابعة دراسية دقيقة لمساعدة كل طالب على نيل أعلى المراتب والتفوق بإذن الله.') }}
                     </p>
 
                     <div class="hero-features-strip">
                         <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('منهاج وزارة التربية والتعليم المعتمد') }}</span>
-                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('بنك أسئلة ونماذج وزارية سابقة') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('بنك أسئلة وتدريبات تفاعلية شاملة') }}</span>
                         <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('ملازم وتلاخيص PDF للتحميل') }}</span>
                     </div>
                 </div>
 
-                <!-- صندوق فروع الثانوية العامة -->
+                <!-- جدول فروع ومسارات الثانوية العامة المعتمدة -->
                 <div class="ed-card" id="branches">
                     <div class="ed-card-header">
                         <h2>
@@ -996,65 +994,80 @@
                         </h2>
                         <span style="font-size: 11.5px; font-weight: 700; color: var(--ed-primary);">{{ __('تغطية شاملة 100%') }}</span>
                     </div>
-                    <div class="ed-card-body">
-                        <div class="branches-grid">
-                            <!-- العلمي -->
-                            <div class="branch-box sci">
-                                <div class="branch-box-head">
-                                    <h4>{{ __('الفرع العلمي') }}</h4>
-                                    <span class="branch-badge">{{ __('مسار علمي ⚛️') }}</span>
-                                </div>
-                                <p>{{ __('شروحات عميقة وتمارين تفصيلية لقوانين المساقات العلمية ونماذج التوجيهي الوزارية.') }}</p>
-                                <div class="branch-tags-list">
-                                    <span class="branch-tag">{{ __('الرياضيات') }}</span>
-                                    <span class="branch-tag">{{ __('الفيزياء') }}</span>
-                                    <span class="branch-tag">{{ __('الكيمياء') }}</span>
-                                    <span class="branch-tag">{{ __('العلوم الحياتية') }}</span>
-                                </div>
-                            </div>
-
-                            <!-- الأدبي -->
-                            <div class="branch-box lit">
-                                <div class="branch-box-head">
-                                    <h4>{{ __('الفرع الأدبي') }}</h4>
-                                    <span class="branch-badge">{{ __('مسار أدبي 📜') }}</span>
-                                </div>
-                                <p>{{ __('تبسيط شامل لقواعد وقصائد اللغة العربية والإنجليزية، وتلخيص التاريخ والجغرافيا.') }}</p>
-                                <div class="branch-tags-list">
-                                    <span class="branch-tag">{{ __('اللغة العربية') }}</span>
-                                    <span class="branch-tag">{{ __('اللغة الإنجليزية') }}</span>
-                                    <span class="branch-tag">{{ __('التاريخ') }}</span>
-                                    <span class="branch-tag">{{ __('الجغرافيا') }}</span>
-                                </div>
-                            </div>
-
-                            <!-- الريادة والأعمال -->
-                            <div class="branch-box bus">
-                                <div class="branch-box-head">
-                                    <h4>{{ __('فرع الريادة والأعمال') }}</h4>
-                                    <span class="branch-badge">{{ __('ريادة واقتصاد 💼') }}</span>
-                                </div>
-                                <p>{{ __('مسائل تطبيقية في المحاسبة المالية، دراسات الجدوى، والإدارة والاقتصاد والمشاريع.') }}</p>
-                                <div class="branch-tags-list">
-                                    <span class="branch-tag">{{ __('المحاسبة') }}</span>
-                                    <span class="branch-tag">{{ __('الإدارة والاقتصاد') }}</span>
-                                    <span class="branch-tag">{{ __('المشاريع الصغيرة') }}</span>
-                                </div>
-                            </div>
-
-                            <!-- الشرعي والصناعي -->
-                            <div class="branch-box voc">
-                                <div class="branch-box-head">
-                                    <h4>{{ __('الفرع الشرعي والصناعي') }}</h4>
-                                    <span class="branch-badge">{{ __('مسارات مهنية وشرعية ⚙️') }}</span>
-                                </div>
-                                <p>{{ __('تغطية مساقات العلوم الشرعية والحديث والفقه، بجانب الرياضيات والفيزياء التطبيقية الصناعية.') }}</p>
-                                <div class="branch-tags-list">
-                                    <span class="branch-tag">{{ __('العلوم الإسلامية') }}</span>
-                                    <span class="branch-tag">{{ __('الرياضيات الصناعية') }}</span>
-                                    <span class="branch-tag">{{ __('الفيزياء التطبيقية') }}</span>
-                                </div>
-                            </div>
+                    <div class="ed-card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="academic-table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                                <thead>
+                                    <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                                        <th style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem; color: #1e293b; width: 220px;">{{ __('الفرع والمسار الأكاديمي') }}</th>
+                                        <th style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem; color: #1e293b;">{{ __('أبرز المساقات والمباحث المقررة') }}</th>
+                                        <th style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem; color: #1e293b; width: 140px; text-align: center;">{{ __('التغطية') }}</th>
+                                        <th style="padding: 12px 18px; font-weight: 800; font-size: 0.82rem; color: #1e293b; width: 140px; text-align: center;">{{ __('المنهاج') }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #1e3a8a; font-size: 0.95rem; display: block;">{{ __('الفرع العلمي') }}</strong>
+                                            <small style="color: #64748b;">{{ __('مسار علمي ⚛️') }}</small>
+                                        </td>
+                                        <td style="padding: 14px 18px; font-size: 0.85rem; color: #334155;">
+                                            {{ __('الرياضيات (علمي)، الفيزياء، الكيمياء، العلوم الحياتية (الأحياء)، اللغة العربية، والإنجليزية.') }}
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #991b1b; font-size: 0.95rem; display: block;">{{ __('الفرع الأدبي') }}</strong>
+                                            <small style="color: #64748b;">{{ __('مسار أدبي 📜') }}</small>
+                                        </td>
+                                        <td style="padding: 14px 18px; font-size: 0.85rem; color: #334155;">
+                                            {{ __('اللغة العربية، اللغة الإنجليزية، التاريخ، الجغرافيا، الدراسات الإسلامية، والرياضيات الأدبية.') }}
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #065f46; font-size: 0.95rem; display: block;">{{ __('فرع الريادة والأعمال') }}</strong>
+                                            <small style="color: #64748b;">{{ __('ريادة واقتصاد 💼') }}</small>
+                                        </td>
+                                        <td style="padding: 14px 18px; font-size: 0.85rem; color: #334155;">
+                                            {{ __('المحاسبة المالية، الإدارة والاقتصاد، المشاريع الصغيرة، الرياضيات التطبيقية، والتكنولوجيا.') }}
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #334155; font-size: 0.95rem; display: block;">{{ __('الفرع الشرعي والصناعي') }}</strong>
+                                            <small style="color: #64748b;">{{ __('مسارات مهنية وشرعية ⚙️') }}</small>
+                                        </td>
+                                        <td style="padding: 14px 18px; font-size: 0.85rem; color: #334155;">
+                                            {{ __('العلوم الإسلامية والحديث والفقه، بجانب الرياضيات والفيزياء التطبيقية والمهنية.') }}
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <span style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('معتمد') }}</span>
+                                        </td>
+                                        <td style="padding: 14px 18px; text-align: center;">
+                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1068,39 +1081,48 @@
                         </h3>
                         <span style="font-size: 11.5px; font-weight: 700; color: var(--ed-success);">{{ __('بيئة دراسية متكاملة') }}</span>
                     </div>
-                    <div class="ed-card-body">
-                        <div class="features-grid">
-                            <div class="feature-card">
-                                <div class="feature-icon-wrap"><i class="fa-solid fa-play"></i></div>
-                                <div class="feature-text">
-                                    <h4>{{ __('شروحات مرئية منظمة') }}</h4>
-                                    <p>{{ __('دروس مصورة عالية الجودة مرتبة ترتيباً دقيقاً حسب فهرس ووحدات الكتاب الوزاري الفلسطيني.') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="feature-card">
-                                <div class="feature-icon-wrap green"><i class="fa-solid fa-clipboard-check"></i></div>
-                                <div class="feature-text">
-                                    <h4>{{ __('بنك نماذج الامتحانات الوزارية') }}</h4>
-                                    <p>{{ __('اختبارات السنوات السابقة لجميع الفروع مع نماذج الإجابات الرسمية المعتمدة وتوزيع الدرجات.') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="feature-card">
-                                <div class="feature-icon-wrap gold"><i class="fa-solid fa-file-pdf"></i></div>
-                                <div class="feature-text">
-                                    <h4>{{ __('ملازم وتلاخيص PDF') }}</h4>
-                                    <p>{{ __('ملفات دراسية وتلاخيص مكثفة جاهزة للتحميل والطباعة المنزلية لسرعة مراجعة القوانين والقواعد.') }}</p>
-                                </div>
-                            </div>
-
-                            <div class="feature-card">
-                                <div class="feature-icon-wrap"><i class="fa-solid fa-chalkboard-user"></i></div>
-                                <div class="feature-text">
-                                    <h4>{{ __('إشراف ومتابعة مستمرة') }}</h4>
-                                    <p>{{ __('تواصل أكاديمي ومتابعة مباشرة من المشرف أ. أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.') }}</p>
-                                </div>
-                            </div>
+                    <div class="ed-card-body" style="padding: 0;">
+                        <div class="table-responsive">
+                            <table class="academic-table" style="width: 100%; border-collapse: collapse; margin: 0;">
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px; width: 45px; text-align: center;">
+                                            <i class="fa-solid fa-circle-play" style="color: #1e3a8a; font-size: 1.25rem;"></i>
+                                        </td>
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #0f172a; font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ __('شروحات مرئية منظمة') }}</strong>
+                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('دروس مصورة عالية الجودة مرتبة ترتيباً دقيقاً حسب فهرس ووحدات الكتاب الوزاري الفلسطيني.') }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px; width: 45px; text-align: center;">
+                                            <i class="fa-solid fa-file-pen" style="color: #059669; font-size: 1.25rem;"></i>
+                                        </td>
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #0f172a; font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ __('بنك التدريبات والتقييمات الذاتية') }}</strong>
+                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('أسئلة وتدريبات تفاعلية لكل درس ووحدة دراسية لترسيخ القوانين والمفاهيم.') }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 14px 18px; width: 45px; text-align: center;">
+                                            <i class="fa-solid fa-file-pdf" style="color: #d97706; font-size: 1.25rem;"></i>
+                                        </td>
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #0f172a; font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ __('ملازم وتلاخيص PDF') }}</strong>
+                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('ملفات دراسية وتلاخيص مكثفة جاهزة للتحميل والطباعة المنزلية لسرعة مراجعة القوانين والقواعد.') }}</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 14px 18px; width: 45px; text-align: center;">
+                                            <i class="fa-solid fa-chalkboard-user" style="color: #4f46e5; font-size: 1.25rem;"></i>
+                                        </td>
+                                        <td style="padding: 14px 18px;">
+                                            <strong style="color: #0f172a; font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ __('إشراف ومتابعة مستمرة') }}</strong>
+                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('تواصل أكاديمي ومتابعة مباشرة من المشرف أ. أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.') }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -1136,7 +1158,7 @@
                                     </tr>
                                     <tr>
                                         <td style="text-align: center;"><strong>{{ __('الخطوة 3') }}</strong></td>
-                                        <td>{{ __('مشاهدة الدروس والشروحات، تحميل التلاخيص والملازم، وحل نماذج الامتحانات الوزارية بانتظام.') }}</td>
+                                        <td>{{ __('مشاهدة الدروس والشروحات، تحميل التلاخيص والملازم، وحل التدريبات والأنشطة بانتظام.') }}</td>
                                         <td style="text-align: center;"><a href="{{ route('dashboard') }}" style="font-weight: 700;">{{ __('لوحة التحكم ←') }}</a></td>
                                     </tr>
                                 </tbody>
@@ -1219,7 +1241,7 @@
                         <div class="study-tip-box">
                             <h5><i class="fa-solid fa-star"></i> {{ __('سر النجاح في التوجيهي:') }}</h5>
                             <p>
-                                {{ __('التركيز اليومي المتواصل، حل أسئلة الكتاب المدرسي الوزاري بدقة، والتدرب على نماذج السنوات السابقة يضمن لك ثبات المعلومة وتجنب مفاجآت الامتحانات الوزارية.') }}
+                                {{ __('التركيز اليومي المتواصل، حل أسئلة وتمارين الكتاب المدرسي بدقة، والمتابعة المستمرة تضمن لك ثبات المعلومة والتفوق في نتائج الثانوية.') }}
                             </p>
                         </div>
                     </div>

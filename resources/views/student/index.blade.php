@@ -9,7 +9,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
             <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">سجل الطلاب والطلبات 👥</h1>
-            <p style="color: var(--text-light);">إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية.</p>
+            <p style="color: var(--text-light);">{{ __('إدارة وتفعيل حسابات طلاب منصة منارة التوجيهي والمراجعة الأكاديمية.') }}</p>
         </div>
         <a href="{{ route('students.create') }}" class="btn btn-primary" style="border-radius: 15px; padding: 15px 30px;">
             ➕ إضافة طالب جديد
@@ -21,11 +21,11 @@
         <table style="width: 100%; border-collapse: collapse; text-align: right;">
             <thead>
                 <tr style="background: var(--primary); color: white;">
-                    <th style="padding: 25px;">الطالب</th>
-                    <th style="padding: 25px;">المرحلة الدراسية</th>
-                    <th style="padding: 25px;">رقم الهوية</th>
-                    <th style="padding: 25px;">الحالة</th>
-                    <th style="padding: 25px; text-align: center;">الإجراءات</th>
+                    <th style="padding: 25px;">{{ __('الطالب') }}</th>
+                    <th style="padding: 25px;">{{ __('المرحلة الدراسية') }}</th>
+                    <th style="padding: 25px;">{{ __('رقم الهوية') }}</th>
+                    <th style="padding: 25px;">{{ __('الحالة') }}</th>
+                    <th style="padding: 25px; text-align: center;">{{ __('الإجراءات') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,12 +66,12 @@
                             </button>
 
                             {{-- زر التعديل --}}
-                            <a href="{{ route('students.edit', $student->id) }}" class="act-icon edit-btn" title="تعديل البيانات">
+                            <a href="{{ route('students.edit', $student->id) }}" class="act-icon edit-btn" title="{{ __('تعديل البيانات') }}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </a>
 
                             {{-- زر الحذف --}}
-                            <button onclick="deleteStudent({{ $student->id }})" class="act-icon delete-btn" title="حذف الطالب">
+                            <button onclick="deleteStudent({{ $student->id }})" class="act-icon delete-btn" title="{{ __('حذف الطالب') }}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                             </button>
 

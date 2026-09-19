@@ -4,7 +4,7 @@
 <div style="max-width: 1000px; margin: 50px auto;">
     <div style="text-align: center; margin-bottom: 60px;">
         <h1 style="font-size: 3rem; font-weight: 900; color: var(--primary);">مركز المساعدة 💡</h1>
-        <p style="color: #64748b;">كل ما تحتاج لمعرفته حول تجربة التعلم في جسر.</p>
+        <p style="color: #64748b;">{{ __('كل ما تحتاج لمعرفته حول تجربة التعلم في جسر.') }}</p>
     </div>
 
     <div style="display: grid; gap: 20px;">

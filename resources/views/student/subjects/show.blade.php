@@ -859,9 +859,7 @@
                                         <iframe src="{{ str_replace('watch?v=', 'embed/', $videoUrl) }}" allowfullscreen loading="lazy"></iframe>
                                     @else
                                         <video id="player_{{ $video->id }}" controls preload="metadata">
-                                            <source src="{{ $videoUrl }}" type="video/mp4">
-                                            متصفحك لا يدعم مشغل الفيديو.
-                                        </video>
+                                            <source src="{{ $videoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}</video>
                                     @endif
                                 </div>
 

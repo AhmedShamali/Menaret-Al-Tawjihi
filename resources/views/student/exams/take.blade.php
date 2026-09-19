@@ -97,9 +97,9 @@
                             <span class="ed-q-number">سؤال {{ $index + 1 }} من {{ count($exam->questions) }}</span>
                             <span class="ed-q-score"><i class="far fa-star"></i> {{ $q->points }} درجات</span>
                         </div>
-                        <button type="button" class="ed-flag-btn" onclick="toggleFlag({{ $q->id }}, {{ $index }})" title="تمييز للمراجعة">
+                        <button type="button" class="ed-flag-btn" onclick="toggleFlag({{ $q->id }}, {{ $index }})" title="{{ __('تمييز للمراجعة') }}">
                             <i class="far fa-bookmark" id="flag_icon_{{ $q->id }}"></i>
-                            <span>مراجعة</span>
+                            <span>{{ __('مراجعة') }}</span>
                         </button>
                     </div>
 
@@ -113,8 +113,7 @@
                         @if(!empty($questionImage))
                         <div class="ed-q-image-box">
                             <button type="button" class="ed-zoom-btn" onclick="openImageModal('{{ asset('storage/' . $questionImage) }}')">
-                                <i class="fas fa-search-plus"></i> تكبير الصورة
-                            </button>
+                                <i class="fas fa-search-plus"></i>{{ __('تكبير الصورة') }}</button>
                             <img src="{{ asset('storage/' . $questionImage) }}" alt="مرفق السؤال" class="ed-q-img" onclick="openImageModal('{{ asset('storage/' . $questionImage) }}')">
                         </div>
                         @endif
@@ -141,11 +140,11 @@
                             </div>
                         @else
                             <div class="ed-written-answer-box">
-                                <label class="ed-input-label">اكتب إجابتك النموذجية:</label>
+                                <label class="ed-input-label">{{ __('اكتب إجابتك النموذجية:') }}</label>
                                 <textarea 
                                     name="answers[{{ $q->id }}]" 
                                     rows="4" 
-                                    placeholder="دون إجابتك هنا بوضوح وبشكل كامل..." 
+                                    placeholder="{{ __('دون إجابتك هنا بوضوح وبشكل كامل...') }}" 
                                     class="ed-textarea" 
                                     oninput="markAsAnswered({{ $index }}, {{ $q->id }})"
                                 ></textarea>
@@ -177,9 +176,9 @@
                 <div class="ed-final-submit-wrap">
                     <button type="button" onclick="confirmSubmission()" id="submitBtn" class="ed-btn ed-btn-primary" style="padding: 14px 44px; font-size: 1.05rem;">
                         <i class="fas fa-paper-plane"></i>
-                        <span>تسليم الاختبار النهائي</span>
+                        <span>{{ __('تسليم الاختبار النهائي') }}</span>
                     </button>
-                    <p class="ed-submit-hint">تأكد من مراجعة كافة الأسئلة وإجاباتك قبل الضغط على تسليم الاختبار.</p>
+                    <p class="ed-submit-hint">{{ __('تأكد من مراجعة كافة الأسئلة وإجاباتك قبل الضغط على تسليم الاختبار.') }}</p>
                 </div>
             </div>
 
@@ -187,14 +186,14 @@
             <aside class="ed-take-sidebar">
                 <div class="ed-nav-card">
                     <div class="ed-nav-header">
-                        <h4><i class="fas fa-map-marked-alt"></i> خريطة الأسئلة</h4>
+                        <h4><i class="fas fa-map-marked-alt"></i>{{ __('خريطة الأسئلة') }}</h4>
                         <span class="ed-progress-counter"><strong id="answeredCounter">0</strong> / {{ count($exam->questions) }}</span>
                     </div>
 
                     <div class="ed-nav-legend">
-                        <span class="legend-item"><span class="dot answered"></span> تم الحل</span>
-                        <span class="legend-item"><span class="dot flagged"></span> للمراجعة</span>
-                        <span class="legend-item"><span class="dot unvisited"></span> متبقي</span>
+                        <span class="legend-item"><span class="dot answered"></span>{{ __('تم الحل') }}</span>
+                        <span class="legend-item"><span class="dot flagged"></span>{{ __('للمراجعة') }}</span>
+                        <span class="legend-item"><span class="dot unvisited"></span>{{ __('متبقي') }}</span>
                     </div>
 
                     <div class="ed-nav-grid">
@@ -206,9 +205,7 @@
                     </div>
 
                     <div class="ed-sidebar-submit">
-                        <button type="button" onclick="confirmSubmission()" class="ed-btn ed-btn-outline" style="width: 100%; justify-content: center;">
-                            تسليم الاختبار
-                        </button>
+                        <button type="button" onclick="confirmSubmission()" class="ed-btn ed-btn-outline" style="width: 100%; justify-content: center;">{{ __('تسليم الاختبار') }}</button>
                     </div>
                 </div>
             </aside>

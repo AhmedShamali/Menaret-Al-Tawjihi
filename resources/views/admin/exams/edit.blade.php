@@ -9,27 +9,24 @@
     <div class="page-header">
         <div class="header-info">
             <nav class="breadcrumb-nav">
-                <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i> الرئيسية</a>
+                <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
                 <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-                <a href="{{ route('admin.exams.index') }}">إدارة الاختبارات</a>
+                <a href="{{ route('admin.exams.index') }}">{{ __('إدارة الاختبارات') }}</a>
                 <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-                <span class="current">تعديل الاختبار</span>
+                <span class="current">{{ __('تعديل الاختبار') }}</span>
             </nav>
             <h1 class="page-title">
-                <i class="fa-solid fa-pen-to-square text-primary"></i>
-                تعديل الاختبار
-                <span class="exam-badge">{{ $exam->title }}</span>
+                <i class="fa-solid fa-pen-to-square text-primary"></i>{{ __('تعديل الاختبار') }}<span class="exam-badge">{{ $exam->title }}</span>
             </h1>
-            <p class="page-subtitle">يمكنك تعديل معلومات الاختبار، إضافة أسئلة جديدة أو تعديل وحذف الأسئلة الحالية.</p>
+            <p class="page-subtitle">{{ __('يمكنك تعديل معلومات الاختبار، إضافة أسئلة جديدة أو تعديل وحذف الأسئلة الحالية.') }}</p>
         </div>
 
         <div class="header-actions">
             <a href="{{ route('admin.exams.index') }}" class="btn-secondary">
-                <i class="fa-solid fa-arrow-right"></i> إلغاء
-            </a>
+                <i class="fa-solid fa-arrow-right"></i>{{ __('إلغاء') }}</a>
             <button type="button" onclick="updateExam({{ $exam->id }})" id="saveBtn" class="btn-primary">
                 <i class="fa-solid fa-floppy-disk"></i>
-                <span>حفظ التغييرات</span>
+                <span>{{ __('حفظ التغييرات') }}</span>
             </button>
         </div>
     </div>
@@ -47,20 +44,20 @@
                         <div class="header-icon">
                             <i class="fa-solid fa-sliders"></i>
                         </div>
-                        <h3>إعدادات الاختبار</h3>
+                        <h3>{{ __('إعدادات الاختبار') }}</h3>
                     </div>
 
                     <div class="card-body">
                         <div class="f-group mb-20">
-                            <label class="f-label">عنوان الاختبار <span class="req">*</span></label>
+                            <label class="f-label">{{ __('عنوان الاختبار') }}<span class="req">*</span></label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-solid fa-heading icon"></i>
-                                <input type="text" name="title" value="{{ $exam->title }}" class="f-input" required placeholder="أدخل عنوان الاختبار">
+                                <input type="text" name="title" value="{{ $exam->title }}" class="f-input" required placeholder="{{ __('أدخل عنوان الاختبار') }}">
                             </div>
                         </div>
 
                         <div class="f-group mb-20">
-                            <label class="f-label">المدة الزمنية (بالدقائق) <span class="req">*</span></label>
+                            <label class="f-label">{{ __('المدة الزمنية (بالدقائق)') }}<span class="req">*</span></label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-regular fa-clock icon"></i>
                                 <input type="number" name="duration_minutes" value="{{ $exam->duration_minutes }}" class="f-input" required min="1">
@@ -68,7 +65,7 @@
                         </div>
 
                         <div class="f-group mb-20">
-                            <label class="f-label">درجة النجاح</label>
+                            <label class="f-label">{{ __('درجة النجاح') }}</label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-solid fa-award icon"></i>
                                 <input type="number" name="pass_marks" value="{{ $exam->pass_marks ?? 50 }}" class="f-input">
@@ -77,7 +74,7 @@
 
                         <div class="exam-stats-info">
                             <div class="stat-item">
-                                <span class="stat-label">إجمالي الأسئلة</span>
+                                <span class="stat-label">{{ __('إجمالي الأسئلة') }}</span>
                                 <span class="stat-val" id="questionsCount">{{ count($exam->questions) }}</span>
                             </div>
                         </div>
@@ -88,13 +85,12 @@
             {{-- الجانب الأيسر: قائمة الأسئلة والأسئلة الجديدة --}}
             <main class="questions-container">
                 <div class="section-title-bar">
-                    <h3><i class="fa-solid fa-list-check"></i> أسئلة الاختبار</h3>
+                    <h3><i class="fa-solid fa-list-check"></i>{{ __('أسئلة الاختبار') }}</h3>
 
                     {{-- أزرار إضافة الأسئلة --}}
                     <div class="add-q-btns">
                         <button type="button" onclick="addQuestion('mcq')" class="btn-add-q mcq">
-                            <i class="fa-solid fa-plus"></i> سؤال اختيار من متعدد
-                        </button>
+                            <i class="fa-solid fa-plus"></i>{{ __('سؤال اختيار من متعدد') }}</button>
                         <button type="button" onclick="addQuestion('text')" class="btn-add-q text">
                             <i class="fa-solid fa-plus"></i> سؤال مقالي/نصي
                         </button>
@@ -108,19 +104,18 @@
                         <input type="hidden" name="questions[{{ $index }}][type]" value="{{ $q->type }}">
 
                         <div class="q-card-header">
-                            <span class="q-number"><i class="fa-solid fa-circle-question"></i> سؤال <span class="q-idx">{{ $index + 1 }}</span></span>
+                            <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }}<span class="q-idx">{{ $index + 1 }}</span></span>
                             <div class="q-actions">
                                 <span class="type-badge">{{ strtoupper($q->type) }}</span>
-                                <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="حذف السؤال">
-                                    <i class="fa-solid fa-trash-can"></i> حذف
-                                </button>
+                                <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="{{ __('حذف السؤال') }}">
+                                    <i class="fa-solid fa-trash-can"></i>{{ __('حذف') }}</button>
                             </div>
                         </div>
 
                         <div class="q-card-body">
                             <div class="f-group mb-20">
-                                <label class="f-label">نص السؤال</label>
-                                <textarea name="questions[{{ $index }}][question_text]" class="f-input f-textarea" rows="2" placeholder="اكتب نص السؤال هنا...">{{ $q->question_text }}</textarea>
+                                <label class="f-label">{{ __('نص السؤال') }}</label>
+                                <textarea name="questions[{{ $index }}][question_text]" class="f-input f-textarea" rows="2" placeholder="{{ __('اكتب نص السؤال هنا...') }}">{{ $q->question_text }}</textarea>
                             </div>
 
                             @if($q->type == 'mcq')
@@ -129,7 +124,7 @@
                                     <label class="f-label-sm">الخيار (A)</label>
                                     <div class="input-icon-wrapper">
                                         <span class="option-prefix">A</span>
-                                        <input type="text" name="questions[{{ $index }}][a]" value="{{ $q->a }}" class="f-input" placeholder="نص الخيار الأول">
+                                        <input type="text" name="questions[{{ $index }}][a]" value="{{ $q->a }}" class="f-input" placeholder="{{ __('نص الخيار الأول') }}">
                                     </div>
                                 </div>
 
@@ -137,12 +132,12 @@
                                     <label class="f-label-sm">الخيار (B)</label>
                                     <div class="input-icon-wrapper">
                                         <span class="option-prefix">B</span>
-                                        <input type="text" name="questions[{{ $index }}][b]" value="{{ $q->b }}" class="f-input" placeholder="نص الخيار الثاني">
+                                        <input type="text" name="questions[{{ $index }}][b]" value="{{ $q->b }}" class="f-input" placeholder="{{ __('نص الخيار الثاني') }}">
                                     </div>
                                 </div>
 
                                 <div class="f-group full-width">
-                                    <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i> الإجابة الصحيحة</label>
+                                    <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i>{{ __('الإجابة الصحيحة') }}</label>
                                     <div class="select-wrapper">
                                         <select name="questions[{{ $index }}][correct_answer]" class="f-select success-select">
                                             <option value="a" {{ $q->correct_answer == 'a' ? 'selected' : '' }}>الخيار (A)</option>
@@ -158,8 +153,8 @@
                     @empty
                     <div id="emptyState" class="empty-state glass-card text-center p-40">
                         <i class="fa-solid fa-folder-open empty-icon"></i>
-                        <h4>لا توجد أسئلة مضافة لهذا الاختبار حالياً</h4>
-                        <p class="text-muted">استخدم الأزرار بالأعلى لإضافة أسئلة جديدة.</p>
+                        <h4>{{ __('لا توجد أسئلة مضافة لهذا الاختبار حالياً') }}</h4>
+                        <p class="text-muted">{{ __('استخدم الأزرار بالأعلى لإضافة أسئلة جديدة.') }}</p>
                     </div>
                     @endforelse
                 </div>
@@ -525,18 +520,18 @@
                     <label class="f-label-sm">الخيار (A)</label>
                     <div class="input-icon-wrapper">
                         <span class="option-prefix">A</span>
-                        <input type="text" name="questions[${qIndex}][a]" class="f-input" placeholder="نص الخيار الأول">
+                        <input type="text" name="questions[${qIndex}][a]" class="f-input" placeholder="{{ __('نص الخيار الأول') }}">
                     </div>
                 </div>
                 <div class="f-group">
                     <label class="f-label-sm">الخيار (B)</label>
                     <div class="input-icon-wrapper">
                         <span class="option-prefix">B</span>
-                        <input type="text" name="questions[${qIndex}][b]" class="f-input" placeholder="نص الخيار الثاني">
+                        <input type="text" name="questions[${qIndex}][b]" class="f-input" placeholder="{{ __('نص الخيار الثاني') }}">
                     </div>
                 </div>
                 <div class="f-group full-width">
-                    <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i> الإجابة الصحيحة</label>
+                    <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i>{{ __('الإجابة الصحيحة') }}</label>
                     <div class="select-wrapper">
                         <select name="questions[${qIndex}][correct_answer]" class="f-select success-select">
                             <option value="a">الخيار (A)</option>
@@ -551,18 +546,17 @@
         newCard.innerHTML = `
             <input type="hidden" name="questions[${qIndex}][type]" value="${type}">
             <div class="q-card-header">
-                <span class="q-number"><i class="fa-solid fa-circle-question"></i> سؤال <span class="q-idx"></span></span>
+                <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }}<span class="q-idx"></span></span>
                 <div class="q-actions">
                     <span class="type-badge">${type.toUpperCase()}</span>
-                    <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="حذف السؤال">
-                        <i class="fa-solid fa-trash-can"></i> حذف
-                    </button>
+                    <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="{{ __('حذف السؤال') }}">
+                        <i class="fa-solid fa-trash-can"></i>{{ __('حذف') }}</button>
                 </div>
             </div>
             <div class="q-card-body">
                 <div class="f-group mb-20">
-                    <label class="f-label">نص السؤال</label>
-                    <textarea name="questions[${qIndex}][question_text]" class="f-input f-textarea" rows="2" placeholder="اكتب نص السؤال الجديد هنا..."></textarea>
+                    <label class="f-label">{{ __('نص السؤال') }}</label>
+                    <textarea name="questions[${qIndex}][question_text]" class="f-input f-textarea" rows="2" placeholder="{{ __('اكتب نص السؤال الجديد هنا...') }}"></textarea>
                 </div>
                 ${mcqHtml}
             </div>
@@ -603,7 +597,7 @@
         formData.append('_method', 'PUT');
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري الحفظ...</span>';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __('جاري الحفظ...') }}</span>';
 
         axios.post(`/admin/exams/${id}`, formData)
             .then(res => {
@@ -624,7 +618,7 @@
                     text: err.response?.data?.message || 'يرجى التأكد من ملء كافة الحقول بشكل صحيح.',
                 });
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>حفظ التغييرات</span>';
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>{{ __('حفظ التغييرات') }}</span>';
             });
     }
 </script>

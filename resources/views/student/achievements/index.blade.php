@@ -64,7 +64,7 @@
                     </span>
                     <h2 class="wait-title">{{ __('الشهادات والنتائج النهائية تُعتمد وتُعلن في ختام العام الدراسي') }} 🎓</h2>
                     <p class="wait-desc">
-                        {{ __('تنفيذاً للضوابط والمعايير المدرسية والأكاديمية المعتمدة، تخضع نتائجك وسجلك الدراسي للمتابعة والتقييم المستمر. تصدر وتُعتمد الشهادات الرسمية من قبل إدارة المنصة والمشرف العام في نهاية العام الدراسي بعد استكمال متطلبات المنهاج والاختبارات الوزارية.') }}
+                        {{ __('تنفيذاً للضوابط والمعايير المدرسية والأكاديمية المعتمدة، تخضع نتائجك وسجلك الدراسي للمتابعة والتقييم المستمر. تصدر وتُعتمد الشهادات الرسمية من قبل إدارة المنصة والمشرف العام في نهاية العام الدراسي بعد استكمال متطلبات المنهاج والتقييمات الأكاديمية المعتمدة.') }}
                     </p>
                     <div class="wait-details-pills">
                         <span><i class="fa-regular fa-clock" style="color: var(--ed-warning);"></i> {{ __('حالة التقييم:') }} <strong style="color: var(--ed-warning);">{{ __('قيد المتابعة والتدقيق الأكاديمي') }}</strong></span>
@@ -156,13 +156,13 @@
 
                     <div class="planner-card-sub">
                         <label class="form-label-clean"><i class="fa-solid fa-bullseye" style="color: var(--ed-danger);"></i> {{ __('هدف الجلسة الحالي (ماذا تريد أن تنجز؟):') }}</label>
-                        <input type="text" id="sessionGoalInput" class="ed-input" placeholder="{{ __('مثال: حل 10 أسئلة وزارية، مراجعة الدرس الأول...') }}" oninput="updateActiveGoalDisplay()">
+                        <input type="text" id="sessionGoalInput" class="ed-input" placeholder="{{ __('مثال: حل تمارين الكتاب المدرسي، مراجعة الدرس الأول...') }}" oninput="updateActiveGoalDisplay()">
                         
                         <div class="quick-tags-wrap">
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('حل مسائل وزارية مكثفة')))">✍️ {{ __('مسائل وزارية') }}</span>
+                            <span class="tag-chip" onclick="setQuickGoal(@json(__('حل تمارين وأسئلة الكتاب')))">✍️ {{ __('تمارين الكتاب') }}</span>
                             <span class="tag-chip" onclick="setQuickGoal(@json(__('حفظ ومراجعة درس ومفاهيم')))">📖 {{ __('حفظ ومراجعة') }}</span>
                             <span class="tag-chip" onclick="setQuickGoal(@json(__('تلخيص وكتابة ملاحظات هامة')))">📝 {{ __('تلخيص شامل') }}</span>
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('تدريب على نموذج امتحان تجريبي')))">🎯 {{ __('امتحان تجريبي') }}</span>
+                            <span class="tag-chip" onclick="setQuickGoal(@json(__('مراجعة المفاهيم والقوانين')))">🎯 {{ __('مراجعة المفاهيم') }}</span>
                         </div>
                     </div>
 

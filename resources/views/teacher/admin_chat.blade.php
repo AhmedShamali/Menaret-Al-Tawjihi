@@ -179,11 +179,9 @@
         <!-- الهيدر -->
         <div class="chat-nav">
             <h6 class="fw-bold mb-0">
-                <i class="fas fa-shield-halved"></i>
-                مراسلة الإدارة العامة
-            </h6>
+                <i class="fas fa-shield-halved"></i>{{ __('مراسلة الإدارة العامة') }}</h6>
             <div class="status-indicator d-flex align-items-center gap-2">
-                <span style="font-size: 11px; color: #64748b;">الرد غالباً خلال ساعات</span>
+                <span style="font-size: 11px; color: #64748b;">{{ __('الرد غالباً خلال ساعات') }}</span>
                 <div style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%;"></div>
             </div>
         </div>
@@ -194,14 +192,14 @@
                 <div class="mb-3">
                     <i class="fas fa-comments-alt fa-3x" style="opacity: 0.2;"></i>
                 </div>
-                <p>ابدأ المحادثة مع الإدارة...</p>
+                <p>{{ __('ابدأ المحادثة مع الإدارة...') }}</p>
             </div>
         </div>
 
         <!-- شريط الإدخال -->
         <div class="chat-input-bar">
             <div class="input-group-custom">
-                <input type="text" id="msg_input" placeholder="اكتب رسالتك للإدارة..." onkeypress="if(event.key === 'Enter') sendReply()">
+                <input type="text" id="msg_input" placeholder="{{ __('اكتب رسالتك للإدارة...') }}" onkeypress="if(event.key === 'Enter') sendReply()">
                 <button class="send-trigger" onclick="sendReply()">
                     <i class="fas fa-paper-plane"></i>
                 </button>

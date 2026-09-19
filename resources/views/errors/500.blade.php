@@ -101,20 +101,16 @@
 <body>
     <div class="error-card">
         <div class="error-badge">
-            <i class="fa-solid fa-triangle-exclamation"></i> رمز الخطأ 500: استجابة الخادم
-        </div>
+            <i class="fa-solid fa-triangle-exclamation"></i>{{ __('رمز الخطأ 500: استجابة الخادم') }}</div>
         <div class="error-icon">
             <i class="fa-solid fa-server"></i>
         </div>
-        <h1>حدث خطأ غير متوقع في المعالجة</h1>
-        <p>
-            تم تسجيل الخطأ لدى نظام المراقبة لمراجعته وحله فورياً.
-            يرجى المحاولة مجدداً بعد لحظات أو العودة إلى لوحة التحكم.
-        </p>
+        <h1>{{ __('حدث خطأ غير متوقع في المعالجة') }}</h1>
+        <p>{{ __('تم تسجيل الخطأ لدى نظام المراقبة لمراجعته وحله فورياً.
+            يرجى المحاولة مجدداً بعد لحظات أو العودة إلى لوحة التحكم.') }}</p>
         <div>
             <a href="/" class="btn-home">
-                <i class="fa-solid fa-house"></i> العودة للرئيسية
-            </a>
+                <i class="fa-solid fa-house"></i>{{ __('العودة للرئيسية') }}</a>
         </div>
         <div class="institution-footer">
             منصة منارة التوجيهي - الثانوية العامة 🇵🇸 | إشراف الأستاذ أحمد حسين شمالي

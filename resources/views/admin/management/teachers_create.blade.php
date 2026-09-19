@@ -8,18 +8,16 @@
     {{-- رأس الصفحة والمسار --}}
     <div class="page-header">
         <nav class="breadcrumb-nav">
-            <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i> الرئيسية</a>
+            <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-            <span>إدارة الكادر</span>
+            <span>{{ __('إدارة الكادر') }}</span>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-            <span class="current">إضافة مدرس</span>
+            <span class="current">{{ __('إضافة مدرس') }}</span>
         </nav>
         <div class="header-title-group">
-            <h1 class="page-title">
-                إنشاء ملف أكاديمي متكامل
-                <span class="title-badge"><i class="fa-solid fa-sparkles"></i> جديد</span>
+            <h1 class="page-title">{{ __('إنشاء ملف أكاديمي متكامل') }}<span class="title-badge"><i class="fa-solid fa-sparkles"></i>{{ __('جديد') }}</span>
             </h1>
-            <p class="page-subtitle">قم بتعبئة بيانات المعلم لإسناد المواد وإتاحة الحساب على المنصة مباشرة</p>
+            <p class="page-subtitle">{{ __('قم بتعبئة بيانات المعلم لإسناد المواد وإتاحة الحساب على المنصة مباشرة') }}</p>
         </div>
     </div>
 
@@ -37,17 +35,17 @@
                             <i class="fa-solid fa-address-card"></i>
                         </div>
                         <div>
-                            <h3>المعلومات الأساسية والتواصل</h3>
-                            <span class="header-desc">البيانات التعريفية الخاصة بحساب المدرس</span>
+                            <h3>{{ __('المعلومات الأساسية والتواصل') }}</h3>
+                            <span class="header-desc">{{ __('البيانات التعريفية الخاصة بحساب المدرس') }}</span>
                         </div>
                     </div>
                     <div class="uni-card-body">
                         <div class="form-grid-2">
                             <div class="f-group">
-                                <label>الاسم الرباعي للمدرس <span class="req">*</span></label>
+                                <label>{{ __('الاسم الرباعي للمدرس') }}<span class="req">*</span></label>
                                 <div class="input-icon-wrapper">
                                     <i class="fa-regular fa-user icon"></i>
-                                    <input type="text" name="name" placeholder="أدخل الاسم الكامل" class="uni-input" required>
+                                    <input type="text" name="name" placeholder="{{ __('أدخل الاسم الكامل') }}" class="uni-input" required>
                                 </div>
                             </div>
                             <div class="f-group">
@@ -61,11 +59,11 @@
                                 <label>الدرجة العلمية / التخصص</label>
                                 <div class="input-icon-wrapper">
                                     <i class="fa-solid fa-user-graduate icon"></i>
-                                    <input type="text" name="major" placeholder="مثلاً: بكالوريوس تربية رياضية" class="uni-input">
+                                    <input type="text" name="major" placeholder="{{ __('مثلاً: بكالوريوس تربية رياضية') }}" class="uni-input">
                                 </div>
                             </div>
                             <div class="f-group">
-                                <label>البريد الإلكتروني (الدخول) <span class="req">*</span></label>
+                                <label>{{ __('البريد الإلكتروني (الدخول)') }}<span class="req">*</span></label>
                                 <div class="input-icon-wrapper">
                                     <i class="fa-regular fa-envelope icon"></i>
                                     <input type="email" name="email" placeholder="teacher@jesr.ps" class="uni-input" required>
@@ -83,12 +81,12 @@
                         </div>
                         <div>
                             <h3>النبذة التعريفية (Bio)</h3>
-                            <span class="header-desc">سيرة ذاتية مختصرة تظهر في ملفه أمام الطلاب</span>
+                            <span class="header-desc">{{ __('سيرة ذاتية مختصرة تظهر في ملفه أمام الطلاب') }}</span>
                         </div>
                     </div>
                     <div class="uni-card-body">
                         <div class="f-group">
-                            <textarea name="bio" rows="4" class="uni-input uni-textarea" placeholder="اكتب نبذة مختصرة عن الخبرات والمهارات لتظهر للطلاب..."></textarea>
+                            <textarea name="bio" rows="4" class="uni-input uni-textarea" placeholder="{{ __('اكتب نبذة مختصرة عن الخبرات والمهارات لتظهر للطلاب...') }}"></textarea>
                         </div>
                     </div>
                 </div>
@@ -105,8 +103,8 @@
                             <i class="fa-solid fa-camera"></i>
                         </div>
                         <div>
-                            <h3>الصورة الشخصية</h3>
-                            <span class="header-desc">صورة الملف الشخصي للمدرس</span>
+                            <h3>{{ __('الصورة الشخصية') }}</h3>
+                            <span class="header-desc">{{ __('صورة الملف الشخصي للمدرس') }}</span>
                         </div>
                     </div>
                     <div class="uni-card-body text-center">
@@ -116,7 +114,7 @@
                                 <div class="preview-circle">
                                     <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
                                 </div>
-                                <span class="upload-title">انقر لرفع صورة أو اسحبها هنا</span>
+                                <span class="upload-title">{{ __('انقر لرفع صورة أو اسحبها هنا') }}</span>
                                 <span class="upload-hint">PNG, JPG, WEBP حتى 5MB</span>
                             </label>
                         </div>
@@ -130,8 +128,8 @@
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                         <div>
-                            <h3>المساق الدراسي</h3>
-                            <span class="header-desc">إسناد الصف والمادة الأكاديمية</span>
+                            <h3>{{ __('المساق الدراسي') }}</h3>
+                            <span class="header-desc">{{ __('إسناد الصف والمادة الأكاديمية') }}</span>
                         </div>
                     </div>
                     <div class="uni-card-body">
@@ -139,7 +137,7 @@
                             <label>اختر الصف / المرحلة <span class="req">*</span></label>
                             <div class="select-wrapper">
                                 <select id="stage_select" class="uni-select" required>
-                                    <option value="" selected disabled>اختر المرحلة...</option>
+                                    <option value="" selected disabled>{{ __('اختر المرحلة...') }}</option>
                                     @foreach($stages as $stage)
                                         <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
                                     @endforeach
@@ -148,10 +146,10 @@
                             </div>
                         </div>
                         <div class="f-group">
-                            <label>اختر المادة المسندة <span class="req">*</span></label>
+                            <label>{{ __('اختر المادة المسندة') }}<span class="req">*</span></label>
                             <div class="select-wrapper">
                                 <select name="subject_id" id="subject_select" class="uni-select" disabled required>
-                                    <option value="">اختر الصف أولاً...</option>
+                                    <option value="">{{ __('اختر الصف أولاً...') }}</option>
                                 </select>
                                 <i class="fa-solid fa-chevron-down select-arrow"></i>
                             </div>
@@ -166,13 +164,13 @@
                             <i class="fa-solid fa-shield-halved"></i>
                         </div>
                         <div>
-                            <h3>الأمان والدخول</h3>
-                            <span class="header-desc">كلمة المرور الابتدائية للحساب</span>
+                            <h3>{{ __('الأمان والدخول') }}</h3>
+                            <span class="header-desc">{{ __('كلمة المرور الابتدائية للحساب') }}</span>
                         </div>
                     </div>
                     <div class="uni-card-body">
                         <div class="f-group">
-                            <label>كلمة المرور المؤقتة <span class="req">*</span></label>
+                            <label>{{ __('كلمة المرور المؤقتة') }}<span class="req">*</span></label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-solid fa-key icon"></i>
                                 <input type="password" name="password" placeholder="••••••••" class="uni-input" required>
@@ -183,7 +181,7 @@
 
                 <button type="button" onclick="saveTeacherProfile()" id="saveBtn" class="uni-btn-submit">
                     <i class="fa-solid fa-circle-check"></i>
-                    <span>اعتماد ونشر ملف المدرس</span>
+                    <span>{{ __('اعتماد ونشر ملف المدرس') }}</span>
                 </button>
 
             </aside>
@@ -556,7 +554,7 @@
 
     document.getElementById('stage_select').onchange = function() {
         const subPicker = document.getElementById('subject_select');
-        subPicker.innerHTML = '<option value="" selected disabled>اختر المادة...</option>';
+        subPicker.innerHTML = '<option value="" selected disabled>{{ __('اختر المادة...') }}</option>';
 
         const selected = stagesData.find(s => s.id == this.value);
         if(selected && selected.subjects && selected.subjects.length > 0) {
@@ -565,7 +563,7 @@
             });
             subPicker.disabled = false;
         } else {
-            subPicker.innerHTML = '<option value="">لا توجد مواد لهذه المرحلة</option>';
+            subPicker.innerHTML = '<option value="">{{ __('لا توجد مواد لهذه المرحلة') }}</option>';
             subPicker.disabled = true;
         }
     };
@@ -593,7 +591,7 @@
         const formData = new FormData(form);
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري اعتماد الحساب...</span>';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __('جاري اعتماد الحساب...') }}</span>';
 
         axios.post("{{ route('admin.teachers.store') }}", formData, {
             headers: {
@@ -618,7 +616,7 @@
                     text: err.response?.data?.message || 'يرجى مراجعة كافة البيانات المطلوبة والإدخال بشكل صحيح.',
                 });
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>اعتماد ونشر ملف المدرس</span>';
+                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>{{ __('اعتماد ونشر ملف المدرس') }}</span>';
             });
     }
 </script>

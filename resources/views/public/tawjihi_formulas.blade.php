@@ -233,14 +233,14 @@
         </a>
 
         <div class="nav-actions">
-            <button onclick="window.print()" class="btn-nav-action" title="طباعة ملخص القوانين">
-                <i class="fa-solid fa-print"></i> <span>طباعة الملخص</span>
+            <button onclick="window.print()" class="btn-nav-action" title="{{ __('طباعة ملخص القوانين') }}">
+                <i class="fa-solid fa-print"></i> <span>{{ __('طباعة الملخص') }}</span>
             </button>
             <a href="{{ route('tawjihi.calculator') }}" class="btn-nav-action">
-                <i class="fa-solid fa-calculator"></i> <span>حاسبة المعدل</span>
+                <i class="fa-solid fa-calculator"></i> <span>{{ __('حاسبة المعدل') }}</span>
             </a>
             <a href="{{ route('tawjihi.archive') }}" class="btn-nav-action">
-                <i class="fa-solid fa-file-pdf"></i> <span>بنك الامتحانات</span>
+                <i class="fa-solid fa-file-pdf"></i> <span>{{ __('بنك الامتحانات') }}</span>
             </a>
             <button id="themeToggleBtn" onclick="toggleTheme()" class="btn-nav-action" style="padding: 8px 12px;">
                 <i class="fa-solid fa-moon" id="themeIcon"></i>
@@ -254,8 +254,8 @@
             <i class="fa-solid fa-bolt"></i>
             <span>الملخص الشامل للقوانين والقواعد الوزارية المعتمدة 🇵🇸</span>
         </div>
-        <h1>دليل القوانين الذهبية لامتحانات الثانوية العامة</h1>
-        <p>مرجعك السريع والدقيق لكافة قوانين الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية المقررة في المنهاج الفلسطيني للتوجيهي.</p>
+        <h1>{{ __('دليل القوانين الذهبية لامتحانات الثانوية العامة') }}</h1>
+        <p>{{ __('مرجعك السريع والدقيق لكافة قوانين الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية المقررة في المنهاج الفلسطيني للتوجيهي.') }}</p>
     </section>
 
     <!-- Controls: Search & Tabs -->
@@ -267,19 +267,19 @@
 
         <div class="subject-tabs">
             <button class="tab-btn active" data-filter="all" onclick="filterBySubject('all', this)">
-                <i class="fa-solid fa-layer-group"></i> <span>جميع المواد</span>
+                <i class="fa-solid fa-layer-group"></i> <span>{{ __('جميع المواد') }}</span>
             </button>
             <button class="tab-btn" data-filter="math" onclick="filterBySubject('math', this)">
-                <i class="fa-solid fa-calculator"></i> <span>الرياضيات</span>
+                <i class="fa-solid fa-calculator"></i> <span>{{ __('الرياضيات') }}</span>
             </button>
             <button class="tab-btn" data-filter="physics" onclick="filterBySubject('physics', this)">
-                <i class="fa-solid fa-atom"></i> <span>الفيزياء</span>
+                <i class="fa-solid fa-atom"></i> <span>{{ __('الفيزياء') }}</span>
             </button>
             <button class="tab-btn" data-filter="chemistry" onclick="filterBySubject('chemistry', this)">
-                <i class="fa-solid fa-flask-vial"></i> <span>الكيمياء</span>
+                <i class="fa-solid fa-flask-vial"></i> <span>{{ __('الكيمياء') }}</span>
             </button>
             <button class="tab-btn" data-filter="english" onclick="filterBySubject('english', this)">
-                <i class="fa-solid fa-language"></i> <span>اللغة الإنجليزية</span>
+                <i class="fa-solid fa-language"></i> <span>{{ __('اللغة الإنجليزية') }}</span>
             </button>
         </div>
     </div>
@@ -293,9 +293,7 @@
                         <i class="fa-solid {{ $cat['icon'] }}" style="color: {{ $cat['color'] }};"></i>
                         <span>{{ $cat['title'] }}</span>
                     </h2>
-                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-card);">
-                        منهاج فلسطين الرسمي
-                    </span>
+                    <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); background: var(--bg-card); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-card);">{{ __('منهاج فلسطين الرسمي') }}</span>
                 </div>
 
                 @foreach($cat['sections'] as $sec)
@@ -311,7 +309,7 @@
                                     <div>
                                         <div class="card-top">
                                             <h3>{{ $item['name'] }}</h3>
-                                            <button class="btn-copy" onclick="copyFormula('{{ addslashes($item['formula']) }}', this)" title="نسخ القانون">
+                                            <button class="btn-copy" onclick="copyFormula('{{ addslashes($item['formula']) }}', this)" title="{{ __('نسخ القانون') }}">
                                                 <i class="fa-regular fa-copy"></i>
                                             </button>
                                         </div>
@@ -332,7 +330,7 @@
 
         <div id="noResultsBox" style="display: none; text-align: center; padding: 60px 20px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border-card);">
             <i class="fa-solid fa-search" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 12px; opacity: 0.4;"></i>
-            <h3 style="color: var(--text-title); font-size: 1.1rem; margin-bottom: 6px;">لم يتم العثور على قوانين مطابقة</h3>
+            <h3 style="color: var(--text-title); font-size: 1.1rem; margin-bottom: 6px;">{{ __('لم يتم العثور على قوانين مطابقة') }}</h3>
             <p style="color: var(--text-muted); font-size: 0.88rem;">جرب كتابة مصطلح آخر مثل "مشتقة" أو "زخم" أو "pH" أو "شرطية".</p>
         </div>
     </main>
