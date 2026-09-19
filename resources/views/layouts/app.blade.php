@@ -169,6 +169,33 @@
             background: linear-gradient(90deg, #f59e0b 0%, #d97706 60%, transparent 100%);
         }
 
+        .sidebar-close-btn {
+            display: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            color: #cbd5e1;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-close-btn:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.35);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-close-btn {
+                display: flex;
+            }
+        }
+
         .brand-logo {
             display: flex;
             align-items: center;
@@ -684,13 +711,20 @@
         @media (max-width: 1024px) {
             aside.sidebar {
                 transform: translateX(105%);
-                box-shadow: -4px 0 25px rgba(0,0,0,0.08);
+                box-shadow: -8px 0 35px rgba(0, 0, 0, 0.6);
+                z-index: 1100;
+                width: 290px;
+                max-width: 86vw;
             }
             aside.sidebar.mobile-active {
                 transform: translateX(0);
             }
+            .sidebar-overlay {
+                z-index: 1050;
+            }
             main.main-content {
                 margin-right: 0;
+                margin-left: 0;
                 width: 100%;
                 max-width: 100%;
                 min-width: 0;
@@ -702,10 +736,10 @@
                 display: block;
             }
             .top-bar {
-                padding: 0 18px;
+                padding: 0 16px;
             }
             .content-body {
-                padding: 20px 18px 80px;
+                padding: 18px 16px 80px;
             }
         }
 
@@ -714,16 +748,37 @@
                 display: flex;
             }
             body:not(.no-sidebar) {
-                padding-bottom: 64px;
+                padding-bottom: 68px;
             }
             .date-info {
                 display: none !important;
+            }
+            .top-bar {
+                padding: 0 12px;
+                height: 60px;
+            }
+            .content-body {
+                padding: 14px 12px 80px;
+            }
+            .ed-card-header {
+                padding: 14px 16px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .ed-card-body {
+                padding: 16px;
             }
         }
 
         @media (max-width: 640px) {
             .supervisor-top-tag {
                 display: none !important;
+            }
+            .top-bar {
+                padding: 0 10px;
+            }
+            .content-body {
+                padding: 12px 10px 80px;
             }
         }
 
@@ -1164,6 +1219,9 @@
                     <small style="font-size: 0.68rem; color: #fef08a; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>
+            <button type="button" class="sidebar-close-btn" id="btnCloseSidebar" aria-label="{{ __('إغلاق القائمة') }}">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
         <div class="menu-wrapper">
@@ -1928,20 +1986,55 @@
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
         const btnToggle = document.getElementById('btnToggleSidebar');
+        const btnClose = document.getElementById('btnCloseSidebar');
+
+        function openSidebarDrawer() {
+            if(sidebar) sidebar.classList.add('mobile-active');
+            if(overlay) overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeSidebarDrawer() {
+            if(sidebar) sidebar.classList.remove('mobile-active');
+            if(overlay) overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
 
         if(btnToggle) {
-            btnToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('mobile-active');
-                overlay.classList.toggle('active');
+            btnToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(sidebar && sidebar.classList.contains('mobile-active')) {
+                    closeSidebarDrawer();
+                } else {
+                    openSidebarDrawer();
+                }
+            });
+        }
+
+        if(btnClose) {
+            btnClose.addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeSidebarDrawer();
             });
         }
 
         if(overlay) {
             overlay.addEventListener('click', () => {
-                sidebar.classList.remove('mobile-active');
-                overlay.classList.remove('active');
+                closeSidebarDrawer();
             });
         }
+
+        document.addEventListener('keydown', (e) => {
+            if(e.key === 'Escape') closeSidebarDrawer();
+        });
+
+        document.querySelectorAll('.menu-wrapper .nav-item').forEach(el => {
+            el.addEventListener('click', () => {
+                if(window.innerWidth <= 1024) {
+                    closeSidebarDrawer();
+                }
+            });
+        });
 
         const notifToggle = document.getElementById('notificationsToggle');
         const notifMenu = document.getElementById('notificationsMenu');
