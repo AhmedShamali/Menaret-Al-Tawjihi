@@ -535,13 +535,14 @@
         display: grid;
         grid-template-columns: 230px minmax(0, 1fr) 110px;
         gap: 14px;
-        padding: 10px 16px;
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
-        border-bottom: 2px solid #f59e0b;
+        padding: 11px 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-bottom: 2px solid #cbd5e1;
         border-radius: 8px;
         font-size: 0.82rem;
         font-weight: 800;
-        color: #ffffff;
+        color: #0f172a;
         margin-bottom: 12px;
     }
     .col-head-student { text-align: right; }

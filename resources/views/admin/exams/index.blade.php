@@ -365,12 +365,12 @@ function confirmDelete(id) {
 
     .table-responsive { width: 100%; overflow-x: auto; }
     .custom-table th {
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
-        color: #ffffff !important;
-        font-weight: 700 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        font-weight: 800 !important;
         font-size: 0.82rem !important;
         padding: 12px 16px !important;
-        border-bottom: 2.5px solid #d97706 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
         letter-spacing: 0.3px;
         white-space: nowrap;
     }

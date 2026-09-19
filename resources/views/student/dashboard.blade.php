@@ -368,20 +368,20 @@
         width: 100%;
     }
 
-    /* 1. الترويسة الأكاديمية الكلاسيكية */
+    /* 1. الترويسة الأكاديمية الكلاسيكية الفاتحة */
     .ed-dash-header-classic {
-        background: #172554;
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+        background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
         border-radius: 12px;
-        border-bottom: 4px solid #f59e0b;
-        padding: 28px 32px;
-        color: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-top: 4px solid #1e3a8a;
+        padding: 24px 28px;
+        color: #0f172a;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 24px;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
 
     .ed-header-main-info {
@@ -400,19 +400,19 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         padding: 4px 12px;
         border-radius: 6px;
         font-size: 0.78rem;
         font-weight: 700;
-        color: #f8fafc;
+        color: #334155;
     }
 
     .ed-badge-item.term {
-        background: rgba(16, 185, 129, 0.18);
-        border-color: rgba(16, 185, 129, 0.35);
-        color: #a7f3d0;
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
     }
 
     .pulse-dot {
@@ -424,25 +424,25 @@
     }
 
     .ed-badge-item.sup {
-        background: rgba(245, 158, 11, 0.15);
-        border-color: rgba(245, 158, 11, 0.3);
-        color: #fde68a;
+        background: #fffbeb;
+        border-color: #fde68a;
+        color: #b45309;
     }
 
     .ed-welcome-title {
         font-size: 1.85rem;
         font-weight: 900;
         margin: 0 0 8px;
-        color: #ffffff;
+        color: #0f172a;
     }
 
     .ed-welcome-title span {
-        color: #fde047;
+        color: #1d4ed8;
     }
 
     .ed-welcome-quote {
         font-size: 0.92rem;
-        color: #cbd5e1;
+        color: #64748b;
         line-height: 1.6;
         margin: 0 0 20px;
     }
@@ -468,23 +468,24 @@
     }
 
     .ed-btn-classic.primary {
-        background: #f59e0b;
-        color: #0f172a;
+        background: #1d4ed8;
+        color: #ffffff;
     }
     .ed-btn-classic.primary:hover {
-        background: #d97706;
+        background: #1e40af;
         color: #ffffff;
         text-decoration: none;
     }
 
     .ed-btn-classic.secondary {
-        background: rgba(255, 255, 255, 0.12);
-        color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
     }
     .ed-btn-classic.secondary:hover {
-        background: rgba(255, 255, 255, 0.2);
-        color: #ffffff;
+        background: #f8fafc;
+        color: #1d4ed8;
+        border-color: #1d4ed8;
         text-decoration: none;
     }
 

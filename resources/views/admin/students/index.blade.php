@@ -388,10 +388,10 @@
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+        background: #1d4ed8;
         color: #ffffff;
-        border: 1px solid #1e3a8a;
-        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+        border: 1px solid #1d4ed8;
+        box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
     }
     .btn-primary:hover {
         background: #1e3a8a;
@@ -636,13 +636,13 @@
     }
 
     .data-table-clean th {
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
-        color: #ffffff;
+        background: #f8fafc;
+        color: #0f172a;
         font-size: 0.82rem;
-        font-weight: 700;
+        font-weight: 800;
         letter-spacing: 0.3px;
         padding: 12px 14px;
-        border-bottom: 2.5px solid #d97706;
+        border-bottom: 2px solid #cbd5e1;
         white-space: nowrap;
     }
 

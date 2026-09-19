@@ -87,8 +87,8 @@
             right: auto;
             left: 0;
             border-left: none;
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.35);
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 2px 0 15px rgba(15, 23, 42, 0.04);
         }
         html[dir="ltr"] main.main-content {
             margin-right: 0;
@@ -132,11 +132,11 @@
             transition: background-color 0.25s ease, color 0.25s ease;
         }
 
-        /* --- تصميم الشريط الجانبي الأكاديمي الكلاسيكي الملكي (Royal Academic Sidebar) --- */
+        /* --- تصميم الشريط الجانبي الأكاديمي الكلاسيكي الملكي الفاتح (Pure Light Academic Sidebar) --- */
         aside.sidebar {
             width: var(--sidebar-width);
-            background: linear-gradient(180deg, #090e1a 0%, #0f172a 45%, #131d35 100%);
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            background: #ffffff;
+            border-left: 1px solid #e2e8f0;
             position: fixed;
             top: 0;
             right: 0;
@@ -145,7 +145,7 @@
             flex-direction: column;
             z-index: 1000;
             transition: var(--transition-smooth);
-            box-shadow: -4px 0 25px rgba(0, 0, 0, 0.35);
+            box-shadow: -2px 0 15px rgba(15, 23, 42, 0.04);
         }
 
         .side-brand {
@@ -155,8 +155,8 @@
             align-items: center;
             justify-content: space-between;
             position: relative;
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.45) 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
         }
 
         .side-brand::after {
@@ -166,7 +166,7 @@
             right: 0;
             left: 0;
             height: 2px;
-            background: linear-gradient(90deg, #f59e0b 0%, #d97706 60%, transparent 100%);
+            background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 60%, transparent 100%);
         }
 
         .sidebar-close-btn {
@@ -174,9 +174,9 @@
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            background: rgba(255, 255, 255, 0.08);
-            color: #cbd5e1;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #64748b;
             align-items: center;
             justify-content: center;
             cursor: pointer;
@@ -185,9 +185,9 @@
         }
 
         .sidebar-close-btn:hover {
-            background: rgba(239, 68, 68, 0.25);
-            color: #f87171;
-            border-color: rgba(239, 68, 68, 0.35);
+            background: #fef2f2;
+            color: #ef4444;
+            border-color: #fecaca;
         }
 
         @media (max-width: 1024px) {
@@ -201,7 +201,7 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: #ffffff;
+            color: #0f172a;
             font-weight: 700;
             font-size: 1.05rem;
         }
@@ -209,16 +209,16 @@
         .logo-square {
             width: 38px;
             height: 38px;
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-            color: #ffffff;
-            border: 2px solid #f59e0b;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1.5px solid #bfdbfe;
             border-radius: 9px;
             display: grid;
             place-items: center;
             font-size: 1.15rem;
             font-weight: 800;
             flex-shrink: 0;
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+            box-shadow: 0 1px 4px rgba(29, 78, 216, 0.08);
         }
 
         .menu-wrapper {
@@ -226,29 +226,29 @@
             overflow-y: auto;
             padding: 14px 10px;
             scrollbar-width: thin;
-            scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+            scrollbar-color: #cbd5e1 transparent;
         }
 
         .menu-wrapper::-webkit-scrollbar {
             width: 4px;
         }
         .menu-wrapper::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
+            background: #cbd5e1;
             border-radius: 4px;
         }
         .menu-wrapper::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: #94a3b8;
         }
 
         .group-label {
             font-size: 0.7rem;
-            font-weight: 700;
-            color: #94a3b8;
+            font-weight: 800;
+            color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.6px;
             margin: 14px 8px 6px;
             padding-top: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -262,7 +262,7 @@
 
         .group-label i {
             font-size: 0.72rem;
-            color: #64748b;
+            color: #94a3b8;
         }
 
         .nav-item {
@@ -277,9 +277,9 @@
             justify-content: space-between;
             padding: 7px 10px;
             border-radius: 9px;
-            color: #cbd5e1;
+            color: #334155;
             font-size: 0.84rem;
-            font-weight: 500;
+            font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             border-right: 3px solid transparent;
@@ -291,8 +291,8 @@
         }
 
         .nav-link:hover {
-            background: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
+            background: #f1f5f9;
+            color: #1d4ed8;
             transform: translateX(-3px);
         }
 
@@ -301,16 +301,16 @@
         }
 
         .nav-item.active .nav-link {
-            background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(29, 78, 216, 0.95) 100%);
-            color: #ffffff;
-            font-weight: 700;
-            border-right: 3.5px solid #f59e0b;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 800;
+            border-right: 3.5px solid #1d4ed8;
+            box-shadow: 0 1px 4px rgba(29, 78, 216, 0.08);
         }
 
         html[dir="ltr"] .nav-item.active .nav-link {
             border-right: none;
-            border-left: 3.5px solid #f59e0b;
+            border-left: 3.5px solid #1d4ed8;
         }
 
         .link-main {
@@ -337,36 +337,36 @@
             font-size: 0.86rem;
             flex-shrink: 0;
             transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.05);
-            color: #94a3b8;
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
         }
 
         .nav-link:hover .nav-icon-badge {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
+            background: #ffffff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
         }
 
         .nav-item.active .nav-icon-badge {
-            background: rgba(255, 255, 255, 0.22);
+            background: #1d4ed8;
             color: #ffffff;
-            border-color: rgba(255, 255, 255, 0.35);
+            border-color: #1d4ed8;
         }
 
-        .badge-blue { background: rgba(59, 130, 246, 0.14); color: #60a5fa; border-color: rgba(59, 130, 246, 0.25); }
-        .badge-emerald { background: rgba(16, 185, 129, 0.14); color: #34d399; border-color: rgba(16, 185, 129, 0.25); }
-        .badge-amber { background: rgba(245, 158, 11, 0.14); color: #fbbf24; border-color: rgba(245, 158, 11, 0.25); }
-        .badge-purple { background: rgba(168, 85, 247, 0.14); color: #c084fc; border-color: rgba(168, 85, 247, 0.25); }
-        .badge-indigo { background: rgba(99, 102, 241, 0.14); color: #818cf8; border-color: rgba(99, 102, 241, 0.25); }
-        .badge-rose { background: rgba(244, 63, 94, 0.14); color: #fb7185; border-color: rgba(244, 63, 94, 0.25); }
-        .badge-cyan { background: rgba(6, 182, 212, 0.14); color: #22d3ee; border-color: rgba(6, 182, 212, 0.25); }
+        .badge-blue { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .badge-emerald { background: #ecfdf5; color: #059669; border-color: #a7f3d0; }
+        .badge-amber { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+        .badge-purple { background: #faf5ff; color: #9333ea; border-color: #e9d5ff; }
+        .badge-indigo { background: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
+        .badge-rose { background: #fff1f2; color: #e11d48; border-color: #fecdd3; }
+        .badge-cyan { background: #ecfeff; color: #0891b2; border-color: #a5f3fc; }
 
         /* تذييل القائمة وبطاقة المستخدم */
         .sidebar-footer {
             padding: 12px 14px;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(9, 14, 26, 0.88);
-            backdrop-filter: blur(8px);
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
         }
 
         .user-profile-widget {
@@ -381,15 +381,15 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #1e3a8a, #2563eb);
-            border: 2px solid #f59e0b;
-            color: #ffffff;
+            background: #eff6ff;
+            border: 1.5px solid #bfdbfe;
+            color: #1d4ed8;
             display: grid;
             place-items: center;
             font-weight: 800;
             font-size: 0.9rem;
             flex-shrink: 0;
-            box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 1px 4px rgba(29, 78, 216, 0.06);
         }
 
         .user-info-text {
@@ -400,9 +400,9 @@
         }
 
         .user-name-label {
-            color: #f8fafc;
+            color: #0f172a;
             font-size: 0.82rem;
-            font-weight: 700;
+            font-weight: 800;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -426,30 +426,30 @@
         }
 
         .role-badge-admin {
-            background: rgba(245, 158, 11, 0.18);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
         }
 
         .role-badge-teacher {
-            background: rgba(16, 185, 129, 0.18);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
         }
 
         .role-badge-student {
-            background: rgba(59, 130, 246, 0.18);
-            color: #93c5fd;
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
         }
 
         .sidebar-logout-btn {
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            background: rgba(239, 68, 68, 0.1);
-            color: #f87171;
+            border: 1px solid #fecaca;
+            background: #fef2f2;
+            color: #dc2626;
             display: grid;
             place-items: center;
             cursor: pointer;
@@ -459,10 +459,10 @@
         }
 
         .sidebar-logout-btn:hover {
-            background: #ef4444;
+            background: #dc2626;
             color: #ffffff;
-            border-color: #ef4444;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+            border-color: #dc2626;
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
             transform: scale(1.05);
         }
 
@@ -741,7 +741,7 @@
         @media (max-width: 1024px) {
             aside.sidebar {
                 transform: translateX(105%);
-                box-shadow: -8px 0 35px rgba(0, 0, 0, 0.6);
+                box-shadow: -4px 0 25px rgba(15, 23, 42, 0.12);
                 z-index: 1100;
                 width: 290px;
                 max-width: 86vw;
@@ -849,14 +849,20 @@
         table.payroll-table th,
         table.ed-custom-table th,
         table.payments-table th,
-        table.clean-matrix-table th {
-            background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
-            color: #ffffff !important;
+        table.payments-tbl th,
+        table.clean-matrix-table th,
+        table.custom-table th,
+        .custom-table th,
+        .academic-table th,
+        .access-data-table th,
+        .salary-luxury-table th {
+            background: #f8fafc !important;
+            color: #0f172a !important;
             font-size: 0.82rem !important;
-            font-weight: 700 !important;
+            font-weight: 800 !important;
             letter-spacing: 0.3px !important;
             padding: 12px 14px !important;
-            border-bottom: 2.5px solid #d97706 !important;
+            border-bottom: 2px solid #cbd5e1 !important;
             white-space: nowrap !important;
             vertical-align: middle !important;
         }
@@ -864,9 +870,17 @@
         .data-table-clean th a,
         .classic-table th a,
         table.data-table th a,
+        table.table-custom th a,
         table.payroll-table th a,
-        table.ed-custom-table th a {
-            color: #ffffff !important;
+        table.ed-custom-table th a,
+        table.payments-table th a,
+        table.payments-tbl th a,
+        table.custom-table th a,
+        .custom-table th a,
+        .academic-table th a,
+        .access-data-table th a,
+        .salary-luxury-table th a {
+            color: #0f172a !important;
             text-decoration: none;
         }
 
@@ -1203,13 +1217,13 @@
         }
 
         .btn-clean.btn-primary {
-            background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);
+            background: #1d4ed8;
             color: #ffffff !important;
-            border: 1px solid #1e3a8a;
-            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+            border: 1px solid #1d4ed8;
+            box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);
         }
         .btn-clean.btn-primary:hover {
-            background: #1e3a8a;
+            background: #1e40af;
             transform: translateY(-1px);
             color: #ffffff !important;
         }
@@ -1264,13 +1278,13 @@
         }
 
         .tbl-btn {
-            background: #0f172a;
+            background: #1d4ed8;
             color: #ffffff !important;
             border: none;
-            padding: 3px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 5px;
             font-size: 0.74rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             text-decoration: none;
             display: inline-flex;
@@ -1278,7 +1292,7 @@
             gap: 4px;
         }
         .tbl-btn:hover {
-            background: #1e293b;
+            background: #1e40af;
         }
     </style>
 </head>
@@ -1297,8 +1311,8 @@
                     <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 800; font-size: 0.98rem; color: #ffffff; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</span>
-                    <small style="font-size: 0.68rem; color: #fef08a; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</span>
+                    <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>
             <button type="button" class="sidebar-close-btn" id="btnCloseSidebar" aria-label="{{ __('إغلاق القائمة') }}">

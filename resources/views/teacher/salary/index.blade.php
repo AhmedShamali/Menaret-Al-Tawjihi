@@ -791,12 +791,12 @@
         text-align: right;
     }
     .salary-luxury-table th {
-        background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%) !important;
-        color: #ffffff !important;
-        font-weight: 700;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        font-weight: 800;
         font-size: 0.82rem;
         padding: 12px 16px;
-        border-bottom: 2.5px solid #d97706 !important;
+        border-bottom: 2px solid #cbd5e1 !important;
         letter-spacing: 0.3px;
         white-space: nowrap;
     }
