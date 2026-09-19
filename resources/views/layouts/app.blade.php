@@ -77,8 +77,8 @@
             --ed-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
             --ed-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
 
-            --sidebar-width: 270px;
-            --topbar-height: 68px;
+            --sidebar-width: 250px;
+            --topbar-height: 56px;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -110,7 +110,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Alexandria', 'Tajawal', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -118,6 +118,7 @@
             width: 100%;
             max-width: 100vw;
             overflow-x: hidden;
+            font-size: 14px;
         }
 
         body {
@@ -128,8 +129,9 @@
             max-width: 100vw;
             overflow-x: hidden;
             display: flex;
-            line-height: 1.6;
-            transition: background-color 0.25s ease, color 0.25s ease;
+            line-height: 1.5;
+            font-size: 0.9rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         /* --- تصميم الشريط الجانبي الأكاديمي الكلاسيكي الملكي الفاتح (Pure Light Academic Sidebar) --- */
@@ -150,7 +152,7 @@
 
         .side-brand {
             height: var(--topbar-height);
-            padding: 0 16px;
+            padding: 0 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -171,16 +173,16 @@
 
         .sidebar-close-btn {
             display: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             border: 1px solid #e2e8f0;
             background: #f8fafc;
             color: #64748b;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.9rem;
             transition: all 0.2s ease;
         }
 
@@ -199,32 +201,32 @@
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             text-decoration: none;
             color: #0f172a;
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
         }
 
         .logo-square {
-            width: 38px;
-            height: 38px;
+            width: 32px;
+            height: 32px;
             background: #eff6ff;
             color: #1d4ed8;
             border: 1.5px solid #bfdbfe;
-            border-radius: 9px;
+            border-radius: 7px;
             display: grid;
             place-items: center;
-            font-size: 1.15rem;
+            font-size: 1rem;
             font-weight: 800;
             flex-shrink: 0;
-            box-shadow: 0 1px 4px rgba(29, 78, 216, 0.08);
+            box-shadow: 0 1px 3px rgba(29, 78, 216, 0.08);
         }
 
         .menu-wrapper {
             flex: 1;
             overflow-y: auto;
-            padding: 14px 10px;
+            padding: 10px 8px;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
         }
@@ -241,46 +243,46 @@
         }
 
         .group-label {
-            font-size: 0.7rem;
-            font-weight: 800;
+            font-size: 0.68rem;
+            font-weight: 700;
             color: #64748b;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
-            margin: 14px 8px 6px;
-            padding-top: 10px;
+            letter-spacing: 0.5px;
+            margin: 10px 6px 3px;
+            padding-top: 8px;
             border-top: 1px solid #f1f5f9;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         .group-label:first-child {
-            margin-top: 4px;
+            margin-top: 2px;
             padding-top: 0;
             border-top: none;
         }
 
         .group-label i {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             color: #94a3b8;
         }
 
         .nav-item {
             display: block;
             text-decoration: none;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 7px 10px;
-            border-radius: 9px;
+            padding: 6px 9px;
+            border-radius: 6px;
             color: #334155;
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             font-weight: 600;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.15s ease;
             cursor: pointer;
             border-right: 3px solid transparent;
         }
@@ -293,30 +295,29 @@
         .nav-link:hover {
             background: #f1f5f9;
             color: #1d4ed8;
-            transform: translateX(-3px);
+            transform: translateX(-2px);
         }
 
         html[dir="ltr"] .nav-link:hover {
-            transform: translateX(3px);
+            transform: translateX(2px);
         }
 
         .nav-item.active .nav-link {
             background: #eff6ff;
             color: #1d4ed8;
-            font-weight: 800;
-            border-right: 3.5px solid #1d4ed8;
-            box-shadow: 0 1px 4px rgba(29, 78, 216, 0.08);
+            font-weight: 700;
+            border-right: 3px solid #1d4ed8;
         }
 
         html[dir="ltr"] .nav-item.active .nav-link {
             border-right: none;
-            border-left: 3.5px solid #1d4ed8;
+            border-left: 3px solid #1d4ed8;
         }
 
         .link-main {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             min-width: 0;
         }
 
@@ -328,15 +329,15 @@
 
         /* حاويات الأيقونات الموحدة لكل مجال */
         .nav-icon-badge {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.86rem;
+            font-size: 0.8rem;
             flex-shrink: 0;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
             background: #f8fafc;
             color: #64748b;
             border: 1px solid #e2e8f0;
@@ -486,12 +487,12 @@
             justify-content: space-between;
             align-items: center;
             background: var(--ed-surface);
-            padding: 0 32px;
+            padding: 0 20px;
             border-bottom: 1px solid #cbd5e1;
             position: sticky;
             top: 0;
             z-index: 900;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
         }
 
         .top-bar::after {
@@ -501,17 +502,17 @@
             right: 0;
             left: 0;
             height: 2px;
-            background: linear-gradient(90deg, #f59e0b 0%, #d97706 35%, transparent 80%);
+            background: linear-gradient(90deg, #1d4ed8 0%, #3b82f6 35%, transparent 80%);
             pointer-events: none;
         }
 
         html[dir="ltr"] .top-bar::after {
-            background: linear-gradient(270deg, #f59e0b 0%, #d97706 35%, transparent 80%);
+            background: linear-gradient(270deg, #1d4ed8 0%, #3b82f6 35%, transparent 80%);
         }
 
         .content-body {
             flex: 1;
-            padding: 28px 32px 60px;
+            padding: 18px 22px 50px;
             width: 100%;
             max-width: 100%;
             min-width: 0;
