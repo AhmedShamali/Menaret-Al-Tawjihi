@@ -876,7 +876,7 @@
                 <span>{{ __('بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ') }}</span>
             </div>
             <div class="top-info-left">
-                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ date('Y') }}</span>
+                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }})</span>
             </div>
         </div>
     </div>
@@ -956,7 +956,7 @@
         <div class="notice-ticker-inner">
             <span class="notice-tag"><i class="fa-solid fa-bullhorn"></i> {{ __('إعلان هام') }}</span>
             <span class="notice-content">
-                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين لدورة :year. تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات بإشراف نخبة من المعلمين المعتمدين.', ['year' => date('Y')]) }}
+                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين لدورة :session (:year). تم فتح باب التسجيل وتفعيل الشروحات ونماذج الامتحانات بإشراف نخبة من المعلمين المعتمدين.', ['session' => \App\Models\Setting::tawjihiSession(), 'year' => \App\Models\Setting::academicYear()]) }}
             </span>
         </div>
     </div>
@@ -1300,7 +1300,7 @@
 
         <div class="footer-bottom-bar">
             <div class="footer-bottom-inner">
-                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي'))]) }}</span>
+                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸 • العام الأكاديمي :academic م', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')), 'academic' => \App\Models\Setting::academicYear()]) }}</span>
                 <span>{{ __('متوافق تماماً مع المنهاج الرسمي لوزارة التربية والتعليم الفلسطينية') }}</span>
             </div>
         </div>

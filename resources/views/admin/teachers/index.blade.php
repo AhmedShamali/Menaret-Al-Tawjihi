@@ -14,7 +14,7 @@
                 <span class="count-pill" id="visibleTeachersCount">{{ count($teachers) }}</span>
             </h1>
             <p class="page-desc-text">
-                {{ __('إدارة ومتابعة المعلمين، المواد المسندة، وقنوات التواصل المباشر لدورة 2026.') }}
+                {{ __('إدارة ومتابعة المعلمين، المواد المسندة، وقنوات التواصل المباشر لدورة :session (:academic).', ['session' => \App\Models\Setting::tawjihiSession(), 'academic' => \App\Models\Setting::academicYear()]) }}
             </p>
         </div>
 

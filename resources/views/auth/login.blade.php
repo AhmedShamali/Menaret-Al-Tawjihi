@@ -13,44 +13,51 @@
 
     <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
 
-    <!-- الخطوط الموحدة للمنظومة (Alexandria & Tajawal) -->
+    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- أيقونات FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        /* ==========================================================================
+           التصميم الأكاديمي الكلاسيكي الرصين - بوابة الدخول الموحد (Classic Academic Portal)
+           - إطار كلاسيكي مزدوج رصين (Two-Column Academic Portal Frame)
+           - فواتح بالكامل بدون كتل داكنة ضخمة ولا فراغات عشوائية
+           - خطوط واضحة وصغيرة 13-14px بأسلوب بوابات الجامعات الكبرى
+           ========================================================================== */
         :root {
             --ed-primary: #1d4ed8;
             --ed-primary-dark: #1e3a8a;
-            --ed-primary-deep: #0f172a;
             --ed-primary-hover: #1e40af;
             --ed-primary-soft: #eff6ff;
             --ed-primary-border: #bfdbfe;
 
-            --ed-accent-gold: #f59e0b;
-            --ed-accent-gold-dark: #d97706;
+            --ed-accent-gold: #b45309;
+            --ed-accent-gold-soft: #fef3c7;
+            --ed-accent-gold-border: #fde68a;
 
             --ed-success: #16a34a;
             --ed-success-hover: #15803d;
+            --ed-success-soft: #ecfdf5;
+            --ed-success-border: #a7f3d0;
 
             --ed-bg: #f8fafc;
             --ed-surface: #ffffff;
             --ed-surface-alt: #f1f5f9;
-            --ed-border: #e2e8f0;
-            --ed-border-hover: #cbd5e1;
+            --ed-border: #cbd5e1;
+            --ed-border-subtle: #e2e8f0;
 
             --ed-text-main: #0f172a;
             --ed-text-body: #334155;
             --ed-text-muted: #64748b;
 
             --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
+            --radius-md: 8px;
 
-            --shadow-card: 0 4px 14px rgba(15, 23, 42, 0.05);
+            --shadow-portal: 0 4px 20px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04);
             --transition: all 0.2s ease;
         }
 
@@ -58,82 +65,76 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Alexandria', 'Tajawal', sans-serif;
+            font-family: 'Tajawal', 'Alexandria', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--ed-bg);
             color: var(--ed-text-body);
-            font-size: 14px;
+            font-size: 13.5px;
             line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
-        html[dir="rtl"] body {
-            direction: rtl;
-            text-align: right;
-        }
+        html[dir="rtl"] body { direction: rtl; text-align: right; }
+        html[dir="ltr"] body { direction: ltr; text-align: left; }
 
-        html[dir="ltr"] body {
-            direction: ltr;
-            text-align: left;
-        }
-
-        html[dir="ltr"] .input-wrap .input-icon {
-            right: auto;
-            left: 14px;
-        }
-        html[dir="ltr"] .input-wrap .form-control {
-            padding-right: 14px;
-            padding-left: 42px;
-        }
-        html[dir="ltr"] .input-wrap .toggle-pw-btn {
-            left: auto;
-            right: 12px;
-        }
+        html[dir="ltr"] .input-wrap .input-icon { right: auto; left: 14px; }
+        html[dir="ltr"] .input-wrap .form-control { padding-right: 14px; padding-left: 42px; }
+        html[dir="ltr"] .input-wrap .toggle-pw-btn { left: auto; right: 12px; }
 
         a {
             color: var(--ed-primary);
             text-decoration: none;
             transition: var(--transition);
         }
-        a:hover {
-            color: var(--ed-primary-hover);
-        }
+        a:hover { color: var(--ed-primary-hover); }
 
-        /* الشريط العلوي الرفيع بنمط كلاسيكي فاتح */
+        /* 1. الشريط العلوي الرفيع للمنظومة */
         .top-info-bar {
             width: 100%;
-            background-color: #f1f5f9;
-            color: #475569;
-            padding: 8px 32px;
-            font-size: 12.5px;
-            border-bottom: 1px solid var(--ed-border);
+            background-color: #ffffff;
+            color: var(--ed-text-muted);
+            padding: 7px 32px;
+            font-size: 12px;
+            border-bottom: 1px solid var(--ed-border-subtle);
         }
         .top-bar-inner {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1240px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .top-bar-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .top-bar-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        /* ترويسة الصفحة الرسمية الفاتحة الأكاديمية */
+        /* 2. الترويسة الأكاديمية الكلاسيكية الفاتحة */
         .page-header {
             width: 100%;
             background: #ffffff;
             color: var(--ed-text-main);
-            padding: 16px 32px;
-            border-bottom: 1px solid var(--ed-border);
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            padding: 14px 32px;
+            border-bottom: 1px solid var(--ed-border-subtle);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
         }
         .header-inner {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1240px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -144,95 +145,212 @@
         .brand-link {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             color: var(--ed-text-main);
             text-decoration: none;
         }
         .brand-logo-square {
-            width: 46px;
-            height: 46px;
-            background: #eff6ff;
+            width: 44px;
+            height: 44px;
+            background: var(--ed-primary-soft);
             color: var(--ed-primary);
             border-radius: var(--radius-sm);
             display: grid;
             place-items: center;
             font-size: 22px;
             border: 1px solid var(--ed-primary-border);
+            flex-shrink: 0;
         }
         .brand-titles h1 {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--ed-text-main);
-            line-height: 1.2;
+            line-height: 1.25;
         }
         .brand-titles p {
             font-size: 12px;
             color: var(--ed-text-muted);
-            margin-top: 2px;
+            margin-top: 1px;
+            font-weight: 500;
         }
         .supervisor-pill {
             background: #f8fafc;
-            border: 1px solid var(--ed-border);
-            padding: 7px 14px;
+            border: 1px solid var(--ed-border-subtle);
+            padding: 6px 14px;
             border-radius: var(--radius-sm);
             font-size: 12.5px;
             color: var(--ed-text-body);
-            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
         }
-        .supervisor-pill span {
-            color: var(--ed-primary);
+        .supervisor-pill strong {
+            color: var(--ed-primary-dark);
             font-weight: 700;
         }
 
-        /* الحاوية المركزية لبطاقة الدخول */
+        /* 3. الحاوية العامة للإطار الأكاديمي الكلاسيكي */
         .auth-container {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px 20px;
+            padding: 36px 20px;
         }
-        .auth-card {
+        .classic-portal-frame {
             width: 100%;
-            max-width: 460px;
-            background: var(--ed-surface);
+            max-width: 1020px;
+            background: #ffffff;
             border: 1px solid var(--ed-border);
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-card);
+            box-shadow: var(--shadow-portal);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             overflow: hidden;
         }
 
-        .auth-card-header {
-            background-color: #ffffff;
-            color: var(--ed-text-main);
-            padding: 20px 24px 16px;
-            border-bottom: 1px solid var(--ed-border);
-            text-align: center;
+        /* الجانب الأيمن: اللوحة التعريفية الأكاديمية (Academic Panel) */
+        .portal-info-panel {
+            background-color: #f8fafc;
+            border-inline-end: 1px solid var(--ed-border-subtle);
+            padding: 34px 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
-        .auth-card-header h2 {
+        .panel-brand-box {
+            margin-bottom: 22px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid var(--ed-border-subtle);
+        }
+        .panel-session-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            border: 1px solid var(--ed-primary-border);
+            color: var(--ed-primary-dark);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .panel-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--ed-text-main);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-desc {
+            font-size: 12.5px;
+            color: var(--ed-text-muted);
+            line-height: 1.65;
+        }
+
+        /* قائمة التعليمات الأكاديمية */
+        .portal-instructions-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 24px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .instruction-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 12.5px;
+            color: var(--ed-text-body);
+            line-height: 1.55;
+        }
+        .instruction-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            background: #ffffff;
+            border: 1px solid var(--ed-border);
+            color: var(--ed-primary);
+            display: grid;
+            place-items: center;
+            font-size: 11px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* بطاقة التواصل المباشر مع الإشراف */
+        .supervisor-contact-box {
+            background: #ffffff;
+            border: 1px solid var(--ed-border);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+        }
+        .supervisor-box-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ed-text-main);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-whatsapp-compact {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            background-color: var(--ed-success);
+            color: #ffffff !important;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .btn-whatsapp-compact:hover {
+            background-color: var(--ed-success-hover);
+        }
+        .alt-contact-text {
+            font-size: 11px;
+            color: var(--ed-text-muted);
+            text-align: center;
+            margin-top: 6px;
+        }
+
+        /* الجانب الأيسر: نموذج تسجيل الدخول الكلاسيكي (Form Panel) */
+        .portal-form-panel {
+            background-color: #ffffff;
+            padding: 34px 32px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .form-head {
+            margin-bottom: 18px;
+        }
+        .form-head h2 {
             font-size: 18px;
             font-weight: 800;
-            margin-bottom: 4px;
             color: var(--ed-text-main);
+            margin-bottom: 4px;
         }
-        .auth-card-header p {
-            font-size: 13px;
+        .form-head p {
+            font-size: 12.5px;
             color: var(--ed-text-muted);
         }
 
-        .auth-card-body {
-            padding: 24px;
-        }
-
-        /* تبويبات اختيار نوع الحساب */
+        /* أزرار اختيار الصفة الأكاديمية (Segmented Tabs) */
         .role-tabs-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 6px;
+            margin-bottom: 16px;
             background: var(--ed-surface-alt);
             padding: 4px;
             border-radius: var(--radius-sm);
@@ -240,10 +358,10 @@
         }
         .role-tab-btn {
             background: transparent;
-            border: none;
+            border: 1px solid transparent;
             padding: 8px 6px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
+            border-radius: 4px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--ed-text-muted);
             cursor: pointer;
@@ -254,37 +372,37 @@
             transition: var(--transition);
         }
         .role-tab-btn.active {
-            background: #ffffff;
-            color: var(--ed-primary);
-            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
-            border: 1px solid var(--ed-border);
+            background: var(--ed-primary-dark);
+            color: #ffffff;
+            border-color: var(--ed-primary-dark);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15);
         }
 
-        /* شريط توضيح نوع البوابة */
+        /* تنبيه الدور */
         .role-info-alert {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-            padding: 10px 14px;
-            border-radius: var(--radius-sm);
-            font-size: 12.5px;
+            background: var(--ed-primary-soft);
+            border: 1px solid var(--ed-primary-border);
+            color: var(--ed-primary-dark);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        /* حقول النموذج */
+        /* الحقول الكلاسيكية */
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
         .form-label {
             display: block;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--ed-text-main);
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
         .input-wrap {
             position: relative;
@@ -293,18 +411,18 @@
         }
         .input-icon {
             position: absolute;
-            right: 14px;
+            right: 12px;
             color: var(--ed-text-muted);
-            font-size: 15px;
+            font-size: 14px;
             pointer-events: none;
         }
         .form-control {
             width: 100%;
-            height: 42px;
-            padding: 0 42px 0 14px;
+            height: 40px;
+            padding: 0 38px 0 12px;
             border: 1px solid var(--ed-border);
-            border-radius: var(--radius-sm);
-            font-size: 13.5px;
+            border-radius: 4px;
+            font-size: 13px;
             color: var(--ed-text-main);
             background: #ffffff;
             transition: var(--transition);
@@ -312,16 +430,16 @@
         .form-control:focus {
             outline: none;
             border-color: var(--ed-primary);
-            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+            box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
         }
         .toggle-pw-btn {
             position: absolute;
-            left: 12px;
+            left: 10px;
             background: none;
             border: none;
             color: var(--ed-text-muted);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             padding: 4px;
         }
 
@@ -329,8 +447,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            font-size: 13px;
+            margin-bottom: 16px;
+            font-size: 12px;
         }
         .remember-label {
             display: flex;
@@ -338,21 +456,22 @@
             gap: 6px;
             cursor: pointer;
             color: var(--ed-text-body);
+            font-weight: 500;
         }
         .forgot-link {
-            font-weight: 600;
+            font-weight: 700;
             color: var(--ed-primary);
         }
 
-        /* زر الدخول الرئيسي */
+        /* زر الدخول الرسمي الكلاسيكي */
         .btn-submit-login {
             width: 100%;
-            height: 44px;
+            height: 42px;
             background-color: var(--ed-primary);
             color: #ffffff;
             border: 1px solid var(--ed-primary-hover);
-            border-radius: var(--radius-sm);
-            font-size: 14px;
+            border-radius: 4px;
+            font-size: 13.5px;
             font-weight: 700;
             cursor: pointer;
             display: flex;
@@ -360,20 +479,18 @@
             justify-content: center;
             gap: 8px;
             transition: var(--transition);
-            box-shadow: 0 1px 3px rgba(29, 78, 216, 0.2);
         }
         .btn-submit-login:hover {
             background-color: var(--ed-primary-hover);
-            transform: translateY(-1px);
         }
 
-        /* أسفل البطاقة والتسجيل */
-        .auth-card-footer {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid var(--ed-border);
+        /* صندوق تسجيل طالب جديد */
+        .new-student-box {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--ed-border-subtle);
             text-align: center;
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--ed-text-muted);
         }
         .btn-to-register {
@@ -386,17 +503,17 @@
             text-decoration: underline;
         }
 
-        /* التذييل البسيط الفاتح */
+        /* التذييل الفاتح الرسمي */
         .auth-page-footer {
             background-color: #ffffff;
             color: var(--ed-text-muted);
-            font-size: 12.5px;
-            padding: 16px 20px;
+            font-size: 12px;
+            padding: 14px 20px;
             text-align: center;
-            border-top: 1px solid var(--ed-border);
+            border-top: 1px solid var(--ed-border-subtle);
         }
 
-        /* نافذة استعادة كلمة المرور */
+        /* نافذة استعادة كلمة المرور الكلاسيكية */
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -408,40 +525,49 @@
             padding: 20px;
             z-index: 1000;
         }
-        .modal-backdrop.active {
-            display: flex;
-        }
+        .modal-backdrop.active { display: flex; }
         .modal-card {
             background: #ffffff;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             padding: 24px;
             max-width: 420px;
             width: 100%;
-            box-shadow: var(--shadow-card);
+            box-shadow: var(--shadow-portal);
             border: 1px solid var(--ed-border);
         }
         .modal-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             padding-bottom: 10px;
-            border-bottom: 1px solid var(--ed-border);
+            border-bottom: 1px solid var(--ed-border-subtle);
         }
         .modal-head h3 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 800;
             color: var(--ed-text-main);
         }
         .modal-close-btn {
             background: none;
             border: none;
-            font-size: 22px;
+            font-size: 20px;
             cursor: pointer;
             color: var(--ed-text-muted);
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 860px) {
+            .classic-portal-frame {
+                grid-template-columns: 1fr;
+            }
+            .portal-info-panel {
+                border-inline-end: none;
+                border-bottom: 1px solid var(--ed-border-subtle);
+                padding: 24px 20px;
+            }
+            .portal-form-panel {
+                padding: 24px 20px;
+            }
             .page-header, .top-info-bar {
                 padding-left: 16px;
                 padding-right: 16px;
@@ -458,26 +584,30 @@
 </head>
 <body>
 
-    <!-- 1. الشريط العلوي الرفيع الفاتح -->
+    <!-- 1. الشريط العلوي الرفيع: التاريخ والتقويم الأكاديمي المعتمد -->
     <div class="top-info-bar">
         <div class="top-bar-inner">
-            <span><i class="fa-regular fa-calendar-check text-primary"></i> {{ __('اليوم:') }} {{ date('Y/m/d') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }} • {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</span>
-            <div style="display: flex; align-items: center; gap: 14px;">
+            <div class="top-bar-meta">
+                <span><i class="fa-regular fa-calendar-check" style="color: var(--ed-accent-gold);"></i> {{ date('Y/m/d') }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }}</span>
+                <span>•</span>
+                <span>{{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }}{{ app()->getLocale() === 'ar' ? ' م' : ' AD' }})</span>
+            </div>
+            <div class="top-bar-actions">
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
                    title="{{ $currentLocale === 'ar' ? 'Switch to English' : 'Switch to Arabic' }}" 
-                   style="background: #ffffff; border: 1px solid var(--ed-border); color: var(--ed-text-main); padding: 3px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                   style="background: #ffffff; border: 1px solid var(--ed-border); color: var(--ed-text-main); padding: 3px 9px; border-radius: 4px; font-size: 11.5px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; text-decoration: none;">
                     <i class="fa-solid fa-globe" style="color: var(--ed-primary);"></i>
                     <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
-                <a href="{{ route('home') }}" style="color: var(--ed-primary); font-weight: 600;">
+                <a href="{{ route('home') }}" style="color: var(--ed-primary); font-weight: 600; font-size: 12px;">
                     <i class="fa-solid {{ app()->getLocale() === 'ar' ? 'fa-arrow-right' : 'fa-arrow-left' }}"></i> {{ __('العودة للرئيسية') }}
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- 2. الترويسة الرسمية الموحدة الفاتحة -->
+    <!-- 2. الترويسة الأكاديمية الكلاسيكية الفاتحة -->
     <header class="page-header">
         <div class="header-inner">
             <a href="{{ route('home') }}" class="brand-link">
@@ -491,22 +621,72 @@
             </a>
 
             <div class="supervisor-pill">
-                <span>{{ __('المشرف العام على المنظومة:') }}</span> {{ __('أ. أحمد حسين شمالي') }}
+                <span>{{ __('المشرف العام على المنظومة:') }}</span> <strong>{{ __('أ. أحمد حسين شمالي') }}</strong>
             </div>
         </div>
     </header>
 
-    <!-- 3. بطاقة تسجيل الدخول المركزية الفاتحة -->
+    <!-- 3. الإطار الأكاديمي الكلاسيكي المزدوج لتسجيل الدخول -->
     <main class="auth-container">
-        <div class="auth-card">
-            <div class="auth-card-header">
-                <h2>{{ __('تسجيل الدخول للمنظومة') }}</h2>
-                <p>{{ __('أدخل بيانات اعتمادك للمتابعة الأكاديمية') }}</p>
+        <div class="classic-portal-frame">
+
+            <!-- الجانب الأيمن: اللوحة التعريفية الأكاديمية الكلاسيكية -->
+            <div class="portal-info-panel">
+                <div>
+                    <div class="panel-brand-box">
+                        <span class="panel-session-badge">
+                            <i class="fa-solid fa-award" style="color: var(--ed-accent-gold);"></i>
+                            {{ __('العام الدراسي:') }} {{ \App\Models\Setting::academicYear() }} • {{ __('دورة') }} {{ \App\Models\Setting::tawjihiSession() }}
+                        </span>
+                        <h3 class="panel-title">
+                            <i class="fa-solid fa-building-columns" style="color: var(--ed-primary);"></i>
+                            {{ __('بوابة الدخول الموحد (SSO)') }}
+                        </h3>
+                        <p class="panel-desc">
+                            {{ __('نظام أكاديمي معتمد لخدمة طلبة وكادر الثانوية العامة في فلسطين (القدس، الضفة الغربية، وقطاع غزة). يتيح الوصول المباشر للشروحات والاختبارات والمتابعة الدراسية.') }}
+                        </p>
+                    </div>
+
+                    <!-- تعليمات الدخول والاستخدام -->
+                    <ul class="portal-instructions-list">
+                        <li class="instruction-item">
+                            <div class="instruction-icon"><i class="fa-solid fa-id-card"></i></div>
+                            <div><strong>{{ __('الدخول المعتمد:') }}</strong> {{ __('متاح بحساب الطالب المعتمد أو البريد الإلكتروني وكلمة المرور.') }}</div>
+                        </li>
+                        <li class="instruction-item">
+                            <div class="instruction-icon"><i class="fa-solid fa-key"></i></div>
+                            <div><strong>{{ __('استعادة كلمة المرور:') }}</strong> {{ __('متاحة فوراً برقم الهوية الفلسطينية (9 أرقام) دون الحاجة للانتظار.') }}</div>
+                        </li>
+                        <li class="instruction-item">
+                            <div class="instruction-icon"><i class="fa-solid fa-shield-check"></i></div>
+                            <div><strong>{{ __('الاعتماد الأكاديمي:') }}</strong> {{ __('يتم تفعيل مواد واشتراكات الطلاب بإشراف إدارة المنظومة مباشرة.') }}</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- بطاقة الدعم المباشر عبر واتساب الإشراف -->
+                <div class="supervisor-contact-box">
+                    <div class="supervisor-box-title">
+                        <i class="fa-solid fa-headset" style="color: var(--ed-primary);"></i>
+                        {{ __('الدعم الفني والأكاديمي المباشر') }}
+                    </div>
+                    <a href="https://wa.me/970597694385" target="_blank" class="btn-whatsapp-compact">
+                        <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب الإشراف العام: 0597694385') }}
+                    </a>
+                    <div class="alt-contact-text">
+                        {{ __('خط اتصال بديل:') }} 0567897212 • {{ __('دولة فلسطين 🇵🇸') }}
+                    </div>
+                </div>
             </div>
 
-            <div class="auth-card-body">
+            <!-- الجانب الأيسر: استمارة الدخول الرسمية الكلاسيكية -->
+            <div class="portal-form-panel">
+                <div class="form-head">
+                    <h2>{{ __('تسجيل الدخول للمنظومة') }}</h2>
+                    <p>{{ __('أدخل بيانات اعتمادك للمتابعة الأكاديمية') }}</p>
+                </div>
 
-                <!-- أزرار تبديل نوع الحساب -->
+                <!-- تبويبات اختيار نوع الحساب الكلاسيكية -->
                 <div class="role-tabs-grid">
                     <button type="button" class="role-tab-btn active" data-role="student" onclick="switchRole('student')">
                         <i class="fa-solid fa-user-graduate"></i> {{ __('طالب') }}
@@ -519,7 +699,7 @@
                     </button>
                 </div>
 
-                <!-- شريط توضيحي للدور -->
+                <!-- شريط توضيح نوع البوابة -->
                 <div class="role-info-alert" id="roleAlertBox">
                     <i class="fa-solid fa-circle-info" id="roleIcon"></i>
                     <span id="roleText">{{ __('بوابة دخول الطلبة — أهلاً بك لمتابعة مساقاتك واختباراتك اليومية.') }}</span>
@@ -527,14 +707,14 @@
 
                 <!-- تنبيهات الأخطاء -->
                 @if($errors->any())
-                    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px;">
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 9px 12px; border-radius: 4px; font-size: 12.5px; margin-bottom: 14px;">
                         <i class="fa-solid fa-triangle-exclamation me-1"></i>
                         {{ $errors->first() }}
                     </div>
                 @endif
 
                 @if(session('success'))
-                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; margin-bottom: 16px;">
+                    <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 9px 12px; border-radius: 4px; font-size: 12.5px; margin-bottom: 14px;">
                         <i class="fa-solid fa-circle-check me-1"></i>
                         {{ session('success') }}
                     </div>
@@ -578,22 +758,28 @@
                     </button>
                 </form>
 
-                <!-- رابط إنشاء حساب جديد -->
-                <div class="auth-card-footer" id="studentRegisterFooter">
+                <!-- رابط إنشاء حساب طالب جديد -->
+                <div class="new-student-box" id="studentRegisterFooter">
                     <span>{{ __('ليس لديك حساب بعد؟') }}</span>
-                    <a href="{{ route('students.create') }}" class="btn-to-register">{{ __('إنشاء حساب طالب جديد ←') }}</a>
+                    <a href="{{ route('students.create') }}" class="btn-to-register">
+                        {{ __('إنشاء حساب طالب جديد لدورة :session ←', ['session' => \App\Models\Setting::tawjihiSession()]) }}
+                    </a>
                 </div>
-
             </div>
+
         </div>
     </main>
 
-    <!-- 4. تذييل الصفحة الفاتح المعتمد -->
+    <!-- 4. تذييل الصفحة الفاتح الكلاسيكي المعتمد -->
     <footer class="auth-page-footer">
-        {{ __('جميع الحقوق محفوظة ©') }} {{ date('Y') }} - {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸 | {{ __('إشراف الأستاذ أحمد حسين شمالي') }}
+        {{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸 • العام الأكاديمي :academic م | إشراف الأستاذ أحمد حسين شمالي', [
+            'year' => date('Y'),
+            'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')),
+            'academic' => \App\Models\Setting::academicYear()
+        ]) }}
     </footer>
 
-    <!-- نافذة استعادة كلمة المرور المنبثقة -->
+    <!-- نافذة استعادة كلمة المرور الكلاسيكية -->
     <div class="modal-backdrop" id="forgotModal">
         <div class="modal-card">
             <div class="modal-head">
@@ -601,7 +787,7 @@
                 <button type="button" class="modal-close-btn" onclick="closeForgotModal()">&times;</button>
             </div>
             
-            <p style="font-size: 13px; color: var(--ed-text-muted); margin-bottom: 16px;">
+            <p style="font-size: 12.5px; color: var(--ed-text-muted); margin-bottom: 14px;">
                 {{ __('أدخل بريدك الإلكتروني أو اسم المستخدم مع رقم الهوية الفلسطينية (9 أرقام) للتحقق ومطابقة الحساب.') }}
             </p>
 
@@ -609,17 +795,17 @@
                 @csrf
                 <div class="form-group">
                     <label class="form-label">{{ __('البريد الإلكتروني أو اسم المستخدم') }}</label>
-                    <input type="text" name="email" class="form-control" placeholder="student@example.com" required style="padding-inline-start: 14px;">
+                    <input type="text" name="email" class="form-control" placeholder="student@example.com" required style="padding-inline-start: 12px;">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">{{ __('رقم الهوية الفلسطينية (9 أرقام)') }}</label>
-                    <input type="text" name="nid" maxlength="9" pattern="\d{9}" class="form-control" placeholder="{{ __('401234567') }}" required style="padding-inline-start: 14px;">
+                    <input type="text" name="nid" maxlength="9" pattern="\d{9}" class="form-control" placeholder="{{ __('401234567') }}" required style="padding-inline-start: 12px;">
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">{{ __('كلمة المرور الجديدة (اختياري)') }}</label>
-                    <input type="password" name="new_password" minlength="6" class="form-control" placeholder="{{ __('اتركها فارغة أو اكتب الكلمة الجديدة') }}" style="padding-inline-start: 14px;">
+                    <input type="password" name="new_password" minlength="6" class="form-control" placeholder="{{ __('اتركها فارغة أو اكتب الكلمة الجديدة') }}" style="padding-inline-start: 12px;">
                 </div>
 
                 <button type="submit" class="btn-submit-login" style="margin-top: 10px;">
@@ -627,15 +813,15 @@
                 </button>
             </form>
 
-            <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--ed-border); text-align: center;">
-                <a href="https://wa.me/970597694385" target="_blank" style="color: var(--ed-success); font-weight: 700; font-size: 13px;">
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--ed-border-subtle); text-align: center;">
+                <a href="https://wa.me/970597694385" target="_blank" style="color: var(--ed-success); font-weight: 700; font-size: 12.5px;">
                     <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام للمساعدة الفورية') }}
                 </a>
             </div>
         </div>
     </div>
 
-    <!-- السكريبتات المعربة بالكامل ثنائية اللغة -->
+    <!-- السكريبتات المعربة وثنائية اللغة -->
     <script>
         const i18n = {
             studentSubmit: "{{ __('تسجيل الدخول كطالب') }}",

@@ -11,7 +11,7 @@
                 <i class="fa-solid fa-graduation-cap"></i>
                 <span>{{ __('الثانوية العامة - فلسطين') }}</span>
                 <span class="badge-dot">•</span>
-                <span>{{ __('المنهاج الفلسطيني المعتمد - دورة') }} 2026</span>
+                <span>{{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }})</span>
             </div>
             <h1 class="ed-catalog-title">{{ __('موادي ومقرراتي الدراسية') }}</h1>
             <p class="ed-catalog-desc">
@@ -45,7 +45,7 @@
                 <i class="fa-solid fa-table-list" style="color: #1e3a8a;"></i>
                 <h3>{{ __('سجل المقررات والمباحث الدراسية المقررة') }}</h3>
             </div>
-            <span class="table-card-sub">{{ __('المنهاج الفلسطيني المعتمد - دورة') }} 2026</span>
+            <span class="table-card-sub">{{ __('المنهاج الفلسطيني المعتمد - دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }})</span>
         </div>
 
         <div class="table-responsive">

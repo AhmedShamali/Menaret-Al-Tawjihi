@@ -719,7 +719,7 @@
             <i class="fa-solid fa-graduation-cap" style="color: #1e3a8a;"></i>
             <span>{{ optional($subject->stage)->label_ar ?? optional($subject->stage)->name ?? __('الثانوية العامة فلسطين 🇵🇸') }}</span>
             <span style="color: #cbd5e1;">•</span>
-            <span>{{ __('منهاج 2026') }}</span>
+            <span>{{ __('دورة') }} {{ \App\Models\Setting::tawjihiSession() }} ({{ \App\Models\Setting::academicYear() }})</span>
         </div>
     </div>
 
@@ -955,7 +955,7 @@
                         </div>
                         <h3 class="ed-empty-title">{{ __('المحاضرات والشروحات قيد الإعداد والتسجيل') }}</h3>
                         <p class="ed-empty-desc">
-                            {{ __('يجري حالياً تجهيز ورفع المحاضرات المصورة والملازم التوضيحية لمبحث') }} ({{ $subject->name_ar ?? $subject->name }}) {{ __('وفق الخطة الوزارية المعتمدة لدورة 2026. ستتاح الحصص في لوحتك فور اكتمال مراجعتها الأكاديمية.') }}
+                            {{ __('يجري حالياً تجهيز ورفع المحاضرات المصورة والملازم التوضيحية لمبحث') }} ({{ $subject->name_ar ?? $subject->name }}) {{ __('وفق الخطة الوزارية المعتمدة لدورة :session (:academic). ستتاح الحصص في لوحتك فور اكتمال مراجعتها الأكاديمية.', ['session' => \App\Models\Setting::tawjihiSession(), 'academic' => \App\Models\Setting::academicYear()]) }}
                         </p>
                         <div class="ed-empty-cta">
                             <button type="button" onclick="switchSubjectTab('exams')" class="ed-btn-royal primary">

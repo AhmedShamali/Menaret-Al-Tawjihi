@@ -88,7 +88,7 @@
                     </div>
                     <div>
                         <h3>{{ __('إحصائيات الاعتماد والتخرج') }}</h3>
-                        <span class="ed-control-status" style="color: #64748b;">{{ __('العام الأكاديمي: 2025 / 2026') }}</span>
+                        <span class="ed-control-status" style="color: #64748b;">{{ __('العام الأكاديمي:') }} {{ \App\Models\Setting::academicYear() }}</span>
                     </div>
                 </div>
 
