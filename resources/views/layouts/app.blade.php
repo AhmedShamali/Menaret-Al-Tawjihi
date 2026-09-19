@@ -487,11 +487,26 @@
             align-items: center;
             background: var(--ed-surface);
             padding: 0 32px;
-            border-bottom: 1px solid var(--ed-border);
+            border-bottom: 1px solid #cbd5e1;
             position: sticky;
             top: 0;
             z-index: 900;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+        }
+
+        .top-bar::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            right: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 35%, transparent 80%);
+            pointer-events: none;
+        }
+
+        html[dir="ltr"] .top-bar::after {
+            background: linear-gradient(270deg, #f59e0b 0%, #d97706 35%, transparent 80%);
         }
 
         .content-body {
@@ -549,35 +564,50 @@
             width: 100% !important;
         }
 
-        /* --- عناصر التصميم الموحدة الهادئة (Universal EdTech UI Components) --- */
+        /* --- عناصر التصميم الأكاديمي الكلاسيكي الملكي الموحدة (Universal Classic Royal Academic UI) --- */
         .ed-card {
             background: var(--ed-surface);
-            border: 1px solid var(--ed-border);
-            border-radius: var(--ed-radius-lg);
-            box-shadow: var(--ed-shadow-card);
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
             overflow: hidden;
             transition: var(--transition-smooth);
         }
         .ed-card:hover {
-            box-shadow: var(--ed-shadow-md);
+            box-shadow: 0 8px 22px -4px rgba(15, 23, 42, 0.08);
+            border-color: #94a3b8;
         }
 
         .ed-card-header {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--ed-border);
+            padding: 16px 22px;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
+            border-right: 4px solid #1e3a8a;
         }
-        .ed-card-header h3 {
+
+        html[dir="ltr"] .ed-card-header {
+            border-right: none;
+            border-left: 4px solid #1e3a8a;
+        }
+
+        .ed-card-header h3,
+        .ed-card-title {
             font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--ed-text-main);
+            font-weight: 800;
+            color: #0f172a;
             margin: 0;
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        .ed-card-header h3 i,
+        .ed-card-title i {
+            color: #1e3a8a;
         }
 
         .ed-card-body {
@@ -904,48 +934,100 @@
         }
 
         .stat-card-clean {
-            background: #ffffff;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #cbd5e1;
-            border-top: 3.5px solid var(--card-accent, #1e3a8a);
-            border-radius: 10px;
-            padding: 16px 18px;
+            border-top: 4px solid var(--card-accent, #1e3a8a);
+            border-radius: 12px;
+            padding: 18px 20px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            position: relative;
+            overflow: hidden;
         }
 
         .stat-card-clean:hover {
-            border-color: #94a3b8;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+            border-color: var(--card-accent, #1e3a8a);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px -4px rgba(15, 23, 42, 0.12);
         }
 
         .stat-card-clean .stat-label {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: #475569;
             font-weight: 700;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
         }
 
         .stat-card-clean .stat-value-wrap {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
         }
 
         .stat-card-clean .stat-number {
-            font-size: 1.45rem;
-            font-weight: 800;
+            font-size: 1.7rem;
+            font-weight: 900;
             color: #0f172a;
-            line-height: 1.2;
+            line-height: 1.1;
+            font-family: 'Alexandria', -apple-system, sans-serif;
         }
 
         .stat-card-clean .stat-icon {
-            font-size: 1.15rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        }
+
+        .stat-card-clean:hover .stat-icon {
+            transform: scale(1.08);
+        }
+
+        .stat-card-clean .stat-icon.text-navy {
+            background: #eff6ff !important;
+            color: #1e3a8a !important;
+            border: 1.5px solid #bfdbfe;
+        }
+        .stat-card-clean .stat-icon.text-emerald {
+            background: #ecfdf5 !important;
+            color: #059669 !important;
+            border: 1.5px solid #a7f3d0;
+        }
+        .stat-card-clean .stat-icon.text-amber {
+            background: #fffbeb !important;
+            color: #d97706 !important;
+            border: 1.5px solid #fde68a;
+        }
+        .stat-card-clean .stat-icon.text-indigo {
+            background: #eef2ff !important;
+            color: #4f46e5 !important;
+            border: 1.5px solid #c7d2fe;
+        }
+        .stat-card-clean .stat-icon.text-rose {
+            background: #fef2f2 !important;
+            color: #dc2626 !important;
+            border: 1.5px solid #fecaca;
+        }
+
+        .stat-card-clean small {
+            font-size: 0.74rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 8px;
+            display: block;
         }
 
         /* فئات الألوان الكلاسيكية */
