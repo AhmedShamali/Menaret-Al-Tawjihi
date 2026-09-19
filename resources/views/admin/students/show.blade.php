@@ -388,7 +388,7 @@
         </div>
 
         <!-- قائمة المواد بخانات الاختيار -->
-        <form id="syncSubjectsForm" style="padding: 24px 28px; overflow-y: auto; flex: 1;">
+        <form id="syncSubjectsForm" method="POST" action="{{ route('admin.students.syncSubjects', $student->id) }}" style="padding: 24px 28px; overflow-y: auto; flex: 1;">
             @csrf
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
                 @php
@@ -489,46 +489,99 @@
         });
     }
 
-    // حفظ ومزامنة المواد عبر AJAX
+    // حفظ ومزامنة المواد بدقة وسرعة فائقة مع معالجة بطء السيرفر السحابي
     async function submitSyncSubjects() {
         const btn = document.getElementById('btnSaveSubjects');
+        const form = document.getElementById('syncSubjectsForm');
         const checkedBoxes = document.querySelectorAll('.modal-subject-cb:checked');
         const subjectIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
+        // تنبيه ديناميكي فوري إذا كان السيرفر السحابي يستيقظ (Cold start)
+        const slowNotice = setTimeout(() => {
+            if (btn && btn.disabled) {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الربط وتحديث السيرفر...';
+            }
+        }, 2500);
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         try {
-            const response = await axios.post("{{ route('admin.students.syncSubjects', $student->id) }}", {
-                subject_ids: subjectIds,
-                _token: '{{ csrf_token() }}'
-            }, {
+            const syncUrl = "{{ route('admin.students.syncSubjects', $student->id) }}";
+            const res = await fetch(syncUrl, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                timeout: 15000
+                body: JSON.stringify({
+                    subject_ids: subjectIds,
+                    _token: '{{ csrf_token() }}'
+                }),
+                signal: controller.signal
             });
-            Swal.fire({
-                icon: 'success',
-                title: 'تم الحفظ بنجاح! 🎉',
-                text: response.data.message || 'تم تحديث قائمة مواد الطالب وتفعيلها.',
-                confirmButtonColor: '#10b981',
-                confirmButtonText: 'حسناً'
-            }).then(() => {
+
+            clearTimeout(slowNotice);
+            clearTimeout(timeoutId);
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.message || 'فشلت الاستجابة من السيرفر (' + res.status + ')');
+            }
+
+            const data = await res.json();
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم الحفظ بنجاح! 🎉',
+                    text: data.message || 'تم تحديث قائمة مواد الطالب وتفعيلها.',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'حسناً'
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
                 location.reload();
-            });
+            }
         } catch (error) {
+            clearTimeout(slowNotice);
+            clearTimeout(timeoutId);
+
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> حفظ وتفعيل المواد';
-            const errorMsg = error.response?.data?.message || (error.code === 'ECONNABORTED' ? 'استغرق الخادم وقتاً أطول للاستجابة، يرجى إعادة المحاولة.' : 'تعذر حفظ مواد الطالب، يرجى المحاولة مرة أخرى.');
-            Swal.fire({
-                icon: 'error',
-                title: 'خطأ أثناء الحفظ',
-                text: errorMsg,
-                confirmButtonText: 'حسناً'
-            });
+
+            const isTimeout = error.name === 'AbortError';
+            const errorMsg = isTimeout 
+                ? 'استغرق السيرفر السحابي وقتاً أطول للاستجابة. يمكنك الحفظ الفوري المباشر الآن.' 
+                : (error.message || 'تعذر حفظ مواد الطالب، يرجى المحاولة مجدداً.');
+
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: isTimeout ? 'info' : 'error',
+                    title: isTimeout ? 'تأخر استجابة السيرفر' : 'خطأ أثناء الحفظ',
+                    text: errorMsg,
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#64748b',
+                    confirmButtonText: 'حفظ مباشر فوري ⚡',
+                    cancelButtonText: 'إلغاء'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الإرسال المباشر...';
+                        form.submit();
+                    }
+                });
+            } else {
+                if (confirm(errorMsg + '\n\nهل ترغب في الحفظ المباشر؟')) {
+                    form.submit();
+                }
+            }
         }
     }
 

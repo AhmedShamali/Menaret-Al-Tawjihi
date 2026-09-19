@@ -338,6 +338,48 @@ class PlatformAuditTest extends TestCase
         $pendingPage->assertSee($reason);
         $pendingPage->assertSee('0567897212'); // WhatsApp supervisor contact
     }
+
+    public function test_admin_can_sync_student_subjects_via_json_and_form(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Subject Sync',
+            'email' => 'admin_sync@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب مزامنة المواد',
+            'name_en' => 'Sync Subject Student',
+            'nid' => '400554433',
+            'email' => 'sync_std@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599554433',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+        ]);
+
+        $subjects = \App\Models\Subject::take(3)->get();
+        $subjectIds = $subjects->pluck('id')->toArray();
+
+        // 1. Test via JSON (AJAX)
+        $responseJson = $this->actingAs($admin)->postJson("/admin/students/{$student->id}/sync-subjects", [
+            'subject_ids' => $subjectIds
+        ]);
+        $responseJson->assertStatus(200);
+        $responseJson->assertJson(['success' => true]);
+        $this->assertEquals(count($subjectIds), $student->enrolledSubjects()->count());
+
+        // 2. Test via Standard Form POST (Fallback)
+        $responseForm = $this->actingAs($admin)->post("/admin/students/{$student->id}/sync-subjects", [
+            'subject_ids' => array_slice($subjectIds, 0, 1)
+        ]);
+        $responseForm->assertRedirect();
+        $this->assertEquals(1, $student->enrolledSubjects()->count());
+    }
 }
 
 

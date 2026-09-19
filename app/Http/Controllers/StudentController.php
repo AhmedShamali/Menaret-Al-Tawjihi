@@ -858,30 +858,25 @@ class StudentController extends Controller
             }
             $selectedSubjectIds = array_values(array_filter(array_map('intval', $selectedSubjectIds)));
 
-            \DB::transaction(function () use ($student, $selectedSubjectIds) {
-                // 1. حذف الاشتراكات للمواد التي تم إلغاء تحديدها
-                \App\Models\Enrollment::where('student_id', $student->id)
-                    ->whereNotIn('subject_id', $selectedSubjectIds)
-                    ->delete();
+            $now = now();
+            $syncData = [];
+            foreach ($selectedSubjectIds as $subId) {
+                $syncData[$subId] = [
+                    'status'         => 'active',
+                    'access_mode'    => 'all',
+                    'payment_status' => 'admin_grant',
+                    'activated_at'   => $now,
+                ];
+            }
 
-                // 2. تحديث أو تفعيل المواد المحددة دفعة واحدة
-                foreach ($selectedSubjectIds as $subId) {
-                    \App\Models\Enrollment::updateOrCreate(
-                        [
-                            'student_id' => $student->id,
-                            'subject_id' => $subId,
-                        ],
-                        [
-                            'status'         => 'active',
-                            'access_mode'    => 'all',
-                            'payment_status' => 'admin_grant',
-                            'activated_at'   => now(),
-                        ]
-                    );
-                }
-            });
+            // مزامنة فورية فائقة السرعة بحد أدنى من الاستعلامات (Sync)
+            $student->enrolledSubjects()->sync($syncData);
 
             $addedCount = count($selectedSubjectIds);
+
+            if (!$request->ajax() && !$request->wantsJson()) {
+                return redirect()->back()->with('success', "تم اعتماد {$addedCount} مادة دراسية للطالب ({$student->name_ar}).");
+            }
 
             return response()->json([
                 'success' => true,
@@ -892,6 +887,11 @@ class StudentController extends Controller
             ]);
         } catch (\Throwable $e) {
             \Log::error("syncSubjects error for student {$id}: " . $e->getMessage());
+
+            if (!$request->ajax() && !$request->wantsJson()) {
+                return redirect()->back()->with('error', 'حدث خطأ أثناء حفظ المواد: ' . $e->getMessage());
+            }
+
             return response()->json([
                 'success' => false,
                 'icon'    => 'error',
