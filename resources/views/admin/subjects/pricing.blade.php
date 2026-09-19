@@ -9,7 +9,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
         <div>
             <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 4px;">
-                <i class="fa-solid fa-tags" style="color: #0284c7;"></i> إدارة تسعير المواد وباقات الاشتراك 🇵🇸
+                <i class="fa-solid fa-tags" style="color: #0284c7;"></i> إدارة تسعير المواد وباقات الاشتراك
             </h1>
             <p style="color: #64748b; font-size: 0.88rem; margin: 0;">
                 تحديد أسعار المواد بالشيكل (₪)، ضبط الخصومات الترويجية، وتفعيل المواد المجانية لطلبة توجيهي فلسطين.

@@ -9,7 +9,7 @@
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
     @endif
-    <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
+    <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
     <!-- Google Fonts: Alexandria & Tajawal & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1307,7 +1307,7 @@
                     <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
                     <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>
@@ -1643,35 +1643,11 @@
                         </div>
                     </div>
                 </a>
-                <a href="{{ route('student.flashcards.index') }}" class="nav-item {{ Request::is('student/flashcards*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-purple"><i class="fa-solid fa-bolt"></i></span>
-                            <span>{{ __('بطاقات الاستذكار السريع') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('student.leaderboard') }}" class="nav-item {{ Request::is('student/leaderboard*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-amber"><i class="fa-solid fa-ranking-star"></i></span>
-                            <span>{{ __('لوحة الشرف وتحدي الأوائل') }}</span>
-                        </div>
-                    </div>
-                </a>
                 <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="nav-item">
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-cyan"><i class="fa-solid fa-calculator"></i></span>
                             <span>{{ __('حاسبة المعدل الجامعي') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('tawjihi.formulas') }}" target="_blank" class="nav-item">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-indigo"><i class="fa-solid fa-square-root-variable"></i></span>
-                            <span>{{ __('دليل القوانين والمفاهيم') }}</span>
                         </div>
                     </div>
                 </a>

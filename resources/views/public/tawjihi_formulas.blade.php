@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل القوانين والقواعد الذهبية للتوجيهي | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
+    <title>دليل القوانين والقواعد الذهبية للتوجيهي | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
 
     <!-- Google Fonts: Alexandria -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -229,7 +229,7 @@
     <nav>
         <a href="/" class="nav-logo">
             <div class="logo-badge"><i class="fa-solid fa-graduation-cap"></i></div>
-            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</span>
+            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
         </a>
 
         <div class="nav-actions">
@@ -252,7 +252,7 @@
     <section class="header-section">
         <div class="badge-pill">
             <i class="fa-solid fa-bolt"></i>
-            <span>الملخص الشامل للقوانين والقواعد الوزارية المعتمدة 🇵🇸</span>
+            <span>الملخص الشامل للقوانين والقواعد الوزارية المعتمدة</span>
         </div>
         <h1>{{ __('دليل القوانين الذهبية لامتحانات الثانوية العامة') }}</h1>
         <p>{{ __('مرجعك السريع والدقيق لكافة قوانين الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية المقررة في المنهاج الفلسطيني للتوجيهي.') }}</p>

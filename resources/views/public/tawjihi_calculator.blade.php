@@ -585,7 +585,7 @@
                 <div class="brand-logo-badge">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
-                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
+                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
             </a>
             <div class="nav-links">
                 <!-- زر تبديل اللغة خالي من أي كلمة عربية في وضع الإنجليزية -->

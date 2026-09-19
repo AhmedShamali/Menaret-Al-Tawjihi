@@ -717,7 +717,7 @@
 
         <div class="ed-academic-tag">
             <i class="fa-solid fa-graduation-cap" style="color: #1e3a8a;"></i>
-            <span>{{ optional($subject->stage)->label_ar ?? optional($subject->stage)->name ?? __('الثانوية العامة فلسطين 🇵🇸') }}</span>
+            <span>{{ optional($subject->stage)->label_ar ?? optional($subject->stage)->name ?? __('الثانوية العامة - فلسطين') }}</span>
         </div>
     </div>
 

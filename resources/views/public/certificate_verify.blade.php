@@ -146,7 +146,7 @@
                 </div>
             @endif
             <h2>{{ __('بوابة التحقق الرسمية') }}</h2>
-            <p style="opacity: 0.9; font-size: 0.88rem; margin-top: 4px;">{{ $siteName }} • دولة فلسطين 🇵🇸</p>
+            <p style="opacity: 0.9; font-size: 0.88rem; margin-top: 4px;">{{ $siteName }} • دولة فلسطين</p>
         </div>
 
         <div class="verify-body">

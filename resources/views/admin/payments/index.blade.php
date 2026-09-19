@@ -390,7 +390,7 @@
 
 <div class="payments-header">
     <div>
-        <h1><i class="fas fa-wallet" style="color: var(--ed-primary, #1d4ed8);"></i> {{ __('إدارة الاشتراكات والمدفوعات 🇵🇸') }}</h1>
+        <h1><i class="fas fa-wallet" style="color: var(--ed-primary, #1d4ed8);"></i> {{ __('إدارة الاشتراكات والمدفوعات') }}</h1>
         <p style="color: #64748b; font-size: 0.88rem; margin-top: 4px;">{{ __('متابعة عمليات سداد الطلاب عبر جوال باي، بال باي، وبنك فلسطين واعتماد التفعيل.') }}</p>
     </div>
     <div style="display: flex; gap: 10px;">

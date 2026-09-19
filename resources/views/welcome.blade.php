@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }} 🇵🇸</title>
+    <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
     <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج الوزاري، بنك اختبارات وزارية محلولة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.') }}">
 
     <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
@@ -876,7 +876,7 @@
                 <span>{{ __('بِسْمِ اللَّـهِ الرَّحْمَـٰنِ الرَّحِيمِ') }}</span>
             </div>
             <div class="top-info-left">
-                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد لطلبة الثانوية العامة 🇵🇸') }}</span>
+                <span><i class="fa-solid fa-flag" style="color: #dc2626;"></i> {{ __('المنهاج الفلسطيني المعتمد لطلبة الثانوية العامة') }}</span>
             </div>
         </div>
     </div>
@@ -889,7 +889,7 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div class="header-titles">
-                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</h1>
+                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h1>
                     <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المناهج الوزارية ونماذج الاختبارات المعتمدة') }}</p>
                 </div>
             </div>
@@ -1226,7 +1226,7 @@
                             </a>
 
                             <div style="font-size: 11.5px; color: var(--ed-text-muted); margin-top: 10px;">
-                                {{ __('رقم بديل: 0567897212 • دولة فلسطين 🇵🇸') }}
+                                {{ __('رقم بديل: 0567897212 • دولة فلسطين') }}
                             </div>
                         </div>
                     </div>
@@ -1256,7 +1256,7 @@
     <footer class="main-footer">
         <div class="footer-inner">
             <div class="footer-brand">
-                <h3>🇵🇸 {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h3>
+                <h3>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h3>
                 <p>
                     {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى تيسير وصول العلم والشروحات النموذجية المتوافقة مع تحديثات وزارة التربية والتعليم لكافة بيوت فلسطين.') }}
                 </p>
@@ -1291,7 +1291,7 @@
                     </li>
                     <li>
                         <span style="font-size: 12.5px; color: var(--ed-text-muted);">
-                            <i class="fa-solid fa-location-dot" style="margin-inline-end: 4px;"></i> {{ __('دولة فلسطين 🇵🇸') }}
+                            <i class="fa-solid fa-location-dot" style="margin-inline-end: 4px;"></i> {{ __('دولة فلسطين') }}
                         </span>
                     </li>
                 </ul>
@@ -1300,7 +1300,7 @@
 
         <div class="footer-bottom-bar">
             <div class="footer-bottom-inner">
-                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸 • العام الأكاديمي :academic م', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')), 'academic' => \App\Models\Setting::academicYear()]) }}</span>
+                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')), 'academic' => \App\Models\Setting::academicYear()]) }}</span>
                 <span>{{ __('متوافق تماماً مع المنهاج الرسمي لوزارة التربية والتعليم الفلسطينية') }}</span>
             </div>
         </div>

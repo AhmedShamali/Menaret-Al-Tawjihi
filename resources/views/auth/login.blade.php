@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
+    <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
     <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -615,7 +615,7 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div class="brand-titles">
-                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</h1>
+                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h1>
                     <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</p>
                 </div>
             </a>
@@ -674,7 +674,7 @@
                         <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب الإشراف العام: 0597694385') }}
                     </a>
                     <div class="alt-contact-text">
-                        {{ __('خط اتصال بديل:') }} 0567897212 • {{ __('دولة فلسطين 🇵🇸') }}
+                        {{ __('خط اتصال بديل:') }} 0567897212 • {{ __('دولة فلسطين') }}
                     </div>
                 </div>
             </div>
@@ -772,7 +772,7 @@
 
     <!-- 4. تذييل الصفحة الفاتح الكلاسيكي المعتمد -->
     <footer class="auth-page-footer">
-        {{ __('جميع الحقوق محفوظة © :year - :site_name 🇵🇸 • العام الأكاديمي :academic م | إشراف الأستاذ أحمد حسين شمالي', [
+        {{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م | إشراف الأستاذ أحمد حسين شمالي', [
             'year' => date('Y'),
             'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')),
             'academic' => \App\Models\Setting::academicYear()

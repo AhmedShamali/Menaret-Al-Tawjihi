@@ -9,7 +9,7 @@
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</title>
+    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
     <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -381,7 +381,7 @@
                 @else
                     <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
-                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} 🇵🇸</span>
+                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
             </a>
 
             <div class="nav-actions-right">
@@ -456,7 +456,7 @@
                         <label for="email">
                             <span>{{ __('اسم المستخدم للبريد الأكاديمي') }} <span class="req">*</span></span>
                             <span style="color: var(--ed-primary); font-size: 11px; font-weight: 700;">
-                                {{ __('🇵🇸 @tawjihi.ps ثابت معتمد') }}
+                                {{ __('نطاق @tawjihi.ps ثابت معتمد') }}
                             </span>
                         </label>
                         <div style="display: flex; align-items: stretch; background: #ffffff; border: 1px solid var(--ed-border); border-radius: var(--radius-sm); overflow: hidden;" id="emailBoxWrapper">

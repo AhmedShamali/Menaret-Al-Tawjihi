@@ -67,7 +67,7 @@
                                     @if(\App\Models\Setting::get('site_favicon'))
                                         <img src="{{ asset(\App\Models\Setting::get('site_favicon')) }}" id="fav_img_preview" style="width: 36px; height: 36px; object-fit: contain;">
                                     @else
-                                        <span id="fav_placeholder" style="font-size: 1.8rem;">🇵🇸</span>
+                                        <span id="fav_placeholder" style="font-size: 1.8rem;"><i class="fa-solid fa-graduation-cap"></i></span>
                                         <img id="fav_img_preview" style="width: 36px; height: 36px; object-fit: contain; display: none;">
                                     @endif
                                 </div>
@@ -182,7 +182,7 @@
                         <div>
                             <label class="field-label">{{ __('شعار ووصف المنصة (Slogan)') }}</label>
                             <input type="text" name="site_slogan" id="slogan_input"
-                                   value="{{ \App\Models\Setting::get('site_slogan', 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين 🇵🇸') }}"
+                                   value="{{ \App\Models\Setting::get('site_slogan', 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين') }}"
                                    class="field-input" oninput="document.getElementById('slogan_preview').innerText = this.value">
                         </div>
                     </div>
@@ -192,7 +192,7 @@
                 <div class="settings-card">
                     <div class="settings-card-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 18px 25px; display: flex; align-items: center; gap: 12px;">
                         <i class="fa-solid fa-wallet" style="color: #059669; font-size: 1.2rem;"></i>
-                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('بيانات الدفع والتحويل الفلسطيني المعتمدة 🇵🇸') }}</h3>
+                        <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('بيانات الدفع والتحويل الفلسطيني المعتمدة') }}</h3>
                     </div>
                     <div style="padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                         <div style="grid-column: span 2;">
@@ -282,7 +282,7 @@
                                 {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}
                             </h3>
                             <small id="slogan_preview" style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 2px;">
-                                {{ __(\App\Models\Setting::get('site_slogan', 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين 🇵🇸')) }}
+                                {{ __(\App\Models\Setting::get('site_slogan', 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين')) }}
                             </small>
                         </div>
                     </div>

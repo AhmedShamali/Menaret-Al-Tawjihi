@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>بوابة الزوار | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }} 🇵🇸</title>
+    <title>بوابة الزوار | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
 
     <!-- الخطوط والأيقونات -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -361,8 +361,7 @@
                 <i class="fa-solid fa-calculator" style="color: #0284c7;"></i>{{ __('حاسبة المعدل') }}</a>
             <a href="{{ route('tawjihi.archive') }}" class="btn-header-link">
                 <i class="fa-solid fa-file-lines" style="color: #10b981;"></i>{{ __('بنك الامتحانات') }}</a>
-            <a href="{{ route('tawjihi.formulas') }}" class="btn-header-link">
-                <i class="fa-solid fa-square-root-variable" style="color: #8b5cf6;"></i>{{ __('دليل القوانين') }}</a>
+
             @if (Route::has('login'))
                 @auth
                     <a href="{{ url('/dashboard') }}" class="btn-register-header">
@@ -380,7 +379,7 @@
     <!-- المحتوى الرئيسي -->
     <main class="visitor-main">
         <div class="hero-badge">
-            <i class="fa-solid fa-graduation-cap"></i> المنصة التفاعلية الأولى لطلبة التوجيهي في فلسطين 🇵🇸
+            <i class="fa-solid fa-graduation-cap"></i> المنصة التفاعلية الأولى لطلبة التوجيهي في فلسطين
         </div>
 
         <h1 class="hero-title">{{ __('طريقك نحو التفوق والتميز في') }}<br><span>{{ __('امتحانات الثانوية العامة (التوجيهي)') }}</span>
@@ -402,10 +401,7 @@
                 <i class="fa-solid fa-graduation-cap"></i>
                 <span>{{ __('دليل المقررات والمباحث الدراسية') }}</span>
             </a>
-            <a href="{{ route('tawjihi.formulas') }}" class="btn-cta-secondary" style="border-color: #c7d2fe; background: #f5f3ff; color: #5b21b6;">
-                <i class="fa-solid fa-square-root-variable" style="color: #7c3aed;"></i>
-                <span>{{ __('دليل القوانين والقواعد الذهبية') }}</span>
-            </a>
+
         </div>
 
         <!-- بطاقات المزايا -->
@@ -438,7 +434,7 @@
 
     <!-- الفوتر -->
     <footer class="visitor-footer">
-        <p>{{ __('جميع الحقوق محفوظة') }} © {{ date('Y') }} — {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }} 🇵🇸</p>
+        <p>{{ __('جميع الحقوق محفوظة') }} © {{ date('Y') }} — {{ \App\Models\Setting::get('site_name', __('منارة التوجيهي')) }}</p>
     </footer>
 
 </body>

@@ -11,7 +11,7 @@
             <div class="ed-header-badges">
                 <span class="ed-badge-item stage">
                     <i class="fas fa-graduation-cap"></i>
-                    <span>{{ (app()->getLocale() === 'en' && !empty($student->stage->name_en)) ? $student->stage->name_en : ($student->stage->name_ar ?? $student->stage->label_ar ?? __('الثانوية العامة فلسطين 🇵🇸')) }}</span>
+                    <span>{{ (app()->getLocale() === 'en' && !empty($student->stage->name_en)) ? $student->stage->name_en : ($student->stage->name_ar ?? $student->stage->label_ar ?? __('الثانوية العامة - فلسطين')) }}</span>
                 </span>
                 <span class="ed-badge-item term">
                     <span class="pulse-dot"></span>
@@ -112,7 +112,7 @@
             </div>
             <div>
                 <div class="ed-cd-tag">
-                    <i class="fa-solid fa-flag"></i> {{ __('العام الدراسي للثانوية العامة 🇵🇸') }}
+                    <i class="fa-solid fa-flag"></i> {{ __('العام الدراسي للثانوية العامة') }}
                 </div>
                 <h3>{{ __('العد التنازلي لاختبارات نهاية العام') }}</h3>
                 <small>{{ __('الوقت يمضي سريعاً، كل دقيقة تقضيها بتركيز تقربك من كليات القمة.') }}</small>
@@ -203,42 +203,12 @@
                         <td style="padding: 12px 18px;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle purple" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-bolt"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('بطاقات القوانين') }}</strong>
-                                        <small style="color: #64748b;">{{ __('استذكار سريع وتكرار متباعد') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.flashcards.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle amber" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-trophy"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('لوحة الشرف') }}</strong>
-                                        <small style="color: #64748b;">{{ __('أوائل طلبة فلسطين ونقاطك') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.leaderboard') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
                                     <div class="tool-icon-circle gold" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
                                         <i class="fas fa-award"></i>
                                     </div>
                                     <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الشهادات وغرفة التركيز') }}</strong>
-                                        <small style="color: #64748b;">{{ __('سجل الإنجاز ومؤقت بومودورو') }}</small>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الشهادات وسجل الإنجاز') }}</strong>
+                                        <small style="color: #64748b;">{{ __('الوثائق المعتمدة وسجل الدرجات') }}</small>
                                     </div>
                                 </div>
                                 <a href="{{ route('student.achievements') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>

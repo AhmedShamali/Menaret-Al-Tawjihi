@@ -8,7 +8,7 @@
     <!-- الترويسة الرئيسية -->
     <div class="contact-hero-card">
         <div class="hero-text-side">
-            <span class="palestine-badge">🇵🇸 صوتك مسموع ومحل اهتمامنا دائماً</span>
+            <span class="palestine-badge">{{ __('صوتك مسموع ومحل اهتمامنا دائماً') }}</span>
             <h1 class="hero-title">{{ __('مركز خدمة المستفيدين') }}<br><span class="gradient-text">{{ __('والدعم والشكاوى المباشر') }}</span></h1>
             <p class="hero-desc">{{ __('سواء كنت طالباً، ولي أمر، أو معلماً؛ إدارة منصة') }}<strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>{{ __('والمشرف العام حريصون على متابعة استفساراتك وشكاواك وحلها فورياً لضمان تجربة تعليمية متميزة.') }}</p>
 
@@ -40,7 +40,7 @@
                     <div class="contact-icon loc-icon"><i class="fa-solid fa-location-dot"></i></div>
                     <div>
                         <h4>{{ __('الموقع الجغرافي') }}</h4>
-                        <p>فلسطين - قطاع غزة والضفة الغربية 🇵🇸</p>
+                        <p>فلسطين - قطاع غزة والضفة الغربية</p>
                     </div>
                 </div>
             </div>
