@@ -15,6 +15,11 @@
             <p class="page-subtitle">{{ __('متابعة دفعات وأقساط الطلاب شهراً بشهر لكامل السنة الدراسية وتحديث الحالات فورياً بدون تعقيد') }}</p>
         </div>
         <div class="header-tools">
+            <button type="button" class="btn-global-fee-tool" onclick="openGlobalFeeModal()" title="{{ __('تعديل الرسوم الافتراضية لمنصة منارة التوجيهي') }}">
+                <i class="fa-solid fa-sliders"></i>
+                <span>{{ __('الرسوم العامة للمنصة:') }} <strong class="font-mono" id="globalFeeDisplay">{{ number_format(\App\Models\Setting::get('default_monthly_fee', 150), 0) }} ₪</strong></span>
+            </button>
+
             <form method="GET" action="{{ route('admin.subscriptions.monthly') }}" class="year-form">
                 <label>{{ __('العام الدراسي:') }}</label>
                 <select name="year" class="year-select" onchange="this.form.submit()">
@@ -148,6 +153,17 @@
                         <div class="student-sub-line">
                             <span class="branch-pill">{{ $stageDisplayName }}</span>
                             <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? '-' }}</span>
+                            <button type="button" 
+                                    class="student-fee-badge-btn" 
+                                    onclick="openStudentFeeModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', {{ (float)($student->monthly_fee ?: 150) }}, {{ (float)($student->custom_discount_percent ?: 0) }}, {{ (float)($student->custom_discount_fixed ?: 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
+                                    title="{{ __('تعديل الرسوم والخصم المعتمد لهذا الطالب') }}">
+                                <i class="fa-solid fa-coins text-amber"></i>
+                                <span class="font-mono font-bold" id="student_fee_label_{{ $student->id }}">{{ number_format($student->monthlyAmountDue(), 0) }} ₪</span>
+                                @if($student->hasDiscount())
+                                    <span class="badge-discount-tag"><i class="fa-solid fa-percent"></i></span>
+                                @endif
+                                <i class="fa-solid fa-pen-to-square edit-pen-icon"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -284,6 +300,95 @@
     </div>
 </div>
 
+{{-- مودال تعديل رسوم وخطة الطالب المالية والخصم المخصص --}}
+<div id="editStudentFeeModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card-box">
+        <div class="modal-header-row">
+            <div>
+                <h3 id="feeStudentNameTitle" style="margin: 0 0 4px; font-size: 1.2rem; color: #0f172a;">{{ __('تعديل الرسوم والخصم المعتمد للطالب') }}</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ __('تحديد القسط الشهري، الخصم الخاص، والمنح المعتمدة') }}</p>
+            </div>
+            <button type="button" class="btn-close-x" onclick="closeStudentFeeModal()">&times;</button>
+        </div>
+
+        <form id="updateStudentFeeForm" onsubmit="saveStudentFee(event)">
+            @csrf
+            <input type="hidden" name="student_id" id="feeFormStudentId">
+            <input type="hidden" name="academic_year" value="{{ $year }}">
+
+            <div class="form-body-wrap">
+                <div class="form-field-group">
+                    <label class="field-label">{{ __('القسط الشهري الأساسي للطالب (₪)') }} <span class="required">*</span></label>
+                    <input type="number" step="1" min="0" name="monthly_fee" id="feeFormMonthlyFee" class="clean-input font-mono font-bold" required oninput="calcNetFeePreview()">
+                    <small style="color: #64748b; font-size: 0.74rem;">{{ __('القسط الرسمي المعتمد للطالب قبل تطبيق أي خصومات') }}</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div class="form-field-group">
+                        <label class="field-label">{{ __('نسبة الخصم (%)') }}</label>
+                        <input type="number" step="1" min="0" max="100" name="custom_discount_percent" id="feeFormDiscountPercent" class="clean-input font-mono" placeholder="0" oninput="calcNetFeePreview()">
+                        <small style="color: #64748b; font-size: 0.74rem;">{{ __('مثال: 50% أو 100% لمنحة كاملة') }}</small>
+                    </div>
+                    <div class="form-field-group">
+                        <label class="field-label">{{ __('أو خصم ثابت (₪)') }}</label>
+                        <input type="number" step="1" min="0" name="custom_discount_fixed" id="feeFormDiscountFixed" class="clean-input font-mono" placeholder="0" oninput="calcNetFeePreview()">
+                        <small style="color: #64748b; font-size: 0.74rem;">{{ __('مثال: خصم 50 شيكل شهرياً') }}</small>
+                    </div>
+                </div>
+
+                <!-- معاينة الصافي المستحق -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.84rem; font-weight: 700; color: #334155;">{{ __('صافي القسط المطلوب شهرياً من الطالب:') }}</span>
+                    <strong style="font-size: 1.15rem; color: #15803d;" class="font-mono" id="previewNetFee">150 ₪</strong>
+                </div>
+
+                <div class="form-field-group">
+                    <label class="field-label">{{ __('بيان وملاحظات الخصم أو المنحة (تظهر للطالب بالسند)') }}</label>
+                    <input type="text" name="discount_notes" id="feeFormDiscountNotes" class="clean-input" placeholder="{{ __('مثال: منحة تفوق، خصم إخوة، إعفاء جزئي...') }}">
+                </div>
+            </div>
+
+            <div class="modal-footer-row">
+                <button type="submit" class="btn-save-sub" id="btnSaveFee">
+                    <i class="fa-solid fa-floppy-disk"></i> {{ __('حفظ الرسوم وتحديث الخطة') }}
+                </button>
+                <button type="button" class="btn-cancel-sub" onclick="closeStudentFeeModal()">{{ __('إلغاء') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- مودال تعديل القسط الشهري العام الافتراضي للمنصة --}}
+<div id="editGlobalFeeModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card-box" style="max-width: 440px;">
+        <div class="modal-header-row">
+            <div>
+                <h3 style="margin: 0 0 4px; font-size: 1.2rem; color: #0f172a;">{{ __('الرسوم الشهرية العامة للمنصة') }}</h3>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ __('القسط الشهري الافتراضي لكافة طلاب منارة التوجيهي') }}</p>
+            </div>
+            <button type="button" class="btn-close-x" onclick="closeGlobalFeeModal()">&times;</button>
+        </div>
+
+        <form id="updateGlobalFeeForm" onsubmit="saveGlobalFee(event)">
+            @csrf
+            <div class="form-body-wrap">
+                <div class="form-field-group">
+                    <label class="field-label">{{ __('القسط الشهري الافتراضي الجديد (₪)') }} <span class="required">*</span></label>
+                    <input type="number" step="1" min="0" name="default_monthly_fee" id="formGlobalFeeInput" value="{{ \App\Models\Setting::get('default_monthly_fee', 150) }}" class="clean-input font-mono font-bold" style="font-size: 1.2rem; text-align: center;" required>
+                    <small style="color: #64748b; font-size: 0.74rem;">{{ __('يُطبق هذا القسط تلقائياً على أي طالب جديد لا يوجد له خطة خاصة') }}</small>
+                </div>
+            </div>
+
+            <div class="modal-footer-row">
+                <button type="submit" class="btn-save-sub" id="btnSaveGlobalFee">
+                    <i class="fa-solid fa-check"></i> {{ __('اعتماد وتطبيق الرسوم') }}
+                </button>
+                <button type="button" class="btn-cancel-sub" onclick="closeGlobalFeeModal()">{{ __('إلغاء') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function openEditMonthModal(studentId, studentName, month, monthLabel, currentStatus, currentAmount, currentNotes) {
@@ -351,13 +456,166 @@
         });
     }
 
+    function openStudentFeeModal(studentId, studentName, monthlyFee, discountPercent, discountFixed, discountNotes) {
+        document.getElementById('feeFormStudentId').value = studentId;
+        document.getElementById('feeStudentNameTitle').innerText = '{{ __('تعديل رسوم الطالب:') }} ' + studentName;
+        document.getElementById('feeFormMonthlyFee').value = monthlyFee;
+        document.getElementById('feeFormDiscountPercent').value = discountPercent || '';
+        document.getElementById('feeFormDiscountFixed').value = discountFixed || '';
+        document.getElementById('feeFormDiscountNotes').value = discountNotes || '';
+        calcNetFeePreview();
+        document.getElementById('editStudentFeeModal').style.display = 'flex';
+    }
+
+    function closeStudentFeeModal() {
+        document.getElementById('editStudentFeeModal').style.display = 'none';
+    }
+
+    function calcNetFeePreview() {
+        const base = parseFloat(document.getElementById('feeFormMonthlyFee').value) || 0;
+        const pct = parseFloat(document.getElementById('feeFormDiscountPercent').value) || 0;
+        const fix = parseFloat(document.getElementById('feeFormDiscountFixed').value) || 0;
+
+        let net = base;
+        if (pct > 0) {
+            net = base * (1 - (pct / 100));
+        } else if (fix > 0) {
+            net = Math.max(0, base - fix);
+        }
+        document.getElementById('previewNetFee').innerText = Math.round(net) + ' ₪';
+    }
+
+    function saveStudentFee(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveFee');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
+
+        const form = document.getElementById('updateStudentFeeForm');
+        const formData = new FormData(form);
+
+        axios.post("{{ route('admin.subscriptions.monthly.updateStudentFee') }}", Object.fromEntries(formData))
+        .then(res => {
+            closeStudentFeeModal();
+            const sId = formData.get('student_id');
+            const lbl = document.getElementById(`student_fee_label_${sId}`);
+            if (lbl) {
+                lbl.innerText = res.data.amount_due + ' ₪';
+            }
+            Swal.fire({
+                icon: 'success',
+                title: '{{ __('تم التحديث بنجاح') }}',
+                text: res.data.message,
+                confirmButtonColor: '#1d4ed8'
+            });
+        })
+        .catch(err => {
+            Swal.fire('{{ __('خطأ') }}', err.response?.data?.message || '{{ __('فشل تحديث رسوم الطالب') }}', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> {{ __('حفظ الرسوم وتحديث الخطة') }}';
+        });
+    }
+
+    function openGlobalFeeModal() {
+        document.getElementById('editGlobalFeeModal').style.display = 'flex';
+    }
+
+    function closeGlobalFeeModal() {
+        document.getElementById('editGlobalFeeModal').style.display = 'none';
+    }
+
+    function saveGlobalFee(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveGlobalFee');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري التطبيق...') }}';
+
+        const form = document.getElementById('updateGlobalFeeForm');
+        const formData = new FormData(form);
+
+        axios.post("{{ route('admin.subscriptions.monthly.updateGlobalFee') }}", Object.fromEntries(formData))
+        .then(res => {
+            closeGlobalFeeModal();
+            document.getElementById('globalFeeDisplay').innerText = res.data.fee + ' ₪';
+            Swal.fire({
+                icon: 'success',
+                title: '{{ __('تم اعتماد الرسوم العامة') }}',
+                text: res.data.message,
+                confirmButtonColor: '#1d4ed8'
+            });
+        })
+        .catch(err => {
+            Swal.fire('{{ __('خطأ') }}', err.response?.data?.message || '{{ __('فشل تحديث الرسوم العامة') }}', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> {{ __('اعتماد وتطبيق الرسوم') }}';
+        });
+    }
+
     window.onclick = function(e) {
-        const modal = document.getElementById('editMonthModal');
-        if (e.target === modal) closeEditMonthModal();
+        const modal1 = document.getElementById('editMonthModal');
+        const modal2 = document.getElementById('editStudentFeeModal');
+        const modal3 = document.getElementById('editGlobalFeeModal');
+        if (e.target === modal1) closeEditMonthModal();
+        if (e.target === modal2) closeStudentFeeModal();
+        if (e.target === modal3) closeGlobalFeeModal();
     }
 </script>
 
 <style>
+    /* أزرار وشارات الرسوم والتحكم */
+    .btn-global-fee-tool {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #1e3a8a;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    .btn-global-fee-tool:hover {
+        background: #eff6ff;
+        border-color: #1d4ed8;
+    }
+
+    .student-fee-badge-btn {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        color: #0f172a;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.15s ease;
+        margin-inline-start: 6px;
+    }
+    .student-fee-badge-btn:hover {
+        background: #fef9c3;
+        border-color: #eab308;
+    }
+    .badge-discount-tag {
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 1px 4px;
+        border-radius: 4px;
+    }
+    .edit-pen-icon {
+        font-size: 0.7rem;
+        color: #64748b;
+    }
     /* الحاوية العامة بدون أي سكرول أفقي إطلاقاً */
     .subs-matrix-wrapper {
         width: 100%;

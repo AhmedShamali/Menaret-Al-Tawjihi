@@ -139,6 +139,56 @@ class AdminSubscriptionController extends Controller
     }
 
     /**
+     * تحديث رسوم وخطة الطالب المالية والخصومات (من خلال المدير)
+     */
+    public function updateStudentFee(Request $request)
+    {
+        $request->validate([
+            'student_id'              => 'required|exists:students,id',
+            'monthly_fee'             => 'required|numeric|min:0',
+            'custom_discount_percent' => 'nullable|numeric|min:0|max:100',
+            'custom_discount_fixed'   => 'nullable|numeric|min:0',
+            'discount_notes'          => 'nullable|string|max:255',
+        ]);
+
+        $student = Student::findOrFail($request->student_id);
+        $student->monthly_fee = $request->monthly_fee;
+        $student->custom_discount_percent = $request->custom_discount_percent ?? 0;
+        $student->custom_discount_fixed = $request->custom_discount_fixed ?? 0;
+        $student->discount_notes = $request->discount_notes;
+        $student->save();
+
+        // مزامنة الاشتراكات الشهرية فوراً بالقيم الجديدة
+        $year = $request->input('academic_year', '2026-2027');
+        StudentMonthlySubscription::syncWithStudentPayments($student, $year);
+
+        return response()->json([
+            'success'     => true,
+            'message'     => 'تم تحديث خطة رسوم الطالب (' . ($student->name_ar ?? $student->name) . ') بنجاح.',
+            'monthly_fee' => number_format($student->monthly_fee, 2),
+            'amount_due'  => number_format($student->monthlyAmountDue(), 2),
+        ]);
+    }
+
+    /**
+     * تحديث القسط الشهري الافتراضي العام للمنصة (Global Default Fee)
+     */
+    public function updateGlobalFee(Request $request)
+    {
+        $request->validate([
+            'default_monthly_fee' => 'required|numeric|min:0',
+        ]);
+
+        \App\Models\Setting::set('default_monthly_fee', $request->default_monthly_fee);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حفظ القسط الشهري الافتراضي لمنصة منارة التوجيهي بنجاح: ' . number_format($request->default_monthly_fee, 2) . ' ₪',
+            'fee'     => $request->default_monthly_fee,
+        ]);
+    }
+
+    /**
      * واجهة استعراض الطالب لسجل اشتراكاته الشهرية الشخصي
      */
     public function studentIndex()

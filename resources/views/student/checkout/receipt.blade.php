@@ -1,219 +1,186 @@
 @extends('layouts.app')
 
-@section('title', __('سند قبض واستلام مالي رسمي') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('سند قبض مالي رسمي') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
 
 @section('content')
-<div class="financial-voucher-container">
+@php
+    $student = $payment->student;
+    $studentName = (app()->getLocale() === 'en' && !empty($student?->name_en)) 
+        ? $student->name_en 
+        : ($student?->name_ar ?? $student?->name ?? __('طالب الثانوية العامة'));
+    $stageName = (app()->getLocale() === 'en' && !empty($student?->stage?->name_en))
+        ? $student->stage->name_en
+        : (optional($student?->stage)->label_ar ?? optional($student?->stage)->name_ar ?? __('الثانوية العامة (التوجيهي)'));
+    $studentNid = $student?->nid ?: ($student?->id_number ?: __('غير مسجل'));
+    $studentEmail = $student?->email ?: '-';
+    $studentPhone = $student?->phone ?: '-';
 
-    <!-- 1. شريط الإجراءات والتحكم العلوي الأنيق (يختفي عند الطباعة) -->
-    <div class="no-print voucher-actions-toolbar">
-        <div class="toolbar-nav-group">
-            <a href="{{ route('student.subjects.index') }}" class="btn-voucher-nav" title="{{ __('العودة لمقرراتي الدراسية') }}">
+    $details = is_array($payment->payment_details) 
+        ? $payment->payment_details 
+        : json_decode($payment->payment_details, true);
+    $refNumber = $details['reference_no'] ?? ($details['bop_ref'] ?? ($details['palpay_ref'] ?? ($details['wallet_phone'] ?? null)));
+    $monthTarget = $details['month_target'] ?? null;
+    $isPaid = ($payment->status === 'completed');
+    $isPending = ($payment->status === 'pending');
+
+    $amountInWords = \App\Support\Tafqeet::inArabic($payment->amount);
+    $items = is_array($payment->items) ? $payment->items : json_decode($payment->items, true);
+@endphp
+
+<div class="school-voucher-page-wrapper">
+
+    <!-- شريط الأوامر العلوي (يختفي في الطباعة) -->
+    <div class="no-print voucher-top-actions">
+        <div class="actions-left">
+            <a href="{{ route('student.subjects.index') }}" class="btn-action-light">
                 <i class="fa-solid fa-arrow-right"></i>
                 <span>{{ __('العودة للمقررات والدروس') }}</span>
             </a>
-
-            <a href="{{ route('student.subscriptions.index') }}" class="btn-voucher-nav" title="{{ __('سجل الاشتراكات الشهرية') }}">
-                <i class="fa-solid fa-calendar-check text-primary"></i>
+            <a href="{{ route('student.subscriptions.index') }}" class="btn-action-light">
+                <i class="fa-solid fa-calendar-check text-emerald"></i>
                 <span>{{ __('سجل الاشتراكات الشهرية') }}</span>
             </a>
         </div>
 
-        <div class="toolbar-print-group">
-            <button type="button" onclick="window.print()" class="btn-voucher-print" title="{{ __('طباعة السند المالي الرسمي أو حفظه بصيغة PDF') }}">
+        <div class="actions-right">
+            <button type="button" onclick="window.print()" class="btn-action-print">
                 <i class="fa-solid fa-print"></i>
-                <span>{{ __('طباعة السند المالي / حفظ PDF') }}</span>
+                <span>{{ __('طباعة السند المدرسي الرسمي (ورقة A4)') }}</span>
             </button>
-
-            <a href="{{ route('courses.catalog') }}" class="btn-voucher-catalog" title="{{ __('استعراض باقات ومساقات إضافية') }}">
-                <i class="fa-solid fa-layer-group"></i>
-                <span>{{ __('تصفح باقات المواد') }}</span>
-            </a>
         </div>
     </div>
 
-    <!-- 2. السند المالي الأكاديمي الملكي الرسمي (Imperial Financial Voucher Document) -->
-    <div class="official-financial-voucher" id="printableFinancialVoucher">
+    <!-- وثيقة سند القبض المالي المدرسي الكلاسيكي (Classical School Cash Receipt Voucher) -->
+    <div class="school-cash-voucher-sheet" id="schoolPrintableReceipt">
         
-        <!-- الإطار الأمني المذهب العلوي -->
-        <div class="voucher-top-security-bar"></div>
+        <!-- الإطار الرسمي المزدوج الكلاسيكي لسندات المدارس -->
+        <div class="voucher-double-border">
 
-        <!-- ترويسة السند المالي الرسمية للديوان الأكاديمي -->
-        <header class="voucher-official-header">
-            <div class="header-authority-row">
-                <div class="authority-seal-wrap">
-                    <i class="fa-solid fa-building-columns authority-crest-icon"></i>
-                    <div>
-                        <span class="authority-gov-tag">{{ __('دولة فلسطين • وزارة التربية والتعليم العالي') }}</span>
-                        <h2 class="authority-office-title">{{ __('ديوان الشؤون المالية والاشتراكات المركزية') }}</h2>
+            <!-- 1. ترويسة السند المالي الرسمية المعتمدة -->
+            <header class="voucher-gov-header">
+                <div class="gov-header-col right-col">
+                    <div class="gov-text-line"><strong>دولة فلسطين</strong></div>
+                    <div class="gov-text-line">وزارة التربية والتعليم العالي</div>
+                    <div class="gov-text-line">منصة منارة التوجيهي للثانوية العامة</div>
+                    <div class="gov-text-sub">الدائرة المالية • قسم الاشتراكات والتحصيل</div>
+                </div>
+
+                <div class="gov-header-col center-col">
+                    <div class="voucher-official-emblem">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <h1 class="voucher-headline">سَنَدُ قَبْضٍ مَالِيّ</h1>
+                    <span class="voucher-headline-en">OFFICIAL FINANCIAL RECEIPT VOUCHER</span>
+                    <div class="voucher-serial-tag">
+                        <span>رقم السند:</span>
+                        <strong class="font-mono">{{ $payment->transaction_number }}</strong>
                     </div>
                 </div>
 
-                <!-- شارة حالة المعاملة المالية الرسمية -->
-                <div class="voucher-status-stamp-wrap">
-                    @if($payment->status === 'completed')
-                        <div class="status-stamp-badge certified">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <div class="stamp-text-col">
-                                <strong>{{ __('معتمد ومقبوض رسمياً') }}</strong>
-                                <small>{{ __('سند مالي مؤكد ونافذ') }}</small>
-                            </div>
-                        </div>
-                    @elseif($payment->status === 'pending')
-                        <div class="status-stamp-badge auditing">
-                            <i class="fa-solid fa-hourglass-half fa-spin-pulse"></i>
-                            <div class="stamp-text-col">
-                                <strong>{{ __('قيد التدقيق والمطابقة المصرفية') }}</strong>
-                                <small>{{ __('بانتظار اعتماد الإدارة المالية') }}</small>
-                            </div>
-                        </div>
-                    @else
-                        <div class="status-stamp-badge rejected">
-                            <i class="fa-solid fa-circle-xmark"></i>
-                            <div class="stamp-text-col">
-                                <strong>{{ __('معاملة ملغاة أو غير معتمدة') }}</strong>
-                                <small>{{ __('يرجى مراجعة الإدارة') }}</small>
-                            </div>
-                        </div>
-                    @endif
+                <div class="gov-header-col left-col">
+                    <table class="voucher-meta-mini-table">
+                        <tr>
+                            <td class="lbl">{{ __('التاريخ:') }}</td>
+                            <td class="val font-mono">{{ $payment->created_at ? $payment->created_at->format('Y/m/d') : date('Y/m/d') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">{{ __('العام الدراسي:') }}</td>
+                            <td class="val font-mono">{{ \App\Models\Setting::academicYear() }} م</td>
+                        </tr>
+                        <tr>
+                            <td class="lbl">{{ __('حالة السند:') }}</td>
+                            <td class="val">
+                                @if($isPaid)
+                                    <span class="state-badge-paid"><i class="fa-solid fa-check"></i> {{ __('مسدد ومقبوض') }}</span>
+                                @elseif($isPending)
+                                    <span class="state-badge-pending"><i class="fa-solid fa-clock"></i> {{ __('قيد التدقيق') }}</span>
+                                @else
+                                    <span class="state-badge-cancelled">{{ __('غير معتمد') }}</span>
+                                @endif
+                            </td>
+                        </tr>
+                    </table>
                 </div>
+            </header>
+
+            <div class="voucher-hairline"></div>
+
+            <!-- 2. بيانات السند الكلاسيكية وسرد الإقرار المالي (Classical Statement Format) -->
+            <div class="voucher-statement-block">
+                
+                <div class="statement-row">
+                    <div class="statement-field full-width">
+                        <span class="field-label">وصلنا من الطالب/ـة المكرم/ـة:</span>
+                        <span class="field-content student-name-highlight">{{ $studentName }}</span>
+                        <span class="field-label-inline">رقم الهوية:</span>
+                        <span class="field-content font-mono">{{ $studentNid }}</span>
+                        <span class="field-label-inline">الفرع الدراسي:</span>
+                        <span class="field-content">{{ $stageName }}</span>
+                    </div>
+                </div>
+
+                <div class="statement-row">
+                    <div class="statement-field flex-2">
+                        <span class="field-label">مبلغاً وقدره (بالأرقام):</span>
+                        <span class="field-content font-mono bold-currency">{{ number_format($payment->amount, 2) }} ₪</span>
+                        <span class="field-sub">(شيكل فلسطيني جديد)</span>
+                    </div>
+                    <div class="statement-field flex-3">
+                        <span class="field-label">فقط وقدره كتابةً:</span>
+                        <span class="field-content words-content">{{ $amountInWords }}</span>
+                    </div>
+                </div>
+
+                <div class="statement-row">
+                    <div class="statement-field full-width">
+                        <span class="field-label">وذلك لقاء / عن:</span>
+                        <span class="field-content">
+                            @if($monthTarget)
+                                سداد وتفعيل اشتراك رسوم ({{ $monthTarget }}) لمنهاج الثانوية العامة.
+                            @else
+                                سداد وتفعيل اشتراك المقررات والمباحث الدراسية المعتمدة المقيدة بالجدول المالي أدناه.
+                            @endif
+                        </span>
+                    </div>
+                </div>
+
+                <div class="statement-row">
+                    <div class="statement-field flex-1">
+                        <span class="field-label">طريقة السداد / التحصيل:</span>
+                        <span class="field-content">
+                            <i class="fa-solid fa-building-columns"></i>
+                            {{ __($payment->gateway_name_ar ?? $payment->gateway ?? 'سداد مصرفي معتمد') }}
+                        </span>
+                    </div>
+                    <div class="statement-field flex-1">
+                        <span class="field-label">رقم الحوالة / المرجع:</span>
+                        <span class="field-content font-mono">{{ $refNumber ?: ('TXN-' . substr(md5($payment->id . $payment->created_at), 0, 8)) }}</span>
+                    </div>
+                    <div class="statement-field flex-1">
+                        <span class="field-label">رقم هاتف المشترك:</span>
+                        <span class="field-content font-mono" dir="ltr">{{ $studentPhone }}</span>
+                    </div>
+                </div>
+
             </div>
 
-            <!-- عنوان الوثيقة الرسمية -->
-            <div class="voucher-document-title-block">
-                <h1 class="voucher-doc-main-title">
-                    {{ __('سند قبض واستلام مالي إلكتروني معتمد') }}
-                </h1>
-                <p class="voucher-doc-sub-title">
-                    Official Verified Electronic Tuition Receipt • {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}
-                </p>
-                <div class="voucher-session-ribbon">
-                    <span>{{ __('دورة الامتحانات العامة: :session م (العام الدراسي: :academic)', [
-                        'session' => \App\Models\Setting::tawjihiSession(),
-                        'academic' => \App\Models\Setting::academicYear()
-                    ]) }}</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- 3. سجل بيانات المعاملة المصرفية والسند المرجعي (Master Transaction Ledger) -->
-        @php
-            $details = is_array($payment->payment_details) 
-                ? $payment->payment_details 
-                : json_decode($payment->payment_details, true);
-            $refNumber = $details['reference_no'] ?? ($details['bop_ref'] ?? ($details['palpay_ref'] ?? null));
-            $monthTarget = $details['month_target'] ?? null;
-        @endphp
-        <div class="voucher-section-card">
-            <div class="section-title-strip">
-                <i class="fa-solid fa-file-invoice-dollar text-primary"></i>
-                <span>{{ __('بيانات السند والمعاملة المالية:') }}</span>
-            </div>
-
-            <div class="transaction-meta-grid">
-                <!-- رقم السند المالي -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('رقم السند المالي المرجعي (Voucher ID):') }}</span>
-                    <strong class="meta-field-val font-mono text-primary">{{ $payment->transaction_number }}</strong>
-                </div>
-
-                <!-- تاريخ وتوقيت المعاملة -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('تاريخ وساعة التوريد المالي:') }}</span>
-                    <strong class="meta-field-val font-mono">
-                        {{ $payment->created_at ? $payment->created_at->format('Y-m-d | h:i A') : now()->format('Y-m-d | h:i A') }}
-                    </strong>
-                </div>
-
-                <!-- وسيلة السداد / المزود المصرفي -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('وسيلة السداد والمزود المصرفي:') }}</span>
-                    <strong class="meta-field-val">
-                        <i class="fa-solid fa-building-columns text-primary"></i>
-                        {{ __($payment->gateway_name_ar ?? $payment->gateway ?? 'سداد مصرفي معتمد') }}
-                    </strong>
-                </div>
-
-                <!-- رقم الحوالة / الإشعار البنكي -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('رقم الحوالة / الإشعار المرجعي:') }}</span>
-                    <strong class="meta-field-val font-mono">
-                        {{ $refNumber ?: ('TXN-' . substr(md5($payment->id . $payment->created_at), 0, 8)) }}
-                    </strong>
-                </div>
-            </div>
-        </div>
-
-        <!-- 4. بيانات الطالب الأكاديمية المقيد لحسابه السند (Student Identity Roster) -->
-        @php
-            $student = $payment->student;
-            $studentName = (app()->getLocale() === 'en' && !empty($student?->name_en)) 
-                ? $student->name_en 
-                : ($student?->name_ar ?? $student?->name ?? __('طالب الثانوية العامة'));
-            $stageName = (app()->getLocale() === 'en' && !empty($student?->stage?->name_en))
-                ? $student->stage->name_en
-                : (optional($student?->stage)->label_ar ?? optional($student?->stage)->name_ar ?? __('الثانوية العامة (التوجيهي)'));
-            $studentNid = $student?->nid ?: __('غير مسجل');
-            $studentEmail = $student?->email ?: '-';
-        @endphp
-        <div class="voucher-section-card">
-            <div class="section-title-strip">
-                <i class="fa-solid fa-id-card-clip text-primary"></i>
-                <span>{{ __('بيانات الطالب المقيد لحسابه السند الأكاديمي:') }}</span>
-            </div>
-
-            <div class="student-identity-grid">
-                <!-- اسم الطالب الرباعي -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('اسم الطالب المشترك:') }}</span>
-                    <strong class="meta-field-val">{{ $studentName }}</strong>
-                </div>
-
-                <!-- رقم الهوية الفلسطينية NID -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('رقم الهوية الوطنية الفلسطينية:') }}</span>
-                    <strong class="meta-field-val font-mono">{{ $studentNid }}</strong>
-                </div>
-
-                <!-- الفرع والمرحلة الأكاديمية -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('الفرع الأكاديمي والمسار:') }}</span>
-                    <strong class="meta-field-val">
-                        <span class="academic-stage-pill">{{ $stageName }}</span>
-                    </strong>
-                </div>
-
-                <!-- البريد الأكاديمي الرسمي -->
-                <div class="meta-field-cell">
-                    <span class="meta-field-label">{{ __('البريد الأكاديمي الرسمي للطالب:') }}</span>
-                    <strong class="meta-field-val font-mono" dir="ltr">{{ $studentEmail }}</strong>
-                </div>
-            </div>
-        </div>
-
-        <!-- 5. جدول كشف البنود والمقررات الدراسية المشمولة بالسند (Itemized Financial Ledger) -->
-        <div class="voucher-section-card no-padding-bottom">
-            <div class="section-title-strip">
-                <i class="fa-solid fa-list-check text-primary"></i>
-                <span>{{ __('كشف الرسوم والمقررات الدراسية المفعلة بموجب هذا السند:') }}</span>
-            </div>
-
-            <div class="table-responsive">
-                <table class="voucher-ledger-table">
+            <!-- 3. جدول بيان الرسوم والمقررات الدراسية المشمولة بالسند (Natural Financial Table) -->
+            <div class="voucher-table-wrapper">
+                <table class="voucher-natural-table">
                     <thead>
                         <tr>
-                            <th style="width: 50px; text-align: center;">#</th>
-                            <th style="min-width: 260px;">{{ __('المبحث الأكاديمي / بند القسط الدراسي') }}</th>
-                            <th style="min-width: 180px;">{{ __('الصلاحية والاعتماد الأكاديمي') }}</th>
-                            <th style="min-width: 140px; text-align: center;">{{ __('حالة التفعيل') }}</th>
-                            <th style="min-width: 130px; text-align: left;">{{ __('المبلغ المقيد (ILS)') }}</th>
+                            <th style="width: 35px; text-align: center;">#</th>
+                            <th style="text-align: right;">{{ __('بيان المقرر / بند القسط الدراسي') }}</th>
+                            <th style="width: 130px; text-align: center;">{{ __('العام الأكاديمي') }}</th>
+                            <th style="width: 95px; text-align: center;">{{ __('الرسوم المقررة') }}</th>
+                            <th style="width: 85px; text-align: center;">{{ __('الخصم/الإعفاء') }}</th>
+                            <th style="width: 105px; text-align: center;">{{ __('المقبوض فعلياً') }}</th>
+                            <th style="width: 105px; text-align: center;">{{ __('المتبقي بذمته') }}</th>
+                            <th style="width: 105px; text-align: center;">{{ __('حالة الاعتماد') }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $items = is_array($payment->items) ? $payment->items : json_decode($payment->items, true);
-                            $counter = 1;
-                        @endphp
+                        @php $lineCounter = 1; @endphp
                         @if(!empty($items))
                             @foreach($items as $item)
                                 @php
@@ -221,1130 +188,760 @@
                                     $itemPrice = (float)($item['price'] ?? 0);
                                 @endphp
                                 <tr>
-                                    <td style="text-align: center; color: #64748b; font-weight: 700; font-family: monospace;">
-                                        {{ sprintf('%02d', $counter++) }}
-                                    </td>
+                                    <td class="text-center font-mono">{{ sprintf('%02d', $lineCounter++) }}</td>
                                     <td>
-                                        <div class="item-title-col">
-                                            <strong>{{ $itemSubName }}</strong>
-                                            <small>{{ __('شاملة الشروحات المرئية، الملازم الوزارية، وبنك الامتحانات التقييمية') }}</small>
-                                        </div>
+                                        <strong>{{ $itemSubName }}</strong>
+                                        <span class="sub-item-note">({{ __('تفعيل كامل للمحاضرات وبنك الأسئلة والامتحانات') }})</span>
                                     </td>
-                                    <td>
-                                        <span class="item-validity-tag">
-                                            <i class="fa-solid fa-calendar-days text-muted"></i>
-                                            {{ __('دورة كاملة حتى نهاية امتحانات :session م', ['session' => \App\Models\Setting::tawjihiSession()]) }}
-                                        </span>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        @if($payment->status === 'completed')
-                                            <span class="item-status-tag active">
-                                                <i class="fa-solid fa-check"></i> {{ __('مفعل بالحساب ✅') }}
-                                            </span>
-                                        @elseif($payment->status === 'pending')
-                                            <span class="item-status-tag pending">
-                                                <i class="fa-solid fa-clock"></i> {{ __('بانتظار الاعتماد ⏳') }}
-                                            </span>
+                                    <td class="text-center font-mono">{{ \App\Models\Setting::academicYear() }}</td>
+                                    <td class="text-center font-mono">{{ number_format($itemPrice, 2) }} ₪</td>
+                                    <td class="text-center font-mono text-muted">0.00 ₪</td>
+                                    <td class="text-center font-mono bold-text">{{ number_format($itemPrice, 2) }} ₪</td>
+                                    <td class="text-center font-mono bold-text" style="color: #15803d;">0.00 ₪</td>
+                                    <td class="text-center">
+                                        @if($isPaid)
+                                            <span class="natural-status-active">{{ __('مفعل ومعتمد ✅') }}</span>
                                         @else
-                                            <span class="item-status-tag inactive">
-                                                <i class="fa-solid fa-ban"></i> {{ __('غير مفعل ❌') }}
-                                            </span>
+                                            <span class="natural-status-pending">{{ __('قيد التدقيق ⏳') }}</span>
                                         @endif
-                                    </td>
-                                    <td style="text-align: left; font-weight: 800; font-family: monospace; color: #0f172a;">
-                                        {{ number_format($itemPrice, 2) }} ₪
                                     </td>
                                 </tr>
                             @endforeach
                         @else
                             <tr>
-                                <td style="text-align: center; color: #64748b; font-weight: 700; font-family: monospace;">01</td>
+                                <td class="text-center font-mono">01</td>
                                 <td>
-                                    <div class="item-title-col">
-                                        <strong>{{ $monthTarget ? __('رسوم اشتراك :month', ['month' => $monthTarget]) : __('رسوم الاشتراك الدراسي المعتمد لبرنامج التوجيهي') }}</strong>
-                                        <small>{{ __('قسط دراسي معتمد يشمل كامل المساقات والمحاضرات وبنك الأسئلة') }}</small>
-                                    </div>
+                                    <strong>{{ $monthTarget ? __('رسوم اشتراك :month المعتمد', ['month' => $monthTarget]) : __('رسوم الاشتراك الدراسي المعتمد لبرنامج التوجيهي') }}</strong>
+                                    <span class="sub-item-note">({{ __('شامل المتابعة الأكاديمية وبنك الاختبارات') }})</span>
                                 </td>
-                                <td>
-                                    <span class="item-validity-tag">
-                                        <i class="fa-solid fa-calendar-days text-muted"></i>
-                                        {{ __('العام الدراسي :academic (دورة :session م)', [
-                                            'academic' => \App\Models\Setting::academicYear(),
-                                            'session' => \App\Models\Setting::tawjihiSession()
-                                        ]) }}
-                                    </span>
-                                </td>
-                                <td style="text-align: center;">
-                                    @if($payment->status === 'completed')
-                                        <span class="item-status-tag active"><i class="fa-solid fa-check"></i> {{ __('مفعل ومعتمد ✅') }}</span>
+                                <td class="text-center font-mono">{{ \App\Models\Setting::academicYear() }}</td>
+                                <td class="text-center font-mono">{{ number_format($payment->amount, 2) }} ₪</td>
+                                <td class="text-center font-mono text-muted">0.00 ₪</td>
+                                <td class="text-center font-mono bold-text">{{ number_format($payment->amount, 2) }} ₪</td>
+                                <td class="text-center font-mono bold-text" style="color: #15803d;">0.00 ₪</td>
+                                <td class="text-center">
+                                    @if($isPaid)
+                                        <span class="natural-status-active">{{ __('مفعل ومعتمد ✅') }}</span>
                                     @else
-                                        <span class="item-status-tag pending"><i class="fa-solid fa-clock"></i> {{ __('بانتظار التدقيق ⏳') }}</span>
+                                        <span class="natural-status-pending">{{ __('قيد التدقيق ⏳') }}</span>
                                     @endif
-                                </td>
-                                <td style="text-align: left; font-weight: 800; font-family: monospace; color: #0f172a;">
-                                    {{ number_format($payment->amount, 2) }} ₪
                                 </td>
                             </tr>
                         @endif
                     </tbody>
+                    <tfoot>
+                        <tr class="voucher-total-summary-row">
+                            <td colspan="3" class="total-label-cell">
+                                <strong>{{ __('المجموع الإجمالي للسند المالي:') }}</strong>
+                            </td>
+                            <td class="text-center font-mono font-bold">{{ number_format($payment->amount, 2) }} ₪</td>
+                            <td class="text-center font-mono">0.00 ₪</td>
+                            <td class="text-center font-mono font-bold text-success">{{ number_format($payment->amount, 2) }} ₪</td>
+                            <td class="text-center font-mono font-bold text-success">
+                                {{ $isPaid ? '0.00 ₪' : '0.00 ₪' }}
+                            </td>
+                            <td class="text-center">
+                                @if($isPaid)
+                                    <strong style="color: #15803d; font-size: 0.8rem;">{{ __('خالص ومسدد ✅') }}</strong>
+                                @else
+                                    <strong style="color: #b45309; font-size: 0.8rem;">{{ __('قيد الاعتماد') }}</strong>
+                                @endif
+                            </td>
+                        </tr>
+                    </tfoot>
                 </table>
             </div>
-        </div>
 
-        <!-- 6. صورة إشعار السداد المصرفي المرفقة للمراجعة (إن وجدت) -->
-        @if($payment->receipt_path)
-            <div class="voucher-section-card proof-card">
-                <div class="section-title-strip">
-                    <i class="fa-solid fa-receipt text-primary"></i>
-                    <span>{{ __('وثيقة وإشعار التحويل المصرفي المرفق مع المعاملة:') }}</span>
+            <!-- 4. محضر الذمة المالية وبراءة الطالب (Financial Clearance Notice) -->
+            <div class="voucher-clearance-box {{ $isPaid ? 'clearance-paid' : 'clearance-pending' }}">
+                <div class="clearance-icon">
+                    <i class="fa-solid {{ $isPaid ? 'fa-shield-check' : 'fa-hourglass-half' }}"></i>
                 </div>
-
-                <div class="proof-content-wrap">
-                    @php
-                        $isPdf = \Illuminate\Support\Str::endsWith(strtolower($payment->receipt_path), '.pdf');
-                    @endphp
-                    @if($isPdf)
-                        <div class="pdf-proof-box">
-                            <i class="fa-solid fa-file-pdf"></i>
-                            <div>
-                                <strong>{{ __('مستند إشعار السداد المرفق (ملف PDF معتمد)') }}</strong>
-                                <p>{{ __('تم إرفاق إشعار التحويل البنكي بصيغة PDF وتخزينه في الأرشيف المالي.') }}</p>
-                            </div>
-                            <a href="{{ asset('storage/' . $payment->receipt_path) }}" target="_blank" class="btn-view-proof">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                <span>{{ __('استعراض المستند المالي') }}</span>
-                            </a>
-                        </div>
+                <div class="clearance-text">
+                    @if($isPaid)
+                        <strong>{{ __('إقرار براءة الذمة المالية:') }}</strong>
+                        <span>{{ __('تم استلام وقبض كامل الرسوم المقيدة أعلاه، وتعتبر ذمة الطالب/ـة') }} <u>{{ $studentName }}</u> {{ __('خالصة تماماً ومسددة بالكامل بنسبة 100% ولا يترتب عليه أي التزامات مالية عن هذا السند.') }}</span>
                     @else
-                        <div class="image-proof-box">
-                            <a href="{{ asset('storage/' . $payment->receipt_path) }}" target="_blank" title="{{ __('انقر للتكبير بالحجم الكامل') }}">
-                                <img src="{{ asset('storage/' . $payment->receipt_path) }}" alt="{{ __('إشعار التحويل المصرفي') }}" class="proof-img-thumb">
-                            </a>
-                            <small class="proof-caption">
-                                <i class="fa-solid fa-circle-check text-emerald"></i>
-                                {{ __('إشعار مصرفي مؤرشف ومقيد برقم المعاملة :tx', ['tx' => $payment->transaction_number]) }}
-                            </small>
-                        </div>
+                        <strong>{{ __('حالة التدقيق المصرفي:') }}</strong>
+                        <span>{{ __('تم استلام إشعار التوريد برقم مرجعي (:ref) بمبلغ (:amt ₪)، والمعاملة قيد المطابقة البنكية تمهيداً للتفعيل النهائي.', ['ref' => $payment->transaction_number, 'amt' => number_format($payment->amount, 2)]) }}</span>
                     @endif
                 </div>
-            </div>
-        @endif
-
-        <!-- 7. خلاصة الحساب المالي والتفقيط الرسمي (Financial Reconciliation Box) -->
-        <div class="voucher-reconciliation-row">
-            <div class="reconciliation-notes-col">
-                <div class="currency-legal-note">
-                    <i class="fa-solid fa-scale-balanced text-amber"></i>
-                    <div>
-                        <strong>{{ __('الإبراء والاعتماد المالي:') }}</strong>
-                        <p>{{ __('يعتبر هذا السند إشعاراً مالياً رسمياً صادراً عن منظومة منارة التوجيهي، ويخضع للتدقيق والمطابقة مع الكشوفات المصرفية المعتمدة وفق الأنظمة المعمول بها في دولة فلسطين.') }}</p>
-                    </div>
+                <div class="clearance-remaining">
+                    <span class="rem-lbl">{{ __('المتبقي بذمة الطالب:') }}</span>
+                    <strong class="rem-val font-mono">{{ $isPaid ? '0.00 ₪ (خالص بالكامل)' : '0.00 ₪ (بانتظار الاعتماد)' }}</strong>
                 </div>
             </div>
 
-            <div class="reconciliation-totals-col">
-                <div class="totals-summary-box">
-                    <div class="totals-row">
-                        <span class="totals-lbl">{{ __('العملة الرسمية:') }}</span>
-                        <strong class="totals-val">{{ __('الشيكل الفلسطيني الجديد (ILS ₪)') }}</strong>
+            <!-- 5. الأختام والتواقيع الرسمية الثلاثية (Official Traditional Signatures & Stamp) -->
+            <footer class="voucher-signatures-section">
+                
+                <!-- 1. توقيع أمين الصندوق / المحاسب المستلم -->
+                <div class="sig-column">
+                    <div class="sig-header">{{ __('أمين الصندوق / المحاسب المستلم') }}</div>
+                    <div class="sig-space">
+                        <span class="digital-stamp-text">معتمد مالياً</span>
+                        <div class="sig-handwritten-line">........................................</div>
                     </div>
-
-                    <div class="totals-row">
-                        <span class="totals-lbl">{{ __('رسوم المعالجة الإلكترونية:') }}</span>
-                        <strong class="totals-val text-emerald">{{ __('0.00 ₪ (معفية مجاناً)') }}</strong>
-                    </div>
-
-                    <div class="totals-divider"></div>
-
-                    <div class="totals-net-row">
-                        <span class="net-lbl">{{ __('صافي المبلغ المقبوض / المستحق:') }}</span>
-                        <span class="net-amount-display font-mono">
-                            {{ number_format($payment->amount, 2) }} ₪
-                        </span>
-                    </div>
-
-                    <div class="amount-words-badge">
-                        <i class="fa-solid fa-feather-pointed text-amber"></i>
-                        <span>{{ __('فقط :amount شيكل فلسطيني لا غير', ['amount' => number_format($payment->amount, 0)]) }}</span>
-                    </div>
+                    <div class="sig-name">{{ __('قسم الحسابات والتحصيل') }}</div>
                 </div>
+
+                <!-- 2. خاتم المنصة والاعتماد المالي الدائري الرسمي الأزرق -->
+                <div class="sig-column stamp-center-col">
+                    <div class="authentic-school-stamp">
+                        <div class="stamp-outer-circle">
+                            <div class="stamp-middle-circle">
+                                <div class="stamp-text-arc-top">منارة التوجيهي • بوابة الثانوية العامة</div>
+                                <div class="stamp-center-content">
+                                    <i class="fa-solid fa-stamp stamp-inner-icon"></i>
+                                    <div class="stamp-state-txt">{{ $isPaid ? 'معتمد ومقبوض' : 'قيد التدقيق' }}</div>
+                                    <div class="stamp-gov-txt">دولة فلسطين</div>
+                                </div>
+                                <div class="stamp-text-arc-bottom">الدائرة المالية • {{ \App\Models\Setting::academicYear() }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stamp-caption">{{ __('خاتم السداد والاعتماد المالي الرسمي') }}</div>
+                </div>
+
+                <!-- 3. المشرف العام وإدارة المنظومة -->
+                <div class="sig-column">
+                    <div class="sig-header">{{ __('المشرف العام وإدارة المنصة') }}</div>
+                    <div class="sig-space">
+                        <span class="official-signature-facsimile">أحمد حسين شمالي</span>
+                        <div class="sig-handwritten-line">........................................</div>
+                    </div>
+                    <div class="sig-name">{{ __('أ. أحمد حسين شمالي') }}</div>
+                </div>
+
+            </footer>
+
+            <!-- شريط الملاحظة القانونية في أسفل السند -->
+            <div class="voucher-legal-footer">
+                <span>{{ __('ملاحظة هامة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة منارة التوجيهي وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال أي تعديل أو شطب يدوي دون مصادقة الإدارة.') }}</span>
+                <span class="footer-ref font-mono">{{ $payment->transaction_number }} • {{ date('Y-m-d H:i') }}</span>
             </div>
+
         </div>
-
-        <!-- 8. محضر الأختام الرسمية والتوقيعات والتحقق الرقمي (Official Accreditation Block) -->
-        <footer class="voucher-official-footer">
-            
-            <!-- 1. الختم المالي الرسمي المشفر -->
-            <div class="footer-stamp-column">
-                <div class="official-circular-seal {{ $payment->status === 'completed' ? 'seal-success' : 'seal-pending' }}">
-                    <div class="seal-inner-ring">
-                        <i class="fa-solid {{ $payment->status === 'completed' ? 'fa-stamp' : 'fa-hourglass-start' }}"></i>
-                        <span class="seal-state-text">
-                            {{ $payment->status === 'completed' ? __('معتمد ومقبوض') : __('قيد التدقيق') }}
-                        </span>
-                        <span class="seal-org-text">{{ __('منارة التوجيهي') }}</span>
-                        <span class="seal-year-text">{{ \App\Models\Setting::academicYear() }}</span>
-                    </div>
-                </div>
-                <div class="seal-caption-col">
-                    <strong class="caption-title">{{ __('خاتم السداد والتحصيل الرسمي') }}</strong>
-                    <span class="caption-sub">{{ __('ديوان الشؤون المالية والاشتراكات') }}</span>
-                </div>
-            </div>
-
-            <!-- 2. رمز التحقق الرقمي المعتمد QR Code -->
-            <div class="footer-qr-column">
-                <div class="qr-code-box">
-                    <i class="fa-solid fa-qrcode qr-icon"></i>
-                    <span class="qr-hash-text font-mono">TX-{{ substr(md5($payment->transaction_number), 0, 10) }}</span>
-                </div>
-                <span class="qr-caption">{{ __('رمز التحقق الفوري والتدقيق الرقمي') }}</span>
-            </div>
-
-            <!-- 3. التوقيع والاعتماد الإداري -->
-            <div class="footer-signature-column">
-                <div class="signature-title">{{ __('المشرف العام وإدارة المنظومة:') }}</div>
-                <div class="signature-name">{{ __('أ. أحمد حسين شمالي') }}</div>
-                <div class="signature-accreditation">
-                    <i class="fa-solid fa-file-circle-check text-emerald"></i>
-                    <span>{{ __('توثيق مالي معتمد بموجب المنظومة المركزية') }}</span>
-                </div>
-            </div>
-
-        </footer>
-
-    </div>
-
-    <!-- 9. شريط المتابعة المباشرة مع المشرف عبر واتساب (يختفي عند الطباعة) -->
-    <div class="no-print voucher-followup-card">
-        @if($payment->status === 'completed')
-            <div class="followup-inner success">
-                <div class="followup-icon-wrap">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
-                <div class="followup-text-wrap">
-                    <h3>{{ __('مبارك تفعيل اشتراكك الأكاديمي بنجاح! 🎓') }}</h3>
-                    <p>{{ __('تم اعتماد وتأكيد استلام الرسوم المالية لحسابك، وأصبحت كافة المساقات والدروس والاختبارات جاهزة ومتاحة للدراسة فوراً.') }}</p>
-                </div>
-                <a href="{{ route('student.subjects.index') }}" class="btn-followup-action primary">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>{{ __('الانتقال لموادي ومقرراتي الدراسية') }}</span>
-                </a>
-            </div>
-        @elseif($payment->status === 'pending')
-            <div class="followup-inner pending">
-                <div class="followup-icon-wrap">
-                    <i class="fa-solid fa-clock-rotate-left"></i>
-                </div>
-                <div class="followup-text-wrap">
-                    <h3>{{ __('إشعار السداد قيد التدقيق والمطابقة المصرفية ⏳') }}</h3>
-                    <p>{{ __('تم استلام بيانات الإشعار المرفوعة بنجاح. تقوم الإدارة بمطابقة التحويل المصرفي وتفعيل المواد لحسابك فورياً خلال وقت وجيز.') }}</p>
-                </div>
-                @php
-                    $waText = urlencode("السلام عليكم أ. أحمد شمالي، أنا الطالب ({$studentName}) ورقم هويتي ({$studentNid})، قمت بسداد الرسوم ورفع إشعار العملية برقم مرجعي: [{$payment->transaction_number}] بمبلغ [{$payment->amount} ₪]. أرجو التكرم بالاعتماد وتفعيل المواد.");
-                @endphp
-                <a href="https://wa.me/970567897212?text={{ $waText }}" target="_blank" class="btn-followup-action whatsapp">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    <span>{{ __('متابعة فورية مع المشرف العام (واتساب: 0567897212)') }}</span>
-                </a>
-            </div>
-        @else
-            <div class="followup-inner rejected">
-                <div class="followup-icon-wrap">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <div class="followup-text-wrap">
-                    <h3>{{ __('لم يتم اعتماد عملية السداد أو تم تعليقها') }}</h3>
-                    <p>{{ __('إذا قمت بالتحويل المصرفي مسبقاً، يرجى التواصل مع المشرف العام لتأكيد العملية وإعادة الاعتماد فوراً.') }}</p>
-                </div>
-                <a href="https://wa.me/970567897212" target="_blank" class="btn-followup-action whatsapp">
-                    <i class="fa-brands fa-whatsapp"></i>
-                    <span>{{ __('تواصل مع الإدارة للتحقق من المعاملة') }}</span>
-                </a>
-            </div>
-        @endif
     </div>
 
 </div>
 
 <style>
     /* ==========================================================================
-       التصميم المالي الملكي الكلاسيكي لسند القبض والإيصال الأكاديمي الرسمي
-       (Royal Classic Academic Financial Voucher & Official E-Receipt)
-       - أسلوب سندات القبض الجامعية والوزارية الفاخرة
-       - باليت رسمية: كحلي ملكي (#0d1b2a, #1e3a8a)، ذهبي معتق (#b45309)، ورق رسمي (#ffffff, #f8fafc)
-       - محضر أختام دائرية وتوقيع رسمي مع باركود QR معتمد
-       - تحسين كامل 100% لطباعة الـ A4 وحفظ الـ PDF
+       تصميم السند المدرسي الطبيعي الكلاسيكي (Classical Palestinian School Voucher)
        ========================================================================== */
-
-    :root {
-        --vch-navy: #0d1b2a;
-        --vch-navy-light: #1e3a8a;
-        --vch-gold: #b45309;
-        --vch-gold-soft: #fef3c7;
-        --vch-gold-border: #fde68a;
-        --vch-surface: #ffffff;
-        --vch-surface-alt: #f8fafc;
-        --vch-border: #cbd5e1;
-        --vch-border-subtle: #e2e8f0;
-        --vch-text-main: #0f172a;
-        --vch-text-body: #334155;
-        --vch-text-muted: #64748b;
-        --vch-success: #15803d;
-        --vch-danger: #b91c1c;
+    .school-voucher-page-wrapper {
+        min-height: 100vh;
+        background: #f1f5f9;
+        padding: 24px 16px 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: 'Alexandria', 'Tajawal', 'Segoe UI', Tahoma, sans-serif;
+        color: #0f172a;
     }
 
-    .financial-voucher-container {
-        max-width: 960px;
-        margin: 0 auto;
-        padding: 4px 8px 60px;
+    /* شريط الأزرار العلوي */
+    .voucher-top-actions {
+        width: 100%;
+        max-width: 860px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .actions-left, .actions-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-action-light {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #334155;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    .btn-action-light:hover {
+        background: #f8fafc;
+        border-color: #1e3a8a;
+        color: #1e3a8a;
+    }
+
+    .btn-action-print {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: 1px solid #1e3a8a;
+        padding: 9px 20px;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+        transition: all 0.2s ease;
+    }
+    .btn-action-print:hover {
+        background: #172554;
+    }
+
+    /* جسم ورقة السند الطبيعية */
+    .school-cash-voucher-sheet {
+        width: 100%;
+        max-width: 860px;
+        background: #ffffff;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 16px;
+        border-radius: 4px;
         box-sizing: border-box;
     }
 
-    /* 1. شريط الإجراءات والتحكم العلوي */
-    .voucher-actions-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-bottom: 20px;
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 6px;
-        padding: 12px 18px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    }
-
-    .toolbar-nav-group,
-    .toolbar-print-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .btn-voucher-nav {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        background: #f8fafc;
-        color: var(--vch-text-body);
-        border: 1px solid var(--vch-border);
-        padding: 7px 14px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    .btn-voucher-nav:hover {
-        background: #ffffff;
-        border-color: var(--vch-navy-light);
-        color: var(--vch-navy-light);
-    }
-
-    .btn-voucher-print {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--vch-navy-light);
-        color: #ffffff !important;
-        border: 1px solid var(--vch-navy-light);
-        padding: 8px 18px;
-        border-radius: 4px;
-        font-size: 0.84rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
-    }
-    .btn-voucher-print:hover {
-        background: #1e40af;
-    }
-
-    .btn-voucher-catalog {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        background: #ffffff;
-        color: #16a34a;
-        border: 1px solid #86efac;
-        padding: 7px 14px;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    .btn-voucher-catalog:hover {
-        background: #f0fdf4;
-    }
-
-    /* 2. وثيقة السند المالي الرسمي (The Document) */
-    .official-financial-voucher {
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 6px;
-        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-        position: relative;
-        overflow: hidden;
-        padding: 28px 32px 34px;
-        outline: 1px solid rgba(180, 83, 9, 0.2);
+    /* الإطار المزدوج الكلاسيكي */
+    .voucher-double-border {
+        border: 2px solid #0f172a;
+        outline: 1px solid #0f172a;
         outline-offset: -5px;
-    }
-
-    .voucher-top-security-bar {
-        position: absolute;
-        top: 0;
-        right: 0;
-        left: 0;
-        height: 5px;
-        background: linear-gradient(90deg, #0d1b2a 0%, #1e3a8a 35%, #b45309 70%, #15803d 100%);
-    }
-
-    .voucher-official-header {
-        border-bottom: 2px solid var(--vch-navy);
-        padding-bottom: 20px;
-        margin-bottom: 22px;
-    }
-
-    .header-authority-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 16px;
-    }
-
-    .authority-seal-wrap {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .authority-crest-icon {
-        font-size: 2.2rem;
-        color: var(--vch-navy-light);
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-radius: 6px;
-        padding: 8px 10px;
-    }
-
-    .authority-gov-tag {
-        font-size: 0.74rem;
-        font-weight: 700;
-        color: var(--vch-gold);
-        display: block;
-        margin-bottom: 2px;
-    }
-
-    .authority-office-title {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--vch-navy);
-        margin: 0;
-    }
-
-    /* شارة حالة السند المالي */
-    .status-stamp-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 14px;
-        border-radius: 4px;
-        border: 1px solid;
-    }
-
-    .status-stamp-badge i {
-        font-size: 1.3rem;
-    }
-
-    .stamp-text-col {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.25;
-    }
-
-    .stamp-text-col strong {
-        font-size: 0.84rem;
-    }
-
-    .stamp-text-col small {
-        font-size: 0.68rem;
-    }
-
-    .status-stamp-badge.certified {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        color: var(--vch-success);
-    }
-
-    .status-stamp-badge.auditing {
-        background: #fffbeb;
-        border-color: #fde68a;
-        color: var(--vch-gold);
-    }
-
-    .status-stamp-badge.rejected {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: var(--vch-danger);
-    }
-
-    .voucher-document-title-block {
-        text-align: center;
-        margin-top: 8px;
-    }
-
-    .voucher-doc-main-title {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: var(--vch-navy);
-        margin: 0 0 4px;
-        letter-spacing: -0.2px;
-    }
-
-    .voucher-doc-sub-title {
-        font-size: 0.78rem;
-        color: var(--vch-text-muted);
-        font-weight: 600;
-        margin: 0 0 8px;
-    }
-
-    .voucher-session-ribbon {
-        display: inline-block;
-        background: var(--vch-gold-soft);
-        border: 1px solid var(--vch-gold-border);
-        color: var(--vch-gold);
-        font-size: 0.76rem;
-        font-weight: 700;
-        padding: 3px 12px;
-        border-radius: 4px;
-    }
-
-    /* 3. أقسام السند المالي */
-    .voucher-section-card {
+        padding: 20px 22px 14px;
+        box-sizing: border-box;
         background: #ffffff;
-        border: 1px solid var(--vch-border-subtle);
-        border-radius: 5px;
-        margin-bottom: 18px;
-        overflow: hidden;
     }
 
-    .voucher-section-card.no-padding-bottom {
-        padding-bottom: 0;
-    }
-
-    .section-title-strip {
-        background: #f8fafc;
-        border-bottom: 1px solid var(--vch-border-subtle);
-        padding: 10px 14px;
-        font-size: 0.8rem;
-        font-weight: 800;
-        color: var(--vch-text-main);
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
-
-    .transaction-meta-grid,
-    .student-identity-grid {
+    /* ترويسة السند */
+    .voucher-gov-header {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: 1.2fr 1.4fr 1fr;
+        align-items: center;
         gap: 12px;
-        padding: 14px 16px;
+        padding-bottom: 12px;
     }
 
-    .meta-field-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        line-height: 1.35;
-    }
-
-    .meta-field-label {
-        font-size: 0.72rem;
-        color: var(--vch-text-muted);
-        font-weight: 600;
-    }
-
-    .meta-field-val {
-        font-size: 0.86rem;
-        color: var(--vch-text-main);
-    }
-
-    .academic-stage-pill {
-        display: inline-block;
-        background: #eff6ff;
-        color: var(--vch-navy-light);
-        border: 1px solid #bfdbfe;
-        padding: 2px 7px;
-        border-radius: 3px;
-        font-size: 0.76rem;
-        font-weight: 700;
-    }
-
-    /* 4. جدول كشف البنود والمقررات الدراسية */
-    .voucher-ledger-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.82rem;
+    .gov-header-col.right-col {
         text-align: right;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: #1e293b;
     }
-
-    .voucher-ledger-table thead th {
-        background-color: var(--vch-navy);
-        color: #f8fafc;
-        font-size: 0.78rem;
-        font-weight: 700;
-        padding: 10px 14px;
-        border-bottom: 2px solid var(--vch-gold);
-        white-space: nowrap;
+    .gov-text-line strong {
+        font-size: 0.96rem;
+        color: #0f172a;
     }
-
-    .voucher-ledger-table tbody td {
-        padding: 11px 14px;
-        border-bottom: 1px solid var(--vch-border-subtle);
-        vertical-align: middle;
-        color: var(--vch-text-body);
-        background: #ffffff;
-    }
-
-    .voucher-ledger-table tbody tr:nth-child(even) td {
-        background-color: #fbfcfd;
-    }
-
-    .item-title-col {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .item-title-col strong {
-        color: var(--vch-text-main);
-        font-size: 0.86rem;
-    }
-
-    .item-title-col small {
-        color: var(--vch-text-muted);
-        font-size: 0.7rem;
-    }
-
-    .item-validity-tag {
-        font-size: 0.74rem;
-        color: #475569;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-    }
-
-    .item-status-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 3px;
-        border: 1px solid;
-    }
-
-    .item-status-tag.active {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        color: var(--vch-success);
-    }
-
-    .item-status-tag.pending {
-        background: #fffbeb;
-        border-color: #fde68a;
-        color: var(--vch-gold);
-    }
-
-    .item-status-tag.inactive {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: var(--vch-danger);
-    }
-
-    /* 5. إشعار التحويل المرفوع */
-    .proof-card {
-        background: #fcfdfd;
-    }
-
-    .proof-content-wrap {
-        padding: 14px 16px;
-    }
-
-    .pdf-proof-box {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 5px;
-        padding: 12px 16px;
-    }
-
-    .pdf-proof-box i {
-        font-size: 2rem;
-        color: #ef4444;
-    }
-
-    .pdf-proof-box strong {
-        font-size: 0.84rem;
-        color: var(--vch-text-main);
-        display: block;
-        margin-bottom: 2px;
-    }
-
-    .pdf-proof-box p {
-        font-size: 0.72rem;
-        color: var(--vch-text-muted);
-        margin: 0;
-    }
-
-    .btn-view-proof {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #f1f5f9;
-        color: var(--vch-navy-light);
-        border: 1px solid var(--vch-border);
-        padding: 6px 12px;
-        border-radius: 4px;
+    .gov-text-sub {
         font-size: 0.76rem;
-        font-weight: 700;
-        text-decoration: none;
-    }
-    .btn-view-proof:hover {
-        background: #e2e8f0;
-    }
-
-    .image-proof-box {
-        text-align: center;
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 5px;
-        padding: 12px;
-    }
-
-    .proof-img-thumb {
-        max-height: 200px;
-        max-width: 100%;
-        object-fit: contain;
-        border-radius: 4px;
-        border: 1px solid var(--vch-border-subtle);
-    }
-
-    .proof-caption {
-        display: block;
-        font-size: 0.72rem;
-        color: var(--vch-text-muted);
-        margin-top: 6px;
-    }
-
-    /* 6. خلاصة الحساب والتفقيط */
-    .voucher-reconciliation-row {
-        display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 20px;
-        margin-bottom: 22px;
-        align-items: center;
-    }
-
-    .currency-legal-note {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        background: #f8fafc;
-        border: 1px solid var(--vch-border-subtle);
-        border-radius: 5px;
-        padding: 12px 14px;
-    }
-
-    .currency-legal-note i {
-        font-size: 1.2rem;
+        color: #64748b;
         margin-top: 2px;
     }
 
-    .currency-legal-note strong {
-        font-size: 0.8rem;
-        color: var(--vch-text-main);
-        display: block;
-        margin-bottom: 3px;
+    .gov-header-col.center-col {
+        text-align: center;
     }
-
-    .currency-legal-note p {
-        font-size: 0.72rem;
-        color: var(--vch-text-muted);
-        margin: 0;
-        line-height: 1.5;
-    }
-
-    .totals-summary-box {
-        background: #f8fafc;
-        border: 1px solid var(--vch-border);
-        border-radius: 5px;
-        padding: 14px 16px;
-    }
-
-    .totals-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.78rem;
-        margin-bottom: 6px;
-        color: var(--vch-text-muted);
-    }
-
-    .totals-val {
-        color: var(--vch-text-main);
-    }
-
-    .totals-divider {
-        height: 1px;
-        background: var(--vch-border);
-        margin: 8px 0;
-    }
-
-    .totals-net-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-bottom: 8px;
-    }
-
-    .net-lbl {
-        font-size: 0.86rem;
-        font-weight: 800;
-        color: var(--vch-navy);
-    }
-
-    .net-amount-display {
-        font-size: 1.35rem;
-        font-weight: 800;
-        color: var(--vch-navy-light);
-    }
-
-    .amount-words-badge {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        background: #ffffff;
-        border: 1px solid var(--vch-border-subtle);
-        padding: 4px 8px;
-        border-radius: 3px;
-        font-size: 0.72rem;
-        font-weight: 700;
-        color: var(--vch-gold);
-    }
-
-    /* 7. محضر الأختام الرسمية والتوقيعات والتحقق */
-    .voucher-official-footer {
-        display: grid;
-        grid-template-columns: 1.2fr 1fr 1.2fr;
-        gap: 16px;
-        align-items: center;
-        border-top: 2px solid var(--vch-navy);
-        padding-top: 20px;
-    }
-
-    .footer-stamp-column {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .official-circular-seal {
-        width: 78px;
-        height: 78px;
+    .voucher-official-emblem {
+        width: 38px;
+        height: 38px;
+        margin: 0 auto 4px;
         border-radius: 50%;
-        border: 2px double;
+        border: 1.5px solid #1e3a8a;
+        color: #1e3a8a;
         display: grid;
         place-items: center;
-        padding: 3px;
-        flex-shrink: 0;
-        transform: rotate(-3deg);
+        font-size: 1.15rem;
+    }
+    .voucher-headline {
+        font-size: 1.55rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: 0.5px;
+        font-family: 'Amiri', 'Traditional Arabic', serif;
+    }
+    .voucher-headline-en {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #475569;
+        letter-spacing: 1.5px;
+        margin-top: 1px;
+    }
+    .voucher-serial-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 0.76rem;
+        margin-top: 4px;
+        color: #1e3a8a;
     }
 
-    .seal-inner-ring {
+    .gov-header-col.left-col {
+        text-align: left;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .voucher-meta-mini-table {
+        font-size: 0.76rem;
+        border-collapse: collapse;
+    }
+    .voucher-meta-mini-table td {
+        padding: 2px 6px;
+    }
+    .voucher-meta-mini-table .lbl {
+        color: #475569;
+        font-weight: 600;
+        text-align: right;
+    }
+    .voucher-meta-mini-table .val {
+        font-weight: 700;
+        color: #0f172a;
+        text-align: left;
+    }
+
+    .state-badge-paid {
+        color: #15803d;
+        font-weight: 800;
+    }
+    .state-badge-pending {
+        color: #b45309;
+        font-weight: 800;
+    }
+    .state-badge-cancelled {
+        color: #b91c1c;
+        font-weight: 800;
+    }
+
+    .voucher-hairline {
+        height: 1.5px;
+        background: #0f172a;
+        margin: 6px 0 14px;
+    }
+
+    /* بيانات الإقرار الكلاسيكية */
+    .voucher-statement-block {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        font-size: 0.84rem;
+        line-height: 1.8;
+    }
+
+    .statement-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+    }
+    .statement-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .statement-field {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .statement-field.full-width {
         width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        border: 1px dashed;
+    }
+    .statement-field.flex-1 { flex: 1; min-width: 180px; }
+    .statement-field.flex-2 { flex: 2; min-width: 200px; }
+    .statement-field.flex-3 { flex: 3; min-width: 250px; }
+
+    .field-label {
+        color: #334155;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .field-label-inline {
+        color: #334155;
+        font-weight: 700;
+        margin-right: 12px;
+        white-space: nowrap;
+    }
+    .field-content {
+        color: #0f172a;
+        font-weight: 700;
+        border-bottom: 1px dotted #94a3b8;
+        padding: 0 4px;
+    }
+    .student-name-highlight {
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+    .bold-currency {
+        font-size: 0.98rem;
+        color: #0f172a;
+        font-weight: 800;
+    }
+    .field-sub {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+    .words-content {
+        color: #1e3a8a;
+        font-weight: 700;
+    }
+
+    /* جدول السند الطبيعي */
+    .voucher-table-wrapper {
+        margin-bottom: 12px;
+    }
+
+    .voucher-natural-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+    }
+    .voucher-natural-table th, 
+    .voucher-natural-table td {
+        border: 1px solid #334155;
+        padding: 6px 8px;
+    }
+    .voucher-natural-table thead th {
+        background: #f1f5f9;
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 0.78rem;
+    }
+    .voucher-natural-table tbody tr:nth-child(even) {
+        background: #fcfcfc;
+    }
+    .sub-item-note {
+        display: block;
+        font-size: 0.68rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .natural-status-active {
+        color: #15803d;
+        font-weight: 700;
+        font-size: 0.74rem;
+    }
+    .natural-status-pending {
+        color: #b45309;
+        font-weight: 700;
+        font-size: 0.74rem;
+    }
+
+    .voucher-total-summary-row td {
+        background: #f8fafc;
+        border-top: 2px solid #0f172a;
+        border-bottom: 2px solid #0f172a;
+    }
+    .total-label-cell {
+        text-align: right;
+        font-size: 0.82rem;
+        color: #0f172a;
+    }
+
+    /* صندوق براءة الذمة */
+    .voucher-clearance-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        margin-bottom: 14px;
+        gap: 12px;
+        font-size: 0.78rem;
+    }
+    .clearance-paid {
+        background: #f0fdf4;
+        border-color: #86efac;
+    }
+    .clearance-pending {
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
+
+    .clearance-icon {
+        font-size: 1.25rem;
+        color: #15803d;
+        flex-shrink: 0;
+    }
+    .clearance-pending .clearance-icon {
+        color: #b45309;
+    }
+    .clearance-text {
+        flex: 1;
+        color: #1e293b;
+        line-height: 1.45;
+    }
+    .clearance-text strong {
+        color: #0f172a;
+    }
+    .clearance-remaining {
+        text-align: left;
+        white-space: nowrap;
+        background: #ffffff;
+        padding: 4px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+    }
+    .rem-lbl {
+        display: block;
+        font-size: 0.68rem;
+        color: #64748b;
+    }
+    .rem-val {
+        font-size: 0.82rem;
+        color: #15803d;
+        font-weight: 800;
+    }
+
+    /* قسم التواقيع والأختام الرسمية */
+    .voucher-signatures-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 0 6px;
+        text-align: center;
+    }
+
+    .sig-column {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        text-align: center;
-        padding: 2px;
     }
-
-    .official-circular-seal.seal-success {
-        border-color: var(--vch-success);
-        background: #f0fdf4;
-        color: var(--vch-success);
-    }
-
-    .official-circular-seal.seal-pending {
-        border-color: var(--vch-gold);
-        background: #fffbeb;
-        color: var(--vch-gold);
-    }
-
-    .seal-state-text {
-        font-size: 0.58rem;
-        font-weight: 800;
-        line-height: 1.1;
-    }
-
-    .seal-org-text {
-        font-size: 0.52rem;
-        font-weight: 700;
-    }
-
-    .seal-year-text {
-        font-size: 0.48rem;
-        font-family: monospace;
-    }
-
-    .seal-caption-col {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .caption-title {
+    .sig-header {
         font-size: 0.78rem;
-        color: var(--vch-text-main);
-    }
-
-    .caption-sub {
-        font-size: 0.68rem;
-        color: var(--vch-text-muted);
-    }
-
-    .footer-qr-column {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        text-align: center;
-    }
-
-    .qr-code-box {
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 5px;
-        padding: 6px 10px;
-        display: inline-flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .qr-icon {
-        font-size: 2.2rem;
-        color: var(--vch-navy);
-    }
-
-    .qr-hash-text {
-        font-size: 0.64rem;
-        color: var(--vch-text-muted);
-        margin-top: 2px;
-    }
-
-    .qr-caption {
-        font-size: 0.66rem;
-        color: var(--vch-text-muted);
-    }
-
-    .footer-signature-column {
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    html[dir="rtl"] .footer-signature-column {
-        text-align: left;
-    }
-    html[dir="ltr"] .footer-signature-column {
-        text-align: right;
-    }
-
-    .signature-title {
-        font-size: 0.72rem;
-        color: var(--vch-text-muted);
-    }
-
-    .signature-name {
-        font-size: 0.95rem;
         font-weight: 800;
-        color: var(--vch-navy);
+        color: #334155;
+        margin-bottom: 4px;
     }
-
-    .signature-accreditation {
-        font-size: 0.68rem;
-        color: var(--vch-success);
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    /* 8. بطاقة المتابعة المباشرة عبر واتساب */
-    .voucher-followup-card {
-        margin-top: 20px;
-        background: #ffffff;
-        border: 1px solid var(--vch-border);
-        border-radius: 6px;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-        overflow: hidden;
-    }
-
-    .followup-inner {
+    .sig-space {
+        height: 52px;
         display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
         align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-        padding: 18px 22px;
-        border-left: 4px solid;
+        width: 100%;
+        position: relative;
+    }
+    .sig-handwritten-line {
+        color: #94a3b8;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+    }
+    .digital-stamp-text {
+        font-size: 0.72rem;
+        color: #059669;
+        font-weight: 800;
+        margin-bottom: -2px;
+    }
+    .official-signature-facsimile {
+        font-family: 'Amiri', 'Traditional Arabic', serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: -4px;
+        transform: rotate(-2deg);
+    }
+    .sig-name {
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-top: 4px;
     }
 
-    html[dir="rtl"] .followup-inner {
-        border-left: none;
-        border-right: 4px solid;
-    }
-
-    .followup-inner.success {
-        border-color: var(--vch-success);
-        background: #f0fdf4;
-    }
-    .followup-inner.pending {
-        border-color: var(--vch-gold);
-        background: #fffbeb;
-    }
-    .followup-inner.rejected {
-        border-color: var(--vch-danger);
-        background: #fef2f2;
-    }
-
-    .followup-icon-wrap {
-        width: 44px;
-        height: 44px;
-        border-radius: 6px;
+    /* الخاتم الحبري الدائري الأصيل */
+    .authentic-school-stamp {
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        margin: 0 auto;
         display: grid;
         place-items: center;
-        font-size: 1.3rem;
-        flex-shrink: 0;
+        transform: rotate(-3deg);
+        filter: drop-shadow(0 1px 2px rgba(30, 58, 138, 0.15));
     }
-
-    .followup-inner.success .followup-icon-wrap { background: #dcfce7; color: var(--vch-success); }
-    .followup-inner.pending .followup-icon-wrap { background: #fef3c7; color: var(--vch-gold); }
-    .followup-inner.rejected .followup-icon-wrap { background: #fee2e2; color: var(--vch-danger); }
-
-    .followup-text-wrap {
-        flex: 1;
-        min-width: 260px;
+    .stamp-outer-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        border: 2px solid #1e3a8a;
+        padding: 2px;
+        display: grid;
+        place-items: center;
+        box-sizing: border-box;
     }
-
-    .followup-text-wrap h3 {
-        font-size: 0.95rem;
-        font-weight: 800;
-        margin: 0 0 3px;
-        color: var(--vch-text-main);
-    }
-
-    .followup-text-wrap p {
-        font-size: 0.78rem;
-        color: var(--vch-text-muted);
-        margin: 0;
-        line-height: 1.5;
-    }
-
-    .btn-followup-action {
-        display: inline-flex;
+    .stamp-middle-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px dashed #1e3a8a;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 8px;
-        padding: 9px 18px;
-        border-radius: 4px;
-        font-size: 0.82rem;
+        justify-content: space-between;
+        padding: 3px 2px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .stamp-text-arc-top {
+        font-size: 0.52rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        line-height: 1;
+    }
+    .stamp-center-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .stamp-inner-icon {
+        font-size: 0.8rem;
+        color: #1e3a8a;
+        margin-bottom: 1px;
+    }
+    .stamp-state-txt {
+        font-size: 0.62rem;
+        font-weight: 900;
+        color: #b91c1c;
+        border: 1px solid #b91c1c;
+        padding: 1px 4px;
+        border-radius: 2px;
+        line-height: 1;
+    }
+    .stamp-gov-txt {
+        font-size: 0.5rem;
+        color: #1e3a8a;
         font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        white-space: nowrap;
+        margin-top: 1px;
+    }
+    .stamp-text-arc-bottom {
+        font-size: 0.48rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        line-height: 1;
+    }
+    .stamp-caption {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #475569;
+        margin-top: 3px;
     }
 
-    .btn-followup-action.primary {
-        background: var(--vch-navy-light);
-        color: #ffffff !important;
-    }
-    .btn-followup-action.primary:hover {
-        background: #1e40af;
-    }
-
-    .btn-followup-action.whatsapp {
-        background: #16a34a;
-        color: #ffffff !important;
-    }
-    .btn-followup-action.whatsapp:hover {
-        background: #15803d;
+    /* الذيل والملاحظة القانونية */
+    .voucher-legal-footer {
+        border-top: 1px solid #cbd5e1;
+        margin-top: 10px;
+        padding-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.66rem;
+        color: #64748b;
+        line-height: 1.4;
     }
 
-    /* أدوات عامة */
-    .text-primary { color: var(--vch-navy-light) !important; }
-    .text-amber { color: var(--vch-gold) !important; }
-    .text-emerald { color: var(--vch-success) !important; }
-    .font-mono { font-family: monospace, sans-serif; }
-
-    /* استجابة الشاشات الصغيرة */
-    @media (max-width: 820px) {
-        .voucher-reconciliation-row {
-            grid-template-columns: 1fr;
-        }
-        .voucher-official-footer {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 20px;
-        }
-        .footer-stamp-column {
-            justify-content: center;
-        }
-        .footer-signature-column {
-            text-align: center !important;
-        }
-    }
-
-    /* 10. تحسينات الطباعة الرسمية للوثائق والفواتير (Print & PDF) */
+    /* ==========================================================================
+       محددات الطباعة الدقيقة (Strict A4 Single Sheet Guarantee)
+       ========================================================================== */
     @media print {
-        .no-print, aside, header, nav, footer, .top-bar, .sidebar {
-            display: none !important;
+        @page {
+            size: A4 portrait;
+            margin: 8mm 8mm 8mm 8mm;
         }
-        body {
+
+        html, body {
             background: #ffffff !important;
-            color: #000000 !important;
-            font-family: 'Tajawal', sans-serif !important;
-        }
-        .financial-voucher-container {
-            max-width: 100% !important;
             margin: 0 !important;
             padding: 0 !important;
-        }
-        .official-financial-voucher {
-            border: 1px solid #000000 !important;
-            box-shadow: none !important;
-            padding: 20px !important;
-            outline: none !important;
-        }
-        .voucher-ledger-table thead th {
-            background-color: #f1f5f9 !important;
             color: #000000 !important;
-            border-bottom: 2px solid #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .no-print,
+        .sidebar,
+        .navbar,
+        .topbar,
+        .footer,
+        #topNavbar,
+        #sideMenu {
+            display: none !important;
+        }
+
+        .school-voucher-page-wrapper {
+            background: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            min-height: auto !important;
+        }
+
+        .school-cash-voucher-sheet {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        .voucher-double-border {
+            border: 2px solid #000000 !important;
+            outline: 1px solid #000000 !important;
+            padding: 12px 14px 10px !important;
+        }
+
+        .voucher-gov-header {
+            padding-bottom: 8px !important;
+        }
+
+        .voucher-statement-block {
+            border-color: #000000 !important;
+            padding: 8px 10px !important;
+            margin-bottom: 8px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .voucher-natural-table th, 
+        .voucher-natural-table td {
+            border-color: #000000 !important;
+            padding: 4px 6px !important;
+            font-size: 0.75rem !important;
+        }
+
+        .voucher-clearance-box {
+            padding: 6px 10px !important;
+            margin-bottom: 8px !important;
+            font-size: 0.74rem !important;
+        }
+
+        .sig-space {
+            height: 40px !important;
+        }
+
+        .authentic-school-stamp {
+            width: 72px !important;
+            height: 72px !important;
+        }
+        .stamp-outer-circle {
+            width: 70px !important;
+            height: 70px !important;
         }
     }
 </style>

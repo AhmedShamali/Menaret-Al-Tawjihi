@@ -278,143 +278,212 @@
     </div>
 </div>
 
-{{-- 4. مودال قسيمة الراتب الرقمية القابلة للطباعة --}}
+{{-- 4. مودال سند صرف مستحقات ورواتب المعلمين الطبيعي الكلاسيكي (قابل للطباعة الفورية في ورقة A4 واحدة) --}}
 <div id="payslipModal" class="payslip-modal-overlay" style="display: none;">
     <div class="payslip-modal-container" id="printablePayslip">
-        <div class="payslip-inner-card">
-            {{-- رأس القسيمة الرسمي --}}
-            <div class="payslip-header">
-                <div class="payslip-branding">
-                    <div class="brand-logo-circle">
+        
+        <!-- ورقة السند الكلاسيكية المدرسية -->
+        <div class="voucher-double-border">
+
+            <!-- 1. الترويسة الوزارية والمدرسية الرسمية -->
+            <header class="voucher-gov-header">
+                <div class="gov-header-col right-col">
+                    <div class="gov-text-line"><strong>دولة فلسطين</strong></div>
+                    <div class="gov-text-line">وزارة التربية والتعليم العالي</div>
+                    <div class="gov-text-line">منصة منارة التوجيهي للثانوية العامة</div>
+                    <div class="gov-text-sub">الإدارة المالية • شؤون الكادر التعليمي</div>
+                </div>
+
+                <div class="gov-header-col center-col">
+                    <div class="voucher-official-emblem">
                         <i class="fa-solid fa-graduation-cap"></i>
                     </div>
-                    <div>
-                        <h2 class="brand-title">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h2>
-                        <span class="brand-sub">{{ __('الإدارة المالية وشؤون الكادر التعليمي - دولة فلسطين 🇵🇸') }}</span>
+                    <h2 class="voucher-headline">سَنَدُ صَرْفٍ مَالِيّ</h2>
+                    <span class="voucher-headline-en">TEACHER SALARY DISBURSEMENT VOUCHER</span>
+                    <div class="voucher-serial-tag">
+                        <span>رقم السند:</span>
+                        <strong class="font-mono" id="slipSerialNo">SLIP-{{ $year }}-0000</strong>
                     </div>
                 </div>
-                <div class="payslip-badge-box">
-                    <div class="payslip-type">{{ __('قسيمة راتب شهرية رسمية') }}</div>
-                    <div class="payslip-serial font-mono" id="slipSerialNo">SLIP-{{ $year }}-0000</div>
-                </div>
-            </div>
 
-            <div class="payslip-divider"></div>
-
-            {{-- بيانات المعلم والشهر --}}
-            <div class="payslip-meta-grid">
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('اسم المعلم المكرم:') }}</span>
-                    <strong class="meta-value">{{ $teacherDisplayName }}</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('الشهر والسنة:') }}</span>
-                    <strong class="meta-value" id="slipMonthYear">-</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('المادة الدراسية:') }}</span>
-                    <strong class="meta-value">{{ $subjectDisplayName }}</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('تاريخ الإصدار / الصرف:') }}</span>
-                    <strong class="meta-value font-mono" id="slipPaymentDate">-</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('طريقة الصرف:') }}</span>
-                    <strong class="meta-value" id="slipPaymentMethod">-</strong>
-                </div>
-                <div class="meta-item">
-                    <span class="meta-label">{{ __('رقم السند / المرجع:') }}</span>
-                    <strong class="meta-value font-mono" id="slipRefNo">-</strong>
-                </div>
-            </div>
-
-            {{-- جدول تفاصيل الاستحقاقات والاستقطاعات --}}
-            <div class="breakdown-tables-grid">
-                {{-- الاستحقاقات --}}
-                <div class="breakdown-card earnings">
-                    <div class="breakdown-title">
-                        <i class="fa-solid fa-circle-plus text-emerald"></i>
-                        <span>{{ __('الاستحقاقات والإضافات (Earnings)') }}</span>
-                    </div>
-                    <table class="breakdown-table">
+                <div class="gov-header-col left-col">
+                    <table class="voucher-meta-mini-table">
                         <tr>
-                            <td>{{ __('الراتب الأساسي المعتمد:') }}</td>
-                            <td class="font-mono" id="slipBasicSalary">0.00 ₪</td>
+                            <td class="lbl">{{ __('تاريخ الصرف:') }}</td>
+                            <td class="val font-mono" id="slipPaymentDate">-</td>
                         </tr>
                         <tr>
-                            <td>{{ __('مكافآت وحوافز التميز:') }}</td>
-                            <td class="font-mono text-emerald" id="slipBonus">0.00 ₪</td>
+                            <td class="lbl">{{ __('العام المالي:') }}</td>
+                            <td class="val font-mono">{{ $year }} م</td>
                         </tr>
-                        <tr class="total-row">
-                            <td><strong>{{ __('إجمالي الاستحقاقات:') }}</strong></td>
-                            <td class="font-mono font-bold" id="slipTotalEarnings">0.00 ₪</td>
+                        <tr>
+                            <td class="lbl">{{ __('حالة السند:') }}</td>
+                            <td class="val">
+                                <span class="state-badge-paid"><i class="fa-solid fa-check"></i> {{ __('مصروف ومسدد') }}</span>
+                            </td>
                         </tr>
                     </table>
                 </div>
+            </header>
 
-                {{-- الاستقطاعات والخصومات --}}
-                <div class="breakdown-card deductions">
-                    <div class="breakdown-title">
-                        <i class="fa-solid fa-circle-minus text-rose"></i>
-                        <span>{{ __('الاستقطاعات والخصومات (Deductions)') }}</span>
-                    </div>
-                    <table class="breakdown-table">
-                        <tr>
-                            <td>{{ __('غياب / استقطاع إداري:') }}</td>
-                            <td class="font-mono text-rose" id="slipDeductions">0.00 ₪</td>
-                        </tr>
-                        <tr>
-                            <td>{{ __('أقساط أو سلف مسبقة:') }}</td>
-                            <td class="font-mono text-rose">0.00 ₪</td>
-                        </tr>
-                        <tr class="total-row">
-                            <td><strong>{{ __('إجمالي الخصومات:') }}</strong></td>
-                            <td class="font-mono font-bold text-rose" id="slipTotalDeductions">0.00 ₪</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+            <div class="voucher-hairline"></div>
 
-            {{-- صندوق صافي الراتب المستلم الإجمالي --}}
-            <div class="net-salary-banner">
-                <div class="net-banner-info">
-                    <span class="net-title">{{ __('صافي الراتب المستحق والمحول:') }}</span>
-                    <span class="net-sub" id="slipNotes">{{ __('لا توجد ملاحظات إضافية') }}</span>
-                </div>
-                <div class="net-banner-amount font-mono" id="slipNetSalary">
-                    0.00 ₪
-                </div>
-            </div>
-
-            {{-- التواقيع والأختام الرسمية --}}
-            <div class="payslip-signatures-row">
-                <div class="sig-box">
-                    <span>{{ __('توقيع المعلم المستلم:') }}</span>
-                    <div class="sig-line">.....................................</div>
-                </div>
-                <div class="stamp-seal-box">
-                    <div class="official-seal">
-                        <i class="fa-solid fa-stamp"></i>
-                        <span>{{ __('معتمد - الإدارة العامة') }}</span>
-                        <small>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</small>
+            <!-- 2. بيان الإقرار المالي الكلاسيكي لسند الصرف -->
+            <div class="voucher-statement-block">
+                <div class="statement-row">
+                    <div class="statement-field full-width">
+                        <span class="field-label">صرفنـا للأستاذ/ـة المكرم/ـة:</span>
+                        <span class="field-content student-name-highlight">{{ $teacherDisplayName }}</span>
+                        <span class="field-label-inline">المبحث التدريسي:</span>
+                        <span class="field-content">{{ $subjectDisplayName }}</span>
+                        <span class="field-label-inline">عن مستحقات شهر:</span>
+                        <span class="field-content text-primary font-bold" id="slipMonthYear">-</span>
                     </div>
                 </div>
-                <div class="sig-box">
-                    <span>{{ __('اعتماد المشرف العام والمالي:') }}</span>
-                    <div class="sig-line">{{ __('أ. أحمد حسين شمالي') }}</div>
+
+                <div class="statement-row">
+                    <div class="statement-field flex-2">
+                        <span class="field-label">مبلغاً وقدره (صافي الصرف):</span>
+                        <span class="field-content font-mono bold-currency" id="slipNetSalary">0.00 ₪</span>
+                        <span class="field-sub">(شيكل فلسطيني جديد)</span>
+                    </div>
+                    <div class="statement-field flex-3">
+                        <span class="field-label">فقط وقدره تفقيطاً:</span>
+                        <span class="field-content words-content" id="slipAmountInWords">-</span>
+                    </div>
+                </div>
+
+                <div class="statement-row">
+                    <div class="statement-field flex-1">
+                        <span class="field-label">طريقة الصرف / التحويل:</span>
+                        <span class="field-content" id="slipPaymentMethod">-</span>
+                    </div>
+                    <div class="statement-field flex-1">
+                        <span class="field-label">رقم الحوالة / المرجع:</span>
+                        <span class="field-content font-mono" id="slipRefNo">-</span>
+                    </div>
+                    <div class="statement-field flex-1">
+                        <span class="field-label">ملاحظات الإدارة:</span>
+                        <span class="field-content" id="slipNotes">{{ __('تم الصرف والتحويل') }}</span>
+                    </div>
                 </div>
             </div>
 
-            {{-- أزرار التحكم بالمودال --}}
-            <div class="modal-footer-actions no-print">
-                <button type="button" class="btn-modal-print" onclick="window.print()">
-                    <i class="fa-solid fa-print"></i> {{ __('طباعة القسيمة فوراً') }}
-                </button>
-                <button type="button" class="btn-modal-close" onclick="closePayslipModal()">
-                    {{ __('إغلاق') }}
-                </button>
+            <!-- 3. جدول تفاصيل الاستحقاقات والاستقطاعات المعتمد (Classical Natural Table) -->
+            <div class="voucher-table-wrapper">
+                <table class="voucher-natural-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2" style="width: 50%; text-align: center; background: #ecfdf5; color: #065f46;">
+                                <i class="fa-solid fa-circle-plus"></i> {{ __('كشف الاستحقاقات والبدلات (Earnings)') }}
+                            </th>
+                            <th colspan="2" style="width: 50%; text-align: center; background: #fff1f2; color: #9f1239;">
+                                <i class="fa-solid fa-circle-minus"></i> {{ __('كشف الخصومات والاستقطاع (Deductions)') }}
+                            </th>
+                        </tr>
+                        <tr>
+                            <th style="text-align: right;">{{ __('بيان البند') }}</th>
+                            <th style="width: 100px; text-align: center;">{{ __('المبلغ (ILS)') }}</th>
+                            <th style="text-align: right;">{{ __('بيان البند') }}</th>
+                            <th style="width: 100px; text-align: center;">{{ __('المبلغ (ILS)') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{ __('الراتب الأساسي الشهري المعتمد') }}</td>
+                            <td class="text-center font-mono bold-text" id="slipBasicSalary">0.00 ₪</td>
+                            <td>{{ __('استقطاع غياب أو تأخير إداري') }}</td>
+                            <td class="text-center font-mono text-rose" id="slipDeductions">0.00 ₪</td>
+                        </tr>
+                        <tr>
+                            <td>{{ __('مكافآت التميز وحوافز العطاء') }}</td>
+                            <td class="text-center font-mono text-emerald" id="slipBonus">+0.00 ₪</td>
+                            <td>{{ __('سلفيات أو أقساط مستردة مسبقة') }}</td>
+                            <td class="text-center font-mono text-rose">0.00 ₪</td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="voucher-total-summary-row">
+                            <td class="total-label-cell"><strong>{{ __('إجمالي الاستحقاقات:') }}</strong></td>
+                            <td class="text-center font-mono font-bold text-emerald" id="slipTotalEarnings">0.00 ₪</td>
+                            <td class="total-label-cell"><strong>{{ __('إجمالي الخصومات:') }}</strong></td>
+                            <td class="text-center font-mono font-bold text-rose" id="slipTotalDeductions">0.00 ₪</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
+
+            <!-- 4. صندوق صافي الراتب وإقرار الاستلام -->
+            <div class="voucher-clearance-box clearance-paid">
+                <div class="clearance-icon">
+                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                </div>
+                <div class="clearance-text">
+                    <strong>{{ __('إقرار استلام وإبراء ذمة:') }}</strong>
+                    <span>{{ __('أقر أنا المعلم المكرم الموقع أدناه باستلامي كامل مستحقاتي ورواتبي المبينة أعلاه عن هذا الشهر دون أي قيد أو شرط.') }}</span>
+                </div>
+                <div class="clearance-remaining">
+                    <span class="rem-lbl">{{ __('صافي المبلغ المقبوض:') }}</span>
+                    <strong class="rem-val font-mono" id="slipNetSalaryBanner">0.00 ₪</strong>
+                </div>
+            </div>
+
+            <!-- 5. الأختام والتواقيع الرسمية الثلاثية -->
+            <footer class="voucher-signatures-section">
+                <!-- 1. توقيع المعلم المستلم -->
+                <div class="sig-column">
+                    <div class="sig-header">{{ __('المعلم المستلم (المستفيد)') }}</div>
+                    <div class="sig-space">
+                        <div class="sig-handwritten-line">........................................</div>
+                    </div>
+                    <div class="sig-name">{{ $teacherDisplayName }}</div>
+                </div>
+
+                <!-- 2. خاتم المنصة والاعتماد المالي الرسمي -->
+                <div class="sig-column stamp-center-col">
+                    <div class="authentic-school-stamp">
+                        <div class="stamp-outer-circle">
+                            <div class="stamp-middle-circle">
+                                <div class="stamp-text-arc-top">منارة التوجيهي • بوابة الثانوية العامة</div>
+                                <div class="stamp-center-content">
+                                    <i class="fa-solid fa-stamp stamp-inner-icon"></i>
+                                    <div class="stamp-state-txt">معتمد ومصروف</div>
+                                    <div class="stamp-gov-txt">دولة فلسطين</div>
+                                </div>
+                                <div class="stamp-text-arc-bottom">الدائرة المالية • {{ $year }} م</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stamp-caption">{{ __('خاتم الصرف والاعتماد المالي الرسمي') }}</div>
+                </div>
+
+                <!-- 3. المشرف العام وإدارة المنصة -->
+                <div class="sig-column">
+                    <div class="sig-header">{{ __('المشرف العام والمالي') }}</div>
+                    <div class="sig-space">
+                        <span class="official-signature-facsimile">أحمد حسين شمالي</span>
+                        <div class="sig-handwritten-line">........................................</div>
+                    </div>
+                    <div class="sig-name">{{ __('أ. أحمد حسين شمالي') }}</div>
+                </div>
+            </footer>
+
+            <!-- شريط الملاحظة القانونية -->
+            <div class="voucher-legal-footer">
+                <span>{{ __('ملاحظة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة منارة التوجيهي وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال الكشط أو التعديل اليدوي.') }}</span>
+                <span class="footer-ref font-mono">{{ date('Y-m-d') }} • فلسطين</span>
+            </div>
+
+        </div>
+
+        <!-- أزرار التحكم بالمودال (تختفي في الطباعة) -->
+        <div class="modal-footer-actions no-print">
+            <button type="button" class="btn-modal-print" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> {{ __('طباعة السند المدرسي الرسمي (ورقة A4)') }}
+            </button>
+            <button type="button" class="btn-modal-close" onclick="closePayslipModal()">
+                {{ __('إغلاق النافذة') }}
+            </button>
         </div>
     </div>
 </div>
@@ -465,6 +534,37 @@
         errorClaimFailed: "{{ __('فشل إرسال الملاحظة') }}"
     };
 
+    function tafqeetArabic(amount) {
+        const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+        const tens = ['', '', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+        const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+
+        function convert(num) {
+            if (num === 0) return '';
+            if (num < 20) return ones[num];
+            if (num < 100) {
+                const t = Math.floor(num / 10), r = num % 10;
+                return r === 0 ? tens[t] : ones[r] + ' و ' + tens[t];
+            }
+            if (num < 1000) {
+                const h = Math.floor(num / 100), r = num % 100;
+                return r === 0 ? hundreds[h] : hundreds[h] + ' و ' + convert(r);
+            }
+            if (num < 1000000) {
+                const th = Math.floor(num / 1000), r = num % 1000;
+                let thTxt = (th === 1) ? 'ألف' : (th === 2 ? 'ألفان' : (th >= 3 && th <= 10 ? convert(th) + ' آلاف' : convert(th) + ' ألفاً'));
+                return r === 0 ? thTxt : thTxt + ' و ' + convert(r);
+            }
+            return num.toString();
+        }
+
+        const intPart = Math.floor(amount);
+        if (intPart <= 0) return 'صفر شيكل لا غير';
+        const txt = convert(intPart);
+        const curr = (intPart >= 3 && intPart <= 10) ? 'شواكل' : (intPart >= 11 ? 'شيكلاً' : 'شيكل');
+        return 'فقط ' + txt + ' ' + curr + ' لا غير';
+    }
+
     function openPayslipModal(salary, monthLabel) {
         document.getElementById('slipSerialNo').innerText = `SLIP-{{ $year }}-${String(salary.month).padStart(2, '0')}-${salary.id}`;
         document.getElementById('slipMonthYear').innerText = `${monthLabel} {{ $year }} ${teacherSalaryI18n.adSuffix}`;
@@ -485,6 +585,8 @@
         document.getElementById('slipTotalDeductions').innerText = `-${deductions.toFixed(2)} ₪`;
         
         document.getElementById('slipNetSalary').innerText = `${net.toFixed(2)} ₪`;
+        document.getElementById('slipNetSalaryBanner').innerText = `${net.toFixed(2)} ₪`;
+        document.getElementById('slipAmountInWords').innerText = tafqeetArabic(net);
         document.getElementById('slipNotes').innerText = salary.notes || teacherSalaryI18n.defaultNotes;
 
         document.getElementById('payslipModal').style.display = 'flex';
@@ -1221,6 +1323,245 @@
         font-weight: 700;
         font-size: 0.84rem;
         cursor: pointer;
+    }
+
+    /* ==========================================================================
+       أنماط سند الصرف المدرسي الكلاسيكي للمعلمين (Teacher Salary Voucher)
+       ========================================================================== */
+    .payslip-modal-container {
+        max-width: 860px;
+        width: 100%;
+        background: #ffffff;
+        border-radius: 6px;
+        padding: 16px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        box-sizing: border-box;
+    }
+
+    .voucher-double-border {
+        border: 2px solid #0f172a;
+        outline: 1px solid #0f172a;
+        outline-offset: -5px;
+        padding: 20px 22px 14px;
+        box-sizing: border-box;
+        background: #ffffff;
+    }
+
+    .voucher-gov-header {
+        display: grid;
+        grid-template-columns: 1.2fr 1.4fr 1fr;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+    }
+    .gov-header-col.right-col {
+        text-align: right;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        color: #1e293b;
+    }
+    .gov-text-line strong { font-size: 0.96rem; color: #0f172a; }
+    .gov-text-sub { font-size: 0.76rem; color: #64748b; margin-top: 2px; }
+
+    .gov-header-col.center-col { text-align: center; }
+    .voucher-official-emblem {
+        width: 38px;
+        height: 38px;
+        margin: 0 auto 4px;
+        border-radius: 50%;
+        border: 1.5px solid #1e3a8a;
+        color: #1e3a8a;
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+    }
+    .voucher-headline {
+        font-size: 1.55rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin: 0;
+        letter-spacing: 0.5px;
+        font-family: 'Amiri', 'Traditional Arabic', serif;
+    }
+    .voucher-headline-en {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #475569;
+        letter-spacing: 1.5px;
+        margin-top: 1px;
+    }
+    .voucher-serial-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 2px 10px;
+        border-radius: 4px;
+        font-size: 0.76rem;
+        margin-top: 4px;
+        color: #1e3a8a;
+    }
+
+    .gov-header-col.left-col {
+        text-align: left;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .voucher-meta-mini-table { font-size: 0.76rem; border-collapse: collapse; }
+    .voucher-meta-mini-table td { padding: 2px 6px; }
+    .voucher-meta-mini-table .lbl { color: #475569; font-weight: 600; text-align: right; }
+    .voucher-meta-mini-table .val { font-weight: 700; color: #0f172a; text-align: left; }
+    .state-badge-paid { color: #15803d; font-weight: 800; }
+
+    .voucher-hairline {
+        height: 1.5px;
+        background: #0f172a;
+        margin: 6px 0 14px;
+    }
+
+    .voucher-statement-block {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        font-size: 0.84rem;
+        line-height: 1.8;
+    }
+    .statement-row {
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+    }
+    .statement-row:last-child { margin-bottom: 0; }
+    .statement-field { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+    .statement-field.full-width { width: 100%; }
+    .statement-field.flex-1 { flex: 1; min-width: 180px; }
+    .statement-field.flex-2 { flex: 2; min-width: 200px; }
+    .statement-field.flex-3 { flex: 3; min-width: 250px; }
+
+    .field-label { color: #334155; font-weight: 700; white-space: nowrap; }
+    .field-label-inline { color: #334155; font-weight: 700; margin-right: 12px; white-space: nowrap; }
+    .field-content { color: #0f172a; font-weight: 700; border-bottom: 1px dotted #94a3b8; padding: 0 4px; }
+    .student-name-highlight { font-size: 0.95rem; color: #0f172a; font-weight: 800; }
+    .bold-currency { font-size: 0.98rem; color: #0f172a; font-weight: 800; }
+    .field-sub { font-size: 0.72rem; color: #64748b; }
+    .words-content { color: #1e3a8a; font-weight: 700; }
+
+    .voucher-table-wrapper { margin-bottom: 12px; }
+    .voucher-natural-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .voucher-natural-table th, .voucher-natural-table td { border: 1px solid #334155; padding: 6px 8px; }
+    .voucher-natural-table thead th { background: #f1f5f9; color: #0f172a; font-weight: 800; font-size: 0.78rem; }
+    .voucher-total-summary-row td { background: #f8fafc; border-top: 2px solid #0f172a; border-bottom: 2px solid #0f172a; }
+    .total-label-cell { text-align: right; font-size: 0.82rem; color: #0f172a; }
+
+    .voucher-clearance-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        margin-bottom: 14px;
+        gap: 12px;
+        font-size: 0.78rem;
+    }
+    .clearance-paid { background: #f0fdf4; border-color: #86efac; }
+    .clearance-icon { font-size: 1.25rem; color: #15803d; flex-shrink: 0; }
+    .clearance-text { flex: 1; color: #1e293b; line-height: 1.45; }
+    .clearance-remaining { text-align: left; white-space: nowrap; background: #ffffff; padding: 4px 10px; border: 1px solid #cbd5e1; border-radius: 4px; }
+    .rem-lbl { display: block; font-size: 0.68rem; color: #64748b; }
+    .rem-val { font-size: 0.82rem; color: #15803d; font-weight: 800; }
+
+    .voucher-signatures-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 8px 0 6px;
+        text-align: center;
+    }
+    .sig-column { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .sig-header { font-size: 0.78rem; font-weight: 800; color: #334155; margin-bottom: 4px; }
+    .sig-space { height: 52px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; width: 100%; position: relative; }
+    .sig-handwritten-line { color: #94a3b8; font-size: 0.75rem; letter-spacing: 2px; }
+    .official-signature-facsimile { font-family: 'Amiri', 'Traditional Arabic', serif; font-size: 1.15rem; font-weight: 700; color: #1e3a8a; margin-bottom: -4px; transform: rotate(-2deg); }
+    .sig-name { font-size: 0.76rem; font-weight: 700; color: #0f172a; margin-top: 4px; }
+
+    .authentic-school-stamp {
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        margin: 0 auto;
+        display: grid;
+        place-items: center;
+        transform: rotate(-3deg);
+        filter: drop-shadow(0 1px 2px rgba(30, 58, 138, 0.15));
+    }
+    .stamp-outer-circle { width: 80px; height: 80px; border-radius: 50%; border: 2px solid #1e3a8a; padding: 2px; display: grid; place-items: center; box-sizing: border-box; }
+    .stamp-middle-circle { width: 100%; height: 100%; border-radius: 50%; border: 1px dashed #1e3a8a; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 3px 2px; box-sizing: border-box; text-align: center; }
+    .stamp-text-arc-top { font-size: 0.52rem; font-weight: 800; color: #1e3a8a; line-height: 1; }
+    .stamp-center-content { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .stamp-inner-icon { font-size: 0.8rem; color: #1e3a8a; margin-bottom: 1px; }
+    .stamp-state-txt { font-size: 0.62rem; font-weight: 900; color: #b91c1c; border: 1px solid #b91c1c; padding: 1px 4px; border-radius: 2px; line-height: 1; }
+    .stamp-gov-txt { font-size: 0.5rem; color: #1e3a8a; font-weight: 700; margin-top: 1px; }
+    .stamp-text-arc-bottom { font-size: 0.48rem; font-weight: 700; color: #1e3a8a; line-height: 1; }
+    .stamp-caption { font-size: 0.68rem; font-weight: 700; color: #475569; margin-top: 3px; }
+
+    .voucher-legal-footer {
+        border-top: 1px solid #cbd5e1;
+        margin-top: 10px;
+        padding-top: 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.66rem;
+        color: #64748b;
+        line-height: 1.4;
+    }
+
+    @media print {
+        @page {
+            size: A4 portrait;
+            margin: 8mm;
+        }
+        html, body {
+            background: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            color: #000000 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .no-print, .sidebar, .navbar, .topbar, .footer, .salary-dashboard-wrapper, #claimModal {
+            display: none !important;
+        }
+        #payslipModal {
+            display: block !important;
+            position: static !important;
+            background: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+        }
+        .payslip-modal-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+        .voucher-double-border {
+            border: 2px solid #000000 !important;
+            outline: 1px solid #000000 !important;
+            padding: 12px 14px 10px !important;
+        }
     }
 </style>
 @endsection

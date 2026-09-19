@@ -99,11 +99,19 @@ class StudentMonthlySubscription extends Model
             ->orderBy('created_at')
             ->get();
 
+        $totalCompletedAmount = (float) $completedPayments->sum('amount');
+        $totalPendingAmount = (float) $pendingPayments->sum('amount');
+
         $completedCount = $completedPayments->count();
         $pendingCount = $pendingPayments->count();
 
-        // إن كان الطالب مفعلاً بالمنصة (Active)، يعتبر الشهر الأول مسدداً كحد أدنى عند التسجيل
-        $paidMonthsCount = max($completedCount, ($student->status === 'active' ? 1 : 0));
+        // حساب عدد الشهور التي تغطيها المبالغ المدفوعة فعلياً
+        $monthsCoveredByPaidAmount = ($baseAmount > 0) ? (int) floor($totalCompletedAmount / $baseAmount) : 0;
+        $paidMonthsCount = max($monthsCoveredByPaidAmount, $completedCount, ($student->status === 'active' ? 1 : 0));
+
+        // حساب عدد الشهور التي تغطيها إشعارات الدفع قيد المراجعة
+        $monthsCoveredByPendingAmount = ($baseAmount > 0) ? (int) ceil($totalPendingAmount / $baseAmount) : 0;
+        $totalPendingMonths = max($monthsCoveredByPendingAmount, $pendingCount);
 
         for ($m = 1; $m <= 12; $m++) {
             $sub = $existing->get($m);
@@ -114,9 +122,16 @@ class StudentMonthlySubscription extends Model
                 $notes = 'معفى رسمياً - منحة دراسية كاملة 100%';
                 $paymentId = null;
                 $paidAt = null;
+            } elseif ($sub && $sub->status === 'paid') {
+                // إذا كان المدير قد حدد الشهر يدوياً كمسدد
+                $status = 'paid';
+                $amount = $sub->amount ?: $baseAmount;
+                $paymentId = $sub->payment_id;
+                $paidAt = $sub->paid_at ?? now();
+                $notes = $sub->notes ?: 'معتمد ومسدد بقرار الإدارة';
             } elseif ($m <= $paidMonthsCount) {
                 $status = 'paid';
-                $amount = $baseAmount;
+                $amount = $sub ? $sub->amount : $baseAmount;
                 $pIndex = $m - 1;
                 $payment = $completedPayments->get($pIndex);
                 if ($payment) {
@@ -126,11 +141,11 @@ class StudentMonthlySubscription extends Model
                 } else {
                     $paymentId = null;
                     $paidAt = $student->created_at ?? now();
-                    $notes = 'تم السداد واعتماد الاشتراك عند بداية التسجيل';
+                    $notes = 'تم السداد واعتماد الاشتراك الشهري';
                 }
-            } elseif ($m <= ($paidMonthsCount + $pendingCount)) {
+            } elseif ($m <= ($paidMonthsCount + $totalPendingMonths)) {
                 $status = 'pending';
-                $amount = $baseAmount;
+                $amount = $sub ? $sub->amount : $baseAmount;
                 $pendIndex = ($m - $paidMonthsCount) - 1;
                 $pendPayment = $pendingPayments->get($pendIndex);
                 $paymentId = $pendPayment ? $pendPayment->id : null;
@@ -138,14 +153,12 @@ class StudentMonthlySubscription extends Model
                 $notes = 'إشعار الدفع قيد المراجعة والاعتماد من الإدارة';
             } else {
                 $status = $sub ? $sub->status : 'unpaid';
-                if ($status === 'paid' && $m > $paidMonthsCount) {
-                    $status = 'paid';
-                } elseif ($status !== 'waived') {
+                if ($status !== 'waived') {
                     $status = 'unpaid';
                 }
-                $amount = $baseAmount;
-                $paymentId = $sub ? $sub->payment_id : null;
-                $paidAt = $sub ? $sub->paid_at : null;
+                $amount = $sub ? $sub->amount : $baseAmount;
+                $paymentId = null;
+                $paidAt = null;
                 $notes = $sub ? $sub->notes : null;
             }
 

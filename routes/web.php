@@ -217,6 +217,8 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     // مصفوفة وسجل الاشتراكات الشهرية للطلاب (12 شهراً)
     Route::get('/subscriptions/monthly', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'index'])->name('subscriptions.monthly');
     Route::post('/subscriptions/monthly/update', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStatus'])->name('subscriptions.monthly.update');
+    Route::post('/subscriptions/monthly/update-student-fee', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStudentFee'])->name('subscriptions.monthly.updateStudentFee');
+    Route::post('/subscriptions/monthly/update-global-fee', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateGlobalFee'])->name('subscriptions.monthly.updateGlobalFee');
 
     // إدارة واعتماد شهادات ونتائج نهاية العام للثانوية العامة
     Route::get('/certificates', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'index'])->name('certificates.index');

@@ -298,12 +298,116 @@
 
             <form id="pendingPaymentForm" action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data" onsubmit="return validatePaymentForm(event)">
                 @csrf
-                <input type="hidden" name="amount" value="{{ $finalAmount ?? 150 }}">
 
-                <div class="form-grid-row">
+                <!-- 1. صندوق تحديد قيمة الدفعة المراد سدادها الذكي والمتطور -->
+                <div class="smart-payment-amount-container">
+                    <div class="due-amount-banner">
+                        <div class="due-info">
+                            <span class="due-lbl">{{ __('القسط الشهري المطلوب رسمياً:') }}</span>
+                            <div class="due-val-wrap">
+                                <strong class="due-val font-mono">{{ number_format($finalAmount, 2) }} ₪</strong>
+                                <span class="due-target-badge">{{ __('عن :month', ['month' => $dueMonthName]) }}</span>
+                            </div>
+                        </div>
+                        @if($student->hasDiscount())
+                            <div class="due-discount-tag">
+                                <i class="fa-solid fa-tag"></i>
+                                <span>{{ __('خصم معتمد لك: :orig ₪ ➜ :final ₪', ['orig' => number_format($monthlyFee, 0), 'final' => number_format($finalAmount, 0)]) }}</span>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- أزرار اختيار نمط الدفع المرن (Tabs) -->
+                    <div class="payment-mode-tabs">
+                        <button type="button" class="mode-tab-btn active" id="tabModeFull" onclick="selectPaymentMode('full')">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ __('سداد كامل القسط المطلوب (:amt ₪)', ['amt' => number_format($finalAmount, 0)]) }}</span>
+                        </button>
+                        <button type="button" class="mode-tab-btn" id="tabModeCustom" onclick="selectPaymentMode('custom')">
+                            <i class="fa-solid fa-sliders"></i>
+                            <span>{{ __('سداد دفعة مرنة مخصصة') }}</span>
+                        </button>
+                        <button type="button" class="mode-tab-btn" id="tabModeMulti" onclick="selectPaymentMode('multi')">
+                            <i class="fa-solid fa-calendar-plus"></i>
+                            <span>{{ __('سداد عدة أقساط مقدماً') }}</span>
+                        </button>
+                    </div>
+
+                    <!-- محتوى الخيار 2: إدخال دفعة مخصصة -->
+                    <div id="customAmountSection" class="custom-amount-panel" style="display: none;">
+                        <div class="custom-input-row">
+                            <label class="custom-input-label">
+                                <i class="fa-solid fa-hand-holding-dollar"></i>
+                                {{ __('أدخل المبلغ الذي ترغب في دفعه الآن (₪):') }}
+                            </label>
+                            <div class="custom-input-wrap">
+                                <input type="number" step="1" min="10" max="5000" id="customAmountInput" class="custom-number-input font-mono" placeholder="{{ __('مثال: 50 أو 100') }}" oninput="onCustomAmountChange(this.value)">
+                                <span class="currency-symbol font-mono">₪ ILS</span>
+                            </div>
+                        </div>
+                        <div class="quick-preset-chips">
+                            <span>{{ __('مبالغ سريعة:') }}</span>
+                            <button type="button" class="chip-btn font-mono" onclick="setPresetAmount(50)">50 ₪</button>
+                            <button type="button" class="chip-btn font-mono" onclick="setPresetAmount(75)">75 ₪</button>
+                            <button type="button" class="chip-btn font-mono" onclick="setPresetAmount(100)">100 ₪</button>
+                            <button type="button" class="chip-btn font-mono" onclick="setPresetAmount({{ $finalAmount }})">{{ number_format($finalAmount, 0) }} ₪</button>
+                        </div>
+                    </div>
+
+                    <!-- محتوى الخيار 3: سداد عدة أشهر مقدماً -->
+                    <div id="multiMonthSection" class="custom-amount-panel" style="display: none;">
+                        <span class="multi-panel-title"><i class="fa-solid fa-bolt"></i> {{ __('اختر عدد الأشهر التي ترغب بسدادها مقدماً:') }}</span>
+                        <div class="multi-months-grid">
+                            <button type="button" class="multi-card-btn" onclick="setMultiMonths(2)">
+                                <strong class="m-title">{{ __('شهران (2)') }}</strong>
+                                <span class="m-price font-mono">{{ number_format($finalAmount * 2, 0) }} ₪</span>
+                                <small>{{ __('تغطية الشهرين القادمين') }}</small>
+                            </button>
+                            <button type="button" class="multi-card-btn" onclick="setMultiMonths(3)">
+                                <strong class="m-title">{{ __('3 أشهر') }}</strong>
+                                <span class="m-price font-mono">{{ number_format($finalAmount * 3, 0) }} ₪</span>
+                                <small>{{ __('سداد فصل دراسي جزئي') }}</small>
+                            </button>
+                            <button type="button" class="multi-card-btn" onclick="setMultiMonths(5)">
+                                <strong class="m-title">{{ __('فصل دراسي (5 أشهر)') }}</strong>
+                                <span class="m-price font-mono">{{ number_format($finalAmount * 5, 0) }} ₪</span>
+                                <small>{{ __('تغطية فصل كامل') }}</small>
+                            </button>
+                            <button type="button" class="multi-card-btn" onclick="setMultiMonths(10)">
+                                <strong class="m-title">{{ __('سنة دراسية كاملة') }}</strong>
+                                <span class="m-price font-mono">{{ number_format($finalAmount * 10, 0) }} ₪</span>
+                                <small>{{ __('راحة تامة طوال العام') }}</small>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- شريط المحاسبة الذكي المباشر (Live Financial Summary) -->
+                    <div class="live-calc-box">
+                        <div class="calc-item">
+                            <span class="calc-lbl">{{ __('المبلغ المطلوب رسمياً:') }}</span>
+                            <strong class="calc-val font-mono">{{ number_format($finalAmount, 2) }} ₪</strong>
+                        </div>
+                        <div class="calc-item highlight">
+                            <span class="calc-lbl">{{ __('المبلغ الذي ستدفعه الآن:') }}</span>
+                            <strong class="calc-val font-mono" id="displayActiveAmount">{{ number_format($finalAmount, 2) }} ₪</strong>
+                        </div>
+                        <div class="calc-item">
+                            <span class="calc-lbl">{{ __('حالة الرصيد والتغطية:') }}</span>
+                            <span class="calc-status" id="displayCoverageNote">
+                                <i class="fa-solid fa-circle-check text-emerald"></i> {{ __('خالص ومسدد بالكامل ✅ (المتبقي: 0.00 ₪)') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- الحقول المخفية للنموذج -->
+                    <input type="hidden" name="amount" id="formActualAmountInput" value="{{ $finalAmount ?? 150 }}">
+                    <input type="hidden" name="payment_mode" id="formPaymentModeInput" value="full">
+                </div>
+
+                <div class="form-grid-row" style="margin-top: 18px;">
                     <div class="form-group-cell">
                         <label class="input-label">{{ __('وسيلة الدفع المستخدمة') }} <span class="required">*</span></label>
-                        <select name="payment_method" id="paymentMethodSelect" class="form-select-clean" required>
+                        <select name="payment_method" id="paymentMethodSelect" class="form-select-clean" required onchange="updateWhatsAppMessage()">
                             <option value="جوال باي (Jawwal Pay)">{{ __('محفظة جوال باي (Jawwal Pay)') }} - 0567897212</option>
                             <option value="بال باي (PalPay)">{{ __('بال باي (PalPay)') }} - 0567897212</option>
                             <option value="بنك فلسطين (Bank of Palestine)">{{ __('بنك فلسطين (Bank of Palestine)') }} - 0567897212</option>
@@ -314,8 +418,13 @@
 
                     <div class="form-group-cell">
                         <label class="input-label">{{ __('رقم العملية / الحوالة (اختياري)') }}</label>
-                        <input type="text" name="reference_no" placeholder="{{ __('مثال: TRX-98214') }}" class="form-input-clean">
+                        <input type="text" name="reference_no" id="referenceNoInput" placeholder="{{ __('مثال: TRX-98214') }}" class="form-input-clean">
                     </div>
+                </div>
+
+                <div class="form-group-full">
+                    <label class="input-label">{{ __('ملاحظات الدفعة (اختياري)') }}</label>
+                    <input type="text" name="notes" id="paymentNotesInput" placeholder="{{ __('مثال: دفعة قسط شهر :m أو حوالة باسم والدي...', ['m' => $dueMonthName]) }}" class="form-input-clean">
                 </div>
 
                 <div class="form-group-full">
@@ -332,7 +441,7 @@
 
                 <button type="submit" class="btn-submit-receipt" id="btnSubmitReceipt">
                     <i class="fa-solid fa-paper-plane"></i>
-                    <span id="submitBtnText">{{ __('إرسال إشعار السداد ورفع الإيصال للاعتماد') }}</span>
+                    <span id="submitBtnText">{{ __('تأكيد وإرسال إشعار السداد بمبلغ :amt ₪', ['amt' => number_format($finalAmount, 0)]) }}</span>
                 </button>
             </form>
         </div>
@@ -396,6 +505,102 @@
         fileSelectedText: "{{ __('تم اختيار الملف: :file ✅') }}",
         copySuccess: "{{ __('تم النسخ بنجاح 📋') }}"
     };
+
+    const baseDueAmount = {{ (float)($finalAmount ?? 150) }};
+    const dueMonthName = "{{ addslashes($dueMonthName ?? 'الشهر الحالي') }}";
+    const studentDisplayName = "{{ addslashes($studentDispName ?? 'طالبنا العزيز') }}";
+    const studentPhone = "{{ addslashes($student->phone ?? '') }}";
+
+    function selectPaymentMode(mode) {
+        document.getElementById('tabModeFull')?.classList.remove('active');
+        document.getElementById('tabModeCustom')?.classList.remove('active');
+        document.getElementById('tabModeMulti')?.classList.remove('active');
+
+        const customSec = document.getElementById('customAmountSection');
+        const multiSec = document.getElementById('multiMonthSection');
+        if (customSec) customSec.style.display = 'none';
+        if (multiSec) multiSec.style.display = 'none';
+
+        if (mode === 'full') {
+            document.getElementById('tabModeFull')?.classList.add('active');
+            updateCalculationsAndUI(baseDueAmount, 'full', 1);
+        } else if (mode === 'custom') {
+            document.getElementById('tabModeCustom')?.classList.add('active');
+            if (customSec) customSec.style.display = 'block';
+            let curVal = parseFloat(document.getElementById('customAmountInput')?.value) || baseDueAmount;
+            document.getElementById('customAmountInput').value = curVal;
+            updateCalculationsAndUI(curVal, 'custom', 1);
+        } else if (mode === 'multi') {
+            document.getElementById('tabModeMulti')?.classList.add('active');
+            if (multiSec) multiSec.style.display = 'block';
+            updateCalculationsAndUI(baseDueAmount * 2, 'multi', 2);
+        }
+    }
+
+    function onCustomAmountChange(val) {
+        let amt = parseFloat(val);
+        if (isNaN(amt) || amt < 0) amt = 0;
+        updateCalculationsAndUI(amt, 'custom', 1);
+    }
+
+    function setPresetAmount(amt) {
+        const inp = document.getElementById('customAmountInput');
+        if (inp) inp.value = amt;
+        updateCalculationsAndUI(amt, 'custom', 1);
+    }
+
+    function setMultiMonths(count) {
+        const total = baseDueAmount * count;
+        updateCalculationsAndUI(total, 'multi', count);
+    }
+
+    function updateCalculationsAndUI(amount, mode, count) {
+        const formActualInput = document.getElementById('formActualAmountInput');
+        const formModeInput = document.getElementById('formPaymentModeInput');
+        const displayAmt = document.getElementById('displayActiveAmount');
+        const submitText = document.getElementById('submitBtnText');
+        const coverageEl = document.getElementById('displayCoverageNote');
+
+        if (formActualInput) formActualInput.value = amount;
+        if (formModeInput) formModeInput.value = mode;
+        if (displayAmt) displayAmt.innerText = amount.toFixed(2) + ' ₪';
+
+        if (submitText) {
+            submitText.innerText = `{{ __('تأكيد وإرسال إشعار السداد بمبلغ') }} ${Math.round(amount)} ₪`;
+        }
+
+        if (coverageEl) {
+            if (mode === 'full' || amount === baseDueAmount) {
+                coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('خالص ومسدد بالكامل ✅ (المتبقي: 0.00 ₪ عن') }} ${dueMonthName})`;
+            } else if (amount < baseDueAmount) {
+                const rem = baseDueAmount - amount;
+                coverageEl.innerHTML = `<i class="fa-solid fa-circle-half-stroke text-amber"></i> {{ __('دفعة جزئية على حساب') }} ${dueMonthName} ({{ __('المتبقي:') }} ${rem.toFixed(2)} ₪)`;
+            } else {
+                const monthsCovered = Math.floor(amount / (baseDueAmount > 0 ? baseDueAmount : 150));
+                coverageEl.innerHTML = `<i class="fa-solid fa-star text-emerald"></i> {{ __('سداد مسبق يغطي') }} (${monthsCovered}) {{ __('أشهر بنجاح! رصيد معتمد مقدماً 🎉') }}`;
+            }
+        }
+
+        updateWhatsAppMessage();
+    }
+
+    function updateWhatsAppMessage() {
+        const amount = document.getElementById('formActualAmountInput')?.value || baseDueAmount;
+        const method = document.getElementById('paymentMethodSelect')?.value || 'محفظة جوال باي';
+        const notes = document.getElementById('paymentNotesInput')?.value || '';
+        
+        let msg = `السلام عليكم أ. أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة منارة التوجيهي بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
+        if (notes) {
+            msg += ` ملاحظات: [${notes}].`;
+        }
+        msg += ` أرجو التكرم باعتماد وتفعيل حسابي.`;
+
+        const waUrl = `https://wa.me/970567897212?text=${encodeURIComponent(msg)}`;
+        const waBtn = document.getElementById('supervisorWhatsAppBtn');
+        if (waBtn) {
+            waBtn.href = waUrl;
+        }
+    }
 
     function copyNumber(text, label) {
         navigator.clipboard.writeText(text).then(() => {
@@ -1102,6 +1307,262 @@
         margin-top: 14px;
         padding-top: 10px;
         border-top: 1px solid #e2e8f0;
+    }
+
+    /* ==========================================================================
+       أنماط بوابة الدفع الذكية والمتطورة (Smart Flexible Payment Portal)
+       ========================================================================== */
+    .smart-payment-amount-container {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 14px;
+        text-align: right;
+    }
+
+    .due-amount-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .due-lbl {
+        font-size: 0.78rem;
+        color: #1e3a8a;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+    }
+    .due-val-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .due-val {
+        font-size: 1.35rem;
+        color: #1d4ed8;
+        font-weight: 900;
+    }
+    .due-target-badge {
+        background: #dbeafe;
+        color: #1e40af;
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    .due-discount-tag {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .payment-mode-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .mode-tab-btn {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 8px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+        transition: all 0.2s ease;
+    }
+    .mode-tab-btn i {
+        font-size: 1.05rem;
+    }
+    .mode-tab-btn.active {
+        background: #eff6ff;
+        border-color: #1d4ed8;
+        color: #1d4ed8;
+        box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+    }
+
+    .custom-amount-panel {
+        background: #f8fafc;
+        border: 1px dashed #94a3b8;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        animation: fadeIn 0.2s ease;
+    }
+    .custom-input-row {
+        margin-bottom: 8px;
+    }
+    .custom-input-label {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #334155;
+        display: block;
+        margin-bottom: 6px;
+    }
+    .custom-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .custom-number-input {
+        width: 100%;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 12px 8px 60px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #0f172a;
+        box-sizing: border-box;
+        outline: none;
+    }
+    .custom-number-input:focus {
+        border-color: #1d4ed8;
+        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+    }
+    .currency-symbol {
+        position: absolute;
+        left: 12px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    .quick-preset-chips {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        font-size: 0.74rem;
+        color: #64748b;
+    }
+    .chip-btn {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 3px 10px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #1e3a8a;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .chip-btn:hover {
+        background: #eff6ff;
+        border-color: #1d4ed8;
+    }
+
+    .multi-panel-title {
+        display: block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+    .multi-months-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    .multi-card-btn {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 6px;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.15s ease;
+    }
+    .multi-card-btn:hover {
+        border-color: #1d4ed8;
+        background: #eff6ff;
+    }
+    .multi-card-btn .m-title {
+        font-size: 0.74rem;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+    .multi-card-btn .m-price {
+        font-size: 0.92rem;
+        color: #1d4ed8;
+        font-weight: 800;
+    }
+    .multi-card-btn small {
+        font-size: 0.65rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .live-calc-box {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr 1.8fr;
+        gap: 8px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 10px 12px;
+        align-items: center;
+    }
+    .calc-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .calc-item.highlight .calc-val {
+        color: #1d4ed8;
+        font-size: 1.05rem;
+    }
+    .calc-lbl {
+        font-size: 0.7rem;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .calc-val {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .calc-status {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #15803d;
+        line-height: 1.35;
+    }
+
+    @media (max-width: 640px) {
+        .payment-mode-tabs {
+            grid-template-columns: 1fr;
+        }
+        .multi-months-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        .live-calc-box {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
     }
 </style>
 @endsection
