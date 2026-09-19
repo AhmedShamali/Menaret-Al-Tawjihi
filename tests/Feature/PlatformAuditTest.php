@@ -380,6 +380,54 @@ class PlatformAuditTest extends TestCase
         $responseForm->assertRedirect();
         $this->assertEquals(1, $student->enrolledSubjects()->count());
     }
+
+    public function test_student_subjects_page_only_shows_enrolled_subjects(): void
+    {
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب فحص المواد المسجلة',
+            'name_en' => 'Enrolled Only Student',
+            'nid' => '400776655',
+            'email' => 'enrolled_only@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599776655',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+        ]);
+
+        $stageSubjects = \App\Models\Subject::where('stage_id', $stage->id)->get();
+        if ($stageSubjects->count() < 2) {
+            $stageSubjects = \App\Models\Subject::take(3)->get();
+        }
+
+        // Student only enrolls in the first subject
+        $enrolledSubject = $stageSubjects->first();
+        $unenrolledSubject = $stageSubjects->last();
+
+        \App\Models\Enrollment::create([
+            'student_id'     => $student->id,
+            'subject_id'     => $enrolledSubject->id,
+            'status'         => 'active',
+            'access_mode'    => 'all',
+            'payment_status' => 'paid',
+            'activated_at'   => now(),
+        ]);
+
+        auth('student')->login($student);
+
+        $response = $this->get('/student/subjects');
+        $response->assertStatus(200);
+
+        // Enrolled subject should be visible
+        $response->assertSee($enrolledSubject->name_ar);
+
+        // Unenrolled subject should NOT be visible if it is different
+        if ($unenrolledSubject->id !== $enrolledSubject->id) {
+            $response->assertDontSee($unenrolledSubject->name_ar);
+        }
+    }
 }
 
 

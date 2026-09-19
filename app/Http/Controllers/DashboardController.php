@@ -106,11 +106,21 @@ class DashboardController extends Controller {
         // جلب معرف المرحلة الخاص بالطالب
         $stageId = $student?->stage_id ?? optional($student?->student)->stage_id;
 
-        // جلب المواد التي تنتمي لهذه المرحلة (أو كافة المواد إذا لم تحدد) مع عدادات المحتوى والاختبارات
-        $query = \App\Models\Subject::withCount(['educationalContents', 'contents', 'exams']);
-        if ($stageId) {
+        // جلب المواد مع عدادات المحتوى والاختبارات
+        $query = \App\Models\Subject::with(['stage', 'teacher'])->withCount(['educationalContents', 'contents', 'exams']);
+
+        if ($student) {
+            // حصر العرض حصرياً بالمواد التي سجّل بها الطالب واعتمدتها الإدارة (الاشتراكات النشطة)
+            $enrolledSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('status', 'active')
+                ->pluck('subject_id')
+                ->toArray();
+
+            $query->whereIn('id', $enrolledSubjectIds);
+        } elseif ($stageId) {
             $query->where('stage_id', $stageId);
         }
+
         $subjects = $query->get();
 
         return view('student.subjects.index', compact('subjects'));
@@ -123,12 +133,21 @@ class DashboardController extends Controller {
         // 1. جلب آي دي الاختبارات التي حلها الطالب مسبقاً
         $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
 
-        // 2. جلب الاختبارات المتاحة مع استثناء التي تم حلها مسبقاً ومطابقتها للمرحلة إن وجدت
+        // 2. جلب الاختبارات المتاحة مع استثناء التي تم حلها مسبقاً وحصرها في المواد المسجل بها الطالب
         $examsQuery = Exam::latest()->whereNotIn('id', $solvedExamIds);
-        if ($student?->stage_id) {
-            $examsQuery->whereHas('subject', function($q) use ($student) {
-                $q->where('stage_id', $student->stage_id);
-            });
+        if ($student) {
+            $enrolledSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('status', 'active')
+                ->pluck('subject_id')
+                ->toArray();
+
+            if (!empty($enrolledSubjectIds)) {
+                $examsQuery->whereIn('subject_id', $enrolledSubjectIds);
+            } elseif ($student->stage_id) {
+                $examsQuery->whereHas('subject', function($q) use ($student) {
+                    $q->where('stage_id', $student->stage_id);
+                });
+            }
         }
         $availableExamsCount = (clone $examsQuery)->count();
         $available_exams = $examsQuery->take(6)->get();
