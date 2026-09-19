@@ -428,6 +428,94 @@ class PlatformAuditTest extends TestCase
             $response->assertDontSee($unenrolledSubject->name_ar);
         }
     }
+
+    public function test_monthly_subscription_timeline_and_due_fee_calculation(): void
+    {
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'علي شمالي',
+            'name_en' => 'Ali Shamali',
+            'nid' => '865389653',
+            'email' => 'ali.test@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599112233',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+            'monthly_fee' => 150.00,
+            'approved_at' => now()->subDays(35), // 35 days ago = Month 2
+        ]);
+
+        // Student has Month 1 paid
+        \App\Models\StudentMonthlySubscription::create([
+            'student_id' => $student->id,
+            'academic_year' => '2026-2027',
+            'month' => 1,
+            'status' => 'paid',
+            'amount' => 150.00,
+            'paid_at' => now()->subDays(35),
+        ]);
+
+        $this->assertEquals(2, $student->currentAcademicMonthIndex());
+        $this->assertEquals(1, $student->paidMonthsCount());
+        $this->assertTrue($student->isMonthlyFeeDue());
+        $this->assertEquals(2, $student->currentDueMonth());
+        $this->assertEquals('الشهر الثاني', $student->currentDueMonthName());
+        $this->assertEquals(150.00, $student->monthlyAmountDue());
+    }
+
+    public function test_admin_can_update_student_monthly_fee(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Monthly Fee Test',
+            'email' => 'admin_fee@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب فحص الرسوم الشهرية',
+            'name_en' => 'Monthly Fee Student',
+            'nid' => '998877665',
+            'email' => 'fee.test@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599887766',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+            'monthly_fee' => 150.00,
+        ]);
+
+        $this->actingAs($admin);
+
+        $response = $this->postJson("/admin/students/{$student->id}/monthly-fee", [
+            'monthly_fee' => 200.00,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'monthly_fee' => 200.00]);
+
+        $this->assertEquals(200.00, $student->fresh()->monthly_fee);
+    }
+
+    public function test_admin_certificates_view_renders_classic_registry_successfully(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Cert Registry Test',
+            'email' => 'admin_cert@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+        $this->actingAs($admin);
+
+        $response = $this->get('/admin/certificates');
+        $response->assertStatus(200);
+        $response->assertSee('سجل اعتماد وتوثيق شهادات الثانوية العامة');
+        $response->assertSee('ديوان الامتحانات العامة');
+        $response->assertSee('دفتر السجل العام وقيد الدرجات والشهادات');
+    }
 }
 
 

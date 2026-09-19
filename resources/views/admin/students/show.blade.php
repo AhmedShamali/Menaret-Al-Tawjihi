@@ -167,6 +167,37 @@
                 </div>
             </div>
 
+            <!-- الرسوم الشهرية المقررة للطالب ونظام الأقساط -->
+            <div style="background: #eff6ff; padding: 14px 16px; border-radius: 8px; border: 1px solid #bfdbfe; grid-column: 1/-1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 0.74rem; font-weight: 700; color: #1d4ed8; display: block; margin-bottom: 4px;">
+                            <i class="fa-solid fa-coins"></i> {{ __('الرسوم الشهرية المقررة للطالب (نظام الأقساط الشهرية)') }}
+                        </span>
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <span style="font-size: 1.15rem; font-weight: 800; color: #1e3a8a;">
+                                <span id="displayMonthlyFee">{{ number_format($student->monthly_fee ?: 150, 2) }}</span> ₪ / {{ __('شهرياً') }}
+                            </span>
+                            <span style="background: white; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; color: #1e40af;">
+                                {{ __('الشهر المستحق حالياً:') }} {{ $student->currentDueMonthName() }} (الشهر {{ $student->currentAcademicMonthIndex() }} من تاريخ الاعتماد)
+                            </span>
+                            <span style="background: {{ $student->isMonthlyFeeDue() ? '#fef2f2' : '#ecfdf5' }}; color: {{ $student->isMonthlyFeeDue() ? '#b91c1c' : '#047857' }}; border: 1px solid {{ $student->isMonthlyFeeDue() ? '#fecaca' : '#a7f3d0' }}; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700;">
+                                {{ $student->isMonthlyFeeDue() ? __('يستحق السداد ⚠️') : __('مسدد بالكامل حتى تاريخه ✅') }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="number" id="inputMonthlyFee" min="0" step="5" value="{{ (float)($student->monthly_fee ?: 150) }}" 
+                               style="width: 90px; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 800; font-family: monospace; font-size: 0.9rem; text-align: center;">
+                        <button type="button" onclick="saveStudentMonthlyFee({{ $student->id }})" id="btnSaveMonthlyFee"
+                                style="background: #1d4ed8; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-check"></i> {{ __('حفظ الرسوم') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </div>
@@ -817,6 +848,44 @@ function previewIdModal(imgUrl, studentName, studentNid) {
 
 function closeIdModal() {
     document.getElementById('idPhotoModalOverlay').style.display = 'none';
+}
+
+function saveStudentMonthlyFee(studentId) {
+    const feeVal = document.getElementById('inputMonthlyFee').value;
+    const btn = document.getElementById('btnSaveMonthlyFee');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري الحفظ...") }}';
+
+    fetch(`/admin/students/${studentId}/monthly-fee`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ monthly_fee: feeVal })
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        if (data.success) {
+            document.getElementById('displayMonthlyFee').textContent = parseFloat(data.monthly_fee).toFixed(2);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: '{{ __("تم التحديث") }}', text: data.message, timer: 2000, showConfirmButton: false });
+            } else {
+                alert(data.message);
+            }
+        } else {
+            alert(data.message || '{{ __("حدث خطأ أثناء حفظ الرسوم") }}');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        alert('{{ __("تعذر الاتصال بالخادم") }}');
+    });
 }
 </script>
 

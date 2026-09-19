@@ -10,11 +10,16 @@ class Student extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'name_ar', 'name_en', 'nid', 'email', 'password', 'plain_password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'status', 'freeze_reason',
+        'name_ar', 'name_en', 'nid', 'email', 'password', 'plain_password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'monthly_fee', 'status', 'approved_at', 'freeze_reason',
         'city', 'school_name', 'guardian_phone',
         'streak_count', 'last_activity_date', 'total_points',
         'custom_discount_percent', 'custom_discount_fixed', 'discount_notes',
         'google_id', 'provider', 'provider_id', 'avatar_url'
+    ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'monthly_fee' => 'decimal:2',
     ];
 
     protected $hidden = [
@@ -187,6 +192,88 @@ class Student extends Authenticatable
     public function monthlySubscriptions()
     {
         return $this->hasMany(\App\Models\StudentMonthlySubscription::class)->orderBy('month');
+    }
+
+    /**
+     * حساب رقم الشهر الدراسي المنقضي للطالب بناءً على تاريخ اعتماده بالمنظومة
+     * يبدأ العد (الشهر 1) من تاريخ الاعتماد approved_at، وكل 30 يوماً يدخل الطالب في شهر دراسي جديد.
+     */
+    public function currentAcademicMonthIndex(): int
+    {
+        $startDate = $this->approved_at ?? $this->created_at;
+        if (!$startDate) {
+            return 1;
+        }
+
+        $days = (int) $startDate->diffInDays(now());
+        $monthIndex = (int) floor($days / 30) + 1;
+
+        return min(12, max(1, $monthIndex));
+    }
+
+    /**
+     * عدد الشهور المسددة أو المعفاة فعلياً للطالب في العام الأكاديمي
+     */
+    public function paidMonthsCount(?string $academicYear = null): int
+    {
+        $year = $academicYear ?? '2026-2027';
+
+        return $this->monthlySubscriptions()
+            ->where('academic_year', $year)
+            ->whereIn('status', ['paid', 'waived'])
+            ->count();
+    }
+
+    /**
+     * هل يستحق على الطالب سداد قسط شهر جديد غير مسدد؟
+     */
+    public function isMonthlyFeeDue(?string $academicYear = null): bool
+    {
+        // إذا كان الطالب معفياً بنسبة 100%، لا يستحق عليه سداد
+        if ($this->hasDiscount() && $this->custom_discount_percent >= 100) {
+            return false;
+        }
+
+        $currentMonth = $this->currentAcademicMonthIndex();
+        $paidMonths = $this->paidMonthsCount($academicYear);
+
+        return $currentMonth > $paidMonths;
+    }
+
+    /**
+     * رقم الشهر المستحق سداده حالياً
+     */
+    public function currentDueMonth(?string $academicYear = null): int
+    {
+        $paid = $this->paidMonthsCount($academicYear);
+        return min(12, max(1, $paid + 1));
+    }
+
+    /**
+     * اسم الشهر المستحق سداده حالياً (مثلاً: "الشهر الثاني")
+     */
+    public function currentDueMonthName(?string $academicYear = null): string
+    {
+        $monthNum = $this->currentDueMonth($academicYear);
+        return \App\Models\StudentMonthlySubscription::monthNamesAr()[$monthNum] ?? "الشهر {$monthNum}";
+    }
+
+    /**
+     * قيمة الرسوم الشهرية الصافية المستحقة بعد تطبيق الخصم
+     */
+    public function monthlyAmountDue(): float
+    {
+        $baseFee = (float) ($this->monthly_fee ?: 150.00);
+
+        if ($this->hasDiscount()) {
+            if ($this->custom_discount_percent > 0) {
+                $baseFee = $baseFee * (1 - ($this->custom_discount_percent / 100));
+            } elseif ($this->custom_discount_fixed > 0) {
+                $baseFee = max(0, $baseFee - $this->custom_discount_fixed);
+            }
+        }
+
+        return max(0, round($baseFee, 2));
     }
 }
 

@@ -29,7 +29,7 @@ class StudentMonthlySubscription extends Model
     public static function monthNamesAr(): array
     {
         return [
-            1  => 'الشهر الأول (بداية التسجيل)',
+            1  => 'الشهر الأول',
             2  => 'الشهر الثاني',
             3  => 'الشهر الثالث',
             4  => 'الشهر الرابع',
@@ -48,7 +48,7 @@ class StudentMonthlySubscription extends Model
     {
         if (app()->getLocale() === 'en') {
             return [
-                1  => 'Month 1 (Enrollment Start)',
+                1  => 'Month 1',
                 2  => 'Month 2',
                 3  => 'Month 3',
                 4  => 'Month 4',
@@ -81,9 +81,9 @@ class StudentMonthlySubscription extends Model
             ->get()
             ->keyBy('month');
 
-        $baseAmount = (float)($student->final_amount ?? 150.00);
+        $baseAmount = $student->monthlyAmountDue();
         if ($baseAmount <= 0) {
-            $baseAmount = 150.00;
+            $baseAmount = (float)($student->monthly_fee ?: 150.00);
         }
 
         $isFullWaived = $student->hasDiscount() && $student->custom_discount_percent >= 100;

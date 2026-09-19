@@ -110,12 +110,19 @@ class AdminSubscriptionController extends Controller
         $student = Student::find($request->student_id);
         $monthName = StudentMonthlySubscription::monthNamesAr()[$request->month] ?? "شهر {$request->month}";
 
-        if ($request->status === 'paid') {
+        if (in_array($request->status, ['paid', 'waived']) && $student) {
+            // إذا كان الحساب مجمداً بسبب رسوم شهر، يتم فك التجميد تلقائياً إذا لم يعد مستحقاً
+            if ($student->status === 'suspended' && !$student->isMonthlyFeeDue($request->academic_year)) {
+                $student->status = 'active';
+                $student->freeze_reason = null;
+                $student->save();
+            }
+
             try {
                 NotificationService::notifyStudent(
                     $student->id,
                     "اعتماد اشتراك {$monthName} 💳",
-                    "تم اعتماد سداد اشتراكك لشهر ({$monthName}) بنجاح! نرجو لك دوام التوفيق والتميز.",
+                    "تم اعتماد سداد اشتراكك لـ ({$monthName}) بنجاح! تم تفعيل حسابك ومتابعة دراستك بالكامل.",
                     'payment',
                     route('student.subscriptions.index'),
                     'fa-circle-check'

@@ -137,6 +137,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/sync-subjects', [StudentController::class, 'syncSubjects'])->name('students.syncSubjects');
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
     Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
+    Route::post('/students/{id}/monthly-fee', [StudentController::class, 'updateMonthlyFee'])->name('students.monthlyFee');
 
     // مسارات الحذف الجماعي والتصفير الشامل وتصدير الطلاب
     Route::get('/students/export', [AdminManagerController::class, 'exportStudents'])->name('students.export');

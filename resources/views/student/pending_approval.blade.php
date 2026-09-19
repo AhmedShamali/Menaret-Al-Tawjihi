@@ -118,35 +118,95 @@
             </div>
         </div>
 
-        <!-- بطاقة تفاصيل الرسوم والخصم المعتمد -->
+        <!-- بطاقة تفاصيل الرسوم الشهرية والمنح المعتمدة -->
         <div class="fees-summary-card">
             <div class="fees-header">
                 <div class="fees-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 <div>
-                    <h3>{{ __('الرسوم الدراسية والمنح المعتمدة') }}</h3>
-                    <p>{{ __('تفاصيل الرسوم المقررة للمساقات الأكاديمية المسجلة') }}</p>
+                    <h3>{{ __('الرسوم الدراسية الشهرية') }} - <span style="color: var(--ed-primary);">{{ $dueMonthName ?? __('الشهر الأول') }}</span></h3>
+                    <p>{{ __('نظام الاشتراك الشهري المعتمد من إدارة المنصة للعام الأكاديمي 2026 / 2027 م') }}</p>
                 </div>
             </div>
             <div class="fees-grid">
                 <div class="fee-box">
-                    <span class="fee-title">{{ __('إجمالي الرسوم') }}</span>
-                    <span class="fee-value">{{ number_format($totalAmount ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
+                    <span class="fee-title">{{ __('القسط الشهري المقرر') }}</span>
+                    <span class="fee-value">{{ number_format($monthlyFee ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
                 <div class="fee-box discount">
                     <span class="fee-title">{{ __('الخصم / المنحة') }}</span>
                     <span class="fee-value text-emerald">- {{ number_format($discountAmount ?? 0, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
                 <div class="fee-box net-amount">
-                    <span class="fee-title">{{ __('المبلغ المطلوب سداده') }}</span>
+                    <span class="fee-title">{{ __('المطلوب لسداد') }} ({{ $dueMonthName ?? __('الشهر الحالي') }})</span>
                     <span class="fee-value text-primary-net">{{ number_format($finalAmount ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
             </div>
             @if(isset($discountAmount) && $discountAmount > 0)
                 <div class="fee-note-alert">
                     <i class="fa-solid fa-gift"></i>
-                    <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على الرسوم.', ['amount' => number_format($discountAmount, 0)]) }}</span>
+                    <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على رسوم الشهر.', ['amount' => number_format($discountAmount, 0)]) }}</span>
                 </div>
             @endif
+
+            <!-- جدول خطة الشهور الـ 12 ونظام التقسيط الشهري -->
+            <div class="monthly-schedule-block" style="margin-top: 18px; border-top: 1px dashed #cbd5e1; padding-top: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                    <strong style="font-size: 0.85rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-calendar-check" style="color: #1d4ed8;"></i>
+                        {{ __('خطة سداد الشهور الدراسية (12 شهراً):') }}
+                    </strong>
+                    <span style="font-size: 0.75rem; color: #64748b;">
+                        {{ __('يبدأ احتساب كل شهر تلقائياً بمعدل 30 يوماً من تاريخ الاعتماد') }}
+                    </span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px;">
+                    @php
+                        $monthLabels = \App\Models\StudentMonthlySubscription::monthNamesAr();
+                        $subsByMonth = isset($subscriptions) ? $subscriptions->keyBy('month') : collect();
+                        $currMonthIdx = $student->currentAcademicMonthIndex();
+                    @endphp
+                    @for($m = 1; $m <= 12; $m++)
+                        @php
+                            $subItem = $subsByMonth->get($m);
+                            $stLabel = __('مجدول');
+                            $bgCol = '#f8fafc';
+                            $borderCol = '#e2e8f0';
+                            $textCol = '#64748b';
+
+                            if ($subItem && in_array($subItem->status, ['paid', 'waived'])) {
+                                $stLabel = __('مسدد ومعتمد ✅');
+                                $bgCol = '#ecfdf5';
+                                $borderCol = '#a7f3d0';
+                                $textCol = '#047857';
+                            } elseif ($subItem && $subItem->status === 'pending') {
+                                $stLabel = __('قيد المراجعة ⏳');
+                                $bgCol = '#fffbeb';
+                                $borderCol = '#fde68a';
+                                $textCol = '#b45309';
+                            } elseif ($m === ($dueMonthIndex ?? 1)) {
+                                $stLabel = __('مستحق السداد ⚠️');
+                                $bgCol = '#fef2f2';
+                                $borderCol = '#fecaca';
+                                $textCol = '#b91c1c';
+                            } elseif ($m < ($dueMonthIndex ?? 1)) {
+                                $stLabel = __('مسدد ✅');
+                                $bgCol = '#ecfdf5';
+                                $borderCol = '#a7f3d0';
+                                $textCol = '#047857';
+                            }
+                        @endphp
+                        <div style="background: {{ $bgCol }}; border: 1px solid {{ $borderCol }}; border-radius: 6px; padding: 6px 8px; text-align: center;">
+                            <div style="font-size: 0.78rem; font-weight: 700; color: #1e293b; margin-bottom: 2px;">
+                                {{ $monthLabels[$m] ?? "الشهر $m" }}
+                            </div>
+                            <div style="font-size: 0.68rem; font-weight: 700; color: {{ $textCol }};">
+                                {{ $stLabel }}
+                            </div>
+                        </div>
+                    @endfor
+                </div>
+            </div>
         </div>
 
         <!-- بطاقة وسائل الدفع الفلسطينية المعتمدة -->

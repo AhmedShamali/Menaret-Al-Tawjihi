@@ -273,7 +273,7 @@ class StudentController extends Controller
             return redirect()->route('login');
         }
 
-        if ($student->status === 'active') {
+        if ($student->status === 'active' && !$student->isMonthlyFeeDue()) {
             return redirect()->route('student.dashboard');
         }
 
@@ -281,21 +281,27 @@ class StudentController extends Controller
             ->where('student_id', $student->id)
             ->get();
 
-        // حساب إجمالي الرسوم الأكاديمية المطلوبة والخصم الممنوح
-        $totalAmount = 0;
-        foreach ($pendingEnrollments as $enr) {
-            $totalAmount += (float)($enr->subject->price ?? 120);
-        }
-        if ($totalAmount === 0) {
-            $totalAmount = 150; // باقة التوجيهي الأساسية الافتراضية
-        }
+        // مزامنة وتحديث سجل الاشتراكات الشهرية للعام الأكاديمي
+        try {
+            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student);
+        } catch (\Throwable $e) {}
 
-        $discountAmount = $student->hasDiscount() ? $student->calculateDiscount($totalAmount) : 0;
-        $finalAmount = max(0, $totalAmount - $discountAmount);
+        $subscriptions = $student->monthlySubscriptions()->get();
+        $dueMonthIndex = $student->currentDueMonth();
+        $dueMonthName = $student->currentDueMonthName();
+        $monthlyFee = (float) ($student->monthly_fee ?: 150.00);
+        $discountAmount = $student->hasDiscount() ? ($student->calculateDiscount($monthlyFee)) : 0;
+        $finalAmount = $student->monthlyAmountDue();
+        $totalAmount = $monthlyFee;
+        $isFeeDue = $student->isMonthlyFeeDue();
 
         $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
 
-        return view('student.pending_approval', compact('student', 'pendingEnrollments', 'latestPayment', 'totalAmount', 'discountAmount', 'finalAmount'));
+        return view('student.pending_approval', compact(
+            'student', 'pendingEnrollments', 'latestPayment', 
+            'totalAmount', 'discountAmount', 'finalAmount',
+            'subscriptions', 'dueMonthIndex', 'dueMonthName', 'monthlyFee', 'isFeeDue'
+        ));
     }
 
     /**
@@ -323,7 +329,8 @@ class StudentController extends Controller
         }
 
         $txNo = $request->input('reference_no') ?: ($request->input('transaction_number') ?: 'TXN-' . time());
-        $amount = (float)($request->input('amount') ?: 150);
+        $dueAmount = $student->monthlyAmountDue();
+        $amount = (float)($request->input('amount') ?: ($dueAmount > 0 ? $dueAmount : 150));
 
         // تحويل اسم وسيلة الدفع إلى رمز البوابة المتوافق مع جدول payments
         $rawMethod = strtolower($request->payment_method);
@@ -340,10 +347,13 @@ class StudentController extends Controller
             $gateway = 'voucher';
         }
 
+        $dueMonthName = $student->currentDueMonthName();
         $paymentDetails = json_encode([
             'payment_method_label' => $request->payment_method,
             'reference_no'         => $request->input('reference_no'),
-            'notes'                => $request->input('notes', 'إشعار سداد اشتراك من منصة التوجيهي'),
+            'month_target'         => $dueMonthName,
+            'month_index'          => $student->currentDueMonth(),
+            'notes'                => $request->input('notes', "إشعار سداد رسوم {$dueMonthName}"),
             'submitted_at'         => now()->toDateTimeString(),
         ], JSON_UNESCAPED_UNICODE);
 
@@ -358,12 +368,21 @@ class StudentController extends Controller
             'receipt_path'       => $receiptPath,
         ]);
 
+        // تحديث حالة الشهر المستحق في جدول الاشتراكات إلى pending
+        try {
+            $dueMonth = $student->currentDueMonth();
+            \App\Models\StudentMonthlySubscription::updateOrCreate(
+                ['student_id' => $student->id, 'academic_year' => '2026-2027', 'month' => $dueMonth],
+                ['status' => 'pending', 'amount' => $amount, 'notes' => "إشعار سداد رقم {$txNo}"]
+            );
+        } catch (\Throwable $e) {}
+
         // إشعار إدارة المنصة فوراً لوصول إشعار سداد من الطالب
         try {
             $gwLabel = $payment->gateway_name_ar ?? $request->payment_method;
             \App\Services\NotificationService::notifyAdmin(
                 'إشعار سداد رسوم جديد 💳',
-                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد عبر ({$gwLabel}) بمبلغ ({$payment->amount} ₪).",
+                "قام الطالب ({$student->name_ar}) برفع إشعار دفع جديد لرسوم ({$dueMonthName}) عبر ({$gwLabel}) بمبلغ ({$payment->amount} ₪).",
                 'payment',
                 route('admin.payments.index'),
                 'fa-receipt'
@@ -373,11 +392,11 @@ class StudentController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'تم استلام إشعار السداد والإيصال بنجاح! سيقوم المشرف العام بمطابقته واعتماد حسابك فورياً. 🎉'
+                'message' => "تم استلام إشعار سداد ({$dueMonthName}) بنجاح! سيقوم المشرف العام بمطابقته واعتماد حسابك فورياً. 🎉"
             ]);
         }
 
-        return back()->with('payment_success', 'تم استلام إشعار السداد والإيصال بنجاح! سيقوم المشرف العام بمراجعته واعتماد حسابك واشتراكك فورياً.');
+        return back()->with('payment_success', "تم استلام إشعار سداد ({$dueMonthName}) بنجاح! سيقوم المشرف العام بمراجعته واعتماد حسابك واشتراكك فورياً.");
     }
 
     /**
@@ -389,10 +408,17 @@ class StudentController extends Controller
         $student->status = 'active';
 
         try {
+            if (!$student->approved_at) {
+                $student->approved_at = now();
+            }
             $student->freeze_reason = null;
             $student->save();
         } catch (\Throwable $e) {
-            \DB::table('students')->where('id', $student->id)->update(['status' => 'active']);
+            \DB::table('students')->where('id', $student->id)->update([
+                'status' => 'active',
+                'approved_at' => now(),
+                'freeze_reason' => null
+            ]);
         }
 
         // تفعيل كافة المواد المقيد بها الطالب أو تسجيل مواد مرحلته تلقائياً
@@ -421,7 +447,7 @@ class StudentController extends Controller
             \Log::error('Approve student enrollment error: ' . $e->getMessage());
         }
 
-        // تحديث أي مدفوعات معلقة بأمان دون استدعاء أعمدة غير موجودة
+        // تحديث أي مدفوعات معلقة بأمان
         try {
             \App\Models\Payment::where('student_id', $student->id)
                 ->where('status', 'pending')
@@ -432,9 +458,16 @@ class StudentController extends Controller
             \Log::error('Approve student payment update error: ' . $e->getMessage());
         }
 
-        // مزامنة مصفوفة الاشتراكات الشهرية للعام الأكاديمي
+        // تأكيد سداد الشهر الأول للطالب وتثبيته في سجل الاشتراكات
         try {
-            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student);
+            $month1 = \App\Models\StudentMonthlySubscription::firstOrCreate(
+                ['student_id' => $student->id, 'academic_year' => '2026-2027', 'month' => 1],
+                ['amount' => $student->monthlyAmountDue(), 'status' => 'paid', 'paid_at' => now()]
+            );
+            $month1->update(['status' => 'paid', 'paid_at' => now()]);
+
+            // مزامنة باقي الشهور
+            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student, '2026-2027');
         } catch (\Throwable $e) {}
 
         // إشعار الطالب بالاعتماد والتفعيل
@@ -449,10 +482,47 @@ class StudentController extends Controller
             );
         } catch (\Throwable $e) {}
 
-        return response()->json([
-            'success' => true,
-            'message' => 'تم اعتماد وتفعيل حساب الطالب واشتراكه بنجاح! 🎉'
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "تم اعتماد حساب الطالب ({$student->name_ar}) وتفعيل اشتراكه في المنصة بنجاح!"
+            ]);
+        }
+
+        return back()->with('success', "تم اعتماد حساب الطالب ({$student->name_ar}) وتفعيل اشتراكه في المنصة بنجاح!");
+    }
+
+    /**
+     * تحديد وتعديل الرسوم الشهرية المقررة للطالب من قبل المدير
+     */
+    public function updateMonthlyFee(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $request->validate([
+            'monthly_fee' => 'required|numeric|min:0',
         ]);
+
+        $student->monthly_fee = (float) $request->monthly_fee;
+        $student->save();
+
+        // تحديث رسوم الشهور غير المسددة للعام الحالي
+        try {
+            \App\Models\StudentMonthlySubscription::where('student_id', $student->id)
+                ->where('academic_year', '2026-2027')
+                ->where('status', 'unpaid')
+                ->update(['amount' => $student->monthlyAmountDue()]);
+        } catch (\Throwable $e) {}
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success'            => true,
+                'message'            => 'تم تحديث الرسوم الشهرية بنجاح (' . number_format($student->monthly_fee, 2) . ' ₪)',
+                'monthly_fee'        => $student->monthly_fee,
+                'monthly_amount_due' => $student->monthlyAmountDue(),
+            ]);
+        }
+
+        return back()->with('success', 'تم تحديث الرسوم الشهرية للطالب بنجاح.');
     }
 
     /**
