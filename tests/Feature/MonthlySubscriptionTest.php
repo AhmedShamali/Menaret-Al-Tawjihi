@@ -113,4 +113,97 @@ class MonthlySubscriptionTest extends TestCase
             ->assertStatus(200)
             ->assertSee('أحمد علي');
     }
+
+    public function test_admin_can_record_partial_payment_and_view_accurate_remaining_and_aggregates(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Test',
+            'email' => 'admin2@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'محمود كمال',
+            'name_en' => 'Mahmoud Kamal',
+            'nid' => '400000002',
+            'email' => 'mahmoud@tawjihi.ps',
+            'password' => bcrypt('secret123'),
+            'phone' => '0599222333',
+            'age' => 18,
+            'gender' => 'male',
+            'status' => 'active',
+            'stage_id' => $stage->id,
+            'monthly_fee' => 150.00,
+        ]);
+
+        // 1. Initial load
+        $this->actingAs($admin)
+            ->get(route('admin.subscriptions.monthly'))
+            ->assertStatus(200);
+
+        // 2. Admin records partial payment: student owes 150 ₪ but pays 100 ₪, remaining must be 50 ₪
+        $partialResponse = $this->actingAs($admin)
+            ->postJson(route('admin.subscriptions.monthly.update'), [
+                'student_id'    => $student->id,
+                'month'         => 2,
+                'academic_year' => '2026-2027',
+                'amount'        => 150.00,
+                'paid_amount'   => 100.00,
+                'notes'         => 'دفع 100 ومتبقي عليه 50 لنهاية الشهر',
+            ]);
+
+        $partialResponse->assertStatus(200);
+        $partialResponse->assertJson([
+            'success'          => true,
+            'status'           => 'partial',
+            'amount'           => 150.00,
+            'paid_amount'      => 100.00,
+            'remaining_amount' => 50.00,
+        ]);
+
+        $subMonth2 = StudentMonthlySubscription::where('student_id', $student->id)
+            ->where('month', 2)
+            ->first();
+
+        $this->assertNotNull($subMonth2);
+        $this->assertEquals('partial', $subMonth2->status);
+        $this->assertEquals(100.00, (float)$subMonth2->paid_amount);
+        $this->assertEquals(50.00, (float)$subMonth2->remaining_amount);
+
+        // 3. Admin loads monthly view and verifies the counters
+        $indexResponse = $this->actingAs($admin)
+            ->get(route('admin.subscriptions.monthly'));
+
+        $indexResponse->assertStatus(200);
+        $indexResponse->assertSee('اللي لازم يصلني');
+        $indexResponse->assertSee('اللي وصلني');
+        $indexResponse->assertSee('المتبقي بذمة الطلاب');
+        $indexResponse->assertSee('دفع جزئي');
+
+        // 4. Admin completes remaining payment (pays 150 total)
+        $fullResponse = $this->actingAs($admin)
+            ->postJson(route('admin.subscriptions.monthly.update'), [
+                'student_id'    => $student->id,
+                'month'         => 2,
+                'academic_year' => '2026-2027',
+                'amount'        => 150.00,
+                'paid_amount'   => 150.00,
+                'notes'         => 'تم سداد المتبقي بالكامل',
+            ]);
+
+        $fullResponse->assertStatus(200);
+        $fullResponse->assertJson([
+            'success'          => true,
+            'status'           => 'paid',
+            'amount'           => 150.00,
+            'paid_amount'      => 150.00,
+            'remaining_amount' => 0.00,
+        ]);
+
+        $subMonth2->refresh();
+        $this->assertEquals('paid', $subMonth2->status);
+        $this->assertEquals(0.00, (float)$subMonth2->remaining_amount);
+    }
 }

@@ -14,6 +14,7 @@ class StudentMonthlySubscription extends Model
         'academic_year',
         'month',
         'amount',
+        'paid_amount',
         'status',
         'is_manual',
         'payment_id',
@@ -22,10 +23,11 @@ class StudentMonthlySubscription extends Model
     ];
 
     protected $casts = [
-        'amount'    => 'decimal:2',
-        'month'     => 'integer',
-        'paid_at'   => 'datetime',
-        'is_manual' => 'boolean',
+        'amount'      => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'month'       => 'integer',
+        'paid_at'     => 'datetime',
+        'is_manual'   => 'boolean',
     ];
 
     public static function monthNamesAr(): array
@@ -127,6 +129,7 @@ class StudentMonthlySubscription extends Model
             if ($isFullWaived) {
                 $status = 'waived';
                 $amount = 0.00;
+                $paidAmount = 0.00;
                 $notes = 'معفى رسمياً - منحة دراسية كاملة 100%';
                 $paymentId = null;
                 $paidAt = null;
@@ -134,6 +137,7 @@ class StudentMonthlySubscription extends Model
                 // إذا كان الشهر محفوظاً كمسدد أو معفى، نحافظ على حالته تماماً
                 $status = $sub->status;
                 $amount = $sub->amount ?: $baseAmount;
+                $paidAmount = ($sub->status === 'paid') ? ((float)($sub->paid_amount ?: $amount)) : 0.00;
                 $paymentId = $sub->payment_id;
                 $paidAt = $sub->paid_at ?? now();
                 $notes = $sub->notes ?: 'معتمد ومسدد بقرار الإدارة';
@@ -141,6 +145,7 @@ class StudentMonthlySubscription extends Model
                 // تهيئة أولية فقط إذا لم يكن السجل موجوداً في قاعدة البيانات
                 $status = 'paid';
                 $amount = $baseAmount;
+                $paidAmount = $baseAmount;
                 $pIndex = $m - 1;
                 $payment = $completedPayments->get($pIndex);
                 if ($payment) {
@@ -156,6 +161,7 @@ class StudentMonthlySubscription extends Model
                 // تهيئة أولية لإشعار قيد المراجعة
                 $status = 'pending';
                 $amount = $baseAmount;
+                $paidAmount = 0.00;
                 $pendIndex = ($m - $paidMonthsCount) - 1;
                 $pendPayment = $pendingPayments->get($pendIndex);
                 $paymentId = $pendPayment ? $pendPayment->id : null;
@@ -165,6 +171,7 @@ class StudentMonthlySubscription extends Model
                 // الحفاظ على حالة السجل الحالية إذا كان موجوداً، أو جعله غير مسدد إذا كان جديداً
                 $status = $sub ? $sub->status : 'unpaid';
                 $amount = $sub ? $sub->amount : $baseAmount;
+                $paidAmount = $sub ? (float)($sub->paid_amount ?? 0.00) : 0.00;
                 $paymentId = $sub ? $sub->payment_id : null;
                 $paidAt = $sub ? $sub->paid_at : null;
                 $notes = $sub ? $sub->notes : null;
@@ -176,6 +183,7 @@ class StudentMonthlySubscription extends Model
                     'academic_year' => $academicYear,
                     'month'         => $m,
                     'amount'        => $amount,
+                    'paid_amount'   => $paidAmount,
                     'status'        => $status,
                     'is_manual'     => false,
                     'payment_id'    => $paymentId,
@@ -186,9 +194,10 @@ class StudentMonthlySubscription extends Model
                 // إذا كان السجل موجوداً وغير يدوي، نحدّثه فقط في حالة المنحة الكاملة 100%
                 if ($isFullWaived && $sub->status !== 'waived') {
                     $sub->update([
-                        'status' => 'waived',
-                        'amount' => 0.00,
-                        'notes'  => 'معفى رسمياً - منحة دراسية كاملة 100%',
+                        'status'      => 'waived',
+                        'amount'      => 0.00,
+                        'paid_amount' => 0.00,
+                        'notes'       => 'معفى رسمياً - منحة دراسية كاملة 100%',
                     ]);
                 }
             }
@@ -200,13 +209,27 @@ class StudentMonthlySubscription extends Model
             ->get();
     }
 
+    public function getRemainingAmountAttribute(): float
+    {
+        if ($this->status === 'waived') {
+            return 0.00;
+        }
+        if ($this->status === 'paid' && ((float)($this->paid_amount ?? 0) <= 0)) {
+            return 0.00;
+        }
+        $req = (float) $this->amount;
+        $paid = (float) ($this->paid_amount ?? 0);
+        return max(0.00, round($req - $paid, 2));
+    }
+
     public function getStatusBadgeAttribute(): array
     {
         return match ($this->status) {
-            'paid'    => ['label' => 'مسدد وخالص ✅', 'class' => 'badge-paid', 'color' => '#059669', 'bg' => '#ecfdf5'],
-            'pending' => ['label' => 'قيد المراجعة ⏳', 'class' => 'badge-pending', 'color' => '#d97706', 'bg' => '#fffbeb'],
-            'waived'  => ['label' => 'إعفاء / منحة 🏷️', 'class' => 'badge-waived', 'color' => '#4f46e5', 'bg' => '#eef2ff'],
-            default   => ['label' => 'غير مسدد ❌', 'class' => 'badge-unpaid', 'color' => '#dc2626', 'bg' => '#fef2f2'],
+            'paid'    => ['label' => 'مسدد وخالص ✅', 'class' => 'badge-paid', 'color' => '#059669', 'bg' => '#ecfdf5', 'icon' => 'fa-check'],
+            'partial' => ['label' => 'دفع جزئي (متبقي عليه) ⚠️', 'class' => 'badge-partial', 'color' => '#b45309', 'bg' => '#fef3c7', 'icon' => 'fa-circle-half-stroke'],
+            'pending' => ['label' => 'قيد المراجعة ⏳', 'class' => 'badge-pending', 'color' => '#d97706', 'bg' => '#fffbeb', 'icon' => 'fa-hourglass-half'],
+            'waived'  => ['label' => 'إعفاء / منحة 🏷️', 'class' => 'badge-waived', 'color' => '#4f46e5', 'bg' => '#eef2ff', 'icon' => 'fa-tag'],
+            default   => ['label' => 'غير مسدد ❌', 'class' => 'badge-unpaid', 'color' => '#dc2626', 'bg' => '#fef2f2', 'icon' => 'fa-xmark'],
         };
     }
 

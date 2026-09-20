@@ -74,19 +74,30 @@ class AdminSubscriptionController extends Controller
             }
         }
 
-        // إحصائيات عامة للمدير
+        // إحصائيات مالية عامة ومؤشرات دقيقة للمدير (اللي لازم يصلني، اللي وصلني، المتبقي)
         $allSubs = StudentMonthlySubscription::where('academic_year', $year)->get();
-        $totalCollected = (float)$allSubs->where('status', 'paid')->sum('amount');
-        $totalUnpaid = (float)$allSubs->where('status', 'unpaid')->sum('amount');
+        $totalExpected = (float)$allSubs->where('status', '!=', 'waived')->sum('amount');
+        $totalCollected = (float)$allSubs->sum(function ($s) {
+            if ($s->status === 'waived') {
+                return 0.00;
+            }
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) {
+                return (float) $s->amount;
+            }
+            return (float) ($s->paid_amount ?? 0);
+        });
+        $totalRemaining = max(0.00, round($totalExpected - $totalCollected, 2));
         $totalPending = (float)$allSubs->where('status', 'pending')->sum('amount');
-        $totalExpected = (float)$allSubs->sum('amount');
+        $totalUnpaid = (float)$allSubs->where('status', 'unpaid')->sum('amount');
 
         $stats = [
             'total_expected'  => $totalExpected,
             'total_collected' => $totalCollected,
+            'total_remaining' => $totalRemaining,
             'total_pending'   => $totalPending,
             'total_unpaid'    => $totalUnpaid,
             'paid_count'      => $allSubs->where('status', 'paid')->count(),
+            'partial_count'   => $allSubs->where('status', 'partial')->count(),
             'pending_count'   => $allSubs->where('status', 'pending')->count(),
             'unpaid_count'    => $allSubs->where('status', 'unpaid')->count(),
             'waived_count'    => $allSubs->where('status', 'waived')->count(),
@@ -99,7 +110,7 @@ class AdminSubscriptionController extends Controller
     }
 
     /**
-     * تحديث حالة اشتراك شهر محدد لطالب (AJAX) مع الحفظ اليدوي التام وتحديث الإحصائيات
+     * تحديث حالة ومبالغ اشتراك شهر محدد لطالب (AJAX) مع دعم الدفع الجزئي والمتبقي
      */
     public function updateStatus(Request $request)
     {
@@ -107,30 +118,71 @@ class AdminSubscriptionController extends Controller
             'student_id'    => 'required|exists:students,id',
             'month'         => 'required|integer|between:1,12',
             'academic_year' => 'required|string',
-            'status'        => 'required|in:paid,pending,unpaid,waived',
+            'status'        => 'nullable|string|in:paid,partial,pending,unpaid,waived',
             'amount'        => 'nullable|numeric|min:0',
+            'paid_amount'   => 'nullable|numeric|min:0',
             'notes'         => 'nullable|string',
         ]);
 
+        $student = Student::findOrFail($request->student_id);
+        $amount = $request->filled('amount') ? (float)$request->amount : (float)$student->monthlyAmountDue();
+        $statusInput = $request->input('status');
+
+        if ($statusInput === 'waived') {
+            $amount = 0.00;
+            $paidAmount = 0.00;
+            $status = 'waived';
+        } else {
+            // إذا تم تمرير المبلغ المدفوع فعلياً
+            if ($request->filled('paid_amount')) {
+                $paidAmount = (float)$request->paid_amount;
+                if ($paidAmount >= $amount && $amount > 0) {
+                    $status = 'paid';
+                } elseif ($paidAmount > 0 && $paidAmount < $amount) {
+                    $status = 'partial';
+                } elseif ($paidAmount <= 0) {
+                    $status = ($statusInput === 'pending') ? 'pending' : 'unpaid';
+                    $paidAmount = 0.00;
+                } else {
+                    $status = $statusInput ?: 'unpaid';
+                }
+            } else {
+                // إذا تم اختيار الحالة بدون إدخال مدفوع محدد
+                if ($statusInput === 'paid') {
+                    $paidAmount = $amount;
+                    $status = 'paid';
+                } elseif ($statusInput === 'partial') {
+                    $paidAmount = round($amount / 2, 2);
+                    $status = 'partial';
+                } elseif ($statusInput === 'pending') {
+                    $paidAmount = 0.00;
+                    $status = 'pending';
+                } else {
+                    $paidAmount = 0.00;
+                    $status = 'unpaid';
+                }
+            }
+        }
+
         $sub = StudentMonthlySubscription::updateOrCreate(
             [
-                'student_id'    => $request->student_id,
+                'student_id'    => $student->id,
                 'academic_year' => $request->academic_year,
                 'month'         => $request->month,
             ],
             [
-                'status'    => $request->status,
-                'amount'    => $request->amount ?? 150.00,
-                'notes'     => $request->notes,
-                'paid_at'   => ($request->status === 'paid') ? now() : null,
-                'is_manual' => true,
+                'status'      => $status,
+                'amount'      => $amount,
+                'paid_amount' => $paidAmount,
+                'notes'       => $request->notes,
+                'paid_at'     => in_array($status, ['paid', 'partial']) ? now() : null,
+                'is_manual'   => true,
             ]
         );
 
-        $student = Student::find($request->student_id);
         $monthName = StudentMonthlySubscription::monthNamesAr()[$request->month] ?? "شهر {$request->month}";
 
-        if (in_array($request->status, ['paid', 'waived']) && $student) {
+        if (in_array($status, ['paid', 'waived']) && $student) {
             // إذا كان الحساب مجمداً بسبب رسوم شهر، يتم فك التجميد تلقائياً إذا لم يعد مستحقاً
             if ($student->status === 'suspended' && !$student->isMonthlyFeeDue($request->academic_year)) {
                 $student->status = 'active';
@@ -150,40 +202,60 @@ class AdminSubscriptionController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        // حساب إحصائيات الطالب المحدثة
-        $studentSubs = StudentMonthlySubscription::where('student_id', $request->student_id)
+        // حساب إحصائيات الطالب المالية المحدثة
+        $studentSubs = StudentMonthlySubscription::where('student_id', $student->id)
             ->where('academic_year', $request->academic_year)
             ->get();
+
+        $studentDue = (float)$studentSubs->where('status', '!=', 'waived')->sum('amount');
+        $studentPaid = (float)$studentSubs->sum(function ($s) {
+            return ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) ? (float)$s->amount : (float)($s->paid_amount ?? 0);
+        });
+        $studentRemaining = max(0.00, round($studentDue - $studentPaid, 2));
         $studentPaidCount = $studentSubs->whereIn('status', ['paid', 'waived'])->count();
         $studentPercent = round(($studentPaidCount / 12) * 100);
 
         // إحصائيات عامة للمنصة بعد التحديث المباشر
         $allSubs = StudentMonthlySubscription::where('academic_year', $request->academic_year)->get();
-        $totalCollected = (float)$allSubs->where('status', 'paid')->sum('amount');
-        $totalUnpaid = (float)$allSubs->where('status', 'unpaid')->sum('amount');
-        $totalPending = (float)$allSubs->where('status', 'pending')->sum('amount');
-        $totalExpected = (float)$allSubs->sum('amount');
+        $allExpected = (float)$allSubs->where('status', '!=', 'waived')->sum('amount');
+        $allCollected = (float)$allSubs->sum(function ($s) {
+            if ($s->status === 'waived') return 0.00;
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
+            return (float)($s->paid_amount ?? 0);
+        });
+        $allRemaining = max(0.00, round($allExpected - $allCollected, 2));
 
         $stats = [
-            'total_collected' => number_format($totalCollected, 2) . ' ₪',
-            'total_unpaid'    => number_format($totalUnpaid, 2) . ' ₪',
-            'total_pending'   => number_format($totalPending, 2) . ' ₪',
+            'total_expected'  => number_format($allExpected, 2) . ' ₪',
+            'total_collected' => number_format($allCollected, 2) . ' ₪',
+            'total_remaining' => number_format($allRemaining, 2) . ' ₪',
+            'total_unpaid'    => number_format($allSubs->where('status', 'unpaid')->sum('amount'), 2) . ' ₪',
+            'total_pending'   => number_format($allSubs->where('status', 'pending')->sum('amount'), 2) . ' ₪',
             'paid_count'      => $allSubs->where('status', 'paid')->count(),
+            'partial_count'   => $allSubs->where('status', 'partial')->count(),
             'unpaid_count'    => $allSubs->where('status', 'unpaid')->count(),
             'pending_count'   => $allSubs->where('status', 'pending')->count(),
-            'collection_rate' => ($totalExpected > 0 ? round(($totalCollected / $totalExpected) * 100, 1) : 0) . '%',
+            'waived_count'    => $allSubs->where('status', 'waived')->count(),
+            'collection_rate' => ($allExpected > 0 ? round(($allCollected / $allExpected) * 100, 1) : 0) . '%',
         ];
 
         return response()->json([
-            'success'            => true,
-            'message'            => "تم تحديث اشتراك الطالب لشهر ({$monthName}) إلى: " . $sub->status_badge['label'],
-            'badge'              => $sub->status_badge,
-            'status'             => $sub->status,
-            'amount'             => (float)$sub->amount,
-            'notes'              => $sub->notes ?? '',
-            'student_paid_count' => $studentPaidCount,
-            'student_percent'    => $studentPercent,
-            'stats'              => $stats,
+            'success'               => true,
+            'message'               => "تم تحديث اشتراك ({$monthName}) بنجاح: " . $sub->status_badge['label'],
+            'badge'                 => $sub->status_badge,
+            'status'                => $sub->status,
+            'amount'                => (float)$sub->amount,
+            'paid_amount'           => (float)$sub->paid_amount,
+            'remaining_amount'      => (float)$sub->remaining_amount,
+            'notes'                 => $sub->notes ?? '',
+            'student_id'            => $student->id,
+            'student_due'           => number_format($studentDue, 2) . ' ₪',
+            'student_paid'          => number_format($studentPaid, 2) . ' ₪',
+            'student_remaining'     => number_format($studentRemaining, 2) . ' ₪',
+            'student_has_remaining' => $studentRemaining > 0,
+            'student_paid_count'    => $studentPaidCount,
+            'student_percent'       => $studentPercent,
+            'stats'                 => $stats,
         ]);
     }
 

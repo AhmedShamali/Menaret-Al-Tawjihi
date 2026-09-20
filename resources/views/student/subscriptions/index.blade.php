@@ -77,11 +77,15 @@
             @foreach($subscriptions as $sub)
                 @php
                     $isPaid = $sub->status === 'paid';
+                    $isPartial = $sub->status === 'partial';
                     $isPending = $sub->status === 'pending';
                     $isWaived = $sub->status === 'waived';
                     $badgeInfo = $sub->status_badge;
+                    $paidAmt = (float)($sub->paid_amount ?? 0);
+                    if ($isPaid && $paidAmt <= 0) $paidAmt = (float)$sub->amount;
+                    $remAmt = (float)$sub->remaining_amount;
                 @endphp
-                <div class="month-card {{ $isPaid ? 'card-paid' : ($isPending ? 'card-pending' : ($isWaived ? 'card-waived' : 'card-unpaid')) }}">
+                <div class="month-card {{ $isPaid ? 'card-paid' : ($isPartial ? 'card-partial' : ($isPending ? 'card-pending' : ($isWaived ? 'card-waived' : 'card-unpaid'))) }}">
                     <div class="month-card-header">
                         <span class="month-number font-mono">{{ sprintf('%02d', $sub->month) }}</span>
                         <span class="month-state-pill" style="background: {{ $badgeInfo['bg'] }}; color: {{ $badgeInfo['color'] }};">
@@ -92,9 +96,19 @@
                     <div class="month-card-body">
                         <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10))) }}</h4>
                         <div class="month-amount-row">
-                            <span class="amount-label">{{ __('Installment Amount:') }}</span>
+                            <span class="amount-label">{{ __('المبلغ المطلوب:') }}</span>
                             <strong class="amount-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
                         </div>
+                        @if($isPartial)
+                            <div class="month-amount-row" style="color: #059669; font-size: 0.85rem;">
+                                <span class="amount-label">{{ __('المدفوع:') }}</span>
+                                <strong class="amount-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
+                            </div>
+                            <div class="month-amount-row" style="color: #dc2626; font-size: 0.85rem;">
+                                <span class="amount-label">{{ __('المتبقي عليك:') }}</span>
+                                <strong class="amount-val font-mono font-bold">{{ number_format($remAmt, 2) }} ₪</strong>
+                            </div>
+                        @endif
                         @if($isPaid && $sub->paid_at)
                             <div class="paid-date-note font-mono">
                                 <i class="fa-regular fa-calendar-check"></i> {{ __('Payment Date:') }} {{ $sub->paid_at->format('Y-m-d') }}
@@ -111,6 +125,15 @@
                             <span class="btn-month-status done">
                                 <i class="fa-solid fa-circle-check"></i> {{ __('Paid Successfully') }}
                             </span>
+                        @elseif($isPartial)
+                            <div class="unpaid-actions-row">
+                                <a href="{{ route('student.pendingPayment.show') }}" class="btn-month-status pay" style="flex: 1; background: #b45309;">
+                                    <i class="fa-solid fa-receipt"></i> {{ __('سداد المتبقي') }} ({{ number_format($remAmt, 0) }} ₪)
+                                </a>
+                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود سداد باقي قسط (' . $sub->month_name_ar . ') وقيمته ' . number_format($remAmt, 0) . ' ₪ لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </a>
+                            </div>
                         @elseif($isPending)
                             <span class="btn-month-status waiting">
                                 <i class="fa-solid fa-clock-rotate-left"></i> {{ __('Pending Supervisor Approval') }}
@@ -153,8 +176,12 @@
                     @foreach($subscriptions as $sub)
                         @php
                             $isPaid = $sub->status === 'paid';
+                            $isPartial = $sub->status === 'partial';
                             $isPending = $sub->status === 'pending';
                             $isWaived = $sub->status === 'waived';
+                            $paidAmt = (float)($sub->paid_amount ?? 0);
+                            if ($isPaid && $paidAmt <= 0) $paidAmt = (float)$sub->amount;
+                            $remAmt = (float)$sub->remaining_amount;
                             $monthTitle = app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10)));
                         @endphp
                         <tr>
@@ -166,10 +193,20 @@
                             </td>
                             <td style="font-family: monospace; font-weight: 700; color: #0f172a;">
                                 {{ number_format($sub->amount, 2) }} ₪
+                                @if($isPartial)
+                                    <div style="font-size: 0.72rem; color: #dc2626; margin-top: 2px;">
+                                        {{ __('متبقي:') }} {{ number_format($remAmt, 2) }} ₪
+                                    </div>
+                                @endif
                             </td>
                             <td style="color: #64748b; font-size: 0.82rem;">
                                 @if($isPaid && $sub->paid_at)
                                     <i class="fa-regular fa-calendar-check text-emerald"></i> {{ $sub->paid_at->format('Y-m-d') }}
+                                @elseif($isPartial)
+                                    <span style="color: #b45309; font-weight: 600;"><i class="fa-solid fa-circle-half-stroke"></i> {{ __('تم دفع ') }}{{ number_format($paidAmt, 2) }} ₪</span>
+                                    @if($sub->notes)
+                                        <div style="font-size: 0.75rem; color: #64748b;">{{ $sub->notes }}</div>
+                                    @endif
                                 @elseif($sub->notes)
                                     {{ $sub->notes }}
                                 @else
@@ -179,6 +216,8 @@
                             <td style="text-align: center;">
                                 @if($isPaid)
                                     <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد وخالص') }}</span>
+                                @elseif($isPartial)
+                                    <span class="status-pill" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;"><span class="dot" style="background: #b45309;"></span> {{ __('دفع جزئي') }}</span>
                                 @elseif($isPending)
                                     <span class="status-pill status-pending"><span class="dot"></span> {{ __('قيد المراجعة') }}</span>
                                 @elseif($isWaived)
@@ -189,8 +228,8 @@
                             </td>
                             <td style="text-align: center;">
                                 @if(!$isPaid && !$isWaived)
-                                    <a href="{{ route('student.pendingPayment.show') }}" class="tbl-btn" style="background: #1e3a8a;">
-                                        <i class="fa-solid fa-receipt"></i> {{ __('رفع إشعار') }}
+                                    <a href="{{ route('student.pendingPayment.show') }}" class="tbl-btn" style="background: {{ $isPartial ? '#b45309' : '#1e3a8a' }};">
+                                        <i class="fa-solid fa-receipt"></i> {{ $isPartial ? __('سداد الباقي') : __('رفع إشعار') }}
                                     </a>
                                 @else
                                     <span style="color: #16a34a; font-size: 0.8rem; font-weight: 700;">
