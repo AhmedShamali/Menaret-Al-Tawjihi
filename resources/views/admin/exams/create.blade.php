@@ -109,7 +109,7 @@
 
                         <div class="form-group">
                             <label>المرحلة / الصف الدراسي <span class="req">*</span></label>
-                            <select id="stage_picker" class="form-control form-select" required>
+                            <select name="stage_id" id="stage_picker" class="form-control form-select" required>
                                 <option value="">{{ __('اختر الصف الدراسي...') }}</option>
                                 @foreach($stages as $stage)
                                     <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>

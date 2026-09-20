@@ -73,10 +73,11 @@
     <div class="ed-exams-grid">
         @forelse($exams as $exam)
             @php
-                $hasSubmitted = $student && $exam->submissions && $exam->submissions->where('student_id', $student->id)->isNotEmpty();
-                $submissionRecord = $hasSubmitted ? $exam->submissions->where('student_id', $student->id)->first() : null;
+                $submissionRecord = ($student && $exam->submissions) ? $exam->submissions->where('student_id', $student->id)->first() : null;
+                $hasCompletedSubmission = $submissionRecord && $submissionRecord->answers()->exists();
+                $canRetake = $submissionRecord && (bool)$submissionRecord->allow_retake;
             @endphp
-            <div class="ed-exam-card {{ $hasSubmitted ? 'completed' : '' }}">
+            <div class="ed-exam-card {{ $hasCompletedSubmission ? 'completed' : '' }}">
                 <div class="ed-exam-card-body">
                     <div class="ed-exam-tags">
                         <span class="ed-badge ed-badge-blue">
@@ -106,7 +107,22 @@
                 </div>
 
                 <div class="ed-exam-card-footer">
-                    @if($hasSubmitted)
+                    @if($canRetake)
+                        <div style="width: 100%; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 0.8rem; font-weight: 800; padding: 6px 10px; border-radius: 8px; text-align: center;">
+                                <i class="fa-solid fa-rotate-right"></i> {{ __('المعلّم أتاح لك إعادة تقديم الاختبار') }}
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="ed-btn ed-btn-primary" style="flex: 1; justify-content: center; background: #059669;">
+                                    <i class="fa-solid fa-play"></i>
+                                    <span>{{ __('إعادة الاختبار الآن') }}</span>
+                                </button>
+                                <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 12px;">
+                                    {{ __('النتيجة السابقة') }}
+                                </a>
+                            </div>
+                        </div>
+                    @elseif($hasCompletedSubmission)
                         <div class="ed-submitted-actions">
                             <span class="ed-btn ed-btn-completed">
                                 <i class="fas fa-check"></i> {{ __('تم التقديم') }}
@@ -152,8 +168,9 @@
                 <tbody>
                     @forelse($exams as $exam)
                         @php
-                            $hasSubmitted = $student && $exam->submissions && $exam->submissions->where('student_id', $student->id)->isNotEmpty();
-                            $submissionRecord = $hasSubmitted ? $exam->submissions->where('student_id', $student->id)->first() : null;
+                            $submissionRecord = ($student && $exam->submissions) ? $exam->submissions->where('student_id', $student->id)->first() : null;
+                            $hasCompletedSubmission = $submissionRecord && $submissionRecord->answers()->exists();
+                            $canRetake = $submissionRecord && (bool)$submissionRecord->allow_retake;
                         @endphp
                         <tr>
                             <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
@@ -176,7 +193,12 @@
                                 {{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} {{ __('سؤال') }}
                             </td>
                             <td style="text-align: center;">
-                                @if($hasSubmitted)
+                                @if($canRetake)
+                                    <span class="status-pill" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 800;">
+                                        <span class="dot" style="background: #10b981;"></span>
+                                        {{ __('متاح للإعادة 🔄') }}
+                                    </span>
+                                @elseif($hasCompletedSubmission)
                                     <span class="status-pill status-active">
                                         <span class="dot"></span>
                                         {{ __('تم التقديم') }}
@@ -192,7 +214,16 @@
                                 @endif
                             </td>
                             <td style="text-align: center;">
-                                @if($hasSubmitted)
+                                @if($canRetake)
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                        <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="tbl-btn" style="background: #059669;">
+                                            <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة') }}
+                                        </button>
+                                        <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="tbl-btn" style="background: #64748b; padding: 6px 10px;" title="{{ __('النتيجة السابقة') }}">
+                                            <i class="fa-solid fa-chart-simple"></i>
+                                        </a>
+                                    </div>
+                                @elseif($hasCompletedSubmission)
                                     @if($submissionRecord)
                                         <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="tbl-btn" style="background: #059669;">
                                             <i class="fa-solid fa-square-poll-vertical"></i> {{ __('النتيجة') }}
@@ -208,6 +239,7 @@
                                     </button>
                                 @endif
                             </td>
+                        </tr>
                         </tr>
                     @empty
                         <tr>

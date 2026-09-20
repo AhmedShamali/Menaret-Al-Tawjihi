@@ -28,7 +28,7 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
         parent::setUp();
 
         $this->stage = Stage::create([
-            'grade_level' => 12,
+            'grade_level' => 122,
             'label_ar'    => 'الثانوية العامة - الفرع العلمي',
             'icon'        => '📐',
         ]);
@@ -311,5 +311,145 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
 
         $incidentResponse->assertOk();
         $incidentResponse->assertJson(['status' => 'logged']);
+    }
+
+    /**
+     * اختبار عزل الفروع الأكاديمية: منع ظهور امتحانات الفرع الأدبي لطلاب الفرع العلمي
+     */
+    public function test_branch_isolation_prevents_literary_exam_from_appearing_to_scientific_student()
+    {
+        $literaryStage = Stage::create([
+            'grade_level' => 121,
+            'label_ar'    => 'الثانوية العامة - الفرع الأدبي',
+            'icon'        => '📖',
+        ]);
+
+        $literarySubject = Subject::create([
+            'stage_id'    => $literaryStage->id,
+            'name_ar'     => 'التاريخ للفرع الأدبي',
+            'subject_key' => 'history_literary',
+            'price_ils'   => 80,
+        ]);
+
+        $literaryExam = Exam::create([
+            'teacher_id' => $this->teacher->id,
+            'subject_id' => $literarySubject->id,
+            'stage_id'   => $literaryStage->id,
+            'title'      => 'امتحان التاريخ - الفرع الأدبي فقط',
+            'duration'   => 40,
+        ]);
+
+        $scientificExam = Exam::create([
+            'teacher_id' => $this->teacher->id,
+            'subject_id' => $this->subject->id,
+            'stage_id'   => $this->stage->id,
+            'title'      => 'امتحان الفيزياء للفرع العلمي',
+            'duration'   => 40,
+        ]);
+
+        // الطالب العلمي يزور صفحة الامتحانات
+        $indexResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.index'));
+        $indexResponse->assertOk();
+
+        // يجب أن يرى امتحان العلمي
+        $indexResponse->assertSee('امتحان الفيزياء للفرع العلمي');
+        // ويُحجب تماماً امتحان الأدبي
+        $indexResponse->assertDontSee('امتحان التاريخ - الفرع الأدبي فقط');
+    }
+
+    /**
+     * اختبار رصد العلامات مع خصم الدرجات وسبب الخصم وملاحظات المعلم عند وجود اشتباه غش
+     */
+    public function test_teacher_can_grade_cheating_submission_with_deductions_and_reasons()
+    {
+        $exam = Exam::create([
+            'teacher_id' => $this->teacher->id,
+            'subject_id' => $this->subject->id,
+            'stage_id'   => $this->stage->id,
+            'title'      => 'امتحان الفيزياء المتقدمة',
+            'duration'   => 30,
+            'show_result_immediately' => false,
+        ]);
+
+        $q = Question::create([
+            'exam_id'       => $exam->id,
+            'type'          => 'essay',
+            'question_text' => 'اشرح أثر دوبلر مع ذكر 3 تطبيقات عملية.',
+            'points'        => 20,
+        ]);
+
+        // تقديم الامتحان
+        $this->actingAs($this->student, 'student')->post(route('student.exams.submit', $exam->id), [
+            'answers' => [
+                $q->id => 'حل الطالب الكامل',
+            ],
+            'tab_switches_count' => 3,
+            'screenshots_count'  => 0,
+        ]);
+
+        $submission = ExamSubmission::where('exam_id', $exam->id)->where('student_id', $this->student->id)->first();
+        $this->assertNotNull($submission);
+        $answer = $submission->answers()->first();
+        $this->assertNotNull($answer);
+
+        // المعلم يرصد 18 درجة ويخصم 5 بسبب تكرار الخروج
+        $gradeResponse = $this->actingAs($this->teacher)->post(route('teacher.submissions.saveGrade', $submission->id), [
+            'grades' => [
+                $answer->id => 18,
+            ],
+            'deduction_amount' => 5,
+            'deduction_reason' => 'خصم درجات لتكرار مغادرة صفحة الاختبار 3 مرات',
+            'teacher_notes'    => 'إجابتك ممتازة ولكن تم الخصم بسبب مخالفة تعليمات النزاهة الأكاديمية.',
+        ]);
+
+        $gradeResponse->assertJson(['success' => true]);
+
+        $submission->refresh();
+        $this->assertEquals(13, $submission->total_earned_grade); // 18 - 5 = 13
+        $this->assertEquals(5, $submission->deduction_amount);
+        $this->assertEquals('خصم درجات لتكرار مغادرة صفحة الاختبار 3 مرات', $submission->deduction_reason);
+        $this->assertEquals('إجابتك ممتازة ولكن تم الخصم بسبب مخالفة تعليمات النزاهة الأكاديمية.', $submission->teacher_notes);
+        $this->assertEquals('graded', $submission->status);
+        $this->assertTrue((bool) $submission->is_published);
+
+        // عرض النتيجة للطالب والتأكد من إظهار بطاقة التنبيه بالخصم والملاحظات
+        $studentResultView = $this->actingAs($this->student, 'student')->get(route('student.exams.results', $submission->id));
+        $studentResultView->assertOk();
+        $studentResultView->assertSee('تنبيه أكاديمي: تم تطبيق خصم درجات على هذا الاختبار');
+        $studentResultView->assertSee('خصم درجات لتكرار مغادرة صفحة الاختبار 3 مرات');
+        $studentResultView->assertSee('إجابتك ممتازة ولكن تم الخصم بسبب مخالفة تعليمات النزاهة الأكاديمية.');
+    }
+
+    /**
+     * اختبار ظهور خيار إعادة الاختبار للطالب عند سماح المعلم له بالإعادة
+     */
+    public function test_retake_permission_allows_student_to_retake_and_shows_badge()
+    {
+        $exam = Exam::create([
+            'teacher_id' => $this->teacher->id,
+            'subject_id' => $this->subject->id,
+            'stage_id'   => $this->stage->id,
+            'title'      => 'امتحان كهرومغناطيسية',
+            'duration'   => 25,
+        ]);
+
+        $submission = ExamSubmission::create([
+            'exam_id'            => $exam->id,
+            'student_id'         => $this->student->id,
+            'total_earned_grade' => 5,
+            'status'             => 'graded',
+            'allow_retake'       => true,
+            'is_published'       => true,
+        ]);
+
+        // زيارة صفحة الامتحانات للطالب
+        $indexResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.index'));
+        $indexResponse->assertOk();
+        $indexResponse->assertSee('المعلّم أتاح لك إعادة تقديم الاختبار');
+        $indexResponse->assertSee('إعادة الاختبار الآن');
+
+        // يستطيع الطالب فتح قاعة الاختبار للإعادة دون منعه
+        $takeResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $exam->id));
+        $takeResponse->assertOk();
     }
 }

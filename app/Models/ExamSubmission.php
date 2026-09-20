@@ -14,6 +14,9 @@ class ExamSubmission extends Model
         'exam_id', 
         'student_id', 
         'total_earned_grade', 
+        'deduction_amount',
+        'deduction_reason',
+        'teacher_notes',
         'tab_switches_count',
         'screenshots_count',
         'cheating_flags',
@@ -34,6 +37,7 @@ class ExamSubmission extends Model
         'cheating_flags' => 'array',
         'tab_switches_count' => 'integer',
         'screenshots_count' => 'integer',
+        'deduction_amount' => 'float',
     ];
 
     /**

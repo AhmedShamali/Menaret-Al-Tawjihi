@@ -140,16 +140,16 @@
 </div>
 
 <style>
-/* المتغيرات والتصميم العام بنمط تيليجرام / واتساب */
+/* المتغيرات والتصميم العام بنمط أكاديمي كلاسيكي راقي */
 :root {
-    --chat-max-width: 950px;
+    --chat-max-width: 1020px;
     --chat-height: calc(100vh - 120px);
-    --bubble-me-bg: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --bubble-me-bg: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
     --bubble-me-color: #ffffff;
     --bubble-them-bg: #ffffff;
     --bubble-them-color: #0f172a;
-    --chat-canvas-bg: #f0f2f5;
-    --primary-teal: #0d9488;
+    --chat-canvas-bg: #f8fafc;
+    --primary-teal: #1e3a8a;
 }
 
 body.dark-theme {
@@ -403,7 +403,7 @@ body.dark-theme .quick-emoji-lane {
     transform: scale(1.35);
 }
 
-/* 3. منطقة الرسائل الشبيهة بواتساب وتيليجرام */
+/* 3. منطقة الرسائل الأكاديمية النقية والكلاسيكية */
 .chat-viewport {
     flex: 1;
     overflow-y: auto;
@@ -412,8 +412,7 @@ body.dark-theme .quick-emoji-lane {
     flex-direction: column;
     gap: 12px;
     position: relative;
-    background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 0);
-    background-size: 20px 20px;
+    background: #f8fafc;
 }
 
 .date-badge-separator {

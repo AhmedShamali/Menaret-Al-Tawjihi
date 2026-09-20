@@ -77,10 +77,21 @@ class PlatformAuditTest extends TestCase
 
         $adminRoutes = [
             '/admin/dashboard',
-            '/admin/academic-inquiries',
-            '/admin/settings',
-            '/admin/subscriptions/monthly',
+            '/admin/students',
             '/admin/students/records/all',
+            '/admin/certificates',
+            '/admin/teachers',
+            '/admin/teachers/create',
+            '/admin/teachers/salaries',
+            '/admin/subjects/pricing',
+            '/admin/payments',
+            '/admin/subscriptions/monthly',
+            '/admin/academic-inquiries',
+            '/admin/inbox',
+            '/admin/teachers/chat',
+            '/admin/settings',
+            '/admin/system-pulse',
+            '/admin/exams',
         ];
 
         foreach ($adminRoutes as $route) {
@@ -101,10 +112,17 @@ class PlatformAuditTest extends TestCase
         $this->actingAs($teacher);
 
         $teacherRoutes = [
+            '/teacher/dashboard',
+            '/teacher/exams',
+            '/teacher/exams/create',
+            '/teacher/submissions',
             '/teacher/videos',
             '/teacher/files',
-            '/teacher/inbox',
             '/teacher/visibility',
+            '/teacher/students',
+            '/teacher/inbox',
+            '/teacher/admin/chat',
+            '/teacher/salaries',
         ];
 
         foreach ($teacherRoutes as $route) {
@@ -136,15 +154,19 @@ class PlatformAuditTest extends TestCase
 
         $studentRoutes = [
             '/student/dashboard',
+            '/student/subjects',
+            '/student/subscriptions',
+            '/student/my-exams',
             '/student/courses/catalog',
+            '/student/notifications',
             '/student/study-planner',
+            '/student/achievements',
+            '/student/teachers',
+            '/student/support',
+            '/student/profile',
             '/student/flashcards',
             '/student/channels',
-            '/student/notifications',
-            '/student/subscriptions',
             '/student/leaderboard',
-            '/student/my-exams',
-            '/student/profile',
         ];
 
         foreach ($studentRoutes as $route) {

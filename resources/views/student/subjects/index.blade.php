@@ -54,11 +54,11 @@
         <div class="toolbar-view-switcher">
             <span class="switcher-label">{{ __('نمط العرض:') }}</span>
             <div class="switcher-buttons">
-                <button type="button" class="btn-switch-view active" id="btnViewCards" onclick="setCatalogViewMode('cards')" title="{{ __('عرض البطاقات الأكاديمية') }}">
+                <button type="button" class="btn-switch-view" id="btnViewCards" onclick="setCatalogViewMode('cards')" title="{{ __('عرض البطاقات الأكاديمية') }}">
                     <i class="fa-solid fa-grid-2"></i>
                     <span>{{ __('بطاقات المقررات') }}</span>
                 </button>
-                <button type="button" class="btn-switch-view" id="btnViewTable" onclick="setCatalogViewMode('table')" title="{{ __('عرض السجل الأكاديمي') }}">
+                <button type="button" class="btn-switch-view active" id="btnViewTable" onclick="setCatalogViewMode('table')" title="{{ __('عرض السجل الأكاديمي') }}">
                     <i class="fa-solid fa-table-list"></i>
                     <span>{{ __('جدول السجل') }}</span>
                 </button>
@@ -66,8 +66,8 @@
         </div>
     </div>
 
-    <!-- 3. النمط الأول: بطاقات المقررات الأكاديمية الملكية الفاخرة (Cards View - افتراضي) -->
-    <div id="catalogCardsContainer" class="ed-subjects-grid">
+    <!-- 3. النمط الأول: بطاقات المقررات الأكاديمية الملكية الفاخرة (Cards View) -->
+    <div id="catalogCardsContainer" class="ed-subjects-grid" style="display: none;">
         @forelse($subjects as $index => $subject)
             @php
                 $color = $subject->color ?: '#1e3a8a';
@@ -168,8 +168,8 @@
         @endforelse
     </div>
 
-    <!-- 4. النمط الثاني: السجل الأكاديمي للمقررات (Table View) -->
-    <div id="catalogTableContainer" class="ed-academic-table-container" style="display: none;">
+    <!-- 4. النمط الثاني: السجل الأكاديمي للمقررات (Table View - الافتراضي) -->
+    <div id="catalogTableContainer" class="ed-academic-table-container" style="display: block;">
         <div class="table-card-head">
             <div class="table-card-title">
                 <i class="fa-solid fa-table-list text-primary"></i>
@@ -980,13 +980,13 @@
         }
     }
 
-    // استعادة تفضيل العرض المحفوظ لدى الطالب
+    // استعادة تفضيل العرض المحفوظ لدى الطالب (الافتراضي: جدول أكاديمي)
     document.addEventListener('DOMContentLoaded', function () {
         const savedMode = localStorage.getItem('student_subjects_view_mode');
-        if (savedMode === 'table') {
-            setCatalogViewMode('table');
-        } else {
+        if (savedMode === 'cards') {
             setCatalogViewMode('cards');
+        } else {
+            setCatalogViewMode('table');
         }
     });
 

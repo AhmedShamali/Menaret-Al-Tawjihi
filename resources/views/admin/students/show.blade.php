@@ -814,7 +814,7 @@
             <img id="modalIdImg" src="" alt="{{ __('بطاقة الهوية') }}" style="max-height: 480px; max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); object-fit: contain;">
         </div>
         <div style="padding: 14px 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <a id="modalDownloadBtn" href="" target="_blank" download style="background: var(--ed-primary, #1d4ed8); color: white; padding: 8px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <a id="modalDownloadBtn" href="#" target="_blank" download style="background: var(--ed-primary, #1d4ed8); color: white; padding: 8px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="fa-solid fa-download"></i> {{ __('تنزيل الوثيقة الرسمية') }}
             </a>
             <button type="button" onclick="closeIdModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer;">

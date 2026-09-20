@@ -57,6 +57,32 @@
                         </div>
 
                         <div class="f-group mb-20">
+                            <label class="f-label">{{ __('المرحلة / الصف الدراسي') }}</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-layer-group icon"></i>
+                                <select name="stage_id" class="f-input" style="padding-inline-start: 40px;">
+                                    <option value="">{{ __('اختر المرحلة...') }}</option>
+                                    @foreach($stages as $stg)
+                                        <option value="{{ $stg->id }}" {{ ($exam->stage_id == $stg->id || (!$exam->stage_id && optional($exam->subject)->stage_id == $stg->id)) ? 'selected' : '' }}>{{ $stg->label_ar ?? $stg->name_ar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="f-group mb-20">
+                            <label class="f-label">{{ __('المادة التعليمية') }}</label>
+                            <div class="input-icon-wrapper">
+                                <i class="fa-solid fa-book-open icon"></i>
+                                <select name="subject_id" class="f-input" style="padding-inline-start: 40px;">
+                                    <option value="">{{ __('اختر المادة...') }}</option>
+                                    @foreach($subjects as $sub)
+                                        <option value="{{ $sub->id }}" {{ $exam->subject_id == $sub->id ? 'selected' : '' }}>{{ $sub->name_ar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="f-group mb-20">
                             <label class="f-label">{{ __('المدة الزمنية (بالدقائق)') }}<span class="req">*</span></label>
                             <div class="input-icon-wrapper">
                                 <i class="fa-regular fa-clock icon"></i>

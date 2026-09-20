@@ -3,54 +3,56 @@
 @section('title', 'مركز المحادثات والتواصل الأكاديمي | ' . config('app.name', 'منارة التوجيهي'))
 
 @section('content')
-<div class="inbox-page-container">
-    <!-- Main Chat Workspace Card -->
-    <div class="inbox-card" id="chat_container">
+<div class="inbox-classic-wrapper">
+    <!-- Main Chat Container -->
+    <div class="inbox-classic-card" id="chat_container">
         
         <!-- ==================== SIDEBAR: CONVERSATION LIST ==================== -->
-        <aside class="inbox-sidebar" id="sidebar_view">
+        <aside class="inbox-classic-sidebar" id="sidebar_view">
             <!-- Sidebar Header -->
-            <div class="sidebar-head">
-                <div class="head-title-row">
-                    <div class="title-with-icon">
-                        <span class="head-icon"><i class="fa-solid fa-comments"></i></span>
+            <div class="sidebar-top-pane">
+                <div class="sidebar-headline-row">
+                    <div class="brand-title-group">
+                        <div class="brand-icon-box">
+                            <i class="fa-solid fa-comments"></i>
+                        </div>
                         <div>
-                            <h2 class="head-title">المراسلات والدعم</h2>
-                            <p class="head-subtitle">التواصل المباشر مع الطلاب</p>
+                            <h2 class="brand-title">المراسلات والدعم</h2>
+                            <p class="brand-desc">التواصل المباشر مع الطلاب</p>
                         </div>
                     </div>
                     @php
                         $totalUnread = $chats->sum('unread_count');
                     @endphp
                     @if($totalUnread > 0)
-                        <span class="badge-unread-total" id="global_unread_badge" title="رسائل غير مقروءة">
+                        <span class="total-unread-badge" id="global_unread_badge">
                             {{ $totalUnread }} جديدة
                         </span>
                     @endif
                 </div>
 
-                <!-- Search Box -->
-                <div class="search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="search_student" oninput="filterStudents()" placeholder="ابحث بالاسم أو البريد أو الهاتف..." autocomplete="off">
-                    <button type="button" id="clear_search" class="clear-search-btn" onclick="clearSearch()" style="display: none;">
+                <!-- Search Input -->
+                <div class="sidebar-search-box">
+                    <i class="fa-solid fa-magnifying-glass search-ico"></i>
+                    <input type="text" id="search_student" oninput="filterStudents()" placeholder="بحث بالاسم أو الهاتف أو التخصص..." autocomplete="off">
+                    <button type="button" id="clear_search" class="clear-btn" onclick="clearSearch()" style="display: none;">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
-                <!-- Filter Tabs -->
-                <div class="filter-tabs">
-                    <button type="button" class="filter-tab active" data-filter="all" onclick="setFilter('all')">
-                        الكل <span class="tab-count">({{ count($chats) }})</span>
+                <!-- Tabs Filter -->
+                <div class="sidebar-filter-tabs">
+                    <button type="button" class="filter-chip active" data-filter="all" onclick="setFilter('all')">
+                        الكل <span class="chip-count">({{ count($chats) }})</span>
                     </button>
-                    <button type="button" class="filter-tab" data-filter="unread" onclick="setFilter('unread')">
-                        غير مقروءة <span class="tab-count" id="tab_unread_count">({{ $totalUnread }})</span>
+                    <button type="button" class="filter-chip" data-filter="unread" onclick="setFilter('unread')">
+                        غير مقروءة <span class="chip-count" id="tab_unread_count">({{ $totalUnread }})</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Student Conversation Items -->
-            <div class="conversations-list" id="student_list">
+            <!-- Student List -->
+            <div class="student-scroll-list" id="student_list">
                 @forelse($chats as $student)
                     @php
                         $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: 'طالب';
@@ -58,120 +60,116 @@
                         $stageName = $student->stage ? ($student->stage->name_ar ?? $student->stage->name ?? 'توجيهي') : 'توجيهي';
                         $phone = $student->phone ?? $student->whatsapp ?? '';
                         $hasUnread = ($student->unread_count ?? 0) > 0;
-                        $lastText = $student->last_message ?? 'لا توجد رسائل سابقة';
+                        $lastText = $student->last_message ?? 'محادثة جديدة';
                         $lastTime = $student->last_message_time ?? '';
                         $isMe = ($student->last_sender_type === 'admin');
                     @endphp
                     <div onclick="loadChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}', '{{ addslashes($phone) }}', '{{ $student->status }}')"
-                         class="conv-card {{ $hasUnread ? 'has-unread' : '' }} {{ (isset($selectedStudentId) && $selectedStudentId == $student->id) ? 'active' : '' }}"
+                         class="student-chat-item {{ $hasUnread ? 'unread' : '' }} {{ (isset($selectedStudentId) && $selectedStudentId == $student->id) ? 'active' : '' }}"
                          id="user_{{ $student->id }}"
                          data-student-id="{{ $student->id }}"
                          data-unread="{{ $hasUnread ? '1' : '0' }}"
                          data-search="{{ mb_strtolower($studentName . ' ' . ($student->email ?? '') . ' ' . $phone . ' ' . $stageName) }}">
                         
-                        <div class="conv-avatar-wrapper">
+                        <div class="item-avatar-wrapper">
                             @if(!empty($student->photo))
-                                <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $studentName }}" class="conv-avatar-img">
+                                <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $studentName }}" class="item-avatar-img">
                             @else
-                                <div class="conv-avatar-initials">{{ $firstLetter }}</div>
+                                <div class="item-avatar-letter">{{ $firstLetter }}</div>
                             @endif
-                            <span class="conv-status-dot {{ $student->status === 'active' ? 'online' : 'inactive' }}" title="{{ $student->status === 'active' ? 'نشط' : 'حساب موقف' }}"></span>
+                            <span class="online-dot {{ $student->status === 'active' ? 'online' : 'offline' }}"></span>
                         </div>
 
-                        <div class="conv-body">
-                            <div class="conv-top-row">
-                                <h4 class="conv-name" title="{{ $studentName }}">{{ $studentName }}</h4>
-                                <span class="conv-time" id="time_{{ $student->id }}">{{ $lastTime }}</span>
+                        <div class="item-content-pane">
+                            <div class="item-header-line">
+                                <span class="item-name" title="{{ $studentName }}">{{ $studentName }}</span>
+                                <span class="item-time" id="time_{{ $student->id }}">{{ $lastTime }}</span>
                             </div>
-                            <div class="conv-middle-row">
-                                <span class="conv-stage-badge">{{ $stageName }}</span>
+                            
+                            <div class="item-stage-line">
+                                <span class="stage-tag">{{ $stageName }}</span>
                             </div>
-                            <div class="conv-bottom-row">
-                                <p class="conv-snippet" id="snippet_{{ $student->id }}">
+
+                            <div class="item-snippet-line">
+                                <span class="snippet-text" id="snippet_{{ $student->id }}">
                                     @if($student->last_message)
-                                        @if($isMe)<span class="snippet-prefix">أنت: </span>@endif{{ Str::limit($lastText, 35) }}
+                                        @if($isMe)<strong class="me-prefix">أنت: </strong>@endif{{ Str::limit($lastText, 32) }}
                                     @else
-                                        <span class="no-msg-text">محادثة جديدة</span>
+                                        <span class="new-conversation-hint">انقر لبدء المحادثة</span>
                                     @endif
-                                </p>
-                                <span class="unread-pill" id="badge_{{ $student->id }}" style="{{ $hasUnread ? '' : 'display: none;' }}">
+                                </span>
+                                <span class="unread-counter-pill" id="badge_{{ $student->id }}" style="{{ $hasUnread ? '' : 'display: none;' }}">
                                     {{ $student->unread_count }}
                                 </span>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="empty-list-placeholder">
-                        <i class="fa-solid fa-user-group"></i>
+                    <div class="empty-list-box">
+                        <i class="fa-regular fa-comments"></i>
                         <p>لا يوجد طلاب مسجلين حالياً</p>
                     </div>
                 @endforelse
 
-                <div id="no_results" class="empty-list-placeholder" style="display: none;">
+                <div id="no_results" class="empty-list-box" style="display: none;">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <p>لم يتم العثور على أي محادثة مطابقة للبحث</p>
+                    <p>لم يتم العثور على محادثات مطابقة</p>
                 </div>
             </div>
         </aside>
 
         <!-- ==================== MAIN CHAT VIEWPORT ==================== -->
-        <main class="inbox-chat-pane" id="chat_view">
+        <main class="inbox-classic-main" id="chat_view">
             
-            <!-- Empty State (when no chat is selected) -->
-            <div id="chat_empty_state" class="chat-placeholder" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: none;' : 'display: flex;' }}">
-                <div class="placeholder-graphic">
-                    <div class="graphic-circle">
-                        <i class="fa-solid fa-comments"></i>
-                    </div>
+            <!-- Empty State -->
+            <div id="chat_empty_state" class="empty-conversation-state" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: none;' : 'display: flex;' }}">
+                <div class="empty-icon-circle">
+                    <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h3>مركز المراسلات المباشرة</h3>
-                <p>اختر طالباً من القائمة الجانبية لبدء المحادثة ومتابعة استفساراته وتقديم الدعم الأكاديمي والمالي.</p>
-                <div class="quick-hints">
-                    <div class="hint-item">
+                <h3>مركز المراسلات والتواصل الأكاديمي</h3>
+                <p>اختر طالباً من القائمة الجانبية لعرض المحادثة والرد على استفساراته وتقديم الدعم الدراسي.</p>
+                <div class="academic-features-row">
+                    <div class="feat-box">
                         <i class="fa-solid fa-bolt"></i>
-                        <span>يمكنك إرسال ردود سريعة بنقرة واحدة</span>
+                        <span>ردود جاهزة معتمدة</span>
                     </div>
-                    <div class="hint-item">
+                    <div class="feat-box">
                         <i class="fa-brands fa-whatsapp"></i>
-                        <span>إمكانية التحويل المباشر لمحادثة واتساب الرسمية</span>
+                        <span>تحويل مباشر للواتساب</span>
                     </div>
-                    <div class="hint-item">
+                    <div class="feat-box">
                         <i class="fa-solid fa-bell"></i>
-                        <span>وصول إشعارات فورية للطلاب على لوحة التحكم</span>
+                        <span>إشعارات أكاديمية فورية</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Chat Header -->
-            <header id="chat_header" class="active-header" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
-                <div class="header-student-info">
-                    <button type="button" class="mobile-back-btn" onclick="toggleMobileView('sidebar')" title="العودة للقائمة">
+            <!-- Active Header -->
+            <header id="chat_header" class="active-conversation-header" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
+                <div class="header-profile-cluster">
+                    <button type="button" class="mobile-return-btn" onclick="toggleMobileView('sidebar')" title="العودة للقائمة">
                         <i class="fa-solid fa-arrow-right"></i>
                     </button>
                     
-                    <div class="active-avatar" id="active_avatar">
-                        @if(isset($selectedStudent))
-                            {{ mb_substr($selectedStudent->name_ar ?? $selectedStudent->name ?? 'ط', 0, 1) }}
-                        @else
-                            ط
-                        @endif
+                    <div class="header-avatar" id="active_avatar">
+                        {{ isset($selectedStudent) ? mb_substr($selectedStudent->name_ar ?? $selectedStudent->name ?? 'ط', 0, 1) : 'ط' }}
                     </div>
                     
-                    <div class="active-meta">
-                        <div class="name-and-badges">
-                            <h3 id="active_user_name" class="active-name">
+                    <div class="header-meta-details">
+                        <div class="title-and-stage">
+                            <h3 id="active_user_name" class="active-student-name">
                                 {{ isset($selectedStudent) ? ($selectedStudent->name_ar ?? $selectedStudent->name ?? 'طالب') : 'اختر طالباً' }}
                             </h3>
-                            <span id="active_stage_tag" class="header-stage-badge">
+                            <span id="active_stage_tag" class="student-stage-pill">
                                 {{ isset($selectedStudent) && $selectedStudent->stage ? ($selectedStudent->stage->name_ar ?? $selectedStudent->stage->name ?? 'توجيهي') : 'توجيهي' }}
                             </span>
                         </div>
-                        <div class="active-sub-meta">
-                            <span class="active-status-text">
-                                <span class="status-pulse-dot"></span> متصل في المنصة
+                        <div class="status-and-contact">
+                            <span class="status-indicator">
+                                <span class="pulse-emerald"></span> مسجل في المنصة
                             </span>
-                            <span class="sub-sep">•</span>
-                            <span id="active_phone_display" class="active-phone">
+                            <span class="meta-divider">•</span>
+                            <span id="active_phone_display" class="contact-pill">
                                 <i class="fa-solid fa-phone"></i>
                                 <span id="active_phone_number">{{ isset($selectedStudent) ? ($selectedStudent->phone ?? $selectedStudent->whatsapp ?? 'غير محدد') : '---' }}</span>
                             </span>
@@ -179,71 +177,72 @@
                     </div>
                 </div>
 
-                <div class="header-actions">
-                    <!-- WhatsApp Link Button -->
-                    <a href="#" id="btn_whatsapp_direct" target="_blank" class="action-btn btn-whatsapp" style="display: none;" title="محادثة عبر واتساب">
+                <div class="header-controls">
+                    <!-- WhatsApp -->
+                    <a href="#" id="btn_whatsapp_direct" target="_blank" class="control-btn btn-wa" style="display: none;" title="محادثة عبر واتساب">
                         <i class="fa-brands fa-whatsapp"></i>
-                        <span class="btn-label">واتساب</span>
+                        <span>واتساب</span>
                     </a>
                     
-                    <!-- View Profile Link -->
-                    <a href="#" id="btn_view_profile" target="_blank" class="action-btn btn-profile" style="display: none;" title="عرض الملف الأكاديمي">
+                    <!-- Profile -->
+                    <a href="#" id="btn_view_profile" target="_blank" class="control-btn btn-academic" style="display: none;" title="عرض الملف الأكاديمي">
                         <i class="fa-solid fa-user-graduate"></i>
-                        <span class="btn-label">الملف الأكاديمي</span>
+                        <span>الملف الأكاديمي</span>
                     </a>
 
-                    <!-- Refresh Messages Button -->
-                    <button type="button" class="action-btn btn-refresh" onclick="fetchMessages(true)" title="تحديث الرسائل">
+                    <!-- Refresh -->
+                    <button type="button" class="control-btn btn-icon" onclick="fetchMessages(true)" title="تحديث الرسائل">
                         <i class="fa-solid fa-rotate-right" id="refresh_icon"></i>
                     </button>
                 </div>
             </header>
 
             <!-- Messages Stream Area -->
-            <div id="chat_messages" class="messages-area" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
-                <div class="loading-messages">
+            <div id="chat_messages" class="messages-canvas" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
+                <div class="loading-state-box">
                     <i class="fa-solid fa-circle-notch fa-spin"></i>
-                    <span>جاري تحميل المحادثة...</span>
+                    <span>جاري مزامنة المحادثة...</span>
                 </div>
             </div>
 
             <!-- Quick Reply Prompts Toolbar -->
-            <div id="quick_replies_bar" class="canned-responses-bar" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
-                <span class="canned-title">
-                    <i class="fa-solid fa-bolt"></i> ردود سريعة:
-                </span>
-                <div class="canned-chips-container">
-                    <button type="button" class="chip-btn" onclick="insertCanned('وعليكم السلام ورحمة الله، أهلاً بك! كيف يمكننا مساعدتك؟')">
+            <div id="quick_replies_bar" class="canned-responses-pane" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
+                <div class="canned-label">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>ردود سريعة:</span>
+                </div>
+                <div class="canned-pills-flow">
+                    <button type="button" class="canned-chip" onclick="insertCanned('وعليكم السلام ورحمة الله، أهلاً بك! كيف يمكننا مساعدتك؟')">
                         👋 ترحيب
                     </button>
-                    <button type="button" class="chip-btn" onclick="insertCanned('تم التحقق وتفعيل حسابك واشتراكك بنجاح، بالتوفيق!')">
+                    <button type="button" class="canned-chip" onclick="insertCanned('تم التحقق وتفعيل حسابك واشتراكك بنجاح، بالتوفيق!')">
                         ✅ تم تفعيل الاشتراك
                     </button>
-                    <button type="button" class="chip-btn" onclick="insertCanned('يرجى تزويدنا بصورة إيصال السداد أو رقم الحوالة المالية لمطابقتها.')">
+                    <button type="button" class="canned-chip" onclick="insertCanned('يرجى تزويدنا بصورة إيصال السداد أو رقم الحوالة المالية لمطابقتها.')">
                         📄 طلب إيصال سداد
                     </button>
-                    <button type="button" class="chip-btn" onclick="insertCanned('تم تحويل استفسارك إلى مدرس المادة، وسيقوم بالإجابة عليك قريباً.')">
+                    <button type="button" class="canned-chip" onclick="insertCanned('تم تحويل استفسارك إلى مدرس المادة، وسيقوم بالإجابة عليك قريباً.')">
                         👨‍🏫 إحالة للمعلم
                     </button>
-                    <button type="button" class="chip-btn" onclick="insertCanned('تم حل المشكلة وتحديث البيانات في حسابك.')">
+                    <button type="button" class="canned-chip" onclick="insertCanned('تم حل المشكلة وتحديث البيانات في حسابك بنجاح.')">
                         ✨ تم حل المشكلة
                     </button>
                 </div>
             </div>
 
             <!-- Message Input Area -->
-            <div id="input_area" class="input-container" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: block;' : 'display: none;' }}">
-                <form id="chatForm" onsubmit="event.preventDefault(); sendReply();" class="message-form">
-                    <div class="input-row">
+            <div id="input_area" class="composer-container" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: block;' : 'display: none;' }}">
+                <form id="chatForm" onsubmit="event.preventDefault(); sendReply();" class="composer-form">
+                    <div class="composer-box">
                         <textarea id="msg_input" 
                                   rows="1" 
                                   placeholder="اكتب ردك الأكاديمي هنا... (اضغط Enter للإرسال، Shift+Enter لسطر جديد)" 
                                   autocomplete="off" 
                                   required></textarea>
                         
-                        <button type="submit" class="btn-send-message" id="btn_send" title="إرسال">
-                            <span class="send-text">إرسال</span>
-                            <i class="fa-solid fa-paper-plane send-icon"></i>
+                        <button type="submit" class="composer-send-btn" id="btn_send" title="إرسال">
+                            <span>إرسال</span>
+                            <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </div>
                 </form>
@@ -253,691 +252,701 @@
 </div>
 
 <style>
-    /* =========================
-       INBOX LUXURY STYLING
-       ========================= */
+    /* =========================================================
+       CLASSIC ROYAL INBOX STYLING (Prestige Academic Design)
+       ========================================================= */
     :root {
-        --chat-navy: #0f172a;
-        --chat-navy-light: #1e293b;
-        --chat-primary: #1e3a8a;
-        --chat-primary-hover: #1d4ed8;
-        --chat-accent: #2563eb;
-        --chat-surface: #ffffff;
-        --chat-bg-soft: #f8fafc;
-        --chat-border: #e2e8f0;
-        --chat-border-subtle: #f1f5f9;
-        --chat-text-dark: #0f172a;
-        --chat-text-muted: #64748b;
-        --chat-bubble-admin: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
-        --chat-bubble-student: #ffffff;
-        --chat-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-        --chat-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-        --chat-shadow-lg: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-        --radius-lg: 18px;
-        --radius-md: 12px;
-        --radius-sm: 8px;
+        --cr-navy-dark: #0f172a;
+        --cr-navy-main: #1e3a8a;
+        --cr-navy-light: #2563eb;
+        --cr-navy-soft: #eff6ff;
+        --cr-bg: #f8fafc;
+        --cr-surface: #ffffff;
+        --cr-border: #e2e8f0;
+        --cr-border-subtle: #f1f5f9;
+        --cr-text-primary: #0f172a;
+        --cr-text-muted: #64748b;
+        --cr-emerald: #10b981;
+        --cr-danger: #ef4444;
+        --cr-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+        --cr-radius-card: 16px;
+        --cr-radius-bubble: 14px;
     }
 
-    .inbox-page-container {
-        padding: 16px 20px;
-        max-width: 1600px;
+    .inbox-classic-wrapper {
+        padding: 16px 20px 30px;
+        max-width: 1540px;
         margin: 0 auto;
         box-sizing: border-box;
     }
 
-    .inbox-card {
+    .inbox-classic-card {
         display: grid;
-        grid-template-columns: 380px 1fr;
+        grid-template-columns: 360px 1fr;
         height: calc(100vh - 130px);
-        min-height: 550px;
-        background: var(--chat-surface);
-        border: 1px solid var(--chat-border);
-        border-radius: var(--radius-lg);
+        min-height: 560px;
+        background: var(--cr-surface);
+        border: 1px solid var(--cr-border);
+        border-radius: var(--cr-radius-card);
         overflow: hidden;
-        box-shadow: var(--chat-shadow-lg);
+        box-shadow: var(--cr-shadow);
     }
 
-    /* ------------------------------
-       SIDEBAR
-       ------------------------------ */
-    .inbox-sidebar {
+    /* -----------------------------------
+       SIDEBAR: CONVERSATION LIST
+       ----------------------------------- */
+    .inbox-classic-sidebar {
         display: flex;
         flex-direction: column;
-        background: var(--chat-surface);
-        border-left: 1px solid var(--chat-border);
-        min-width: 0;
+        background: var(--cr-surface);
+        border-left: 1px solid var(--cr-border);
         height: 100%;
+        min-width: 0;
     }
 
-    .sidebar-head {
-        padding: 20px 20px 14px 20px;
-        background: var(--chat-surface);
-        border-bottom: 1px solid var(--chat-border);
+    .sidebar-top-pane {
+        padding: 18px 18px 12px;
+        background: var(--cr-surface);
+        border-bottom: 1px solid var(--cr-border);
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
     }
 
-    .head-title-row {
+    .sidebar-headline-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    .title-with-icon {
+    .brand-title-group {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
     }
 
-    .head-icon {
-        width: 40px;
-        height: 40px;
+    .brand-icon-box {
+        width: 38px;
+        height: 38px;
         border-radius: 10px;
-        background: linear-gradient(135deg, rgba(30, 58, 138, 0.1) 0%, rgba(37, 99, 235, 0.15) 100%);
-        color: var(--chat-primary);
+        background: #eff6ff;
+        color: var(--cr-navy-main);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.15rem;
+        font-size: 1.1rem;
+        border: 1px solid #dbeafe;
     }
 
-    .head-title {
-        font-size: 1.15rem;
+    .brand-title {
+        font-size: 1.05rem;
         font-weight: 800;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
         margin: 0;
-        line-height: 1.3;
+        line-height: 1.2;
     }
 
-    .head-subtitle {
-        font-size: 0.76rem;
-        color: var(--chat-text-muted);
+    .brand-desc {
+        font-size: 0.74rem;
+        color: var(--cr-text-muted);
         margin: 0;
     }
 
-    .badge-unread-total {
-        background: #ef4444;
-        color: #fff;
+    .total-unread-badge {
+        background: var(--cr-danger);
+        color: #ffffff;
         font-size: 0.72rem;
-        font-weight: 700;
-        padding: 4px 10px;
+        font-weight: 800;
+        padding: 3px 10px;
         border-radius: 20px;
-        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
-        animation: pulseSoft 2s infinite;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
     }
 
-    @keyframes pulseSoft {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-
-    .search-wrapper {
+    .sidebar-search-box {
         position: relative;
         display: flex;
         align-items: center;
     }
 
-    .search-icon {
+    .sidebar-search-box .search-ico {
         position: absolute;
         right: 14px;
-        color: var(--chat-text-muted);
-        font-size: 0.88rem;
+        color: #94a3b8;
+        font-size: 0.85rem;
         pointer-events: none;
     }
 
-    .search-wrapper input {
+    .sidebar-search-box input {
         width: 100%;
-        padding: 10px 38px 10px 36px;
-        background: var(--chat-bg-soft);
-        border: 1px solid var(--chat-border);
-        border-radius: var(--radius-md);
-        font-size: 0.85rem;
-        color: var(--chat-text-dark);
+        padding: 9px 38px 9px 34px;
+        background: #f8fafc;
+        border: 1px solid var(--cr-border);
+        border-radius: 10px;
+        font-size: 0.84rem;
+        color: var(--cr-text-primary);
         font-family: inherit;
+        outline: none;
         transition: all 0.2s ease;
     }
 
-    .search-wrapper input:focus {
+    .sidebar-search-box input:focus {
         background: #ffffff;
-        border-color: var(--chat-accent);
+        border-color: var(--cr-navy-light);
         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
-        outline: none;
     }
 
-    .clear-search-btn {
+    .clear-btn {
         position: absolute;
         left: 10px;
         background: none;
         border: none;
-        color: var(--chat-text-muted);
+        color: #94a3b8;
         cursor: pointer;
         padding: 4px;
         font-size: 0.8rem;
     }
 
-    .clear-search-btn:hover {
-        color: var(--chat-text-dark);
+    .clear-btn:hover {
+        color: var(--cr-text-primary);
     }
 
-    .filter-tabs {
+    .sidebar-filter-tabs {
         display: flex;
         gap: 8px;
     }
 
-    .filter-tab {
+    .filter-chip {
         flex: 1;
-        background: var(--chat-bg-soft);
-        border: 1px solid var(--chat-border);
-        color: var(--chat-text-muted);
+        background: #f1f5f9;
+        border: 1px solid var(--cr-border);
+        color: var(--cr-text-muted);
         font-size: 0.78rem;
-        font-weight: 600;
+        font-weight: 700;
         padding: 6px 12px;
         border-radius: 8px;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.15s ease;
         text-align: center;
     }
 
-    .filter-tab:hover {
+    .filter-chip:hover {
         background: #e2e8f0;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
     }
 
-    .filter-tab.active {
-        background: var(--chat-primary);
+    .filter-chip.active {
+        background: var(--cr-navy-main);
         color: #ffffff;
-        border-color: var(--chat-primary);
+        border-color: var(--cr-navy-main);
     }
 
-    .conversations-list {
+    .student-scroll-list {
         flex: 1;
         overflow-y: auto;
-        padding: 10px 12px;
+        padding: 8px 10px;
     }
 
-    /* Individual Student Card in Sidebar */
-    .conv-card {
+    /* Individual Student Card */
+    .student-chat-item {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 12px 14px;
-        border-radius: var(--radius-md);
+        padding: 11px 12px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         border: 1px solid transparent;
         background: #ffffff;
         position: relative;
     }
 
-    .conv-card:hover {
-        background: var(--chat-bg-soft);
-        border-color: var(--chat-border);
+    .student-chat-item:hover {
+        background: #f8fafc;
+        border-color: var(--cr-border);
     }
 
-    .conv-card.active {
+    .student-chat-item.active {
         background: #eff6ff;
         border-color: #bfdbfe;
     }
 
-    .conv-card.active::before {
+    .student-chat-item.active::before {
         content: '';
         position: absolute;
         right: 0;
-        top: 10px;
-        bottom: 10px;
+        top: 8px;
+        bottom: 8px;
         width: 4px;
-        background: var(--chat-accent);
+        background: var(--cr-navy-main);
         border-radius: 4px 0 0 4px;
     }
 
-    .conv-avatar-wrapper {
+    .item-avatar-wrapper {
         position: relative;
         flex-shrink: 0;
     }
 
-    .conv-avatar-initials {
-        width: 46px;
-        height: 46px;
+    .item-avatar-letter {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.15rem;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+        font-weight: 800;
+        font-size: 1.1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
     }
 
-    .conv-avatar-img {
-        width: 46px;
-        height: 46px;
+    .item-avatar-img {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         object-fit: cover;
-        border: 2px solid var(--chat-border);
+        border: 1.5px solid var(--cr-border);
     }
 
-    .conv-status-dot {
+    .online-dot {
         position: absolute;
         bottom: 0;
         right: 0;
-        width: 12px;
-        height: 12px;
+        width: 11px;
+        height: 11px;
         border-radius: 50%;
         border: 2px solid #ffffff;
     }
 
-    .conv-status-dot.online {
-        background: #10b981;
+    .online-dot.online {
+        background: var(--cr-emerald);
     }
 
-    .conv-status-dot.inactive {
+    .online-dot.offline {
         background: #94a3b8;
     }
 
-    .conv-body {
+    .item-content-pane {
         flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
     }
 
-    .conv-top-row {
+    .item-header-line {
         display: flex;
         justify-content: space-between;
-        align-items: baseline;
-        gap: 8px;
+        align-items: center;
+        gap: 6px;
     }
 
-    .conv-name {
-        font-size: 0.92rem;
+    .item-name {
+        font-size: 0.9rem;
         font-weight: 700;
-        color: var(--chat-text-dark);
-        margin: 0;
+        color: var(--cr-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .conv-time {
-        font-size: 0.7rem;
-        color: var(--chat-text-muted);
+    .item-time {
+        font-size: 0.68rem;
+        color: var(--cr-text-muted);
         white-space: nowrap;
         flex-shrink: 0;
     }
 
-    .conv-middle-row {
+    .item-stage-line {
         display: flex;
         align-items: center;
     }
 
-    .conv-stage-badge {
+    .stage-tag {
         font-size: 0.68rem;
         font-weight: 600;
         padding: 1px 7px;
         border-radius: 6px;
         background: #f1f5f9;
         color: #475569;
-        display: inline-block;
     }
 
-    .conv-card.active .conv-stage-badge {
+    .student-chat-item.active .stage-tag {
         background: #dbeafe;
         color: #1e40af;
     }
 
-    .conv-bottom-row {
+    .item-snippet-line {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         margin-top: 2px;
     }
 
-    .conv-snippet {
-        font-size: 0.8rem;
-        color: var(--chat-text-muted);
-        margin: 0;
+    .snippet-text {
+        font-size: 0.78rem;
+        color: var(--cr-text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         flex: 1;
     }
 
-    .snippet-prefix {
-        font-weight: 600;
+    .me-prefix {
+        font-weight: 700;
         color: #334155;
     }
 
-    .no-msg-text {
+    .new-conversation-hint {
         font-style: italic;
-        opacity: 0.6;
+        opacity: 0.7;
     }
 
-    .unread-pill {
-        background: #ef4444;
+    .unread-counter-pill {
+        background: var(--cr-danger);
         color: #ffffff;
-        font-size: 0.7rem;
-        font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 12px;
+        font-size: 0.68rem;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 10px;
         min-width: 18px;
         text-align: center;
-        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
     }
 
-    .empty-list-placeholder {
-        padding: 48px 20px;
+    .empty-list-box {
+        padding: 40px 16px;
         text-align: center;
-        color: var(--chat-text-muted);
+        color: var(--cr-text-muted);
     }
 
-    .empty-list-placeholder i {
-        font-size: 2.2rem;
+    .empty-list-box i {
+        font-size: 2rem;
         color: #cbd5e1;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         display: block;
     }
 
-    .empty-list-placeholder p {
-        font-size: 0.88rem;
+    .empty-list-box p {
+        font-size: 0.84rem;
         margin: 0;
     }
 
-    /* ------------------------------
+    /* -----------------------------------
        MAIN CHAT PANE
-       ------------------------------ */
-    .inbox-chat-pane {
+       ----------------------------------- */
+    .inbox-classic-main {
         display: flex;
         flex-direction: column;
-        background: #f8fafc;
-        position: relative;
+        background: var(--cr-bg);
         height: 100%;
         min-width: 0;
+        position: relative;
     }
 
-    /* Placeholder when no conversation chosen */
-    .chat-placeholder {
+    /* Empty state */
+    .empty-conversation-state {
         flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
+        padding: 40px 24px;
         text-align: center;
     }
 
-    .placeholder-graphic .graphic-circle {
-        width: 80px;
-        height: 80px;
+    .empty-icon-circle {
+        width: 76px;
+        height: 76px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.4rem;
-        margin: 0 auto 20px;
-        box-shadow: 0 10px 20px -5px rgba(30, 58, 138, 0.3);
+        font-size: 2.2rem;
+        margin-bottom: 18px;
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
     }
 
-    .chat-placeholder h3 {
-        font-size: 1.35rem;
+    .empty-conversation-state h3 {
+        font-size: 1.25rem;
         font-weight: 800;
-        color: var(--chat-text-dark);
-        margin: 0 0 8px 0;
+        color: var(--cr-text-primary);
+        margin: 0 0 8px;
     }
 
-    .chat-placeholder p {
-        font-size: 0.92rem;
-        color: var(--chat-text-muted);
-        max-width: 440px;
+    .empty-conversation-state p {
+        font-size: 0.88rem;
+        color: var(--cr-text-muted);
+        max-width: 420px;
         line-height: 1.6;
-        margin: 0 0 24px 0;
+        margin: 0 0 24px;
     }
 
-    .quick-hints {
+    .academic-features-row {
         display: flex;
         flex-direction: column;
         gap: 10px;
-        max-width: 380px;
-        text-align: right;
+        max-width: 360px;
+        width: 100%;
     }
 
-    .hint-item {
+    .feat-box {
         display: flex;
         align-items: center;
         gap: 12px;
         background: #ffffff;
-        border: 1px solid var(--chat-border);
+        border: 1px solid var(--cr-border);
         padding: 10px 16px;
         border-radius: 10px;
         font-size: 0.82rem;
         color: #334155;
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
 
-    .hint-item i {
-        color: var(--chat-accent);
+    .feat-box i {
+        color: var(--cr-navy-main);
         font-size: 1rem;
     }
 
     /* Active Header */
-    .active-header {
-        padding: 14px 24px;
+    .active-conversation-header {
+        padding: 12px 20px;
         background: #ffffff;
-        border-bottom: 1px solid var(--chat-border);
+        border-bottom: 1px solid var(--cr-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
+        gap: 14px;
         z-index: 5;
     }
 
-    .header-student-info {
+    .header-profile-cluster {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 12px;
         min-width: 0;
     }
 
-    .mobile-back-btn {
+    .mobile-return-btn {
         display: none;
         background: none;
         border: none;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
         font-size: 1.1rem;
         cursor: pointer;
         padding: 6px;
     }
 
-    .active-avatar {
-        width: 46px;
-        height: 46px;
+    .header-avatar {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #1e3a8a, #2563eb);
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.2rem;
+        font-weight: 800;
+        font-size: 1.15rem;
         flex-shrink: 0;
-        box-shadow: var(--chat-shadow-sm);
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
     }
 
-    .active-meta {
+    .header-meta-details {
         display: flex;
         flex-direction: column;
-        gap: 3px;
+        gap: 2px;
         min-width: 0;
     }
 
-    .name-and-badges {
+    .title-and-stage {
         display: flex;
         align-items: center;
         gap: 8px;
         flex-wrap: wrap;
     }
 
-    .active-name {
-        font-size: 1.05rem;
+    .active-student-name {
+        font-size: 1rem;
         font-weight: 800;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
         margin: 0;
     }
 
-    .header-stage-badge {
-        font-size: 0.7rem;
-        font-weight: 600;
+    .student-stage-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
         padding: 2px 8px;
         border-radius: 6px;
-        background: #f1f5f9;
-        color: #475569;
-        border: 1px solid #e2e8f0;
+        background: #eff6ff;
+        color: #1e40af;
+        border: 1px solid #dbeafe;
     }
 
-    .active-sub-meta {
+    .status-and-contact {
         display: flex;
         align-items: center;
         gap: 8px;
-        font-size: 0.75rem;
-        color: var(--chat-text-muted);
+        font-size: 0.74rem;
+        color: var(--cr-text-muted);
     }
 
-    .status-pulse-dot {
+    .status-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pulse-emerald {
         width: 7px;
         height: 7px;
-        background: #10b981;
+        background: var(--cr-emerald);
         border-radius: 50%;
         display: inline-block;
     }
 
-    .sub-sep {
+    .meta-divider {
         color: #cbd5e1;
     }
 
-    .header-actions {
+    .contact-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .contact-pill i {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .header-controls {
         display: flex;
         align-items: center;
         gap: 8px;
         flex-shrink: 0;
     }
 
-    .action-btn {
+    .control-btn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
         padding: 7px 12px;
         border-radius: 8px;
         font-size: 0.8rem;
-        font-weight: 600;
-        border: 1px solid var(--chat-border);
+        font-weight: 700;
+        border: 1px solid var(--cr-border);
         background: #ffffff;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
     }
 
-    .action-btn:hover {
-        background: var(--chat-bg-soft);
+    .control-btn:hover {
+        background: #f8fafc;
         border-color: #cbd5e1;
     }
 
-    .btn-whatsapp {
+    .btn-wa {
         background: #25d366;
         color: #ffffff;
         border-color: #22c55e;
     }
 
-    .btn-whatsapp:hover {
+    .btn-wa:hover {
         background: #16a34a;
         color: #ffffff;
     }
 
-    .btn-profile {
-        background: #f8fafc;
-        color: var(--chat-primary);
-        border-color: #cbd5e1;
-    }
-
-    .btn-profile:hover {
+    .btn-academic {
         background: #eff6ff;
-        border-color: #93c5fd;
+        color: var(--cr-navy-main);
+        border-color: #bfdbfe;
     }
 
-    .btn-refresh {
-        padding: 8px 10px;
+    .btn-academic:hover {
+        background: #dbeafe;
     }
 
-    /* Messages Display */
-    .messages-area {
+    .btn-icon {
+        padding: 7px 10px;
+    }
+
+    /* Messages Canvas: Serene & Classic (NO UGLY DOTS!) */
+    .messages-canvas {
         flex: 1;
         overflow-y: auto;
         padding: 20px 24px;
         display: flex;
         flex-direction: column;
         gap: 14px;
-        background-color: #f1f5f9;
-        background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
-        background-size: 20px 20px;
+        background: #f8fafc;
     }
 
-    .loading-messages {
+    .loading-state-box {
         margin: auto;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 10px;
-        color: var(--chat-text-muted);
-        font-size: 0.9rem;
+        color: var(--cr-text-muted);
+        font-size: 0.88rem;
     }
 
-    .empty-chat-message {
+    .empty-chat-state {
         margin: auto;
         text-align: center;
-        color: var(--chat-text-muted);
-        padding: 30px;
-        background: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(4px);
-        border-radius: var(--radius-md);
-        border: 1px dashed var(--chat-border);
-        max-width: 400px;
+        color: var(--cr-text-muted);
+        padding: 24px;
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px dashed var(--cr-border);
+        max-width: 360px;
     }
 
-    .empty-chat-message i {
+    .empty-chat-state i {
         font-size: 2rem;
-        color: var(--chat-accent);
-        margin-bottom: 10px;
+        color: #94a3b8;
+        margin-bottom: 8px;
         display: block;
     }
 
-    /* Message Rows and Bubbles */
-    .message-row {
+    .empty-chat-state h4 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--cr-text-primary);
+        margin: 0 0 4px;
+    }
+
+    .empty-chat-state p {
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    /* Classic Bubble Rows */
+    .bubble-row {
         display: flex;
         align-items: flex-end;
-        gap: 8px;
+        gap: 10px;
         width: 100%;
     }
 
-    /* In RTL:
-       Student (incoming) = on the Right (flex-start)
-       Admin (outgoing) = on the Left (flex-end)
-    */
-    .message-row.is-student {
+    .bubble-row.is-student {
         justify-content: flex-start;
         flex-direction: row;
     }
 
-    .message-row.is-admin {
+    .bubble-row.is-admin {
         justify-content: flex-end;
         flex-direction: row-reverse;
     }
 
-    .msg-avatar-small {
+    .bubble-avatar-mini {
         width: 32px;
         height: 32px;
         border-radius: 50%;
@@ -945,70 +954,69 @@
         align-items: center;
         justify-content: center;
         font-size: 0.75rem;
-        font-weight: 700;
+        font-weight: 800;
         flex-shrink: 0;
     }
 
-    .message-row.is-student .msg-avatar-small {
+    .bubble-row.is-student .bubble-avatar-mini {
         background: #e2e8f0;
         color: #475569;
     }
 
-    .message-row.is-admin .msg-avatar-small {
-        background: var(--chat-primary);
+    .bubble-row.is-admin .bubble-avatar-mini {
+        background: var(--cr-navy-main);
         color: #ffffff;
     }
 
-    .message-bubble {
-        max-width: 68%;
+    .bubble-card {
+        max-width: 65%;
         min-width: 140px;
         padding: 12px 16px;
-        position: relative;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         line-height: 1.6;
         word-break: break-word;
-        box-shadow: var(--chat-shadow-sm);
-        animation: messageFadeIn 0.25s ease-out;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        animation: bubbleSlideIn 0.2s ease-out;
     }
 
-    @keyframes messageFadeIn {
-        from { opacity: 0; transform: translateY(6px); }
+    @keyframes bubbleSlideIn {
+        from { opacity: 0; transform: translateY(4px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
-    .message-row.is-admin .message-bubble {
-        background: var(--chat-bubble-admin);
+    .bubble-row.is-admin .bubble-card {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
         color: #ffffff;
-        border-radius: 16px 16px 4px 16px;
+        border-radius: 14px 14px 4px 14px;
     }
 
-    .message-row.is-student .message-bubble {
-        background: var(--chat-bubble-student);
-        color: var(--chat-text-dark);
-        border: 1px solid var(--chat-border);
-        border-radius: 16px 16px 16px 4px;
+    .bubble-row.is-student .bubble-card {
+        background: #ffffff;
+        color: var(--cr-text-primary);
+        border: 1px solid var(--cr-border);
+        border-radius: 14px 14px 14px 4px;
     }
 
-    .bubble-author {
-        font-size: 0.74rem;
-        font-weight: 700;
+    .bubble-sender-name {
+        font-size: 0.72rem;
+        font-weight: 800;
         margin-bottom: 4px;
         display: block;
     }
 
-    .message-row.is-admin .bubble-author {
+    .bubble-row.is-admin .bubble-sender-name {
         color: #93c5fd;
     }
 
-    .message-row.is-student .bubble-author {
-        color: var(--chat-primary);
+    .bubble-row.is-student .bubble-sender-name {
+        color: var(--cr-navy-main);
     }
 
-    .bubble-text {
+    .bubble-message-text {
         white-space: pre-wrap;
     }
 
-    .bubble-meta {
+    .bubble-footer-meta {
         display: flex;
         align-items: center;
         justify-content: flex-end;
@@ -1017,23 +1025,23 @@
         font-size: 0.68rem;
     }
 
-    .message-row.is-admin .bubble-meta {
+    .bubble-row.is-admin .bubble-footer-meta {
         color: rgba(255, 255, 255, 0.8);
     }
 
-    .message-row.is-student .bubble-meta {
-        color: var(--chat-text-muted);
+    .bubble-row.is-student .bubble-footer-meta {
+        color: var(--cr-text-muted);
     }
 
-    .bubble-meta i {
-        font-size: 0.72rem;
+    .bubble-footer-meta i {
+        font-size: 0.7rem;
     }
 
-    /* Quick Reply Toolbar */
-    .canned-responses-bar {
+    /* Quick Reply Bar */
+    .canned-responses-pane {
         background: #ffffff;
-        border-top: 1px solid var(--chat-border);
-        padding: 10px 16px;
+        border-top: 1px solid var(--cr-border);
+        padding: 9px 18px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -1041,160 +1049,150 @@
         white-space: nowrap;
     }
 
-    .canned-title {
+    .canned-label {
         font-size: 0.78rem;
         font-weight: 700;
-        color: var(--chat-text-muted);
+        color: var(--cr-text-muted);
         display: flex;
         align-items: center;
         gap: 6px;
         flex-shrink: 0;
     }
 
-    .canned-title i {
+    .canned-label i {
         color: #d97706;
     }
 
-    .canned-chips-container {
+    .canned-pills-flow {
         display: flex;
         gap: 8px;
         overflow-x: auto;
-        padding-bottom: 2px;
     }
 
-    .chip-btn {
-        background: var(--chat-bg-soft);
-        border: 1px solid var(--chat-border);
+    .canned-chip {
+        background: #f8fafc;
+        border: 1px solid var(--cr-border);
         border-radius: 20px;
-        padding: 5px 14px;
+        padding: 5px 12px;
         font-size: 0.78rem;
         color: #334155;
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease;
         white-space: nowrap;
         font-family: inherit;
-        font-weight: 500;
+        font-weight: 600;
     }
 
-    .chip-btn:hover {
+    .canned-chip:hover {
         background: #eff6ff;
         border-color: #93c5fd;
-        color: var(--chat-primary);
-        transform: translateY(-1px);
+        color: var(--cr-navy-main);
     }
 
-    /* Input Area */
-    .input-container {
-        padding: 14px 20px;
+    /* Input Composer */
+    .composer-container {
+        padding: 12px 18px;
         background: #ffffff;
-        border-top: 1px solid var(--chat-border);
+        border-top: 1px solid var(--cr-border);
     }
 
-    .message-form {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .input-row {
+    .composer-box {
         display: flex;
         align-items: center;
-        gap: 12px;
-        background: var(--chat-bg-soft);
-        border: 1px solid var(--chat-border);
-        border-radius: var(--radius-md);
-        padding: 6px 10px 6px 14px;
-        transition: all 0.2s;
+        gap: 10px;
+        background: #f8fafc;
+        border: 1px solid var(--cr-border);
+        border-radius: 12px;
+        padding: 6px 8px 6px 12px;
+        transition: all 0.2s ease;
     }
 
-    .input-row:focus-within {
-        border-color: var(--chat-accent);
+    .composer-box:focus-within {
         background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        border-color: var(--cr-navy-light);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
-    .input-row textarea {
+    .composer-box textarea {
         flex: 1;
         border: none;
         background: transparent;
         resize: none;
         outline: none;
         font-family: inherit;
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         line-height: 1.5;
         max-height: 120px;
         padding: 6px 0;
-        color: var(--chat-text-dark);
+        color: var(--cr-text-primary);
     }
 
-    .btn-send-message {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    .composer-send-btn {
+        background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
         color: #ffffff;
         border: none;
-        padding: 10px 20px;
-        border-radius: var(--radius-sm);
+        padding: 9px 18px;
+        border-radius: 8px;
         font-weight: 700;
-        font-size: 0.88rem;
+        font-size: 0.85rem;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 8px;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+        gap: 6px;
+        transition: all 0.15s ease;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
     }
 
-    .btn-send-message:hover {
-        background: linear-gradient(135deg, #172554 0%, #1d4ed8 100%);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    .composer-send-btn:hover {
+        background: #172554;
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.35);
     }
 
-    .btn-send-message:disabled {
+    .composer-send-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-        transform: none;
     }
 
-    /* Scrollbar */
-    .conversations-list::-webkit-scrollbar,
-    .messages-area::-webkit-scrollbar,
-    .canned-chips-container::-webkit-scrollbar {
+    /* Scrollbars */
+    .student-scroll-list::-webkit-scrollbar,
+    .messages-canvas::-webkit-scrollbar,
+    .canned-pills-flow::-webkit-scrollbar {
         width: 5px;
         height: 5px;
     }
-    .conversations-list::-webkit-scrollbar-thumb,
-    .messages-area::-webkit-scrollbar-thumb,
-    .canned-chips-container::-webkit-scrollbar-thumb {
+    .student-scroll-list::-webkit-scrollbar-thumb,
+    .messages-canvas::-webkit-scrollbar-thumb,
+    .canned-pills-flow::-webkit-scrollbar-thumb {
         background: #cbd5e1;
         border-radius: 4px;
     }
 
     /* Responsive */
     @media (max-width: 900px) {
-        .inbox-page-container {
+        .inbox-classic-wrapper {
             padding: 8px;
         }
-        .inbox-card {
+        .inbox-classic-card {
             grid-template-columns: 1fr;
             height: calc(100vh - 100px);
             border-radius: 12px;
         }
-        .inbox-chat-pane {
+        .inbox-classic-main {
             display: none;
         }
-        .inbox-card.mobile-active .inbox-sidebar {
+        .inbox-classic-card.mobile-active .inbox-classic-sidebar {
             display: none;
         }
-        .inbox-card.mobile-active .inbox-chat-pane {
+        .inbox-classic-card.mobile-active .inbox-classic-main {
             display: flex;
         }
-        .mobile-back-btn {
+        .mobile-return-btn {
             display: inline-block;
         }
-        .message-bubble {
+        .bubble-card {
             max-width: 85%;
         }
-        .btn-send-message .send-text {
+        .composer-send-btn span {
             display: none;
         }
     }
@@ -1223,7 +1221,7 @@
 
     function setFilter(filter) {
         activeFilter = filter;
-        document.querySelectorAll('.filter-tab').forEach(b => {
+        document.querySelectorAll('.filter-chip').forEach(b => {
             b.classList.toggle('active', b.dataset.filter === filter);
         });
         filterStudents();
@@ -1236,7 +1234,7 @@
             clearBtn.style.display = query ? 'block' : 'none';
         }
 
-        const cards = document.querySelectorAll('.conv-card');
+        const cards = document.querySelectorAll('.student-chat-item');
         let visibleCount = 0;
 
         cards.forEach(card => {
@@ -1271,7 +1269,7 @@
         activeStudentId = id;
         lastMessagesJson = "";
 
-        // Update browser URL query string without reloading page
+        // Update URL
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.set('student_id', id);
         window.history.replaceState({ path: newUrl.href }, '', newUrl.href);
@@ -1311,8 +1309,8 @@
         profileBtn.href = profileUrlBase + '/' + id;
         profileBtn.style.display = 'inline-flex';
 
-        // Highlight active card in sidebar
-        document.querySelectorAll('.conv-card').forEach(c => c.classList.remove('active'));
+        // Highlight active card
+        document.querySelectorAll('.student-chat-item').forEach(c => c.classList.remove('active'));
         const activeCard = document.getElementById('user_' + id);
         if (activeCard) {
             activeCard.classList.add('active');
@@ -1326,9 +1324,9 @@
         // Show loading in messages area
         const box = document.getElementById('chat_messages');
         box.innerHTML = `
-            <div class="loading-messages">
+            <div class="loading-state-box">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
-                <span>جاري تحميل المحادثة...</span>
+                <span>جاري مزامنة المحادثة...</span>
             </div>
         `;
 
@@ -1339,7 +1337,6 @@
         if (pollInterval) clearInterval(pollInterval);
         pollInterval = setInterval(() => fetchMessages(false), 3500);
 
-        // Focus input
         setTimeout(() => {
             const input = document.getElementById('msg_input');
             if (input) input.focus();
@@ -1361,7 +1358,6 @@
                 const box = document.getElementById('chat_messages');
                 const messages = res.data.messages || [];
 
-                // If student object returned, update header
                 if (res.data.student) {
                     const st = res.data.student;
                     if (st.name) {
@@ -1389,10 +1385,10 @@
 
                 if (messages.length === 0) {
                     box.innerHTML = `
-                        <div class="empty-chat-message">
+                        <div class="empty-chat-state">
                             <i class="fa-regular fa-comment-dots"></i>
-                            <h4 style="font-weight:700; color: #1e293b; margin-bottom: 6px;">لا توجد رسائل سابقة</h4>
-                            <p style="font-size:0.85rem; margin:0;">ابدأ المحادثة مع الطالب عبر كتابة رسالة بالأسفل.</p>
+                            <h4>لا توجد رسائل سابقة</h4>
+                            <p>ابدأ المحادثة مع الطالب عبر كتابة رسالة بالأسفل.</p>
                         </div>
                     `;
                     return;
@@ -1413,7 +1409,7 @@
 
     function appendMessage(msg) {
         const box = document.getElementById('chat_messages');
-        const emptyMsg = box.querySelector('.empty-chat-message');
+        const emptyMsg = box.querySelector('.empty-chat-state');
         if (emptyMsg) emptyMsg.remove();
 
         const sender = (msg.sender_type || '').toLowerCase().trim();
@@ -1424,15 +1420,15 @@
         const avatarLetter = isAdmin ? '<i class="fa-solid fa-user-shield"></i>' : studentName.charAt(0);
 
         const row = document.createElement('div');
-        row.className = `message-row ${isAdmin ? 'is-admin' : 'is-student'}`;
+        row.className = `bubble-row ${isAdmin ? 'is-admin' : 'is-student'}`;
         row.innerHTML = `
-            <div class="msg-avatar-small" title="${escapeHtml(authorLabel)}">
+            <div class="bubble-avatar-mini" title="${escapeHtml(authorLabel)}">
                 ${avatarLetter}
             </div>
-            <div class="message-bubble">
-                <span class="bubble-author">${escapeHtml(authorLabel)}</span>
-                <div class="bubble-text">${escapeHtml(msg.message)}</div>
-                <div class="bubble-meta">
+            <div class="bubble-card">
+                <span class="bubble-sender-name">${escapeHtml(authorLabel)}</span>
+                <div class="bubble-message-text">${escapeHtml(msg.message)}</div>
+                <div class="bubble-footer-meta">
                     <span>${escapeHtml(time)}</span>
                     ${isAdmin ? '<i class="fa-solid fa-check-double text-info"></i>' : ''}
                 </div>
@@ -1472,7 +1468,7 @@
             // Update snippet in sidebar
             const snippet = document.getElementById('snippet_' + activeStudentId);
             if (snippet) {
-                snippet.innerHTML = `<span class="snippet-prefix">أنت: </span>` + escapeHtml(message.substring(0, 35));
+                snippet.innerHTML = `<strong class="me-prefix">أنت: </strong>` + escapeHtml(message.substring(0, 32));
             }
             const timeEl = document.getElementById('time_' + activeStudentId);
             if (timeEl) {
@@ -1525,7 +1521,6 @@
         return String(text).replace(/[&<>"']/g, m => map[m]);
     }
 
-    // Handle Enter key for sending (Shift+Enter for newline)
     document.addEventListener('DOMContentLoaded', function() {
         const input = document.getElementById('msg_input');
         if (input) {
@@ -1547,7 +1542,6 @@
                 targetCard.click();
                 targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                // If card not found in DOM, fetch directly
                 @if(isset($selectedStudent) && $selectedStudent)
                     loadChat(
                         {{ $selectedStudent->id }},

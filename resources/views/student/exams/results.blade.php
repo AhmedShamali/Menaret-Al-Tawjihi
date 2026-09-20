@@ -106,6 +106,39 @@
             </div>
         </header>
 
+        @if(!empty($submission->deduction_amount) && $submission->deduction_amount > 0)
+        <div style="margin: 20px 24px 0; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 14px; padding: 18px 22px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; color: #991b1b; font-weight: 800; font-size: 1rem;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                    <span>{{ __('تنبيه أكاديمي: تم تطبيق خصم درجات على هذا الاختبار') }}</span>
+                </div>
+                <span style="background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.85rem;">
+                    - {{ $submission->deduction_amount }} علامات مخصومة
+                </span>
+            </div>
+            @if($submission->deduction_reason)
+                <div style="color: #b91c1c; font-size: 0.92rem; line-height: 1.6; margin-top: 6px;">
+                    <strong>سبب خصم العلامة:</strong> {{ $submission->deduction_reason }}
+                </div>
+            @endif
+            @if($submission->teacher_notes)
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #fca5a5; color: #7f1d1d; font-size: 0.88rem; line-height: 1.6;">
+                    <strong>توجيهات المعلم:</strong> {{ $submission->teacher_notes }}
+                </div>
+            @endif
+        </div>
+        @elseif(!empty($submission->teacher_notes))
+        <div style="margin: 20px 24px 0; background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px; padding: 16px 20px;">
+            <div style="color: #166534; font-weight: 800; font-size: 0.95rem; margin-bottom: 6px;">
+                <i class="fa-solid fa-comment-dots"></i> ملاحظات وتوجيهات أستاذ المساق:
+            </div>
+            <div style="color: #15803d; font-size: 0.9rem; line-height: 1.6;">
+                {{ $submission->teacher_notes }}
+            </div>
+        </div>
+        @endif
+
         <div class="ed-report-body">
             <div class="ed-report-section-title">
                 <i class="fa-solid fa-clipboard-check"></i>

@@ -1074,6 +1074,10 @@
 
         isExamRunning = true;
 
+        if (!sessionStorage.getItem('exam_start_time_{{ $exam->id }}')) {
+            sessionStorage.setItem('exam_start_time_{{ $exam->id }}', Date.now());
+        }
+
         if (timerInterval) clearInterval(timerInterval);
 
         timerInterval = setInterval(function() {
@@ -1094,6 +1098,19 @@
             }
         }, 1000);
     }
+
+    // استعادة وقت الجلسة تلقائياً في حال إعادة تحميل الصفحة
+    document.addEventListener('DOMContentLoaded', function() {
+        const storedStart = sessionStorage.getItem('exam_start_time_{{ $exam->id }}');
+        if (storedStart) {
+            const elapsed = Math.floor((Date.now() - parseInt(storedStart, 10)) / 1000);
+            const totalDuration = {{ $exam->duration_minutes * 60 }};
+            if (elapsed < totalDuration) {
+                timeLeft = totalDuration - elapsed;
+                startExamOfficially();
+            }
+        }
+    });
 
     // ==========================================
     // محرك مكافحة الغش الأكاديمي والرصد الذكي
@@ -1120,7 +1137,7 @@
         document.getElementById('screenshotsCount').value = screenshots;
         document.getElementById('cheatingFlagsInput').value = JSON.stringify(cheatingFlags);
 
-        // تحديث الشارة اللحظية
+        // تحديث الشارة اللحظية بهدوء في الشريط العلوي
         const badge = document.getElementById('proctoringBadge');
         const text = document.getElementById('proctoringText');
         if (badge && text) {
@@ -1128,7 +1145,7 @@
             text.textContent = `تنبيه رصد (${tabSwitches + screenshots})`;
         }
 
-        // إشعار الخادم فورياً في الخلفية
+        // إشعار الخادم فورياً في الخلفية بدون تعطيل الطالب
         try {
             axios.post("{{ route('student.exams.cheatingIncident', $exam->id) }}", {
                 violation_type: type,
@@ -1136,30 +1153,15 @@
             }).catch(() => {});
         } catch (e) {}
 
-        // إطلاق الإنذار الأكاديمي الرادع للطالب
+        // إشعار علوي هادئ وغير معطّل لتدفق الاختبار (Non-blocking discreet toast)
         Swal.fire({
+            toast: true,
+            position: 'top-end',
             icon: 'warning',
-            title: '⚠️ تنبيه أمني أكاديمي: اشتباه غش!',
-            html: `
-                <div style="text-align: right; direction: rtl; font-size: 0.95rem; line-height: 1.8; color: #1e293b;">
-                    <p style="margin-bottom: 10px; color: #dc2626; font-weight: 800;">
-                        تم رصد حركة غير مصرح بها: <span style="text-decoration: underline;">${details}</span>
-                    </p>
-                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 0.85rem;">
-                        <strong>سجل الرصد في جلستك الحالية:</strong>
-                        <ul style="margin: 6px 0 0; padding-inline-start: 20px;">
-                            <li>مرات مغادرة الصفحة/التبويب: <b>${tabSwitches} مرة</b></li>
-                            <li>محاولات أخذ لقطة شاشة: <b>${screenshots} مرة</b></li>
-                        </ul>
-                    </div>
-                    <p style="color: #64748b; font-size: 0.8rem; margin: 0;">
-                        تم توثيق هذه المحاولة وإشعار معلّم المساق بها فوراً. يرجى التركيز في إجاباتك تجنباً لاتخاذ إجراءات أكاديمية أو إلغاء الاختبار.
-                    </p>
-                </div>
-            `,
-            confirmButtonText: 'الرجوع ومتابعة الاختبار',
-            confirmButtonColor: '#1e3a8a',
-            allowOutsideClick: false
+            title: `تم رصد نشاط خارج صفحة الاختبار (${details}) وتوثيقه للمعلم.`,
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true
         });
     }
 
@@ -1170,7 +1172,7 @@
         }
     });
 
-    // 2. رصد فقدان تركيز النافذة (Window Blur)
+    // 2. رصد فقدان تركيز النافذة (Window Blur) - مع تجاهل نافذة تكبير الصور
     window.addEventListener('blur', function() {
         const modal = document.getElementById('imageModal');
         const isZoomOpen = modal && modal.style.display === 'flex';
@@ -1300,6 +1302,7 @@
         })
         .then(res => {
             if (res.data.success) {
+                sessionStorage.removeItem('exam_start_time_{{ $exam->id }}');
                 Swal.fire({
                     title: 'تم التسليم بنجاح!',
                     text: res.data.message || 'تم توثيق إجاباتك بنجاح.',

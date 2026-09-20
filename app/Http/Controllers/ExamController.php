@@ -75,29 +75,33 @@ class ExamController extends Controller
         ]);
 
         $showResultImmediately = filter_var($request->input('show_result_immediately', false), FILTER_VALIDATE_BOOLEAN);
+        $sub = Subject::find($validated['subject_id']);
+        $effectiveStageId = $validated['stage_id'] ?? $sub?->stage_id;
 
-        DB::transaction(function () use ($request, $validated, $showResultImmediately) {
+        DB::transaction(function () use ($request, $validated, $showResultImmediately, $effectiveStageId) {
             $exam = Exam::create([
                 'teacher_id' => auth()->id(),
                 'title' => $validated['title'],
                 'subject_id' => $validated['subject_id'],
-                'stage_id' => $validated['stage_id'] ?? null,
+                'stage_id' => $effectiveStageId,
                 'duration_minutes' => $validated['duration_minutes'],
                 'show_result_immediately' => $showResultImmediately,
             ]);
 
-            foreach ($request->questions as $q) {
+            foreach ($request->questions as $index => $q) {
                 $imagePath = null;
-                if (isset($q['image']) && $q['image'] instanceof \Illuminate\Http\UploadedFile) {
+                $imageFile = $request->file("questions.{$index}.image") ?? ($q['image'] ?? null);
+
+                if ($imageFile instanceof \Illuminate\Http\UploadedFile && $imageFile->isValid()) {
                     if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
                         try {
-                            $path = $q['image']->store('questions', 'supabase');
+                            $path = $imageFile->store('questions', 'supabase');
                             $imagePath = Storage::disk('supabase')->url($path);
                         } catch (\Throwable $e) {
-                            $imagePath = $q['image']->store('questions', 'public');
+                            $imagePath = $imageFile->store('questions', 'public');
                         }
                     } else {
-                        $imagePath = $q['image']->store('questions', 'public');
+                        $imagePath = $imageFile->store('questions', 'public');
                     }
                 }
 
@@ -127,8 +131,7 @@ class ExamController extends Controller
         });
 
         try {
-            $sub = Subject::find($validated['subject_id']);
-            $stageId = $validated['stage_id'] ?? $sub?->stage_id;
+            $stageId = $effectiveStageId;
             if ($stageId && $sub) {
                 \App\Services\NotificationService::notifyStageStudents(
                     $stageId,
@@ -274,7 +277,7 @@ class ExamController extends Controller
     public function saveGrade(Request $request, $id)
     {
         try {
-            $submission = ExamSubmission::with('exam')->findOrFail($id);
+            $submission = ExamSubmission::with(['exam', 'answers'])->findOrFail($id);
             $user = auth()->user();
             if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
                 return response()->json(['success' => false, 'error' => 'غير مصرح لك برصد الدرجات لهذا التسليم'], 403);
@@ -283,31 +286,55 @@ class ExamController extends Controller
             if ($request->has('grades')) {
                 foreach ($request->grades as $answerId => $points) {
                     SubmissionAnswer::where('id', $answerId)->update([
-                        'points_awarded' => $points
+                        'points_awarded' => (float) $points
                     ]);
                 }
             }
 
-            $newTotalGrade = $submission->answers()->sum('points_awarded');
+            $deductionAmount = max(0, (float) $request->input('deduction_amount', 0));
+            $deductionReason = $request->input('deduction_reason');
+            $teacherNotes = $request->input('teacher_notes');
+
+            // إذا كان هناك تعديل يدوي مباشر للدرجة الأولية أو استخدام مجموع الأسئلة
+            $subtotalGrade = (float) $submission->answers()->sum('points_awarded');
+            if ($request->filled('override_total_grade')) {
+                $subtotalGrade = (float) $request->input('override_total_grade');
+            }
+
+            $finalEarnedGrade = max(0, $subtotalGrade - $deductionAmount);
+
             $submission->update([
-                'total_earned_grade' => $newTotalGrade,
-                'status' => 'graded',
-                'is_published' => true,
+                'total_earned_grade' => $finalEarnedGrade,
+                'deduction_amount'   => $deductionAmount,
+                'deduction_reason'   => $deductionReason,
+                'teacher_notes'      => $teacherNotes,
+                'status'             => 'graded',
+                'is_published'       => true,
             ]);
 
             try {
+                $msg = "قام أستاذ المادة بتصحيح ورصد درجتك في اختبار: \"{$submission->exam->title}\". الدرجة المحتسبة: {$finalEarnedGrade}/{$submission->exam->total_grade}.";
+                if ($deductionAmount > 0) {
+                    $msg .= " (تم تطبيق خصم أكاديمي بقيمة {$deductionAmount} علامة. السبب: {$deductionReason}).";
+                }
+
                 \App\Services\NotificationService::notifyStudent(
                     $submission->student_id,
                     'تم تصحيح اختبارك ورصد الدرجة! 🌟',
-                    "قام أستاذ المادة بتصحيح ورصد درجتك في اختبار: \"{$submission->exam->title}\". درجتك النهائية: {$newTotalGrade}/{$submission->exam->total_grade}.",
+                    $msg,
                     'grade',
                     route('student.exams.results', $submission->id),
                     'fa-award'
                 );
             } catch (\Throwable $e) {}
 
-            return response()->json(['success' => true, 'title' => 'تم رصد الدرجات بنجاح ✅']);
-        } catch (\Exception $e) {
+            return response()->json([
+                'success' => true, 
+                'title' => 'تم رصد الدرجات بنجاح ✅',
+                'final_grade' => $finalEarnedGrade,
+                'deduction_amount' => $deductionAmount,
+            ]);
+        } catch (\Throwable $e) {
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
@@ -331,7 +358,16 @@ class ExamController extends Controller
         }])
         ->withCount('questions')
         ->when($studentStageId, function ($query) use ($studentStageId) {
-            $query->where('stage_id', $studentStageId)->orWhereNull('stage_id');
+            // عزل صارم: يظهر الاختبار فقط إن كان مخصصاً لمرحلة الطالب، أو مخصصاً لمادة تنتمي لنفس مرحلة الطالب حصراً
+            $query->where(function ($q) use ($studentStageId) {
+                $q->where('stage_id', $studentStageId)
+                  ->orWhere(function ($subQ) use ($studentStageId) {
+                      $subQ->whereNull('stage_id')
+                           ->whereHas('subject', function ($sQ) use ($studentStageId) {
+                               $sQ->where('stage_id', $studentStageId);
+                           });
+                  });
+            });
         })
         ->latest()
         ->get();
@@ -373,7 +409,8 @@ class ExamController extends Controller
         }
 
         $submission = ExamSubmission::where('exam_id', $examId)->where('student_id', $student->id)->latest()->first();
-        if ($submission && !$submission->allow_retake) {
+        $hasCompletedAnswers = $submission && $submission->answers()->exists();
+        if ($hasCompletedAnswers && !$submission->allow_retake) {
             return redirect()->route('student.exams.results', $submission->id)->with('info', 'عذراً، لقد قمت بتقديم هذا الاختبار مسبقاً. وفقاً للأنظمة الأكاديمية لا يمكن إعادة المحاولة إلا بعد الحصول على إذن من أستاذ المادة.');
         }
 
@@ -391,17 +428,27 @@ class ExamController extends Controller
                 }
 
                 if (!$student) {
-                    return response()->json(['success' => false, 'error' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'], 422);
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!',
+                        'error'   => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'
+                    ], 422);
                 }
 
                 $submission = ExamSubmission::where('student_id', $student->id)->where('exam_id', $id)->latest()->first();
-                if ($submission && !$submission->allow_retake) {
-                    return response()->json(['success' => false, 'error' => 'لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكن إعادته إلا بعد موافقة المعلم.'], 422);
+                $hasCompletedAnswers = $submission && $submission->answers()->exists();
+
+                if ($hasCompletedAnswers && !$submission->allow_retake) {
+                    return response()->json([
+                        'success' => false, 
+                        'message' => 'لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكن إعادته إلا بعد موافقة المعلم.',
+                        'error'   => 'لقد قمت بتقديم هذا الاختبار مسبقاً ولا يمكن إعادته إلا بعد موافقة المعلم.'
+                    ], 422);
                 }
 
                 $exam = Exam::with('questions')->findOrFail($id);
 
-                if ($submission && $submission->allow_retake) {
+                if ($submission) {
                     $submission->answers()->delete();
                     $submission->update([
                         'status' => 'pending',
@@ -414,7 +461,9 @@ class ExamController extends Controller
                         'exam_id' => $id,
                         'student_id' => $student->id,
                         'status' => 'pending',
-                        'total_earned_grade' => 0
+                        'total_earned_grade' => 0,
+                        'allow_retake' => false,
+                        'retake_requested' => false,
                     ]);
                 }
 
@@ -433,7 +482,7 @@ class ExamController extends Controller
                             $decodedCorrect = json_decode($q->correct_answer, true);
                             $correctAnswers = is_array($decodedCorrect) 
                                 ? array_map('strtolower', array_map('trim', $decodedCorrect)) 
-                                : [strtolower(trim($q->correct_answer ?? ''))];
+                                : [strtolower(trim((string)($q->correct_answer ?? '')))];
 
                             sort($userAnswers);
                             sort($correctAnswers);
@@ -442,8 +491,8 @@ class ExamController extends Controller
                                 $points = $q->points;
                             }
                         } else {
-                            $userAnswer = strtolower(trim(is_array($studentAns) ? ($studentAns[0] ?? '') : ($studentAns ?? '')));
-                            $correctAnswer = strtolower(trim($q->correct_answer ?? ''));
+                            $userAnswer = strtolower(trim((string)(is_array($studentAns) ? ($studentAns[0] ?? '') : ($studentAns ?? ''))));
+                            $correctAnswer = strtolower(trim((string)($q->correct_answer ?? '')));
 
                             if (!empty($userAnswer) && $userAnswer === $correctAnswer) {
                                 $points = $q->points;
@@ -478,8 +527,18 @@ class ExamController extends Controller
 
                 $totalTabSwitches = max($tabSwitches, (int) ($submission->tab_switches_count ?? 0));
                 $totalScreenshots = max($screenshots, (int) ($submission->screenshots_count ?? 0));
-                $existingFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode($submission->cheating_flags, true) ?? []);
-                $mergedFlags = array_values(array_unique(array_merge($existingFlags, $incomingFlags), SORT_REGULAR));
+                $existingFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode((string)$submission->cheating_flags, true) ?? []);
+                
+                $mergedFlags = [];
+                $seen = [];
+                foreach (array_merge($existingFlags, $incomingFlags) as $flag) {
+                    $k = is_array($flag) ? json_encode($flag) : (string)$flag;
+                    if (!isset($seen[$k])) {
+                        $seen[$k] = true;
+                        $mergedFlags[] = $flag;
+                    }
+                }
+
                 $hasCheatingRisk = ($totalTabSwitches > 0 || $totalScreenshots > 0 || !empty($mergedFlags));
 
                 $allQuestionsMcq = $exam->questions->isNotEmpty() && $exam->questions->every(fn($q) => $q->type === 'mcq');
@@ -552,10 +611,12 @@ class ExamController extends Controller
                     'redirect' => route('student.exams.results', $submission->id)
                 ]);
             });
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            Log::error('Exam Submission Error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'success' => false,
-                'error' => 'خطأ داخلي: ' . $e->getMessage()
+                'message' => 'تعذر حفظ وتسليم الاختبار: ' . $e->getMessage(),
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
@@ -593,6 +654,7 @@ class ExamController extends Controller
                 'student_id' => $student->id,
                 'status' => 'pending',
                 'total_earned_grade' => 0,
+                'allow_retake' => true, // يضمن عدم حظر تسليم الاختبار الفعلي للطالب
                 'has_cheating_risk' => true,
                 'tab_switches_count' => ($type === 'tab_switch' ? 1 : 0),
                 'screenshots_count' => ($type === 'screenshot' ? 1 : 0),
@@ -601,12 +663,12 @@ class ExamController extends Controller
                 ],
             ]);
         } else {
-            $currentFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode($submission->cheating_flags, true) ?? []);
+            $currentFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode((string)$submission->cheating_flags, true) ?? []);
             $currentFlags[] = ['type' => $type, 'details' => $details, 'time' => $time];
             $submission->update([
                 'has_cheating_risk' => true,
-                'tab_switches_count' => $submission->tab_switches_count + ($type === 'tab_switch' ? 1 : 0),
-                'screenshots_count' => $submission->screenshots_count + ($type === 'screenshot' ? 1 : 0),
+                'tab_switches_count' => (int)$submission->tab_switches_count + ($type === 'tab_switch' ? 1 : 0),
+                'screenshots_count' => (int)$submission->screenshots_count + ($type === 'screenshot' ? 1 : 0),
                 'cheating_flags' => $currentFlags,
             ]);
         }
