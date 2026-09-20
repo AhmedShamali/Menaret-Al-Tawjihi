@@ -9,9 +9,9 @@
     <div class="page-header">
         <div class="header-info">
             <nav class="breadcrumb-nav">
-                <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
+                <a href="{{ route((auth()->check() ? auth()->user()->role : 'admin') . '.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
                 <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-                <a href="{{ route('admin.exams.index') }}">{{ __('إدارة الاختبارات') }}</a>
+                <a href="{{ route((auth()->check() ? auth()->user()->role : 'admin') . '.exams.index') }}">{{ __('إدارة الاختبارات') }}</a>
                 <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
                 <span class="current">{{ __('تعديل الاختبار') }}</span>
             </nav>
@@ -22,7 +22,7 @@
         </div>
 
         <div class="header-actions">
-            <a href="{{ route('admin.exams.index') }}" class="btn-secondary">
+            <a href="{{ route((auth()->check() ? auth()->user()->role : 'admin') . '.exams.index') }}" class="btn-secondary">
                 <i class="fa-solid fa-arrow-right"></i>{{ __('إلغاء') }}</a>
             <button type="button" onclick="updateExam({{ $exam->id }})" id="saveBtn" class="btn-primary">
                 <i class="fa-solid fa-floppy-disk"></i>
@@ -508,9 +508,13 @@
         }
         .header-actions {
             width: 100%;
+            display: flex;
+            gap: 10px;
         }
-        .btn-submit-exam {
-            width: 100%;
+        .header-actions .btn-secondary,
+        .header-actions .btn-primary,
+        #saveBtn {
+            flex: 1;
             justify-content: center;
         }
         .exam-edit-wrapper {
@@ -659,16 +663,19 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __('جاري الحفظ...') }}</span>';
 
-        axios.post(`/admin/exams/${id}`, formData)
+        const role = "{{ auth()->check() ? auth()->user()->role : 'admin' }}";
+        const indexRoute = "{{ route((auth()->check() ? auth()->user()->role : 'admin') . '.exams.index') }}";
+
+        axios.post(`/${role}/exams/${id}`, formData)
             .then(res => {
                 Swal.fire({
                     icon: 'success',
                     title: 'تم الحفظ بنجاح!',
-                    text: 'تم تحديث بيانات الاختبار والأسئلة.',
+                    text: res.data.message || 'تم تحديث بيانات الاختبار والأسئلة.',
                     timer: 2000,
                     showConfirmButton: false
                 }).then(() => {
-                    location.href = "{{ route('admin.exams.index') }}";
+                    location.href = indexRoute;
                 });
             })
             .catch(err => {

@@ -190,7 +190,12 @@ class ExamController extends Controller
             'is_active'        => $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $exam->is_active,
         ]);
 
-        return redirect()->route('admin.exams.index')->with('success', 'تم تحديث بيانات الاختبار بنجاح!');
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => true, 'message' => 'تم تحديث بيانات الاختبار بنجاح!']);
+        }
+
+        $redirectRoute = ($user->role === 'admin') ? 'admin.exams.index' : 'teacher.exams.index';
+        return redirect()->route($redirectRoute)->with('success', 'تم تحديث بيانات الاختبار بنجاح!');
     }
 
     // دالة حذف الاختبار المضافة حديثاً
@@ -207,7 +212,8 @@ class ExamController extends Controller
             $exam->questions()->delete();
             $exam->delete();
 
-            return redirect()->route('admin.exams.index')->with('success', 'تم حذف الاختبار بنجاح!');
+            $redirectRoute = ($user->role === 'admin') ? 'admin.exams.index' : 'teacher.exams.index';
+            return redirect()->route($redirectRoute)->with('success', 'تم حذف الاختبار بنجاح!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
         }
