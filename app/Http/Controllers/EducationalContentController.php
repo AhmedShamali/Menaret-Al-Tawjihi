@@ -26,20 +26,19 @@ class EducationalContentController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->hasFile('video_file')) {
-            return response()->json([
-                'icon'  => 'warning',
-                'title' => 'تم حظر رفع ملفات الفيديو المباشرة! يرجى إدخال رابط YouTube فقط لضمان سرعة المشاهدة واستقرارها.'
-            ], 422);
-        }
-
         $validator = validator($request->all(), [
             'subject_id'      => 'required',
             'title'           => 'required|string|min:3',
             'order'           => 'required|numeric',
             'video_url'       => 'nullable|url',
+            'video_file'      => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v,mkv|max:512000',
             'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
             'pdf_url'         => 'nullable|url',
+        ], [
+            'title.required'      => 'يرجى إدخال عنوان الدرس أو المحتوى التعليمي.',
+            'subject_id.required' => 'يرجى تحديد المادة الدراسية.',
+            'video_file.mimes'    => 'صيغ ملفات الفيديو المعتمدة هي: MP4, WebM, MOV, OGG, M4V.',
+            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 500 ميغابايت.',
         ]);
 
         if ($validator->fails()) {
@@ -57,15 +56,15 @@ class EducationalContentController extends Controller
         $content->order        = $request->order;
         $content->is_visible   = true;
 
-        // التحقق من صحة رابط اليوتيوب إذا وُجد
-        if ($request->filled('video_url')) {
+        // معالجة ملف الفيديو المباشر المرفوع على المنصة
+        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
+            $uploadedVideo = $request->file('video_file');
+            $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
+            $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
+            $path = $uploadedVideo->store('educational/videos', 'public');
+            $content->url_path = $path;
+        } elseif ($request->filled('video_url')) {
             $dummy = new EducationalContent(['url_path' => $request->video_url]);
-            if (!$dummy->youtube_id) {
-                return response()->json([
-                    'icon'  => 'error',
-                    'title' => 'يرجى إدخال رابط YouTube صحيح ومباشر (watch, embed, youtu.be, shorts)'
-                ], 422);
-            }
             $content->url_path = $request->video_url;
         }
 
@@ -180,13 +179,6 @@ class EducationalContentController extends Controller
 
     public function update(Request $request, $id)
     {
-        if ($request->hasFile('video_file')) {
-            return response()->json([
-                'icon'  => 'warning',
-                'title' => 'تم حظر رفع ملفات الفيديو المباشرة! يرجى إدخال رابط YouTube فقط.'
-            ], 422);
-        }
-
         $attributes = [
             'subject_id'   => 'المادة',
             'title'        => 'العنوان',
@@ -201,6 +193,7 @@ class EducationalContentController extends Controller
             'title'           => 'required|string|min:3',
             'order'           => 'required|numeric',
             'video_url'       => 'nullable|url',
+            'video_file'      => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v,mkv|max:512000',
             'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
             'pdf_url'         => 'nullable|url',
         ], [], $attributes);
@@ -219,14 +212,13 @@ class EducationalContentController extends Controller
         $content->channel_name = $request->channel_name ?? $content->channel_name;
         $content->order        = $request->order;
 
-        if ($request->filled('video_url')) {
-            $dummy = new EducationalContent(['url_path' => $request->video_url]);
-            if (!$dummy->youtube_id) {
-                return response()->json([
-                    'icon'  => 'error',
-                    'title' => 'يرجى إدخال رابط YouTube صحيح ومباشر (watch, embed, youtu.be, shorts)'
-                ], 422);
-            }
+        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
+            $uploadedVideo = $request->file('video_file');
+            $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
+            $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
+            $path = $uploadedVideo->store('educational/videos', 'public');
+            $content->url_path = $path;
+        } elseif ($request->filled('video_url')) {
             $content->url_path = $request->video_url;
         }
 
@@ -319,6 +311,44 @@ class EducationalContentController extends Controller
         }
 
         return response()->json(['success' => false, 'message' => 'العنصر غير موجود'], 404);
+    }
+
+    /**
+     * تنزيل ملف الفيديو المرفوع على المنصة مباشرة
+     */
+    public function downloadVideo($id)
+    {
+        $content = EducationalContent::with('subject')->findOrFail($id);
+
+        if (empty($content->url_path)) {
+            return back()->with('error', 'لا يوجد ملف فيديو مخصص لهذا الدرس.');
+        }
+
+        $rawUrl = $content->url_path;
+        $isDirect = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
+
+        if ($isDirect) {
+            $relativePath = null;
+            if (preg_match('~educational/videos/[^\s?#]+~', $rawUrl, $m)) {
+                $relativePath = $m[0];
+            } elseif (!filter_var($rawUrl, FILTER_VALIDATE_URL)) {
+                $relativePath = ltrim($rawUrl, '/');
+            }
+
+            $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
+            $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
+
+            if ($relativePath && Storage::disk('public')->exists($relativePath)) {
+                return Storage::disk('public')->download($relativePath, $fileName);
+            }
+
+            if (filter_var($rawUrl, FILTER_VALIDATE_URL)) {
+                return redirect()->away($rawUrl);
+            }
+        }
+
+        // إذا كان رابط يوتيوب يتم توجيهه إلى الرابط
+        return redirect()->away($content->url_path);
     }
 
     public function downloadFile($id)

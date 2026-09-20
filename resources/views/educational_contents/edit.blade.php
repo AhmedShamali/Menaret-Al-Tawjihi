@@ -70,20 +70,47 @@
                     </div>
 
                     <!-- قسم الفيديو -->
+                    @php
+                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $content->url_path ?? '');
+                        $directUrl = $isDirectVideo ? (filter_var($content->url_path, FILTER_VALIDATE_URL) ? $content->url_path : asset('storage/' . $content->url_path)) : null;
+                    @endphp
                     <div class="upload-section">
                         <div class="upload-header">
                             <span class="field-label" style="margin:0">
-                                <i class="fa-brands fa-youtube text-danger"></i> {{ __('رابط فيديو الدرس (YouTube)') }}
+                                <i class="fa-solid fa-video text-danger"></i> {{ __('فيديو الدرس (YouTube أو ملف المنصة المباشر)') }}
                             </span>
                             @if($content->url_path)
-                                <span class="badge-present">{{ __('موجود حالياً') }} ✅</span>
+                                <span class="badge-present">
+                                    {{ $isDirectVideo ? __('فيديو مرفوع على المنصة ✅') : __('رابط YouTube موجود ✅') }}
+                                </span>
                             @endif
                         </div>
-                        <input type="url" name="video_url" id="editVideoUrl" value="{{ $content->url_path }}" class="input-style font-mono" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
-                        <small class="upload-hint">{{ __('يدعم روابط YouTube العادية والمختصرة و Shorts.') }}</small>
-                        
-                        <div id="editYtPreview" style="{{ $content->youtube_id ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-                            <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+
+                        <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                            <button type="button" id="edit_btn_yt" onclick="switchEditVideoSource('yt')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1.5px solid {{ $isDirectVideo ? '#cbd5e1' : '#ef4444' }}; background: {{ $isDirectVideo ? '#ffffff' : '#fef2f2' }}; color: {{ $isDirectVideo ? '#475569' : '#dc2626' }}; font-weight: 800; font-size: 0.82rem; cursor: pointer; transition: 0.2s;">
+                                <i class="fa-brands fa-youtube"></i> {{ __('رابط YouTube') }}
+                            </button>
+                            <button type="button" id="edit_btn_file" onclick="switchEditVideoSource('file')" style="flex: 1; padding: 8px 12px; border-radius: 8px; border: 1.5px solid {{ $isDirectVideo ? '#2563eb' : '#cbd5e1' }}; background: {{ $isDirectVideo ? '#eff6ff' : '#ffffff' }}; color: {{ $isDirectVideo ? '#1d4ed8' : '#475569' }}; font-weight: 800; font-size: 0.82rem; cursor: pointer; transition: 0.2s;">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> {{ __('رفع/استبدال ملف فيديو (MP4)') }}
+                            </button>
+                        </div>
+
+                        <div id="edit_box_yt" style="{{ $isDirectVideo ? 'display:none;' : 'display:block;' }}">
+                            <input type="url" name="video_url" id="editVideoUrl" value="{{ $isDirectVideo ? '' : $content->url_path }}" class="input-style font-mono" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
+                            <small class="upload-hint">{{ __('يدعم روابط YouTube العادية والمختصرة و Shorts.') }}</small>
+                            
+                            <div id="editYtPreview" style="{{ ($content->youtube_id && !$isDirectVideo) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                            </div>
+                        </div>
+
+                        <div id="edit_box_file" style="{{ $isDirectVideo ? 'display:block;' : 'display:none;' }}">
+                            <input type="file" name="video_file" id="editVideoFile" accept=".mp4,.webm,.ogg,.mov,.m4v,.mkv" class="input-style" onchange="previewEditLocalVideo(this)">
+                            <small class="upload-hint">{{ __('يدعم ملفات الفيديو حتى 500 ميجابايت (MP4, WebM, MOV). ترك هذا الحقل فارغاً يبقي على الفيديو الحالي.') }}</small>
+                            
+                            <div id="editLocalPreview" style="{{ ($isDirectVideo && $directUrl) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+                                <video id="editLocalVideoEl" src="{{ $directUrl ?? '' }}" controls style="position:absolute; inset:0; width:100%; height:100%;"></video>
+                            </div>
                         </div>
                     </div>
 
@@ -199,6 +226,46 @@
             progressBox.style.display = 'none';
             Swal.fire({ icon: 'error', title: '{{ __('خطأ في الرفع') }}', text: err.response?.data?.message || '{{ __('تأكد من الحقول وحجم الملفات') }}' });
         });
+    }
+
+    function switchEditVideoSource(type) {
+        const btnYt = document.getElementById('edit_btn_yt');
+        const btnFile = document.getElementById('edit_btn_file');
+        const boxYt = document.getElementById('edit_box_yt');
+        const boxFile = document.getElementById('edit_box_file');
+
+        if (type === 'yt') {
+            btnYt.style.borderColor = '#ef4444';
+            btnYt.style.background = '#fef2f2';
+            btnYt.style.color = '#dc2626';
+
+            btnFile.style.borderColor = '#cbd5e1';
+            btnFile.style.background = '#ffffff';
+            btnFile.style.color = '#475569';
+
+            boxYt.style.display = 'block';
+            boxFile.style.display = 'none';
+        } else {
+            btnFile.style.borderColor = '#2563eb';
+            btnFile.style.background = '#eff6ff';
+            btnFile.style.color = '#1d4ed8';
+
+            btnYt.style.borderColor = '#cbd5e1';
+            btnYt.style.background = '#ffffff';
+            btnYt.style.color = '#475569';
+
+            boxYt.style.display = 'none';
+            boxFile.style.display = 'block';
+        }
+    }
+
+    function previewEditLocalVideo(input) {
+        const preview = document.getElementById('editLocalPreview');
+        const videoEl = document.getElementById('editLocalVideoEl');
+        if (input.files && input.files[0]) {
+            videoEl.src = URL.createObjectURL(input.files[0]);
+            preview.style.display = 'block';
+        }
     }
 
     function previewEditYt(url) {

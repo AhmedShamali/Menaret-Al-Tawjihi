@@ -466,6 +466,40 @@
     gap: 8px;
 }
 
+.btn-direct-download {
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #0284c7;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+}
+.btn-direct-download:hover {
+    background: #0369a1;
+    color: #ffffff;
+    border-color: #0369a1;
+}
+
+.note-item-card {
+    transition: all 0.2s ease;
+}
+.note-item-card:hover {
+    border-color: #93c5fd !important;
+    background: #f8fafc !important;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.05);
+}
+.note-time-btn:hover {
+    background: #dbeafe !important;
+    border-color: #60a5fa !important;
+}
+
 /* بطاقة المحتوى المقفل */
 .ed-locked-card {
     background: #ffffff;
@@ -849,11 +883,16 @@
                                         $rawUrl = trim($video->url_path ?? '');
                                         $ytEmbed = $video->youtube_embed_url;
                                         $isYt = !empty($ytEmbed) || str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be');
-                                        if ($isYt && empty($ytEmbed) && !empty($rawUrl)) {
-                                            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
-                                                $ytEmbed = 'https://www.youtube.com/embed/' . $ym[1] . '?rel=0&modestbranding=1';
-                                            } else {
-                                                $ytEmbed = str_replace('watch?v=', 'embed/', $rawUrl);
+                                        if ($isYt) {
+                                            if (empty($ytEmbed) && !empty($rawUrl)) {
+                                                if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
+                                                    $ytEmbed = 'https://www.youtube.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1';
+                                                } else {
+                                                    $ytEmbed = str_replace('watch?v=', 'embed/', $rawUrl);
+                                                }
+                                            }
+                                            if (!empty($ytEmbed) && !str_contains($ytEmbed, 'enablejsapi=1')) {
+                                                $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1';
                                             }
                                         }
                                         $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl);
@@ -910,14 +949,16 @@
 
                                 {{-- قسم تدوين الملاحظات بالتوقيت --}}
                                 <div class="video-notes-panel" id="notes_panel_{{ $video->id }}" style="display: none; padding: 16px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                                    <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="note_input_{{ $video->id }}" placeholder="{{ __('اكتب ملاحظتك عند الدقيقة الحالية...') }}" style="flex: 1; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; outline: none;">
-                                        <button type="button" onclick="submitVideoNote('{{ $video->id }}')" class="ed-btn-royal primary" style="padding: 8px 16px; font-size: 0.82rem;">
-                                            <i class="fa-solid fa-plus"></i> {{ __('حفظ بالتوقيت') }}
+                                    <div style="display: flex; gap: 8px; align-items: center;">
+                                        <input type="text" id="note_input_{{ $video->id }}" placeholder="{{ __('اكتب ملاحظتك عند التوقيت الحالي واضغط حفظ...') }}" style="flex: 1; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; outline: none;" onkeydown="if(event.key==='Enter'){event.preventDefault(); submitVideoNote('{{ $video->id }}');}">
+                                        <button type="button" id="btn_submit_note_{{ $video->id }}" onclick="submitVideoNote('{{ $video->id }}')" class="ed-btn-royal primary" style="padding: 9px 16px; font-size: 0.82rem; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;">
+                                            <i class="fa-solid fa-bookmark"></i> <span>{{ __('حفظ بالتوقيت') }}</span>
                                         </button>
                                     </div>
-                                    <div class="notes-list-box" id="notes_list_{{ $video->id }}" style="max-height: 180px; overflow-y: auto; margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
-                                        <span style="font-size: 0.78rem; color: #94a3b8; text-align: center; padding: 6px;">{{ __('اضغط ملاحظاتي لعرض ملاحظاتك المسجلة') }}</span>
+                                    <div class="notes-list-box" id="notes_list_{{ $video->id }}" style="max-height: 220px; overflow-y: auto; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                                        <span style="font-size: 0.8rem; color: #94a3b8; text-align: center; padding: 8px;">
+                                            <i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري تحميل الملاحظات...') }}
+                                        </span>
                                     </div>
                                 </div>
 
@@ -936,17 +977,23 @@
 
                                 {{-- إجراءات التنزيل والملفات المرفقة --}}
                                 <div class="ed-video-actions-box">
-                                    <div id="offline_action_box_{{ $video->id }}">
+                                    <div id="offline_action_box_{{ $video->id }}" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                         @if($isYt)
-                                            <span style="font-size: 0.8rem; color: #94a3b8;"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> {{ __('بث يوتيوب مباشر') }}</span>
+                                            <span style="font-size: 0.8rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 6px;">
+                                                <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 1.1rem;"></i> {{ __('بث يوتيوب مباشر') }}
+                                            </span>
                                         @elseif($isDirectVideo && $directVideoUrl)
+                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل ملف الفيديو الأصلي إلى جهازك') }}">
+                                                <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل الفيديو (MP4)') }}
+                                            </a>
                                             <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="downloadVideoOffline('{{ $video->id }}', '{{ $directVideoUrl }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '{{ $subject->id }}')">
-                                                <i class="fa-solid fa-download"></i> {{ __('حفظ للمشاهدة بدون إنترنت') }}
+                                                <i class="fa-solid fa-download"></i> {{ __('حفظ بدون إنترنت') }}
                                             </button>
                                         @else
                                             <span style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-file-circle-check"></i> {{ __('ملف ومرفق دراسي') }}</span>
                                         @endif
                                     </div>
+
 
                                     @if(!empty($video->pdf_path))
                                         <a href="{{ route('content.download', $video->id) }}" style="color: #1e3a8a; font-size: 0.82rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; padding: 6px 12px; border-radius: 8px; border: 1px solid #bfdbfe;">
@@ -1344,54 +1391,320 @@ async function handleRedeemCode(e) {
     }
 }
 
+// YouTube API & Video Management
+let ytPlayers = {};
+
+function onYouTubeIframeAPIReady() {
+    document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
+        initSingleYtPlayer(iframe.id);
+    });
+}
+
+function initSingleYtPlayer(iframeId) {
+    if (!iframeId) return null;
+    const videoId = iframeId.replace('player_yt_', '');
+    if (ytPlayers[videoId]) return ytPlayers[videoId];
+    if (window.YT && window.YT.Player) {
+        try {
+            ytPlayers[videoId] = new YT.Player(iframeId, {
+                events: {
+                    'onReady': function(event) {
+                        // Ready
+                    }
+                }
+            });
+            return ytPlayers[videoId];
+        } catch(e) {
+            console.warn('YT Player init:', e);
+        }
+    }
+    return null;
+}
+
+function getVideoCurrentTime(videoId) {
+    // 1. HTML5 video
+    const player = document.getElementById(`player_${videoId}`);
+    if (player && !isNaN(player.currentTime) && player.currentTime > 0) {
+        return Math.floor(player.currentTime);
+    }
+
+    // 2. YouTube API
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.getCurrentTime === 'function') {
+        try {
+            const t = yt.getCurrentTime();
+            if (!isNaN(t)) return Math.floor(t);
+        } catch(e) {}
+    }
+
+    return 0;
+}
+
 function setVideoSpeed(videoId, speed, btnElement) {
+    // 1. HTML5 Video
     const player = document.getElementById(`player_${videoId}`);
     if (player) {
         player.playbackRate = speed;
     }
-    const ytPlayer = document.getElementById(`player_yt_${videoId}`);
-    if (ytPlayer && ytPlayer.contentWindow) {
-        ytPlayer.contentWindow.postMessage(JSON.stringify({
+
+    // 2. YouTube Iframe API
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.setPlaybackRate === 'function') {
+        try {
+            yt.setPlaybackRate(speed);
+        } catch(e) {}
+    }
+
+    // 3. YouTube postMessage Fallback
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({
             event: 'command',
             func: 'setPlaybackRate',
             args: [speed]
         }), '*');
     }
-    const parent = btnElement.closest('.speed-buttons-group');
-    if (parent) {
-        parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-        btnElement.classList.add('active');
+
+    // 4. Update UI Active State
+    if (btnElement) {
+        const parent = btnElement.closest('.speed-buttons-group');
+        if (parent) {
+            parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+    }
+
+    showPlayerToast(`{{ __('تم ضبط سرعة العرض على') }} ${speed}x ⚡`);
+}
+
+function seekVideoTo(videoId, seconds) {
+    // 1. HTML5 Video
+    const player = document.getElementById(`player_${videoId}`);
+    if (player) {
+        player.currentTime = seconds;
+        player.play().catch(() => {});
+    }
+
+    // 2. YouTube API
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.seekTo === 'function') {
+        try {
+            yt.seekTo(seconds, true);
+            yt.playVideo();
+        } catch(e) {}
+    } else {
+        const ytIframe = document.getElementById(`player_yt_${videoId}`);
+        if (ytIframe && ytIframe.contentWindow) {
+            ytIframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'seekTo',
+                args: [seconds, true]
+            }), '*');
+            ytIframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'playVideo',
+                args: []
+            }), '*');
+        }
+    }
+
+    const card = document.getElementById(`card_video_${videoId}`);
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
 
 function toggleNotesSection(videoId) {
     const panel = document.getElementById(`notes_panel_${videoId}`);
     if (!panel) return;
-    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    const isHidden = (panel.style.display === 'none' || !panel.style.display);
+    if (isHidden) {
+        panel.style.display = 'block';
+        loadVideoNotes(videoId);
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function formatNoteTime(totalSeconds) {
+    const s = parseInt(totalSeconds, 10) || 0;
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+function loadVideoNotes(videoId) {
+    const list = document.getElementById(`notes_list_${videoId}`);
+    if (!list) return;
+
+    fetch(`/student/video-notes/${videoId}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const notes = data.notes || [];
+        if (notes.length === 0) {
+            list.innerHTML = `
+                <div style="text-align: center; padding: 14px; color: #94a3b8; font-size: 0.82rem; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                    <i class="fa-regular fa-note-sticky" style="font-size: 1.2rem; margin-bottom: 4px; display: block; color: #cbd5e1;"></i>
+                    {{ __('لا توجد ملاحظات مسجلة بعد لهذا الدرس. اكتب أول ملاحظة بالتوقيت أعلاه!') }}
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = notes.map(n => renderNoteItemHtml(videoId, n)).join('');
+    })
+    .catch(err => {
+        list.innerHTML = `<span style="font-size: 0.78rem; color: #ef4444; text-align: center; padding: 6px;">{{ __('تعذر جلب الملاحظات، أعد المحاولة.') }}</span>`;
+    });
+}
+
+function renderNoteItemHtml(videoId, note) {
+    const formatted = note.formatted_time || formatNoteTime(note.timestamp_seconds);
+    return `
+        <div class="note-item-card" id="note_item_${note.id}" style="display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 12px; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+                <button type="button" onclick="seekVideoTo('${videoId}', ${note.timestamp_seconds})" class="note-time-btn" title="{{ __('الانتقال إلى هذه الدقيقة بالدرس') }}" style="background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; font-size: 0.78rem; font-weight: 800; border-radius: 6px; padding: 3px 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                    <i class="fa-regular fa-clock"></i>
+                    <span>${formatted}</span>
+                </button>
+                <div style="font-size: 0.85rem; color: #1e293b; word-break: break-word; flex: 1;">
+                    ${escapeHtml(note.note_text)}
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                <span style="font-size: 0.72rem; color: #94a3b8;">${note.created_at || ''}</span>
+                <button type="button" onclick="deleteVideoNote('${note.id}', '${videoId}')" title="{{ __('حذف الملاحظة') }}" style="background: none; border: none; color: #94a3b8; font-size: 0.85rem; cursor: pointer; padding: 4px 6px; border-radius: 4px;" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#94a3b8'">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        </div>
+    `;
 }
 
 function submitVideoNote(videoId) {
-    const player = document.getElementById(`player_${videoId}`);
     const input = document.getElementById(`note_input_${videoId}`);
     const text = input ? input.value.trim() : '';
-    if (!text) return;
+    if (!text) {
+        if (input) input.focus();
+        return;
+    }
+
+    const btn = document.getElementById(`btn_submit_note_${videoId}`);
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+
+    const currentTime = getVideoCurrentTime(videoId);
 
     fetch('/student/video-notes', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: JSON.stringify({
             educational_content_id: videoId,
-            timestamp_seconds: player ? Math.floor(player.currentTime) : 0,
-            note_text: text
+            timestamp_seconds: currentTime,
+            note_text: text,
+            _token: '{{ csrf_token() }}'
         })
-    }).then(res => res.json()).then(res => {
-        if (res.success) {
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i> <span>{{ __('حفظ بالتوقيت') }}</span>';
+        }
+
+        if (res.success && res.note) {
             input.value = '';
+            const list = document.getElementById(`notes_list_${videoId}`);
+            if (list) {
+                // Remove empty notice if present
+                const emptyNotice = list.querySelector('.fa-note-sticky');
+                if (emptyNotice) {
+                    list.innerHTML = '';
+                }
+                const newNoteDiv = document.createElement('div');
+                newNoteDiv.innerHTML = renderNoteItemHtml(videoId, res.note);
+                list.prepend(newNoteDiv.firstElementChild);
+            }
+            showPlayerToast('{{ __('تم حفظ الملاحظة عند التوقيت بنجاح 📌') }}');
+        } else {
+            alert(res.message || '{{ __('فشل حفظ الملاحظة، يرجى المحاولة ثانية') }}');
+        }
+    })
+    .catch(err => {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-bookmark"></i> <span>{{ __('حفظ بالتوقيت') }}</span>';
+        }
+        alert('{{ __('حدث خطأ أثناء حفظ الملاحظة.') }}');
+    });
+}
+
+function deleteVideoNote(noteId, videoId) {
+    if (!confirm('{{ __('هل أنت متأكد من رغبتك في حذف هذه الملاحظة؟') }}')) return;
+
+    fetch(`/student/video-notes/${noteId}`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            const item = document.getElementById(`note_item_${noteId}`);
+            if (item) {
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    item.remove();
+                    const list = document.getElementById(`notes_list_${videoId}`);
+                    if (list && list.children.length === 0) {
+                        loadVideoNotes(videoId);
+                    }
+                }, 200);
+            }
+            showPlayerToast('{{ __('تم حذف الملاحظة بنجاح') }}');
+        } else {
+            alert(res.message || '{{ __('تعذر حذف الملاحظة') }}');
         }
     });
 }
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function showPlayerToast(message) {
+    let toast = document.getElementById('player_speed_toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'player_speed_toast';
+        toast.style.cssText = 'position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #ffffff; padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; z-index: 99999; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; opacity: 0; pointer-events: none;';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #38bdf8;"></i> ${message}`;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(10px)';
+    }, 2400);
+}
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 @endsection

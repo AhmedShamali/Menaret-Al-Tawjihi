@@ -336,4 +336,92 @@ class EducationalContentManagementTest extends TestCase
         // Subject pricing belongs under subscriptions
         $response->assertSee(route('admin.subjects.pricing'));
     }
+
+    public function test_teacher_can_upload_direct_video_file()
+    {
+        Storage::fake('public');
+        $videoFile = UploadedFile::fake()->create('lesson1.mp4', 1024, 'video/mp4');
+
+        $response = $this->actingAs($this->teacher, 'web')->post(route('teacher.educational_contents.store'), [
+            'subject_id' => $this->subject->id,
+            'title'      => 'شرح مصور مرفوع مباشر',
+            'type'       => 'video',
+            'video_file' => $videoFile,
+            'order'      => 1,
+        ]);
+
+        $response->assertStatus(200);
+
+        $content = EducationalContent::where('title', 'شرح مصور مرفوع مباشر')->first();
+        $this->assertNotNull($content);
+        $this->assertStringContainsString('educational/videos/', $content->url_path);
+        Storage::disk('public')->assertExists($content->url_path);
+    }
+
+    public function test_download_direct_video_returns_file()
+    {
+        Storage::fake('public');
+        $filePath = 'educational/videos/test_lesson.mp4';
+        Storage::disk('public')->put($filePath, 'fake video content');
+
+        $content = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'فيديو تجريبي للتحميل',
+            'type'       => 'video',
+            'url_path'   => $filePath,
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        $response = $this->get(route('content.downloadVideo', $content->id));
+        $response->assertStatus(200);
+        $this->assertEquals('fake video content', $response->streamedContent());
+    }
+
+    public function test_student_can_store_and_fetch_video_notes()
+    {
+        $student = \App\Models\Student::create([
+            'name_ar'  => 'طالب الملاحظات',
+            'name_en'  => 'Note Student',
+            'nid'      => '400000077',
+            'email'    => 'notestudent@platform.ps',
+            'password' => bcrypt('password123'),
+            'phone'    => '0599000077',
+            'age'      => 17,
+            'gender'   => 'male',
+            'stage_id' => $this->stage->id,
+            'status'   => 'active',
+        ]);
+
+        $content = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'درس الملاحظات',
+            'type'       => 'video',
+            'url_path'   => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        // 1. Store note
+        $storeRes = $this->actingAs($student, 'student')->postJson('/student/video-notes', [
+            'educational_content_id' => $content->id,
+            'timestamp_seconds'      => 135,
+            'note_text'              => 'قانون نيوتن الثاني هنا مهم جداً',
+        ]);
+        $storeRes->assertStatus(200);
+        $storeRes->assertJson(['success' => true]);
+
+        // 2. Fetch notes
+        $fetchRes = $this->actingAs($student, 'student')->getJson("/student/video-notes/{$content->id}");
+        $fetchRes->assertStatus(200);
+        $fetchRes->assertJsonCount(1, 'notes');
+        $fetchRes->assertJsonFragment(['formatted_time' => '02:15', 'note_text' => 'قانون نيوتن الثاني هنا مهم جداً']);
+
+        // 3. Delete note
+        $noteId = $fetchRes->json('notes.0.id');
+        $delRes = $this->actingAs($student, 'student')->deleteJson("/student/video-notes/{$noteId}");
+        $delRes->assertStatus(200);
+        $delRes->assertJson(['success' => true]);
+    }
 }
+

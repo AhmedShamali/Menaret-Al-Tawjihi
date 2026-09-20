@@ -27,6 +27,7 @@ use App\Http\Controllers\{
 Route::get('/', [PublicController::class, 'index'])->name('home');
 Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
 Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
+Route::get('/educational-contents/{id}/download-video', [EducationalContentController::class, 'downloadVideo'])->name('content.downloadVideo');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

@@ -196,21 +196,47 @@
                     <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
                 </div>
 
-                <!-- رابط YouTube -->
+                <!-- اختيار نوع المصدر: يوتيوب أو ملف فيديو مباشر -->
                 <div class="f-group">
+                    <label class="f-label">{{ __('طريقة إضافة الفيديو *') }}</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <button type="button" id="tabSourceYt" onclick="switchVideoSourceType('youtube')" style="padding: 10px; border-radius: 8px; border: 2px solid #1e3a8a; background: #eff6ff; color: #1e3a8a; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 1.1rem;"></i>
+                            <span>{{ __('رابط YouTube') }}</span>
+                        </button>
+                        <button type="button" id="tabSourceFile" onclick="switchVideoSourceType('file')" style="padding: 10px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb; font-size: 1.1rem;"></i>
+                            <span>{{ __('رفع ملف للمنصة (MP4)') }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- حقل رابط YouTube -->
+                <div class="f-group" id="groupVideoUrl">
                     <label class="f-label">
                         <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
                         <span>{{ __('رابط فيديو YouTube *') }}</span>
                     </label>
-                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
+                    <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
                     <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts).') }}</small>
+                </div>
+
+                <!-- حقل رفع ملف فيديو مباشر للمنصة -->
+                <div class="f-group" id="groupVideoFile" style="display: none;">
+                    <label class="f-label">
+                        <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
+                        <span>{{ __('اختر ملف الفيديو من جهازك * (MP4 / WebM / MOV)') }}</span>
+                    </label>
+                    <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska" onchange="previewLocalVideo(this)" class="f-control">
+                    <small class="f-hint">{{ __('يتم رفع وتخزين الفيديو مباشرة على المنصة مع دعم تنزيله وسرعات المشاهدة المتعددة (حتى 500 ميغابايت).') }}</small>
                 </div>
 
                 <!-- معاينة فورية للفيديو -->
                 <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
-                    <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو المباشر:') }}</label>
+                    <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو:') }}</label>
                     <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">
                         <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                        <video id="localPreviewVideo" controls style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
                     </div>
                 </div>
 
@@ -764,16 +790,92 @@ function parseYouTubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
+let currentVideoSourceType = 'youtube';
+
+function switchVideoSourceType(type) {
+    currentVideoSourceType = type;
+    const tabYt = document.getElementById('tabSourceYt');
+    const tabFile = document.getElementById('tabSourceFile');
+    const groupUrl = document.getElementById('groupVideoUrl');
+    const groupFile = document.getElementById('groupVideoFile');
+    const urlInput = document.getElementById('videoUrlInput');
+    const fileInput = document.getElementById('videoFileInput');
+    const container = document.getElementById('ytPreviewContainer');
+    const ytFrame = document.getElementById('ytPreviewFrame');
+    const localVideo = document.getElementById('localPreviewVideo');
+
+    if (type === 'youtube') {
+        tabYt.style.border = '2px solid #1e3a8a';
+        tabYt.style.background = '#eff6ff';
+        tabYt.style.color = '#1e3a8a';
+        tabFile.style.border = '1.5px solid #cbd5e1';
+        tabFile.style.background = '#ffffff';
+        tabFile.style.color = '#64748b';
+
+        groupUrl.style.display = 'flex';
+        groupFile.style.display = 'none';
+        fileInput.value = '';
+
+        localVideo.style.display = 'none';
+        localVideo.pause();
+        previewYoutube(urlInput.value);
+    } else {
+        tabFile.style.border = '2px solid #1e3a8a';
+        tabFile.style.background = '#eff6ff';
+        tabFile.style.color = '#1e3a8a';
+        tabYt.style.border = '1.5px solid #cbd5e1';
+        tabYt.style.background = '#ffffff';
+        tabYt.style.color = '#64748b';
+
+        groupFile.style.display = 'flex';
+        groupUrl.style.display = 'none';
+        urlInput.value = '';
+
+        ytFrame.style.display = 'none';
+        ytFrame.src = '';
+        if (fileInput.files && fileInput.files[0]) {
+            previewLocalVideo(fileInput);
+        } else {
+            container.style.display = 'none';
+        }
+    }
+}
+
+function previewLocalVideo(input) {
+    const file = input.files ? input.files[0] : null;
+    const container = document.getElementById('ytPreviewContainer');
+    const ytFrame = document.getElementById('ytPreviewFrame');
+    const localVideo = document.getElementById('localPreviewVideo');
+
+    if (file) {
+        ytFrame.style.display = 'none';
+        ytFrame.src = '';
+        localVideo.src = URL.createObjectURL(file);
+        localVideo.style.display = 'block';
+        container.style.display = 'block';
+    } else {
+        localVideo.src = '';
+        localVideo.style.display = 'none';
+        container.style.display = 'none';
+    }
+}
+
 function previewYoutube(url) {
     const videoId = parseYouTubeId(url.trim());
     const container = document.getElementById('ytPreviewContainer');
     const frame = document.getElementById('ytPreviewFrame');
+    const localVideo = document.getElementById('localPreviewVideo');
     if (videoId) {
+        localVideo.style.display = 'none';
+        frame.style.display = 'block';
         frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
         container.style.display = 'block';
     } else {
         frame.src = '';
-        container.style.display = 'none';
+        frame.style.display = 'none';
+        if (currentVideoSourceType === 'youtube') {
+            container.style.display = 'none';
+        }
     }
 }
 
