@@ -1609,11 +1609,11 @@
                         </div>
                     </div>
                 </a>
-                <a href="{{ route('student.courses.catalog') }}" class="nav-item {{ Request::is('student/courses/catalog*') || Request::is('student/checkout*') ? 'active' : '' }}">
+                <a href="{{ route('student.courses.catalog') }}" class="nav-item {{ Request::is('student/courses/catalog*') || Request::is('courses/catalog*') || Request::is('catalog*') ? 'active' : '' }}">
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-amber"><i class="fa-solid fa-layer-group"></i></span>
-                            <span>{{ __('باقات المواد والاشتراك') }}</span>
+                            <span>{{ __('دليل المقررات والمنهاج') }}</span>
                         </div>
                     </div>
                 </a>

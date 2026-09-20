@@ -13,12 +13,32 @@ use Illuminate\Support\Facades\Auth;
 class CourseEnrollmentController extends Controller
 {
     /**
-     * كتالوج المواد وباقات الاشتراك لطلبة توجيهي فلسطين
+     * دليل ومقررات المنهاج الفلسطيني لطلبة الثانوية العامة (التوجيهي)
      */
     public function catalog(Request $request)
     {
         $student = CurrentActor::student() ?? Auth::guard('student')->user();
-        $stageId = $request->query('stage_id') ?? $student?->stage_id;
+        $stageId = $request->query('stage_id');
+        $branch  = $request->query('branch');
+
+        // دعم التصفية حسب اسم الفرع القادم من الصفحة الرئيسية
+        if (!$stageId && $branch) {
+            $branchSlug = strtolower(trim($branch));
+            if (in_array($branchSlug, ['scientific', 'sci', 'علمي'])) {
+                $stageId = Stage::where('grade_level', 122)->orWhere('label_ar', 'LIKE', '%علمي%')->value('id');
+            } elseif (in_array($branchSlug, ['literary', 'lit', 'أدبي'])) {
+                $stageId = Stage::where('grade_level', 121)->orWhere('label_ar', 'LIKE', '%أدبي%')->value('id');
+            } elseif (in_array($branchSlug, ['business', 'entrepreneurship', 'ريادة'])) {
+                $stageId = Stage::where('grade_level', 123)->orWhere('label_ar', 'LIKE', '%ريادة%')->value('id');
+            } elseif (in_array($branchSlug, ['vocational', 'sharia', 'شرعي', 'صناعي'])) {
+                $stageId = Stage::where('label_ar', 'LIKE', '%صناعي%')->orWhere('label_ar', 'LIKE', '%شرعي%')->value('id');
+            }
+        }
+
+        // إذا كان طالباً مسجلاً ولم يحدد فرعاً معيناً، يُعرض له فرعه الدراسي أولاً مع إمكانية التبديل
+        if (!$stageId && !$branch && $student && $student->stage_id) {
+            $stageId = $student->stage_id;
+        }
 
         $query = Subject::with(['stage', 'teacher'])->withCount(['contents', 'exams']);
         if ($stageId) {

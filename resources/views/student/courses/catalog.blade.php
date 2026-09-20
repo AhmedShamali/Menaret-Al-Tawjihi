@@ -1,202 +1,274 @@
 @extends('layouts.app')
 
-@section('title', __('كتالوج وباقات المواد الدراسية') . ' | ' . __('منارة التوجيهي'))
+@section('title', __('دليل المقررات والمناهج الدراسية') . ' | ' . config('app.name', 'منارة التوجيهي'))
 
 @section('content')
 <div class="ed-catalog-page">
 
-    <!-- الترويسة الأكاديمية الكلاسيكية -->
+    <!-- الترويسة الأكاديمية الرسمية -->
     <header class="ed-page-header">
         <div class="header-main-info">
             <div class="ed-flag-badge">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>{{ __('المنهاج الفلسطيني المعتمد للتوجيهي 🇵🇸') }}</span>
+                <span>{{ __('المنهاج الفلسطيني المعتمد للتوجيهي') }}</span>
             </div>
-            <h1 class="ed-page-title">{{ __('اختر مادتك الدراسية أو باقتك الوزارية الكاملة') }}</h1>
+            <h1 class="ed-page-title">{{ __('دليل المقررات والمناهج الدراسية المعتمدة') }}</h1>
             <p class="ed-page-desc">
-                {{ __('اشترك في مادة واحدة أو حدد عدة مواد دراسية معاً لتحصل تلقائياً على خصم الباقة 15% عند اختيار 3 مواد أو أكثر!') }}
+                {{ __('استعراض شامل وتفصيلي لمباحث الثانوية العامة (التوجيهي) لكافة الفروع الأكاديمية مع الشروحات المرئية، بنوك الأسئلة، والامتحانات الوزارية التجريبية.') }}
             </p>
         </div>
     </header>
 
-    <!-- شريط تنبيه الخصم الخاص للطالب إن وجد -->
-    @if(isset($student) && $student && $student->hasDiscount())
-        <div class="ed-discount-banner">
-            <div class="discount-icon-box">🏷️</div>
-            <div class="discount-info">
-                <h3>{{ __('مرحباً') }} {{ $student->name_ar }}! {{ $student->discount_label }}</h3>
-                <p>
-                    {{ $student->discount_notes ? $student->discount_notes . ' • ' : '' }}
-                    {{ __('سيتم تطبيق هذا الخصم لصالحك تلقائياً عند اختيار المواد والانتقال لبوابة الاشتراك!') }}
-                </p>
-            </div>
-            <span class="discount-pill">{{ __('خصم ساري ومفعّل ✔') }}</span>
+    <!-- صندوق الإيضاح والتوجيه الأكاديمي -->
+    <div class="ed-info-banner">
+        <div class="info-banner-icon">
+            <i class="fa-solid fa-circle-info"></i>
         </div>
-    @endif
+        <div class="info-banner-content">
+            <h3>{{ __('تنويه أكاديمي لطلبة الثانوية العامة وأولياء الأمور') }}</h3>
+            <p>
+                {{ __('يتم تفعيل وتثبيت باقة المواد الدراسية الخاصة بكل طالب تلقائياً فور إتمام إجراءات التسجيل الجديد في المنصة واعتماد الاشتراك الأكاديمي من قِبل الإدارة. هذه الصفحة مخصصة للاطلاع على تفاصيل ومفردات المنهاج ونخبة الأساتذة المشرفين.') }}
+            </p>
+        </div>
+        <div class="info-banner-action">
+            @if(Auth::guard('student')->check())
+                <a href="{{ route('student.subjects.index') }}" class="btn-banner-action">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>{{ __('الانتقال لموادي المقيدة') }}</span>
+                </a>
+            @else
+                <a href="{{ route('students.create') }}" class="btn-banner-action">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>{{ __('تسجيل طالب جديد') }}</span>
+                </a>
+            @endif
+        </div>
+    </div>
 
-    <!-- شريط تصفية الفروع الكلاسيكي -->
+    <!-- شريط تصفية الفروع الأكاديمية -->
     <div class="ed-stage-filter-bar">
         <div class="filter-label">
             <i class="fa-solid fa-layer-group"></i>
-            <span>{{ __('تصفية المواد حسب الفرع:') }}</span>
+            <span>{{ __('تصفية المقررات حسب الفرع الأكاديمي:') }}</span>
         </div>
         <div class="filter-pills-list">
-            <a href="{{ route('student.courses.catalog') }}" class="filter-pill {{ empty($stageId) ? 'active' : '' }}">
-                {{ __('جميع الفروع') }}
+            <a href="{{ route('courses.catalog') }}" class="filter-pill {{ empty($stageId) ? 'active' : '' }}">
+                <i class="fa-solid fa-border-all"></i>
+                <span>{{ __('جميع الفروع') }}</span>
             </a>
             @foreach($stages as $stg)
-                <a href="{{ route('student.courses.catalog', ['stage_id' => $stg->id]) }}" class="filter-pill {{ $stageId == $stg->id ? 'active' : '' }}">
-                    {{ $stg->label_ar ?? ($stg->name_ar ?? $stg->name) }}
+                <a href="{{ route('courses.catalog', ['stage_id' => $stg->id]) }}" class="filter-pill {{ $stageId == $stg->id ? 'active' : '' }}">
+                    <span>{{ $stg->label_ar ?? ($stg->name_ar ?? $stg->name) }}</span>
                 </a>
             @endforeach
         </div>
     </div>
 
-    <form id="enrollmentForm" onsubmit="handleCheckout(event)">
-        @csrf
+    <!-- شبكة بطاقات المواد الأكاديمية -->
+    <div class="ed-courses-grid">
+        @forelse($subjects as $sub)
+            @php
+                $isEnrolled = in_array($sub->id, $enrolledSubjectIds);
+                $isPending = in_array($sub->id, $pendingSubjectIds ?? []);
+                $themeColor = $sub->color ?? '#1e3a8a';
+            @endphp
 
-        <!-- شبكة بطاقات المواد الأكاديمية -->
-        <div class="ed-courses-grid">
-            @forelse($subjects as $sub)
-                @php
-                    $isEnrolled = in_array($sub->id, $enrolledSubjectIds);
-                    $isPending = in_array($sub->id, $pendingSubjectIds ?? []);
-                    $effectivePrice = $sub->effective_price;
-                @endphp
+            <div class="ed-course-card {{ $isEnrolled ? 'is-enrolled' : '' }}">
 
-                <div class="ed-course-card {{ $isEnrolled ? 'is-enrolled' : ($isPending ? 'is-pending' : '') }}">
+                <!-- شارة الحالة الأكاديمية -->
+                @if($isEnrolled)
+                    <div class="card-status-badge badge-enrolled">
+                        <i class="fa-solid fa-circle-check"></i> {{ __('مشمولة في خطتك الدراسية') }}
+                    </div>
+                @elseif($isPending)
+                    <div class="card-status-badge badge-pending">
+                        <i class="fa-solid fa-clock-rotate-left"></i> {{ __('بانتظار اعتماد الحساب') }}
+                    </div>
+                @else
+                    <div class="card-status-badge badge-curriculum">
+                        <i class="fa-solid fa-shield-halved"></i> {{ __('منهاج وزاري معتمد') }}
+                    </div>
+                @endif
 
+                <div class="course-card-top">
+                    <div class="course-icon-row">
+                        <div class="course-icon-sq" style="color: {{ $themeColor }}; background: {{ $themeColor }}15; border: 1px solid {{ $themeColor }}30;">
+                            <i class="fa-solid {{ $sub->icon ?? 'fa-book-open' }}"></i>
+                        </div>
+                        <div class="course-title-block">
+                            <span class="course-stage-name">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                {{ optional($sub->stage)->label_ar ?? (optional($sub->stage)->name_ar ?? __('توجيهي فلسطين')) }}
+                            </span>
+                            <h3 class="course-title">{{ $sub->name_ar ?? $sub->name }}</h3>
+                        </div>
+                    </div>
+
+                    <!-- الأستاذ المشرف -->
+                    <div class="course-teacher-badge">
+                        <i class="fa-solid fa-chalkboard-user"></i>
+                        <span>{{ __('المشرف الأكاديمي:') }} <strong>{{ $sub->teacher_display_name }}</strong></span>
+                    </div>
+
+                    <!-- نبذة المنهاج -->
+                    <p class="course-desc">
+                        {{ $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.') }}
+                    </p>
+
+                    <!-- المؤشرات الأكاديمية -->
+                    <div class="course-stats-line">
+                        <span class="stat-pill" title="{{ __('الدروس والشروحات المرئية') }}">
+                            <i class="fa-solid fa-circle-play text-primary"></i>
+                            <strong>{{ $sub->contents_count ?? 0 }}</strong> {{ __('درس مرئي') }}
+                        </span>
+                        <span class="stat-pill" title="{{ __('الاختبارات والتدريبات التفاعلية') }}">
+                            <i class="fa-solid fa-file-pen text-amber"></i>
+                            <strong>{{ $sub->exams_count ?? 0 }}</strong> {{ __('اختبار وبنك أسئلة') }}
+                        </span>
+                        <span class="stat-pill" title="{{ __('ملازم وتلخيصات PDF') }}">
+                            <i class="fa-solid fa-file-pdf text-rose"></i>
+                            {{ __('ملازم وتلاخيص') }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="course-card-bottom">
                     @if($isEnrolled)
-                        <div class="card-status-badge badge-enrolled">
-                            <i class="fa-solid fa-circle-check"></i> {{ __('اشتراك معتمد ومفعّل') }}
-                        </div>
+                        <a href="{{ route('student.subjects.show', $sub->id) }}" class="btn-card-action btn-enter-subject">
+                            <span>{{ __('دخول المادة ومتابعة التعلم') }}</span>
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </a>
                     @elseif($isPending)
-                        <div class="card-status-badge badge-pending">
-                            <i class="fa-solid fa-clock-rotate-left"></i> {{ __('بانتظار موافقة المدير') }} ⏳
+                        <div class="pending-notice-box">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                            <span>{{ __('قيد المراجعة والاعتماد لدى الإدارة') }}</span>
                         </div>
-                    @elseif($sub->is_free)
-                        <div class="card-status-badge badge-free">
-                            {{ __('مجانية تجريبية') }} 🎁
-                        </div>
-                    @elseif($sub->discount_price_ils > 0)
-                        <div class="card-status-badge badge-discount">
-                            {{ round((($sub->price_ils - $sub->discount_price_ils) / $sub->price_ils) * 100) }}% {{ __('خصم') }}
+                    @else
+                        <div class="visitor-actions-row">
+                            <button type="button" class="btn-card-action btn-outline-info" onclick="openSubjectModal({{ json_encode([
+                                'name' => $sub->name_ar ?? $sub->name,
+                                'stage' => optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? __('الثانوية العامة'),
+                                'teacher' => $sub->teacher_display_name,
+                                'desc' => $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.'),
+                                'lessons' => $sub->contents_count ?? 0,
+                                'exams' => $sub->exams_count ?? 0,
+                                'icon' => $sub->icon ?? 'fa-book-open',
+                                'color' => $themeColor
+                            ]) }})">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>{{ __('تفاصيل المنهاج') }}</span>
+                            </button>
+
+                            @if(!Auth::guard('student')->check())
+                                <a href="{{ route('students.create') }}" class="btn-card-action btn-register-cta">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                    <span>{{ __('التسجيل') }}</span>
+                                </a>
+                            @endif
                         </div>
                     @endif
-
-                    <div class="course-card-top">
-                        <div class="course-icon-row">
-                            <div class="course-icon-sq" style="color: {{ $sub->color ?? '#1e3a8a' }}; background: {{ $sub->color ?? '#1e3a8a' }}15;">
-                                <i class="fa-solid {{ $sub->icon ?? 'fa-book' }}"></i>
-                            </div>
-                            <div>
-                                <span class="course-stage-name">
-                                    {{ optional($sub->stage)->label_ar ?? (optional($sub->stage)->name_ar ?? __('توجيهي')) }}
-                                </span>
-                                <h3 class="course-title">{{ $sub->name_ar ?? $sub->name }}</h3>
-                            </div>
-                        </div>
-
-                        <p class="course-desc">
-                            {{ $sub->description ?: __('شرح تفاعلي متكامل للمنهاج الفلسطيني مع حلول الأسئلة الوزارية ونماذج الإنجاز.') }}
-                        </p>
-
-                        <div class="course-stats-line">
-                            <span><i class="fa-solid fa-circle-play"></i> {{ $sub->contents_count ?? 0 }} {{ __('دروس') }}</span>
-                            <span><i class="fa-solid fa-file-pen"></i> {{ $sub->exams_count ?? 0 }} {{ __('اختبارات') }}</span>
-                        </div>
-                    </div>
-
-                    <div class="course-card-bottom">
-                        <div class="pricing-block">
-                            @if($sub->is_free)
-                                <span class="price-val free">0 ₪</span>
-                                <small class="price-note">{{ __('دخول مجاني بالكامل') }}</small>
-                            @else
-                                <div class="price-row">
-                                    <span class="price-val font-mono">{{ number_format($effectivePrice, 0) }} ₪</span>
-                                    @if($sub->discount_price_ils > 0)
-                                        <span class="price-original font-mono">{{ number_format($sub->price_ils, 0) }} ₪</span>
-                                    @endif
-                                </div>
-                                <small class="price-note">{{ __('اشتراك شامل حتى نهاية العام') }}</small>
-                            @endif
-                        </div>
-
-                        <div class="action-block">
-                            @if($isEnrolled)
-                                <a href="{{ route('student.subjects.show', $sub->id) }}" class="btn-goto-course">
-                                    <span>{{ __('متابعة التعلم') }}</span>
-                                    <i class="fa-solid fa-arrow-left arrow-icon"></i>
-                                </a>
-                            @elseif($isPending)
-                                <span class="btn-pending-wait">
-                                    <i class="fa-solid fa-hourglass-half"></i> {{ __('قيد المراجعة') }}
-                                </span>
-                            @else
-                                <label class="select-box-label">
-                                    <input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}" data-price="{{ $effectivePrice }}" data-name="{{ $sub->name_ar ?? $sub->name }}" onchange="updateCartBar()" class="course-checkbox">
-                                    <span>{{ __('تحديد المادة') }}</span>
-                                </label>
-                            @endif
-                        </div>
-                    </div>
-
-                </div>
-            @empty
-                <div class="ed-empty-courses">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <p>{{ __('لا توجد مواد مسجلة لهذا الفرع حالياً.') }}</p>
-                </div>
-            @endforelse
-        </div>
-
-        <!-- شريط السلة العائم الثابت بالأسفل (Floating Cart Bar) -->
-        <div id="floatingCartBar" class="floating-cart-bar">
-            <div class="cart-bar-content">
-                <div class="cart-info-side">
-                    <div class="cart-icon"><i class="fa-solid fa-bag-shopping"></i></div>
-                    <div>
-                        <div class="cart-count-row">
-                            <span>{{ __('المواد المحددة:') }} <strong id="cartCount" class="font-mono text-cyan">0</strong></span>
-                            <span id="bundleBadge" class="bundle-discount-badge" style="display: none;">
-                                {{ __('خصم الباقة 15% مفعّل') }} 🔥
-                            </span>
-                        </div>
-                        <div class="cart-summary" id="cartSummaryText">{{ __('حدد موادك للاشتراك المباشر') }}</div>
-                    </div>
                 </div>
 
-                <div class="cart-action-side">
-                    <div class="cart-total-block">
-                        <span class="total-label">{{ __('المجموع الإجمالي') }}</span>
-                        <div class="total-number font-mono">
-                            <span id="cartTotal">0</span> ₪
-                        </div>
-                    </div>
+            </div>
+        @empty
+            <div class="ed-empty-courses">
+                <i class="fa-solid fa-folder-open"></i>
+                <h3>{{ __('لا توجد مواد مسجلة لهذا الفرع حالياً') }}</h3>
+                <p>{{ __('يرجى اختيار فرع دراسي آخر من شريط الفروع بالأعلى للاطلاع على المقررات المتاحة.') }}</p>
+                <a href="{{ route('courses.catalog') }}" class="filter-pill active" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-rotate-right"></i> {{ __('عرض جميع الفروع') }}
+                </a>
+            </div>
+        @endforelse
+    </div>
 
-                    <button type="submit" id="btnGoToCheckout" class="btn-checkout">
-                        <span>{{ __('إتمام الدفع الفلسطيني') }}</span>
-                        <i class="fa-solid fa-arrow-left arrow-icon"></i>
-                    </button>
-                </div>
+</div>
+
+<!-- نافذة المعاينة السريعة للمنهاج الأكاديمي -->
+<div id="subjectModal" class="subject-modal-overlay" onclick="closeSubjectModal(event)">
+    <div class="subject-modal-card" onclick="event.stopPropagation()">
+        <button type="button" class="modal-close-btn" onclick="closeSubjectModal()">&times;</button>
+        <div class="modal-header">
+            <div id="modalIconBox" class="modal-icon-sq">
+                <i id="modalIcon" class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+                <span id="modalStage" class="modal-stage-badge"></span>
+                <h2 id="modalTitle" class="modal-title"></h2>
             </div>
         </div>
+        <div class="modal-body">
+            <div class="modal-teacher-box">
+                <i class="fa-solid fa-chalkboard-user"></i>
+                <span>{{ __('إشراف الأستاذ المعتمد:') }} <strong id="modalTeacher"></strong></span>
+            </div>
 
-    </form>
+            <div class="modal-section-title">
+                <i class="fa-solid fa-align-right"></i>
+                <span>{{ __('نظرة عامة على المقرر الدراسي:') }}</span>
+            </div>
+            <p id="modalDesc" class="modal-desc-text"></p>
+
+            <div class="modal-metrics-grid">
+                <div class="modal-metric-card">
+                    <i class="fa-solid fa-circle-play text-primary"></i>
+                    <div>
+                        <strong id="modalLessons">0</strong>
+                        <small>{{ __('شروحات مرئية') }}</small>
+                    </div>
+                </div>
+                <div class="modal-metric-card">
+                    <i class="fa-solid fa-file-pen text-amber"></i>
+                    <div>
+                        <strong id="modalExams">0</strong>
+                        <small>{{ __('نماذج واختبارات') }}</small>
+                    </div>
+                </div>
+                <div class="modal-metric-card">
+                    <i class="fa-solid fa-file-pdf text-rose"></i>
+                    <div>
+                        <strong>100%</strong>
+                        <small>{{ __('تغطية وزارية') }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-enroll-note">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>{{ __('للالتحاق بهذا المقرر ومتابعة الدروس والاختبارات التفاعلية، يرجى التسجيل في المنصة أو سداد القسط الشهري المعتمد.') }}</span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            @if(Auth::guard('student')->check())
+                <a href="{{ route('student.subjects.index') }}" class="btn-modal-primary">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                    <span>{{ __('الانتقال إلى موادي الدراسية') }}</span>
+                </a>
+            @else
+                <a href="{{ route('students.create') }}" class="btn-modal-primary">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>{{ __('تسجيل طالب جديد الآن') }}</span>
+                </a>
+            @endif
+            <button type="button" class="btn-modal-secondary" onclick="closeSubjectModal()">
+                {{ __('إغلاق') }}
+            </button>
+        </div>
+    </div>
 </div>
 
 <style>
 /* ==========================================================
-   CLASSIC ACADEMIC COURSE CATALOG STYLES (100% RESPONSIVE)
+   ACADEMIC INFORMATIVE COURSE DIRECTORY (RESPONSIVE & CLEAN)
    ========================================================== */
 .ed-catalog-page {
     width: 100%;
     margin: 0;
-    padding: 0 0 90px;
+    padding: 0 0 60px;
     box-sizing: border-box;
 }
 
+/* Header */
 .ed-page-header {
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -222,7 +294,7 @@
 }
 
 .ed-page-title {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     font-weight: 800;
     color: #0f172a;
     margin: 0 0 6px;
@@ -232,53 +304,74 @@
     font-size: 0.88rem;
     color: #64748b;
     margin: 0;
-    max-width: 650px;
-    line-height: 1.5;
+    max-width: 750px;
+    line-height: 1.6;
 }
 
-/* Discount Banner */
-.ed-discount-banner {
-    background: #faf5ff;
-    border: 1px solid #d8b4fe;
+/* Info Banner */
+.ed-info-banner {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-right: 4px solid #1e3a8a;
     border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 18px;
     flex-wrap: wrap;
-    gap: 12px;
 }
 
-.discount-icon-box {
-    font-size: 1.4rem;
+html[dir="ltr"] .ed-info-banner {
+    border-right: 1px solid #cbd5e1;
+    border-left: 4px solid #1e3a8a;
 }
 
-.discount-info {
+.info-banner-icon {
+    font-size: 1.8rem;
+    color: #1e3a8a;
+    display: flex;
+    align-items: center;
+}
+
+.info-banner-content {
     flex: 1;
-    min-width: 240px;
+    min-width: 260px;
 }
 
-.discount-info h3 {
+.info-banner-content h3 {
     margin: 0 0 4px;
     font-size: 0.95rem;
     font-weight: 800;
-    color: #581c87;
+    color: #0f172a;
 }
 
-.discount-info p {
+.info-banner-content p {
     margin: 0;
-    font-size: 0.8rem;
-    color: #7e22ce;
+    font-size: 0.84rem;
+    color: #475569;
+    line-height: 1.55;
 }
 
-.discount-pill {
-    background: #7c3aed;
-    color: #ffffff;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 0.76rem;
+.btn-banner-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e3a8a;
+    color: #ffffff !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.84rem;
     font-weight: 700;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-banner-action:hover {
+    background: #0f172a;
+    transform: translateY(-1px);
 }
 
 /* Filter Bar */
@@ -288,7 +381,7 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     background: #ffffff;
     padding: 12px 18px;
     border-radius: 10px;
@@ -313,6 +406,9 @@
 }
 
 .filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     text-decoration: none;
     padding: 6px 14px;
     border-radius: 6px;
@@ -320,7 +416,7 @@
     font-weight: 700;
     background: #f1f5f9;
     color: #475569;
-    transition: 0.15s;
+    transition: all 0.15s ease;
 }
 
 .filter-pill.active {
@@ -330,13 +426,14 @@
 
 .filter-pill:hover:not(.active) {
     background: #e2e8f0;
+    color: #0f172a;
 }
 
 /* Courses Grid */
 .ed-courses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
+    gap: 22px;
 }
 
 .ed-course-card {
@@ -357,8 +454,10 @@
     box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
 }
 
-.ed-course-card.is-enrolled { border-color: #86efac; }
-.ed-course-card.is-pending { border-color: #fde68a; }
+.ed-course-card.is-enrolled {
+    border-color: #86efac;
+    background: #fafffc;
+}
 
 .card-status-badge {
     position: absolute;
@@ -370,7 +469,7 @@
     border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
 }
 
 html[dir="ltr"] .card-status-badge {
@@ -378,16 +477,16 @@ html[dir="ltr"] .card-status-badge {
     right: 14px;
 }
 
-.badge-enrolled { background: #dcfce7; color: #15803d; }
+.badge-enrolled { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
 .badge-pending { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-.badge-free { background: #eff6ff; color: #1e3a8a; }
-.badge-discount { background: #fef3c7; color: #b45309; }
+.badge-curriculum { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
 .course-icon-row {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
+    padding-top: 12px;
 }
 
 .course-icon-sq {
@@ -400,333 +499,418 @@ html[dir="ltr"] .card-status-badge {
     flex-shrink: 0;
 }
 
+.course-title-block {
+    flex: 1;
+}
+
 .course-stage-name {
     font-size: 0.72rem;
     font-weight: 700;
     color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .course-title {
-    font-size: 1.1rem;
+    font-size: 1.12rem;
     font-weight: 800;
     color: #0f172a;
     margin: 2px 0 0;
 }
 
+.course-teacher-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    color: #334155;
+    margin-bottom: 12px;
+}
+
+.course-teacher-badge i {
+    color: #1e3a8a;
+}
+
 .course-desc {
-    font-size: 0.82rem;
+    font-size: 0.83rem;
     color: #64748b;
-    line-height: 1.55;
+    line-height: 1.6;
     margin: 0 0 16px;
-    min-height: 38px;
+    min-height: 45px;
 }
 
 .course-stats-line {
     display: flex;
-    gap: 14px;
-    font-size: 0.76rem;
-    color: #475569;
-    font-weight: 600;
+    gap: 8px;
+    flex-wrap: wrap;
     border-top: 1px solid #f1f5f9;
-    padding-top: 10px;
+    padding-top: 12px;
     margin-bottom: 16px;
 }
 
-.course-stats-line i { margin-inline-end: 4px; color: #1e3a8a; }
+.stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #475569;
+}
 
 .course-card-bottom {
     border-top: 1px solid #f1f5f9;
     padding-top: 14px;
+}
+
+.visitor-actions-row {
     display: flex;
-    justify-content: space-between;
+    gap: 8px;
     align-items: center;
 }
 
-.price-val {
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: #0f172a;
-}
-
-.price-val.free { color: #16a34a; }
-
-.price-original {
-    text-decoration: line-through;
-    color: #94a3b8;
-    font-size: 0.82rem;
-}
-
-.price-note {
-    display: block;
-    font-size: 0.7rem;
-    color: #94a3b8;
-}
-
-.btn-goto-course {
+.btn-card-action {
+    flex: 1;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 14px;
     border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.btn-outline-info {
     background: #eff6ff;
     color: #1e3a8a;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 0.82rem;
+    border: 1px solid #bfdbfe;
 }
 
-.btn-pending-wait {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    background: #fffbeb;
-    border: 1px solid #fde68a;
-    color: #b45309;
-    font-weight: 700;
-    font-size: 0.8rem;
+.btn-outline-info:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
 }
 
-.select-box-label {
-    display: inline-flex;
+.btn-register-cta {
+    background: #1e3a8a;
+    color: #ffffff !important;
+}
+
+.btn-register-cta:hover {
+    background: #0f172a;
+}
+
+.btn-enter-subject {
+    background: #059669;
+    color: #ffffff !important;
+    width: 100%;
+}
+
+.btn-enter-subject:hover {
+    background: #047857;
+}
+
+.pending-notice-box {
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
-    cursor: pointer;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    padding: 8px 14px;
-    border-radius: 8px;
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
     font-weight: 700;
-    font-size: 0.82rem;
-    color: #334155;
-    transition: 0.15s;
 }
 
-.select-box-label:hover {
-    border-color: #1e3a8a;
-    background: #ffffff;
-}
-
-.course-checkbox {
-    width: 16px;
-    height: 16px;
-    accent-color: #1e3a8a;
-    cursor: pointer;
-}
-
+/* Empty State */
 .ed-empty-courses {
     grid-column: 1 / -1;
-    padding: 50px 20px;
-    text-align: center;
     background: #ffffff;
     border: 1px dashed #cbd5e1;
     border-radius: 12px;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.ed-empty-courses i {
+    font-size: 2.8rem;
     color: #94a3b8;
+    margin-bottom: 12px;
 }
 
-.ed-empty-courses i { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.4; }
+.ed-empty-courses h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
 
-/* Floating Cart Bar */
-.floating-cart-bar {
+.ed-empty-courses p {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 16px;
+}
+
+/* Modal */
+.subject-modal-overlay {
+    display: none;
     position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 40px);
-    max-width: 900px;
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    padding: 14px 24px;
-    color: #ffffff;
-    z-index: 1000;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-}
-
-.cart-bar-content {
-    display: flex;
-    justify-content: space-between;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.6);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
     align-items: center;
-    flex-wrap: wrap;
-    gap: 14px;
+    justify-content: center;
+    padding: 20px;
 }
 
-.cart-info-side {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+.subject-modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    max-width: 540px;
+    width: 100%;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalIn 0.2s ease-out;
 }
 
-.cart-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: #1e3a8a;
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
     display: grid;
     place-items: center;
-    font-size: 1.1rem;
-}
-
-.cart-count-row {
-    font-size: 0.9rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.text-cyan { color: #38bdf8; }
-
-.bundle-discount-badge {
-    background: #16a34a;
-    color: #ffffff;
-    font-size: 0.72rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 700;
-}
-
-.cart-summary {
-    font-size: 0.78rem;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-
-.cart-action-side {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.cart-total-block {
-    text-align: right;
-}
-
-html[dir="ltr"] .cart-total-block {
-    text-align: left;
-}
-
-.total-label {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    display: block;
-}
-
-.total-number {
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: #38bdf8;
-    line-height: 1.1;
-}
-
-.btn-checkout {
-    background: #1e3a8a;
-    color: #ffffff;
-    border: none;
-    padding: 10px 22px;
-    border-radius: 8px;
-    font-weight: 800;
-    font-size: 0.9rem;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    color: #64748b;
     transition: 0.15s;
 }
 
-.btn-checkout:hover {
-    background: #172554;
+html[dir="ltr"] .modal-close-btn {
+    left: auto;
+    right: 18px;
 }
 
-html[dir="ltr"] .arrow-icon {
-    transform: rotate(180deg);
+.modal-close-btn:hover {
+    background: #e2e8f0;
+    color: #0f172a;
 }
 
-@media (max-width: 768px) {
-    .floating-cart-bar {
-        width: calc(100% - 24px);
-        padding: 12px 16px;
-    }
-    .cart-bar-content {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .cart-action-side {
-        justify-content: space-between;
-    }
+.modal-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.modal-icon-sq {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.modal-stage-badge {
+    display: inline-block;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.modal-teacher-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: #334155;
+    margin-bottom: 14px;
+}
+
+.modal-teacher-box i {
+    color: #1e3a8a;
+}
+
+.modal-section-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.modal-desc-text {
+    font-size: 0.86rem;
+    color: #475569;
+    line-height: 1.65;
+    margin-bottom: 18px;
+}
+
+.modal-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.modal-metric-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-metric-card i {
+    font-size: 1.4rem;
+}
+
+.modal-metric-card strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #0f172a;
+}
+
+.modal-metric-card small {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+
+.modal-enroll-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    color: #1e40af;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.modal-enroll-note i {
+    margin-top: 2px;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-modal-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e3a8a;
+    color: #ffffff !important;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.15s;
+}
+
+.btn-modal-primary:hover {
+    background: #0f172a;
+}
+
+.btn-modal-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+.btn-modal-secondary:hover {
+    background: #e2e8f0;
 }
 </style>
 
 <script>
-function updateCartBar() {
-    const checked = document.querySelectorAll('input[name="subject_ids[]"]:checked');
-    const bar = document.getElementById('floatingCartBar');
-    const countEl = document.getElementById('cartCount');
-    const totalEl = document.getElementById('cartTotal');
-    const badgeEl = document.getElementById('bundleBadge');
-    const summaryText = document.getElementById('cartSummaryText');
+function openSubjectModal(data) {
+    document.getElementById('modalTitle').textContent = data.name;
+    document.getElementById('modalStage').textContent = data.stage;
+    document.getElementById('modalTeacher').textContent = data.teacher;
+    document.getElementById('modalDesc').textContent = data.desc;
+    document.getElementById('modalLessons').textContent = data.lessons;
+    document.getElementById('modalExams').textContent = data.exams;
 
-    let count = checked.length;
-    let subtotal = 0;
-    let names = [];
+    const iconBox = document.getElementById('modalIconBox');
+    const icon = document.getElementById('modalIcon');
+    iconBox.style.color = data.color || '#1e3a8a';
+    iconBox.style.background = (data.color || '#1e3a8a') + '15';
+    iconBox.style.border = '1px solid ' + (data.color || '#1e3a8a') + '30';
+    icon.className = 'fa-solid ' + (data.icon || 'fa-book-open');
 
-    checked.forEach(box => {
-        subtotal += parseFloat(box.getAttribute('data-price') || 0);
-        names.push(box.getAttribute('data-name'));
-    });
-
-    if (count > 0) {
-        bar.style.display = 'block';
-        countEl.textContent = count;
-
-        let discount = 0;
-        if (count >= 3 && subtotal > 0) {
-            discount = subtotal * 0.15;
-            badgeEl.style.display = 'inline-block';
-        } else {
-            badgeEl.style.display = 'none';
-        }
-
-        let finalTotal = Math.max(0, subtotal - discount);
-        totalEl.textContent = Math.round(finalTotal);
-
-        summaryText.textContent = names.slice(0, 3).join(' + ') + (names.length > 3 ? ' +' + (names.length - 3) + ' أخرى' : '');
-    } else {
-        bar.style.display = 'none';
-    }
+    const modal = document.getElementById('subjectModal');
+    modal.style.display = 'flex';
 }
 
-function handleCheckout(e) {
-    e.preventDefault();
-    const form = document.getElementById('enrollmentForm');
-    const checked = document.querySelectorAll('input[name="subject_ids[]"]:checked');
-
-    if (checked.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: '{{ __("تنبيه") }}',
-            text: '{{ __("حدد مادة دراسية واحدة على الأقل للاشتراك في المنهاج.") }}'
-        });
-        return;
+function closeSubjectModal(e) {
+    if (!e || e.target.id === 'subjectModal' || e.target.classList.contains('modal-close-btn') || e.target.classList.contains('btn-modal-secondary')) {
+        document.getElementById('subjectModal').style.display = 'none';
     }
-
-    const btn = document.getElementById('btnGoToCheckout');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري المعالجة...") }}';
-
-    const formData = new FormData(form);
-
-    axios.post('{{ route("student.courses.checkout") }}', formData)
-        .then(res => {
-            window.location.href = res.data.redirect || '{{ route("student.checkout.show") }}';
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = '<span>{{ __("إتمام الدفع الفلسطيني") }}</span> <i class="fa-solid fa-arrow-left arrow-icon"></i>';
-            const msg = err.response?.data?.message || '{{ __("حدث خطأ أثناء تجهيز الطلب، يرجى المحاولة ثانية.") }}';
-            Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: msg });
-        });
 }
 </script>
 @endsection

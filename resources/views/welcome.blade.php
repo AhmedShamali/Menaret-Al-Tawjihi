@@ -1018,7 +1018,7 @@
                                             <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
                                         </td>
                                         <td style="padding: 14px 18px; text-align: center;">
-                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                            <a href="{{ route('courses.catalog', ['branch' => 'scientific']) }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
                                         </td>
                                     </tr>
                                     <tr style="border-bottom: 1px solid #e2e8f0;">
@@ -1033,7 +1033,7 @@
                                             <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
                                         </td>
                                         <td style="padding: 14px 18px; text-align: center;">
-                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                            <a href="{{ route('courses.catalog', ['branch' => 'literary']) }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
                                         </td>
                                     </tr>
                                     <tr style="border-bottom: 1px solid #e2e8f0;">
@@ -1048,7 +1048,7 @@
                                             <span style="display: inline-block; background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('شامل 100%') }}</span>
                                         </td>
                                         <td style="padding: 14px 18px; text-align: center;">
-                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                            <a href="{{ route('courses.catalog', ['branch' => 'business']) }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
                                         </td>
                                     </tr>
                                     <tr>
@@ -1063,7 +1063,7 @@
                                             <span style="display: inline-block; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{{ __('معتمد') }}</span>
                                         </td>
                                         <td style="padding: 14px 18px; text-align: center;">
-                                            <a href="{{ route('courses.catalog') }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
+                                            <a href="{{ route('courses.catalog', ['branch' => 'vocational']) }}" class="tbl-btn" style="background: #1e3a8a; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 0.78rem; text-decoration: none; font-weight: 700;">{{ __('عرض المواد') }}</a>
                                         </td>
                                     </tr>
                                 </tbody>
