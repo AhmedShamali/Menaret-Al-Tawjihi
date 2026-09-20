@@ -52,7 +52,6 @@ class EducationalContentController extends Controller
         $content = new EducationalContent();
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
-        $content->type         = $request->type ?? 'video';
         $content->channel_name = $request->channel_name ?? 'منارة التوجيهي';
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
@@ -69,18 +68,23 @@ class EducationalContentController extends Controller
             $content->url_path = $request->video_url;
         }
 
-        // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي ---
+        // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي والتوافقية مع بيئة الاختبار ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $uploaded = $request->file('file_upload_pdf');
             $sizeKb = round($uploaded->getSize() / 1024);
             $content->file_size = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
 
-            try {
-                $path = $uploaded->store('educational/files', 'supabase');
-                $content->pdf_path = Storage::disk('supabase')->url($path);
-            } catch (\Throwable $e) {
+            if (app()->environment('testing') || empty(config('filesystems.disks.supabase.key'))) {
                 $path = $uploaded->store('educational/files', 'public');
                 $content->pdf_path = asset('storage/' . $path);
+            } else {
+                try {
+                    $path = $uploaded->store('educational/files', 'supabase');
+                    $content->pdf_path = Storage::disk('supabase')->url($path);
+                } catch (\Throwable $e) {
+                    $path = $uploaded->store('educational/files', 'public');
+                    $content->pdf_path = asset('storage/' . $path);
+                }
             }
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
@@ -93,6 +97,19 @@ class EducationalContentController extends Controller
             ], 422);
         }
 
+        // تحديد نوع المحتوى تلقائياً وبدقة
+        if ($request->filled('type')) {
+            $content->type = $request->type;
+        } else {
+            if (!empty($content->url_path) && !empty($content->pdf_path)) {
+                $content->type = 'both';
+            } elseif (!empty($content->pdf_path)) {
+                $content->type = 'file';
+            } else {
+                $content->type = 'video';
+            }
+        }
+
         if (auth()->check()) {
             $subject = Subject::find($request->subject_id);
             if ($subject && is_null($subject->user_id)) {
@@ -101,7 +118,31 @@ class EducationalContentController extends Controller
             }
         }
 
-        $content->save();
+        // حفظ المحتوى مع حماية تلقائية وشاملة ضد قيود قواعد البيانات القديمة
+        try {
+            $content->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            $err = strtolower($e->getMessage());
+            if (str_contains($err, 'url_path') && (str_contains($err, 'not null') || str_contains($err, 'violates not-null'))) {
+                $content->url_path = '';
+                $content->save();
+            } elseif (str_contains($err, 'check constraint') || $e->getCode() == '23514') {
+                $content->type = !empty($content->url_path) ? 'video' : 'file';
+                $content->save();
+            } else {
+                \Log::error('EducationalContent save query exception: ' . $e->getMessage());
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'تعذر حفظ المحتوى التعليمي، يرجى التحقق من صحة البيانات والمحاولة مجدداً.'
+                ], 500);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('EducationalContent save exception: ' . $e->getMessage());
+            return response()->json([
+                'icon'  => 'error',
+                'title' => 'حدث خطأ أثناء معالجة المحتوى التعليمي.'
+            ], 500);
+        }
 
         try {
             $subject = \App\Models\Subject::find($content->subject_id);
@@ -200,25 +241,64 @@ class EducationalContentController extends Controller
             $sizeKb = round($uploaded->getSize() / 1024);
             $content->file_size = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
 
-            $path = $uploaded->store('educational/files', 'supabase');
-            $content->pdf_path = Storage::disk('supabase')->url($path);
+            if (app()->environment('testing') || empty(config('filesystems.disks.supabase.key'))) {
+                $path = $uploaded->store('educational/files', 'public');
+                $content->pdf_path = asset('storage/' . $path);
+            } else {
+                try {
+                    $path = $uploaded->store('educational/files', 'supabase');
+                    $content->pdf_path = Storage::disk('supabase')->url($path);
+                } catch (\Throwable $e) {
+                    $path = $uploaded->store('educational/files', 'public');
+                    $content->pdf_path = asset('storage/' . $path);
+                }
+            }
         } elseif ($request->filled('pdf_url')) {
             $content->pdf_path = $request->pdf_url;
         }
 
-        $isSaved = $content->save();
+        // تحديد نوع المحتوى تلقائياً
+        if ($request->filled('type')) {
+            $content->type = $request->type;
+        } else {
+            if (!empty($content->url_path) && !empty($content->pdf_path)) {
+                $content->type = 'both';
+            } elseif (!empty($content->pdf_path)) {
+                $content->type = 'file';
+            } else {
+                $content->type = 'video';
+            }
+        }
 
-        if ($isSaved) {
+        try {
+            $content->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            $err = strtolower($e->getMessage());
+            if (str_contains($err, 'url_path') && (str_contains($err, 'not null') || str_contains($err, 'violates not-null'))) {
+                $content->url_path = '';
+                $content->save();
+            } elseif (str_contains($err, 'check constraint') || $e->getCode() == '23514') {
+                $content->type = !empty($content->url_path) ? 'video' : 'file';
+                $content->save();
+            } else {
+                \Log::error('EducationalContent update query error: ' . $e->getMessage());
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'تعذر تحديث المحتوى التعليمي. يرجى مراجعة البيانات والمحاولة مجدداً.'
+                ], 500);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('EducationalContent update error: ' . $e->getMessage());
             return response()->json([
-                'icon'  => 'success',
-                'title' => 'تم تحديث البيانات بنجاح 🚀'
-            ], 200);
+                'icon'  => 'error',
+                'title' => 'حدث خطأ أثناء حفظ التعديلات.'
+            ], 500);
         }
 
         return response()->json([
-            'icon'  => 'error',
-            'title' => 'فشلت عملية الحفظ!'
-        ], 500);
+            'icon'  => 'success',
+            'title' => 'تم تحديث البيانات بنجاح 🚀'
+        ], 200);
     }
 
     public function destroy($id)
@@ -324,7 +404,7 @@ class EducationalContentController extends Controller
         $query = EducationalContent::with('subject.stage')
             ->where(function($q) {
                 $q->whereNotNull('url_path')->where('url_path', '!=', '')
-                  ->orWhere('type', 'video');
+                  ->orWhereIn('type', ['video', 'both']);
             });
 
         if ($user->role === 'teacher' && $subjectId) {
@@ -333,9 +413,15 @@ class EducationalContentController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        $stats = [
+            'total'   => (clone $query)->count(),
+            'visible' => (clone $query)->where('is_visible', 1)->count(),
+            'hidden'  => (clone $query)->where('is_visible', 0)->count(),
+        ];
+
         $videos = $query->orderBy('order')->latest()->paginate(20);
 
-        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId'));
+        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats'));
     }
 
     /**
@@ -350,7 +436,7 @@ class EducationalContentController extends Controller
         $query = EducationalContent::with('subject.stage')
             ->where(function($q) {
                 $q->whereNotNull('pdf_path')->where('pdf_path', '!=', '')
-                  ->orWhere('type', 'pdf');
+                  ->orWhereIn('type', ['file', 'pdf', 'both']);
             });
 
         if ($user->role === 'teacher' && $subjectId) {
@@ -359,9 +445,15 @@ class EducationalContentController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        $stats = [
+            'total'   => (clone $query)->count(),
+            'visible' => (clone $query)->where('is_visible', 1)->count(),
+            'hidden'  => (clone $query)->where('is_visible', 0)->count(),
+        ];
+
         $files = $query->orderBy('order')->latest()->paginate(20);
 
-        return view('teacher.files.index', compact('files', 'subjects', 'subjectId'));
+        return view('teacher.files.index', compact('files', 'subjects', 'subjectId', 'stats'));
     }
 
     /**

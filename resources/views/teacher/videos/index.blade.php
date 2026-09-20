@@ -1,33 +1,91 @@
 @extends('layouts.app')
 
-@section('title', __('Video Lessons & Lectures Management') . ' | ' . config('app.name'))
+@section('title', __('إدارة ورفع الفيديوهات والشروحات') . ' | ' . config('app.name', 'منارة التوجيهي'))
 
 @section('content')
 <div class="ed-teacher-videos-container">
 
-    <!-- الهيدر الأكاديمي -->
+    <!-- الهيدر الأكاديمي الرسمي -->
     <header class="ed-teacher-header">
         <div>
             <div class="ed-teacher-breadcrumbs">
-                <a href="{{ route('teacher.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('Teacher Portal') }}</a>
-                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}" style="font-size: 0.7rem;"></i>
-                <span class="active">{{ __('Video Content') }}</span>
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('teacher.dashboard') }}">
+                    {{ auth()->user()->role === 'admin' ? __('لوحة الإدارة') : __('بوابة المعلم المعتمد') }}
+                </a>
+                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
+                <span class="active">{{ __('المحتوى المرئي والفيديوهات') }}</span>
             </div>
             <h1>
-                <i class="fa-solid fa-video" style="color: #1e3a8a;"></i> {{ __('Manage & Upload Video Lessons') }}
+                <i class="fa-solid fa-video" style="color: #1e3a8a;"></i>
+                {{ __('إدارة ورفع الفيديوهات والشروحات المرئية') }}
             </h1>
             <p>
-                {{ __('Upload recorded lessons, Tawjihi explanations, and YouTube streams with secure cloud processing.') }}
+                {{ __('رفع وإدارة حصص وشروحات المنهاج الفلسطيني عبر روابط YouTube السريعة، مع تنظيم ترتيب الدروس والتحكم بظهورها للطلبة فورياً.') }}
             </p>
         </div>
 
-        <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload">
-            <i class="fa-solid fa-cloud-arrow-up"></i>
-            <span>{{ __('Upload New Lesson / Video') }}</span>
-        </button>
+        <div class="header-actions">
+            <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ __('إضافة فيديو / شرح جديد') }}</span>
+            </button>
+        </div>
     </header>
 
-    <!-- شبكة الفيديوهات -->
+    <!-- شريط الإحصائيات والمؤشرات السريعة -->
+    <div class="ed-stats-strip">
+        <div class="stat-box">
+            <div class="stat-icon-wrap" style="background: #eff6ff; color: #1e40af;">
+                <i class="fa-solid fa-film"></i>
+            </div>
+            <div>
+                <span class="stat-num">{{ $stats['total'] ?? $videos->total() }}</span>
+                <span class="stat-label">{{ __('إجمالي الفيديوهات والشروحات') }}</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon-wrap" style="background: #ecfdf5; color: #059669;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <span class="stat-num">{{ $stats['visible'] ?? 0 }}</span>
+                <span class="stat-label">{{ __('شروحات مفعلة ومتاحة للطلبة') }}</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-icon-wrap" style="background: #fffbeb; color: #d97706;">
+                <i class="fa-solid fa-eye-slash"></i>
+            </div>
+            <div>
+                <span class="stat-num">{{ $stats['hidden'] ?? 0 }}</span>
+                <span class="stat-label">{{ __('شروحات محجوبة مؤقتاً') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- شريط التصفية حسب المادة -->
+    @if(auth()->user()->role === 'admin' || !auth()->user()->subject_id)
+        <div class="ed-filter-bar">
+            <div class="filter-label">
+                <i class="fa-solid fa-filter"></i>
+                <span>{{ __('تصفية حسب المادة الدراسية:') }}</span>
+            </div>
+            <div class="filter-pills">
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos') }}" class="filter-chip {{ empty(request('subject_id')) ? 'active' : '' }}">
+                    {{ __('جميع المواد') }}
+                </a>
+                @foreach($subjects as $sub)
+                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos')) . '?subject_id=' . $sub->id }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
+                        {{ $sub->name_ar ?? $sub->name }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <!-- شبكة بطاقات الفيديوهات -->
     <div class="ed-videos-grid">
         @forelse($videos as $vid)
             @php
@@ -45,26 +103,41 @@
                     <div class="video-info-box">
                         <div class="video-meta-row">
                             <span class="subject-badge">
-                                {{ $vid->subject?->name_ar ?? __('General') }}
+                                <i class="fa-solid fa-graduation-cap"></i>
+                                {{ $vid->subject?->name_ar ?? __('عام') }}
                             </span>
-                            <span class="order-badge">{{ __('Order:') }} #{{ $vid->order }}</span>
+                            <span class="order-badge">
+                                <i class="fa-solid fa-arrow-down-1-9"></i>
+                                {{ __('ترتيب الدرس:') }} #{{ $vid->order }}
+                            </span>
                         </div>
                         <h3 class="video-title">{{ $vid->title }}</h3>
-                        <p class="video-channel">{{ $vid->channel_name ?? config('app.name') }}</p>
+                        <p class="video-channel">
+                            <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+                            <span>{{ $vid->channel_name ?? config('app.name', 'منارة التوجيهي') }}</span>
+                        </p>
                     </div>
                 </div>
 
                 <div class="video-card-footer">
-                    <span class="visibility-status {{ $vid->is_visible ? 'visible' : 'hidden' }}">
+                    <button type="button" onclick="toggleVisibility({{ $vid->id }}, this)" class="visibility-toggle-btn {{ $vid->is_visible ? 'is-visible' : 'is-hidden' }}" title="{{ __('انقر لتبديل الظهور للطلبة') }}">
                         <i class="fa-solid {{ $vid->is_visible ? 'fa-eye' : 'fa-eye-slash' }}"></i>
-                        {{ $vid->is_visible ? __('Available for students') : __('Temporarily hidden') }}
-                    </span>
+                        <span>{{ $vid->is_visible ? __('متاح للطلبة') : __('محجوب') }}</span>
+                    </button>
+
                     <div class="action-btns">
-                        <a href="{{ route('teacher.educational_contents.edit', $vid->id) }}" class="btn-edit">
-                            <i class="fa-solid fa-pen"></i> {{ __('Edit') }}
-                        </a>
-                        <button type="button" onclick="deleteContentItem({{ $vid->id }})" class="btn-delete" title="{{ __('Delete') }}">
-                            <i class="fa-solid fa-trash-alt"></i>
+                        @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.educational_contents.edit', $vid->id) }}" class="btn-edit" title="{{ __('تعديل') }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        @else
+                            <a href="{{ route('teacher.educational_contents.edit', $vid->id) }}" class="btn-edit" title="{{ __('تعديل') }}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                        @endif
+
+                        <button type="button" onclick="deleteVideoItem({{ $vid->id }})" class="btn-delete" title="{{ __('حذف') }}">
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 </div>
@@ -72,10 +145,11 @@
         @empty
             <div class="ed-empty-videos">
                 <i class="fa-solid fa-film"></i>
-                <h3>{{ __('No videos registered currently') }}</h3>
-                <p>{{ __('Click "Upload New Video" to add your first recorded lesson for your students.') }}</p>
+                <h3>{{ __('لا توجد شروحات فيديو مسجلة حالياً') }}</h3>
+                <p>{{ __('انقر على زر "إضافة فيديو / شرح جديد" لإضافة أول درس مرئي لطلبتك في هذه المادة.') }}</p>
                 <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload" style="margin: 0 auto;">
-                    {{ __('Upload New Lesson / Video') }}
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>{{ __('إضافة فيديو / شرح جديد الآن') }}</span>
                 </button>
             </div>
         @endforelse
@@ -87,70 +161,77 @@
 
 </div>
 
-<!-- Modal رفع فيديو جديد -->
-<div id="uploadVideoModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: white; border-radius: 20px; max-width: 560px; width: 100%; padding: 26px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
-            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-video" style="color: #1e3a8a;"></i> {{ __('Upload New Video Lesson') }}
+<!-- نافذة Modal إضافة فيديو جديد -->
+<div id="uploadVideoModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-head">
+            <h3>
+                <i class="fa-solid fa-video text-primary"></i>
+                <span>{{ __('إضافة درس أو شرح فيديو جديد (YouTube)') }}</span>
             </h3>
-            <button type="button" onclick="closeUploadVideoModal()" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">✕</button>
+            <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
         </div>
 
         <form id="uploadVideoForm" onsubmit="submitVideoForm(event)">
             @csrf
             <input type="hidden" name="type" value="video">
 
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-                <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">{{ __('Academic Subject *') }}</label>
-                    <select name="subject_id" required style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none;">
+            <div class="modal-form-body">
+                <!-- المادة الدراسية -->
+                <div class="f-group">
+                    <label class="f-label">{{ __('المادة الدراسية والمرحلة *') }}</label>
+                    <select name="subject_id" required class="f-control">
+                        <option value="">{{ __('اختر المادة الدراسية...') }}</option>
                         @foreach($subjects as $sub)
-                            <option value="{{ $sub->id }}" {{ $subjectId == $sub->id ? 'selected' : '' }}>{{ $sub->name_ar }} ({{ $sub->stage?->label_ar ?? __('High School') }})</option>
+                            <option value="{{ $sub->id }}" {{ (isset($subjectId) && $subjectId == $sub->id) ? 'selected' : '' }}>
+                                {{ $sub->name_ar ?? $sub->name }} {{ optional($sub->stage)->label_ar ? ' - (' . optional($sub->stage)->label_ar . ')' : '' }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
 
-                <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">{{ __('Lesson Title *') }}</label>
-                    <input type="text" name="title" required placeholder="{{ __('e.g. Explaining Coulombs Law and Exercises') }}" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none;">
+                <!-- عنوان الفيديو -->
+                <div class="f-group">
+                    <label class="f-label">{{ __('عنوان الدرس / الشرح المرئي *') }}</label>
+                    <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
                 </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-                    <div>
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">{{ __('Lesson Order *') }}</label>
-                        <input type="number" name="order" value="{{ $videos->count() + 1 }}" required min="1" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none;">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.82rem; font-weight: 700; color: #334155; display: block; margin-bottom: 6px;">{{ __('Unit / Topic Name') }}</label>
-                        <input type="text" name="channel_name" placeholder="{{ __('e.g. Unit 1') }}" style="width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none;">
-                    </div>
-                </div>
-
-                <div>
-                    <label style="font-size: 0.82rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 6px;">
-                        <i class="fa-brands fa-youtube" style="color: #ef4444;"></i> {{ __('YouTube Lesson URL *') }}
+                <!-- رابط YouTube -->
+                <div class="f-group">
+                    <label class="f-label">
+                        <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+                        <span>{{ __('رابط فيديو YouTube *') }}</span>
                     </label>
-                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="https://www.youtube.com/watch?v=..." oninput="previewYoutube(this.value)" style="width: 100%; padding: 10px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 0.9rem; outline: none; direction: ltr; text-align: left; background: #ffffff; color: #0f172a;">
-                    <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 4px;">
-                        {{ __('Supports regular YouTube URLs, youtu.be, and Shorts.') }}
-                    </small>
+                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
+                    <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts).') }}</small>
                 </div>
 
                 <!-- معاينة فورية للفيديو -->
-                <div id="ytPreviewContainer" style="display: none; margin-top: 4px;">
-                    <label style="font-size: 0.78rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">{{ __('Live Video Preview:') }}</label>
+                <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
+                    <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو المباشر:') }}</label>
                     <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">
                         <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
                     </div>
                 </div>
+
+                <div class="f-row">
+                    <div class="f-group" style="flex: 1;">
+                        <label class="f-label">{{ __('اسم القناة / المصدر الأكاديمي') }}</label>
+                        <input type="text" name="channel_name" value="{{ auth()->user()->name_ar ?? auth()->user()->name }}" placeholder="{{ __('مثال: أ. أحمد شمالي') }}" class="f-control">
+                    </div>
+
+                    <div class="f-group" style="width: 130px;">
+                        <label class="f-label">{{ __('ترتيب الدرس') }}</label>
+                        <input type="number" name="order" value="1" min="1" class="f-control font-mono">
+                    </div>
+                </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #f1f5f9;">
-                <button type="button" onclick="closeUploadVideoModal()" style="padding: 10px 20px; border-radius: 10px; background: #f1f5f9; color: #64748b; border: none; font-weight: 700; cursor: pointer;">{{ __('Cancel') }}</button>
-                <button type="submit" id="btnSubmitVideo" style="padding: 10px 24px; border-radius: 10px; background: #1e3a8a; color: white; border: none; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            <div class="modal-foot">
+                <button type="button" onclick="closeUploadVideoModal()" class="btn-modal-cancel">{{ __('إلغاء') }}</button>
+                <button type="submit" id="btnSubmitVideo" class="btn-modal-submit">
                     <i class="fa-solid fa-check"></i>
-                    <span>{{ __('Save and Publish Lesson') }}</span>
+                    <span>{{ __('حفظ ونشر الفيديو للطلبة') }}</span>
                 </button>
             </div>
         </form>
@@ -158,9 +239,11 @@
 </div>
 
 <style>
+/* ==========================================================
+   ACADEMIC VIDEO MANAGEMENT STYLES
+   ========================================================== */
 .ed-teacher-videos-container {
     width: 100%;
-    max-width: 100%;
     margin: 0 auto;
     padding: 0 0 60px;
     box-sizing: border-box;
@@ -170,7 +253,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
     flex-wrap: wrap;
     gap: 16px;
     border-bottom: 2px solid #e2e8f0;
@@ -186,16 +269,29 @@
     margin-bottom: 6px;
 }
 
+.ed-teacher-breadcrumbs a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.ed-teacher-breadcrumbs a:hover {
+    color: #1e3a8a;
+}
+
 .ed-teacher-breadcrumbs .active {
     color: #1e3a8a;
-    font-weight: 700;
+    font-weight: 800;
 }
 
 .ed-teacher-header h1 {
     margin: 0 0 6px;
-    font-size: 1.65rem;
+    font-size: 1.55rem;
     font-weight: 800;
     color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .ed-teacher-header p {
@@ -211,21 +307,116 @@
     color: white;
     border: none;
     padding: 12px 24px;
-    border-radius: 12px;
+    border-radius: 10px;
     font-weight: 800;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     display: inline-flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
 }
 
 .ed-btn-upload:hover {
-    background: #172554;
+    background: #0f172a;
+    transform: translateY(-1px);
 }
 
+/* Stats Strip */
+.ed-stats-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.stat-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.stat-num {
+    display: block;
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #0f172a;
+    font-family: inherit;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+}
+
+/* Filter Bar */
+.ed-filter-bar {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #475569;
+    transition: all 0.15s ease;
+}
+
+.filter-chip.active {
+    background: #1e3a8a;
+    color: #ffffff;
+}
+
+.filter-chip:hover:not(.active) {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Videos Grid */
 .ed-videos-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -234,142 +425,324 @@
 
 .ed-video-card {
     background: #ffffff;
-    border-radius: 16px;
     border: 1px solid #e2e8f0;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.02);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ed-video-card:hover {
-    border-color: #cbd5e1;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
 }
 
 .video-frame-wrap {
     position: relative;
     padding-top: 56.25%;
-    background: #000000;
+    background: #0f172a;
 }
 
 .video-info-box {
-    padding: 16px 20px;
+    padding: 16px;
 }
 
 .video-meta-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .subject-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     background: #eff6ff;
     color: #1e3a8a;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    border: 1px solid #bfdbfe;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
     font-weight: 700;
 }
 
 .order-badge {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: 600;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 3px 8px;
+    border-radius: 4px;
 }
 
 .video-title {
-    margin: 0 0 8px;
-    font-size: 1.02rem;
+    font-size: 0.98rem;
     font-weight: 800;
     color: #0f172a;
-    line-height: 1.4;
+    margin: 0 0 6px;
+    line-height: 1.5;
 }
 
 .video-channel {
-    margin: 0;
     font-size: 0.78rem;
     color: #64748b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .video-card-footer {
-    padding: 12px 20px;
-    background: #f8fafc;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid #f1f5f9;
+    padding: 12px 16px;
+    background: #fafafa;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.visibility-status {
-    font-size: 0.78rem;
+.visibility-toggle-btn {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 0.76rem;
     font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.15s;
 }
 
-.visibility-status.visible { color: #16a34a; }
-.visibility-status.hidden { color: #dc2626; }
+.visibility-toggle-btn.is-visible {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.visibility-toggle-btn.is-hidden {
+    background: #fef2f2;
+    color: #dc2626;
+}
 
 .action-btns {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    align-items: center;
 }
 
 .btn-edit {
-    padding: 6px 12px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    color: #475569;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #1d4ed8;
     text-decoration: none;
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: 0.85rem;
+    transition: 0.15s;
 }
 
 .btn-edit:hover {
-    border-color: #1e3a8a;
-    color: #1e3a8a;
+    background: #dbeafe;
 }
 
 .btn-delete {
-    padding: 6px 10px;
-    background: #fee2e2;
-    border: 1px solid #fecaca;
-    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: none;
+    background: #fef2f2;
     color: #dc2626;
     cursor: pointer;
-    font-size: 0.78rem;
+    font-size: 0.85rem;
+    transition: 0.15s;
 }
 
+.btn-delete:hover {
+    background: #fee2e2;
+}
+
+/* Empty State */
 .ed-empty-videos {
     grid-column: 1 / -1;
-    text-align: center;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
     padding: 60px 20px;
-    background: white;
-    border-radius: 20px;
-    border: 2px dashed #cbd5e1;
-    color: #94a3b8;
+    text-align: center;
 }
 
 .ed-empty-videos i {
     font-size: 3rem;
+    color: #94a3b8;
     margin-bottom: 12px;
-    display: block;
-    opacity: 0.4;
 }
 
 .ed-empty-videos h3 {
-    margin: 0 0 6px;
+    font-size: 1.2rem;
     font-weight: 800;
-    color: #475569;
+    color: #1e293b;
+    margin-bottom: 6px;
 }
 
 .ed-empty-videos p {
-    margin: 0 0 20px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-card {
+    background: #ffffff;
+    border-radius: 16px;
+    max-width: 580px;
+    width: 100%;
+    padding: 26px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modalScale 0.2s ease-out;
+}
+
+@keyframes modalScale {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 14px;
+    margin-bottom: 18px;
+}
+
+.modal-head h3 {
+    margin: 0;
+    font-size: 1.18rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-modal {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-form-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.f-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.f-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.f-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-family: inherit;
     font-size: 0.88rem;
+    outline: none;
+    background: #ffffff;
+    color: #0f172a;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.f-control:focus {
+    border-color: #1e3a8a;
+}
+
+.f-hint {
+    color: #64748b;
+    font-size: 0.74rem;
+}
+
+.f-row {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-modal-cancel {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-modal-submit {
+    padding: 10px 24px;
+    border-radius: 8px;
+    background: #1e3a8a;
+    color: white;
+    border: none;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.15s;
+}
+
+.btn-modal-submit:hover {
+    background: #0f172a;
 }
 </style>
 
@@ -380,12 +753,12 @@
 function openUploadVideoModal() {
     document.getElementById('uploadVideoModal').style.display = 'flex';
 }
+
 function closeUploadVideoModal() {
     document.getElementById('uploadVideoModal').style.display = 'none';
 }
 
 function parseYouTubeId(url) {
-    if (!url) return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
@@ -409,47 +782,65 @@ async function submitVideoForm(e) {
     const btn = document.getElementById('btnSubmitVideo');
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("Uploading...") }}';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري الحفظ والرفع...") }}';
 
     const form = document.getElementById('uploadVideoForm');
     const formData = new FormData(form);
 
+    const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+
     try {
-        const res = await axios.post("{{ route('teacher.educational_contents.store') }}", formData);
+        const res = await axios.post(storeUrl, formData);
         Swal.fire({
             icon: 'success',
-            title: res.data.title || '{{ __("Saved successfully") }}',
-            confirmButtonText: '{{ __("OK") }}',
+            title: res.data.title || '{{ __("تم حفظ ونشر درس الفيديو بنجاح 🎉") }}',
+            confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#1e3a8a'
         }).then(() => location.reload());
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        const msg = err.response?.data?.title || err.response?.data?.message || '{{ __("Error uploading content") }}';
-        Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: msg });
+        const msg = err.response?.data?.title || err.response?.data?.message || '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
+        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: msg });
     }
 }
 
-async function deleteContentItem(id) {
+async function toggleVisibility(id, btn) {
+    const toggleUrl = "{{ auth()->user()->role === 'admin' ? url('admin/visibility/toggle') : url('teacher/visibility/toggle') }}/" + id;
+    try {
+        const res = await axios.post(toggleUrl, { _token: '{{ csrf_token() }}' });
+        if (res.data.success) {
+            const isVis = res.data.is_visible;
+            btn.className = 'visibility-toggle-btn ' + (isVis ? 'is-visible' : 'is-hidden');
+            btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-eye-slash'}"></i> <span>${isVis ? '{{ __("متاح للطلبة") }}' : '{{ __("محجوب") }}'}</span>`;
+            Swal.fire({ icon: 'success', title: res.data.message, timer: 1000, showConfirmButton: false });
+        }
+    } catch (e) {
+        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر تعديل حالة الظهور.") }}' });
+    }
+}
+
+async function deleteVideoItem(id) {
+    const deleteUrl = "{{ auth()->user()->role === 'admin' ? url('admin/educational-contents') : url('teacher/educational_contents') }}/" + id;
     Swal.fire({
-        title: '{{ __("Delete Video Lesson?") }}',
-        text: '{{ __("Are you sure you want to delete this video?") }}',
+        title: '{{ __("حذف هذا الشرح المرئي؟") }}',
+        text: '{{ __("هل أنت متأكد من حذف هذا الدرس؟ لن يتمكن الطلاب من مشاهدته بعد الحذف.") }}',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#dc2626',
         cancelButtonColor: '#64748b',
-        confirmButtonText: '{{ __("Yes, delete") }}',
-        cancelButtonText: '{{ __("Cancel") }}'
+        confirmButtonText: '{{ __("نعم، احذف") }}',
+        cancelButtonText: '{{ __("إلغاء") }}'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                await axios.delete(`{{ url('teacher/educational_contents') }}/${id}`, {
+                await axios.delete(deleteUrl, {
                     data: { _token: '{{ csrf_token() }}' }
                 });
-                Swal.fire({ icon: 'success', title: '{{ __("Deleted successfully") }}', timer: 1200, showConfirmButton: false })
+                Swal.fire({ icon: 'success', title: '{{ __("تم حذف الفيديو بنجاح") }}', timer: 1200, showConfirmButton: false })
                     .then(() => location.reload());
             } catch (e) {
-                Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ __("Could not delete content.") }}' });
+                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر حذف المحتوى.") }}' });
             }
         }
     });

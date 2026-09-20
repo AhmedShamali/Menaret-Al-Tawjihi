@@ -185,6 +185,12 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
+
+    // واجهتا الفيديوهات والملفات والدوسيات المستقلتان للإدارة
+    Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
+    Route::get('/files', [EducationalContentController::class, 'teacherFiles'])->name('files');
+    Route::get('/visibility', [EducationalContentController::class, 'teacherVisibility'])->name('visibility');
+    Route::post('/visibility/toggle/{id}', [EducationalContentController::class, 'toggleVisibility'])->name('visibility.toggle');
     Route::get('/teachers', [DashboardController::class, 'teachersIndex'])->name('teachers.index');
 
     // مسارات الطلاب بشكل آمن بدون تعارض

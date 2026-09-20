@@ -1405,6 +1405,22 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('admin.videos') }}" class="nav-item {{ Request::is('admin/videos*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-video"></i></span>
+                            <span>{{ __('استوديو الفيديوهات والشروحات') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('admin.files') }}" class="nav-item {{ Request::is('admin/files*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-rose"><i class="fa-solid fa-file-pdf"></i></span>
+                            <span>{{ __('مستودع الملازم والدوسيات') }}</span>
+                        </div>
+                    </div>
+                </a>
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
                     <div class="nav-link">
                         <div class="link-main">

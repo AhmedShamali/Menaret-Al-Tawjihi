@@ -8,9 +8,42 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">➕ إضافة محتوى تعليمي جديد</h1>
-            <p class="page-subtitle">يمكنك إضافة فيديو، ملف PDF، أو كلاهما معاً للدرس بضغطة واحدة</p>
+            <p class="page-subtitle">يمكنك إضافة فيديو، ملف PDF، أو كلاهما معاً للدرس بضغطة واحدة، أو استخدام الواجهات المخصصة أدناه</p>
         </div>
         <a href="{{ route('teacher.educational_contents.index') }}" class="btn-secondary-custom">{{ __('إلغاء والعودة') }}</a>
+    </div>
+
+    <!-- بطاقات الوصول المباشر للواجهات المتخصصة -->
+    <div class="quick-mode-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin-bottom: 25px;">
+        <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1.5px solid #bfdbfe; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: 0 4px 12px rgba(37,99,235,0.06);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #1e40af; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-video"></i>
+                </div>
+                <div>
+                    <strong style="display: block; color: #1e3a8a; font-size: 0.95rem; margin-bottom: 2px;">{{ __('واجهة مخصصة للفيديوهات فقط') }}</strong>
+                    <span style="color: #3b82f6; font-size: 0.8rem;">{{ __('رفع وتنظيم حصص وشروحات YouTube مع معاينة فورية') }}</span>
+                </div>
+            </div>
+            <a href="{{ auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos') }}" style="background: #1e40af; color: #fff; text-decoration: none; padding: 9px 15px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; white-space: nowrap;">
+                {{ __('استوديو الفيديوهات 🚀') }}
+            </a>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 1.5px solid #fecaca; border-radius: 16px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: 0 4px 12px rgba(220,38,38,0.06);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #dc2626; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-file-pdf"></i>
+                </div>
+                <div>
+                    <strong style="display: block; color: #991b1b; font-size: 0.95rem; margin-bottom: 2px;">{{ __('واجهة مخصصة للملازم والدوسيات') }}</strong>
+                    <span style="color: #ef4444; font-size: 0.8rem;">{{ __('رفع وتصنيف ملفات PDF والدوسيات وأوراق العمل') }}</span>
+                </div>
+            </div>
+            <a href="{{ auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files') }}" style="background: #dc2626; color: #fff; text-decoration: none; padding: 9px 15px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; white-space: nowrap;">
+                {{ __('مستودع الدوسيات 📚') }}
+            </a>
+        </div>
     </div>
 
     <form id="createForm" enctype="multipart/form-data">

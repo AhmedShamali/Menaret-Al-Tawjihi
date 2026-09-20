@@ -15,8 +15,8 @@ return new class extends Migration
                 $table->id();
                 $table->foreignId('subject_id')->constrained()->onDelete('cascade');
                 $table->string('title');
-                $table->enum('type', ['video', 'file']);
-                $table->text('url_path');
+                $table->enum('type', ['video', 'file'])->default('video');
+                $table->text('url_path')->nullable();
                 $table->string('channel_name')->nullable();
                 $table->string('file_size')->nullable();
                 $table->integer('order')->default(0);
