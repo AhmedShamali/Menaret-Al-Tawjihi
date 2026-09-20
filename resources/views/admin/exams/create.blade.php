@@ -776,6 +776,55 @@
         from { opacity: 0; transform: translateY(15px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    @media (max-width: 768px) {
+        .exam-builder-container {
+            padding: 14px 10px 70px;
+        }
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .btn-publish {
+            width: 100%;
+            justify-content: center;
+        }
+        .page-title {
+            font-size: 1.35rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .floating-toolbar {
+            flex-direction: column;
+            gap: 8px;
+            bottom: 12px;
+            padding: 8px;
+        }
+        .toolbar-divider {
+            display: none;
+        }
+        .tool-btn {
+            padding: 10px 14px;
+        }
+        .tool-text small {
+            display: none;
+        }
+        .q-header-top {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .q-header-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
 </style>
 
 <script>

@@ -580,6 +580,29 @@
                 flex-direction: column;
             }
         }
+
+        @media (max-width: 480px) {
+            .role-tabs-grid {
+                grid-template-columns: 1fr;
+            }
+            .top-bar-inner {
+                flex-direction: column;
+                text-align: center;
+                gap: 8px;
+            }
+            .top-bar-meta, .top-bar-actions {
+                justify-content: center;
+            }
+            .portal-container {
+                padding: 12px 10px;
+            }
+            .portal-form-panel {
+                padding: 20px 16px;
+            }
+            .portal-info-panel {
+                padding: 20px 16px;
+            }
+        }
     </style>
 </head>
 <body>

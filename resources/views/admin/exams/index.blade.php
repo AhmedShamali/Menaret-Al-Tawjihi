@@ -432,5 +432,50 @@ function confirmDelete(id) {
         font-weight: 700 !important;
         font-size: 0.85rem !important;
     }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 16px;
+        }
+        .header-main-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .subject-icon-avatar {
+            width: 52px;
+            height: 52px;
+            font-size: 1.6rem;
+            border-radius: 14px;
+        }
+        .dashboard-title {
+            font-size: 1.35rem;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .btn-primary-create {
+            width: 100%;
+            justify-content: center;
+        }
+        .teacher-studio-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .alert-info-banner {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .card-top-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px 16px;
+        }
+    }
 </style>
 @endsection

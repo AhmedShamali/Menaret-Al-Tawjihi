@@ -495,11 +495,48 @@
     .text-success { color: #059669; }
     .mb-20 { margin-bottom: 20px; }
     .p-40 { padding: 40px; }
-    .text-center { text-align: center; }
-
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 14px;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .btn-submit-exam {
+            width: 100%;
+            justify-content: center;
+        }
+        .exam-edit-wrapper {
+            padding: 12px 10px 60px;
+        }
+    }
+
+    @media (max-width: 500px) {
+        .add-q-btns {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .btn-add-q {
+            flex: 1 1 auto;
+            justify-content: center;
+        }
+        .q-card-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+        }
+        .q-actions {
+            width: 100%;
+            justify-content: space-between;
+        }
     }
 </style>
 

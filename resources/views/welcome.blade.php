@@ -806,6 +806,9 @@
                 padding-left: 16px;
                 padding-right: 16px;
             }
+            .footer-bottom-bar {
+                margin: 0 -16px;
+            }
             .header-inner {
                 flex-direction: column;
                 text-align: center;

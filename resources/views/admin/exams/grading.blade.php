@@ -182,6 +182,17 @@
     .f-input { padding: 12px; border-radius: 12px; border: 2px solid #f1f5f9; font-family: inherit; outline: none; transition: 0.3s; }
     .f-input:focus { border-color: #4f46e5; box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 640px) {
+        .glass-card {
+            padding: 18px 14px !important;
+            border-radius: 14px !important;
+        }
+        #submitBtn {
+            width: 100% !important;
+            justify-content: center !important;
+        }
+    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
