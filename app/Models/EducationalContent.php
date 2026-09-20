@@ -31,11 +31,27 @@ class EducationalContent extends Model
      */
     public function getYoutubeIdAttribute()
     {
-        if (empty($this->url_path)) return null;
-        $pattern = '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/|youtube\.com/shorts/)([^"&?/\s]{11})%i';
-        if (preg_match($pattern, $this->url_path, $match)) {
-            return $match[1];
+        $url = trim($this->url_path ?? '');
+        if (empty($url)) return null;
+
+        // إذا كان المعرف بحد ذاته مكوناً من 11 حرفاً (معرف يوتيوب مباشر)
+        if (preg_match('/^[a-zA-Z0-9_\-]{11}$/', $url)) {
+            return $url;
         }
+
+        $patterns = [
+            '/[?&]v=([a-zA-Z0-9_\-]{11})/',
+            '/youtu\.be\/([a-zA-Z0-9_\-]{11})/',
+            '/(?:embed|shorts|live|v)\/([a-zA-Z0-9_\-]{11})/',
+            '/(?:youtube(?:-nocookie)?\.com\/)(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)([^"&?\/\s]{11})/i',
+        ];
+
+        foreach ($patterns as $p) {
+            if (preg_match($p, $url, $match)) {
+                return $match[1];
+            }
+        }
+
         return null;
     }
 

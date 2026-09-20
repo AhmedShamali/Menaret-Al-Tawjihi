@@ -846,18 +846,42 @@
                             <article class="ed-video-card" id="card_video_{{ $video->id }}">
                                 <div class="ed-player-frame">
                                     @php
-                                        $videoUrl = filter_var($video->url_path, FILTER_VALIDATE_URL)
-                                                    ? $video->url_path
-                                                    : asset('storage/' . $video->url_path);
+                                        $rawUrl = trim($video->url_path ?? '');
+                                        $ytEmbed = $video->youtube_embed_url;
+                                        $isYt = !empty($ytEmbed) || str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be');
+                                        if ($isYt && empty($ytEmbed) && !empty($rawUrl)) {
+                                            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
+                                                $ytEmbed = 'https://www.youtube.com/embed/' . $ym[1] . '?rel=0&modestbranding=1';
+                                            } else {
+                                                $ytEmbed = str_replace('watch?v=', 'embed/', $rawUrl);
+                                            }
+                                        }
+                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl);
+                                        $directVideoUrl = $isDirectVideo 
+                                            ? (filter_var($rawUrl, FILTER_VALIDATE_URL) ? $rawUrl : asset('storage/' . $rawUrl))
+                                            : null;
                                     @endphp
 
-                                    @if($video->youtube_embed_url)
-                                        <iframe src="{{ $video->youtube_embed_url }}" allowfullscreen loading="lazy"></iframe>
-                                    @elseif(strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false)
-                                        <iframe src="{{ str_replace('watch?v=', 'embed/', $videoUrl) }}" allowfullscreen loading="lazy"></iframe>
+                                    @if(!empty($ytEmbed))
+                                        <iframe src="{{ $ytEmbed }}" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                    @elseif($isDirectVideo && $directVideoUrl)
+                                        <video id="player_{{ $video->id }}" controls preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                                            <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
+                                        </video>
                                     @else
-                                        <video id="player_{{ $video->id }}" controls preload="metadata">
-                                            <source src="{{ $videoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}</video>
+                                        {{-- في حال كان الدرس مرفقاً بملف أو دوسية بدون فيديو --}}
+                                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
+                                            <i class="fa-solid fa-file-pdf" style="font-size: 3.2rem; color: #ef4444; margin-bottom: 12px;"></i>
+                                            <h4 style="margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #ffffff;">{{ $video->title }}</h4>
+                                            <p style="margin: 0 0 16px; font-size: 0.88rem; color: #94a3b8; max-width: 450px;">
+                                                {{ __('هذا الدرس مخصص كملزمة / دوسية دراسية معتمدة قابلة للتحميل والدراسة المباشرة.') }}
+                                            </p>
+                                            @if(!empty($video->pdf_path))
+                                                <a href="{{ route('content.download', $video->id) }}" class="ed-btn-royal primary" style="font-size: 0.86rem; padding: 10px 22px; text-decoration: none;">
+                                                    <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل ملزمة الدرس الآن') }}
+                                                </a>
+                                            @endif
+                                        </div>
                                     @endif
                                 </div>
 
@@ -911,12 +935,14 @@
                                 {{-- إجراءات التنزيل والملفات المرفقة --}}
                                 <div class="ed-video-actions-box">
                                     <div id="offline_action_box_{{ $video->id }}">
-                                        @if(strpos($videoUrl, 'youtube.com') === false && strpos($videoUrl, 'youtu.be') === false)
-                                            <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="downloadVideoOffline('{{ $video->id }}', '{{ $videoUrl }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '{{ $subject->id }}')">
+                                        @if($isYt)
+                                            <span style="font-size: 0.8rem; color: #94a3b8;"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> {{ __('بث يوتيوب مباشر') }}</span>
+                                        @elseif($isDirectVideo && $directVideoUrl)
+                                            <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="downloadVideoOffline('{{ $video->id }}', '{{ $directVideoUrl }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '{{ $subject->id }}')">
                                                 <i class="fa-solid fa-download"></i> {{ __('حفظ للمشاهدة بدون إنترنت') }}
                                             </button>
                                         @else
-                                            <span style="font-size: 0.8rem; color: #94a3b8;"><i class="fa-brands fa-youtube"></i> {{ __('بث يوتيوب مباشر') }}</span>
+                                            <span style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-file-circle-check"></i> {{ __('ملف ومرفق دراسي') }}</span>
                                         @endif
                                     </div>
 

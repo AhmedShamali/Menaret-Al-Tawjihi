@@ -191,4 +191,96 @@ class EducationalContentManagementTest extends TestCase
         $response2->assertJson(['success' => true, 'is_visible' => 1]);
         $this->assertEquals(1, $content->fresh()->is_visible);
     }
+
+    public function test_download_file_returns_correct_response_for_stored_pdf()
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('educational/files/sample_dossier.pdf', '%PDF-1.4 sample content');
+
+        $content = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'دوسية نموذجية',
+            'type'       => 'file',
+            'pdf_path'   => 'educational/files/sample_dossier.pdf',
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        $response = $this->get(route('content.download', $content->id));
+
+        $response->assertStatus(200);
+        $this->assertStringContainsString('%PDF-1.4 sample content', $response->streamedContent());
+    }
+
+    public function test_download_file_with_missing_file_redirects_with_error_and_never_returns_zero_bytes()
+    {
+        $content = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'ملف مفقود',
+            'type'       => 'file',
+            'pdf_path'   => 'educational/files/non_existent.pdf',
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        $response = $this->get(route('content.download', $content->id));
+
+        // Must redirect back with error flash message instead of outputting an empty 0-byte stream
+        $response->assertStatus(302);
+        $response->assertSessionHas('error');
+    }
+
+    public function test_student_subject_view_separates_videos_and_files_properly()
+    {
+        $student = \App\Models\Student::create([
+            'name_ar'  => 'طالب تجريبي للاختبار',
+            'name_en'  => 'Test Student Show',
+            'nid'      => '400000099',
+            'email'    => 'student_show@platform.ps',
+            'password' => bcrypt('password123'),
+            'phone'    => '0599000099',
+            'age'      => 17,
+            'gender'   => 'male',
+            'stage_id' => $this->stage->id,
+            'status'   => 'active',
+        ]);
+
+        \App\Models\Enrollment::create([
+            'student_id'  => $student->id,
+            'subject_id'  => $this->subject->id,
+            'status'      => 'active',
+            'access_mode' => 'all',
+        ]);
+
+        // File-only content
+        $fileOnly = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'دوسية بدون فيديو',
+            'type'       => 'file',
+            'pdf_path'   => 'educational/files/test.pdf',
+            'url_path'   => null,
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        // Real video content
+        $videoOnly = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'فيديو شرح الدرس',
+            'type'       => 'video',
+            'url_path'   => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'order'      => 2,
+            'is_visible' => 1,
+        ]);
+
+        $response = $this->actingAs($student, 'student')->get(route('student.subjects.show', $this->subject->id));
+
+        $response->assertStatus(200);
+        // Video tab should show the real video title
+        $response->assertSee('فيديو شرح الدرس');
+        // File should be listed in dossiers and work papers
+        $response->assertSee('دوسية بدون فيديو');
+        // Check that YouTube iframe is rendered
+        $response->assertSee('https://www.youtube.com/embed/dQw4w9WgXcQ');
+    }
 }

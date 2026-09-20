@@ -351,45 +351,78 @@ class EducationalContentController extends Controller
         ];
         $contentType = $mimeTypes[$ext] ?? 'application/octet-stream';
 
-        // 1. إذا كان الملف مخزناً محلياً
-        if (Storage::disk('public')->exists($content->pdf_path)) {
-            return Storage::disk('public')->download($content->pdf_path, $fileName, [
+        // استخراج المسار النسبي للملف داخل نظام التخزين (مثل educational/files/xxxx.pdf)
+        $relativePath = null;
+        if (preg_match('~educational/(?:files|pdfs)/[^\s?#]+~', $content->pdf_path, $m)) {
+            $relativePath = $m[0];
+        } elseif (!filter_var($content->pdf_path, FILTER_VALIDATE_URL)) {
+            $relativePath = ltrim($content->pdf_path, '/');
+        }
+
+        // 1. التنزيل من قرص Supabase السحابي المعتمد
+        if (!empty(config('filesystems.disks.supabase.key')) && $relativePath) {
+            try {
+                if (Storage::disk('supabase')->exists($relativePath)) {
+                    return Storage::disk('supabase')->download($relativePath, $fileName, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning("Supabase storage download check failed: " . $e->getMessage());
+            }
+        }
+
+        // 2. التنزيل من القرص المحلي العام (public)
+        if ($relativePath && Storage::disk('public')->exists($relativePath)) {
+            return Storage::disk('public')->download($relativePath, $fileName, [
                 'Content-Type' => $contentType,
                 'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
             ]);
         }
 
-        // 2. إذا كان الملف على Supabase
-        if (str_contains($content->pdf_path, 'storage.supabase.co')) {
-            $parsedPath = preg_replace('#^.*?/educational/#', 'educational/', $content->pdf_path);
-            if (Storage::disk('supabase')->exists($parsedPath)) {
-                return Storage::disk('supabase')->download($parsedPath, $fileName, [
-                    'Content-Type' => $contentType,
-                    'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
-                ]);
-            }
+        // 3. التحقق من وجود الملف في مسار التخزين الفعلي على القرص
+        if ($relativePath && file_exists(storage_path('app/public/' . $relativePath))) {
+            return response()->download(storage_path('app/public/' . $relativePath), $fileName, [
+                'Content-Type' => $contentType,
+                'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+            ]);
         }
 
-        // 3. مسار رابط عام أو مباشر (تدفق آمن يفرض التحميل)
-        return response()->streamDownload(function () use ($content) {
-            $opts = [
-                'http' => [
-                    'method' => 'GET', 
-                    'header' => "User-Agent: TawjihiPlatform/1.0\r\n",
-                    'follow_location' => 1,
-                    'timeout' => 60
-                ]
-            ];
-            $context = stream_context_create($opts);
-            $stream = @fopen($content->pdf_path, 'rb', false, $context);
-            if ($stream) {
-                fpassthru($stream);
-                fclose($stream);
-            }
-        }, $fileName, [
-            'Content-Type' => $contentType,
-            'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
-        ]);
+        // 4. إذا كان الملف يحمل رابط Supabase عام، جلب محتواه المباشر
+        if (str_contains($content->pdf_path, 'supabase.co') && $relativePath) {
+            try {
+                $bucket = config('filesystems.disks.supabase.bucket', 'educational');
+                $host = parse_url($content->pdf_path, PHP_URL_HOST);
+                $publicUrl = "https://{$host}/storage/v1/object/public/{$bucket}/{$relativePath}";
+                $resp = \Illuminate\Support\Facades\Http::timeout(20)->withoutVerifying()->get($publicUrl);
+                if ($resp->successful() && strlen($resp->body()) > 20) {
+                    return response($resp->body(), 200, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+                    ]);
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // 5. إذا كان الرابط URL خارجي مباشر، جلب المحتوى الآمن والتأكد من عدم كونه فارغاً
+        if (filter_var($content->pdf_path, FILTER_VALIDATE_URL)) {
+            try {
+                $resp = \Illuminate\Support\Facades\Http::timeout(20)->withoutVerifying()->get($content->pdf_path);
+                if ($resp->successful() && strlen($resp->body()) > 20) {
+                    return response($resp->body(), 200, [
+                        'Content-Type' => $contentType,
+                        'Content-Disposition' => 'attachment; filename="' . rawurlencode($fileName) . '"',
+                    ]);
+                }
+            } catch (\Throwable $e) {}
+
+            // تحويل مباشر للمتصفح إذا تعذر الجلب الخادمي
+            return redirect()->away($content->pdf_path);
+        }
+
+        // 6. في حال لم يتوفر الملف نهائياً: تنبيه واضح ومنع إرجاع ملف تالف بحجم 0 بايت
+        return back()->with('error', 'عذراً، لم يتم العثور على الملف المطلوب على الخادم، يرجى مراجعة المعلم أو إدارة المنصة.');
     }
 
     /**

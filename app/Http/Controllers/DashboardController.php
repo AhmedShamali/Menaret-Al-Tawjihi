@@ -68,14 +68,24 @@ class DashboardController extends Controller {
             $item->is_unlocked = $isFullAccess || in_array($item->id, $allowedIds);
         });
 
-        // 1. جلب الفيديوهات
+        // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط
         $videos = $contents->filter(function ($item) {
-            return !empty($item->url_path);
+            if ($item->type === 'file') {
+                return false;
+            }
+            $url = trim($item->url_path ?? '');
+            if (empty($url)) {
+                return false;
+            }
+            $isYt = !empty($item->youtube_id) || str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be');
+            $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $url);
+            return $isYt || $isDirectVideo;
         })->sortBy('order');
 
-        // 2. جلب الملفات والكتب
+        // 2. جلب الملفات والملازم والدوسيات
         $files = $contents->filter(function ($item) {
-            return !empty($item->pdf_path);
+            $pdf = trim($item->pdf_path ?? '');
+            return !empty($pdf);
         })->sortBy('order');
 
         // 3. جلب بنك الاختبارات المعتمدة للمادة
