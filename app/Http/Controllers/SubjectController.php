@@ -69,6 +69,10 @@ class SubjectController extends Controller
      */
     public function show($id)
     {
+        if (\Illuminate\Support\Facades\Auth::guard('student')->check() || (auth()->check() && auth()->user()->role === 'student')) {
+            return redirect()->route('student.subjects.show', $id);
+        }
+
         $subject = Subject::with(['stage', 'teacher', 'contents'])->findOrFail($id);
         // 1. جلب الفيديوهات (أي عنصر يحتوي على رابط فيديو أو مسار فيديو محلي)
         $videos = $subject->contents->filter(function ($item) {

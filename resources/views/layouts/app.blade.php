@@ -1423,47 +1423,7 @@
                     </div>
                 </a>
 
-                <span class="group-label"><i class="fa-solid fa-book-bookmark"></i> {{ __('المناهج والامتحانات') }}</span>
-                <a href="{{ route('admin.exams.index') }}" class="nav-item {{ Request::is('admin/exams*') && !Request::is('admin/exams/*/submissions*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-purple"><i class="fa-solid fa-file-signature"></i></span>
-                            <span>{{ __('إدارة الاختبارات والتقييمات') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('admin.submissions.index') }}" class="nav-item {{ Request::is('admin/submissions*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-square-poll-vertical"></i></span>
-                            <span>{{ __('رصد وتصحيح الإجابات') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('admin.educational_contents.index') }}" class="nav-item {{ Request::is('admin/educational-contents*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-cyan"><i class="fa-solid fa-book-open-reader"></i></span>
-                            <span>{{ __('المقررات والمحتوى التعليمي') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('admin.videos') }}" class="nav-item {{ Request::is('admin/videos*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-video"></i></span>
-                            <span>{{ __('استوديو الفيديوهات والشروحات') }}</span>
-                        </div>
-                    </div>
-                </a>
-                <a href="{{ route('admin.files') }}" class="nav-item {{ Request::is('admin/files*') ? 'active' : '' }}">
-                    <div class="nav-link">
-                        <div class="link-main">
-                            <span class="nav-icon-badge badge-rose"><i class="fa-solid fa-file-pdf"></i></span>
-                            <span>{{ __('مستودع الملازم والدوسيات') }}</span>
-                        </div>
-                    </div>
-                </a>
+                <span class="group-label"><i class="fa-solid fa-sack-dollar"></i> {{ __('الاشتراكات والمالية') }}</span>
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
                     <div class="nav-link">
                         <div class="link-main">
@@ -1472,8 +1432,6 @@
                         </div>
                     </div>
                 </a>
-
-                <span class="group-label"><i class="fa-solid fa-sack-dollar"></i> {{ __('الاشتراكات والمالية') }}</span>
                 <a href="{{ route('admin.payments.index') }}" class="nav-item {{ Request::is('admin/payments*') ? 'active' : '' }}">
                     <div class="nav-link">
                         <div class="link-main">

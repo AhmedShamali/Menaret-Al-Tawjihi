@@ -283,4 +283,57 @@ class EducationalContentManagementTest extends TestCase
         // Check that YouTube iframe is rendered
         $response->assertSee('https://www.youtube.com/embed/dQw4w9WgXcQ');
     }
+
+    public function test_hidden_video_is_not_displayed_to_students()
+    {
+        $student = \App\Models\Student::create([
+            'name_ar'  => 'طالب محجوب تجريبي',
+            'name_en'  => 'Test Hidden Student',
+            'nid'      => '400000098',
+            'email'    => 'student2@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone'    => '0599000098',
+            'age'      => 17,
+            'gender'   => 'female',
+            'stage_id' => $this->stage->id,
+            'status'   => 'active',
+        ]);
+
+        \App\Models\Enrollment::create([
+            'student_id'  => $student->id,
+            'subject_id'  => $this->subject->id,
+            'status'      => 'active',
+            'access_mode' => 'all',
+        ]);
+
+        // Hidden content (is_visible = 0)
+        EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'درس محجوب سري جدا',
+            'type'       => 'video',
+            'url_path'   => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'order'      => 1,
+            'is_visible' => 0,
+        ]);
+
+        $response = $this->actingAs($student, 'student')->get(route('student.subjects.show', $this->subject->id));
+        $response->assertStatus(200);
+        $response->assertDontSee('درس محجوب سري جدا');
+    }
+
+    public function test_admin_sidebar_does_not_contain_teacher_content_links()
+    {
+        $response = $this->actingAs($this->admin, 'web')->get(route('admin.dashboard'));
+        $response->assertStatus(200);
+
+        // Teacher specific curriculum links removed from admin sidebar
+        $response->assertDontSee(route('admin.exams.index'));
+        $response->assertDontSee(route('admin.submissions.index'));
+        $response->assertDontSee(route('admin.educational_contents.index'));
+        $response->assertDontSee(route('admin.videos'));
+        $response->assertDontSee(route('admin.files'));
+
+        // Subject pricing belongs under subscriptions
+        $response->assertSee(route('admin.subjects.pricing'));
+    }
 }

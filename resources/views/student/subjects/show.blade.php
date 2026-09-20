@@ -863,11 +863,13 @@
                                     @endphp
 
                                     @if(!empty($ytEmbed))
-                                        <iframe src="{{ $ytEmbed }}" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
                                     @elseif($isDirectVideo && $directVideoUrl)
-                                        <video id="player_{{ $video->id }}" controls preload="metadata" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%;">
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
+                                    @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
+                                        <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
                                     @else
                                         {{-- في حال كان الدرس مرفقاً بملف أو دوسية بدون فيديو --}}
                                         <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
@@ -1346,11 +1348,19 @@ function setVideoSpeed(videoId, speed, btnElement) {
     const player = document.getElementById(`player_${videoId}`);
     if (player) {
         player.playbackRate = speed;
-        const parent = btnElement.closest('.speed-buttons-group');
-        if (parent) {
-            parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
-        }
+    }
+    const ytPlayer = document.getElementById(`player_yt_${videoId}`);
+    if (ytPlayer && ytPlayer.contentWindow) {
+        ytPlayer.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'setPlaybackRate',
+            args: [speed]
+        }), '*');
+    }
+    const parent = btnElement.closest('.speed-buttons-group');
+    if (parent) {
+        parent.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
     }
 }
 

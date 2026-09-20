@@ -158,10 +158,10 @@
                             <tr>
                                 <td>
                                     <div class="cell-entity">
-                                        <i class="fa-solid fa-book-bookmark text-amber"></i>
+                                        <i class="fa-solid fa-tags text-amber"></i>
                                         <div>
-                                            <strong>{{ __('المقررات، الملازم والمحتوى التعليمي') }}</strong>
-                                            <small>{{ __('المناهج، الأسئلة الوزارية، ومصادر الدراسة') }}</small>
+                                            <strong>{{ __('تسعير وباقات المواد الدراسية') }}</strong>
+                                            <small>{{ __('إدارة الرسوم، الخصومات الموسمية، وباقات المناهج') }}</small>
                                         </div>
                                     </div>
                                 </td>

@@ -29,21 +29,29 @@ class DashboardController extends Controller {
 
     public function showSubject($id)
     {
-        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user();
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
         $student_id = $student?->id ?? auth()->id();
 
         // جلب المادة مع كامل علاقاتها
         $subject = Subject::with(['stage', 'teacher', 'contents', 'educationalContents', 'exams'])->findOrFail($id);
 
-        // الاعتماد على المحتوى المتاح
-        $contents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
+        // الاعتماد على المحتوى المتاح في المادة
+        $allContents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
+
+        // للطلاب: إظهار المحتوى المعتمد والمرئي فقط (حيث is_visible != 0)
+        // أما المعلم أو المدير فيمكنهما رؤية كافة المحتويات عند المعاينة
+        $isAdminOrTeacher = auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher']);
+        
+        $contents = $isAdminOrTeacher 
+            ? $allContents 
+            : $allContents->filter(fn($item) => $item->is_visible !== false && $item->is_visible !== 0 && $item->is_visible !== '0');
 
         // فحص اشتراك الطالب وصلاحياته في هذه المادة
         $enrollment = null;
-        $isFullAccess = true;
+        $isFullAccess = $isAdminOrTeacher || (bool) $subject->is_free || ($subject->effective_price <= 0);
         $allowedIds = [];
 
-        if ($student) {
+        if (!$isFullAccess && $student) {
             $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('subject_id', $subject->id)
                 ->first();
@@ -57,9 +65,9 @@ class DashboardController extends Controller {
                         ->toArray();
                 }
             } else {
-                // إذا لم يكن مسجلاً باشتراك نشط أو كان طلبه قيد المراجعة، تتاح فقط الدروس التمهيدية المجانية
+                // إذا لم يكن مسجلاً باشتراك نشط، يتاح الدرس الأول والثاني مجاناً كتجربة استعراضية
                 $isFullAccess = false;
-                $allowedIds = $contents->where('order', '<=', 2)->pluck('id')->toArray(); // الدرس الأول والثاني مجاني تجريبي
+                $allowedIds = $contents->where('order', '<=', 2)->pluck('id')->toArray();
             }
         }
 
@@ -68,7 +76,7 @@ class DashboardController extends Controller {
             $item->is_unlocked = $isFullAccess || in_array($item->id, $allowedIds);
         });
 
-        // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط
+        // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط التي رفعها المعلم
         $videos = $contents->filter(function ($item) {
             if ($item->type === 'file') {
                 return false;
@@ -79,10 +87,10 @@ class DashboardController extends Controller {
             }
             $isYt = !empty($item->youtube_id) || str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be');
             $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $url);
-            return $isYt || $isDirectVideo;
+            return $isYt || $isDirectVideo || $item->type === 'video' || $item->type === 'both';
         })->sortBy('order');
 
-        // 2. جلب الملفات والملازم والدوسيات
+        // 2. جلب الملفات والملازم والدوسيات الحقيقية فقط
         $files = $contents->filter(function ($item) {
             $pdf = trim($item->pdf_path ?? '');
             return !empty($pdf);

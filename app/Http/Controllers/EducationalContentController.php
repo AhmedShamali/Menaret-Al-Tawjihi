@@ -55,6 +55,7 @@ class EducationalContentController extends Controller
         $content->channel_name = $request->channel_name ?? 'منارة التوجيهي';
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
+        $content->is_visible   = true;
 
         // التحقق من صحة رابط اليوتيوب إذا وُجد
         if ($request->filled('video_url')) {
