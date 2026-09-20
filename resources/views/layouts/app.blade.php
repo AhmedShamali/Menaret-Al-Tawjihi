@@ -80,6 +80,10 @@
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        .swal2-container {
+            z-index: 1000000 !important;
+        }
+
         /* --- دعم اللغة الإنجليزية واتجاه من اليسار لليمين (LTR Support) --- */
         html[dir="ltr"] aside.sidebar {
             right: auto;

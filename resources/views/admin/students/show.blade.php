@@ -550,62 +550,47 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + studentShowI18n.saving;
 
-        const slowNotice = setTimeout(() => {
-            if (btn && btn.disabled) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + studentShowI18n.connecting;
-            }
-        }, 2500);
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
         try {
             const syncUrl = "{{ route('admin.students.syncSubjects', $student->id) }}";
-            const res = await fetch(syncUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    subject_ids: subjectIds,
-                    _token: '{{ csrf_token() }}'
-                }),
-                signal: controller.signal
+            const res = await axios.post(syncUrl, {
+                subject_ids: subjectIds,
+                _token: '{{ csrf_token() }}'
             });
 
-            clearTimeout(slowNotice);
-            clearTimeout(timeoutId);
-
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.message || 'Server error (' + res.status + ')');
-            }
-
-            const data = await res.json();
+            // إغلاق نافذة المودال فوراً حتى لا تحجب رسالة النجاح وتمنع استجابة الصفحة
+            closeSubjectModal();
 
             if (typeof Swal !== 'undefined') {
-                Swal.fire({
+                await Swal.fire({
                     icon: 'success',
                     title: studentShowI18n.savedSuccess,
-                    text: data.message || studentShowI18n.savedDesc,
-                    confirmButtonColor: '#10b981',
-                    confirmButtonText: studentShowI18n.okBtn
-                }).then(() => {
-                    location.reload();
+                    text: (res.data && res.data.message) ? res.data.message : studentShowI18n.savedDesc,
+                    timer: 1300,
+                    showConfirmButton: false
                 });
+                window.location.reload();
             } else {
-                location.reload();
+                window.location.reload();
             }
         } catch (error) {
-            clearTimeout(slowNotice);
-            clearTimeout(timeoutId);
-
             btn.disabled = false;
             btn.innerHTML = studentShowI18n.saveBtnText;
 
-            form.submit();
+            if (form) {
+                form.submit();
+            } else {
+                const errMsg = error.response?.data?.message || studentShowI18n.failedDesc;
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'error',
+                        title: studentShowI18n.failedTitle,
+                        text: errMsg,
+                        confirmButtonText: studentShowI18n.okBtn
+                    });
+                } else {
+                    alert(errMsg);
+                }
+            }
         }
     }
 
@@ -720,15 +705,18 @@
                 discount_notes: notes
             });
 
+            closeDiscountModalDirect();
+
             Swal.fire({
                 icon: 'success',
                 title: res.data.title || studentShowI18n.discountSaveSuccess,
                 text: res.data.message || '',
-                timer: 1600,
+                timer: 1300,
                 showConfirmButton: false
             }).then(() => {
                 location.reload();
             });
+            setTimeout(() => location.reload(), 1400);
         } catch (err) {
             btn.disabled = false;
             btn.innerHTML = originalText;
