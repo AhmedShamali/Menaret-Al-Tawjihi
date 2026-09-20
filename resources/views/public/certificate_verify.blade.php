@@ -177,7 +177,7 @@
                     </div>
                     <div class="info-row">
                         <span class="info-label">{{ __('المشرف العام المعتمد:') }}</span>
-                        <span class="info-value">{{ __('م.أحمد شمالي') }}</span>
+                        <span class="info-value">{{ __('أحمد حسين شمالي') }}</span>
                     </div>
                 </div>
 

@@ -29,7 +29,7 @@ class PaymentGatewayController extends Controller
 
         // بيانات الحسابات المعتمدة في فلسطين (مربوطة بإعدادات مدير النظام ديناميكياً)
         $palPhone = \App\Models\Setting::get('payment_phone', '0567897212');
-        $palOwner = \App\Models\Setting::get('payment_account_name', 'م.أحمد شمالي');
+        $palOwner = \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي');
         $palSiteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
         $whatsappRaw = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
         

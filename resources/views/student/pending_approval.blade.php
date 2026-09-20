@@ -63,8 +63,8 @@
             <div class="unfreeze-actions-strip">
                 @php
                     $waUnfreeze = urlencode(app()->getLocale() === 'ar'
-                        ? ("السلام عليكم م.أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هويتي (" . ($student->nid ?? '-') . ")، حسابي مجمد على المنصة بسبب: [" . ($student->freeze_reason ?: 'عدم سداد الرسوم أو مراجعة الإدارة') . "]. أرجو التكرم بمساعدتي لفك التجميد وإعادة تفعيل الحساب.")
-                        : ("Hello Eng.Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") ID (" . ($student->nid ?? '-') . "), my account is frozen. Please assist me in unfreezing and reactivating my account."));
+                        ? ("السلام عليكم أ. أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هويتي (" . ($student->nid ?? '-') . ")، حسابي مجمد على المنصة بسبب: [" . ($student->freeze_reason ?: 'عدم سداد الرسوم أو مراجعة الإدارة') . "]. أرجو التكرم بمساعدتي لفك التجميد وإعادة تفعيل الحساب.")
+                        : ("Hello Mr. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") ID (" . ($student->nid ?? '-') . "), my account is frozen. Please assist me in unfreezing and reactivating my account."));
                 @endphp
                 <a href="https://wa.me/970567897212?text={{ $waUnfreeze }}" 
                    target="_blank" 
@@ -90,7 +90,7 @@
             
             <p class="card-desc">
                 {{ __('أهلاً بك يا') }} <strong>{{ $studentDispName }}</strong>{{ __('! تم استلام طلب التحاقك واكتمال تسجيلك المبدئي بنجاح.') }}
-                {{ __('يقوم المشرف العام') }} <strong>({{ __('م.أحمد شمالي') }})</strong> {{ __('بمراجعة بياناتك واعتماد اشتراكك في المواد التعليمية فور تسديد الرسوم الأكاديمية المقررة.') }}
+                {{ __('يقوم المشرف العام') }} <strong>({{ __('أ. أحمد حسين شمالي') }})</strong> {{ __('بمراجعة بياناتك واعتماد اشتراكك في المواد التعليمية فور تسديد الرسوم الأكاديمية المقررة.') }}
             </p>
         @endif
 
@@ -249,7 +249,7 @@
                 <i class="fa-solid fa-building-columns" style="color: var(--ed-primary);"></i>
                 <h4>{{ __('وسائل الدفع والتحويل الفلسطينية المعتمدة:') }}</h4>
             </div>
-            <p class="channels-desc">{{ __('يرجى تحويل المبلغ المطلوب (:amount ₪) عبر إحدى القنوات الآتية باسم (م.أحمد شمالي):', ['amount' => number_format($finalAmount ?? 150, 0)]) }}</p>
+            <p class="channels-desc">{{ __('يرجى تحويل المبلغ المطلوب (:amount ₪) عبر إحدى القنوات الآتية باسم (أحمد حسين شمالي):', ['amount' => number_format($finalAmount ?? 150, 0)]) }}</p>
 
             <div class="channels-grid">
                 <!-- بنك فلسطين -->
@@ -257,7 +257,7 @@
                     <div class="channel-icon" style="color: #b91c1c;"><i class="fa-solid fa-building-columns"></i></div>
                     <div class="channel-details">
                         <strong>{{ __('بنك فلسطين (Bank of Palestine)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
+                        <span class="account-holder">{{ __('المستفيد المعتمد: أ. أحمد حسين شمالي') }}</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم بنك فلسطين') }}')">
@@ -272,7 +272,7 @@
                     <div class="channel-icon" style="color: #0284c7;"><i class="fa-solid fa-credit-card"></i></div>
                     <div class="channel-details">
                         <strong>{{ __('بال باي (PalPay)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
+                        <span class="account-holder">{{ __('المستفيد المعتمد: أ. أحمد حسين شمالي') }}</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم PalPay') }}')">
@@ -287,7 +287,7 @@
                     <div class="channel-icon" style="color: #16a34a;"><i class="fa-solid fa-mobile-screen-button"></i></div>
                     <div class="channel-details">
                         <strong>{{ __('محفظة جوال باي (Jawwal Pay)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
+                        <span class="account-holder">{{ __('المستفيد المعتمد: أ. أحمد حسين شمالي') }}</span>
                         <div class="number-copy-row">
                             <span class="account-num" dir="ltr">0567897212</span>
                             <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم جوال باي') }}')">
@@ -484,11 +484,11 @@
         <div class="pending-actions-wrap">
             @php
                 $waMsg = urlencode(app()->getLocale() === 'ar'
-                    ? ("مرحباً م.أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة منارة التوجيهي وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
-                    : ("Hello Eng.Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Menaret Al-Tawjihi platform and paid tuition. Please verify and activate my enrollment."));
+                    ? ("مرحباً أستاذ أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة منارة التوجيهي وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
+                    : ("Hello Mr. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Menaret Al-Tawjihi platform and paid tuition. Please verify and activate my enrollment."));
             @endphp
             <a href="https://wa.me/970567897212?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
-                <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام (م.أحمد شمالي) عبر واتساب') }}
+                <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام (أ. أحمد شمالي) عبر واتساب') }}
             </a>
 
             <div class="whatsapp-direct-info">
@@ -623,7 +623,7 @@
         const method = document.getElementById('paymentMethodSelect')?.value || 'محفظة جوال باي';
         const notes = document.getElementById('paymentNotesInput')?.value || '';
         
-        let msg = `السلام عليكم م.أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة منارة التوجيهي بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
+        let msg = `السلام عليكم أ. أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة منارة التوجيهي بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
         if (notes) {
             msg += ` ملاحظات: [${notes}].`;
         }

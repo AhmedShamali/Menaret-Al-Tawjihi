@@ -125,30 +125,30 @@
         <!-- ==================== MAIN CHAT VIEWPORT ==================== -->
         <main class="inbox-classic-main" id="chat_view">
             
-            <!-- Empty State -->
+            <!-- Empty State (Shown when no chat selected) -->
             <div id="chat_empty_state" class="empty-conversation-state" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: none;' : 'display: flex;' }}">
                 <div class="empty-icon-circle">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <h3>مركز المراسلات والتواصل الأكاديمي</h3>
-                <p>اختر طالباً من القائمة الجانبية لعرض المحادثة والرد على استفساراته وتقديم الدعم الدراسي.</p>
+                <p>اختر طالباً من القائمة الجانبية لعرض المحادثة والرد على استفساراته وتقديم الدعم الدراسي المباشر.</p>
                 <div class="academic-features-row">
                     <div class="feat-box">
                         <i class="fa-solid fa-bolt"></i>
-                        <span>ردود جاهزة معتمدة</span>
+                        <span>ردود فورية سريعة ومعتمدة بنقرة واحدة</span>
                     </div>
                     <div class="feat-box">
                         <i class="fa-brands fa-whatsapp"></i>
-                        <span>تحويل مباشر للواتساب</span>
+                        <span>تحويل مباشر للواتساب لمتابعة الحالات الخاصة</span>
                     </div>
                     <div class="feat-box">
-                        <i class="fa-solid fa-bell"></i>
-                        <span>إشعارات أكاديمية فورية</span>
+                        <i class="fa-solid fa-user-graduate"></i>
+                        <span>الاطلاع المباشر على الملف الأكاديمي للطالب</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Active Header -->
+            <!-- Active Header (Pinned to top of chat) -->
             <header id="chat_header" class="active-conversation-header" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
                 <div class="header-profile-cluster">
                     <button type="button" class="mobile-return-btn" onclick="toggleMobileView('sidebar')" title="العودة للقائمة">
@@ -201,7 +201,7 @@
                 </div>
             </header>
 
-            <!-- Messages Stream Area -->
+            <!-- Messages Stream Area (Scrolls cleanly between header and composer) -->
             <div id="chat_messages" class="messages-canvas" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: flex;' : 'display: none;' }}">
                 <div class="loading-state-box">
                     <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -234,7 +234,7 @@
                 </div>
             </div>
 
-            <!-- Message Input Area -->
+            <!-- Message Input Area (Pinned to bottom of chat) -->
             <div id="input_area" class="composer-container" style="{{ isset($selectedStudentId) && $selectedStudentId ? 'display: block;' : 'display: none;' }}">
                 <form id="chatForm" onsubmit="event.preventDefault(); sendReply();" class="composer-form">
                     <div class="composer-box">
@@ -242,6 +242,7 @@
                                   rows="1" 
                                   placeholder="اكتب ردك الأكاديمي هنا... (اضغط Enter للإرسال، Shift+Enter لسطر جديد)" 
                                   autocomplete="off" 
+                                  dir="rtl"
                                   required></textarea>
                         
                         <button type="submit" class="composer-send-btn" id="btn_send" title="إرسال">
@@ -278,7 +279,7 @@
     }
 
     .inbox-classic-wrapper {
-        padding: 0 0 12px 0;
+        padding: 0 0 16px 0;
         max-width: 100%;
         margin: 0 auto;
         box-sizing: border-box;
@@ -286,10 +287,10 @@
 
     .inbox-classic-card {
         display: grid;
-        grid-template-columns: 350px 1fr;
-        height: calc(100vh - 105px);
-        max-height: calc(100vh - 105px);
-        min-height: 520px;
+        grid-template-columns: 360px 1fr;
+        height: calc(100vh - 120px);
+        min-height: 540px;
+        max-height: calc(100vh - 120px);
         background: var(--cr-surface);
         border: 1px solid var(--cr-border);
         border-radius: var(--cr-radius-card);
@@ -306,6 +307,7 @@
         background: var(--cr-surface);
         border-left: 1px solid var(--cr-border);
         height: 100%;
+        min-height: 0;
         min-width: 0;
         overflow: hidden;
     }
@@ -316,12 +318,13 @@
     }
 
     .sidebar-top-pane {
-        padding: 18px 18px 12px;
+        flex-shrink: 0;
+        padding: 16px 16px 12px;
         background: var(--cr-surface);
         border-bottom: 1px solid var(--cr-border);
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
     }
 
     .sidebar-headline-row {
@@ -337,20 +340,20 @@
     }
 
     .brand-icon-box {
-        width: 38px;
-        height: 38px;
+        width: 36px;
+        height: 36px;
         border-radius: 10px;
         background: #eff6ff;
         color: var(--cr-navy-main);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         border: 1px solid #dbeafe;
     }
 
     .brand-title {
-        font-size: 1.05rem;
+        font-size: 1rem;
         font-weight: 800;
         color: var(--cr-text-primary);
         margin: 0;
@@ -358,7 +361,7 @@
     }
 
     .brand-desc {
-        font-size: 0.74rem;
+        font-size: 0.72rem;
         color: var(--cr-text-muted);
         margin: 0;
     }
@@ -368,7 +371,7 @@
         color: #ffffff;
         font-size: 0.72rem;
         font-weight: 800;
-        padding: 3px 10px;
+        padding: 3px 9px;
         border-radius: 20px;
         box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
     }
@@ -381,23 +384,32 @@
 
     .sidebar-search-box .search-ico {
         position: absolute;
-        right: 14px;
+        right: 12px;
         color: #94a3b8;
         font-size: 0.85rem;
         pointer-events: none;
     }
 
+    html[dir="ltr"] .sidebar-search-box .search-ico {
+        right: auto;
+        left: 12px;
+    }
+
     .sidebar-search-box input {
         width: 100%;
-        padding: 9px 38px 9px 34px;
+        padding: 8px 36px 8px 32px;
         background: #f8fafc;
         border: 1px solid var(--cr-border);
         border-radius: 10px;
-        font-size: 0.84rem;
+        font-size: 0.82rem;
         color: var(--cr-text-primary);
         font-family: inherit;
         outline: none;
         transition: all 0.2s ease;
+    }
+
+    html[dir="ltr"] .sidebar-search-box input {
+        padding: 8px 32px 8px 36px;
     }
 
     .sidebar-search-box input:focus {
@@ -417,6 +429,11 @@
         font-size: 0.8rem;
     }
 
+    html[dir="ltr"] .clear-btn {
+        left: auto;
+        right: 10px;
+    }
+
     .clear-btn:hover {
         color: var(--cr-text-primary);
     }
@@ -433,11 +450,12 @@
         color: var(--cr-text-muted);
         font-size: 0.78rem;
         font-weight: 700;
-        padding: 6px 12px;
+        padding: 5px 10px;
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.15s ease;
         text-align: center;
+        font-family: inherit;
     }
 
     .filter-chip:hover {
@@ -453,6 +471,7 @@
 
     .student-scroll-list {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         padding: 8px 10px;
     }
@@ -472,9 +491,13 @@
         position: relative;
         overflow: hidden;
         text-align: right;
+        direction: rtl;
+        box-sizing: border-box;
+        width: 100%;
     }
 
     html[dir="ltr"] .student-chat-item {
+        direction: ltr;
         text-align: left;
     }
 
@@ -543,7 +566,9 @@
         object-fit: cover;
         border: 1.5px solid var(--cr-border);
         display: block;
-        background: #f1f5f9;
+        font-size: 0;
+        color: transparent;
+        background: #eff6ff;
     }
 
     .online-dot {
@@ -554,6 +579,7 @@
         height: 11px;
         border-radius: 50%;
         border: 2px solid #ffffff;
+        z-index: 2;
     }
 
     html[dir="ltr"] .online-dot {
@@ -575,6 +601,7 @@
         display: flex;
         flex-direction: column;
         gap: 2px;
+        overflow: hidden;
         text-align: right;
     }
 
@@ -680,6 +707,7 @@
         border-radius: 10px;
         min-width: 18px;
         text-align: center;
+        flex-shrink: 0;
     }
 
     .empty-list-box {
@@ -708,8 +736,10 @@
         flex-direction: column;
         background: var(--cr-bg);
         height: 100%;
+        min-height: 0;
         min-width: 0;
         position: relative;
+        overflow: hidden;
     }
 
     /* Empty state */
@@ -724,16 +754,16 @@
     }
 
     .empty-icon-circle {
-        width: 76px;
-        height: 76px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2.2rem;
-        margin-bottom: 18px;
+        font-size: 2rem;
+        margin-bottom: 16px;
         box-shadow: 0 8px 24px rgba(30, 58, 138, 0.25);
     }
 
@@ -779,9 +809,11 @@
         font-size: 1rem;
     }
 
-    /* Active Header */
+    /* Active Header (Pinned at top of conversation) */
     .active-conversation-header {
-        padding: 12px 20px;
+        flex-shrink: 0;
+        height: 66px;
+        padding: 10px 20px;
         background: #ffffff;
         border-bottom: 1px solid var(--cr-border);
         display: flex;
@@ -789,6 +821,7 @@
         align-items: center;
         gap: 14px;
         z-index: 5;
+        box-sizing: border-box;
     }
 
     .header-profile-cluster {
@@ -838,7 +871,7 @@
     }
 
     .active-student-name {
-        font-size: 1rem;
+        font-size: 0.98rem;
         font-weight: 800;
         color: var(--cr-text-primary);
         margin: 0;
@@ -912,6 +945,7 @@
         text-decoration: none;
         cursor: pointer;
         transition: all 0.15s ease;
+        font-family: inherit;
     }
 
     .control-btn:hover {
@@ -944,9 +978,10 @@
         padding: 7px 10px;
     }
 
-    /* Messages Canvas: Serene & Classic (NO UGLY DOTS!) */
+    /* Messages Canvas */
     .messages-canvas {
         flex: 1;
+        min-height: 0;
         overflow-y: auto;
         padding: 20px 24px;
         display: flex;
@@ -974,6 +1009,7 @@
         border-radius: 12px;
         border: 1px dashed var(--cr-border);
         max-width: 360px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
     }
 
     .empty-chat-state i {
@@ -1106,9 +1142,10 @@
 
     /* Quick Reply Bar */
     .canned-responses-pane {
+        flex-shrink: 0;
         background: #ffffff;
         border-top: 1px solid var(--cr-border);
-        padding: 9px 18px;
+        padding: 8px 16px;
         display: flex;
         align-items: center;
         gap: 10px;
@@ -1158,6 +1195,7 @@
 
     /* Input Composer */
     .composer-container {
+        flex-shrink: 0;
         padding: 12px 18px;
         background: #ffffff;
         border-top: 1px solid var(--cr-border);
@@ -1192,6 +1230,13 @@
         max-height: 120px;
         padding: 6px 0;
         color: var(--cr-text-primary);
+        direction: rtl;
+        text-align: right;
+    }
+
+    html[dir="ltr"] .composer-box textarea {
+        direction: ltr;
+        text-align: left;
     }
 
     .composer-send-btn {
@@ -1208,6 +1253,8 @@
         gap: 6px;
         transition: all 0.15s ease;
         box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25);
+        font-family: inherit;
+        flex-shrink: 0;
     }
 
     .composer-send-btn:hover {
@@ -1241,7 +1288,8 @@
         }
         .inbox-classic-card {
             grid-template-columns: 1fr;
-            height: calc(100vh - 100px);
+            height: calc(100vh - 90px);
+            max-height: calc(100vh - 90px);
             border-radius: 12px;
         }
         .inbox-classic-main {
@@ -1336,7 +1384,7 @@
         activeStudentId = id;
         lastMessagesJson = "";
 
-        // Update URL
+        // Update URL cleanly without reload
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.set('student_id', id);
         window.history.replaceState({ path: newUrl.href }, '', newUrl.href);
@@ -1406,7 +1454,9 @@
 
         setTimeout(() => {
             const input = document.getElementById('msg_input');
-            if (input) input.focus();
+            if (input) {
+                input.focus({ preventScroll: true });
+            }
         }, 150);
     }
 
@@ -1557,14 +1607,14 @@
         }).finally(() => {
             sendBtn.disabled = false;
             sendBtn.innerHTML = originalContent;
-            input.focus();
+            input.focus({ preventScroll: true });
         });
     }
 
     function insertCanned(text) {
         const input = document.getElementById('msg_input');
         input.value = text;
-        input.focus();
+        input.focus({ preventScroll: true });
     }
 
     function scrollToBottom() {

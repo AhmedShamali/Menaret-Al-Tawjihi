@@ -75,7 +75,7 @@
                 $examsCount = $subject->exams_count ?? 0;
                 $subjectName = (app()->getLocale() === 'en' && !empty($subject->name_en)) ? $subject->name_en : ($subject->name_ar ?? $subject->name);
                 $stageLabel = $subject->stage?->label_ar ? __($subject->stage->label_ar) : __('توجيهي عام');
-                $teacherName = $subject->teacher?->name ?: __('م.أحمد شمالي (المشرف العام)');
+                $teacherName = $subject->teacher?->name ?: __('أ. أحمد حسين شمالي (المشرف العام)');
                 $subjectKey = $subject->subject_key ?: ('CRS-' . $subject->id);
             @endphp
             <div class="ed-subject-card" data-search="{{ strtolower($subjectName . ' ' . $subjectKey . ' ' . $stageLabel . ' ' . ($subject->description ?? '')) }}">
