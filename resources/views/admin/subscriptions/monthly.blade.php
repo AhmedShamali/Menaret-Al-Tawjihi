@@ -35,34 +35,34 @@
         <div class="stat-card-clean" style="--card-accent: #059669;">
             <span class="stat-label">{{ __('المحصل الفعلي المعتمد') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-emerald">{{ number_format($stats['total_collected'], 2) }} ₪</span>
+                <span class="stat-number text-emerald" id="stat_total_collected">{{ number_format($stats['total_collected'], 2) }} ₪</span>
                 <i class="fa-solid fa-circle-dollar-to-slot stat-icon text-emerald"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('تم تأكيد سداده') }} ({{ $stats['paid_count'] }} {{ __('قسط') }})</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('تم تأكيد سداده') }} (<span id="stat_paid_count">{{ $stats['paid_count'] }}</span> {{ __('قسط') }})</small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #dc2626;">
             <span class="stat-label">{{ __('المتأخرات غير المسددة') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-rose">{{ number_format($stats['total_unpaid'], 2) }} ₪</span>
+                <span class="stat-number text-rose" id="stat_total_unpaid">{{ number_format($stats['total_unpaid'], 2) }} ₪</span>
                 <i class="fa-solid fa-triangle-exclamation stat-icon text-rose"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('أقساط مستحقة') }} ({{ $stats['unpaid_count'] }} {{ __('شهراً') }})</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('أقساط مستحقة') }} (<span id="stat_unpaid_count">{{ $stats['unpaid_count'] }}</span> {{ __('شهراً') }})</small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #d97706;">
             <span class="stat-label">{{ __('إشعارات قيد المراجعة') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number {{ $stats['pending_count'] > 0 ? 'text-amber' : '' }}">{{ number_format($stats['total_pending'], 2) }} ₪</span>
+                <span class="stat-number {{ $stats['pending_count'] > 0 ? 'text-amber' : '' }}" id="stat_total_pending">{{ number_format($stats['total_pending'], 2) }} ₪</span>
                 <i class="fa-solid fa-clock-rotate-left stat-icon text-amber"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('بحاجة لاعتمادك') }} ({{ $stats['pending_count'] }} {{ __('إشعار') }})</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('بحاجة لاعتمادك') }} (<span id="stat_pending_count">{{ $stats['pending_count'] }}</span> {{ __('إشعار') }})</small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
             <span class="stat-label">{{ __('نسبة الالتزام المالي') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-navy">{{ $stats['collection_rate'] }}%</span>
+                <span class="stat-number text-navy" id="stat_collection_rate">{{ $stats['collection_rate'] }}%</span>
                 <i class="fa-solid fa-percent stat-icon text-navy"></i>
             </div>
             <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('المستحق:') }} {{ number_format($stats['total_expected'], 0) }} ₪</small>
@@ -155,7 +155,14 @@
                             <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? '-' }}</span>
                             <button type="button" 
                                     class="student-fee-badge-btn" 
-                                    onclick="openStudentFeeModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', {{ (float)($student->monthly_fee ?: 150) }}, {{ (float)($student->custom_discount_percent ?: 0) }}, {{ (float)($student->custom_discount_fixed ?: 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
+                                    id="fee_btn_{{ $student->id }}"
+                                    data-student-id="{{ $student->id }}"
+                                    data-student-name="{{ $studentDisplayName }}"
+                                    data-monthly-fee="{{ (float)($student->monthly_fee ?: 150) }}"
+                                    data-discount-percent="{{ (float)($student->custom_discount_percent ?: 0) }}"
+                                    data-discount-fixed="{{ (float)($student->custom_discount_fixed ?: 0) }}"
+                                    data-discount-notes="{{ $student->discount_notes ?? '' }}"
+                                    onclick="openStudentFeeModalFromEl(this)"
                                     title="{{ __('تعديل الرسوم والخصم المعتمد لهذا الطالب') }}">
                                 <i class="fa-solid fa-coins text-amber"></i>
                                 <span class="font-mono font-bold" id="student_fee_label_{{ $student->id }}">{{ number_format($student->monthlyAmountDue(), 0) }} ₪</span>
@@ -174,13 +181,22 @@
                         @php
                             $sub = $subsByMonth[$m] ?? null;
                             $st = $sub ? $sub->status : 'unpaid';
-                            $amt = $sub ? (float)$sub->amount : 150;
+                            $amt = $sub ? (float)$sub->amount : (float)$student->monthlyAmountDue();
                             $notes = $sub ? ($sub->notes ?? '') : '';
                             $mTitle = $monthsNames[$m] ?? (app()->getLocale() === 'en' ? "Month $m" : "شهر $m");
+                            $isHighlight = ($monthFilter && (int)$monthFilter === $m);
                         @endphp
                         <div id="badge_{{ $student->id }}_{{ $m }}" 
-                             class="month-micro-badge badge-{{ $st }}"
-                             onclick="openEditMonthModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', {{ $m }}, '{{ addslashes($mTitle) }}', '{{ $st }}', {{ $amt }}, '{{ addslashes($notes) }}')"
+                             class="month-micro-badge badge-{{ $st }} {{ $isHighlight ? 'month-highlight-col' : '' }}"
+                             data-student-id="{{ $student->id }}"
+                             data-student-name="{{ $studentDisplayName }}"
+                             data-month="{{ $m }}"
+                             data-month-title="{{ $mTitle }}"
+                             data-status="{{ $st }}"
+                             data-amount="{{ $amt }}"
+                             data-notes="{{ $notes }}"
+                             data-student-fee="{{ (float)$student->monthlyAmountDue() }}"
+                             onclick="openEditMonthModalFromEl(this)"
                              title="{{ $mTitle }} ({{ round($amt) }} ₪) - {{ __('انقر للتعديل') }}">
                             <span class="m-digit font-mono">{{ $m }}</span>
                             @if($st === 'paid')
@@ -198,13 +214,13 @@
 
                 {{-- إحصائية الالتزام --}}
                 <div class="student-progress-block">
-                    <div class="progress-ratio font-mono">
+                    <div class="progress-ratio font-mono" id="progress_ratio_{{ $student->id }}">
                         <strong>{{ $paidCount }}</strong> / 12 {{ __('شهراً') }}
                     </div>
                     <div class="progress-bar-bg">
-                        <div class="progress-bar-fill {{ $isFull ? 'bg-full' : '' }}" style="width: {{ $percent }}%;"></div>
+                        <div class="progress-bar-fill {{ $isFull ? 'bg-full' : '' }}" id="progress_bar_{{ $student->id }}" style="width: {{ $percent }}%;"></div>
                     </div>
-                    <span class="progress-percent-label font-mono">{{ $percent }}%</span>
+                    <span class="progress-percent-label font-mono" id="progress_percent_{{ $student->id }}">{{ $percent }}%</span>
                 </div>
             </div>
         @empty
@@ -236,13 +252,14 @@
             <input type="hidden" name="student_id" id="formStudentId">
             <input type="hidden" name="academic_year" value="{{ $year }}">
             <input type="hidden" name="month" id="formMonth">
+            <input type="hidden" id="formStudentFeeHidden" value="150">
 
             <div class="form-body-wrap">
                 <div class="form-field-group">
                     <label class="field-label">{{ __('حالة السداد والاشتراك لهذا الشهر') }} <span class="required">*</span></label>
                     <div class="status-options-grid">
                         <label class="status-option-label opt-paid">
-                            <input type="radio" name="status" value="paid" id="optStatusPaid">
+                            <input type="radio" name="status" value="paid" id="optStatusPaid" onchange="onStatusRadioChange(this.value)">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-check"></i>
                                 <strong>{{ __('مسدد وخالص') }}</strong>
@@ -251,7 +268,7 @@
                         </label>
 
                         <label class="status-option-label opt-pending">
-                            <input type="radio" name="status" value="pending" id="optStatusPending">
+                            <input type="radio" name="status" value="pending" id="optStatusPending" onchange="onStatusRadioChange(this.value)">
                             <div class="opt-content">
                                 <i class="fa-solid fa-clock-rotate-left"></i>
                                 <strong>{{ __('قيد المراجعة') }}</strong>
@@ -260,7 +277,7 @@
                         </label>
 
                         <label class="status-option-label opt-unpaid">
-                            <input type="radio" name="status" value="unpaid" id="optStatusUnpaid">
+                            <input type="radio" name="status" value="unpaid" id="optStatusUnpaid" onchange="onStatusRadioChange(this.value)">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-xmark"></i>
                                 <strong>{{ __('غير مسدد') }}</strong>
@@ -269,7 +286,7 @@
                         </label>
 
                         <label class="status-option-label opt-waived">
-                            <input type="radio" name="status" value="waived" id="optStatusWaived">
+                            <input type="radio" name="status" value="waived" id="optStatusWaived" onchange="onStatusRadioChange(this.value)">
                             <div class="opt-content">
                                 <i class="fa-solid fa-award"></i>
                                 <strong>{{ __('إعفاء / منحة') }}</strong>
@@ -391,22 +408,63 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    function openEditMonthModal(studentId, studentName, month, monthLabel, currentStatus, currentAmount, currentNotes) {
+    function yearString() {
+        return '{{ $year }}';
+    }
+
+    function onStatusRadioChange(val) {
+        const amtInput = document.getElementById('formAmount');
+        const hiddenFee = document.getElementById('formStudentFeeHidden');
+        if (val === 'waived') {
+            amtInput.value = '0.00';
+        } else if ((val === 'paid' || val === 'unpaid' || val === 'pending') && parseFloat(amtInput.value) === 0) {
+            amtInput.value = hiddenFee.value || '150';
+        }
+    }
+
+    function openEditMonthModalFromEl(el) {
+        const studentId = el.dataset.studentId;
+        const studentName = el.dataset.studentName;
+        const month = el.dataset.month;
+        const monthTitle = el.dataset.monthTitle;
+        const currentStatus = el.dataset.status;
+        const currentAmount = el.dataset.amount;
+        const currentNotes = el.dataset.notes || '';
+        const studentFee = el.dataset.studentFee || '150';
+
         document.getElementById('formStudentId').value = studentId;
         document.getElementById('formMonth').value = month;
+        document.getElementById('formStudentFeeHidden').value = studentFee;
         document.getElementById('modalStudentNameTitle').innerText = studentName;
-        document.getElementById('modalMonthSubtitle').innerText = '{{ __('اشتراك') }} ' + monthLabel + ' (' + yearString() + ')';
+        document.getElementById('modalMonthSubtitle').innerText = '{{ __('اشتراك') }} ' + monthTitle + ' (' + yearString() + ')';
         document.getElementById('formAmount').value = currentAmount;
-        document.getElementById('formNotes').value = currentNotes || '';
+        document.getElementById('formNotes').value = currentNotes;
 
-        const radio = document.querySelector(`input[name="status"][value="${currentStatus}"]`);
-        if (radio) radio.checked = true;
+        document.querySelectorAll('#updateMonthForm input[name="status"]').forEach(r => r.checked = false);
+        const radio = document.querySelector(`#updateMonthForm input[name="status"][value="${currentStatus}"]`);
+        if (radio) {
+            radio.checked = true;
+        }
 
         document.getElementById('editMonthModal').style.display = 'flex';
     }
 
-    function yearString() {
-        return '{{ $year }}';
+    // دعم الاستدعاء المباشر القديم للتوافقية
+    function openEditMonthModal(studentId, studentName, month, monthLabel, currentStatus, currentAmount, currentNotes) {
+        const badge = document.getElementById(`badge_${studentId}_${month}`);
+        if (badge) {
+            openEditMonthModalFromEl(badge);
+        } else {
+            document.getElementById('formStudentId').value = studentId;
+            document.getElementById('formMonth').value = month;
+            document.getElementById('modalStudentNameTitle').innerText = studentName;
+            document.getElementById('modalMonthSubtitle').innerText = '{{ __('اشتراك') }} ' + monthLabel + ' (' + yearString() + ')';
+            document.getElementById('formAmount').value = currentAmount;
+            document.getElementById('formNotes').value = currentNotes || '';
+            const radio = document.querySelector(`#updateMonthForm input[name="status"][value="${currentStatus}"]`);
+            if (radio) radio.checked = true;
+            document.getElementById('editMonthModal').style.display = 'flex';
+        }
     }
 
     function closeEditMonthModal() {
@@ -429,13 +487,61 @@
             const m = formData.get('month');
             const targetBadge = document.getElementById(`badge_${sId}_${m}`);
             if (targetBadge) {
-                targetBadge.className = `month-micro-badge badge-${res.data.status}`;
+                // تحديث الـ dataset
+                targetBadge.dataset.status = res.data.status;
+                targetBadge.dataset.amount = res.data.amount;
+                targetBadge.dataset.notes = res.data.notes || '';
+
+                const isHighlight = targetBadge.classList.contains('month-highlight-col');
+                targetBadge.className = `month-micro-badge badge-${res.data.status} ${isHighlight ? 'month-highlight-col' : ''}`;
+                targetBadge.title = `${targetBadge.dataset.monthTitle} (${Math.round(res.data.amount)} ₪) - {{ __('انقر للتعديل') }}`;
+
                 let icon = '<i class="fa-solid fa-xmark badge-icon"></i>';
                 if (res.data.status === 'paid') icon = '<i class="fa-solid fa-check badge-icon"></i>';
                 else if (res.data.status === 'pending') icon = '<i class="fa-solid fa-hourglass-half badge-icon"></i>';
                 else if (res.data.status === 'waived') icon = '<i class="fa-solid fa-tag badge-icon"></i>';
 
                 targetBadge.innerHTML = `<span class="m-digit font-mono">${m}</span> ${icon}`;
+            }
+
+            // تحديث شريط التقدم ونسبة الطالب لحظياً
+            if (res.data.student_paid_count !== undefined) {
+                const ratioEl = document.getElementById(`progress_ratio_${sId}`);
+                if (ratioEl) ratioEl.innerHTML = `<strong>${res.data.student_paid_count}</strong> / 12 {{ __('شهراً') }}`;
+
+                const barEl = document.getElementById(`progress_bar_${sId}`);
+                if (barEl) {
+                    barEl.style.width = `${res.data.student_percent}%`;
+                    if (res.data.student_percent >= 100) barEl.classList.add('bg-full');
+                    else barEl.classList.remove('bg-full');
+                }
+
+                const pctEl = document.getElementById(`progress_percent_${sId}`);
+                if (pctEl) pctEl.innerText = `${res.data.student_percent}%`;
+            }
+
+            // تحديث بطاقات الإحصائيات العامة للمنصة مباشرة
+            if (res.data.stats) {
+                const colEl = document.getElementById('stat_total_collected');
+                if (colEl) colEl.innerText = res.data.stats.total_collected;
+
+                const unpEl = document.getElementById('stat_total_unpaid');
+                if (unpEl) unpEl.innerText = res.data.stats.total_unpaid;
+
+                const pendEl = document.getElementById('stat_total_pending');
+                if (pendEl) pendEl.innerText = res.data.stats.total_pending;
+
+                const pCountEl = document.getElementById('stat_paid_count');
+                if (pCountEl) pCountEl.innerText = res.data.stats.paid_count;
+
+                const uCountEl = document.getElementById('stat_unpaid_count');
+                if (uCountEl) uCountEl.innerText = res.data.stats.unpaid_count;
+
+                const pendCountEl = document.getElementById('stat_pending_count');
+                if (pendCountEl) pendCountEl.innerText = res.data.stats.pending_count;
+
+                const rateEl = document.getElementById('stat_collection_rate');
+                if (rateEl) rateEl.innerText = res.data.stats.collection_rate;
             }
 
             Swal.fire({
@@ -456,15 +562,38 @@
         });
     }
 
-    function openStudentFeeModal(studentId, studentName, monthlyFee, discountPercent, discountFixed, discountNotes) {
+    function openStudentFeeModalFromEl(el) {
+        const studentId = el.dataset.studentId;
+        const studentName = el.dataset.studentName;
+        const monthlyFee = el.dataset.monthlyFee || 150;
+        const discountPercent = el.dataset.discountPercent || '';
+        const discountFixed = el.dataset.discountFixed || '';
+        const discountNotes = el.dataset.discountNotes || '';
+
         document.getElementById('feeFormStudentId').value = studentId;
         document.getElementById('feeStudentNameTitle').innerText = '{{ __('تعديل رسوم الطالب:') }} ' + studentName;
         document.getElementById('feeFormMonthlyFee').value = monthlyFee;
-        document.getElementById('feeFormDiscountPercent').value = discountPercent || '';
-        document.getElementById('feeFormDiscountFixed').value = discountFixed || '';
-        document.getElementById('feeFormDiscountNotes').value = discountNotes || '';
+        document.getElementById('feeFormDiscountPercent').value = discountPercent;
+        document.getElementById('feeFormDiscountFixed').value = discountFixed;
+        document.getElementById('feeFormDiscountNotes').value = discountNotes;
         calcNetFeePreview();
         document.getElementById('editStudentFeeModal').style.display = 'flex';
+    }
+
+    function openStudentFeeModal(studentId, studentName, monthlyFee, discountPercent, discountFixed, discountNotes) {
+        const btn = document.getElementById(`fee_btn_${studentId}`);
+        if (btn) {
+            openStudentFeeModalFromEl(btn);
+        } else {
+            document.getElementById('feeFormStudentId').value = studentId;
+            document.getElementById('feeStudentNameTitle').innerText = '{{ __('تعديل رسوم الطالب:') }} ' + studentName;
+            document.getElementById('feeFormMonthlyFee').value = monthlyFee;
+            document.getElementById('feeFormDiscountPercent').value = discountPercent || '';
+            document.getElementById('feeFormDiscountFixed').value = discountFixed || '';
+            document.getElementById('feeFormDiscountNotes').value = discountNotes || '';
+            calcNetFeePreview();
+            document.getElementById('editStudentFeeModal').style.display = 'flex';
+        }
     }
 
     function closeStudentFeeModal() {
@@ -502,6 +631,27 @@
             if (lbl) {
                 lbl.innerText = res.data.amount_due + ' ₪';
             }
+
+            const feeBtn = document.getElementById(`fee_btn_${sId}`);
+            if (feeBtn) {
+                feeBtn.dataset.monthlyFee = res.data.monthly_fee;
+                feeBtn.dataset.discountPercent = res.data.discount_percent;
+                feeBtn.dataset.discountFixed = res.data.discount_fixed;
+                feeBtn.dataset.discountNotes = res.data.discount_notes || '';
+            }
+
+            // تحديث بطاقات الشهور الخاصة بالطالب للشهور غير المسددة
+            for (let m = 1; m <= 12; m++) {
+                const b = document.getElementById(`badge_${sId}_${m}`);
+                if (b) {
+                    b.dataset.studentFee = res.data.amount_due;
+                    if (b.dataset.status === 'unpaid') {
+                        b.dataset.amount = res.data.amount_due;
+                        b.title = `${b.dataset.monthTitle} (${Math.round(res.data.amount_due)} ₪) - {{ __('انقر للتعديل') }}`;
+                    }
+                }
+            }
+
             Swal.fire({
                 icon: 'success',
                 title: '{{ __('تم التحديث بنجاح') }}',
@@ -912,6 +1062,13 @@
     .badge-pending { background: #fffbeb; color: #d97706; border: 1.5px solid #f59e0b; }
     .badge-unpaid { background: #fef2f2; color: #dc2626; border: 1px dashed #fca5a5; }
     .badge-waived { background: #eef2ff; color: #4f46e5; border: 1.5px solid #818cf8; }
+    .month-micro-badge.month-highlight-col {
+        outline: 2.5px solid #2563eb !important;
+        outline-offset: 1px;
+        box-shadow: 0 0 10px rgba(37, 99, 235, 0.4) !important;
+        transform: scale(1.08);
+        z-index: 5;
+    }
 
     /* شريط التقدم والنسبة */
     .student-progress-block {

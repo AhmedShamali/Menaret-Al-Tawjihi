@@ -15,15 +15,17 @@ class StudentMonthlySubscription extends Model
         'month',
         'amount',
         'status',
+        'is_manual',
         'payment_id',
         'paid_at',
         'notes',
     ];
 
     protected $casts = [
-        'amount'  => 'decimal:2',
-        'month'   => 'integer',
-        'paid_at' => 'datetime',
+        'amount'    => 'decimal:2',
+        'month'     => 'integer',
+        'paid_at'   => 'datetime',
+        'is_manual' => 'boolean',
     ];
 
     public static function monthNamesAr(): array
@@ -72,6 +74,7 @@ class StudentMonthlySubscription extends Model
 
     /**
      * مزامنة وتحديث سجلات الشهور الـ 12 للطالب تلقائياً وربطها بعمليات الدفع وحالة التسجيل
+     * مع حماية كاملة لأي شهر تم تعديله يدوياً من قبل الإدارة
      */
     public static function syncWithStudentPayments(Student $student, string $academicYear = '2026-2027'): \Illuminate\Database\Eloquent\Collection
     {
@@ -116,22 +119,28 @@ class StudentMonthlySubscription extends Model
         for ($m = 1; $m <= 12; $m++) {
             $sub = $existing->get($m);
 
+            // الحماية الذهبية: إذا كان السجل موجوداً ومعدلاً يدوياً من قبل الإدارة، لا يتم لمسه إطلاقاً!
+            if ($sub && !empty($sub->is_manual)) {
+                continue;
+            }
+
             if ($isFullWaived) {
                 $status = 'waived';
                 $amount = 0.00;
                 $notes = 'معفى رسمياً - منحة دراسية كاملة 100%';
                 $paymentId = null;
                 $paidAt = null;
-            } elseif ($sub && $sub->status === 'paid') {
-                // إذا كان المدير قد حدد الشهر يدوياً كمسدد
-                $status = 'paid';
+            } elseif ($sub && in_array($sub->status, ['paid', 'waived'])) {
+                // إذا كان الشهر محفوظاً كمسدد أو معفى، نحافظ على حالته تماماً
+                $status = $sub->status;
                 $amount = $sub->amount ?: $baseAmount;
                 $paymentId = $sub->payment_id;
                 $paidAt = $sub->paid_at ?? now();
                 $notes = $sub->notes ?: 'معتمد ومسدد بقرار الإدارة';
-            } elseif ($m <= $paidMonthsCount) {
+            } elseif (!$sub && $m <= $paidMonthsCount) {
+                // تهيئة أولية فقط إذا لم يكن السجل موجوداً في قاعدة البيانات
                 $status = 'paid';
-                $amount = $sub ? $sub->amount : $baseAmount;
+                $amount = $baseAmount;
                 $pIndex = $m - 1;
                 $payment = $completedPayments->get($pIndex);
                 if ($payment) {
@@ -143,22 +152,21 @@ class StudentMonthlySubscription extends Model
                     $paidAt = $student->created_at ?? now();
                     $notes = 'تم السداد واعتماد الاشتراك الشهري';
                 }
-            } elseif ($m <= ($paidMonthsCount + $totalPendingMonths)) {
+            } elseif (!$sub && $m <= ($paidMonthsCount + $totalPendingMonths)) {
+                // تهيئة أولية لإشعار قيد المراجعة
                 $status = 'pending';
-                $amount = $sub ? $sub->amount : $baseAmount;
+                $amount = $baseAmount;
                 $pendIndex = ($m - $paidMonthsCount) - 1;
                 $pendPayment = $pendingPayments->get($pendIndex);
                 $paymentId = $pendPayment ? $pendPayment->id : null;
                 $paidAt = null;
                 $notes = 'إشعار الدفع قيد المراجعة والاعتماد من الإدارة';
             } else {
+                // الحفاظ على حالة السجل الحالية إذا كان موجوداً، أو جعله غير مسدد إذا كان جديداً
                 $status = $sub ? $sub->status : 'unpaid';
-                if ($status !== 'waived') {
-                    $status = 'unpaid';
-                }
                 $amount = $sub ? $sub->amount : $baseAmount;
-                $paymentId = null;
-                $paidAt = null;
+                $paymentId = $sub ? $sub->payment_id : null;
+                $paidAt = $sub ? $sub->paid_at : null;
                 $notes = $sub ? $sub->notes : null;
             }
 
@@ -169,18 +177,18 @@ class StudentMonthlySubscription extends Model
                     'month'         => $m,
                     'amount'        => $amount,
                     'status'        => $status,
+                    'is_manual'     => false,
                     'payment_id'    => $paymentId,
                     'paid_at'       => $paidAt,
                     'notes'         => $notes,
                 ]);
             } else {
-                if (($sub->status === 'unpaid' && in_array($status, ['paid', 'pending', 'waived'])) ||
-                    ($m === 1 && $student->status === 'active' && $sub->status === 'unpaid')) {
+                // إذا كان السجل موجوداً وغير يدوي، نحدّثه فقط في حالة المنحة الكاملة 100%
+                if ($isFullWaived && $sub->status !== 'waived') {
                     $sub->update([
-                        'status'     => $status,
-                        'payment_id' => $paymentId ?? $sub->payment_id,
-                        'paid_at'    => $paidAt ?? $sub->paid_at,
-                        'notes'      => $notes ?? $sub->notes,
+                        'status' => 'waived',
+                        'amount' => 0.00,
+                        'notes'  => 'معفى رسمياً - منحة دراسية كاملة 100%',
                     ]);
                 }
             }

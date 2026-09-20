@@ -19,6 +19,7 @@ return new class extends Migration
                 $table->unsignedTinyInteger('month'); // 1 to 12
                 $table->decimal('amount', 8, 2)->default(150.00);
                 $table->string('status')->default('unpaid'); // paid, pending, unpaid, waived
+                $table->boolean('is_manual')->default(false);
                 $table->foreignId('payment_id')->nullable()->constrained('payments')->nullOnDelete();
                 $table->timestamp('paid_at')->nullable();
                 $table->text('notes')->nullable();
