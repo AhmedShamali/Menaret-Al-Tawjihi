@@ -795,7 +795,7 @@
 
     <!-- 4. تذييل الصفحة الفاتح الكلاسيكي المعتمد -->
     <footer class="auth-page-footer">
-        {{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م | إشراف الأستاذ أحمد حسين شمالي', [
+        {{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م | إشراف م.أحمد شمالي', [
             'year' => date('Y'),
             'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')),
             'academic' => \App\Models\Setting::academicYear()

@@ -184,7 +184,7 @@
                     <div id="fields_jawwal_pay" class="gateway-fields" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('صاحب الحساب المستفيد:') }}</span>
-                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'أحمد حسين شمالي') }}</strong>
+                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'م.أحمد شمالي') }}</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('رقم محفظة التحويل المعتمد:') }}</span>
@@ -209,7 +209,7 @@
                     <div id="fields_bop" class="gateway-fields" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('اسم صاحب الحساب المستفيد:') }}</span>
-                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'أحمد حسين شمالي') }}</strong>
+                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'م.أحمد شمالي') }}</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('رقم حساب بنك فلسطين:') }}</span>
@@ -243,7 +243,7 @@
                     <div id="fields_palpay" class="gateway-fields" style="display: none; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 18px; margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('صاحب الحساب المستفيد:') }}</span>
-                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'أحمد حسين شمالي') }}</strong>
+                            <strong style="font-size: 0.92rem; color: #0f172a;">{{ __($palOwner ?? 'م.أحمد شمالي') }}</strong>
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #cbd5e1;">
                             <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('رقم الحساب / محفظتي بال باي:') }}</span>
@@ -403,7 +403,7 @@
                 <details style="padding: 6px 0 0; cursor: pointer;">
                     <summary style="font-size: 0.82rem; font-weight: 700; color: #334155;">{{ __('ما هي أرقام المحافظ المعتمدة في المنصة؟') }}</summary>
                     <p style="font-size: 0.78rem; color: #64748b; margin: 6px 0 0; line-height: 1.55;">
-                        {{ __('رقم محفظة جوال باي وبنك فلسطين وبال باي المعتمد للمنصة هو: 0567897212 باسم أحمد حسين شمالي.') }}
+                        {{ __('رقم محفظة جوال باي وبنك فلسطين وبال باي المعتمد للمنصة هو: 0567897212 باسم م.أحمد شمالي.') }}
                     </p>
                 </details>
             </div>

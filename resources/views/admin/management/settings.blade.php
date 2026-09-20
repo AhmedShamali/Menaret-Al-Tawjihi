@@ -198,7 +198,7 @@
                         <div style="grid-column: span 2;">
                             <label class="field-label">{{ __('اسم صاحب الحساب المستفيد المعتمد (الاسم الثلاثي)') }}</label>
                             <input type="text" name="payment_account_name" id="owner_input"
-                                   value="{{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}"
+                                   value="{{ \App\Models\Setting::get('payment_account_name', 'م.أحمد شمالي') }}"
                                    class="field-input" oninput="document.getElementById('owner_preview').innerText = this.value">
                             <small style="color: #64748b; font-size: 0.78rem; display: block; margin-top: 4px;">{{ __('يظهر في صفحة السداد والإيصالات الرسمية لتأكيد التحويل البنكي وجوال باي.') }}</small>
                         </div>
@@ -290,7 +290,7 @@
                     <div style="background: #ffffff; border-radius: 10px; padding: 12px 14px; border: 1px solid #cbd5e1;">
                         <div style="font-size: 0.74rem; color: #64748b; margin-bottom: 4px;">{{ __('بيانات التحويل المسجلة حالياً:') }}</div>
                         <div style="font-size: 0.88rem; font-weight: 800; color: #1d4ed8;" id="owner_preview">
-                            {{ \App\Models\Setting::get('payment_account_name', 'أحمد حسين شمالي') }}
+                            {{ \App\Models\Setting::get('payment_account_name', 'م.أحمد شمالي') }}
                         </div>
                         <div style="font-family: monospace; font-size: 0.85rem; color: #059669; direction: ltr; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }};" id="phone_preview">
                             {{ \App\Models\Setting::get('payment_phone', '0567897212') }}
