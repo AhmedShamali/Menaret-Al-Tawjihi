@@ -94,7 +94,15 @@
             <div class="ed-video-card">
                 <div>
                     <div class="video-frame-wrap">
-                        @if($vid->youtube_id)
+                        @php
+                            $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $vid->url_path ?? '') || str_contains($vid->url_path ?? '', 'educational/videos');
+                            $directVidUrl = $isDirectVid ? (filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path)) : null;
+                        @endphp
+                        @if($isDirectVid && $directVidUrl)
+                            <video controls preload="metadata" playsinline style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
+                                <source src="{{ $directVidUrl }}" type="video/mp4">
+                            </video>
+                        @elseif($vid->youtube_id)
                             <iframe src="{{ $vid->youtube_embed_url }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
                         @else
                             <iframe src="{{ $embedUrl }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
@@ -113,8 +121,13 @@
                         </div>
                         <h3 class="video-title">{{ $vid->title }}</h3>
                         <p class="video-channel">
-                            <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
-                            <span>{{ $vid->channel_name ?? config('app.name', 'منارة التوجيهي') }}</span>
+                            @if($isDirectVid)
+                                <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
+                                <span style="color: #1e40af; font-weight: 700;">{{ __('ملف فيديو محلي مرفوع على المنصة') }}</span>
+                            @else
+                                <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+                                <span>{{ $vid->channel_name ?? config('app.name', 'منارة التوجيهي') }}</span>
+                            @endif
                         </p>
                     </div>
                 </div>
@@ -126,6 +139,12 @@
                     </button>
 
                     <div class="action-btns">
+                        @if($isDirectVid && $directVidUrl)
+                            <a href="{{ route('content.downloadVideo', $vid->id) }}" class="btn-edit" title="{{ __('تحميل ملف الفيديو') }}" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
+                                <i class="fa-solid fa-cloud-arrow-down"></i>
+                            </a>
+                        @endif
+
                         @if(auth()->user()->role === 'admin')
                             <a href="{{ route('admin.educational_contents.edit', $vid->id) }}" class="btn-edit" title="{{ __('تعديل') }}">
                                 <i class="fa-solid fa-pen-to-square"></i>
@@ -167,7 +186,7 @@
         <div class="modal-head">
             <h3>
                 <i class="fa-solid fa-video text-primary"></i>
-                <span>{{ __('إضافة درس أو شرح فيديو جديد (YouTube)') }}</span>
+                <span>{{ __('إضافة درس أو شرح فيديو جديد (ملف مباشر للمنصة أو YouTube)') }}</span>
             </h3>
             <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
         </div>

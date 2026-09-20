@@ -347,8 +347,8 @@ class EducationalContentController extends Controller
             }
         }
 
-        // إذا كان رابط يوتيوب يتم توجيهه إلى الرابط
-        return redirect()->away($content->url_path);
+        // إذا كان رابط يوتيوب يتم إبقاؤه داخل المنصة وتنبيه الطالب بأن المشاهدة والتفاعل متاحين حصرياً على المنصة
+        return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة الآمنة وتدوين الملاحظات التفاعلية وحفظها حصرياً داخل المنصة.');
     }
 
     public function downloadFile($id)

@@ -352,6 +352,124 @@
     height: 100%;
     border: 0;
 }
+.ed-player-frame:fullscreen, .ed-player-frame:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    padding-top: 0 !important;
+    background: #000 !important;
+}
+
+/* دروع حماية مشغل اليوتيوب وحجب الروابط الخارجية */
+.ed-yt-shield-container {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.ed-yt-top-curtain {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.85) 65%, transparent 100%);
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    pointer-events: auto; /* يحجب النقر على عنوان يوتيوب وقناته */
+    user-select: none;
+    cursor: default;
+}
+
+.ed-yt-curtain-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+    max-width: 70%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ed-yt-curtain-info i {
+    color: #60a5fa;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.ed-yt-curtain-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ed-yt-curtain-badge {
+    background: rgba(30, 58, 138, 0.9);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.ed-yt-curtain-badge i {
+    color: #38bdf8;
+}
+
+.ed-yt-logo-shield {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 140px;
+    height: 46px;
+    z-index: 5;
+    pointer-events: auto; /* يحجب النقر على شعار يوتيوب المائي */
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    padding-bottom: 6px;
+    user-select: none;
+    cursor: default;
+}
+
+.ed-yt-logo-shield .shield-tag {
+    background: rgba(15, 23, 42, 0.92);
+    color: #cbd5e1;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    backdrop-filter: blur(4px);
+}
+.ed-yt-logo-shield .shield-tag i {
+    color: #60a5fa;
+}
+
+.ed-in-platform-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
 
 /* شريط تحكم الفيديو الذكي */
 .ed-smart-player-bar {
@@ -878,7 +996,7 @@
                     @foreach($videos as $video)
                         @if($video->is_unlocked)
                             <article class="ed-video-card" id="card_video_{{ $video->id }}">
-                                <div class="ed-player-frame">
+                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}">
                                     @php
                                         $rawUrl = trim($video->url_path ?? '');
                                         $ytEmbed = $video->youtube_embed_url;
@@ -886,23 +1004,46 @@
                                         if ($isYt) {
                                             if (empty($ytEmbed) && !empty($rawUrl)) {
                                                 if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
-                                                    $ytEmbed = 'https://www.youtube.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1';
+                                                    $ytEmbed = 'https://www.youtube.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1';
                                                 } else {
                                                     $ytEmbed = str_replace('watch?v=', 'embed/', $rawUrl);
                                                 }
                                             }
-                                            if (!empty($ytEmbed) && !str_contains($ytEmbed, 'enablejsapi=1')) {
-                                                $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1';
+                                            if (!empty($ytEmbed)) {
+                                                if (!str_contains($ytEmbed, 'enablejsapi=1')) {
+                                                    $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1';
+                                                }
                                             }
                                         }
-                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl);
+                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
                                         $directVideoUrl = $isDirectVideo 
                                             ? (filter_var($rawUrl, FILTER_VALIDATE_URL) ? $rawUrl : asset('storage/' . $rawUrl))
                                             : null;
                                     @endphp
 
                                     @if(!empty($ytEmbed))
-                                        <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        <div class="ed-yt-shield-container">
+                                            {{-- الستارة الأكاديمية العلوية: تحجب عنوان وقناة يوتيوب وصورة الحساب وتمنع النقر للخروج --}}
+                                            <div class="ed-yt-top-curtain" onclick="event.stopPropagation();">
+                                                <div class="ed-yt-curtain-info">
+                                                    <i class="fa-solid fa-graduation-cap"></i>
+                                                    <span class="ed-yt-curtain-title">{{ $video->title }}</span>
+                                                </div>
+                                                <div class="ed-yt-curtain-badge">
+                                                    <i class="fa-solid fa-shield-halved"></i>
+                                                    <span>{{ __('منارة التوجيهي • مشغل محمي') }}</span>
+                                                </div>
+                                            </div>
+
+                                            {{-- الدرع السفلي الأيسر: يحجب شعار يوتيوب المائي ويمنع النقر عليه --}}
+                                            <div class="ed-yt-logo-shield" onclick="event.stopPropagation();" title="{{ __('مشغل أكاديمي مخصص داخل المنصة') }}">
+                                                <span class="shield-tag">
+                                                    <i class="fa-solid fa-graduation-cap"></i> {{ __('منارة التوجيهي') }}
+                                                </span>
+                                            </div>
+
+                                            <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%;">
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
@@ -939,7 +1080,11 @@
                                         <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
                                     </div>
 
-                                    <div>
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض داخل المنصة مع استمرار الحماية') }}">
+                                            <i class="fa-solid fa-expand"></i>
+                                            <span>{{ __('ملء الشاشة') }}</span>
+                                        </button>
                                         <button type="button" class="btn-toggle-notes" onclick="toggleNotesSection('{{ $video->id }}')">
                                             <i class="fa-solid fa-bookmark"></i>
                                             <span>{{ __('ملاحظاتي على الدرس') }}</span>
@@ -977,26 +1122,31 @@
 
                                 {{-- إجراءات التنزيل والملفات المرفقة --}}
                                 <div class="ed-video-actions-box">
-                                    <div id="offline_action_box_{{ $video->id }}" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                        @if($isYt)
-                                            <span style="font-size: 0.8rem; color: #94a3b8; display: inline-flex; align-items: center; gap: 6px;">
-                                                <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 1.1rem;"></i> {{ __('بث يوتيوب مباشر') }}
-                                            </span>
-                                        @elseif($isDirectVideo && $directVideoUrl)
-                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل ملف الفيديو الأصلي إلى جهازك') }}">
+                                    <div id="offline_action_box_{{ $video->id }}" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        @if($isDirectVideo && $directVideoUrl)
+                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل ملف الفيديو الأصلي بجودة عالية إلى جهازك') }}">
                                                 <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل الفيديو (MP4)') }}
                                             </a>
                                             <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="downloadVideoOffline('{{ $video->id }}', '{{ $directVideoUrl }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '{{ $subject->id }}')">
                                                 <i class="fa-solid fa-download"></i> {{ __('حفظ بدون إنترنت') }}
                                             </button>
+                                        @elseif($isYt)
+                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل وتسجيل الشرح المرئي داخل المنصة') }}">
+                                                <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل الشرح المرئي') }}
+                                            </a>
+                                            <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="saveLessonToPlatformLibrary('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}')">
+                                                <i class="fa-solid fa-bookmark"></i> {{ __('حفظ بالمكتبة للمشاهدة بدون إنترنت') }}
+                                            </button>
+                                            <span class="ed-in-platform-tag">
+                                                <i class="fa-solid fa-shield-halved" style="color: #2563eb;"></i> {{ __('عرض مخصص ومحمي بالمنصة') }}
+                                            </span>
                                         @else
                                             <span style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-file-circle-check"></i> {{ __('ملف ومرفق دراسي') }}</span>
                                         @endif
                                     </div>
 
-
                                     @if(!empty($video->pdf_path))
-                                        <a href="{{ route('content.download', $video->id) }}" style="color: #1e3a8a; font-size: 0.82rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; padding: 6px 12px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                        <a href="{{ route('content.download', $video->id) }}" style="color: #1e3a8a; font-size: 0.82rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; padding: 7px 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
                                             <i class="fa-solid fa-file-pdf" style="color: #dc2626;"></i> {{ __('تحميل ملزمة المحاضرة') }}
                                         </a>
                                     @endif
@@ -1314,6 +1464,54 @@ async function downloadVideoOffline(videoId, videoUrl, title, subjectName, subje
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> {{ __('فشل التحميل، أعد المحاولة') }}';
+        }
+    }
+}
+
+function saveLessonToPlatformLibrary(videoId, title, subjectName) {
+    const key = 'platform_saved_lesson_' + videoId;
+    localStorage.setItem(key, JSON.stringify({
+        id: videoId,
+        title: title,
+        subject: subjectName,
+        savedAt: new Date().toISOString()
+    }));
+    const btn = document.getElementById(`btn_save_offline_${videoId}`);
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#059669;"></i> {{ __('محفوظ في مكتبة المنصة') }}';
+        btn.style.background = '#ecfdf5';
+        btn.style.color = '#065f46';
+        btn.style.borderColor = '#a7f3d0';
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'success',
+            title: '{{ __('تم الحفظ في مكتبة المنصة!') }}',
+            text: '{{ __('تم تثبيت هذا الدرس في قائمة المشاهدة والمتابعة الخاصة بك للرجوع إليه وتدوين ملاحظاتك في أي وقت.') }}',
+            confirmButtonColor: '#1e3a8a',
+            confirmButtonText: '{{ __('حسناً') }}'
+        });
+    }
+}
+
+function togglePlatformFullscreen(videoId) {
+    const frame = document.getElementById(`player_frame_${videoId}`);
+    if (!frame) return;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (frame.requestFullscreen) {
+            frame.requestFullscreen();
+        } else if (frame.webkitRequestFullscreen) {
+            frame.webkitRequestFullscreen();
+        } else if (frame.msRequestFullscreen) {
+            frame.msRequestFullscreen();
+        }
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
         }
     }
 }

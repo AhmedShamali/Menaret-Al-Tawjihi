@@ -61,7 +61,7 @@ class EducationalContent extends Model
     public function getYoutubeEmbedUrlAttribute()
     {
         $id = $this->youtube_id;
-        return $id ? "https://www.youtube.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1" : null;
+        return $id ? "https://www.youtube.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1" : null;
     }
 
     /**
