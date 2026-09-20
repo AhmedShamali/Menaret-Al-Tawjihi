@@ -59,11 +59,12 @@ class ExamController extends Controller
             'subject_id' => ['required', 'exists:subjects,id'],
             'stage_id' => ['nullable', 'exists:stages,id'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:600'],
+            'show_result_immediately' => ['nullable'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.type' => ['required', 'in:mcq,essay'],
             'questions.*.question_text' => ['required', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
-            'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
+            'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             'questions.*.a' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.b' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
             'questions.*.c' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
@@ -73,19 +74,31 @@ class ExamController extends Controller
             'questions.*.is_multiple' => ['nullable'],
         ]);
 
-        DB::transaction(function () use ($request, $validated) {
+        $showResultImmediately = filter_var($request->input('show_result_immediately', false), FILTER_VALIDATE_BOOLEAN);
+
+        DB::transaction(function () use ($request, $validated, $showResultImmediately) {
             $exam = Exam::create([
                 'teacher_id' => auth()->id(),
                 'title' => $validated['title'],
                 'subject_id' => $validated['subject_id'],
                 'stage_id' => $validated['stage_id'] ?? null,
                 'duration_minutes' => $validated['duration_minutes'],
+                'show_result_immediately' => $showResultImmediately,
             ]);
 
             foreach ($request->questions as $q) {
                 $imagePath = null;
                 if (isset($q['image']) && $q['image'] instanceof \Illuminate\Http\UploadedFile) {
-                    $imagePath = $q['image']->store('questions', 'public');
+                    if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                        try {
+                            $path = $q['image']->store('questions', 'supabase');
+                            $imagePath = Storage::disk('supabase')->url($path);
+                        } catch (\Throwable $e) {
+                            $imagePath = $q['image']->store('questions', 'public');
+                        }
+                    } else {
+                        $imagePath = $q['image']->store('questions', 'public');
+                    }
                 }
 
                 $requireFileValue = (bool) filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -156,9 +169,14 @@ class ExamController extends Controller
             'total_marks'      => 'nullable|integer|min:1',
             'pass_marks'       => 'nullable|integer|min:1',
             'is_active'        => 'nullable|boolean',
+            'show_result_immediately' => 'nullable',
             'subject_id'       => 'nullable|exists:subjects,id',
             'stage_id'         => 'nullable|exists:stages,id',
         ]);
+
+        $showResultImmediately = $request->has('show_result_immediately') 
+            ? filter_var($request->show_result_immediately, FILTER_VALIDATE_BOOLEAN) 
+            : $exam->show_result_immediately;
 
         $exam->update([
             'title'            => $validated['title'],
@@ -166,6 +184,7 @@ class ExamController extends Controller
             'duration_minutes' => $validated['duration_minutes'],
             'total_marks'      => $validated['total_marks'] ?? $exam->total_marks,
             'pass_marks'       => $validated['pass_marks'] ?? $exam->pass_marks,
+            'show_result_immediately' => $showResultImmediately,
             'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
             'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
             'is_active'        => $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $exam->is_active,
@@ -266,7 +285,8 @@ class ExamController extends Controller
             $newTotalGrade = $submission->answers()->sum('points_awarded');
             $submission->update([
                 'total_earned_grade' => $newTotalGrade,
-                'status' => 'graded'
+                'status' => 'graded',
+                'is_published' => true,
             ]);
 
             try {
@@ -440,33 +460,77 @@ class ExamController extends Controller
                     $autoGrade += $points;
                 }
 
-                $submission->update(['total_earned_grade' => $autoGrade]);
+                $tabSwitches = (int) $request->input('tab_switches_count', 0);
+                $screenshots = (int) $request->input('screenshots_count', 0);
+                $rawCheatingFlags = $request->input('cheating_flags');
+                $incomingFlags = [];
+                if (is_string($rawCheatingFlags)) {
+                    $incomingFlags = json_decode($rawCheatingFlags, true) ?? [];
+                } elseif (is_array($rawCheatingFlags)) {
+                    $incomingFlags = $rawCheatingFlags;
+                }
+
+                $totalTabSwitches = max($tabSwitches, (int) ($submission->tab_switches_count ?? 0));
+                $totalScreenshots = max($screenshots, (int) ($submission->screenshots_count ?? 0));
+                $existingFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode($submission->cheating_flags, true) ?? []);
+                $mergedFlags = array_values(array_unique(array_merge($existingFlags, $incomingFlags), SORT_REGULAR));
+                $hasCheatingRisk = ($totalTabSwitches > 0 || $totalScreenshots > 0 || !empty($mergedFlags));
+
+                $allQuestionsMcq = $exam->questions->isNotEmpty() && $exam->questions->every(fn($q) => $q->type === 'mcq');
+                $isPublished = (bool) ($exam->show_result_immediately && $allQuestionsMcq);
+
+                $submission->update([
+                    'total_earned_grade' => $autoGrade,
+                    'status' => $isPublished ? 'graded' : 'pending',
+                    'tab_switches_count' => $totalTabSwitches,
+                    'screenshots_count' => $totalScreenshots,
+                    'cheating_flags' => $mergedFlags,
+                    'has_cheating_risk' => $hasCheatingRisk,
+                    'is_published' => $isPublished,
+                ]);
 
                 // إشعار المعلم وإدارة المنصة بتسليم الاختبار
                 try {
                     $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+                    $studentName = $student->name_ar ?? $student->name ?? 'طالب';
+
+                    if ($hasCheatingRisk && $teacherId) {
+                        \App\Services\NotificationService::notifyTeacher(
+                            $teacherId,
+                            '⚠️ تنبيه اشتباه غش في الاختبار!',
+                            "قام الطالب ({$studentName}) بتسليم اختبار \"{$exam->title}\" مع رصد مخالفات أكاديمية ({$totalTabSwitches} مغادرة صفحة، {$totalScreenshots} لقطة شاشة).",
+                            'cheating_alert',
+                            route('teacher.submissions.grade', $submission->id),
+                            'fa-triangle-exclamation'
+                        );
+                    }
+
                     if ($teacherId) {
                         \App\Services\NotificationService::notifyTeacher(
                             $teacherId,
                             'تسليم اختبار جديد ✍️',
-                            "قام الطالب ({$student->name_ar}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة تلقائياً: {$autoGrade}/{$exam->total_grade}.",
+                            "قام الطالب ({$studentName}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة: {$autoGrade}/{$exam->total_grade}.",
                             'exam',
                             route('teacher.submissions.index')
                         );
                     } else {
                         \App\Services\NotificationService::notifyAdmin(
                             'تسليم اختبار جديد ✍️',
-                            "قام الطالب ({$student->name_ar}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة: {$autoGrade}/{$exam->total_grade}.",
+                            "قام الطالب ({$studentName}) بتسليم إجاباته في اختبار: \"{$exam->title}\". الدرجة المحتسبة: {$autoGrade}/{$exam->total_grade}.",
                             'exam',
                             route('admin.submissions.index')
                         );
                     }
 
                     // إشعار الطالب بالتسليم الناجح
+                    $studentMsg = $isPublished
+                        ? "تم استلام إجاباتك في اختبار: \"{$exam->title}\" بنجاح. نتيجتك المحتسبة: {$autoGrade} علامة."
+                        : "تم استلام وتوثيق إجاباتك في اختبار: \"{$exam->title}\" بنجاح. النتيجة قيد المراجعة والتدقيق من قبل معلّم المساق.";
+
                     \App\Services\NotificationService::notifyStudent(
                         $student->id,
                         'تم تسليم الاختبار بنجاح ✅',
-                        "تم استلام إجاباتك في اختبار: \"{$exam->title}\" بنجاح. نتيجتك التقديرية المحتسبة: {$autoGrade} علامة.",
+                        $studentMsg,
                         'exam',
                         route('student.exams.results', $submission->id)
                     );
@@ -474,8 +538,11 @@ class ExamController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'message' => 'تم تسليم الاختبار بنجاح!',
+                    'message' => $isPublished 
+                        ? 'تم تسليم الاختبار بنجاح واحتساب نتيجتك!' 
+                        : 'تم تسليم الاختبار بنجاح! الإجابات قيد التدقيق والمراجعة من قبل معلّم المساق.',
                     'submission_id' => $submission->id,
+                    'is_published' => $isPublished,
                     'redirect' => route('student.exams.results', $submission->id)
                 ]);
             });
@@ -489,8 +556,108 @@ class ExamController extends Controller
 
     public function showResult($id)
     {
-        $submission = ExamSubmission::with(['exam.subject', 'answers.question'])->findOrFail($id);
-        return view('student.exams.results', compact('submission'));
+        $submission = ExamSubmission::with(['exam.subject', 'exam.questions', 'answers.question'])->findOrFail($id);
+        $canViewResult = $submission->canStudentViewResult();
+        return view('student.exams.results', compact('submission', 'canViewResult'));
+    }
+
+    /**
+     * رصد وتسجيل حركة اشتباه غش لحظياً من متصفح الطالب
+     */
+    public function reportCheatingIncident(Request $request, $id)
+    {
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
+
+        if (!$student) {
+            return response()->json(['success' => false, 'error' => 'حساب الطالب غير مصرح'], 403);
+        }
+
+        $exam = Exam::with(['subject'])->findOrFail($id);
+        $type = $request->input('violation_type', 'unknown');
+        $details = $request->input('details', 'حركة مريبة أثناء الامتحان');
+        $time = now()->toDateTimeString();
+
+        $submission = ExamSubmission::where('exam_id', $id)->where('student_id', $student->id)->latest()->first();
+        if (!$submission) {
+            $submission = ExamSubmission::create([
+                'exam_id' => $id,
+                'student_id' => $student->id,
+                'status' => 'pending',
+                'total_earned_grade' => 0,
+                'has_cheating_risk' => true,
+                'tab_switches_count' => ($type === 'tab_switch' ? 1 : 0),
+                'screenshots_count' => ($type === 'screenshot' ? 1 : 0),
+                'cheating_flags' => [
+                    ['type' => $type, 'details' => $details, 'time' => $time]
+                ],
+            ]);
+        } else {
+            $currentFlags = is_array($submission->cheating_flags) ? $submission->cheating_flags : (json_decode($submission->cheating_flags, true) ?? []);
+            $currentFlags[] = ['type' => $type, 'details' => $details, 'time' => $time];
+            $submission->update([
+                'has_cheating_risk' => true,
+                'tab_switches_count' => $submission->tab_switches_count + ($type === 'tab_switch' ? 1 : 0),
+                'screenshots_count' => $submission->screenshots_count + ($type === 'screenshot' ? 1 : 0),
+                'cheating_flags' => $currentFlags,
+            ]);
+        }
+
+        try {
+            $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+            $studentName = $student->name_ar ?? $student->name ?? 'طالب';
+            $actionText = $type === 'screenshot' ? 'محاولة أخذ لقطة شاشة (Screenshot)' : 'مغادرة نافذة/تبويب الاختبار';
+
+            if ($teacherId) {
+                \App\Services\NotificationService::notifyTeacher(
+                    $teacherId,
+                    '⚠️ رصد حركة مريبة في الامتحان!',
+                    "تم رصد الطالب ({$studentName}) أثناء تأدية اختبار \"{$exam->title}\": {$actionText}.",
+                    'cheating_alert',
+                    route('teacher.exams.submissions', $exam->id),
+                    'fa-triangle-exclamation'
+                );
+            }
+        } catch (\Throwable $e) {}
+
+        return response()->json(['success' => true, 'logged' => true, 'status' => 'logged']);
+    }
+
+    /**
+     * إعلان ونشر النتيجة للطالب أو حجبها من قِبل المعلم/المدير
+     */
+    public function togglePublishResult($id)
+    {
+        $user = auth()->user();
+        $submission = ExamSubmission::with(['exam.subject', 'student'])->findOrFail($id);
+
+        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح لك بنشر نتائج هذا الاختبار'], 403);
+        }
+
+        $newStatus = !$submission->is_published;
+        $submission->update(['is_published' => $newStatus]);
+
+        if ($newStatus) {
+            try {
+                \App\Services\NotificationService::notifyStudent(
+                    $submission->student_id,
+                    'صدرت نتيجتك في الاختبار! 🎓',
+                    "أعلن معلّم المساق نتائج اختبار: \"{$submission->exam->title}\". يمكنك الآن الاطلاع على درجتك وإجاباتك.",
+                    'exam',
+                    route('student.exams.results', $submission->id),
+                    'fa-award'
+                );
+            } catch (\Throwable $e) {}
+        }
+
+        return response()->json([
+            'success' => true,
+            'is_published' => $newStatus,
+            'message' => $newStatus ? 'تم إعلان النتيجة للطالب بنجاح 🎉' : 'تم حجب النتيجة عن الطالب 🔒'
+        ]);
     }
 
     public function gradebook()

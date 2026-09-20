@@ -174,6 +174,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/exams/{exam}/submissions', [ExamController::class, 'submissions'])->name('exams.submissions');
     Route::get('/submissions/{id}/grade', [ExamController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{id}/save-grade', [ExamController::class, 'saveGrade'])->name('submissions.saveGrade');
+    Route::post('/submissions/{id}/toggle-publish', [ExamController::class, 'togglePublishResult'])->name('submissions.togglePublish');
     Route::post('/submissions/{id}/allow-retake', [ExamController::class, 'allowRetake'])->name('submissions.allowRetake');
     Route::post('/submissions/{id}/deny-retake', [ExamController::class, 'denyRetake'])->name('submissions.denyRetake');
     Route::get('/exams/{id}/stats', [ExamController::class, 'stats'])->name('exams.stats');
@@ -246,6 +247,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/exams/{exam}/submissions', [ExamController::class, 'submissions'])->name('exams.submissions');
     Route::get('/submissions/{submission}/grade', [ExamController::class, 'grade'])->name('submissions.grade');
     Route::post('/submissions/{submission}/save-grade', [ExamController::class, 'saveGrade'])->name('submissions.saveGrade');
+    Route::post('/submissions/{submission}/toggle-publish', [ExamController::class, 'togglePublishResult'])->name('submissions.togglePublish');
     Route::post('/submissions/{submission}/allow-retake', [ExamController::class, 'allowRetake'])->name('submissions.allowRetake');
     Route::post('/submissions/{submission}/deny-retake', [ExamController::class, 'denyRetake'])->name('submissions.denyRetake');
     Route::resource('exams', ExamController::class);
@@ -309,6 +311,7 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/my-exams', [ExamController::class, 'studentIndex'])->name('exams.index');
     Route::get('/exams/{id}/take', [ExamController::class, 'takeExam'])->name('exams.take');
     Route::post('/exams/{id}/submit', [ExamController::class, 'submitExam'])->name('exams.submit');
+    Route::post('/exams/{id}/cheating-incident', [ExamController::class, 'reportCheatingIncident'])->name('exams.cheatingIncident');
     Route::post('/exams/{id}/request-retake', [ExamController::class, 'requestRetake'])->name('exams.requestRetake');
 
     Route::get('/exams/{id}/result', [ExamController::class, 'showResult'])->name('exams.result');

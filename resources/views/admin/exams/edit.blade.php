@@ -72,6 +72,29 @@
                             </div>
                         </div>
 
+                        <div class="f-group mb-20" style="padding-top: 14px; border-top: 1px solid var(--border-color);">
+                            <label class="f-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800;">
+                                <i class="fa-solid fa-eye-slash text-primary"></i>
+                                {{ __('سياسة إعلان نتائج الاختبار') }}
+                            </label>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <input type="radio" name="show_result_immediately" value="0" {{ empty($exam->show_result_immediately) ? 'checked' : '' }} style="margin-top: 3px;">
+                                    <div>
+                                        <strong style="display: block;">{{ __('حجب النتيجة حتى اعتماد المعلم (موصى به)') }}</strong>
+                                        <small style="color: var(--text-muted); line-height: 1.4; display: block; margin-top: 2px;">{{ __('لا تظهر العلامة أو الإجابات للطالب إلا بعد تصحيحك للاختبار.') }}</small>
+                                    </div>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; color: var(--text-main); cursor: pointer; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <input type="radio" name="show_result_immediately" value="1" {{ !empty($exam->show_result_immediately) ? 'checked' : '' }} style="margin-top: 3px;">
+                                    <div>
+                                        <strong style="display: block;">{{ __('إظهار النتيجة فورياً بعد التسليم') }}</strong>
+                                        <small style="color: var(--text-muted); line-height: 1.4; display: block; margin-top: 2px;">{{ __('تظهر النتيجة للطالب تلقائياً إذا كانت جميع الأسئلة موضوعية.') }}</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="exam-stats-info">
                             <div class="stat-item">
                                 <span class="stat-label">{{ __('إجمالي الأسئلة') }}</span>

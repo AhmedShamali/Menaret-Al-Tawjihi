@@ -15,9 +15,16 @@ class Exam extends Model
         'stage_id',
         'title',
         'duration_minutes',
+        'show_result_immediately',
         'is_published',
         'is_active',
         'status'
+    ];
+
+    protected $casts = [
+        'show_result_immediately' => 'boolean',
+        'is_published' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function questions()

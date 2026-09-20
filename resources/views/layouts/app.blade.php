@@ -777,34 +777,77 @@
                 display: flex;
             }
             body:not(.no-sidebar) {
-                padding-bottom: 68px;
+                padding-bottom: 74px;
             }
             .date-info {
                 display: none !important;
             }
             .top-bar {
                 padding: 0 12px;
-                height: 60px;
+                height: 56px;
             }
             .content-body {
-                padding: 14px 12px 80px;
+                padding: 12px 10px 80px;
             }
             .ed-card-header {
-                padding: 14px 16px;
+                padding: 12px 14px;
                 flex-wrap: wrap;
                 gap: 10px;
             }
             .ed-card-body {
-                padding: 16px;
+                padding: 14px;
+            }
+            .toolbar-clean {
+                flex-direction: column;
+                align-items: stretch !important;
+                gap: 10px !important;
+            }
+            .search-box-clean {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .filter-pills-clean {
+                overflow-x: auto;
+                flex-wrap: nowrap !important;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+                gap: 6px !important;
+            }
+            .filter-pill {
+                white-space: nowrap !important;
+                flex-shrink: 0;
+            }
+            .stats-row-clean {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+            .stat-card-clean {
+                padding: 12px !important;
+            }
+            .stat-card-clean .stat-number {
+                font-size: 1.35rem !important;
+            }
+            .stat-card-clean .stat-icon {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1rem !important;
             }
         }
 
-        @media (max-width: 640px) {
+        @media (max-width: 480px) {
+            .stats-row-clean {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+            }
             .top-bar {
-                padding: 0 10px;
+                padding: 0 8px;
             }
             .content-body {
-                padding: 12px 10px 80px;
+                padding: 8px 6px 80px;
+            }
+            .ed-btn {
+                padding: 8px 14px;
+                font-size: 0.82rem;
             }
         }
 
@@ -1292,7 +1335,7 @@
         }
     </style>
 </head>
-<body class="{{ request()->is('login') || request()->is('register') ? 'no-sidebar' : '' }}">
+<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }}">
 
     <!-- طبقة التعتيم للجوال -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
