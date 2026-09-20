@@ -19,7 +19,7 @@ class ExamController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $query = Exam::with(['subject', 'stage'])->withCount('questions');
+        $query = Exam::with(['subject', 'stage'])->withCount(['questions', 'submissions']);
 
         if ($user->role !== 'admin') {
             $query->where(function ($q) use ($user) {
