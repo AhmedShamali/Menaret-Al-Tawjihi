@@ -31,6 +31,12 @@ services:
         value: database
       - key: FILESYSTEM_DISK
         value: supabase
+      - key: APP_LOCALE
+        value: ar
+      - key: APP_FALLBACK_LOCALE
+        value: ar
+      - key: SESSION_LIFETIME
+        value: "1440"
 
 databases:
   - name: tawjihi-db

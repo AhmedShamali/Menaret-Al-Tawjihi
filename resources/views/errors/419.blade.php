@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>انتهت صلاحية الجلسة | منارة التوجيهي</title>
+    <title>{{ __('انتهت صلاحية الصفحة المؤقتة') }} | {{ config('app.name', 'منارة التوجيهي') }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800&family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
@@ -84,10 +84,18 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 0.95rem;
+            width: 100%;
+            max-width: 280px;
         }
         .btn-refresh:hover {
             background: #172554;
             transform: translateY(-1px);
+        }
+        .actions-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
         }
         .btn-home {
             display: inline-flex;
@@ -97,7 +105,7 @@
             font-size: 0.88rem;
             font-weight: 600;
             text-decoration: none;
-            margin-top: 16px;
+            transition: color 0.2s ease;
         }
         .btn-home:hover {
             color: var(--primary);
@@ -114,24 +122,34 @@
 <body>
     <div class="error-card">
         <div class="error-badge">
-            <i class="fa-solid fa-clock-rotate-left"></i>{{ __('رمز الخطأ 419: انتهاء الجلسة المؤقتة') }}</div>
+            <i class="fa-solid fa-clock-rotate-left"></i>{{ __('رمز الخطأ 419: انتهاء الجلسة المؤقتة') }}
+        </div>
         <div class="error-icon">
             <i class="fa-solid fa-shield-halved"></i>
         </div>
         <h1>{{ __('انتهت صلاحية الصفحة المؤقتة') }}</h1>
         <p>{{ __('حرصاً على أمان بياناتك الأكاديمية تم إنهاء الجلسة بسبب عدم النشاط لفترة.
             يرجى النقر على زر التحديث للمتابعة واستكمال عمليتك بشكل طبيعي.') }}</p>
-        <div>
-            <button type="button" onclick="window.location.reload()" class="btn-refresh">
-                <i class="fa-solid fa-rotate-right"></i>{{ __('تحديث الصفحة والمتابعة') }}</button>
-        </div>
-        <div>
+        <div class="actions-group">
+            <button type="button" onclick="handleRefresh()" class="btn-refresh">
+                <i class="fa-solid fa-rotate-right"></i>{{ __('تحديث الصفحة والمتابعة') }}
+            </button>
             <a href="/" class="btn-home">
-                <i class="fa-solid fa-arrow-right"></i>{{ __('العودة للصفحة الرئيسية للمنصة') }}</a>
+                <i class="fa-solid fa-arrow-right"></i>{{ __('العودة للصفحة الرئيسية للمنصة') }}
+            </a>
         </div>
         <div class="institution-footer">
-            منصة منارة التوجيهي - الثانوية العامة | إشراف الأستاذ أحمد حسين شمالي
+            {{ __('منصة منارة التوجيهي - الثانوية العامة | إشراف الأستاذ أحمد حسين شمالي') }}
         </div>
     </div>
+    <script>
+        function handleRefresh() {
+            if (document.referrer && document.referrer !== window.location.href) {
+                window.location.href = document.referrer;
+            } else {
+                window.location.replace(window.location.href);
+            }
+        }
+    </script>
 </body>
 </html>
