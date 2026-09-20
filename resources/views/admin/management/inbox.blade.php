@@ -73,7 +73,11 @@
                         
                         <div class="item-avatar-wrapper">
                             @if(!empty($student->photo))
-                                <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $studentName }}" class="item-avatar-img">
+                                <img src="{{ asset('storage/' . $student->photo) }}" 
+                                     alt="" 
+                                     class="item-avatar-img"
+                                     onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                                <div class="item-avatar-letter fallback-letter" style="display: none;">{{ $firstLetter }}</div>
                             @else
                                 <div class="item-avatar-letter">{{ $firstLetter }}</div>
                             @endif
@@ -274,17 +278,18 @@
     }
 
     .inbox-classic-wrapper {
-        padding: 16px 20px 30px;
-        max-width: 1540px;
+        padding: 0 0 12px 0;
+        max-width: 100%;
         margin: 0 auto;
         box-sizing: border-box;
     }
 
     .inbox-classic-card {
         display: grid;
-        grid-template-columns: 360px 1fr;
-        height: calc(100vh - 130px);
-        min-height: 560px;
+        grid-template-columns: 350px 1fr;
+        height: calc(100vh - 105px);
+        max-height: calc(100vh - 105px);
+        min-height: 520px;
         background: var(--cr-surface);
         border: 1px solid var(--cr-border);
         border-radius: var(--cr-radius-card);
@@ -302,6 +307,12 @@
         border-left: 1px solid var(--cr-border);
         height: 100%;
         min-width: 0;
+        overflow: hidden;
+    }
+
+    html[dir="ltr"] .inbox-classic-sidebar {
+        border-left: none;
+        border-right: 1px solid var(--cr-border);
     }
 
     .sidebar-top-pane {
@@ -451,7 +462,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 11px 12px;
+        padding: 10px 12px;
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -459,6 +470,12 @@
         border: 1px solid transparent;
         background: #ffffff;
         position: relative;
+        overflow: hidden;
+        text-align: right;
+    }
+
+    html[dir="ltr"] .student-chat-item {
+        text-align: left;
     }
 
     .student-chat-item:hover {
@@ -482,14 +499,29 @@
         border-radius: 4px 0 0 4px;
     }
 
+    html[dir="ltr"] .student-chat-item.active::before {
+        right: auto;
+        left: 0;
+        border-radius: 0 4px 4px 0;
+    }
+
     .item-avatar-wrapper {
         position: relative;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        max-width: 44px;
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .item-avatar-letter {
         width: 44px;
         height: 44px;
+        min-width: 44px;
+        max-width: 44px;
         border-radius: 50%;
         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
@@ -497,16 +529,21 @@
         align-items: center;
         justify-content: center;
         font-weight: 800;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        user-select: none;
     }
 
     .item-avatar-img {
         width: 44px;
         height: 44px;
+        min-width: 44px;
+        max-width: 44px;
         border-radius: 50%;
         object-fit: cover;
         border: 1.5px solid var(--cr-border);
+        display: block;
+        background: #f1f5f9;
     }
 
     .online-dot {
@@ -517,6 +554,11 @@
         height: 11px;
         border-radius: 50%;
         border: 2px solid #ffffff;
+    }
+
+    html[dir="ltr"] .online-dot {
+        right: auto;
+        left: 0;
     }
 
     .online-dot.online {
@@ -533,22 +575,34 @@
         display: flex;
         flex-direction: column;
         gap: 2px;
+        text-align: right;
+    }
+
+    html[dir="ltr"] .item-content-pane {
+        text-align: left;
     }
 
     .item-header-line {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: baseline;
         gap: 6px;
+        width: 100%;
     }
 
     .item-name {
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         font-weight: 700;
         color: var(--cr-text-primary);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        flex: 1;
+        text-align: right;
+    }
+
+    html[dir="ltr"] .item-name {
+        text-align: left;
     }
 
     .item-time {
@@ -561,6 +615,8 @@
     .item-stage-line {
         display: flex;
         align-items: center;
+        width: 100%;
+        margin-top: 1px;
     }
 
     .stage-tag {
@@ -570,6 +626,11 @@
         border-radius: 6px;
         background: #f1f5f9;
         color: #475569;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        display: inline-block;
     }
 
     .student-chat-item.active .stage-tag {
@@ -583,15 +644,21 @@
         align-items: center;
         gap: 6px;
         margin-top: 2px;
+        width: 100%;
     }
 
     .snippet-text {
-        font-size: 0.78rem;
+        font-size: 0.76rem;
         color: var(--cr-text-muted);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         flex: 1;
+        text-align: right;
+    }
+
+    html[dir="ltr"] .snippet-text {
+        text-align: left;
     }
 
     .me-prefix {
@@ -1540,7 +1607,10 @@
             const targetCard = document.getElementById('user_' + paramStudentId);
             if (targetCard) {
                 targetCard.click();
-                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const list = document.getElementById('student_list');
+                if (list) {
+                    list.scrollTop = targetCard.offsetTop - list.offsetTop - 12;
+                }
             } else {
                 @if(isset($selectedStudent) && $selectedStudent)
                     loadChat(
@@ -1553,6 +1623,8 @@
                 @endif
             }
         }
+        // Keep window pinned to the top without unwanted document scrolling
+        window.scrollTo(0, 0);
     });
 </script>
 @endsection
