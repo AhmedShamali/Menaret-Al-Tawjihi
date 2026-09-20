@@ -215,6 +215,13 @@ class StudentController extends Controller
             }
         }
 
+        // احتساب القسط الشهري الدقيق بناءً على المواد الدراسية المختارة وحزم المنهاج
+        $feeBreakdown = $student->getFeeBreakdown();
+        if ($feeBreakdown['base_after_bundle'] > 0) {
+            $student->monthly_fee = $feeBreakdown['base_after_bundle'];
+            $student->save();
+        }
+
         // إذا كان تسجيلاً من قبل مدير مسجل، يتم توجيهه للوحة إدارة الطلاب
         if ($isAdmin) {
             if ($request->ajax() || $request->wantsJson()) {
@@ -277,9 +284,18 @@ class StudentController extends Controller
             return redirect()->route('student.dashboard');
         }
 
-        $pendingEnrollments = \App\Models\Enrollment::with('subject')
+        $pendingEnrollments = \App\Models\Enrollment::with(['subject.stage'])
             ->where('student_id', $student->id)
             ->get();
+
+        // احتساب التفصيل المالي الدقيق والشفاف للمواد المسجلة
+        $feeBreakdown = $student->getFeeBreakdown();
+
+        // تحديث رسوم الطالب إذا كانت مسجلة بالافتراضي القديم (150) ولديه مواد مسجلة حقيقية
+        if ($pendingEnrollments->isNotEmpty() && $feeBreakdown['base_after_bundle'] > 0 && abs((float)$student->monthly_fee - 150.00) < 0.01) {
+            $student->monthly_fee = $feeBreakdown['base_after_bundle'];
+            $student->save();
+        }
 
         // مزامنة وتحديث سجل الاشتراكات الشهرية للعام الأكاديمي
         try {
@@ -289,17 +305,18 @@ class StudentController extends Controller
         $subscriptions = $student->monthlySubscriptions()->get();
         $dueMonthIndex = $student->currentDueMonth();
         $dueMonthName = $student->currentDueMonthName();
-        $monthlyFee = (float) ($student->monthly_fee ?: 150.00);
-        $discountAmount = $student->hasDiscount() ? ($student->calculateDiscount($monthlyFee)) : 0;
-        $finalAmount = $student->monthlyAmountDue();
-        $totalAmount = $monthlyFee;
+        $monthlyFee = (float) $feeBreakdown['base_after_bundle'];
+        $discountAmount = (float) $feeBreakdown['student_discount'];
+        $finalAmount = (float) $feeBreakdown['final_amount'];
+        $totalAmount = (float) $feeBreakdown['subtotal'];
+        $bundleDiscount = (float) $feeBreakdown['bundle_discount'];
         $isFeeDue = $student->isMonthlyFeeDue();
 
         $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
 
         return view('student.pending_approval', compact(
             'student', 'pendingEnrollments', 'latestPayment', 
-            'totalAmount', 'discountAmount', 'finalAmount',
+            'totalAmount', 'discountAmount', 'finalAmount', 'bundleDiscount', 'feeBreakdown',
             'subscriptions', 'dueMonthIndex', 'dueMonthName', 'monthlyFee', 'isFeeDue'
         ));
     }

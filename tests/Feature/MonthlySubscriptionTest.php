@@ -7,6 +7,8 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Student;
 use App\Models\Stage;
+use App\Models\Subject;
+use App\Models\Enrollment;
 use App\Models\StudentMonthlySubscription;
 
 class MonthlySubscriptionTest extends TestCase
@@ -205,5 +207,74 @@ class MonthlySubscriptionTest extends TestCase
         $subMonth2->refresh();
         $this->assertEquals('paid', $subMonth2->status);
         $this->assertEquals(0.00, (float)$subMonth2->remaining_amount);
+    }
+
+    public function test_student_monthly_fee_is_calculated_dynamically_from_enrolled_subjects_with_breakdown(): void
+    {
+        $stage = Stage::first();
+        
+        $subMath = Subject::create([
+            'stage_id'    => $stage->id,
+            'name_ar'     => 'الرياضيات (علمي)',
+            'subject_key' => 'math_test_' . rand(1000, 9999),
+            'price_ils'   => 150.00,
+            'is_free'     => false,
+        ]);
+
+        $subPhysics = Subject::create([
+            'stage_id'    => $stage->id,
+            'name_ar'     => 'الفيزياء',
+            'subject_key' => 'physics_test_' . rand(1000, 9999),
+            'price_ils'   => 150.00,
+            'is_free'     => false,
+        ]);
+
+        $subChemistry = Subject::create([
+            'stage_id'    => $stage->id,
+            'name_ar'     => 'الكيمياء',
+            'subject_key' => 'chem_test_' . rand(1000, 9999),
+            'price_ils'   => 120.00,
+            'is_free'     => false,
+        ]);
+
+        $student = Student::create([
+            'name_ar'     => 'ريما فهد',
+            'name_en'     => 'Rema Fahd',
+            'nid'         => '400099991',
+            'email'       => 'rema_test@tawjihi.ps',
+            'password'    => bcrypt('secret123'),
+            'phone'       => '0599000111',
+            'age'         => 18,
+            'gender'      => 'أنثى',
+            'status'      => 'pending',
+            'stage_id'    => $stage->id,
+            'monthly_fee' => 150.00, // old default
+        ]);
+
+        // Enroll in the 3 subjects
+        \App\Models\Enrollment::create(['student_id' => $student->id, 'subject_id' => $subMath->id, 'status' => 'pending']);
+        \App\Models\Enrollment::create(['student_id' => $student->id, 'subject_id' => $subPhysics->id, 'status' => 'pending']);
+        \App\Models\Enrollment::create(['student_id' => $student->id, 'subject_id' => $subChemistry->id, 'status' => 'pending']);
+
+        // Subtotal = 150 + 150 + 120 = 420.
+        // 3 subjects => 15% discount = 420 * 0.15 = 63.
+        // Net = 420 - 63 = 357.
+        $breakdown = $student->getFeeBreakdown();
+        $this->assertEquals(420.00, $breakdown['subtotal']);
+        $this->assertEquals(63.00, $breakdown['bundle_discount']);
+        $this->assertEquals(357.00, $breakdown['final_amount']);
+        $this->assertEquals(357.00, $student->monthlyAmountDue());
+
+        // Test pending approval screen renders breakdown
+        auth('student')->login($student);
+        $response = $this->get('/student/pending-approval');
+
+        $response->assertStatus(200);
+        $response->assertSee('المواد والمباحث الدراسية المسجلة بحسابك');
+        $response->assertSee('الرياضيات (علمي)');
+        $response->assertSee('الفيزياء');
+        $response->assertSee('الكيمياء');
+        $response->assertSee('خصم باقة التوجيهي (15%)');
+        $response->assertSee('357');
     }
 }

@@ -124,16 +124,42 @@
                 <div class="fees-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 <div>
                     <h3>{{ __('الرسوم الدراسية الشهرية') }} - <span style="color: var(--ed-primary);">{{ $dueMonthName ?? __('الشهر الأول') }}</span></h3>
-                    <p>{{ __('نظام الاشتراك الشهري المعتمد من إدارة المنصة للعام الأكاديمي 2026 / 2027 م') }}</p>
+                    <p>{{ __('نظام الاشتراك الأكاديمي المعتمد وفق المواد الدراسية المختارة - منارة التوجيهي') }}</p>
                 </div>
             </div>
+
+            @if(isset($feeBreakdown['items']) && count($feeBreakdown['items']) > 0)
+                <!-- تفصيل المواد والمباحث الدراسية المسجلة للطالب وأسعارها -->
+                <div class="enrolled-subjects-breakdown-box">
+                    <div class="breakdown-box-title">
+                        <i class="fa-solid fa-layer-group" style="color: #1d4ed8;"></i>
+                        <span>{{ __('المواد والمباحث الدراسية المسجلة بحسابك:') }} ({{ count($feeBreakdown['items']) }} {{ __('مباحث') }})</span>
+                    </div>
+                    <div class="enrolled-subjects-chips">
+                        @foreach($feeBreakdown['items'] as $item)
+                            <div class="enrolled-sub-chip">
+                                <span class="sub-icon">{{ $item['icon'] ?? '📘' }}</span>
+                                <span class="sub-name">{{ $item['name_ar'] }}</span>
+                                <span class="sub-price font-mono">{{ number_format($item['price'], 0) }} ₪</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div class="fees-grid">
                 <div class="fee-box">
-                    <span class="fee-title">{{ __('القسط الشهري المقرر') }}</span>
-                    <span class="fee-value">{{ number_format($monthlyFee ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
+                    <span class="fee-title">{{ __('مجموع رسوم المواد') }}</span>
+                    <span class="fee-value">{{ number_format($totalAmount ?? $monthlyFee, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
+                @if(isset($bundleDiscount) && $bundleDiscount > 0)
+                    <div class="fee-box bundle-discount">
+                        <span class="fee-title">{{ __('خصم باقة التوجيهي (15%)') }}</span>
+                        <span class="fee-value text-emerald">- {{ number_format($bundleDiscount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
+                    </div>
+                @endif
                 <div class="fee-box discount">
-                    <span class="fee-title">{{ __('الخصم / المنحة') }}</span>
+                    <span class="fee-title">{{ __('المنحة / الخصم الخاص') }}</span>
                     <span class="fee-value text-emerald">- {{ number_format($discountAmount ?? 0, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
                 <div class="fee-box net-amount">
@@ -141,8 +167,16 @@
                     <span class="fee-value text-primary-net">{{ number_format($finalAmount ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
             </div>
+
+            @if(isset($bundleDiscount) && $bundleDiscount > 0)
+                <div class="fee-note-alert bundle" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700;">
+                    <i class="fa-solid fa-tags" style="color: #16a34a;"></i>
+                    <span>{{ __('مبارك! تم تطبيق خصم باقة التوجيهي الإضافي (15%) لاشتراكك في (:count) مواد ومباحث دراسية.', ['count' => count($feeBreakdown['items'] ?? [])]) }}</span>
+                </div>
+            @endif
+
             @if(isset($discountAmount) && $discountAmount > 0)
-                <div class="fee-note-alert">
+                <div class="fee-note-alert" style="margin-top: 10px;">
                     <i class="fa-solid fa-gift"></i>
                     <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على رسوم الشهر.', ['amount' => number_format($discountAmount, 0)]) }}</span>
                 </div>
@@ -980,9 +1014,59 @@
         color: #64748b;
     }
 
+    .enrolled-subjects-breakdown-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        text-align: right;
+    }
+    html[dir="ltr"] .enrolled-subjects-breakdown-box { text-align: left; }
+    .breakdown-box-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .enrolled-subjects-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .enrolled-sub-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .enrolled-sub-chip .sub-icon {
+        font-size: 1rem;
+    }
+    .enrolled-sub-chip .sub-name {
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .enrolled-sub-chip .sub-price {
+        font-weight: 800;
+        color: #1d4ed8;
+        background: #eff6ff;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+    }
+
     .fees-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr 1.2fr;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 10px;
         margin-bottom: 10px;
     }
@@ -995,6 +1079,7 @@
         padding: 10px 12px;
         text-align: center;
     }
+    .fee-box.bundle-discount { background: #fefce8; border-color: #fef08a; }
     .fee-box.discount { background: #f0fdf4; border-color: #bbf7d0; }
     .fee-box.net-amount { background: #eff6ff; border-color: #bfdbfe; }
     .fee-title {

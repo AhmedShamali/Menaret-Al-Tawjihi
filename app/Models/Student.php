@@ -259,11 +259,113 @@ class Student extends Authenticatable
     }
 
     /**
+     * احتساب التفصيل المالي الدقيق للمواد والاشتراك الشهري للطالب
+     */
+    public function getFeeBreakdown(): array
+    {
+        $enrollments = $this->enrollments()->with('subject.stage')->get();
+        $items = [];
+        $subtotal = 0;
+
+        if ($enrollments->isNotEmpty()) {
+            foreach ($enrollments as $e) {
+                $sub = $e->subject;
+                if (!$sub) continue;
+                $price = (float) $sub->effective_price;
+                $subtotal += $price;
+                $items[] = [
+                    'id'         => $sub->id,
+                    'name_ar'    => $sub->name_ar,
+                    'name_en'    => $sub->name_en ?? $sub->name_ar,
+                    'icon'       => $sub->icon ?? '📘',
+                    'stage'      => optional($sub->stage)->name_ar ?? 'توجيهي',
+                    'price'      => $price,
+                    'orig_price' => (float) $sub->price_ils,
+                    'is_free'    => (bool) $sub->is_free,
+                ];
+            }
+        } elseif ($this->stage) {
+            $stageSubjects = $this->stage->subjects()->get();
+            if ($stageSubjects->isNotEmpty()) {
+                foreach ($stageSubjects as $sub) {
+                    $price = (float) $sub->effective_price;
+                    $subtotal += $price;
+                    $items[] = [
+                        'id'         => $sub->id,
+                        'name_ar'    => $sub->name_ar,
+                        'name_en'    => $sub->name_en ?? $sub->name_ar,
+                        'icon'       => $sub->icon ?? '📘',
+                        'stage'      => optional($sub->stage)->name_ar ?? 'توجيهي',
+                        'price'      => $price,
+                        'orig_price' => (float) $sub->price_ils,
+                        'is_free'    => (bool) $sub->is_free,
+                    ];
+                }
+            }
+        }
+
+        $bundleDiscount = (count($items) >= 3 && $subtotal > 0) ? round($subtotal * 0.15, 2) : 0;
+        $baseAfterBundle = max(0, $subtotal - $bundleDiscount);
+
+        // إذا لم توجد مواد مسجلة أو محددة، الاعتماد على القسط الشهري المحدد للطالب أو الإعداد العام
+        if (empty($items)) {
+            $baseAfterBundle = (float) ($this->monthly_fee ?: \App\Models\Setting::get('default_monthly_fee', 150.00));
+            $subtotal = $baseAfterBundle;
+        }
+
+        // حساب الخصم أو المنحة المخصصة للطالب من قِبل الإدارة
+        $studentDiscount = 0;
+        $studentDiscountLabel = null;
+        $customPercent = (float) ($this->custom_discount_percent ?? 0);
+        $customFixed = (float) ($this->custom_discount_fixed ?? 0);
+
+        if ($customPercent >= 100) {
+            $studentDiscount = $baseAfterBundle;
+            $studentDiscountLabel = 'إعفاء ومنحة كاملة 100%';
+        } elseif ($customPercent > 0) {
+            $studentDiscount = round($baseAfterBundle * ($customPercent / 100), 2);
+            $studentDiscountLabel = 'منحة دراسية خاصة (' . round($customPercent) . '%)';
+        } elseif ($customFixed > 0) {
+            $studentDiscount = min($baseAfterBundle, round($customFixed, 2));
+            $studentDiscountLabel = 'خصم خاص (' . round($customFixed) . ' ₪)';
+        }
+
+        $finalAmount = max(0, round($baseAfterBundle - $studentDiscount, 2));
+
+        return [
+            'items'                  => $items,
+            'subtotal'               => round($subtotal, 2),
+            'bundle_discount'        => round($bundleDiscount, 2),
+            'base_after_bundle'      => round($baseAfterBundle, 2),
+            'student_discount'       => round($studentDiscount, 2),
+            'student_discount_label' => $studentDiscountLabel,
+            'custom_percent'         => $customPercent,
+            'custom_fixed'           => $customFixed,
+            'final_amount'           => $finalAmount,
+            'count'                  => count($items),
+        ];
+    }
+
+    /**
+     * القسط الشهري الأساسي قبل خصم الطالب (إما بناء على المواد أو القسط المحدد)
+     */
+    public function calculateBaseMonthlyFee(): float
+    {
+        // إذا كان هناك تسجيلات مواد فعلية للطالب، يتم احتسابها بدقة
+        if ($this->enrollments()->exists()) {
+            $breakdown = $this->getFeeBreakdown();
+            return (float) $breakdown['base_after_bundle'];
+        }
+
+        return (float) ($this->monthly_fee ?: \App\Models\Setting::get('default_monthly_fee', 150.00));
+    }
+
+    /**
      * قيمة الرسوم الشهرية الصافية المستحقة بعد تطبيق الخصم
      */
     public function monthlyAmountDue(): float
     {
-        $baseFee = (float) ($this->monthly_fee ?: 150.00);
+        $baseFee = $this->calculateBaseMonthlyFee();
 
         if ($this->hasDiscount()) {
             if ($this->custom_discount_percent > 0) {
