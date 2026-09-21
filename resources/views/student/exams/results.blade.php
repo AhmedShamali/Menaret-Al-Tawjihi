@@ -162,11 +162,8 @@
                             $icon = 'fa-clock';
                         }
 
-                        $qImg = $ans->question ? ($ans->question->image_url ?? (
-                            !empty($ans->question->image) 
-                                ? (str_starts_with($ans->question->image, 'http') ? $ans->question->image : asset('storage/' . ltrim($ans->question->image, '/'))) 
-                                : null
-                        )) : null;
+                        $qImg = $ans->question ? $ans->question->image_url : null;
+                        $localFallback = $ans->question ? $ans->question->local_image_url : null;
                     @endphp
 
                     <div class="ed-question-item {{ $statusClass }}">
@@ -181,23 +178,41 @@
                         <div class="ed-q-content">
                             <h3 class="ed-q-text">{!! nl2br(e($ans->question->question_text ?? '')) !!}</h3>
 
-                            @if(!empty($qImg))
+                            @if(!empty($qImg) || (!empty($ans->question) && !empty($ans->question->image)))
                             <div class="ed-result-q-image">
-                                <img src="{{ $qImg }}" alt="{{ __('مرفق السؤال') }}" onerror="this.parentElement.style.display='none'">
+                                <img src="{{ $qImg }}" alt="{{ __('مرفق السؤال') }}" 
+                                     onclick="window.open(this.src, '_blank')" 
+                                     style="cursor: zoom-in;"
+                                     title="{{ __('انقر لفتح الصورة بالحجم الكامل') }}"
+                                     onerror="if(!this.dataset.retried && '{{ $localFallback }}'){ this.dataset.retried=1; this.src='{{ $localFallback }}'; } else { this.parentElement.style.display='none'; }">
                             </div>
                             @endif
 
                             @if($ans->question && $ans->question->type == 'mcq')
                                 <div class="ed-mcq-options">
                                     @foreach(['a', 'b', 'c', 'd'] as $opt)
-                                        @if(!empty($ans->question->$opt))
+                                        @php
+                                            $optImg = $ans->question ? $ans->question->getOptionImageUrl($opt) : null;
+                                            $hasOptImg = !empty($optImg);
+                                            $hasOptText = !empty($ans->question->$opt);
+                                        @endphp
+                                        @if($hasOptText || $hasOptImg)
                                             @php
                                                 $isCorrectOpt = (strtolower(trim($ans->question->correct_answer)) == $opt);
                                                 $isStudentOpt = (strtolower(trim($ans->answer_text)) == $opt);
                                             @endphp
                                             <div class="ed-option-cell {{ $isCorrectOpt ? 'option-correct' : ($isStudentOpt && !$isCorrectOpt ? 'option-wrong' : '') }}">
                                                 <strong class="opt-letter">{{ strtoupper($opt) }}:</strong>
-                                                <span class="opt-text">{{ $ans->question->$opt }}</span>
+                                                <div class="ed-result-opt-body">
+                                                    @if($hasOptText)
+                                                        <span class="opt-text">{{ $ans->question->$opt }}</span>
+                                                    @endif
+                                                    @if($hasOptImg)
+                                                        <div class="ed-result-opt-img" onclick="window.open('{{ $optImg }}', '_blank')" title="{{ __('انقر لفتح صورة الخيار بالحجم الكامل') }}">
+                                                            <img src="{{ $optImg }}" alt="صورة الخيار {{ strtoupper($opt) }}">
+                                                        </div>
+                                                    @endif
+                                                </div>
                                                 @if($isStudentOpt)
                                                     <span class="opt-student-tag">{{ __('إجابتك') }}</span>
                                                 @endif
@@ -596,6 +611,28 @@
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         font-size: 0.9rem;
+    }
+
+    .ed-result-opt-body {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        flex: 1;
+    }
+
+    .ed-result-opt-img {
+        max-width: 130px;
+        cursor: zoom-in;
+    }
+
+    .ed-result-opt-img img {
+        max-height: 80px;
+        max-width: 100%;
+        border-radius: 6px;
+        border: 1px solid #cbd5e1;
+        object-fit: contain;
+        background: #ffffff;
+        padding: 2px;
     }
 
     .option-correct {

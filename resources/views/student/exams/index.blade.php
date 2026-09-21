@@ -76,6 +76,8 @@
                 $submissionRecord = ($student && $exam->submissions) ? $exam->submissions->where('student_id', $student->id)->first() : null;
                 $hasCompletedSubmission = $submissionRecord && $submissionRecord->answers()->exists();
                 $canRetake = $submissionRecord && (bool)$submissionRecord->allow_retake;
+                $isUpcoming = $exam->isUpcoming();
+                $isExpired = $exam->isExpired();
             @endphp
             <div class="ed-exam-card {{ $hasCompletedSubmission ? 'completed' : '' }}">
                 <div class="ed-exam-card-body">
@@ -86,6 +88,19 @@
                         <span class="ed-badge ed-badge-gray">
                             {{ optional($exam->stage)->name_ar ?? (optional($exam->stage)->name ?? __('عام')) }}
                         </span>
+                        @if($isUpcoming)
+                            <span class="ed-badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">
+                                <i class="fa-regular fa-clock"></i> {{ __('قادم') }}
+                            </span>
+                        @elseif($isExpired)
+                            <span class="ed-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
+                                <i class="fa-solid fa-lock"></i> {{ __('منتهي') }}
+                            </span>
+                        @elseif($exam->starts_at || $exam->ends_at)
+                            <span class="ed-badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">
+                                <i class="fa-solid fa-bolt"></i> {{ __('متاح حالياً') }}
+                            </span>
+                        @endif
                     </div>
 
                     <h3 class="ed-exam-title">{{ $exam->title }}</h3>
@@ -117,7 +132,7 @@
                                     <i class="fa-solid fa-play"></i>
                                     <span>{{ __('إعادة الاختبار الآن') }}</span>
                                 </button>
-                                <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 12px;">
+                                <a href="{{ route('student.exams.results', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.82rem; padding: 8px 12px;">
                                     {{ __('النتيجة السابقة') }}
                                 </a>
                             </div>
@@ -128,11 +143,21 @@
                                 <i class="fas fa-check"></i> {{ __('تم التقديم') }}
                             </span>
                             @if($submissionRecord)
-                                <a href="{{ route('student.exams.result', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.85rem; padding: 10px 16px;">
+                                <a href="{{ route('student.exams.results', $submissionRecord->id) }}" class="ed-btn ed-btn-outline" style="font-size: 0.85rem; padding: 10px 16px;">
                                     {{ __('عرض النتيجة') }}
                                 </a>
                             @endif
                         </div>
+                    @elseif($isUpcoming)
+                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.7; cursor: not-allowed; background: #fffbeb; color: #b45309; border-color: #fde68a;">
+                            <i class="fa-regular fa-clock"></i>
+                            <span>{{ __('يبدأ في:') }} {{ $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }}</span>
+                        </button>
+                    @elseif($isExpired)
+                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.6; cursor: not-allowed; background: #fef2f2; color: #b91c1c; border-color: #fecaca;">
+                            <i class="fa-solid fa-lock"></i>
+                            <span>{{ __('انتهى موعد الاختبار') }}</span>
+                        </button>
                     @else
                         <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="ed-btn ed-btn-primary" style="width: 100%; justify-content: center;">
                             <span>{{ __('بدء الاختبار الآن') }}</span>

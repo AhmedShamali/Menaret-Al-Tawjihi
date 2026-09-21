@@ -373,25 +373,26 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 52px;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.85) 65%, transparent 100%);
-    z-index: 5;
+    height: 75px;
+    background: #0b1120; /* لون داكن معتم 100% بدون أي شفافية لحجب بيانات يوتيوب تماماً */
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    pointer-events: auto; /* يحجب النقر على عنوان يوتيوب وقناته */
+    pointer-events: auto; /* يحجب النقر على عنوان يوتيوب، وقناته، وزر المشاركة، وصورة الحساب */
     user-select: none;
     cursor: default;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
 .ed-yt-curtain-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     color: #ffffff;
-    font-size: 0.88rem;
-    font-weight: 700;
+    font-size: 0.95rem;
+    font-weight: 800;
     max-width: 70%;
     white-space: nowrap;
     overflow: hidden;
@@ -399,7 +400,7 @@
 }
 .ed-yt-curtain-info i {
     color: #60a5fa;
-    font-size: 0.95rem;
+    font-size: 1.1rem;
     flex-shrink: 0;
 }
 .ed-yt-curtain-title {
@@ -409,12 +410,12 @@
 }
 
 .ed-yt-curtain-badge {
-    background: rgba(30, 58, 138, 0.9);
+    background: rgba(30, 58, 138, 0.95);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.72rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 0.75rem;
     font-weight: 800;
-    padding: 3px 10px;
+    padding: 4px 12px;
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -429,30 +430,31 @@
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 140px;
-    height: 46px;
-    z-index: 5;
+    width: 180px;
+    height: 58px;
+    background: #0b1120; /* لون معتم 100% لحجب شعار يوتيوب المائي ومنع النقر عليه */
+    z-index: 10;
     pointer-events: auto; /* يحجب النقر على شعار يوتيوب المائي */
     display: flex;
     align-items: center;
-    padding-left: 10px;
+    padding-left: 12px;
     padding-bottom: 6px;
     user-select: none;
     cursor: default;
+    border-top-right-radius: 8px;
 }
 
 .ed-yt-logo-shield .shield-tag {
-    background: rgba(15, 23, 42, 0.92);
-    color: #cbd5e1;
-    font-size: 0.68rem;
+    background: rgba(30, 58, 138, 0.95);
+    color: #e2e8f0;
+    font-size: 0.74rem;
     font-weight: 800;
-    padding: 3px 8px;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    backdrop-filter: blur(4px);
+    gap: 6px;
 }
 .ed-yt-logo-shield .shield-tag i {
     color: #60a5fa;
@@ -1131,11 +1133,11 @@
                                                 <i class="fa-solid fa-download"></i> {{ __('حفظ بدون إنترنت') }}
                                             </button>
                                         @elseif($isYt)
-                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل وتسجيل الشرح المرئي داخل المنصة') }}">
-                                                <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل الشرح المرئي') }}
-                                            </a>
+                                            <button type="button" class="btn-direct-download" onclick="handlePlatformVideoDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '', false)" title="{{ __('تحميل وتسجيل الشرح المرئي داخل المنصة للمشاهدة بدون إنترنت') }}">
+                                                <i class="fa-solid fa-cloud-arrow-down"></i> <span>{{ __('تحميل الفيديو داخل المنصة') }}</span>
+                                            </button>
                                             <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="saveLessonToPlatformLibrary('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}')">
-                                                <i class="fa-solid fa-bookmark"></i> {{ __('حفظ بالمكتبة للمشاهدة بدون إنترنت') }}
+                                                <i class="fa-solid fa-bookmark"></i> {{ __('حفظ بالمكتبة') }}
                                             </button>
                                             <span class="ed-in-platform-tag">
                                                 <i class="fa-solid fa-shield-halved" style="color: #2563eb;"></i> {{ __('عرض مخصص ومحمي بالمنصة') }}
@@ -1201,20 +1203,41 @@
                         @php
                             $subm = $submissions[$exam->id] ?? null;
                             $isSolved = !is_null($subm);
+                            $isUpcoming = $exam->isUpcoming();
+                            $isExpired = $exam->isExpired();
                         @endphp
                         <div class="ed-exam-card {{ $isSolved ? 'solved' : '' }}">
                             <div style="display: flex; align-items: center; gap: 16px;">
-                                <div class="ed-exam-icon {{ $isSolved ? 'completed' : 'pending' }}">
-                                    <i class="fa-solid {{ $isSolved ? 'fa-circle-check' : 'fa-file-signature' }}"></i>
+                                <div class="ed-exam-icon {{ $isSolved ? 'completed' : ($isExpired ? 'expired' : ($isUpcoming ? 'upcoming' : 'pending')) }}">
+                                    <i class="fa-solid {{ $isSolved ? 'fa-circle-check' : ($isExpired ? 'fa-lock' : ($isUpcoming ? 'fa-clock' : 'fa-file-signature')) }}"></i>
                                 </div>
                                 <div>
-                                    <h3 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ $exam->title }}</h3>
+                                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+                                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ $exam->title }}</h3>
+                                        @if($isUpcoming)
+                                            <span style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                                                <i class="fa-regular fa-clock"></i> {{ __('قادم') }} ({{ $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }})
+                                            </span>
+                                        @elseif($isExpired)
+                                            <span style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                                                <i class="fa-solid fa-lock"></i> {{ __('منتهي الصلاحية') }}
+                                            </span>
+                                        @elseif($exam->starts_at || $exam->ends_at)
+                                            <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                                                <i class="fa-solid fa-bolt"></i> {{ __('متاح حالياً') }}
+                                            </span>
+                                        @endif
+                                    </div>
                                     <div style="display: flex; gap: 12px; align-items: center; font-size: 0.78rem; color: #64748b; font-weight: 700;">
                                         <span><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</span>
                                         <span>•</span>
                                         <span><i class="fa-solid fa-list-check"></i> {{ $exam->questions_count }} {{ __('أسئلة') }}</span>
                                         <span>•</span>
                                         <span style="color: #b45309;"><i class="fa-solid fa-star"></i> {{ $exam->total_grade ?? 100 }} {{ __('علامة') }}</span>
+                                        @if($exam->ends_at && !$isExpired)
+                                        <span>•</span>
+                                        <span style="color: #475569;"><i class="fa-regular fa-calendar-xmark"></i> {{ __('ينتهي في:') }} {{ $exam->ends_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }}</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -1230,6 +1253,16 @@
                                     <a href="{{ route('student.exams.results', $subm->id) }}" class="ed-btn-royal secondary" style="font-size: 0.8rem; padding: 7px 14px;">
                                         <i class="fa-solid fa-square-poll-vertical"></i> {{ __('مراجعة الإجابات') }}
                                     </a>
+                                @elseif($isUpcoming)
+                                    <button type="button" class="ed-btn-royal secondary" disabled style="opacity: 0.7; cursor: not-allowed; font-size: 0.82rem;">
+                                        <i class="fa-regular fa-clock"></i>
+                                        <span>{{ __('لم يبدأ بعد') }}</span>
+                                    </button>
+                                @elseif($isExpired)
+                                    <button type="button" class="ed-btn-royal secondary" disabled style="opacity: 0.6; cursor: not-allowed; font-size: 0.82rem;">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <span>{{ __('انتهى موعد الاختبار') }}</span>
+                                    </button>
                                 @else
                                     <a href="{{ route('student.exams.take', $exam->id) }}" class="ed-btn-royal primary">
                                         <i class="fa-solid fa-play"></i>
@@ -1490,6 +1523,35 @@ function saveLessonToPlatformLibrary(videoId, title, subjectName) {
             text: '{{ __('تم تثبيت هذا الدرس في قائمة المشاهدة والمتابعة الخاصة بك للرجوع إليه وتدوين ملاحظاتك في أي وقت.') }}',
             confirmButtonColor: '#1e3a8a',
             confirmButtonText: '{{ __('حسناً') }}'
+        });
+    }
+}
+
+function handlePlatformVideoDownload(videoId, title, subjectName, directUrl, isDirect) {
+    if (isDirect && directUrl) {
+        window.location.href = `/educational-contents/${videoId}/download-video`;
+        return;
+    }
+    saveLessonToPlatformLibrary(videoId, title, subjectName);
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            icon: 'success',
+            title: '{{ __("تم تنزيل الحصة داخل المنصة ✅") }}',
+            html: `{{ __("تم حفظ درس") }} <strong>"${title}"</strong> {{ __("بنجاح في مكتبتك الرقمية داخل المنصة (فيديوهاتي بدون إنترنت). يمكنك الآن متابعته في أي وقت بدون استهلاك للإنترنت مع حماية كاملة.") }}`,
+            confirmButtonColor: '#1e3a8a',
+            confirmButtonText: '{{ __("فتح فيديوهاتي المحفوظة") }}',
+            showCancelButton: true,
+            cancelButtonText: '{{ __("متابعة المشاهدة") }}'
+        }).then((res) => {
+            if (res.isConfirmed) {
+                const drawer = document.getElementById('offlineDrawer');
+                const backdrop = document.getElementById('drawerBackdrop');
+                if (drawer && backdrop) {
+                    drawer.classList.add('open');
+                    backdrop.style.display = 'block';
+                    if (window.renderOfflineVideosList) window.renderOfflineVideosList();
+                }
+            }
         });
     }
 }

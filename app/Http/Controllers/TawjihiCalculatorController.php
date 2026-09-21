@@ -52,107 +52,166 @@ class TawjihiCalculatorController extends Controller
     }
 
     /**
-     * حساب المعدل الوزاري الفلسطيني بدقة
+     * حساب معدل التوجيهي (الثانوية العامة) في فلسطين لعام 2026 بدقة (نظام 800 علامة ÷ 8)
      */
     private function computeScore($branch, $scores)
     {
         $total = 0;
-        $maxTotal = 700;
+        $maxTotal = 800;
         $notes = [];
         $passedAll = true;
+        $droppedElective = null;
+        $countedElectives = [];
 
         if ($branch === 'scientific') {
-            // الفرع العلمي: رياضيات (200)، فيزياء (100)، عربي (100)، إنجليزي (100)، إسلامية (100)
-            $math    = min(200, max(0, floatval($scores['math'] ?? 0))); // الرياضيات من 200
-            $physics = min(100, max(0, floatval($scores['physics'] ?? 0)));
-            $arabic  = min(100, max(0, floatval($scores['arabic'] ?? 0)));
-            $english = min(100, max(0, floatval($scores['english'] ?? 0)));
-            $islamic = min(100, max(0, floatval($scores['islamic'] ?? 0)));
+            // 1. المواد الإجبارية (5 مواد = 500 علامة)
+            $islamic = min(50,  max(0, floatval($scores['islamic'] ?? 0))); // التربية الإسلامية من 50
+            $arabic  = min(100, max(0, floatval($scores['arabic'] ?? 0)));  // اللغة العربية من 100
+            $english = min(100, max(0, floatval($scores['english'] ?? 0))); // اللغة الإنجليزية من 100
+            $math    = min(150, max(0, floatval($scores['math'] ?? 0)));    // الرياضيات من 150
+            $physics = min(100, max(0, floatval($scores['physics'] ?? 0))); // الفيزياء من 100
 
-            // المواد الاختيارية (أعلى مادة من: كيمياء، أحياء، تكنولوجيا) - من 100
+            $compulsoryTotal = $islamic + $arabic + $english + $math + $physics;
+
+            // 2. المواد الاختيارية (أعلى مبحثين من أصل ثلاثة = 200 علامة، وحذف المادة الأقل)
             $chemistry = min(100, max(0, floatval($scores['chemistry'] ?? 0)));
             $biology   = min(100, max(0, floatval($scores['biology'] ?? 0)));
             $tech      = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
             $electives = [
-                'كيمياء' => $chemistry,
-                'أحياء' => $biology,
-                'تكنولوجيا' => $tech,
+                'الكيمياء'                  => $chemistry,
+                'العلوم الحياتية (الأحياء)' => $biology,
+                'التكنولوجيا'               => $tech,
             ];
             arsort($electives);
-            $bestElectiveName = array_key_first($electives);
-            $bestElectiveScore = reset($electives);
 
-            $total = $math + $physics + $arabic + $english + $islamic + $bestElectiveScore;
-            $maxTotal = 700;
-            $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
+            // أخذ أعلى مبحثين
+            $countedElectives = array_slice($electives, 0, 2, true);
+            $droppedElectiveName = array_key_last($electives);
+            $droppedElectiveScore = end($electives);
+            $droppedElective = [
+                'name'  => $droppedElectiveName,
+                'score' => $droppedElectiveScore,
+            ];
+
+            $electivesTotal = array_sum($countedElectives);
+
+            // 3. مادة الحسم / المكملة (مبحث واحد = 100 علامة)
+            $complementary = min(100, max(0, floatval($scores['complementary'] ?? ($scores['mgmt'] ?? 0))));
+
+            $total = $compulsoryTotal + $electivesTotal + $complementary;
+            $maxTotal = 800;
+
+            $notes[] = "مجموع المواد الإجبارية الخمسة: {$compulsoryTotal} من 500";
+            $notes[] = "تم احتساب أعلى مادتين اختياريتين: " . implode(' + ', array_map(fn($k, $v) => "{$k} ({$v})", array_keys($countedElectives), $countedElectives)) . " = {$electivesTotal} من 200";
+            $notes[] = "تم حذف المادة الاختيارية الأقل علامة تلقائياً: {$droppedElectiveName} ({$droppedElectiveScore} من 100)";
+            $notes[] = "مادة الحسم / المكملة: {$complementary} من 100";
+
         } elseif ($branch === 'literary') {
-            // الفرع الأدبي: عربي (150)، إنجليزي (150)، تاريخ (100)، جغرافيا (100)، إسلامية (100)
+            // 1. المواد الإجبارية (5 مواد = 500 علامة)
+            $islamic   = min(50,  max(0, floatval($scores['islamic'] ?? 0)));   // التربية الإسلامية من 50
             $arabic    = min(150, max(0, floatval($scores['arabic'] ?? 0)));    // اللغة العربية من 150
-            $english   = min(150, max(0, floatval($scores['english'] ?? 0)));   // اللغة الإنجليزية من 150
-            $history   = min(100, max(0, floatval($scores['history'] ?? 0)));   // التاريخ من 100
-            $geography = min(100, max(0, floatval($scores['geography'] ?? 0))); // الجغرافيا من 100
-            $islamic   = min(100, max(0, floatval($scores['islamic'] ?? 0)));   // التربية الإسلامية من 100
+            $english   = min(100, max(0, floatval($scores['english'] ?? 0)));   // اللغة الإنجليزية من 100
+            $history   = min(100, max(0, floatval($scores['history'] ?? 0)));   // الدراسات التاريخية من 100
+            $geography = min(100, max(0, floatval($scores['geography'] ?? 0))); // الدراسات الجغرافية من 100
 
-            // المواد الاختيارية (أعلى مادة من: رياضيات أدبي، ثقافة علمية، تكنولوجيا) - من 100
+            $compulsoryTotal = $islamic + $arabic + $english + $history + $geography;
+
+            // 2. المواد الاختيارية (أعلى مبحثين من أصل ثلاثة = 200 علامة، وحذف المادة الأقل)
             $math       = min(100, max(0, floatval($scores['math'] ?? 0)));
             $sciCulture = min(100, max(0, floatval($scores['sci_culture'] ?? 0)));
             $tech       = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
             $electives = [
-                'رياضيات أدبي' => $math,
-                'ثقافة علمية' => $sciCulture,
-                'تكنولوجيا' => $tech,
+                'الرياضيات (أدبي)' => $math,
+                'الثقافة العلمية' => $sciCulture,
+                'التكنولوجيا'      => $tech,
             ];
             arsort($electives);
-            $bestElectiveName = array_key_first($electives);
-            $bestElectiveScore = reset($electives);
 
-            $total = $arabic + $english + $history + $geography + $islamic + $bestElectiveScore;
-            $maxTotal = 700;
-            $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
+            $countedElectives = array_slice($electives, 0, 2, true);
+            $droppedElectiveName = array_key_last($electives);
+            $droppedElectiveScore = end($electives);
+            $droppedElective = [
+                'name'  => $droppedElectiveName,
+                'score' => $droppedElectiveScore,
+            ];
+
+            $electivesTotal = array_sum($countedElectives);
+
+            // 3. مادة مكملة (مبحث واحد = 100 علامة)
+            $complementary = min(100, max(0, floatval($scores['complementary'] ?? ($scores['legal'] ?? 0))));
+
+            $total = $compulsoryTotal + $electivesTotal + $complementary;
+            $maxTotal = 800;
+
+            $notes[] = "مجموع المواد الإجبارية الخمسة: {$compulsoryTotal} من 500";
+            $notes[] = "تم احتساب أعلى مادتين اختياريتين: " . implode(' + ', array_map(fn($k, $v) => "{$k} ({$v})", array_keys($countedElectives), $countedElectives)) . " = {$electivesTotal} من 200";
+            $notes[] = "تم حذف المادة الاختيارية الأقل علامة تلقائياً: {$droppedElectiveName} ({$droppedElectiveScore} من 100)";
+            $notes[] = "المادة المكملة المقرة: {$complementary} من 100";
+
         } elseif ($branch === 'business') {
-            // فرع الريادة والأعمال: 6 مباحث إجبارية (600) + أعلى مادة اختيارية من (رياضيات الأعمال، التكنولوجيا) (100) = 700
-            $islamic    = min(100, max(0, floatval($scores['islamic'] ?? 0)));
+            // فرع الريادة والأعمال لعام 2026 (5 إجباري = 500 + 2 اختياري = 200 + مكملة = 100 -> المجموع 800)
+            $islamic    = min(50,  max(0, floatval($scores['islamic'] ?? 0)));
             $arabic     = min(100, max(0, floatval($scores['arabic'] ?? 0)));
             $english    = min(100, max(0, floatval($scores['english'] ?? 0)));
-            $projects   = min(100, max(0, floatval($scores['projects'] ?? 0)));
             $accounting = min(100, max(0, floatval($scores['accounting'] ?? 0)));
-            $mgmt       = min(100, max(0, floatval($scores['mgmt'] ?? 0)));
+            $mgmt       = min(150, max(0, floatval($scores['mgmt'] ?? 0)));
 
-            $math = min(100, max(0, floatval($scores['math'] ?? 0)));
-            $tech = min(100, max(0, floatval($scores['tech'] ?? 0)));
+            $compulsoryTotal = $islamic + $arabic + $english + $accounting + $mgmt;
+
+            $projects = min(100, max(0, floatval($scores['projects'] ?? 0)));
+            $math     = min(100, max(0, floatval($scores['math'] ?? 0)));
+            $tech     = min(100, max(0, floatval($scores['tech'] ?? 0)));
 
             $electives = [
-                'رياضيات الأعمال' => $math,
-                'التكنولوجيا'     => $tech,
+                'المشاريع الريادية' => $projects,
+                'رياضيات الأعمال'   => $math,
+                'التكنولوجيا'       => $tech,
             ];
             arsort($electives);
-            $bestElectiveName = array_key_first($electives);
-            $bestElectiveScore = reset($electives);
 
-            $total = $islamic + $arabic + $english + $projects + $accounting + $mgmt + $bestElectiveScore;
-            $maxTotal = 700;
-            $notes[] = "تم احتساب أعلى مادة اختيارية: {$bestElectiveName} ({$bestElectiveScore} من 100)";
+            $countedElectives = array_slice($electives, 0, 2, true);
+            $droppedElectiveName = array_key_last($electives);
+            $droppedElectiveScore = end($electives);
+            $droppedElective = [
+                'name'  => $droppedElectiveName,
+                'score' => $droppedElectiveScore,
+            ];
+
+            $electivesTotal = array_sum($countedElectives);
+            $complementary = min(100, max(0, floatval($scores['complementary'] ?? 0)));
+
+            $total = $compulsoryTotal + $electivesTotal + $complementary;
+            $maxTotal = 800;
+
+            $notes[] = "مجموع المواد الإجبارية: {$compulsoryTotal} من 500";
+            $notes[] = "تم احتساب أعلى مادتين اختياريتين: " . implode(' + ', array_map(fn($k, $v) => "{$k} ({$v})", array_keys($countedElectives), $countedElectives)) . " = {$electivesTotal} من 200";
+            $notes[] = "تم حذف المادة الأقل: {$droppedElectiveName} ({$droppedElectiveScore})";
+            $notes[] = "المادة المكملة: {$complementary} من 100";
+
         } else {
-            // فروع عامة / صناعي
+            // فروع عامة أخرى
             $sum = 0;
             foreach ($scores as $s) {
                 $sum += floatval($s);
             }
             $total = $sum;
-            $maxTotal = count($scores) > 0 ? count($scores) * 100 : 700;
+            $maxTotal = 800;
         }
 
-        $percentage = $maxTotal > 0 ? round(($total / $maxTotal) * 100, 2) : 0;
+        // المعادلة النهائية الرسمية لعام 2026: مجموع العلامات المحتسبة ÷ 8
+        $percentage = round($total / 8, 2);
         $status = $percentage >= 50 ? 'ناجح' : 'راسب';
 
         return [
-            'total_score' => $total,
-            'max_total' => $maxTotal,
-            'percentage' => $percentage,
-            'status' => $status,
-            'notes' => $notes,
+            'total_score'       => $total,
+            'max_total'         => $maxTotal,
+            'percentage'        => $percentage,
+            'status'            => $status,
+            'notes'             => $notes,
+            'dropped_elective'  => $droppedElective,
+            'counted_electives' => $countedElectives,
         ];
     }
 

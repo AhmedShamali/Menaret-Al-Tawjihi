@@ -157,6 +157,48 @@
                     </div>
                 </div>
 
+                <!-- Exam Scheduling Card -->
+                <div class="builder-card" style="margin-top: 18px;">
+                    <div class="card-header">
+                        <i class="fa-solid fa-calendar-check" style="color: #059669;"></i>
+                        <h3>{{ __('جدولة وتوقيت الاختبار') }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0; margin-bottom: 14px; line-height: 1.5;">
+                            {{ __('حدد فترة زمنية معينة يتاح فيها الاختبار للطلاب (اختياري، اتركه فارغاً ليبقى متاحاً دائماً).') }}
+                        </p>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-regular fa-calendar-plus text-primary"></i>
+                                {{ __('تاريخ ووقت بدء الاختبار') }}
+                            </label>
+                            <input type="datetime-local" name="starts_at" id="exam_starts_at" class="form-control">
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">{{ __('لن يتمكن الطالب من فتح الاختبار قبل هذا الموعد.') }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-regular fa-calendar-xmark text-danger"></i>
+                                {{ __('تاريخ ووقت إغلاق الاختبار') }}
+                            </label>
+                            <input type="datetime-local" name="ends_at" id="exam_ends_at" class="form-control">
+                            <small style="color: var(--text-muted); font-size: 0.72rem;">{{ __('يُقفل الاختبار ويمنع الدخول بعد هذا الموعد.') }}</small>
+                        </div>
+
+                        {{-- أزرار الجدولة السريعة --}}
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
+                            <button type="button" class="btn-preset-time" onclick="setSchedulePreset('now_24h')">
+                                <i class="fa-solid fa-bolt"></i> {{ __('متاح 24 ساعة') }}
+                            </button>
+                            <button type="button" class="btn-preset-time" onclick="setSchedulePreset('now_3d')">
+                                <i class="fa-solid fa-calendar-day"></i> {{ __('متاح 3 أيام') }}
+                            </button>
+                            <button type="button" class="btn-preset-time" onclick="setSchedulePreset('clear')">
+                                <i class="fa-solid fa-rotate-left"></i> {{ __('متاح دائماً') }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </aside>
 
         </div>
@@ -565,6 +607,93 @@
         font-size: 0.9rem;
     }
 
+    .mcq-option-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .btn-opt-img-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+        border-right: 1px solid var(--border);
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        user-select: none;
+    }
+
+    .btn-opt-img-trigger:hover {
+        background: #e0e7ff;
+        color: var(--primary);
+    }
+
+    .opt-image-preview-box {
+        position: relative;
+        display: inline-block;
+        max-width: 140px;
+        padding: 4px;
+        background: #ffffff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        margin-right: 12px;
+        margin-top: 4px;
+    }
+
+    .opt-image-preview-box img {
+        max-height: 85px;
+        max-width: 100%;
+        border-radius: 6px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .btn-remove-opt-img {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        background: var(--danger);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .btn-preset-time {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-preset-time:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+        border-color: #94a3b8;
+    }
+
     /* Sidebar Cards */
     .builder-card {
         background: var(--surface);
@@ -891,6 +1020,57 @@
         previewContainer.style.display = 'none';
     }
 
+    // معالجة معاينة صور خيارات الاختيار من متعدد
+    function handleOptionImagePreview(input, qIndex, opt) {
+        const previewBox = document.getElementById(`q_opt_preview_${qIndex}_${opt}`);
+        const imgElem = document.getElementById(`q_opt_img_elem_${qIndex}_${opt}`);
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imgElem.src = e.target.result;
+                previewBox.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeOptionImagePreview(qIndex, opt) {
+        const input = document.getElementById(`q_opt_file_${qIndex}_${opt}`);
+        const previewBox = document.getElementById(`q_opt_preview_${qIndex}_${opt}`);
+        const imgElem = document.getElementById(`q_opt_img_elem_${qIndex}_${opt}`);
+        if (input) input.value = '';
+        if (imgElem) imgElem.src = '';
+        if (previewBox) previewBox.style.display = 'none';
+    }
+
+    // إعدادات الجدولة الزمنية السريعة
+    function setSchedulePreset(type) {
+        const startInput = document.getElementById('exam_starts_at');
+        const endInput = document.getElementById('exam_ends_at');
+        const now = new Date();
+        const formatLocal = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+
+        if (type === 'now_24h') {
+            startInput.value = formatLocal(now);
+            const in24 = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            endInput.value = formatLocal(in24);
+        } else if (type === 'now_3d') {
+            startInput.value = formatLocal(now);
+            const in3d = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+            endInput.value = formatLocal(in3d);
+        } else if (type === 'clear') {
+            startInput.value = '';
+            endInput.value = '';
+        }
+    }
+
     // 4. إضافة سؤال جديد
     function addNewQuestion(type) {
         document.getElementById('questions_placeholder').style.display = 'none';
@@ -935,10 +1115,25 @@
         if (type === 'mcq') {
             html += `
                 <div class="mcq-options-grid">
-                    <div class="option-group"><span class="option-badge">A</span><input type="text" name="questions[${qIdx}][a]" class="option-input" placeholder="{{ __('الخيار الأول') }}" required></div>
-                    <div class="option-group"><span class="option-badge">B</span><input type="text" name="questions[${qIdx}][b]" class="option-input" placeholder="{{ __('الخيار الثاني') }}" required></div>
-                    <div class="option-group"><span class="option-badge">C</span><input type="text" name="questions[${qIdx}][c]" class="option-input" placeholder="{{ __('الخيار الثالث') }}" required></div>
-                    <div class="option-group"><span class="option-badge">D</span><input type="text" name="questions[${qIdx}][d]" class="option-input" placeholder="{{ __('الخيار الرابع') }}" required></div>
+                    ${['a', 'b', 'c', 'd'].map(opt => `
+                        <div class="mcq-option-wrapper">
+                            <div class="option-group">
+                                <span class="option-badge">${opt.toUpperCase()}</span>
+                                <input type="text" name="questions[${qIdx}][${opt}]" class="option-input" placeholder="نص الخيار (${opt.toUpperCase()})">
+                                <label for="q_opt_file_${qIdx}_${opt}" class="btn-opt-img-trigger" title="{{ __('إرفاق صورة لهذا الخيار') }}">
+                                    <i class="fa-solid fa-image"></i>
+                                    <span>{{ __('صورة') }}</span>
+                                </label>
+                                <input type="file" name="questions[${qIdx}][${opt}_image]" id="q_opt_file_${qIdx}_${opt}" accept="image/*" hidden onchange="handleOptionImagePreview(this, ${qIdx}, '${opt}')">
+                            </div>
+                            <div class="opt-image-preview-box" id="q_opt_preview_${qIdx}_${opt}" style="display: none;">
+                                <img id="q_opt_img_${qIdx}_${opt}" src="" alt="صورة الخيار ${opt.toUpperCase()}">
+                                <button type="button" class="btn-remove-opt-img" onclick="removeOptionImagePreview(${qIdx}, '${opt}')" title="{{ __('حذف صورة الخيار') }}">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
                 </div>
                 <div class="form-group" style="margin-top: 18px; margin-bottom: 0;">
                     <label>{{ __('الإجابة الصحيحة (مفتاح التصحيح)') }}</label>

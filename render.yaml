@@ -35,6 +35,10 @@ services:
         value: ar
       - key: APP_FALLBACK_LOCALE
         value: ar
+      - key: APP_TIMEZONE
+        value: Asia/Gaza
+      - key: APP_URL
+        value: "https://menaret-al-tawjihi.onrender.com"
       - key: SESSION_LIFETIME
         value: "1440"
 

@@ -16,14 +16,38 @@ class Question extends Model
         'question_text',
         'image', // ⬅️ تمت إضافته للسماح بالحفظ الشامل عبر الـ Eloquent
         'a',
+        'a_image',
         'b',
+        'b_image',
         'c',
+        'c_image',
         'd',
+        'd_image',
         'correct_answer',
         'require_file',
         'points',
         'is_placement'
     ];
+
+    /**
+     * الحصول على رابط صورة الخيار (A, B, C, D)
+     */
+    public function getOptionImageUrl(string $opt): ?string
+    {
+        $field = strtolower($opt) . '_image';
+        $val = $this->$field ?? null;
+        if (empty($val)) {
+            return null;
+        }
+
+        $img = trim($val);
+        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+            return $img;
+        }
+
+        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $img), '/');
+        return asset('storage/' . $cleanPath);
+    }
 
     protected $casts = [
         'require_file' => 'boolean',
@@ -38,26 +62,28 @@ class Question extends Model
             return null;
         }
 
-        // 1. إذا كان المسار يبدأ بـ http:// أو https:// (رابط مباشر)
-        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
-            return $this->image;
+        $img = trim($this->image);
+        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
+            return $img;
         }
 
-        // 2. إذا كان الملف موجوداً على قرص Supabase السحابي المعتمد
-        if (!empty(config('filesystems.disks.supabase.key'))) {
-            try {
-                if (\Illuminate\Support\Facades\Storage::disk('supabase')->exists($this->image)) {
-                    return \Illuminate\Support\Facades\Storage::disk('supabase')->url($this->image);
-                }
-            } catch (\Throwable $e) {}
-        }
+        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $img), '/');
+        return asset('storage/' . $cleanPath);
+    }
 
-        // 3. إذا كان المسار يبدأ بالفعل بـ storage/
-        if (str_starts_with($this->image, 'storage/')) {
-            return asset($this->image);
+    /**
+     * رابط محلي بديل في حال تعذر الاتصال السحابي
+     */
+    public function getLocalImageUrlAttribute(): ?string
+    {
+        if (empty($this->image)) {
+            return null;
         }
-
-        // 4. المسار الافتراضي على القرص المحلي العام
-        return asset('storage/' . ltrim($this->image, '/'));
+        $cleanPath = ltrim(str_replace('storage/', '', trim($this->image)), '/');
+        if (str_starts_with($cleanPath, 'http')) {
+            $parts = explode('/', $cleanPath);
+            $cleanPath = 'questions/' . end($parts);
+        }
+        return asset('storage/' . $cleanPath);
     }
 }

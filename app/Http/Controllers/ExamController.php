@@ -59,16 +59,22 @@ class ExamController extends Controller
             'subject_id' => ['required', 'exists:subjects,id'],
             'stage_id' => ['nullable', 'exists:stages,id'],
             'duration_minutes' => ['required', 'integer', 'min:1', 'max:600'],
+            'starts_at' => ['nullable', 'date'],
+            'ends_at' => ['nullable', 'date'],
             'show_result_immediately' => ['nullable'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.type' => ['required', 'in:mcq,essay'],
             'questions.*.question_text' => ['required', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
             'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
-            'questions.*.a' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
-            'questions.*.b' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
-            'questions.*.c' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
-            'questions.*.d' => ['required_if:questions.*.type,mcq', 'nullable', 'string'],
+            'questions.*.a' => ['nullable', 'string'],
+            'questions.*.b' => ['nullable', 'string'],
+            'questions.*.c' => ['nullable', 'string'],
+            'questions.*.d' => ['nullable', 'string'],
+            'questions.*.a_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
+            'questions.*.b_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
+            'questions.*.c_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
+            'questions.*.d_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             'questions.*.correct_answer' => ['nullable'],
             'questions.*.require_file' => ['nullable'],
             'questions.*.is_multiple' => ['nullable'],
@@ -85,6 +91,8 @@ class ExamController extends Controller
                 'subject_id' => $validated['subject_id'],
                 'stage_id' => $effectiveStageId,
                 'duration_minutes' => $validated['duration_minutes'],
+                'starts_at' => !empty($validated['starts_at']) ? \Carbon\Carbon::parse($validated['starts_at']) : null,
+                'ends_at' => !empty($validated['ends_at']) ? \Carbon\Carbon::parse($validated['ends_at']) : null,
                 'show_result_immediately' => $showResultImmediately,
             ]);
 
@@ -105,6 +113,26 @@ class ExamController extends Controller
                     }
                 }
 
+                // معالجة صور خيارات الاختيار من متعدد (A, B, C, D)
+                $optImages = [];
+                foreach (['a', 'b', 'c', 'd'] as $opt) {
+                    $optFile = $request->file("questions.{$index}.{$opt}_image") ?? ($q["{$opt}_image"] ?? null);
+                    $optPath = null;
+                    if ($optFile instanceof \Illuminate\Http\UploadedFile && $optFile->isValid()) {
+                        if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                            try {
+                                $p = $optFile->store('question_options', 'supabase');
+                                $optPath = Storage::disk('supabase')->url($p);
+                            } catch (\Throwable $e) {
+                                $optPath = $optFile->store('question_options', 'public');
+                            }
+                        } else {
+                            $optPath = $optFile->store('question_options', 'public');
+                        }
+                    }
+                    $optImages[$opt] = $optPath;
+                }
+
                 $requireFileValue = (bool) filter_var($q['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN);
                 $isMultipleValue = filter_var($q['is_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
 
@@ -119,9 +147,13 @@ class ExamController extends Controller
                     'question_text' => $q['question_text'],
                     'image' => $imagePath,
                     'a' => $q['a'] ?? null,
+                    'a_image' => $optImages['a'],
                     'b' => $q['b'] ?? null,
+                    'b_image' => $optImages['b'],
                     'c' => $q['c'] ?? null,
+                    'c_image' => $optImages['c'],
                     'd' => $q['d'] ?? null,
+                    'd_image' => $optImages['d'],
                     'correct_answer' => $correctAnswer,
                     'points' => $q['points'],
                     'require_file' => $requireFileValue ? 1 : 0,
@@ -171,6 +203,8 @@ class ExamController extends Controller
             'duration_minutes' => 'required|integer|min:1',
             'total_marks'      => 'nullable|integer|min:1',
             'pass_marks'       => 'nullable|integer|min:1',
+            'starts_at'        => 'nullable|date',
+            'ends_at'          => 'nullable|date',
             'is_active'        => 'nullable|boolean',
             'show_result_immediately' => 'nullable',
             'subject_id'       => 'nullable|exists:subjects,id',
@@ -187,11 +221,106 @@ class ExamController extends Controller
             'duration_minutes' => $validated['duration_minutes'],
             'total_marks'      => $validated['total_marks'] ?? $exam->total_marks,
             'pass_marks'       => $validated['pass_marks'] ?? $exam->pass_marks,
+            'starts_at'        => $request->filled('starts_at') ? \Carbon\Carbon::parse($request->starts_at) : null,
+            'ends_at'          => $request->filled('ends_at') ? \Carbon\Carbon::parse($request->ends_at) : null,
             'show_result_immediately' => $showResultImmediately,
             'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
             'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
             'is_active'        => $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $exam->is_active,
         ]);
+
+        // تحديث ومزامنة أسئلة الاختبار وصورها وصور الخيارات إن تم إرسالها
+        if ($request->has('questions') && is_array($request->questions)) {
+            $submittedQuestionIds = [];
+            foreach ($request->questions as $index => $qData) {
+                if (empty($qData['question_text'])) continue;
+
+                $qId = $qData['id'] ?? null;
+                $existingQ = $qId ? Question::where('exam_id', $exam->id)->find($qId) : null;
+
+                $imagePath = $existingQ ? $existingQ->image : ($qData['existing_image'] ?? null);
+                if ($request->hasFile("questions.{$index}.image")) {
+                    $imageFile = $request->file("questions.{$index}.image");
+                    if ($imageFile->isValid()) {
+                        if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                            try {
+                                $path = $imageFile->store('questions', 'supabase');
+                                $imagePath = Storage::disk('supabase')->url($path);
+                            } catch (\Throwable $e) {
+                                $imagePath = $imageFile->store('questions', 'public');
+                            }
+                        } else {
+                            $imagePath = $imageFile->store('questions', 'public');
+                        }
+                    }
+                } elseif (!empty($qData['remove_image']) && $qData['remove_image'] == '1') {
+                    $imagePath = null;
+                }
+
+                // معالجة صور خيارات الاختيار من متعدد (A, B, C, D)
+                $optImages = [];
+                foreach (['a', 'b', 'c', 'd'] as $opt) {
+                    $field = $opt . '_image';
+                    $existingOptImg = $existingQ ? $existingQ->$field : ($qData["existing_{$opt}_image"] ?? null);
+                    if ($request->hasFile("questions.{$index}.{$opt}_image")) {
+                        $optFile = $request->file("questions.{$index}.{$opt}_image");
+                        if ($optFile->isValid()) {
+                            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                                try {
+                                    $p = $optFile->store('question_options', 'supabase');
+                                    $existingOptImg = Storage::disk('supabase')->url($p);
+                                } catch (\Throwable $e) {
+                                    $existingOptImg = $optFile->store('question_options', 'public');
+                                }
+                            } else {
+                                $existingOptImg = $optFile->store('question_options', 'public');
+                            }
+                        }
+                    } elseif (!empty($qData["remove_{$opt}_image"]) && $qData["remove_{$opt}_image"] == '1') {
+                        $existingOptImg = null;
+                    }
+                    $optImages[$field] = $existingOptImg;
+                }
+
+                $requireFileValue = (bool) filter_var($qData['require_file'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $isMultipleValue = filter_var($qData['is_multiple'] ?? false, FILTER_VALIDATE_BOOLEAN) ? 1 : 0;
+                $correctAnswer = $qData['correct_answer'] ?? null;
+                if (is_array($correctAnswer)) {
+                    $correctAnswer = json_encode($correctAnswer);
+                }
+
+                $dataToSave = [
+                    'exam_id'        => $exam->id,
+                    'type'           => $qData['type'] ?? 'mcq',
+                    'question_text'  => $qData['question_text'],
+                    'image'          => $imagePath,
+                    'a'              => $qData['a'] ?? null,
+                    'a_image'        => $optImages['a_image'],
+                    'b'              => $qData['b'] ?? null,
+                    'b_image'        => $optImages['b_image'],
+                    'c'              => $qData['c'] ?? null,
+                    'c_image'        => $optImages['c_image'],
+                    'd'              => $qData['d'] ?? null,
+                    'd_image'        => $optImages['d_image'],
+                    'correct_answer' => $correctAnswer,
+                    'points'         => !empty($qData['points']) ? (int)$qData['points'] : ($existingQ->points ?? 5),
+                    'require_file'   => $requireFileValue ? 1 : 0,
+                    'is_multiple'    => $isMultipleValue,
+                ];
+
+                if ($existingQ) {
+                    $existingQ->update($dataToSave);
+                    $submittedQuestionIds[] = $existingQ->id;
+                } else {
+                    $newQ = Question::create($dataToSave);
+                    $submittedQuestionIds[] = $newQ->id;
+                }
+            }
+
+            if (!empty($submittedQuestionIds)) {
+                Question::where('exam_id', $exam->id)->whereNotIn('id', $submittedQuestionIds)->delete();
+            }
+        }
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['success' => true, 'message' => 'تم تحديث بيانات الاختبار بنجاح!']);
@@ -415,6 +544,18 @@ class ExamController extends Controller
         }
 
         $exam = Exam::with(['questions', 'subject', 'stage'])->findOrFail($examId);
+
+        // التحقق من توقيت وجدولة الاختبار
+        if ($exam->isUpcoming()) {
+            $formattedStart = $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('Y/m/d - h:i A');
+            return redirect()->route('student.exams.index')->with('error', "هذا الاختبار لم يبدأ موعده بعد. موعد البدء الرسمي: {$formattedStart}");
+        }
+
+        if ($exam->isExpired()) {
+            $formattedEnd = $exam->ends_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('Y/m/d - h:i A');
+            return redirect()->route('student.exams.index')->with('error', "عذراً، انتهت الفترة الزمنية المتاحة لتقديم هذا الاختبار في: {$formattedEnd}");
+        }
+
         return view('student.exams.take', compact('exam', 'submission'));
     }
 
@@ -432,6 +573,24 @@ class ExamController extends Controller
                         'success' => false, 
                         'message' => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!',
                         'error'   => 'لا يوجد بيانات طالب مسجلة لهذا الحساب!'
+                    ], 422);
+                }
+
+                $exam = Exam::with('questions')->findOrFail($id);
+
+                if ($exam->isUpcoming()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'عذراً، هذا الاختبار لم يبدأ موعده الرسمي بعد!',
+                        'error'   => 'عذراً، هذا الاختبار لم يبدأ موعده الرسمي بعد!'
+                    ], 422);
+                }
+
+                if ($exam->isExpired()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'عذراً، انتهت الفترة الزمنية المحددة لتقديم هذا الاختبار!',
+                        'error'   => 'عذراً، انتهت الفترة الزمنية المحددة لتقديم هذا الاختبار!'
                     ], 422);
                 }
 
@@ -865,5 +1024,99 @@ class ExamController extends Controller
             'success' => true,
             'title' => 'تم رفض طلب الإعادة'
         ]);
+    }
+
+    /**
+     * خدمة وعرض صورة السؤال بشكل مباشر ومضمون
+     */
+    public function questionImage($id)
+    {
+        $question = Question::findOrFail($id);
+
+        if (empty($question->image)) {
+            abort(404, 'لا توجد صورة لهذا السؤال');
+        }
+
+        // إذا كان الرابط خارجياً ومباشراً (Supabase / S3 / External)
+        if (str_starts_with($question->image, 'http://') || str_starts_with($question->image, 'https://')) {
+            return redirect()->away($question->image);
+        }
+
+        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $question->image), '/');
+
+        // البحث في storage/app/public
+        $fullPath = storage_path('app/public/' . $cleanPath);
+        if (!file_exists($fullPath)) {
+            // البحث في public_path مباشرة
+            $fullPath = public_path('storage/' . $cleanPath);
+        }
+        if (!file_exists($fullPath)) {
+            $fullPath = public_path($cleanPath);
+        }
+
+        if (file_exists($fullPath) && is_file($fullPath)) {
+            $mime = mime_content_type($fullPath) ?: 'image/jpeg';
+            return response()->file($fullPath, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        // إذا كان مخزناً في قرص Supabase
+        if (!empty(config('filesystems.disks.supabase.key'))) {
+            try {
+                if (Storage::disk('supabase')->exists($question->image)) {
+                    return redirect()->away(Storage::disk('supabase')->url($question->image));
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        abort(404, 'ملف الصورة غير موجود');
+    }
+
+    /**
+     * خدمة وعرض صورة خيار الاختيار من متعدد (A, B, C, D)
+     */
+    public function questionOptionImage($id, $option)
+    {
+        $question = Question::findOrFail($id);
+        $field = strtolower($option) . '_image';
+        $imgPath = $question->$field ?? null;
+
+        if (empty($imgPath)) {
+            abort(404, 'لا توجد صورة لهذا الخيار');
+        }
+
+        if (str_starts_with($imgPath, 'http://') || str_starts_with($imgPath, 'https://')) {
+            return redirect()->away($imgPath);
+        }
+
+        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $imgPath), '/');
+
+        $fullPath = storage_path('app/public/' . $cleanPath);
+        if (!file_exists($fullPath)) {
+            $fullPath = public_path('storage/' . $cleanPath);
+        }
+        if (!file_exists($fullPath)) {
+            $fullPath = public_path($cleanPath);
+        }
+
+        if (file_exists($fullPath) && is_file($fullPath)) {
+            $mime = mime_content_type($fullPath) ?: 'image/jpeg';
+            return response()->file($fullPath, [
+                'Content-Type' => $mime,
+                'Cache-Control' => 'public, max-age=86400',
+            ]);
+        }
+
+        if (!empty(config('filesystems.disks.supabase.key'))) {
+            try {
+                if (Storage::disk('supabase')->exists($imgPath)) {
+                    return redirect()->away(Storage::disk('supabase')->url($imgPath));
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        abort(404, 'ملف صورة الخيار غير موجود');
     }
 }

@@ -99,6 +99,34 @@
                         </div>
 
                         <div class="f-group mb-20" style="padding-top: 14px; border-top: 1px solid var(--border-color);">
+                            <label class="f-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: #059669;">
+                                <i class="fa-solid fa-calendar-check"></i>
+                                {{ __('جدولة وتوقيت الاختبار') }}
+                            </label>
+                            <div style="margin-bottom: 12px;">
+                                <label class="f-label-sm" style="display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;">{{ __('تاريخ ووقت بدء الاختبار') }}</label>
+                                <input type="datetime-local" name="starts_at" id="exam_starts_at" value="{{ $exam->starts_at ? $exam->starts_at->format('Y-m-d\TH:i') : '' }}" class="f-input">
+                                <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 2px;">{{ __('لن يتمكن الطالب من دخول الاختبار قبل هذا الموعد.') }}</small>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <label class="f-label-sm" style="display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px;">{{ __('تاريخ ووقت إغلاق الاختبار') }}</label>
+                                <input type="datetime-local" name="ends_at" id="exam_ends_at" value="{{ $exam->ends_at ? $exam->ends_at->format('Y-m-d\TH:i') : '' }}" class="f-input">
+                                <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: 2px;">{{ __('يُقفل الاختبار ويمنع الدخول بعد هذا الموعد.') }}</small>
+                            </div>
+                            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                                <button type="button" class="btn-preset-time" onclick="setSchedulePreset('now_24h')">
+                                    <i class="fa-solid fa-bolt"></i> {{ __('متاح 24 ساعة') }}
+                                </button>
+                                <button type="button" class="btn-preset-time" onclick="setSchedulePreset('now_3d')">
+                                    <i class="fa-solid fa-calendar-day"></i> {{ __('متاح 3 أيام') }}
+                                </button>
+                                <button type="button" class="btn-preset-time" onclick="setSchedulePreset('clear')">
+                                    <i class="fa-solid fa-rotate-left"></i> {{ __('متاح دائماً') }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="f-group mb-20" style="padding-top: 14px; border-top: 1px solid var(--border-color);">
                             <label class="f-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800;">
                                 <i class="fa-solid fa-eye-slash text-primary"></i>
                                 {{ __('سياسة إعلان نتائج الاختبار') }}
@@ -148,14 +176,20 @@
 
                 <div id="q_list">
                     @forelse($exam->questions as $index => $q)
-                    <div class="glass-card q-card mb-20">
+                    <div class="glass-card q-card mb-20" id="q_card_{{ $index }}">
                         <input type="hidden" name="questions[{{ $index }}][id]" value="{{ $q->id }}">
                         <input type="hidden" name="questions[{{ $index }}][type]" value="{{ $q->type }}">
+                        <input type="hidden" name="questions[{{ $index }}][existing_image]" value="{{ $q->image }}">
+                        <input type="hidden" name="questions[{{ $index }}][remove_image]" id="remove_img_{{ $index }}" value="0">
 
                         <div class="q-card-header">
-                            <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }}<span class="q-idx">{{ $index + 1 }}</span></span>
+                            <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }} <span class="q-idx">{{ $index + 1 }}</span></span>
                             <div class="q-actions">
                                 <span class="type-badge">{{ strtoupper($q->type) }}</span>
+                                <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">{{ __('الدرجة:') }}</label>
+                                    <input type="number" name="questions[{{ $index }}][points]" value="{{ $q->points ?? 5 }}" min="1" style="width: 55px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: 700; text-align: center;">
+                                </div>
                                 <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="{{ __('حذف السؤال') }}">
                                     <i class="fa-solid fa-trash-can"></i>{{ __('حذف') }}</button>
                             </div>
@@ -167,23 +201,51 @@
                                 <textarea name="questions[{{ $index }}][question_text]" class="f-input f-textarea" rows="2" placeholder="{{ __('اكتب نص السؤال هنا...') }}">{{ $q->question_text }}</textarea>
                             </div>
 
+                            {{-- إرفاق / استعراض صورة السؤال --}}
+                            <div class="q-image-upload-wrapper mb-20">
+                                <input type="file" name="questions[{{ $index }}][image]" id="q_img_input_{{ $index }}" accept="image/*" hidden onchange="handleQuestionImageEdit(this, {{ $index }})">
+                                <label for="q_img_input_{{ $index }}" class="q-img-label">
+                                    <i class="fa-solid fa-image"></i>
+                                    <span>{{ $q->image_url ? __('تغيير صورة السؤال') : __('إرفاق صورة مع السؤال (اختياري)') }}</span>
+                                </label>
+
+                                <div class="q-image-preview" id="q_img_preview_{{ $index }}" style="{{ $q->image_url ? '' : 'display: none;' }}">
+                                    <img id="q_img_target_{{ $index }}" src="{{ $q->image_url ?? '' }}" alt="{{ __('صورة السؤال') }}">
+                                    <button type="button" class="btn-remove-img" onclick="removeQuestionImageEdit({{ $index }})" title="{{ __('حذف الصورة') }}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+
                             @if($q->type == 'mcq')
                             <div class="mcq-options-grid">
-                                <div class="f-group">
-                                    <label class="f-label-sm">الخيار (A)</label>
-                                    <div class="input-icon-wrapper">
-                                        <span class="option-prefix">A</span>
-                                        <input type="text" name="questions[{{ $index }}][a]" value="{{ $q->a }}" class="f-input" placeholder="{{ __('نص الخيار الأول') }}">
+                                @foreach(['a', 'b', 'c', 'd'] as $opt)
+                                @php
+                                    $optImgUrl = $q->getOptionImageUrl($opt);
+                                    $optField = $opt . '_image';
+                                    $hasOptImg = !empty($optImgUrl);
+                                @endphp
+                                <div class="f-group opt-item-box">
+                                    <label class="f-label-sm">{{ __('الخيار') }} ({{ strtoupper($opt) }})</label>
+                                    <div class="input-icon-wrapper opt-input-row">
+                                        <span class="option-prefix">{{ strtoupper($opt) }}</span>
+                                        <input type="text" name="questions[{{ $index }}][{{ $opt }}]" value="{{ $q->$opt }}" class="f-input" placeholder="{{ __('نص الخيار') }}">
+                                        <label for="q_opt_file_{{ $index }}_{{ $opt }}" class="btn-opt-img-trigger" title="{{ __('إرفاق أو تغيير صورة الخيار') }}">
+                                            <i class="fa-solid fa-image"></i>
+                                            <span>{{ $hasOptImg ? __('تغيير') : __('صورة') }}</span>
+                                        </label>
+                                        <input type="file" name="questions[{{ $index }}][{{ $opt }}_image]" id="q_opt_file_{{ $index }}_{{ $opt }}" accept="image/*" hidden onchange="handleOptionImageEdit(this, {{ $index }}, '{{ $opt }}')">
+                                        <input type="hidden" name="questions[{{ $index }}][existing_{{ $opt }}_image]" value="{{ $q->$optField }}">
+                                        <input type="hidden" name="questions[{{ $index }}][remove_{{ $opt }}_image]" id="remove_opt_img_{{ $index }}_{{ $opt }}" value="0">
+                                    </div>
+                                    <div class="opt-image-preview-box" id="q_opt_preview_{{ $index }}_{{ $opt }}" style="{{ $hasOptImg ? '' : 'display: none;' }}">
+                                        <img id="q_opt_img_target_{{ $index }}_{{ $opt }}" src="{{ $optImgUrl ?? '' }}" alt="صورة الخيار {{ strtoupper($opt) }}">
+                                        <button type="button" class="btn-remove-opt-img" onclick="removeOptionImageEdit({{ $index }}, '{{ $opt }}')" title="{{ __('حذف صورة الخيار') }}">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="f-group">
-                                    <label class="f-label-sm">الخيار (B)</label>
-                                    <div class="input-icon-wrapper">
-                                        <span class="option-prefix">B</span>
-                                        <input type="text" name="questions[{{ $index }}][b]" value="{{ $q->b }}" class="f-input" placeholder="{{ __('نص الخيار الثاني') }}">
-                                    </div>
-                                </div>
+                                @endforeach
 
                                 <div class="f-group full-width">
                                     <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i>{{ __('الإجابة الصحيحة') }}</label>
@@ -191,10 +253,19 @@
                                         <select name="questions[{{ $index }}][correct_answer]" class="f-select success-select">
                                             <option value="a" {{ $q->correct_answer == 'a' ? 'selected' : '' }}>الخيار (A)</option>
                                             <option value="b" {{ $q->correct_answer == 'b' ? 'selected' : '' }}>الخيار (B)</option>
+                                            <option value="c" {{ $q->correct_answer == 'c' ? 'selected' : '' }}>الخيار (C)</option>
+                                            <option value="d" {{ $q->correct_answer == 'd' ? 'selected' : '' }}>الخيار (D)</option>
                                         </select>
                                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                                     </div>
                                 </div>
+                            </div>
+                            @else
+                            <div class="f-group mb-20" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                                    <input type="checkbox" name="questions[{{ $index }}][require_file]" value="1" {{ $q->require_file ? 'checked' : '' }}>
+                                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">{{ __('السماح للطالب بإرفاق ملفات/صور مع الإجابة') }}</span>
+                                </label>
                             </div>
                             @endif
                         </div>
@@ -509,6 +580,48 @@
     }
 
     .full-width { grid-column: span 2; }
+    .q-image-upload-wrapper { margin-top: 14px; }
+    .q-img-label {
+        display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px;
+        background: #f1f5f9; color: #475569; border: 1px dashed #cbd5e1;
+        border-radius: var(--radius-md); font-size: 0.82rem; font-weight: 600;
+        cursor: pointer; transition: all 0.2s ease;
+    }
+    .q-img-label:hover { background: #e0e7ff; color: var(--primary-color); border-color: var(--primary-color); }
+    .q-image-preview { margin-top: 12px; position: relative; display: inline-block; max-width: 100%; }
+    .q-image-preview img { max-height: 180px; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-color); object-fit: contain; }
+    .btn-remove-img {
+        position: absolute; top: -8px; right: -8px; background: #ef4444; color: #fff;
+        border: none; width: 26px; height: 26px; border-radius: 50%; display: grid;
+        place-items: center; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .btn-remove-img:hover { background: #dc2626; }
+
+    .btn-opt-img-trigger {
+        display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px;
+        background: #f1f5f9; color: #475569; font-size: 0.76rem; font-weight: 700;
+        cursor: pointer; border-right: 1px solid var(--border-color); transition: all 0.2s ease;
+        white-space: nowrap; user-select: none;
+    }
+    .btn-opt-img-trigger:hover { background: #e0e7ff; color: var(--primary-color); }
+    .opt-image-preview-box {
+        position: relative; display: inline-block; max-width: 140px; padding: 4px;
+        background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06); margin-top: 6px;
+    }
+    .opt-image-preview-box img { max-height: 80px; max-width: 100%; border-radius: 6px; object-fit: contain; display: block; }
+    .btn-remove-opt-img {
+        position: absolute; top: -6px; right: -6px; background: #ef4444; color: #fff;
+        border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; font-size: 0.65rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .btn-preset-time {
+        background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1;
+        border-radius: 6px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700;
+        cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 5px;
+    }
+    .btn-preset-time:hover { background: #e2e8f0; color: #0f172a; border-color: #94a3b8; }
 
     @media (max-width: 640px) {
         .mcq-options-grid { grid-template-columns: 1fr; }
@@ -594,6 +707,89 @@
         });
     }
 
+    function handleQuestionImageEdit(input, index) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById(`q_img_preview_${index}`);
+                const target = document.getElementById(`q_img_target_${index}`);
+                if (target && preview) {
+                    target.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                }
+                const removeInput = document.getElementById(`remove_img_${index}`);
+                if (removeInput) removeInput.value = '0';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeQuestionImageEdit(index) {
+        const input = document.getElementById(`q_img_input_${index}`);
+        const preview = document.getElementById(`q_img_preview_${index}`);
+        const target = document.getElementById(`q_img_target_${index}`);
+        const removeInput = document.getElementById(`remove_img_${index}`);
+        if (input) input.value = '';
+        if (target) target.src = '';
+        if (preview) preview.style.display = 'none';
+        if (removeInput) removeInput.value = '1';
+    }
+
+    function handleOptionImageEdit(input, index, opt) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById(`q_opt_preview_${index}_${opt}`);
+                const target = document.getElementById(`q_opt_img_target_${index}_${opt}`);
+                if (target && preview) {
+                    target.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                }
+                const removeInput = document.getElementById(`remove_opt_img_${index}_${opt}`);
+                if (removeInput) removeInput.value = '0';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeOptionImageEdit(index, opt) {
+        const input = document.getElementById(`q_opt_file_${index}_${opt}`);
+        const preview = document.getElementById(`q_opt_preview_${index}_${opt}`);
+        const target = document.getElementById(`q_opt_img_target_${index}_${opt}`);
+        const removeInput = document.getElementById(`remove_opt_img_${index}_${opt}`);
+        if (input) input.value = '';
+        if (target) target.src = '';
+        if (preview) preview.style.display = 'none';
+        if (removeInput) removeInput.value = '1';
+    }
+
+    function setSchedulePreset(type) {
+        const startInput = document.getElementById('exam_starts_at');
+        const endInput = document.getElementById('exam_ends_at');
+        const now = new Date();
+        const formatLocal = (d) => {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+
+        if (type === 'now_24h') {
+            startInput.value = formatLocal(now);
+            const in24 = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+            endInput.value = formatLocal(in24);
+        } else if (type === 'now_3d') {
+            startInput.value = formatLocal(now);
+            const in3d = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+            endInput.value = formatLocal(in3d);
+        } else if (type === 'clear') {
+            startInput.value = '';
+            endInput.value = '';
+        }
+    }
+
     function addQuestion(type) {
         const container = document.getElementById('q_list');
         const emptyState = document.getElementById('emptyState');
@@ -601,44 +797,67 @@
 
         let newCard = document.createElement('div');
         newCard.className = 'glass-card q-card mb-20';
+        newCard.id = `q_card_${qIndex}`;
 
         let mcqHtml = '';
         if (type === 'mcq') {
             mcqHtml = `
             <div class="mcq-options-grid">
-                <div class="f-group">
-                    <label class="f-label-sm">الخيار (A)</label>
-                    <div class="input-icon-wrapper">
-                        <span class="option-prefix">A</span>
-                        <input type="text" name="questions[${qIndex}][a]" class="f-input" placeholder="{{ __('نص الخيار الأول') }}">
+                ${['a', 'b', 'c', 'd'].map(opt => `
+                    <div class="f-group opt-item-box">
+                        <label class="f-label-sm">{{ __('الخيار') }} (${opt.toUpperCase()})</label>
+                        <div class="input-icon-wrapper opt-input-row">
+                            <span class="option-prefix">${opt.toUpperCase()}</span>
+                            <input type="text" name="questions[${qIndex}][${opt}]" class="f-input" placeholder="نص الخيار (${opt.toUpperCase()})">
+                            <label for="q_opt_file_${qIndex}_${opt}" class="btn-opt-img-trigger" title="{{ __('إرفاق صورة لهذا الخيار') }}">
+                                <i class="fa-solid fa-image"></i>
+                                <span>{{ __('صورة') }}</span>
+                            </label>
+                            <input type="file" name="questions[${qIndex}][${opt}_image]" id="q_opt_file_${qIndex}_${opt}" accept="image/*" hidden onchange="handleOptionImageEdit(this, ${qIndex}, '${opt}')">
+                            <input type="hidden" name="questions[${qIndex}][remove_${opt}_image]" id="remove_opt_img_${qIndex}_${opt}" value="0">
+                        </div>
+                        <div class="opt-image-preview-box" id="q_opt_preview_${qIndex}_${opt}" style="display: none;">
+                            <img id="q_opt_img_target_${qIndex}_${opt}" src="" alt="صورة الخيار ${opt.toUpperCase()}">
+                            <button type="button" class="btn-remove-opt-img" onclick="removeOptionImageEdit(${qIndex}, '${opt}')" title="{{ __('حذف صورة الخيار') }}">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="f-group">
-                    <label class="f-label-sm">الخيار (B)</label>
-                    <div class="input-icon-wrapper">
-                        <span class="option-prefix">B</span>
-                        <input type="text" name="questions[${qIndex}][b]" class="f-input" placeholder="{{ __('نص الخيار الثاني') }}">
-                    </div>
-                </div>
+                `).join('')}
                 <div class="f-group full-width">
                     <label class="f-label-sm text-success"><i class="fa-solid fa-circle-check"></i>{{ __('الإجابة الصحيحة') }}</label>
                     <div class="select-wrapper">
                         <select name="questions[${qIndex}][correct_answer]" class="f-select success-select">
                             <option value="a">الخيار (A)</option>
                             <option value="b">الخيار (B)</option>
+                            <option value="c">الخيار (C)</option>
+                            <option value="d">الخيار (D)</option>
                         </select>
                         <i class="fa-solid fa-chevron-down select-arrow"></i>
                     </div>
                 </div>
             </div>`;
+        } else {
+            mcqHtml = `
+            <div class="f-group mb-20" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; margin: 0;">
+                    <input type="checkbox" name="questions[${qIndex}][require_file]" value="1">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-main);">{{ __('السماح للطالب بإرفاق ملفات/صور مع الإجابة') }}</span>
+                </label>
+            </div>`;
         }
 
         newCard.innerHTML = `
             <input type="hidden" name="questions[${qIndex}][type]" value="${type}">
+            <input type="hidden" name="questions[${qIndex}][remove_image]" id="remove_img_${qIndex}" value="0">
             <div class="q-card-header">
-                <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }}<span class="q-idx"></span></span>
+                <span class="q-number"><i class="fa-solid fa-circle-question"></i>{{ __('سؤال') }} <span class="q-idx"></span></span>
                 <div class="q-actions">
                     <span class="type-badge">${type.toUpperCase()}</span>
+                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                        <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">{{ __('الدرجة:') }}</label>
+                        <input type="number" name="questions[${qIndex}][points]" value="5" min="1" style="width: 55px; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--border-color); font-weight: 700; text-align: center;">
+                    </div>
                     <button type="button" onclick="removeQuestionCard(this)" class="btn-delete-q" title="{{ __('حذف السؤال') }}">
                         <i class="fa-solid fa-trash-can"></i>{{ __('حذف') }}</button>
                 </div>
@@ -647,6 +866,19 @@
                 <div class="f-group mb-20">
                     <label class="f-label">{{ __('نص السؤال') }}</label>
                     <textarea name="questions[${qIndex}][question_text]" class="f-input f-textarea" rows="2" placeholder="{{ __('اكتب نص السؤال الجديد هنا...') }}"></textarea>
+                </div>
+                <div class="q-image-upload-wrapper mb-20">
+                    <input type="file" name="questions[${qIndex}][image]" id="q_img_input_${qIndex}" accept="image/*" hidden onchange="handleQuestionImageEdit(this, ${qIndex})">
+                    <label for="q_img_input_${qIndex}" class="q-img-label">
+                        <i class="fa-solid fa-image"></i>
+                        <span>{{ __('إرفاق صورة مع السؤال (اختياري)') }}</span>
+                    </label>
+                    <div class="q-image-preview" id="q_img_preview_${qIndex}" style="display: none;">
+                        <img id="q_img_target_${qIndex}" src="" alt="{{ __('صورة السؤال') }}">
+                        <button type="button" class="btn-remove-img" onclick="removeQuestionImageEdit(${qIndex})" title="{{ __('حذف الصورة') }}">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 </div>
                 ${mcqHtml}
             </div>

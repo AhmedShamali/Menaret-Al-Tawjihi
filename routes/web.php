@@ -28,6 +28,8 @@ Route::get('/', [PublicController::class, 'index'])->name('home');
 Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
 Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::get('/educational-contents/{id}/download-video', [EducationalContentController::class, 'downloadVideo'])->name('content.downloadVideo');
+Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->name('question.image');
+Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'questionOptionImage'])->name('question.option_image');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

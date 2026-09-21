@@ -119,27 +119,46 @@
                         <h2 class="ed-q-text">{!! nl2br(e($q->question_text)) !!}</h2>
 
                         @php
-                            $qImg = $q->image_url ?? (
-                                !empty($q->image) 
-                                    ? (str_starts_with($q->image, 'http') ? $q->image : asset('storage/' . ltrim($q->image, '/'))) 
-                                    : null
-                            );
+                            $qImg = $q->image_url;
+                            $localFallback = $q->local_image_url;
                         @endphp
 
-                        @if(!empty($qImg))
+                        @if(!empty($qImg) || !empty($q->image))
                         <div class="ed-q-image-box">
-                            <button type="button" class="ed-zoom-btn" onclick="openImageModal('{{ $qImg }}')">
-                                <i class="fas fa-search-plus"></i> {{ __('تكبير الصورة') }}
-                            </button>
-                            <img src="{{ $qImg }}" alt="{{ __('مرفق السؤال') }}" class="ed-q-img" onclick="openImageModal('{{ $qImg }}')" onerror="this.parentElement.style.display='none'">
+                            <div class="ed-q-image-header">
+                                <span class="ed-q-image-tag"><i class="fa-solid fa-image"></i> {{ __('مرفق السؤال (رسم توضيحي / مسألة)') }}</span>
+                                <button type="button" class="ed-zoom-btn" onclick="openImageModal(this.dataset.src || '{{ $qImg }}')" data-src="{{ $qImg }}">
+                                    <i class="fas fa-search-plus"></i> {{ __('تكبير الصورة بدقة عالية') }}
+                                </button>
+                            </div>
+                            <div class="ed-img-canvas">
+                                <img src="{{ $qImg }}" 
+                                     alt="{{ __('مرفق السؤال') }}" 
+                                     class="ed-q-img" 
+                                     onclick="openImageModal(this.src)" 
+                                     loading="lazy"
+                                     onerror="if(!this.dataset.triedFallback && '{{ $localFallback }}'){ this.dataset.triedFallback='1'; this.src='{{ $localFallback }}'; const btn = this.closest('.ed-q-image-box').querySelector('.ed-zoom-btn'); if(btn) btn.dataset.src='{{ $localFallback }}'; } else { this.closest('.ed-q-image-box').classList.add('load-failed'); }">
+                                <div class="ed-img-fallback-notice">
+                                    <i class="fa-solid fa-circle-exclamation" style="color: #d97706; font-size: 1.1rem;"></i>
+                                    <span>{{ __('تعذر جلب المرفق السحابي مؤقتاً') }}</span>
+                                    <button type="button" class="ed-btn-retry" onclick="const img = this.closest('.ed-q-image-box').querySelector('img'); img.src = '{{ $qImg }}?r=' + Date.now(); this.closest('.ed-q-image-box').classList.remove('load-failed');">
+                                        <i class="fas fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         @endif
 
                         @if($q->type == 'mcq')
                             <div class="ed-options-grid">
                                 @foreach(['a', 'b', 'c', 'd'] as $option)
-                                @if(!empty($q->$option))
-                                <label class="ed-option-item">
+                                @php
+                                    $optImg = $q->getOptionImageUrl($option);
+                                    $hasOptImg = !empty($optImg);
+                                    $hasOptText = !empty($q->$option);
+                                @endphp
+                                @if($hasOptText || $hasOptImg)
+                                <label class="ed-option-item {{ $hasOptImg ? 'has-opt-img' : '' }}">
                                     <input 
                                         type="radio" 
                                         name="answers[{{ $q->id }}]" 
@@ -149,7 +168,17 @@
                                     >
                                     <div class="ed-option-box">
                                         <span class="ed-opt-letter">{{ strtoupper($option) }}</span>
-                                        <span class="ed-opt-text">{{ $q->$option }}</span>
+                                        <div class="ed-opt-content">
+                                            @if($hasOptText)
+                                                <span class="ed-opt-text">{{ $q->$option }}</span>
+                                            @endif
+                                            @if($hasOptImg)
+                                                <div class="ed-opt-img-wrapper" onclick="event.stopPropagation(); openImageModal('{{ $optImg }}')" title="{{ __('انقر لتكبير صورة الخيار') }}">
+                                                    <img src="{{ $optImg }}" alt="خيار {{ strtoupper($option) }}" class="ed-opt-thumb" loading="lazy">
+                                                    <span class="ed-opt-zoom-tag"><i class="fas fa-search-plus"></i> {{ __('تكبير') }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </label>
                                 @endif
@@ -454,36 +483,70 @@
         word-break: break-word;
     }
 
-    /* Question Image Display */
+    /* Classic Question Image Display */
     .ed-q-image-box {
         position: relative;
-        background: #f8fafc;
-        border: 1.5px dashed #cbd5e1;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 12px;
-        padding: 14px;
-        margin-bottom: 20px;
+        padding: 16px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        transition: all 0.2s ease;
+    }
+
+    .ed-q-image-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .ed-q-image-tag {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: #1e3a8a;
+        background: #eff6ff;
+        padding: 4px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ed-img-canvas {
+        position: relative;
         text-align: center;
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px dashed #e2e8f0;
     }
 
     .ed-q-img {
-        max-height: 380px;
+        max-height: 420px;
         max-width: 100%;
-        border-radius: 8px;
+        border-radius: 6px;
         object-fit: contain;
         cursor: zoom-in;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease;
+    }
+
+    .ed-q-img:hover {
+        transform: scale(1.01);
     }
 
     .ed-zoom-btn {
-        position: absolute;
-        top: 12px;
-        left: 12px;
-        background: rgba(15, 23, 42, 0.8);
+        background: #1e3a8a;
         color: #ffffff;
-        border: none;
-        padding: 6px 12px;
+        border: 1px solid #172554;
+        padding: 6px 14px;
         border-radius: 6px;
-        font-size: 0.75rem;
+        font-size: 0.78rem;
         font-weight: 700;
         cursor: pointer;
         display: inline-flex;
@@ -494,6 +557,39 @@
 
     .ed-zoom-btn:hover {
         background: #1d4ed8;
+    }
+
+    .ed-img-fallback-notice {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 6px;
+        margin-top: 10px;
+        font-size: 0.82rem;
+        color: #92400e;
+        font-weight: 600;
+    }
+
+    .ed-q-image-box.load-failed .ed-img-fallback-notice {
+        display: flex;
+    }
+
+    .ed-btn-retry {
+        background: #d97706;
+        color: #ffffff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
     }
 
     /* MCQ Options Grid */
@@ -558,6 +654,56 @@
         line-height: 1.5;
         flex: 1;
         word-break: break-word;
+    }
+
+    .ed-opt-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ed-opt-img-wrapper {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        cursor: zoom-in;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        padding: 4px;
+        transition: all 0.2s ease;
+    }
+
+    .ed-opt-img-wrapper:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .ed-opt-thumb {
+        max-height: 120px;
+        max-width: 100%;
+        display: block;
+        border-radius: 6px;
+        object-fit: contain;
+    }
+
+    .ed-opt-zoom-tag {
+        position: absolute;
+        bottom: 4px;
+        left: 4px;
+        background: rgba(15, 23, 42, 0.85);
+        color: #ffffff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        pointer-events: none;
     }
 
     /* Written / Essay */

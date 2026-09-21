@@ -452,4 +452,154 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
         $takeResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $exam->id));
         $takeResponse->assertOk();
     }
+
+    /**
+     * اختبار تخزين صور خيارات أسئلة الاختيار من متعدد وعرضها للطالب
+     */
+    public function test_mcq_options_images_storage_and_rendering()
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $exam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار الرياضيات والرسوم الهندسية',
+            'duration_minutes' => 45,
+        ]);
+
+        $fileA = \Illuminate\Http\UploadedFile::fake()->create('opt_a.png', 10, 'image/png');
+        $fileB = \Illuminate\Http\UploadedFile::fake()->create('opt_b.png', 10, 'image/png');
+
+        $response = $this->actingAs($this->teacher)->post(route('teacher.exams.store'), [
+            'title'            => 'اختبار الأشكال الهندسية',
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'duration_minutes' => 45,
+            'questions'        => [
+                [
+                    'type'           => 'mcq',
+                    'question_text'  => 'أي من الأشكال التالية يمثل دالة متزايدة؟',
+                    'a'              => 'الشكل الأول',
+                    'a_image'        => $fileA,
+                    'b'              => 'الشكل الثاني',
+                    'b_image'        => $fileB,
+                    'c'              => 'الشكل الثالث',
+                    'd'              => 'الشكل الرابع',
+                    'correct_answer' => 'a',
+                    'points'         => 10,
+                ]
+            ]
+        ]);
+
+        $response->assertCreated();
+
+        $savedExam = Exam::where('title', 'اختبار الأشكال الهندسية')->firstOrFail();
+        $q = $savedExam->questions()->firstOrFail();
+
+        $this->assertNotNull($q->a_image);
+        $this->assertNotNull($q->b_image);
+        $this->assertNull($q->c_image);
+
+        $this->assertStringContainsString('question_options', $q->getOptionImageUrl('a'));
+        $this->assertStringContainsString('question_options', $q->getOptionImageUrl('b'));
+        $this->assertNull($q->getOptionImageUrl('c'));
+
+        // فحص ظهور صورة الخيار في قاعة تقديم الاختبار للطالب
+        $takeView = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $savedExam->id));
+        $takeView->assertOk();
+        $takeView->assertSee('الشكل الأول');
+        $takeView->assertSee('ed-opt-img-wrapper');
+    }
+
+    /**
+     * اختبار قيود جدولة وتوقيت الاختبارات (قادم، متاح، منتهي)
+     */
+    public function test_exam_scheduling_restrictions_for_student()
+    {
+        // 1. اختبار لم يبدأ وقته بعد (قادم في المستقبل)
+        $futureExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'امتحان الكيمياء المستقبلي',
+            'duration_minutes' => 60,
+            'starts_at'        => now()->addDays(2),
+            'ends_at'          => now()->addDays(3),
+        ]);
+
+        Question::create([
+            'exam_id'       => $futureExam->id,
+            'type'          => 'mcq',
+            'question_text' => 'سؤال مستقبلي',
+            'a'             => 'خيار 1',
+            'b'             => 'خيار 2',
+            'correct_answer'=> 'a',
+            'points'        => 5,
+        ]);
+
+        $this->assertTrue($futureExam->isUpcoming());
+        $this->assertFalse($futureExam->isOpen());
+
+        // محاولة دخول الطالب للاختبار القادم تمنعه وتعيد توجيهه مع رسالة تنبيه
+        $takeFuture = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $futureExam->id));
+        $takeFuture->assertRedirect(route('student.exams.index'));
+        $takeFuture->assertSessionHas('error');
+
+        // 2. اختبار منتهي الفترة الزمنية (في الماضي)
+        $expiredExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'امتحان الفيزياء المنتهي',
+            'duration_minutes' => 60,
+            'starts_at'        => now()->subDays(3),
+            'ends_at'          => now()->subHour(),
+        ]);
+
+        Question::create([
+            'exam_id'       => $expiredExam->id,
+            'type'          => 'mcq',
+            'question_text' => 'سؤال قديم',
+            'a'             => 'خيار 1',
+            'b'             => 'خيار 2',
+            'correct_answer'=> 'a',
+            'points'        => 5,
+        ]);
+
+        $this->assertTrue($expiredExam->isExpired());
+        $this->assertFalse($expiredExam->isOpen());
+
+        // محاولة دخول الطالب للاختبار المنتهي تمنعه وتعيد توجيهه
+        $takeExpired = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $expiredExam->id));
+        $takeExpired->assertRedirect(route('student.exams.index'));
+        $takeExpired->assertSessionHas('error');
+
+        // 3. اختبار متاح حالياً
+        $activeExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'امتحان متاح الآن',
+            'duration_minutes' => 60,
+            'starts_at'        => now()->subHour(),
+            'ends_at'          => now()->addHours(5),
+        ]);
+
+        Question::create([
+            'exam_id'       => $activeExam->id,
+            'type'          => 'mcq',
+            'question_text' => 'سؤال متاح',
+            'a'             => 'خيار 1',
+            'b'             => 'خيار 2',
+            'correct_answer'=> 'a',
+            'points'        => 5,
+        ]);
+
+        $this->assertTrue($activeExam->isOpen());
+
+        // الطالب يدخل بنجاح للاختبار المتاح
+        $takeActive = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $activeExam->id));
+        $takeActive->assertOk();
+    }
 }
