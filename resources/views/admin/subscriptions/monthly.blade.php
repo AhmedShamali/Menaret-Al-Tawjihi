@@ -56,7 +56,7 @@
                     </select>
                 </form>
 
-                <button type="button" class="btn-royal-print-all" onclick="window.print()" title="{{ __('طباعة كشف مالي شامل') }}">
+                <button type="button" class="btn-royal-print-all" onclick="printGeneralMatrixDoc()" title="{{ __('طباعة كشف مالي شامل') }}">
                     <i class="fa-solid fa-print"></i> {{ __('طباعة الكشف العام') }}
                 </button>
             </div>
@@ -1136,9 +1136,35 @@
         document.getElementById('statementModal').style.display = 'none';
     }
 
-    function printStatementDoc() {
+    function printGeneralMatrixDoc() {
+        document.body.classList.remove('print-statement-active');
+        document.body.classList.add('print-matrix-active');
         window.print();
     }
+
+    function printStatementDoc() {
+        document.body.classList.remove('print-matrix-active');
+        document.body.classList.add('print-statement-active');
+        window.print();
+    }
+
+    // مزامنة الطباعة التلقائية مع اختصار Ctrl+P وأمر طباعة المتصفح
+    window.addEventListener('beforeprint', function() {
+        const statementModal = document.getElementById('statementModal');
+        const isStatementOpen = statementModal && (statementModal.style.display === 'flex' || statementModal.style.display === 'block');
+        if (isStatementOpen) {
+            document.body.classList.add('print-statement-active');
+            document.body.classList.remove('print-matrix-active');
+        } else {
+            document.body.classList.add('print-matrix-active');
+            document.body.classList.remove('print-statement-active');
+        }
+    });
+
+    window.addEventListener('afterprint', function() {
+        document.body.classList.remove('print-matrix-active');
+        document.body.classList.remove('print-statement-active');
+    });
 
     // مودال الرسوم الفردية للطالب
     function openStudentFeeModalFromEl(el) {
@@ -2358,27 +2384,211 @@
         color: #64748b;
     }
 
-    /* أنماط الطباعة الرسمية النظيفة A4 */
+    /* =========================================================
+       أنماط الطباعة الرسمية المزدوجة (الكشف العام + سند الحساب الفردي)
+       ========================================================= */
     @media print {
-        body * { visibility: hidden; }
-        #statementPrintableArea, #statementPrintableArea * {
-            visibility: visible;
+        @page {
+            size: auto;
+            margin: 8mm;
         }
-        #statementPrintableArea {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100% !important;
-            padding: 20px !important;
-            box-shadow: none !important;
-            background: white !important;
-        }
-        .statement-toolbar, .btn-close-x, .modal-overlay {
+
+        /* -------------------------------------------------------------
+           الوضع الأول: طباعة الكشف المالي العام للمصفوفة والطلاب
+           ------------------------------------------------------------- */
+        body:not(.print-statement-active) .modal-overlay,
+        body:not(.print-statement-active) #statementModal,
+        body:not(.print-statement-active) #editMonthModal,
+        body:not(.print-statement-active) #globalFeeModal,
+        body:not(.print-statement-active) #editStudentFeeModal,
+        body:not(.print-statement-active) .royal-toolbar-strip,
+        body:not(.print-statement-active) .matrix-filter-card,
+        body:not(.print-statement-active) .matrix-pagination-wrap,
+        body:not(.print-statement-active) .actions-statement-block,
+        body:not(.print-statement-active) .col-head-actions,
+        body:not(.print-statement-active) .btn-toggle-drawer,
+        body:not(.print-statement-active) .student-drawer-table-wrap,
+        body:not(.print-statement-active) .edit-pen-icon,
+        body:not(.print-statement-active) .student-fee-badge-btn i.fa-pen-to-square {
             display: none !important;
         }
-        @page {
-            size: A4 portrait;
-            margin: 10mm;
+
+        body:not(.print-statement-active) .subs-matrix-wrapper {
+            display: block !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+
+        body:not(.print-statement-active) .royal-academic-header-card {
+            border: 1.5px solid #1e3a8a !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            margin-bottom: 12px !important;
+            padding: 10px 14px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        body:not(.print-statement-active) .financial-kpi-grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        body:not(.print-statement-active) .kpi-card-royal {
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: none !important;
+            background: #f8fafc !important;
+            padding: 8px 10px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        body:not(.print-statement-active) .kpi-card-royal .kpi-amount {
+            font-size: 1.15rem !important;
+        }
+
+        body:not(.print-statement-active) .students-list-wrapper {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 6px !important;
+            width: 100% !important;
+        }
+
+        body:not(.print-statement-active) .list-header-row {
+            display: grid !important;
+            grid-template-columns: 240px 220px 1fr !important;
+            gap: 10px !important;
+            padding: 6px 12px !important;
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            font-size: 0.76rem !important;
+        }
+
+        body:not(.print-statement-active) .student-matrix-row {
+            display: grid !important;
+            grid-template-columns: 240px 220px 1fr !important;
+            gap: 10px !important;
+            padding: 6px 12px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 6px !important;
+            background: #ffffff !important;
+            box-shadow: none !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin-bottom: 4px !important;
+        }
+
+        body:not(.print-statement-active) .student-avatar {
+            width: 28px !important;
+            height: 28px !important;
+        }
+
+        body:not(.print-statement-active) .student-name {
+            font-size: 0.86rem !important;
+            font-weight: 800 !important;
+        }
+
+        body:not(.print-statement-active) .months-strip-grid {
+            display: grid !important;
+            grid-template-columns: repeat(12, 1fr) !important;
+            gap: 3px !important;
+        }
+
+        body:not(.print-statement-active) .month-micro-badge {
+            box-shadow: none !important;
+            border: 1px solid #cbd5e1 !important;
+            padding: 2px 1px !important;
+            font-size: 0.68rem !important;
+            min-height: 38px !important;
+        }
+
+        body:not(.print-statement-active) .month-micro-badge .m-digit {
+            font-size: 0.65rem !important;
+        }
+
+        body:not(.print-statement-active) .badge-paid {
+            background: #ecfdf5 !important;
+            color: #065f46 !important;
+            border-color: #a7f3d0 !important;
+        }
+
+        body:not(.print-statement-active) .badge-partial {
+            background: #fffbeb !important;
+            color: #92400e !important;
+            border-color: #fde68a !important;
+        }
+
+        body:not(.print-statement-active) .badge-unpaid {
+            background: #fef2f2 !important;
+            color: #991b1b !important;
+            border-color: #fecaca !important;
+        }
+
+        body:not(.print-statement-active) .badge-pending {
+            background: #eff6ff !important;
+            color: #1e40af !important;
+            border-color: #bfdbfe !important;
+        }
+
+        body:not(.print-statement-active) .badge-waived {
+            background: #f1f5f9 !important;
+            color: #475569 !important;
+            border-color: #cbd5e1 !important;
+        }
+
+        /* -------------------------------------------------------------
+           الوضع الثاني: طباعة سند كشف حساب وذمة الطالب الفردي
+           ------------------------------------------------------------- */
+        body.print-statement-active .subs-matrix-wrapper {
+            display: none !important;
+        }
+
+        body.print-statement-active #statementModal {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+        }
+
+        body.print-statement-active .modal-statement-sheet-wrap {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background: transparent !important;
+            overflow: visible !important;
+        }
+
+        body.print-statement-active .statement-toolbar,
+        body.print-statement-active .btn-close-x {
+            display: none !important;
+        }
+
+        body.print-statement-active #statementPrintableArea {
+            display: block !important;
+            width: 100% !important;
+            padding: 16px 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
     }
 </style>

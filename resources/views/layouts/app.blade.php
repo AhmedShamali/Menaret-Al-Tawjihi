@@ -1337,6 +1337,48 @@
         .tbl-btn:hover {
             background: #1e40af;
         }
+
+        /* --- أنماط الطباعة العامة للنظام (Clean Global Print Rules) --- */
+        @media print {
+            html, body {
+                background: #ffffff !important;
+                color: #0f172a !important;
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            aside.sidebar,
+            header.top-bar,
+            .top-bar,
+            .mobile-toggle,
+            .sidebar-overlay,
+            .btn-quick-nav,
+            .floating-action-btn,
+            .swal2-container,
+            .no-print {
+                display: none !important;
+            }
+            main.main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                display: block !important;
+                overflow: visible !important;
+                min-height: auto !important;
+            }
+            .content-body {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: visible !important;
+            }
+        }
     </style>
 </head>
 <body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }}">
