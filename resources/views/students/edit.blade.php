@@ -91,6 +91,26 @@
                             <label class="f-label">{{ __('رقم جوال ولي الأمر (للمتابعة الأكاديمية)') }}</label>
                             <input type="tel" name="guardian_phone" value="{{ $student->guardian_phone }}" class="f-input" placeholder="05XXXXXXXX">
                         </div>
+                        <div class="f-group full-width" style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <label class="f-label" style="margin: 0; color: #334155; font-weight: 700;">{{ __('كلمة المرور الحالية المسجلة في النظام') }}</label>
+                                <span style="font-size: 0.72rem; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                    <i class="fas fa-shield-alt"></i> {{ __('خاص بالإدارة') }}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: #1e293b; background: #ffffff; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; flex: 1; display: flex; justify-content: space-between; align-items: center;" dir="ltr">
+                                    <span id="studentEditPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a;">{{ $student->plain_password ?: '123456' }}</span>
+                                    <span id="studentEditPassMasked" style="display: none; letter-spacing: 2px; color: #64748b;">••••••••</span>
+                                    <button type="button" onclick="toggleStudentEditPass()" style="background: none; border: none; cursor: pointer; color: #64748b;" title="{{ __('إظهار / إخفاء') }}">
+                                        <i id="studentEditPassIcon" class="fas fa-eye-slash"></i>
+                                    </button>
+                                </span>
+                                <button type="button" onclick="copyStudentEditPass('{{ $student->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: #334155;" title="{{ __('نسخ كلمة المرور') }}">
+                                    <i class="far fa-copy me-1"></i> {{ __('نسخ') }}
+                                </button>
+                            </div>
+                        </div>
                         <div class="f-group full-width">
                             <label class="f-label">{{ __('كلمة المرور الجديدة') }}<span class="opt">{{ __('(اتركها فارغة إذا لم ترد التغيير)') }}</span></label>
                             <input type="password" name="password" class="f-input" placeholder="••••••••">
@@ -499,6 +519,47 @@
             btnText.textContent = 'حفظ التغييرات ✅';
             btnSpinner.style.display = 'none';
         });
+    }
+
+    function toggleStudentEditPass() {
+        const masked = document.getElementById('studentEditPassMasked');
+        const plain = document.getElementById('studentEditPassPlain');
+        const icon = document.getElementById('studentEditPassIcon');
+        if (!masked || !plain || !icon) return;
+        if (plain.style.display === 'none') {
+            masked.style.display = 'none';
+            plain.style.display = 'inline';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            plain.style.display = 'none';
+            masked.style.display = 'inline';
+            icon.className = 'fas fa-eye';
+        }
+    }
+
+    function copyStudentEditPass(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text);
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            textArea.remove();
+        }
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ __("تم نسخ كلمة المرور إلى الحافظة") }}',
+                showConfirmButton: false,
+                timer: 1800
+            });
+        } else {
+            alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+        }
     }
 </script>
 @endsection

@@ -6,14 +6,22 @@
 <div class="teacher-profile-wrapper">
 
     {{-- رأس الصفحة والمسار --}}
-    <div class="page-header">
+    <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
         <nav class="breadcrumb-nav">
             <a href="{{ route('admin.dashboard') }}"><i class="fa-solid fa-house"></i>{{ __('الرئيسية') }}</a>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
-            <span>{{ __('إدارة الكادر') }}</span>
+            <a href="{{ route('admin.teachers.info') }}">{{ __('إدارة الكادر') }}</a>
             <span class="sep"><i class="fa-solid fa-chevron-left"></i></span>
             <span class="current">{{ __('الملف الأكاديمي للمعلم') }}</span>
         </nav>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <a href="{{ route('admin.teachers.edit', $teacher->id) }}" style="background: #ffffff; color: var(--primary-color, #4f46e5); border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(15,23,42,0.05);">
+                <i class="fa-solid fa-pen-to-square"></i> {{ __('تعديل بيانات المعلم') }}
+            </a>
+            <a href="{{ route('admin.teachers.info') }}" style="background: var(--primary-color, #4f46e5); color: #ffffff; border: 1px solid #4338ca; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 1px 3px rgba(79,70,229,0.2);">
+                <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('سجل المعلمين') }}
+            </a>
+        </div>
     </div>
 
     {{-- بطاقة رأس الملف الشخصي (Hero Card) --}}
@@ -52,7 +60,47 @@
             </div>
             <div class="info-content">
                 <span class="info-label">{{ __('البريد الإلكتروني') }}</span>
-                <span class="info-value">{{ $teacher->email }}</span>
+                <span class="info-value font-mono" dir="ltr">{{ $teacher->email }}</span>
+            </div>
+        </div>
+
+        <!-- كلمة المرور وحساب الدخول -->
+        <div class="info-card">
+            <div class="info-icon" style="background: #fef3c7; color: #d97706;">
+                <i class="fa-solid fa-key"></i>
+            </div>
+            <div class="info-content" style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="info-label">{{ __('كلمة المرور وحساب الدخول') }}</span>
+                    <span style="font-size: 0.7rem; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                        <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;">
+                    <span class="info-value font-mono" dir="ltr">
+                        <span id="teacherPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $teacher->plain_password ?: '123456' }}</span>
+                        <span id="teacherPassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <button type="button" onclick="toggleTeacherPassVisibility()" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
+                            <i id="teacherPassIcon" class="fa-solid fa-eye-slash"></i>
+                        </button>
+                        <button type="button" onclick="copyTeacherPass('{{ $teacher->plain_password ?: '123456' }}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- رقم الهاتف / التواصل -->
+        <div class="info-card">
+            <div class="info-icon" style="background: #ecfdf5; color: #059669;">
+                <i class="fa-solid fa-phone"></i>
+            </div>
+            <div class="info-content">
+                <span class="info-label">{{ __('رقم الهاتف / التواصل') }}</span>
+                <span class="info-value font-mono" dir="ltr">{{ $teacher->phone ?: __('غير متوفر') }}</span>
             </div>
         </div>
 
@@ -360,4 +408,47 @@
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
+
+<script>
+function toggleTeacherPassVisibility() {
+    const masked = document.getElementById('teacherPassMasked');
+    const plain = document.getElementById('teacherPassPlain');
+    const icon = document.getElementById('teacherPassIcon');
+    if (!masked || !plain || !icon) return;
+    if (plain.style.display === 'none') {
+        masked.style.display = 'none';
+        plain.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        plain.style.display = 'none';
+        masked.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+function copyTeacherPass(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ __("تم نسخ كلمة المرور إلى الحافظة") }}',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    } else {
+        alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+</script>
 @endsection

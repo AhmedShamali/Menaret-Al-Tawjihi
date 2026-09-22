@@ -43,7 +43,16 @@
                             </div>
                         </td>
                         <td>
-                            <span class="email-text font-mono">{{ $student->email }}</span>
+                            <div class="email-text font-mono" dir="ltr">{{ $student->email }}</div>
+                            <div style="margin-top: 4px; display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; font-weight: 700; font-family: monospace;" dir="ltr">
+                                    <i class="fa-solid fa-key" style="color: #d97706; font-size: 0.7rem;"></i>
+                                    <span>{{ $student->plain_password ?: '123456' }}</span>
+                                </span>
+                                <button type="button" onclick="copyProfileAllPass('{{ $student->plain_password ?: '123456' }}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 1px 6px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
                         </td>
                         <td>
                             <div class="date-badge font-mono">
@@ -219,4 +228,31 @@
         border-top: 1px solid #f1f5f9;
     }
 </style>
+
+<script>
+function copyProfileAllPass(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ __("تم نسخ كلمة المرور") }}',
+            showConfirmButton: false,
+            timer: 1500
+        });
+    } else {
+        alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+</script>
 @endsection

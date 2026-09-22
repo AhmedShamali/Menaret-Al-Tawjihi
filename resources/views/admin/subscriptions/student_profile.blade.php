@@ -54,6 +54,7 @@
 
                 <div class="student-meta-strip">
                     <span class="meta-item"><i class="fa-solid fa-id-card text-muted"></i> <strong>{{ __('رقم الهوية:') }}</strong> <span class="font-mono" dir="ltr">{{ $student->nid ?? '-' }}</span></span>
+                    <span class="meta-item"><i class="fa-solid fa-key text-amber"></i> <strong>{{ __('كلمة المرور:') }}</strong> <code class="font-mono" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a; font-weight: 800; cursor: pointer;" title="{{ __('انقر لنسخ كلمة المرور') }}" onclick="if(typeof Swal !== 'undefined'){ navigator.clipboard.writeText('{{ $student->plain_password ?: '123456' }}'); Swal.fire({toast:true,position:'top-end',icon:'success',title:'{{ __('تم نسخ كلمة المرور') }}',showConfirmButton:false,timer:1500}); } else { alert('{{ __('تم نسخ كلمة المرور') }}'); }">{{ $student->plain_password ?: '123456' }}</code></span>
                     <span class="meta-item"><i class="fa-solid fa-phone text-muted"></i> <strong>{{ __('هاتف الطالب:') }}</strong> <a href="tel:{{ $student->phone }}" class="phone-link font-mono" dir="ltr">{{ $student->phone ?? '-' }}</a></span>
                     @if($student->guardian_phone)
                         <span class="meta-item"><i class="fa-solid fa-user-shield text-muted"></i> <strong>{{ __('ولي الأمر:') }}</strong> <a href="tel:{{ $student->guardian_phone }}" class="phone-link font-mono" dir="ltr">{{ $student->guardian_phone }}</a></span>

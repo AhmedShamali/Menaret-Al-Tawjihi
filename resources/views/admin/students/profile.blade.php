@@ -84,6 +84,30 @@
                         <label>{{ __('رقم الهاتف') }}</label>
                         <p class="font-mono">{{ $student->phone ?? '—' }}</p>
                     </div>
+                    <div class="info-item">
+                        <label>{{ __('البريد الإلكتروني الرسمي') }}</label>
+                        <p class="font-mono" dir="ltr">{{ $student->email ?? '—' }}</p>
+                    </div>
+                    <div class="info-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label style="margin: 0;">{{ __('كلمة المرور وحساب الدخول') }}</label>
+                            <span style="font-size: 0.7rem; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
+                            </span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="font-mono" dir="ltr">
+                                <span id="studentProfilePassPlain" style="background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $student->plain_password ?: '123456' }}</span>
+                                <span id="studentProfilePassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                            </span>
+                            <button type="button" onclick="toggleStudentProfilePass()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
+                                <i id="studentProfilePassIcon" class="fa-solid fa-eye-slash"></i>
+                            </button>
+                            <button type="button" onclick="copyStudentProfilePass('{{ $student->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -287,4 +311,47 @@
         .info-grid { grid-template-columns: 1fr; }
     }
 </style>
+
+<script>
+function toggleStudentProfilePass() {
+    const masked = document.getElementById('studentProfilePassMasked');
+    const plain = document.getElementById('studentProfilePassPlain');
+    const icon = document.getElementById('studentProfilePassIcon');
+    if (!masked || !plain || !icon) return;
+    if (plain.style.display === 'none') {
+        masked.style.display = 'none';
+        plain.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        plain.style.display = 'none';
+        masked.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+function copyStudentProfilePass(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ __("تم نسخ كلمة المرور إلى الحافظة") }}',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    } else {
+        alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+</script>
 @endsection

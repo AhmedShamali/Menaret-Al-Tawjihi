@@ -78,6 +78,27 @@
                 </div>
 
                 <div class="field-item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label class="academic-label" style="margin: 0;">{{ __('كلمة المرور الحالية المسجلة') }}</label>
+                        <span style="font-size: 0.7rem; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                            <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="academic-input font-mono" style="background: #f8fafc; display: flex; align-items: center; justify-content: space-between; flex: 1; min-height: 42px;" dir="ltr">
+                            <span id="editTeacherPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800;">{{ $teacher->plain_password ?: '123456' }}</span>
+                            <span id="editTeacherPassMasked" style="display: none; letter-spacing: 2px; color: #64748b;">••••••••</span>
+                            <button type="button" onclick="toggleEditTeacherPass()" style="background: none; border: none; cursor: pointer; color: #64748b; padding: 4px;" title="{{ __('إظهار / إخفاء') }}">
+                                <i id="editTeacherPassIcon" class="fa-solid fa-eye-slash"></i>
+                            </button>
+                        </span>
+                        <button type="button" onclick="copyEditTeacherPass('{{ $teacher->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 9px 14px; font-size: 0.85rem; font-weight: 700; color: #334155; cursor: pointer;" title="{{ __('نسخ كلمة المرور') }}">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field-item">
                     <label class="academic-label">{{ __('كلمة المرور الجديدة (اختياري)') }}</label>
                     <input type="password" name="password" placeholder="{{ __('اتركها فارغة إذا لم ترغب بتغييرها') }}" class="academic-input">
                 </div>
@@ -330,4 +351,47 @@
         .btn-save-primary, .btn-cancel-secondary { width: 100%; justify-content: center; text-align: center; }
     }
 </style>
+
+<script>
+function toggleEditTeacherPass() {
+    const masked = document.getElementById('editTeacherPassMasked');
+    const plain = document.getElementById('editTeacherPassPlain');
+    const icon = document.getElementById('editTeacherPassIcon');
+    if (!masked || !plain || !icon) return;
+    if (plain.style.display === 'none') {
+        masked.style.display = 'none';
+        plain.style.display = 'inline';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        plain.style.display = 'none';
+        masked.style.display = 'inline';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+function copyEditTeacherPass(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ __("تم نسخ كلمة المرور إلى الحافظة") }}',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    } else {
+        alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+</script>
 @endsection

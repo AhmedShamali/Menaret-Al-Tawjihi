@@ -265,7 +265,7 @@
                                     <i class="fas fa-key" style="color: #d97706; font-size: 10px;"></i>
                                     <span>{{ $teacher->plain_password ?: '123456' }}</span>
                                 </span>
-                                <button type="button" onclick="navigator.clipboard.writeText('{{ $teacher->plain_password ?: '123456' }}'); Swal.fire({toast: true, position: 'top-end', icon: 'success', title: 'تم نسخ كلمة المرور', showConfirmButton: false, timer: 1500});" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                                <button type="button" onclick="copyTeacherTablePass('{{ $teacher->plain_password ?: '123456' }}')" style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 5px; padding: 2px 6px; font-size: 10px; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
@@ -461,6 +461,31 @@
                 });
             }
         });
+    }
+
+    function copyTeacherTablePass(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text);
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            textArea.remove();
+        }
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: '{{ __("تم نسخ كلمة المرور") }}',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        } else {
+            alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+        }
     }
 </script>
 @endsection

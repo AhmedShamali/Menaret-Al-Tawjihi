@@ -184,12 +184,10 @@
                                     </div>
                                     <div class="meta-line">
                                         <span class="student-email" dir="ltr">{{ $student->email }}</span>
-                                        @if($student->plain_password)
-                                            <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password }}', '{{ __('تم نسخ كلمة المرور') }}')">
-                                                <i class="fa-solid fa-key"></i>
-                                                <code>{{ $student->plain_password }}</code>
-                                            </span>
-                                        @endif
+                                        <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password ?: '123456' }}', '{{ __('تم نسخ كلمة المرور') }}')">
+                                            <i class="fa-solid fa-key"></i>
+                                            <code>{{ $student->plain_password ?: '123456' }}</code>
+                                        </span>
                                     </div>
                                 </div>
                             </div>

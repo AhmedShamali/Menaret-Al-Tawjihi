@@ -79,6 +79,31 @@
                 </span>
             </div>
 
+            <!-- كلمة المرور وحساب الدخول -->
+            <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.74rem; font-weight: 700; color: #64748b;">{{ __('كلمة المرور وحساب الدخول') }}</span>
+                    <span style="font-size: 0.68rem; color: #0284c7; background: #e0f2fe; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                        <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px;">
+                    <span class="font-mono" style="font-size: 0.88rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;" dir="ltr">
+                        <i class="fa-solid fa-key" style="color: #d97706;"></i>
+                        <span id="studentPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.92rem;">{{ $student->plain_password ?: '123456' }}</span>
+                        <span id="studentPassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                    </span>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <button type="button" onclick="toggleStudentPassVisibility()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569; transition: 0.2s;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
+                            <i id="studentPassIcon" class="fa-solid fa-eye-slash"></i>
+                        </button>
+                        <button type="button" onclick="copyStudentPass('{{ $student->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569; transition: 0.2s;" title="{{ __('نسخ كلمة المرور') }}">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- رقم الجوال -->
             <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
                 <span style="font-size: 0.74rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">{{ __('رقم الجوال') }}</span>
@@ -874,6 +899,47 @@ function saveStudentMonthlyFee(studentId) {
         btn.innerHTML = origHtml;
         alert('{{ __("تعذر الاتصال بالخادم") }}');
     });
+}
+
+function toggleStudentPassVisibility() {
+    const masked = document.getElementById('studentPassMasked');
+    const plain = document.getElementById('studentPassPlain');
+    const icon = document.getElementById('studentPassIcon');
+    if (!masked || !plain || !icon) return;
+    if (plain.style.display === 'none') {
+        masked.style.display = 'none';
+        plain.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye-slash';
+    } else {
+        plain.style.display = 'none';
+        masked.style.display = 'inline-flex';
+        icon.className = 'fa-solid fa-eye';
+    }
+}
+
+function copyStudentPass(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+    }
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: '{{ __("تم نسخ كلمة المرور إلى الحافظة") }}',
+            showConfirmButton: false,
+            timer: 1800
+        });
+    } else {
+        alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
 }
 </script>
 
