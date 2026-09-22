@@ -1422,6 +1422,79 @@
                 overflow: visible !important;
             }
         }
+
+        /* --- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) --- */
+        .ed-scroll-top-btn {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0f243d 0%, #1e3a8a 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            cursor: pointer;
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateY(14px) scale(0.92);
+            transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                        background 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+
+        .ed-scroll-top-btn.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+
+        .ed-scroll-top-btn:hover {
+            background: linear-gradient(135deg, #173252 0%, #2563eb 100%);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
+            transform: translateY(-3px) scale(1.05);
+            color: #ffffff;
+        }
+
+        .ed-scroll-top-btn:active {
+            transform: translateY(0) scale(0.96);
+        }
+
+        html[dir="ltr"] .ed-scroll-top-btn {
+            left: auto;
+            right: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .ed-scroll-top-btn {
+                bottom: 76px;
+                left: 16px;
+                width: 38px;
+                height: 38px;
+                font-size: 0.92rem;
+                border-radius: 8px;
+            }
+            html[dir="ltr"] .ed-scroll-top-btn {
+                left: auto;
+                right: 16px;
+            }
+        }
+
+        @media print {
+            .ed-scroll-top-btn {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }}">
@@ -2259,6 +2332,30 @@
                 navigator.serviceWorker.register('/sw.js').catch(() => {});
             });
         }
+
+        // تفعيل زر العودة إلى بداية الصفحة بسلاسة
+        function scrollToPageTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        window.addEventListener('scroll', function() {
+            const btn = document.getElementById('edScrollTopBtn');
+            if (btn) {
+                if (window.scrollY > 250) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
+            }
+        }, { passive: true });
     </script>
+
+    <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->
+    <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
 </body>
 </html>
