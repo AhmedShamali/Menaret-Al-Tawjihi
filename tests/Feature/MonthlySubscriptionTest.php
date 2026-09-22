@@ -310,4 +310,46 @@ class MonthlySubscriptionTest extends TestCase
         $response->assertSee('محمود الفلسطيني');
         $response->assertSee('875478542');
     }
+
+    /**
+     * فحص واجهة الإدارة المالية المستقلة للطالب (الشهور الـ 12 والبيانات الفردية)
+     */
+    public function test_admin_can_view_dedicated_student_subscription_profile(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Test Profile',
+            'email' => 'admin_profile@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'أحمد العبدالله',
+            'name_en' => 'Ahmed Alabdallah',
+            'nid' => '901234567',
+            'email' => 'ahmed.profile@tawjihi.ps',
+            'password' => bcrypt('secret123'),
+            'phone' => '0599112233',
+            'age' => 18,
+            'gender' => 'male',
+            'status' => 'active',
+            'stage_id' => $stage->id,
+            'monthly_fee' => 150.00,
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.subscriptions.student', ['student' => $student->id]));
+
+        $response->assertStatus(200);
+        $response->assertSee('أحمد العبدالله');
+        $response->assertSee('901234567');
+        $response->assertSee('إجمالي المستحق المطلوب للعام');
+        $response->assertSee('إجمالي المبلغ المسدد المعتمد');
+        $response->assertSee('الرصيد المتبقي بذمة الطالب');
+        $response->assertSee('سجل استحقاقات وسداد الشهور الـ 12');
+        $response->assertSee('1- الشهر الأول');
+        $response->assertSee('12- الشهر الثاني عشر');
+        $response->assertSee('تسجيل وسداد القسط');
+    }
 }

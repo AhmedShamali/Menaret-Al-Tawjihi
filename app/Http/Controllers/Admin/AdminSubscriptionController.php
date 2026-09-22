@@ -369,4 +369,76 @@ class AdminSubscriptionController extends Controller
             'totalDueAmount', 'totalPaidAmount', 'totalRemainingAmount'
         ));
     }
+
+    /**
+     * واجهة الإدارة المالية المستقلة والشاملة لاشتراكات طالب محدد (12 شهراً)
+     */
+    public function studentProfile(Request $request, Student $student)
+    {
+        $year = $request->query('year', '2026-2027');
+
+        // مزامنة وتهيئة الشهور الـ 12 للطالب إن لم تكن مكتملة
+        if ($student->monthlySubscriptions()->where('academic_year', $year)->count() < 12) {
+            StudentMonthlySubscription::syncWithStudentPayments($student, $year);
+        }
+
+        $subscriptions = $student->monthlySubscriptions()
+            ->where('academic_year', $year)
+            ->orderBy('month')
+            ->get();
+
+        // حساب المؤشرات المالية الرسمية للطالب
+        $studentDue = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
+        $studentPaid = (float) $subscriptions->sum(function ($s) {
+            if ($s->status === 'waived') return 0.00;
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
+            return (float)($s->paid_amount ?? 0);
+        });
+        $studentRemaining = max(0.00, round($studentDue - $studentPaid, 2));
+        $paidCount = $subscriptions->where('status', 'paid')->count();
+        $partialCount = $subscriptions->where('status', 'partial')->count();
+        $waivedCount = $subscriptions->where('status', 'waived')->count();
+        $pendingCount = $subscriptions->where('status', 'pending')->count();
+        $unpaidCount = $subscriptions->where('status', 'unpaid')->count();
+
+        $collectionRate = $studentDue > 0 ? round(($studentPaid / $studentDue) * 100, 1) : 100;
+
+        $monthsNames = StudentMonthlySubscription::monthNames();
+
+        // الطلاب السابق والتالي للتنقل السريع والمريح بين السجلات
+        $prevStudent = Student::where('stage_id', $student->stage_id)
+            ->where('id', '<', $student->id)
+            ->orderBy('id', 'desc')
+            ->first() ?? Student::where('id', '<', $student->id)->orderBy('id', 'desc')->first();
+
+        $nextStudent = Student::where('stage_id', $student->stage_id)
+            ->where('id', '>', $student->id)
+            ->orderBy('id', 'asc')
+            ->first() ?? Student::where('id', '>', $student->id)->orderBy('id', 'asc')->first();
+
+        // قائمة مختصرة لجميع طلاب المرحلة للتبديل الفوري
+        $allStageStudents = Student::where('stage_id', $student->stage_id)
+            ->select('id', 'name_ar', 'name_en', 'nid')
+            ->orderBy('name_ar')
+            ->get();
+
+        return view('admin.subscriptions.student_profile', compact(
+            'student',
+            'subscriptions',
+            'year',
+            'monthsNames',
+            'studentDue',
+            'studentPaid',
+            'studentRemaining',
+            'paidCount',
+            'partialCount',
+            'waivedCount',
+            'pendingCount',
+            'unpaidCount',
+            'collectionRate',
+            'prevStudent',
+            'nextStudent',
+            'allStageStudents'
+        ));
+    }
 }

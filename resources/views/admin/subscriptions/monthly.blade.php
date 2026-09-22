@@ -202,7 +202,7 @@
             <span class="col-head-student">{{ __('بيانات الطالب والمرحلة') }}</span>
             <span class="col-head-finance">{{ __('الموقف المالي للطالب (المستحق / المسدد / الرصيد المتبقي)') }}</span>
             <span class="col-head-timeline">{{ __('مسير الشهور الـ 12 (انقر على أي شهر لتعديله أو تسجيل دفع جزئي)') }}</span>
-            <span class="col-head-actions">{{ __('سند وكشف الذمة') }}</span>
+            <span class="col-head-actions">{{ __('التحكم المالي والسندات') }}</span>
         </div>
 
         @forelse($students as $student)
@@ -228,7 +228,7 @@
                 <div class="student-profile-block">
                     <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $studentDisplayName }}">
                     <div class="student-text">
-                        <a href="{{ route('admin.students.show', $student->id) }}" class="student-name">
+                        <a href="{{ route('admin.subscriptions.student', ['student' => $student->id, 'year' => $year]) }}" class="student-name" title="{{ __('فتح الواجهة المالية وسجل اشتراكات الطالب') }}">
                             {{ $studentDisplayName }}
                         </a>
                         <div class="student-sub-line">
@@ -330,7 +330,7 @@
                     @endfor
                 </div>
 
-                {{-- أزرار الإجراءات والكشف الرسمي --}}
+                {{-- أزرار الإجراءات والكشف الرسمي والملف المالي المستقل --}}
                 <div class="student-actions-block">
                     <button type="button" 
                             class="btn-statement-royal"
@@ -340,95 +340,12 @@
                         <span>{{ __('كشف رسمي') }}</span>
                     </button>
 
-                    <button type="button" 
-                            class="btn-toggle-drawer"
-                            onclick="toggleStudentTableDrawer({{ $student->id }})"
-                            title="{{ __('استعراض جدول الشهور الـ 12 والمبالغ التفصيلية') }}">
-                        <i class="fa-solid fa-table-list"></i>
-                    </button>
-                </div>
-
-                {{-- جدول الشهور الـ 12 التفصيلي للطالب (Drawer قابل للفتح والإغلاق) --}}
-                <div class="student-drawer-table-wrap" id="drawer_table_{{ $student->id }}" style="display: none;">
-                    <div class="drawer-header-bar">
-                        <span class="drawer-title"><i class="fa-solid fa-list-check"></i> {{ __('كشف أقساط واشتراكات الشهور الـ 12 المفصل للطالب:') }} <strong>{{ $studentDisplayName }}</strong></span>
-                        <button type="button" class="btn-close-drawer" onclick="toggleStudentTableDrawer({{ $student->id }})">&times;</button>
-                    </div>
-                    <div class="table-responsive-box">
-                        <table class="classic-ledger-table">
-                            <thead>
-                                <tr>
-                                    <th>{{ __('الشهر') }}</th>
-                                    <th>{{ __('المبلغ المستحق (₪)') }}</th>
-                                    <th>{{ __('المبلغ المسدد (₪)') }}</th>
-                                    <th>{{ __('الرصيد المتبقي (₪)') }}</th>
-                                    <th>{{ __('حالة الدفعة') }}</th>
-                                    <th>{{ __('تاريخ السداد') }}</th>
-                                    <th>{{ __('البيان والملاحظات') }}</th>
-                                    <th>{{ __('إجراء') }}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for($dm = 1; $dm <= 12; $dm++)
-                                    @php
-                                        $dSub = $subsByMonth[$dm] ?? null;
-                                        $dSt = $dSub ? $dSub->status : 'unpaid';
-                                        $dAmt = $dSub ? (float)$dSub->amount : (float)$student->monthlyAmountDue();
-                                        $dPaid = $dSub ? (float)($dSub->paid_amount ?? 0) : 0.00;
-                                        if ($dSt === 'paid' && $dPaid <= 0) $dPaid = $dAmt;
-                                        $dRem = $dSub ? (float)$dSub->remaining_amount : ($dSt === 'waived' ? 0.00 : $dAmt);
-                                        $dNotes = $dSub ? ($dSub->notes ?? '') : '';
-                                        $dPaidAt = $dSub && $dSub->paid_at ? $dSub->paid_at->format('Y-m-d') : '-';
-                                        $dTitle = $monthsNames[$dm] ?? (app()->getLocale() === 'en' ? "Month $dm" : "شهر $dm");
-                                    @endphp
-                                    <tr id="drawer_row_{{ $student->id }}_{{ $dm }}">
-                                        <td>
-                                            <strong class="font-mono text-navy">{{ sprintf('%02d', $dm) }}</strong> - {{ $dTitle }}
-                                        </td>
-                                        <td class="font-mono font-bold" id="drawer_amt_{{ $student->id }}_{{ $dm }}">{{ number_format($dAmt, 2) }} ₪</td>
-                                        <td class="font-mono font-bold text-emerald" id="drawer_paid_{{ $student->id }}_{{ $dm }}">{{ number_format($dPaid, 2) }} ₪</td>
-                                        <td class="font-mono font-bold {{ $dRem > 0 ? 'text-rose' : 'text-emerald' }}" id="drawer_rem_{{ $student->id }}_{{ $dm }}">
-                                            {{ number_format($dRem, 2) }} ₪
-                                        </td>
-                                        <td id="drawer_status_{{ $student->id }}_{{ $dm }}">
-                                            <span class="status-pill-small badge-{{ $dSt }}">
-                                                @if($dSt === 'paid')
-                                                    <i class="fa-solid fa-check"></i> {{ __('مسدد بالكامل') }}
-                                                @elseif($dSt === 'partial')
-                                                    <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي (متبقي)') }}
-                                                @elseif($dSt === 'pending')
-                                                    <i class="fa-solid fa-hourglass-half"></i> {{ __('قيد المراجعة') }}
-                                                @elseif($dSt === 'waived')
-                                                    <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
-                                                @else
-                                                    <i class="fa-solid fa-xmark"></i> {{ __('غير مسدد') }}
-                                                @endif
-                                            </span>
-                                        </td>
-                                        <td class="font-mono text-muted" style="font-size: 0.8rem;">{{ $dPaidAt }}</td>
-                                        <td class="text-notes" id="drawer_notes_{{ $student->id }}_{{ $dm }}">{{ $dNotes ?: '-' }}</td>
-                                        <td>
-                                            <button type="button" 
-                                                    class="btn-edit-row"
-                                                    data-student-id="{{ $student->id }}"
-                                                    data-student-name="{{ $studentDisplayName }}"
-                                                    data-month="{{ $dm }}"
-                                                    data-month-title="{{ $dTitle }}"
-                                                    data-status="{{ $dSt }}"
-                                                    data-amount="{{ $dAmt }}"
-                                                    data-paid-amount="{{ $dPaid }}"
-                                                    data-remaining-amount="{{ $dRem }}"
-                                                    data-notes="{{ $dNotes }}"
-                                                    data-student-fee="{{ (float)$student->monthlyAmountDue() }}"
-                                                    onclick="openEditMonthModalFromEl(this)">
-                                                <i class="fa-solid fa-pen"></i> {{ __('تعديل') }}
-                                            </button>
-                                        </td>
-                                    </tr>
-                                @endfor
-                            </tbody>
-                        </table>
-                    </div>
+                    <a href="{{ route('admin.subscriptions.student', ['student' => $student->id, 'year' => $year]) }}" 
+                       class="btn-student-profile-link"
+                       title="{{ __('فتح الواجهة المالية والاشتراكات المستقلة للطالب') }}">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>{{ __('الملف المالي') }}</span>
+                    </a>
                 </div>
             </div>
         @empty
@@ -1955,19 +1872,26 @@
         background: #fef3c7;
         border-color: #b45309;
     }
-    .btn-toggle-drawer {
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
-        color: #334155;
-        padding: 6px 9px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 0.8rem;
-    }
-    .btn-toggle-drawer:hover {
+    .btn-student-profile-link {
         background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+    .btn-student-profile-link:hover {
+        background: #1e3a8a;
+        color: #ffffff;
         border-color: #1e3a8a;
-        color: #1e3a8a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
     }
 
     /* درج جدول الشهور الـ 12 */
