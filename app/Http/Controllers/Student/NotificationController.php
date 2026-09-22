@@ -319,7 +319,9 @@ class NotificationController extends Controller
         // رسائل غير مقروءة
         $messagesUnread = Message::where('student_id', $student->id)
             ->where('sender_type', '!=', 'student')
-            ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
+            ->where(function ($q) {
+                $q->where('is_read', false)->orWhereNull('is_read');
+            })
             ->latest()
             ->take(5)
             ->get()
@@ -335,7 +337,13 @@ class NotificationController extends Controller
             });
 
         $combined = $systemUnread->concat($messagesUnread)->sortByDesc('created_at')->take(5)->values();
-        $totalCount = $student->unreadNotifications()->count() + Message::where('student_id', $student->id)->where('sender_type', '!=', 'student')->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->count();
+        $unreadMessagesCount = Message::where('student_id', $student->id)
+            ->where('sender_type', '!=', 'student')
+            ->where(function ($q) {
+                $q->where('is_read', false)->orWhereNull('is_read');
+            })
+            ->count();
+        $totalCount = $student->unreadNotifications()->count() + $unreadMessagesCount;
 
         return response()->json([
             'count' => $totalCount,

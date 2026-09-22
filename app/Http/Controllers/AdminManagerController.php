@@ -23,7 +23,9 @@ class AdminManagerController extends Controller {
 
     public function inbox() {
         $chats = Student::withCount(['messages' => function($q) {
-            $q->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))->where('sender_type', 'student');
+            $q->where(function($query) {
+                $query->where('is_read', false)->orWhereNull('is_read');
+            })->where('sender_type', 'student');
         }])->has('messages')->latest()->get();
 
         return view('admin.management.inbox', compact('chats'));
@@ -635,8 +637,15 @@ class AdminManagerController extends Controller {
         $chartData = collect();
         
         try {
+            $driver = DB::getDriverName();
+            $hourExpr = match($driver) {
+                'pgsql'  => "date_part('hour', created_at)::int as hour",
+                'sqlite' => "cast(strftime('%H', created_at) as integer) as hour",
+                default  => "HOUR(created_at) as hour",
+            };
+
             $chartData = Activity::select(
-                DB::raw("date_part('hour', created_at) as hour"),
+                DB::raw($hourExpr),
                 DB::raw('count(*) as count')
             )
             ->where('created_at', '>', now()->subDay())
