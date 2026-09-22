@@ -45,7 +45,7 @@
         </div>
     </header>
 
-    <!-- 2. منصة الضبط والرقابة الأكاديمية الكلاسيكية الموحدة (Master Institutional Console) -->
+    <!-- 2. منصة الضبط والرقابة الأكاديمية الكلاسيكية المعتمدة (Master Institutional Console) -->
     <div class="classic-registry-console">
         
         <!-- الجانب الأيمن: المؤشرات الرسمية للسجل الأكاديمي -->
@@ -634,7 +634,7 @@
         border-color: #94a3b8;
     }
 
-    /* 2. منصة الضبط والرقابة الأكاديمية الكلاسيكية الموحدة (Master Console) */
+    /* 2. منصة الضبط والرقابة الأكاديمية الكلاسيكية المعتمدة (Master Console) */
     .classic-registry-console {
         display: grid;
         grid-template-columns: 1fr auto 1.25fr;

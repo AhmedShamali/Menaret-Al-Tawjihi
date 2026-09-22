@@ -63,9 +63,9 @@
         </div>
     </div>
 
-    {{-- 2. العدادات والمؤشرات المالية الكبرى للمدير (اللي لازم يصلني، اللي وصلني، المتبقي بذمة الطلاب) --}}
+    {{-- 2. العدادات والمؤشرات المالية الكبرى (إجمالي المستحق، المحصل الفعلي، الرصيد المتبقي) --}}
     <div class="financial-kpi-grid">
-        {{-- عداد 1: اللي لازم يصلني --}}
+        {{-- عداد 1: إجمالي المستحق المطلوب --}}
         <div class="kpi-card-royal card-expected" style="--kpi-theme: #1e3a8a;">
             <div class="kpi-header">
                 <span class="kpi-tag-pill bg-navy-subtle">{{ __('المستحق الإجمالي المطلوب') }}</span>
@@ -74,7 +74,7 @@
                 </div>
             </div>
             <div class="kpi-body">
-                <span class="kpi-title">{{ __('اللي لازم يصلني') }}</span>
+                <span class="kpi-title">{{ __('إجمالي المستحق المطلوب') }}</span>
                 <div class="kpi-amount font-mono text-navy" id="stat_total_expected">{{ number_format($stats['total_expected'], 2) }} ₪</div>
                 <p class="kpi-subtext">{{ __('إجمالي الرسوم المقررة لكافة الطلاب (12 شهراً)') }}</p>
             </div>
@@ -83,7 +83,7 @@
             </div>
         </div>
 
-        {{-- عداد 2: اللي وصلني --}}
+        {{-- عداد 2: إجمالي الإيراد المحصل --}}
         <div class="kpi-card-royal card-collected" style="--kpi-theme: #059669;">
             <div class="kpi-header">
                 <span class="kpi-tag-pill bg-emerald-subtle">{{ __('المحصل الفعلي المعتمد') }}</span>
@@ -92,16 +92,16 @@
                 </div>
             </div>
             <div class="kpi-body">
-                <span class="kpi-title text-emerald">{{ __('اللي وصلني') }}</span>
+                <span class="kpi-title text-emerald">{{ __('إجمالي الإيراد المحصل') }}</span>
                 <div class="kpi-amount font-mono text-emerald" id="stat_total_collected">{{ number_format($stats['total_collected'], 2) }} ₪</div>
                 <p class="kpi-subtext">{{ __('المبالغ المقبوضة فعلياً في خزينة المنصة') }}</p>
             </div>
             <div class="kpi-footer">
-                <span><i class="fa-solid fa-receipt"></i> <span id="stat_paid_count">{{ $stats['paid_count'] }}</span> {{ __('شهر خالص بالكامل') }}</span>
+                <span><i class="fa-solid fa-receipt"></i> <span id="stat_paid_count">{{ $stats['paid_count'] }}</span> {{ __('شهراً مسدداً بالكامل') }}</span>
             </div>
         </div>
 
-        {{-- عداد 3: المتبقي بذمة الطلاب --}}
+        {{-- عداد 3: إجمالي الرصيد المتبقي --}}
         <div class="kpi-card-royal card-remaining" style="--kpi-theme: #dc2626;">
             <div class="kpi-header">
                 <span class="kpi-tag-pill bg-rose-subtle">{{ __('عجز التحصيل والمتأخرات') }}</span>
@@ -110,7 +110,7 @@
                 </div>
             </div>
             <div class="kpi-body">
-                <span class="kpi-title text-rose">{{ __('المتبقي بذمة الطلاب') }}</span>
+                <span class="kpi-title text-rose">{{ __('إجمالي الرصيد المتبقي') }}</span>
                 <div class="kpi-amount font-mono text-rose" id="stat_total_remaining">{{ number_format($stats['total_remaining'], 2) }} ₪</div>
                 <p class="kpi-subtext">{{ __('أقساط غير مسددة + متبقيات الدفعات الجزئية') }}</p>
             </div>
@@ -171,8 +171,8 @@
             <div class="filter-cell">
                 <select name="status" class="filter-select">
                     <option value="">{{ __('كافة حالات الدفع') }}</option>
-                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('مسدد وخالص بالكامل') }} ✅</option>
-                    <option value="partial" {{ $statusFilter === 'partial' ? 'selected' : '' }}>{{ __('دفع جزئي (متبقي عليه)') }} ⚠️</option>
+                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('مسدد بالكامل رسمياً') }} ✅</option>
+                    <option value="partial" {{ $statusFilter === 'partial' ? 'selected' : '' }}>{{ __('سداد جزئي (يوجد رصيد متبقي)') }} ⚠️</option>
                     <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>{{ __('قيد المراجعة والاعتماد') }} ⏳</option>
                     <option value="unpaid" {{ $statusFilter === 'unpaid' ? 'selected' : '' }}>{{ __('غير مسدد نهائياً') }} ❌</option>
                     <option value="waived" {{ $statusFilter === 'waived' ? 'selected' : '' }}>{{ __('إعفاء / منحة دراسية') }} 🏷️</option>
@@ -188,8 +188,8 @@
 
         <div class="legend-strip">
             <span class="legend-title">{{ __('دليل الحالات والألوان:') }}</span>
-            <span class="legend-item"><span class="badge-mini bg-paid"></span> {{ __('خالص ومسدد بالكامل') }} ✅</span>
-            <span class="legend-item"><span class="badge-mini bg-partial"></span> {{ __('دفع جزئي ومتبقي عليه') }} ⚠️</span>
+            <span class="legend-item"><span class="badge-mini bg-paid"></span> {{ __('مسدد بالكامل رسمياً') }} ✅</span>
+            <span class="legend-item"><span class="badge-mini bg-partial"></span> {{ __('سداد جزئي مع بقاء رصيد') }} ⚠️</span>
             <span class="legend-item"><span class="badge-mini bg-pending"></span> {{ __('قيد المراجعة') }} ⏳</span>
             <span class="legend-item"><span class="badge-mini bg-unpaid"></span> {{ __('غير مسدد') }} ❌</span>
             <span class="legend-item"><span class="badge-mini bg-waived"></span> {{ __('إعفاء / منحة') }} 🏷️</span>
@@ -200,7 +200,7 @@
     <div class="students-list-wrapper">
         <div class="list-header-row">
             <span class="col-head-student">{{ __('بيانات الطالب والمرحلة') }}</span>
-            <span class="col-head-finance">{{ __('الموقف المالي (كم عليه / كم دفع / كم ضل قسط مستحق)') }}</span>
+            <span class="col-head-finance">{{ __('الموقف المالي للطالب (المستحق / المسدد / الرصيد المتبقي)') }}</span>
             <span class="col-head-timeline">{{ __('مسير الشهور الـ 12 (انقر على أي شهر لتعديله أو تسجيل دفع جزئي)') }}</span>
             <span class="col-head-actions">{{ __('سند وكشف الذمة') }}</span>
         </div>
@@ -256,19 +256,19 @@
                     </div>
                 </div>
 
-                {{-- الموقف المالي للطالب (كم عليه / كم دفع / كم ضل قسط مستحق) --}}
+                {{-- الموقف المالي للطالب (المستحق / المسدد / الرصيد المتبقي) --}}
                 <div class="student-financial-summary-block">
                     <div class="fin-pill-group">
-                        <div class="fin-pill fin-due" title="{{ __('إجمالي الرسوم المطلوبة من الطالب طوال السنة (كم عليه)') }}">
-                            <span class="fin-lbl">{{ __('كم عليه:') }}</span>
+                        <div class="fin-pill fin-due" title="{{ __('إجمالي الرسوم المطلوبة من الطالب طوال السنة') }}">
+                            <span class="fin-lbl">{{ __('المستحق:') }}</span>
                             <strong class="font-mono" id="std_due_{{ $student->id }}">{{ number_format($studentDue, 0) }} ₪</strong>
                         </div>
-                        <div class="fin-pill fin-paid" title="{{ __('إجمالي ما قام الطالب بسداده فعلياً (كم دفع)') }}">
-                            <span class="fin-lbl">{{ __('كم دفع:') }}</span>
+                        <div class="fin-pill fin-paid" title="{{ __('إجمالي ما قام الطالب بسداده فعلياً') }}">
+                            <span class="fin-lbl">{{ __('المسدد:') }}</span>
                             <strong class="font-mono text-emerald font-bold" id="std_paid_{{ $student->id }}">{{ number_format($studentPaid, 0) }} ₪</strong>
                         </div>
-                        <div class="fin-pill fin-remaining {{ $studentRemaining > 0 ? 'has-remaining-alert' : 'is-clear' }}" title="{{ __('المبلغ المتبقي بذمة الطالب (كم ضل قسط مستحق)') }}">
-                            <span class="fin-lbl">{{ __('كم ضل عليه:') }}</span>
+                        <div class="fin-pill fin-remaining {{ $studentRemaining > 0 ? 'has-remaining-alert' : 'is-clear' }}" title="{{ __('المبلغ المتبقي بذمة الطالب') }}">
+                            <span class="fin-lbl">{{ __('المتبقي:') }}</span>
                             <strong class="font-mono font-bold" id="std_rem_{{ $student->id }}">
                                 @if($studentRemaining > 0)
                                     {{ number_format($studentRemaining, 0) }} ₪ ⚠️
@@ -359,9 +359,9 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('الشهر') }}</th>
-                                    <th>{{ __('المطلوب - كم عليه (₪)') }}</th>
-                                    <th>{{ __('المدفوع - كم دفع (₪)') }}</th>
-                                    <th>{{ __('المتبقي - كم ضل قسط مستحق (₪)') }}</th>
+                                    <th>{{ __('المبلغ المستحق (₪)') }}</th>
+                                    <th>{{ __('المبلغ المسدد (₪)') }}</th>
+                                    <th>{{ __('الرصيد المتبقي (₪)') }}</th>
                                     <th>{{ __('حالة الدفعة') }}</th>
                                     <th>{{ __('تاريخ السداد') }}</th>
                                     <th>{{ __('البيان والملاحظات') }}</th>
@@ -393,9 +393,9 @@
                                         <td id="drawer_status_{{ $student->id }}_{{ $dm }}">
                                             <span class="status-pill-small badge-{{ $dSt }}">
                                                 @if($dSt === 'paid')
-                                                    <i class="fa-solid fa-check"></i> {{ __('خالص ومسدد') }}
+                                                    <i class="fa-solid fa-check"></i> {{ __('مسدد بالكامل') }}
                                                 @elseif($dSt === 'partial')
-                                                    <i class="fa-solid fa-circle-half-stroke"></i> {{ __('دفع جزئي (متبقي)') }}
+                                                    <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي (متبقي)') }}
                                                 @elseif($dSt === 'pending')
                                                     <i class="fa-solid fa-hourglass-half"></i> {{ __('قيد المراجعة') }}
                                                 @elseif($dSt === 'waived')
@@ -476,8 +476,8 @@
                             <input type="radio" name="status" value="paid" id="optStatusPaid" onchange="onStatusRadioChange('paid')">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-check"></i>
-                                <strong>{{ __('مسدد وخالص') }}</strong>
-                                <small>{{ __('سدد كامل المبلغ') }}</small>
+                                <strong>{{ __('مسدد بالكامل') }}</strong>
+                                <small>{{ __('تم سداد كامل القسط') }}</small>
                             </div>
                         </label>
 
@@ -485,8 +485,8 @@
                             <input type="radio" name="status" value="partial" id="optStatusPartial" onchange="onStatusRadioChange('partial')">
                             <div class="opt-content">
                                 <i class="fa-solid fa-circle-half-stroke"></i>
-                                <strong>{{ __('دفع جزئي') }}</strong>
-                                <small>{{ __('سدد جزءاً وعليه متبقي') }}</small>
+                                <strong>{{ __('سداد جزئي') }}</strong>
+                                <small>{{ __('سداد جزئي مع بقاء رصيد') }}</small>
                             </div>
                         </label>
 
@@ -519,49 +519,49 @@
                     </div>
                 </div>
 
-                {{-- شبكة المبالغ (المطلوب + المدفوع فعلياً) --}}
+                {{-- شبكة المبالغ (المستحق + المسدد فعلياً) --}}
                 <div class="amounts-calc-grid">
                     <div class="form-field-group">
-                        <label class="field-label">{{ __('المبلغ المطلوب للشهر (₪)') }} <span class="required">*</span></label>
+                        <label class="field-label">{{ __('المبلغ المستحق للشهر (₪)') }} <span class="required">*</span></label>
                         <input type="number" step="0.01" min="0" name="amount" id="formAmount" class="clean-input font-mono font-bold" required oninput="calcRemainingLive()">
                         <small class="field-hint">{{ __('المبلغ المستحق لهذا الشهر') }}</small>
                     </div>
 
                     <div class="form-field-group">
-                        <label class="field-label">{{ __('المبلغ المدفوع فعلياً (₪)') }} <span class="required">*</span></label>
+                        <label class="field-label">{{ __('المبلغ المسدد فعلياً (₪)') }} <span class="required">*</span></label>
                         <input type="number" step="0.01" min="0" name="paid_amount" id="formPaidAmount" class="clean-input font-mono font-bold text-emerald" required oninput="calcRemainingLive()">
-                        <small class="field-hint">{{ __('ما دفعه الطالب بالفعل (100، 150، إلخ)') }}</small>
+                        <small class="field-hint">{{ __('المبلغ المقبوض من الطالب فعلياً') }}</small>
                     </div>
                 </div>
 
                 {{-- أزرار مساعدة سريعة للمبالغ --}}
                 <div class="quick-amount-presets">
-                    <span class="preset-label">{{ __('أزرار سريعة:') }}</span>
+                    <span class="preset-label">{{ __('خيارات سريعة:') }}</span>
                     <button type="button" class="btn-preset" onclick="setPresetPaid('full')">{{ __('سداد كامل 100%') }}</button>
-                    <button type="button" class="btn-preset" onclick="setPresetPaid('half')">{{ __('دفع النصف 50%') }}</button>
-                    <button type="button" class="btn-preset" onclick="setPresetPaid('zero')">{{ __('لم يدفع (0 ₪)') }}</button>
+                    <button type="button" class="btn-preset" onclick="setPresetPaid('half')">{{ __('سداد 50%') }}</button>
+                    <button type="button" class="btn-preset" onclick="setPresetPaid('zero')">{{ __('غير مسدد (0 ₪)') }}</button>
                 </div>
 
                 {{-- بطاقة الحاسبة الحية للمبلغ المتبقي --}}
                 <div class="live-calc-box" id="liveCalcBox">
                     <div class="calc-label-row">
-                        <span class="calc-text">{{ __('المبلغ المتبقي بذمة الطالب للشهر:') }}</span>
+                        <span class="calc-text">{{ __('الرصيد المتبقي بذمة الطالب للشهر:') }}</span>
                         <strong class="calc-value font-mono" id="formRemainingPreview">0.00 ₪</strong>
                     </div>
                     <div class="calc-status-indicator" id="formStatusNotice">
-                        <i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل وخالص') }}</span>
+                        <i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل رسمياً') }}</span>
                     </div>
                 </div>
 
                 <div class="form-field-group">
                     <label class="field-label">{{ __('ملاحظات وبيان الدفعة (تظهر في السند)') }}</label>
-                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="{{ __('مثال: دفع 100 شيكل نقداً ومتبقي 50 لنهاية الأسبوع، رقم الإيصال 492...') }}">
+                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="{{ __('مثال: إشعار سداد رقم 66381، دفعة نقدية معتمدة...') }}">
                 </div>
             </div>
 
             <div class="modal-footer-row">
                 <button type="submit" class="btn-save-sub" id="btnSaveSub">
-                    <i class="fa-solid fa-check"></i> {{ __('حفظ التحديث فورياً') }}
+                    <i class="fa-solid fa-check"></i> {{ __('حفظ واعتماد التحديث') }}
                 </button>
                 <button type="button" class="btn-cancel-sub" onclick="closeEditMonthModal()">{{ __('إلغاء') }}</button>
             </div>
@@ -643,15 +643,15 @@
             {{-- ملخص الأرقام الكبرى للسند --}}
             <div class="sheet-kpi-row">
                 <div class="sheet-kpi-item">
-                    <span>{{ __('إجمالي المطلوب (كم عليه):') }}</span>
+                    <span>{{ __('إجمالي المبلغ المستحق:') }}</span>
                     <strong class="font-mono" id="stmtTotalDue">0 ₪</strong>
                 </div>
                 <div class="sheet-kpi-item text-emerald">
-                    <span>{{ __('إجمالي المسدد (كم دفع):') }}</span>
+                    <span>{{ __('إجمالي المبلغ المسدد:') }}</span>
                     <strong class="font-mono" id="stmtTotalPaid">0 ₪</strong>
                 </div>
                 <div class="sheet-kpi-item text-rose">
-                    <span>{{ __('المتبقي بذمته (كم ضل قسط مستحق):') }}</span>
+                    <span>{{ __('الرصيد المتبقي بذمة الطالب:') }}</span>
                     <strong class="font-mono" id="stmtTotalRemaining">0 ₪</strong>
                 </div>
             </div>
@@ -662,9 +662,9 @@
                     <tr>
                         <th>#</th>
                         <th>{{ __('الشهر الدراسي') }}</th>
-                        <th>{{ __('المطلوب - كم عليه (₪)') }}</th>
-                        <th>{{ __('المدفوع - كم دفع (₪)') }}</th>
-                        <th>{{ __('المتبقي - ضل عليه (₪)') }}</th>
+                        <th>{{ __('المبلغ المستحق (₪)') }}</th>
+                        <th>{{ __('المبلغ المسدد (₪)') }}</th>
+                        <th>{{ __('الرصيد المتبقي (₪)') }}</th>
                         <th>{{ __('حالة الدفعة') }}</th>
                         <th>{{ __('تاريخ السداد') }}</th>
                         <th>{{ __('ملاحظات وبيان الدفعة') }}</th>
@@ -827,15 +827,15 @@
         // ضبط إشعار الحالة والأيقونة تلقائياً
         if (paid >= amt && amt > 0) {
             statusNotice.className = 'calc-status-indicator is-paid';
-            statusNotice.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل وخالص ✅ (متبقي 0 ₪)') }}</span>';
+            statusNotice.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪)') }}</span>';
             if (statusRadioPaid) statusRadioPaid.checked = true;
         } else if (paid > 0 && paid < amt) {
             statusNotice.className = 'calc-status-indicator is-partial';
-            statusNotice.innerHTML = '<i class="fa-solid fa-circle-half-stroke"></i> <span>{{ __('دفع جزئي ⚠️ (متبقي بذمته ') }}' + remaining.toFixed(2) + ' ₪)</span>';
+            statusNotice.innerHTML = '<i class="fa-solid fa-circle-half-stroke"></i> <span>{{ __('سداد جزئي ⚠️ (الرصيد المتبقي: ') }}' + remaining.toFixed(2) + ' ₪)</span>';
             if (statusRadioPartial) statusRadioPartial.checked = true;
         } else if (paid === 0 && amt > 0) {
             statusNotice.className = 'calc-status-indicator is-unpaid';
-            statusNotice.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>{{ __('غير مسدد ❌ (مستحق كامل: ') }}' + amt.toFixed(2) + ' ₪)</span>';
+            statusNotice.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>{{ __('غير مسدد ❌ (إجمالي المستحق: ') }}' + amt.toFixed(2) + ' ₪)</span>';
             if (statusRadioUnpaid) statusRadioUnpaid.checked = true;
         }
     }
@@ -1024,7 +1024,7 @@
                 }
             }
 
-            // تحديث بطاقات الإحصائيات العامة للمنصة مباشرة (اللي لازم يصلني، اللي وصلني، المتبقي)
+            // تحديث بطاقات الإحصائيات العامة للمنصة مباشرة (المستحق، المحصل، المتبقي)
             if (res.data.stats) {
                 const expEl = document.getElementById('stat_total_expected');
                 if (expEl) expEl.innerText = res.data.stats.total_expected;
@@ -1109,8 +1109,8 @@
             const notes = badge.dataset.notes || '-';
 
             let stBadge = '';
-            if (st === 'paid') stBadge = '<span class="sheet-status bg-p">{{ __('خالص ومسدد') }} ✅</span>';
-            else if (st === 'partial') stBadge = '<span class="sheet-status bg-part">{{ __('دفع جزئي (متبقي)') }} ⚠️</span>';
+            if (st === 'paid') stBadge = '<span class="sheet-status bg-p">{{ __('مسدد بالكامل') }} ✅</span>';
+            else if (st === 'partial') stBadge = '<span class="sheet-status bg-part">{{ __('سداد جزئي (متبقي)') }} ⚠️</span>';
             else if (st === 'pending') stBadge = '<span class="sheet-status bg-pend">{{ __('قيد المراجعة') }} ⏳</span>';
             else if (st === 'waived') stBadge = '<span class="sheet-status bg-w">{{ __('إعفاء / منحة') }} 🏷️</span>';
             else stBadge = '<span class="sheet-status bg-u">{{ __('غير مسدد') }} ❌</span>';
@@ -1540,7 +1540,7 @@
         background: #1d4ed8;
     }
 
-    /* 2. العدادات الأكاديمية الكبرى (اللي لازم يصلني، اللي وصلني، المتبقي) */
+    /* 2. العدادات الأكاديمية الكبرى (المستحق المطلوب، المحصل الفعلي، الرصيد المتبقي) */
     .financial-kpi-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -2036,16 +2036,53 @@
         cursor: pointer;
     }
 
-    /* مودال تعديل الشهر - الحاسبة الحية */
-    .modal-royal-theme {
-        max-width: 580px;
+    /* =================================================================
+       نظام النوافذ والمودالات الملكية المعتمدة (Classic Royal Academic Modals)
+       ================================================================= */
+    .modal-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(15, 23, 42, 0.72) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        z-index: 999999 !important;
+        display: none;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        overflow-y: auto !important;
     }
+    .modal-card-box {
+        background: #ffffff !important;
+        border-radius: 20px !important;
+        box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+        width: 100% !important;
+        max-width: 620px;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative !important;
+        margin: auto !important;
+        padding: 28px 32px;
+        animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    @keyframes modalScaleIn {
+        from { opacity: 0; transform: scale(0.96) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
     .modal-header-royal {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 16px;
+        border-bottom: 1.5px solid #e2e8f0;
+    }
+    .modal-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 1.5px solid #e2e8f0;
     }
     .modal-title-wrap {
         display: flex;
@@ -2053,38 +2090,195 @@
         gap: 12px;
     }
     .modal-crest {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
         background: #eff6ff;
-        border: 1px solid #bfdbfe;
+        border: 1.5px solid #bfdbfe;
         display: grid;
         place-items: center;
         color: #1e3a8a;
-        font-size: 1.3rem;
+        font-size: 1.35rem;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.08);
     }
     .modal-student-name {
         margin: 0;
-        font-size: 1.15rem;
+        font-size: 1.2rem;
         color: #0f172a;
         font-weight: 800;
     }
     .modal-month-desc {
-        margin: 2px 0 0;
-        font-size: 0.8rem;
+        margin: 3px 0 0;
+        font-size: 0.82rem;
         color: #64748b;
     }
+
+    .btn-close-x {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        font-size: 1.3rem;
+        line-height: 1;
+        color: #64748b;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .btn-close-x:hover {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fecaca;
+        transform: rotate(90deg);
+    }
+
+    .form-body-wrap {
+        padding: 18px 0 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .form-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .field-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-label .required {
+        color: #dc2626;
+    }
+    .clean-input {
+        width: 100%;
+        height: 46px;
+        padding: 0 14px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        color: #0f172a;
+        background: #ffffff;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+    .clean-input:focus {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3.5px rgba(30, 58, 138, 0.12);
+    }
+    .field-hint {
+        font-size: 0.74rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    /* شبكة خيارات الحالات بنمط كروت ملكية راقية */
+    .status-options-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-top: 6px;
+    }
+    .status-option-label {
+        position: relative;
+        cursor: pointer;
+        display: block;
+    }
+    .status-option-label input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+    .status-option-label .opt-content {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 10px;
+        text-align: center;
+        background: #f8fafc;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+    .status-option-label .opt-content i {
+        font-size: 1.4rem;
+        margin-bottom: 2px;
+    }
+    .status-option-label .opt-content strong {
+        font-size: 0.86rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .status-option-label .opt-content small {
+        font-size: 0.7rem;
+        color: #64748b;
+        line-height: 1.2;
+    }
+    .status-option-label:hover .opt-content {
+        border-color: #cbd5e1;
+        background: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .status-option-label input[type="radio"]:checked + .opt-content {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        transform: translateY(-2px);
+    }
+    .opt-paid input[type="radio"]:checked + .opt-content {
+        border-color: #059669;
+        background: #ecfdf5;
+    }
+    .opt-paid .opt-content i { color: #059669; }
+    .opt-paid input[type="radio"]:checked + .opt-content strong { color: #065f46; }
+
+    .opt-partial input[type="radio"]:checked + .opt-content {
+        border-color: #d97706;
+        background: #fffbeb;
+    }
+    .opt-partial .opt-content i { color: #d97706; }
+    .opt-partial input[type="radio"]:checked + .opt-content strong { color: #92400e; }
+
+    .opt-unpaid input[type="radio"]:checked + .opt-content {
+        border-color: #dc2626;
+        background: #fef2f2;
+    }
+    .opt-unpaid .opt-content i { color: #dc2626; }
+    .opt-unpaid input[type="radio"]:checked + .opt-content strong { color: #991b1b; }
+
+    .opt-pending input[type="radio"]:checked + .opt-content {
+        border-color: #2563eb;
+        background: #eff6ff;
+    }
+    .opt-pending .opt-content i { color: #2563eb; }
+    .opt-pending input[type="radio"]:checked + .opt-content strong { color: #1e40af; }
+
+    .opt-waived input[type="radio"]:checked + .opt-content {
+        border-color: #8b5cf6;
+        background: #f5f3ff;
+    }
+    .opt-waived .opt-content i { color: #8b5cf6; }
+    .opt-waived input[type="radio"]:checked + .opt-content strong { color: #5b21b6; }
+
     .amounts-calc-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 14px;
-        margin-top: 10px;
+        margin-top: 4px;
     }
     .quick-amount-presets {
         display: flex;
         align-items: center;
         gap: 8px;
-        margin-top: 8px;
+        margin-top: 4px;
+        flex-wrap: wrap;
     }
     .preset-label {
         font-size: 0.74rem;
@@ -2095,11 +2289,12 @@
         background: #f8fafc;
         border: 1px solid #cbd5e1;
         color: #334155;
-        font-size: 0.72rem;
+        font-size: 0.74rem;
         font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 5px;
+        padding: 4px 10px;
+        border-radius: 6px;
         cursor: pointer;
+        transition: all 0.2s ease;
     }
     .btn-preset:hover {
         background: #eff6ff;
@@ -2110,9 +2305,9 @@
     .live-calc-box {
         background: #f8fafc;
         border: 2px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 16px;
-        margin: 12px 0;
+        border-radius: 12px;
+        padding: 14px 18px;
+        margin: 6px 0;
     }
     .calc-label-row {
         display: flex;
@@ -2131,7 +2326,7 @@
     }
     .calc-status-indicator {
         margin-top: 6px;
-        font-size: 0.78rem;
+        font-size: 0.8rem;
         font-weight: 700;
         display: flex;
         align-items: center;
@@ -2141,6 +2336,53 @@
     .is-partial { color: #b45309; }
     .is-unpaid { color: #dc2626; }
 
+    .modal-footer-row {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        align-items: center;
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1.5px solid #e2e8f0;
+    }
+    .btn-save-sub {
+        background: #1e3a8a;
+        color: #ffffff;
+        border: none;
+        height: 44px;
+        padding: 0 24px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+        transition: all 0.2s ease;
+    }
+    .btn-save-sub:hover {
+        background: #1e40af;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(30, 58, 138, 0.35);
+    }
+    .btn-cancel-sub {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1.5px solid #cbd5e1;
+        height: 44px;
+        padding: 0 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-cancel-sub:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
     /* مودال سند كشف الحساب الرسمي المعتمد (طباعة ملكية كالصورة) */
     .modal-statement-sheet-wrap {
         max-width: 900px;
@@ -2149,17 +2391,18 @@
         overflow: hidden;
     }
     .statement-toolbar {
-        background: #f8fafc;
-        border-bottom: 1px solid #e2e8f0;
-        padding: 12px 20px;
+        background: #0f172a;
+        color: #ffffff;
+        border-bottom: 1px solid #334155;
+        padding: 14px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .statement-title-info {
         font-size: 0.92rem;
-        font-weight: 800;
-        color: #0f172a;
+        color: #ffffff;
+        font-weight: 700;
     }
     .btn-statement-print {
         background: #1e3a8a;

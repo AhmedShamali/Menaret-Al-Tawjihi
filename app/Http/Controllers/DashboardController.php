@@ -111,7 +111,7 @@ class DashboardController extends Controller {
         return view('student.subjects.show', compact('subject', 'videos', 'files', 'exams', 'submissions', 'solvedExamIds', 'enrollment', 'isFullAccess'));
     }
 
-    // جعل الدالة البديلة تحول مباشرة للدالة الموحدة لضمان عدم حدوث تضارب
+    // جعل الدالة البديلة تحول مباشرة للدالة الأساسية لضمان عدم حدوث تضارب
     public function studentSubjectShow($id)
     {
         return $this->showSubject($id);

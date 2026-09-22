@@ -11,7 +11,7 @@
     @endif
     <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
-    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
+    <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">

@@ -253,7 +253,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * تعيين كافة الإشعارات كمقروءة موحد لكافة الأدوار (مدير، معلم، طالب)
+     * تعيين كافة الإشعارات كمقروءة لكافة الأدوار (مدير، معلم، طالب)
      */
     public function unifiedMarkAllRead()
     {

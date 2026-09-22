@@ -70,7 +70,7 @@
         </div>
     </div>
 
-    {{-- 3. شريط البحث والفلاتر الموحد الأنيق --}}
+    {{-- 3. شريط البحث والفلاتر الأكاديمي الأنيق --}}
     <div class="toolbar-clean">
         <div class="search-box-clean">
             <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -378,7 +378,7 @@
         flex-wrap: wrap;
     }
 
-    /* الأزرار الموحدة */
+    /* الأزرار الأكاديمية */
     .btn-clean {
         display: inline-flex;
         align-items: center;

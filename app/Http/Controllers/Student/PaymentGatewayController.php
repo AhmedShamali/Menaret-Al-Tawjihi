@@ -115,7 +115,7 @@ class PaymentGatewayController extends Controller
             $receiptPath = $request->file('receipt_file')->store('receipts/payments', 'public');
         }
 
-        // إنشاء رقم عملية مرجعي فلسطيني موحد
+        // إنشاء رقم عملية مرجعي فلسطيني معتمد
         $txNumber = ($isFullDiscount ? 'GRANT-' : 'PAL-') . date('Ymd') . '-' . strtoupper(Str::random(6));
 
         $details = [

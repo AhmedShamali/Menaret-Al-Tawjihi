@@ -428,7 +428,7 @@
                         <div class="calc-item">
                             <span class="calc-lbl">{{ __('حالة الرصيد والتغطية:') }}</span>
                             <span class="calc-status" id="displayCoverageNote">
-                                <i class="fa-solid fa-circle-check text-emerald"></i> {{ __('خالص ومسدد بالكامل ✅ (المتبقي: 0.00 ₪)') }}
+                                <i class="fa-solid fa-circle-check text-emerald"></i> {{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪)') }}
                             </span>
                         </div>
                     </div>
@@ -605,7 +605,7 @@
 
         if (coverageEl) {
             if (mode === 'full' || amount === baseDueAmount) {
-                coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('خالص ومسدد بالكامل ✅ (المتبقي: 0.00 ₪ عن') }} ${dueMonthName})`;
+                coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪ عن') }} ${dueMonthName})`;
             } else if (amount < baseDueAmount) {
                 const rem = baseDueAmount - amount;
                 coverageEl.innerHTML = `<i class="fa-solid fa-circle-half-stroke text-amber"></i> {{ __('دفعة جزئية على حساب') }} ${dueMonthName} ({{ __('المتبقي:') }} ${rem.toFixed(2)} ₪)`;

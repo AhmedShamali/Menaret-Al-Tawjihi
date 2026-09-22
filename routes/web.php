@@ -44,7 +44,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// لوحة التحكم الموحدة للتوجيه التلقائي حسب نوع الحساب
+// لوحة التحكم المركزية للتوجيه التلقائي حسب نوع الحساب
 Route::get('/dashboard', function () {
     if (Auth::guard('student')->check()) {
         return redirect()->route('student.dashboard');
@@ -111,10 +111,10 @@ Route::get('/tawjihi-formulas', [\App\Http\Controllers\TawjihiFormulaController:
 Route::get('/verify/certificate/{code}', [\App\Http\Controllers\SmartLearningController::class, 'verifyCertificate'])->name('certificates.verify');
 Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController::class, 'showCertificate'])->name('certificates.show');
 
-// مسار موحد لتعيين كافة الإشعارات كمقروءة للمدير والمعلم والطالب
+// مسار مركزي لتعيين كافة الإشعارات كمقروءة للمدير والمعلم والطالب
 Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Student\NotificationController::class, 'unifiedMarkAllRead'])->name('notifications.markAllReadUnified');
 
-// مسار فتح التنبيه الموحد (تحديد كمقروء والانتقال للوجهة دون تجميد أو تعليق)
+// مسار فتح التنبيه (تحديد كمقروء والانتقال للوجهة دون تجميد أو تعليق)
 Route::get('/notifications/open/{id}', [\App\Http\Controllers\Student\NotificationController::class, 'openNotification'])->name('notifications.open');
 Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markReadUnified');
 

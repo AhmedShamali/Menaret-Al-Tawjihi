@@ -179,10 +179,10 @@ class MonthlySubscriptionTest extends TestCase
             ->get(route('admin.subscriptions.monthly'));
 
         $indexResponse->assertStatus(200);
-        $indexResponse->assertSee('اللي لازم يصلني');
-        $indexResponse->assertSee('اللي وصلني');
-        $indexResponse->assertSee('المتبقي بذمة الطلاب');
-        $indexResponse->assertSee('دفع جزئي');
+        $indexResponse->assertSee('إجمالي المستحق المطلوب');
+        $indexResponse->assertSee('إجمالي الإيراد المحصل');
+        $indexResponse->assertSee('إجمالي الرصيد المتبقي');
+        $indexResponse->assertSee('سداد جزئي');
 
         // 4. Admin completes remaining payment (pays 150 total)
         $fullResponse = $this->actingAs($admin)

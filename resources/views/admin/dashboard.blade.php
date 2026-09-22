@@ -573,7 +573,7 @@
         gap: 18px;
     }
 
-    /* البطاقات الموحدة البسيطة */
+    /* البطاقات الأكاديمية البسيطة */
     .simple-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;

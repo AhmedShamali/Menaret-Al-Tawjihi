@@ -81,7 +81,7 @@ class SubjectPricingAndMessagingTest extends TestCase
     }
 
     /**
-     * 2. فحص الشفافية المالية للاشتراكات: كم عليه، كم دفع، كم ضل قسط مستحق
+     * 2. فحص الشفافية المالية للاشتراكات: المستحق، المسدد، الرصيد المتبقي
      */
     public function test_student_and_admin_see_financial_due_paid_and_remaining(): void
     {
@@ -120,9 +120,9 @@ class SubjectPricingAndMessagingTest extends TestCase
             ->get(route('student.subscriptions.index'));
 
         $studentResponse->assertStatus(200);
-        $studentResponse->assertSee('كم عليّ');
-        $studentResponse->assertSee('كم دفعت');
-        $studentResponse->assertSee('كم ضل قسط مستحق');
+        $studentResponse->assertSee('إجمالي الرسوم المطلوبة');
+        $studentResponse->assertSee('المبلغ المسدد المعتمد');
+        $studentResponse->assertSee('الرصيد المتبقي بذمتك');
         $studentResponse->assertSee('1- الشهر الأول');
         $studentResponse->assertSee('2- الشهر الثاني');
 
@@ -131,9 +131,9 @@ class SubjectPricingAndMessagingTest extends TestCase
             ->get(route('admin.subscriptions.monthly'));
 
         $adminResponse->assertStatus(200);
-        $adminResponse->assertSee('كم عليه:');
-        $adminResponse->assertSee('كم دفع:');
-        $adminResponse->assertSee('كم ضل عليه:');
+        $adminResponse->assertSee('المستحق:');
+        $adminResponse->assertSee('المسدد:');
+        $adminResponse->assertSee('المتبقي:');
     }
 
     /**

@@ -14,7 +14,7 @@
     <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
     <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج المعتمد، تدريبات وبنك أسئلة تقييمية شاملة، ومتابعة دراسية بإشراف م.أحمد شمالي.') }}">
 
-    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
+    <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -398,7 +398,7 @@
             gap: 20px;
         }
 
-        /* 6. البطاقات الموحدة (Ed-Cards) */
+        /* 6. البطاقات الأكاديمية (Ed-Cards) */
         .ed-card {
             background-color: var(--ed-surface);
             border: 1px solid var(--ed-border);
@@ -1175,7 +1175,7 @@
             <!-- العمود الجانبي -->
             <aside class="sidebar-flow">
 
-                <!-- 1. صندوق إحصائيات المنصة الموحدة -->
+                <!-- 1. صندوق إحصائيات المنظومة التعليمية -->
                 <div class="ed-card">
                     <div class="ed-card-header">
                         <h3><i class="fa-solid fa-chart-column" style="color: var(--ed-primary);"></i> {{ __('إحصائيات المنظومة') }}</h3>

@@ -242,7 +242,7 @@
                             </td>
                             <td class="text-center">
                                 @if($isPaid)
-                                    <strong style="color: #15803d; font-size: 0.8rem;">{{ __('خالص ومسدد ✅') }}</strong>
+                                    <strong style="color: #15803d; font-size: 0.8rem;">{{ __('مسدد بالكامل ✅') }}</strong>
                                 @else
                                     <strong style="color: #b45309; font-size: 0.8rem;">{{ __('قيد الاعتماد') }}</strong>
                                 @endif
@@ -260,7 +260,7 @@
                 <div class="clearance-text">
                     @if($isPaid)
                         <strong>{{ __('إقرار براءة الذمة المالية:') }}</strong>
-                        <span>{{ __('تم استلام وقبض كامل الرسوم المقيدة أعلاه، وتعتبر ذمة الطالب/ـة') }} <u>{{ $studentName }}</u> {{ __('خالصة تماماً ومسددة بالكامل بنسبة 100% ولا يترتب عليه أي التزامات مالية عن هذا السند.') }}</span>
+                        <span>{{ __('تم استلام وقبض كامل الرسوم المقيدة أعلاه، وتعتبر ذمة الطالب/ـة') }} <u>{{ $studentName }}</u> {{ __('مبرأة الذمة ومسددة بالكامل بنسبة 100% ولا يترتب عليه أي التزامات مالية عن هذا السند.') }}</span>
                     @else
                         <strong>{{ __('حالة التدقيق المصرفي:') }}</strong>
                         <span>{{ __('تم استلام إشعار التوريد برقم مرجعي (:ref) بمبلغ (:amt ₪)، والمعاملة قيد المطابقة البنكية تمهيداً للتفعيل النهائي.', ['ref' => $payment->transaction_number, 'amt' => number_format($payment->amount, 2)]) }}</span>
@@ -268,7 +268,7 @@
                 </div>
                 <div class="clearance-remaining">
                     <span class="rem-lbl">{{ __('المتبقي بذمة الطالب:') }}</span>
-                    <strong class="rem-val font-mono">{{ $isPaid ? '0.00 ₪ (خالص بالكامل)' : '0.00 ₪ (بانتظار الاعتماد)' }}</strong>
+                    <strong class="rem-val font-mono">{{ $isPaid ? '0.00 ₪ (' . __('مسدد بالكامل') . ')' : '0.00 ₪ (' . __('بانتظار الاعتماد') . ')' }}</strong>
                 </div>
             </div>
 

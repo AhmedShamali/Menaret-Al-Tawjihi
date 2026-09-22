@@ -21,10 +21,10 @@
         </div>
     </div>
 
-    {{-- بطاقات الملخص المالي الكلاسيكية للطالب (كم عليّ / كم دفعت / كم ضل قسط مستحق) --}}
+    {{-- بطاقات الملخص المالي الأكاديمية للطالب (المستحق / المسدد / الرصيد المتبقي) --}}
     <div class="stats-row-clean">
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
-            <span class="stat-label">{{ __('كم عليّ (إجمالي الرسوم المطلوبة)') }}</span>
+            <span class="stat-label">{{ __('إجمالي الرسوم المطلوبة') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-navy">{{ number_format($totalDueAmount ?? 1800, 2) }} ₪</span>
                 <i class="fa-solid fa-file-invoice-dollar stat-icon text-navy"></i>
@@ -33,7 +33,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #059669;">
-            <span class="stat-label">{{ __('كم دفعت (المبلغ المسدد المعتمد)') }}</span>
+            <span class="stat-label">{{ __('المبلغ المسدد المعتمد') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-emerald">{{ number_format($totalPaidAmount, 2) }} ₪</span>
                 <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
@@ -42,7 +42,7 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #dc2626;">
-            <span class="stat-label">{{ __('كم ضل قسط مستحق (المتبقي عليك)') }}</span>
+            <span class="stat-label">{{ __('الرصيد المتبقي بذمتك') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number {{ ($totalRemainingAmount ?? 0) > 0 ? 'text-rose' : 'text-emerald' }}">
                     {{ number_format($totalRemainingAmount ?? 0, 2) }} ₪
@@ -53,13 +53,13 @@
                 @if(($totalRemainingAmount ?? 0) > 0)
                     {{ __('متبقي بذمتك حتى نهاية العام الدراسي') }}
                 @else
-                    {{ __('ذمتك المالية بريئة وخالصة تماماً ✅') }}
+                    {{ __('ذمتك المالية مسددة بالكامل ومبرأة ✅') }}
                 @endif
             </small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;">
-            <span class="stat-label">{{ __('الأقساط الخالصة') }}</span>
+            <span class="stat-label">{{ __('الأقساط المسددة بالكامل') }}</span>
             <div class="stat-value-wrap">
                 <span class="stat-number text-indigo">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
                 <i class="fa-solid fa-calendar-check stat-icon text-indigo"></i>
@@ -109,15 +109,15 @@
                     <div class="month-card-body">
                         <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? ($monthsNames[$sub->month] ?? "Month {$sub->month}")) }}</h4>
                         <div class="month-amount-row">
-                            <span class="amount-label">{{ __('المطلوب (كم عليك):') }}</span>
+                            <span class="amount-label">{{ __('المبلغ المستحق:') }}</span>
                             <strong class="amount-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
                         </div>
                         <div class="month-amount-row" style="color: #059669; font-size: 0.85rem;">
-                            <span class="amount-label">{{ __('المدفوع (كم دفعت):') }}</span>
+                            <span class="amount-label">{{ __('المبلغ المسدد:') }}</span>
                             <strong class="amount-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
                         </div>
                         <div class="month-amount-row" style="{{ $remAmt > 0 ? 'color: #dc2626;' : 'color: #059669;' }} font-size: 0.85rem;">
-                            <span class="amount-label">{{ __('المتبقي (ضل عليك):') }}</span>
+                            <span class="amount-label">{{ __('الرصيد المتبقي:') }}</span>
                             <strong class="amount-val font-mono font-bold">{{ number_format($remAmt, 2) }} ₪</strong>
                         </div>
                         @if($isPaid && $sub->paid_at)
@@ -226,7 +226,7 @@
                             </td>
                             <td style="text-align: center;">
                                 @if($isPaid)
-                                    <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد وخالص') }}</span>
+                                    <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد بالكامل') }}</span>
                                 @elseif($isPartial)
                                     <span class="status-pill" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;"><span class="dot" style="background: #b45309;"></span> {{ __('دفع جزئي') }}</span>
                                 @elseif($isPending)

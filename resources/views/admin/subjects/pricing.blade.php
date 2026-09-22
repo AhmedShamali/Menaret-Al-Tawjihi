@@ -727,7 +727,7 @@
                 <div style="width: 38px; height: 38px; border-radius: 10px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 1.15rem;">
                     <i class="fa-solid fa-percent"></i>
                 </div>
-                <h3 style="font-size: 1.18rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تطبيق خصم موسمي موحد') }}</h3>
+                <h3 style="font-size: 1.18rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تطبيق خصم موسمي شامل') }}</h3>
             </div>
             <button onclick="closeSeasonalModal()" style="background: none; border: none; font-size: 1.6rem; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
         </div>

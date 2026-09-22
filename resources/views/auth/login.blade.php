@@ -13,7 +13,7 @@
 
     <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
-    <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
+    <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&family=Alexandria:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
 
     <style>
         /* ==========================================================================
-           التصميم الأكاديمي الكلاسيكي الرصين - بوابة الدخول الموحد (Classic Academic Portal)
+           التصميم الأكاديمي الكلاسيكي الرصين - بوابة الدخول الأكاديمي (Classic Academic Portal)
            - إطار كلاسيكي مزدوج رصين (Two-Column Academic Portal Frame)
            - فواتح بالكامل بدون كتل داكنة ضخمة ولا فراغات عشوائية
            - خطوط واضحة وصغيرة 13-14px بأسلوب بوابات الجامعات الكبرى
@@ -644,7 +644,7 @@
             </a>
 
             <div class="brand-titles">
-                <span style="font-weight: 700; color: var(--ed-primary); font-size: 0.85rem;">{{ __('بوابة تسجيل الدخول الأكاديمي الموحد') }}</span>
+                <span style="font-weight: 700; color: var(--ed-primary); font-size: 0.85rem;">{{ __('بوابة تسجيل الدخول الأكاديمي') }}</span>
             </div>
         </div>
     </header>
@@ -663,7 +663,7 @@
                         </span>
                         <h3 class="panel-title">
                             <i class="fa-solid fa-building-columns" style="color: var(--ed-primary);"></i>
-                            {{ __('بوابة الدخول الموحد (SSO)') }}
+                            {{ __('بوابة الدخول الأكاديمي المعتمد') }}
                         </h3>
                         <p class="panel-desc">
                             {{ __('نظام أكاديمي معتمد لخدمة طلبة وكادر الثانوية العامة في فلسطين (القدس، الضفة الغربية، وقطاع غزة). يتيح الوصول المباشر للشروحات والاختبارات والمتابعة الدراسية.') }}

@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    {{-- 4. الجدول النظيف الموحد بنمط رويال أكاديمي --}}
+    {{-- 4. الجدول النظيف المعتمد بنمط رويال أكاديمي --}}
     <div class="table-card-clean">
         <div class="table-container-clean" style="overflow-x: auto;">
             <table class="data-table-clean">

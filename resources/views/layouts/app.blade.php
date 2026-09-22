@@ -329,7 +329,7 @@
             text-overflow: ellipsis;
         }
 
-        /* حاويات الأيقونات الموحدة لكل مجال */
+        /* حاويات الأيقونات المعتمدة لكل مجال */
         .nav-icon-badge {
             width: 26px;
             height: 26px;
@@ -567,7 +567,7 @@
             width: 100% !important;
         }
 
-        /* --- عناصر التصميم الأكاديمي الكلاسيكي الملكي الموحدة (Universal Classic Royal Academic UI) --- */
+        /* --- عناصر التصميم الأكاديمي الكلاسيكي الملكي المعتمد (Universal Classic Royal Academic UI) --- */
         .ed-card {
             background: var(--ed-surface);
             border: 1px solid #cbd5e1;
@@ -856,11 +856,11 @@
         }
 
         /* ====================================================================
-           نظام التصميم الأكاديمي الملكي الكلاسيكي الموحد لجميع جداول وواجهات المنصة
+           نظام التصميم الأكاديمي الملكي الكلاسيكي المعتمد لجميع جداول وواجهات المنصة
            Master Classic Royal Academic Design System (Navy/Gold/Clean)
            ==================================================================== */
         
-        /* 1. الجداول الكلاسيكية الموحدة (Universal Royal Classic Tables) */
+        /* 1. الجداول الكلاسيكية المعتمدة (Universal Royal Classic Tables) */
         .data-table-clean, 
         .classic-table, 
         table.data-table, 
@@ -1243,7 +1243,7 @@
         }
         .status-info .dot, .status-review .dot { background: #2563eb; }
 
-        /* 5. الأزرار الموحدة (Unified Action Buttons) */
+        /* 5. الأزرار الأكاديمية المعتمدة (Action Buttons) */
         .btn-clean {
             display: inline-flex;
             align-items: center;
@@ -1336,6 +1336,38 @@
         }
         .tbl-btn:hover {
             background: #1e40af;
+        }
+
+        /* --- نظام النوافذ المنبثقة الملكي المعتمد (Global Royal Academic Modal System) --- */
+        .modal-overlay {
+            position: fixed !important;
+            inset: 0 !important;
+            background: rgba(15, 23, 42, 0.72) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            z-index: 999999 !important;
+            display: none;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 20px !important;
+            overflow-y: auto !important;
+        }
+        .modal-card-box {
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+            width: 100% !important;
+            max-width: 620px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative !important;
+            margin: auto !important;
+            padding: 28px 32px;
+            animation: globalModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+        @keyframes globalModalScaleIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
         /* --- أنماط الطباعة العامة للنظام (Clean Global Print Rules) --- */
