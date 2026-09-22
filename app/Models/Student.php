@@ -164,6 +164,9 @@ class Student extends Authenticatable
         if ($this->photo) {
             return asset('storage/' . $this->photo);
         }
+        if (!empty($this->avatar_url)) {
+            return $this->avatar_url;
+        }
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name_ar ?? 'طالب') . '&background=0284c7&color=fff&size=200&bold=true';
     }
 

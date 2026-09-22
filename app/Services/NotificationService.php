@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Student;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class NotificationService
@@ -56,7 +57,7 @@ class NotificationService
 
             return true;
         } catch (\Throwable $e) {
-            \Log::error('فشل إرسال الإشعار للطالب: ' . $e->getMessage());
+            Log::error('فشل إرسال الإشعار للطالب: ' . $e->getMessage());
             return false;
         }
     }
@@ -130,7 +131,7 @@ class NotificationService
                 ]);
             }
         } catch (\Throwable $e) {
-            \Log::error('فشل إرسال الإشعار للإدارة: ' . $e->getMessage());
+            Log::error('فشل إرسال الإشعار للإدارة: ' . $e->getMessage());
         }
     }
 
@@ -177,7 +178,7 @@ class NotificationService
 
             return true;
         } catch (\Throwable $e) {
-            \Log::error('فشل إرسال الإشعار للمعلم: ' . $e->getMessage());
+            Log::error('فشل إرسال الإشعار للمعلم: ' . $e->getMessage());
             return false;
         }
     }
@@ -207,7 +208,7 @@ class NotificationService
             }
             return $count;
         } catch (\Throwable $e) {
-            \Log::error('فشل إرسال الإشعار للطلاب المسجلين: ' . $e->getMessage());
+            Log::error('فشل إرسال الإشعار للطلاب المسجلين: ' . $e->getMessage());
             return 0;
         }
     }

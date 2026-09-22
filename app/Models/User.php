@@ -20,6 +20,7 @@ class User extends Authenticatable
         'bio',
         'photo',
         'role',
+        'stage_id',
         'subject_id',
         'last_activity',
     ];
@@ -42,6 +43,14 @@ class User extends Authenticatable
         }
         $lastAct = is_string($this->last_activity) ? \Carbon\Carbon::parse($this->last_activity) : $this->last_activity;
         return $lastAct->gt(now()->subMinutes(5));
+    }
+
+    public function getPhotoUrlAttribute(): string
+    {
+        if ($this->photo) {
+            return asset('storage/' . $this->photo);
+        }
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name_ar ?? $this->name ?? 'مستخدم') . '&background=0284c7&color=fff&size=200&bold=true';
     }
 
     // دالة تجلب نص آخر ظهور أو متصل الآن بشكل جاهز

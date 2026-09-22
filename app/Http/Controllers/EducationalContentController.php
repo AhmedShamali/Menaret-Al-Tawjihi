@@ -222,13 +222,17 @@ class EducationalContentController extends Controller
             $content->url_path = $request->video_url;
         }
 
-        // --- تحديث الملف وحذف القديم من التخزين السحابي ---
+        // --- تحديث الملف وحذف القديم بأمان مع دعم السحابة والتخزين المحلي ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             if ($content->pdf_path) {
-                $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
-                if (Storage::disk('supabase')->exists($parsedPath)) {
-                    Storage::disk('supabase')->delete($parsedPath);
-                }
+                try {
+                    if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {
+                        $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                        if (Storage::disk('supabase')->exists($parsedPath)) {
+                            Storage::disk('supabase')->delete($parsedPath);
+                        }
+                    }
+                } catch (\Throwable $e) {}
             }
             $uploaded = $request->file('file_upload_pdf');
             $sizeKb = round($uploaded->getSize() / 1024);
@@ -300,10 +304,31 @@ class EducationalContentController extends Controller
 
         if ($content) {
             if ($content->pdf_path) {
-                $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
-                if (Storage::disk('supabase')->exists($parsedPath)) {
-                    Storage::disk('supabase')->delete($parsedPath);
+                try {
+                    if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {
+                        $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                        if (Storage::disk('supabase')->exists($parsedPath)) {
+                            Storage::disk('supabase')->delete($parsedPath);
+                        }
+                    }
+                } catch (\Throwable $e) {}
+
+                if (str_contains($content->pdf_path, 'storage/educational/files/')) {
+                    $localRel = 'educational/files/' . basename($content->pdf_path);
+                    try {
+                        if (Storage::disk('public')->exists($localRel)) {
+                            Storage::disk('public')->delete($localRel);
+                        }
+                    } catch (\Throwable $e) {}
                 }
+            }
+
+            if ($content->url_path && str_starts_with($content->url_path, 'educational/videos/')) {
+                try {
+                    if (Storage::disk('public')->exists($content->url_path)) {
+                        Storage::disk('public')->delete($content->url_path);
+                    }
+                } catch (\Throwable $e) {}
             }
 
             $deleted = $content->delete();

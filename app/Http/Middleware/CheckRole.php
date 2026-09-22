@@ -19,7 +19,11 @@ class CheckRole
             abort(403, 'غير مصرح للمدراء فقط');
         }
 
-        if ($role === 'student' && !auth()->guard('student')->check()) {
+        if ($role === 'teacher' && (!auth()->check() || auth()->user()->role !== 'teacher')) {
+            abort(403, 'للمعلمين فقط');
+        }
+
+        if ($role === 'student' && !auth('student')->check()) {
             abort(403, 'للطلاب فقط');
         }
 

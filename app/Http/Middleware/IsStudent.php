@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class IsStudent
@@ -48,7 +49,7 @@ class IsStudent
                         return redirect()->route('student.pending-approval');
                     }
                 } catch (\Throwable $e) {
-                    \Log::error('IsStudent auto-freeze check error: ' . $e->getMessage());
+                    Log::error('IsStudent auto-freeze check error: ' . $e->getMessage());
                 }
             }
 

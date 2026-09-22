@@ -142,6 +142,11 @@ class Subject extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function assignedTeacher()
+    {
+        return $this->belongsTo(User::class, 'teacher_id');
+    }
+
     public function contents()
     {
         return $this->hasMany(EducationalContent::class);
