@@ -205,6 +205,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     // إدارة ومسير رواتب المعلمين (يجب أن تسبق مسار teachers/{id} لتفادي أي تعارض)
     Route::get('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'adminIndex'])->name('teachers.salaries');
     Route::post('/teachers/salaries', [\App\Http\Controllers\TeacherSalaryController::class, 'storeOrUpdate'])->name('teachers.salaries.store');
+    Route::post('/teachers/salaries/claims/{id}/reply', [\App\Http\Controllers\TeacherSalaryController::class, 'replyTeacherClaim'])->name('teachers.salaries.claims.reply')->whereNumber('id');
     Route::delete('/teachers/salaries/{id}', [\App\Http\Controllers\TeacherSalaryController::class, 'destroy'])->name('teachers.salaries.destroy')->whereNumber('id');
 
     // مسارات المعلمين المتغيرة

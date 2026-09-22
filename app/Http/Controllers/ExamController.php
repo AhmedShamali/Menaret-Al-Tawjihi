@@ -63,7 +63,7 @@ class ExamController extends Controller
             'ends_at' => ['nullable', 'date'],
             'show_result_immediately' => ['nullable'],
             'questions' => ['required', 'array', 'min:1'],
-            'questions.*.type' => ['required', 'in:mcq,essay'],
+            'questions.*.type' => ['required', 'in:mcq,essay,text'],
             'questions.*.question_text' => ['required', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
             'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
@@ -215,19 +215,23 @@ class ExamController extends Controller
             ? filter_var($request->show_result_immediately, FILTER_VALIDATE_BOOLEAN) 
             : $exam->show_result_immediately;
 
-        $exam->update([
+        $updateData = [
             'title'            => $validated['title'],
-            'description'      => $validated['description'] ?? $exam->description,
             'duration_minutes' => $validated['duration_minutes'],
-            'total_marks'      => $validated['total_marks'] ?? $exam->total_marks,
-            'pass_marks'       => $validated['pass_marks'] ?? $exam->pass_marks,
             'starts_at'        => $request->filled('starts_at') ? \Carbon\Carbon::parse($request->starts_at) : null,
             'ends_at'          => $request->filled('ends_at') ? \Carbon\Carbon::parse($request->ends_at) : null,
             'show_result_immediately' => $showResultImmediately,
             'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
             'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
-            'is_active'        => $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $exam->is_active,
-        ]);
+        ];
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('exams', 'is_active')) {
+            if ($request->has('is_active')) {
+                $updateData['is_active'] = filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        $exam->update($updateData);
 
         // تحديث ومزامنة أسئلة الاختبار وصورها وصور الخيارات إن تم إرسالها
         if ($request->has('questions') && is_array($request->questions)) {

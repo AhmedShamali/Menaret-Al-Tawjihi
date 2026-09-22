@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\TeacherSalary;
+use App\Models\TeacherSalaryClaim;
+use App\Models\Complaint;
 use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
@@ -30,6 +32,14 @@ class TeacherSalaryController extends Controller
             ->get()
             ->keyBy('month');
 
+        // استفسارات المعلم المالية والردود الإدارية الواردة عن هذه السنة
+        $myClaims = TeacherSalaryClaim::with('repliedBy')
+            ->where('teacher_id', $teacher->id)
+            ->where('year', $year)
+            ->latest()
+            ->get();
+        $myClaimsByMonth = $myClaims->groupBy('month');
+
         // إحصائيات عامة لحساب المعلم عن السنة المحددة
         $totalPaid = $salaries->where('status', 'paid')->sum('net_salary');
         $totalBonus = $salaries->where('status', 'paid')->sum('bonus');
@@ -46,7 +56,9 @@ class TeacherSalaryController extends Controller
             'totalBonus',
             'totalDeductions',
             'pendingAmount',
-            'paidMonthsCount'
+            'paidMonthsCount',
+            'myClaims',
+            'myClaimsByMonth'
         ));
     }
 
@@ -68,7 +80,30 @@ class TeacherSalaryController extends Controller
 
         $monthName = TeacherSalary::monthNamesAr()[$request->month] ?? "شهر {$request->month}";
 
-        // إشعار إدارة المنصة بمطالبة أو ملاحظة راتب المعلم
+        // 1. تسجيل الاستفسار المالي في جدول المطالبات المالية للمعلمين
+        $claim = TeacherSalaryClaim::create([
+            'teacher_id' => $teacher->id,
+            'year'       => (int)$request->year,
+            'month'      => (int)$request->month,
+            'message'    => trim($request->message),
+            'status'     => 'pending',
+        ]);
+
+        // 2. تسجيل نسخة في جدول الشكاوى والاستفسارات لتظهر أيضاً في صندوق الوارد الإداري المركزي
+        try {
+            Complaint::create([
+                'name'     => $teacher->name,
+                'email'    => $teacher->email,
+                'phone'    => $teacher->phone,
+                'type'     => 'استفسار مالي',
+                'category' => 'استفسار مالي - مستحقات المعلمين',
+                'subject'  => "استفسار مالي بخصوص راتب ({$monthName} {$request->year}) - المعلم: {$teacher->name}",
+                'message'  => trim($request->message),
+                'status'   => 'new',
+            ]);
+        } catch (\Throwable $e) {}
+
+        // 3. إشعار إدارة المنصة بمطالبة أو ملاحظة راتب المعلم
         try {
             NotificationService::notifyAdmin(
                 "استفسار مالي بخصوص راتب {$monthName} 💵",
@@ -81,7 +116,48 @@ class TeacherSalaryController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "تم إرسال ملاحظتك واستفسارك بخصوص راتب ({$monthName}) إلى الإدارة العامة بنجاح!"
+            'message' => "تم إرسال استفسارك بخصوص راتب ({$monthName}) بنجاح، وستتم مراجعته والرد عليه من قِبل الإدارة فوراً.",
+            'claim'   => $claim
+        ]);
+    }
+
+    /**
+     * اعتماد رد الإدارة على الاستفسار المالي للمعلم
+     */
+    public function replyTeacherClaim(Request $request, $id)
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 403);
+        }
+
+        $request->validate([
+            'reply' => 'required|string|min:2|max:1500',
+        ]);
+
+        $claim = TeacherSalaryClaim::with('teacher')->findOrFail($id);
+        $claim->admin_reply = trim($request->reply);
+        $claim->replied_by = $user->id;
+        $claim->replied_at = now();
+        $claim->status = 'replied';
+        $claim->save();
+
+        // إشعار المعلم فورياً باعتماد الرد
+        try {
+            NotificationService::notifyUser(
+                $claim->teacher_id,
+                "رد إداري على استفسارك المالي 📬",
+                "وردك رد رسمي من الإدارة العامة بخصوص استفسار راتب ({$claim->month_name_ar} {$claim->year}): " . \Illuminate\Support\Str::limit($claim->admin_reply, 80),
+                'support',
+                route('teacher.salaries.index', ['year' => $claim->year]),
+                'fa-reply'
+            );
+        } catch (\Throwable $e) {}
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم حفظ وإرسال الرد الرسمي للمعلم بنجاح ✅',
+            'claim'   => $claim
         ]);
     }
 
@@ -113,6 +189,16 @@ class TeacherSalaryController extends Controller
 
         $salaries = $query->orderBy('month', 'desc')->paginate(20)->withQueryString();
 
+        // استفسارات وملاحظات المعلمين المالية
+        $claimsQuery = TeacherSalaryClaim::with(['teacher', 'repliedBy'])->where('year', $year);
+        if ($teacherId) {
+            $claimsQuery->where('teacher_id', $teacherId);
+        }
+        if ($monthFilter) {
+            $claimsQuery->where('month', (int)$monthFilter);
+        }
+        $financialClaims = $claimsQuery->latest()->get();
+
         // إحصائيات عامة للمدير
         $allSalaries = TeacherSalary::where('year', $year)->get();
         $stats = [
@@ -122,6 +208,7 @@ class TeacherSalaryController extends Controller
             'total_records'   => $allSalaries->count(),
             'paid_records'    => $allSalaries->where('status', 'paid')->count(),
             'teachers_count'  => $teachers->count(),
+            'pending_claims'  => $financialClaims->where('status', 'pending')->count(),
         ];
 
         $monthsNames = TeacherSalary::monthNames();
@@ -134,7 +221,8 @@ class TeacherSalaryController extends Controller
             'monthFilter',
             'statusFilter',
             'stats',
-            'monthsNames'
+            'monthsNames',
+            'financialClaims'
         ));
     }
 

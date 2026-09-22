@@ -107,6 +107,65 @@
         </form>
     </div>
 
+    {{-- استفسارات ومطالبات المعلمين المالية --}}
+    @if(isset($financialClaims) && $financialClaims->count() > 0)
+        <div class="claims-summary-card">
+            <div class="claims-header">
+                <div class="claims-header-title">
+                    <i class="fa-solid fa-comments-dollar text-amber" style="font-size: 1.4rem;"></i>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ __('استفسارات وملاحظات المعلمين المالية') }} <span class="claims-count-badge">{{ $financialClaims->count() }}</span></h3>
+                        <p style="margin: 3px 0 0; font-size: 0.8rem; color: #64748b;">{{ __('متابعة وتدقيق استفسارات المعلمين حول الرواتب والمستحقات، والرد عليها فورياً لتصل لحساب المعلم.') }}</p>
+                    </div>
+                </div>
+                @if($stats['pending_claims'] > 0)
+                    <span class="badge-pending-claims"><i class="fa-solid fa-clock-rotate-left"></i> {{ $stats['pending_claims'] }} {{ __('استفسار بانتظار الرد') }}</span>
+                @else
+                    <span class="badge-all-replied"><i class="fa-solid fa-circle-check"></i> {{ __('كافة الاستفسارات تمت الإجابة عليها') }}</span>
+                @endif
+            </div>
+
+            <div class="claims-grid-list">
+                @foreach($financialClaims as $claim)
+                    <div class="claim-item-card {{ $claim->status === 'replied' ? 'claim-replied' : 'claim-pending' }}">
+                        <div class="claim-item-top">
+                            <div class="claim-teacher-info">
+                                <i class="fa-solid fa-user-tie teacher-avatar-icon"></i>
+                                <div>
+                                    <strong>{{ $claim->teacher->name ?? __('معلم') }}</strong>
+                                    <span class="claim-sub-tag">{{ $claim->teacher->subject->name_ar ?? '' }} • {{ $claim->month_name_ar }} {{ $claim->year }}</span>
+                                </div>
+                            </div>
+                            <span class="status-pill {{ $claim->status === 'replied' ? 'status-paid' : 'status-pending' }}">
+                                {{ $claim->status_badge['label'] }}
+                            </span>
+                        </div>
+                        <div class="claim-message-body">
+                            <i class="fa-solid fa-quote-right quote-icon"></i>
+                            <p>{{ $claim->message }}</p>
+                            <small class="claim-date">{{ $claim->created_at ? $claim->created_at->diffForHumans() : '' }}</small>
+                        </div>
+                        @if($claim->admin_reply)
+                            <div class="claim-admin-reply-box">
+                                <div class="reply-header">
+                                    <i class="fa-solid fa-reply"></i>
+                                    <strong>{{ __('رد الإدارة العامة المعتمد:') }}</strong>
+                                    <small class="reply-date">({{ $claim->replied_at ? $claim->replied_at->format('Y-m-d h:i A') : '' }})</small>
+                                </div>
+                                <p class="reply-text">{{ $claim->admin_reply }}</p>
+                            </div>
+                        @endif
+                        <div class="claim-actions">
+                            <button type="button" class="btn-reply-claim" onclick="openReplyClaimModal({{ $claim->id }}, '{{ addslashes($claim->teacher->name ?? '') }}', '{{ addslashes($claim->month_name_ar) }}', '{{ addslashes(str_replace(["\r", "\n"], ' ', $claim->message)) }}', '{{ addslashes(str_replace(["\r", "\n"], ' ', $claim->admin_reply ?? '')) }}')">
+                                <i class="fa-solid fa-reply"></i> {{ $claim->status === 'replied' ? __('تعديل الرد على المعلم') : __('الرد على استفسار المعلم') }}
+                            </button>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     {{-- 4. جدول وبطاقات الرواتب الفاتحة الأكاديمية --}}
     <div class="table-container-card">
         <div class="payroll-table-wrap">
@@ -374,6 +433,49 @@
     </div>
 </div>
 
+{{-- مودال الرد على استفسار المعلم المالي --}}
+<div id="replyClaimModal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: 580px;">
+        <div class="modal-header">
+            <div class="modal-title-wrap">
+                <i class="fa-solid fa-reply text-primary" style="font-size: 1.4rem;"></i>
+                <div>
+                    <h3 id="replyModalTitle">{{ __('الرد على استفسار المعلم المالي') }}</h3>
+                    <p id="replyModalSubtitle" style="font-size: 0.8rem; color: #64748b; margin: 2px 0 0;"></p>
+                </div>
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeReplyClaimModal()">&times;</button>
+        </div>
+
+        <form id="replyClaimForm" onsubmit="handleReplyClaimSubmit(event)">
+            @csrf
+            <input type="hidden" id="replyClaimId">
+
+            <div class="modal-body">
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;">
+                    <div style="font-size: 0.78rem; font-weight: 800; color: #475569; margin-bottom: 4px;">
+                        <i class="fa-solid fa-quote-right text-amber"></i> {{ __('نص استفسار المعلم:') }}
+                    </div>
+                    <p id="replyOriginalMessage" style="font-size: 0.88rem; color: #1e293b; margin: 0; line-height: 1.6; white-space: pre-wrap;"></p>
+                </div>
+
+                <div class="form-row-full">
+                    <label class="form-label">{{ __('الرد الرسمي من الإدارة العامة') }} <span class="required" style="color: #dc2626;">*</span></label>
+                    <textarea id="adminReplyText" rows="4" class="modal-input" placeholder="{{ __('اكتب ردك الواضح والشامل للمعلم هنا...') }}" required style="line-height: 1.6;"></textarea>
+                    <small style="color: #64748b; font-size: 0.75rem;">{{ __('سيظهر هذا الرد فوراً في شاشة المعلم مع إرسال إشعار رسمي لحسابه.') }}</small>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="submit" class="btn-modal-save" id="btnSubmitClaimReply">
+                    <i class="fa-solid fa-paper-plane"></i> {{ __('اعتماد وإرسال الرد للمعلم') }}
+                </button>
+                <button type="button" class="btn-modal-cancel" onclick="closeReplyClaimModal()">{{ __('إلغاء') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const payrollI18n = {
@@ -479,9 +581,221 @@
             }
         });
     }
+
+    function openReplyClaimModal(claimId, teacherName, monthLabel, message, currentReply) {
+        document.getElementById('replyClaimId').value = claimId;
+        document.getElementById('replyModalTitle').innerText = '{{ __("الرد على استفسار المعلم") }}: ' + teacherName;
+        document.getElementById('replyModalSubtitle').innerText = '{{ __("بخصوص مستحقات") }} ' + monthLabel;
+        document.getElementById('replyOriginalMessage').innerText = message;
+        document.getElementById('adminReplyText').value = currentReply || '';
+        document.getElementById('replyClaimModal').style.display = 'flex';
+    }
+
+    function closeReplyClaimModal() {
+        document.getElementById('replyClaimModal').style.display = 'none';
+    }
+
+    function handleReplyClaimSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('replyClaimId').value;
+        const replyText = document.getElementById('adminReplyText').value.trim();
+        if (!replyText) return;
+
+        const btn = document.getElementById('btnSubmitClaimReply');
+        const originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري الاعتماد والإرسال...") }}';
+
+        axios.post(`{{ url('admin/teachers/salaries/claims') }}/${id}/reply`, {
+            reply: replyText,
+            _token: '{{ csrf_token() }}'
+        })
+        .then(res => {
+            closeReplyClaimModal();
+            Swal.fire({
+                icon: 'success',
+                title: '{{ __("تم اعتماد الرد بنجاح ✅") }}',
+                text: res.data.message,
+                confirmButtonColor: '#059669'
+            }).then(() => location.reload());
+        })
+        .catch(err => {
+            Swal.fire('{{ __("خطأ") }}', err.response?.data?.message || '{{ __("فشل اعتماد الرد") }}', 'error');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        });
+    }
 </script>
 
 <style>
+    /* Claims Section Styling */
+    .claims-summary-card {
+        background: #ffffff;
+        border: 1px solid #fde68a;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 15px -3px rgba(217, 119, 6, 0.08);
+        border-inline-start: 5px solid #d97706;
+    }
+    .claims-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #fef3c7;
+        margin-bottom: 16px;
+    }
+    .claims-header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .claims-count-badge {
+        background: #fef3c7;
+        color: #b45309;
+        font-size: 0.8rem;
+        padding: 2px 8px;
+        border-radius: 999px;
+        margin-inline-start: 6px;
+    }
+    .badge-pending-claims {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+        color: #b45309;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.82rem;
+    }
+    .badge-all-replied {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.82rem;
+    }
+    .claims-grid-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 16px;
+    }
+    .claim-item-card {
+        background: #fafafa;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+    .claim-item-card.claim-pending {
+        background: #fffdfa;
+        border-color: #fde68a;
+    }
+    .claim-item-card.claim-replied {
+        background: #fcfdfc;
+        border-color: #d1fae5;
+    }
+    .claim-item-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .claim-teacher-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .teacher-avatar-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+    }
+    .claim-sub-tag {
+        display: block;
+        font-size: 0.76rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+    .claim-message-body {
+        position: relative;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.86rem;
+        color: #1e293b;
+        line-height: 1.5;
+    }
+    .quote-icon {
+        position: absolute;
+        top: 6px;
+        left: 8px;
+        color: #e2e8f0;
+        font-size: 0.9rem;
+    }
+    .claim-date {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.72rem;
+        color: #94a3b8;
+    }
+    .claim-admin-reply-box {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 0.84rem;
+        color: #166534;
+    }
+    .reply-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 4px;
+        font-size: 0.8rem;
+    }
+    .reply-date {
+        color: #65a30d;
+        font-size: 0.72rem;
+    }
+    .reply-text {
+        margin: 0;
+        line-height: 1.5;
+        white-space: pre-wrap;
+    }
+    .btn-reply-claim {
+        background: #0284c7;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 7px 14px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.15s;
+    }
+    .btn-reply-claim:hover {
+        background: #0369a1;
+    }
     .admin-payroll-wrapper {
         width: 100%;
         max-width: 100%;

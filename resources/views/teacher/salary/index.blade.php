@@ -184,6 +184,10 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="row-actions-group">
+                                    @php
+                                        $monthClaims = ($myClaimsByMonth[$monthNum] ?? collect());
+                                        $latestClaim = $monthClaims->first();
+                                    @endphp
                                     @if($sal)
                                         <button type="button" 
                                                 class="btn-table-action btn-payslip" 
@@ -191,13 +195,35 @@
                                                 title="{{ __('قسيمة الراتب') }}">
                                             <i class="fa-solid fa-receipt"></i> {{ __('قسيمة الراتب') }}
                                         </button>
+                                    @endif
+
+                                    @if($latestClaim)
+                                        @if($latestClaim->status === 'replied')
+                                            <button type="button" 
+                                                    class="btn-table-action" 
+                                                    onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" 
+                                                    title="{{ __('عرض رد الإدارة على الاستفسار') }}"
+                                                    style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700;">
+                                                <i class="fa-solid fa-envelope-circle-check"></i> {{ __('رد الإدارة ✅') }}
+                                            </button>
+                                        @else
+                                            <button type="button" 
+                                                    class="btn-table-action" 
+                                                    onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" 
+                                                    title="{{ __('استفسارك قيد المتابعة من الإدارة') }}"
+                                                    style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">
+                                                <i class="fa-solid fa-clock-rotate-left"></i> {{ __('قيد المراجعة ⏳') }}
+                                            </button>
+                                        @endif
                                     @else
-                                        <button type="button" 
-                                                class="btn-table-action btn-claim" 
-                                                onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')" 
-                                                title="{{ __('استفسار مالي') }}">
-                                            <i class="fa-regular fa-comment-dots"></i> {{ __('استفسار مالي') }}
-                                        </button>
+                                        @if(!$sal)
+                                            <button type="button" 
+                                                    class="btn-table-action btn-claim" 
+                                                    onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')" 
+                                                    title="{{ __('استفسار مالي') }}">
+                                                <i class="fa-regular fa-comment-dots"></i> {{ __('استفسار مالي') }}
+                                            </button>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -262,20 +288,84 @@
                     </div>
 
                     <div class="mob-m-footer">
+                        @php
+                            $monthClaims = ($myClaimsByMonth[$monthNum] ?? collect());
+                            $latestClaim = $monthClaims->first();
+                        @endphp
                         @if($sal)
                             <button type="button" class="btn-table-action btn-payslip w-full" onclick="openPayslipModal({{ json_encode($sal) }}, '{{ addslashes($monthLabel) }}')">
                                 <i class="fa-solid fa-receipt"></i> {{ __('قسيمة الراتب الرسمية') }}
                             </button>
+                        @endif
+                        @if($latestClaim)
+                            @if($latestClaim->status === 'replied')
+                                <button type="button" class="btn-table-action w-full" onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; margin-top: 6px; padding: 8px; font-weight: 700;">
+                                    <i class="fa-solid fa-envelope-circle-check"></i> {{ __('عرض رد الإدارة على الاستفسار ✅') }}
+                                </button>
+                            @else
+                                <button type="button" class="btn-table-action w-full" onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; margin-top: 6px; padding: 8px; font-weight: 700;">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> {{ __('استفسارك قيد المراجعة ⏳') }}
+                                </button>
+                            @endif
                         @else
-                            <button type="button" class="btn-table-action btn-claim w-full" onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')">
-                                <i class="fa-regular fa-comment-dots"></i> {{ __('إرسال استفسار مالي') }}
-                            </button>
+                            @if(!$sal)
+                                <button type="button" class="btn-table-action btn-claim w-full" onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')">
+                                    <i class="fa-regular fa-comment-dots"></i> {{ __('إرسال استفسار مالي') }}
+                                </button>
+                            @endif
                         @endif
                     </div>
                 </div>
             @endforeach
         </div>
     </div>
+
+    {{-- سجل الاستفسارات والمطالبات المالية والردود الإدارية --}}
+    @if(isset($myClaims) && $myClaims->count() > 0)
+        <div class="teacher-claims-record-card" style="margin-top: 24px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px 24px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); border-inline-start: 5px solid #0284c7;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-comments-dollar text-primary" style="font-size: 1.3rem;"></i>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ __('سجل استفساراتك المالية وردود الإدارة العامة') }}</h3>
+                </div>
+                <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 999px;">{{ $myClaims->count() }} {{ __('استفسار') }}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;">
+                @foreach($myClaims as $c)
+                    <div style="background: #f8fafc; border: 1px solid {{ $c->status === 'replied' ? '#a7f3d0' : '#fde68a' }}; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="color: #1e293b; font-size: 0.9rem;"><i class="fa-regular fa-calendar text-primary"></i> {{ $c->month_name_ar }} {{ $c->year }}</strong>
+                            <span class="status-pill {{ $c->status === 'replied' ? 'status-paid' : 'status-pending' }}" style="font-size: 0.76rem; padding: 3px 8px;">
+                                {{ $c->status_badge['label'] }}
+                            </span>
+                        </div>
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-size: 0.84rem; color: #334155; line-height: 1.5;">
+                            <span style="font-size: 0.74rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 3px;"><i class="fa-solid fa-comment-dots text-amber"></i> {{ __('استفسارك:') }}</span>
+                            {{ $c->message }}
+                            <small style="display: block; margin-top: 4px; font-size: 0.7rem; color: #94a3b8;">{{ $c->created_at ? $c->created_at->diffForHumans() : '' }}</small>
+                        </div>
+                        @if($c->admin_reply)
+                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 10px; font-size: 0.84rem; color: #065f46; line-height: 1.5;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                    <strong style="font-size: 0.78rem; display: flex; align-items: center; gap: 5px;">
+                                        <i class="fa-solid fa-reply text-emerald"></i> {{ __('رد الإدارة العامة:') }}
+                                    </strong>
+                                    <small style="font-size: 0.7rem; color: #059669;">{{ $c->replied_at ? $c->replied_at->format('Y-m-d h:i A') : '' }}</small>
+                                </div>
+                                <p style="margin: 0; white-space: pre-wrap; font-weight: 500;">{{ $c->admin_reply }}</p>
+                            </div>
+                        @else
+                            <div style="font-size: 0.78rem; color: #b45309; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-hourglass-half"></i>
+                                <span>{{ __('الاستفسار قيد المتابعة لدى الإدارة وسيتم إشعارك فور اعتماد الرد.') }}</span>
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
 </div>
 
 {{-- 4. مودال سند صرف مستحقات ورواتب المعلمين الطبيعي الكلاسيكي (قابل للطباعة الفورية في ورقة A4 واحدة) --}}
@@ -521,6 +611,52 @@
     </div>
 </div>
 
+{{-- 6. مودال عرض تفاصيل استفسار المعلم ورد الإدارة العامة --}}
+<div id="viewClaimReplyModal" class="payslip-modal-overlay" style="display: none;">
+    <div class="claim-modal-container" style="max-width: 540px;">
+        <div class="claim-header">
+            <i class="fa-solid fa-comments-dollar text-primary" style="font-size: 1.8rem;"></i>
+            <div>
+                <h3>{{ __('متابعة الاستفسار المالي ورد الإدارة') }}</h3>
+                <p id="viewClaimMonthTitle">{{ __('بخصوص مستحقات وراتب الشهر') }}</p>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px;">
+                <div style="font-size: 0.78rem; font-weight: 800; color: #475569; margin-bottom: 4px;">
+                    <i class="fa-solid fa-comment-dots text-amber"></i> {{ __('استفسارك المرسل:') }}
+                </div>
+                <p id="viewClaimOriginalText" style="font-size: 0.88rem; color: #1e293b; margin: 0; line-height: 1.5; white-space: pre-wrap;"></p>
+                <small id="viewClaimDate" style="display: block; margin-top: 6px; font-size: 0.72rem; color: #94a3b8;"></small>
+            </div>
+
+            <div id="viewClaimReplySection" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <strong style="font-size: 0.82rem; color: #047857; display: flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-reply"></i> {{ __('رد الإدارة العامة الرسمي:') }}
+                    </strong>
+                    <small id="viewClaimReplyDate" style="font-size: 0.72rem; color: #059669;"></small>
+                </div>
+                <p id="viewClaimReplyText" style="font-size: 0.88rem; color: #064e3b; margin: 0; line-height: 1.6; white-space: pre-wrap; font-weight: 500;"></p>
+            </div>
+
+            <div id="viewClaimPendingSection" style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 12px 14px; display: none;">
+                <div style="display: flex; align-items: center; gap: 8px; color: #b45309; font-size: 0.84rem; font-weight: 700;">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>{{ __('الاستفسار قيد المتابعة لدى الإدارة العامة وسيتم إشعارك فور اعتماد الرد.') }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="claim-actions-row" style="margin-top: 18px;">
+            <button type="button" class="btn-cancel-claim" onclick="closeViewClaimReplyModal()" style="width: 100%;">
+                {{ __('إغلاق النافذة') }}
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const teacherSalaryI18n = {
@@ -629,7 +765,7 @@
                 title: teacherSalaryI18n.claimSuccessTitle,
                 text: res.data.message,
                 confirmButtonColor: '#059669'
-            });
+            }).then(() => location.reload());
         })
         .catch(err => {
             Swal.fire(teacherSalaryI18n.errorTitle, err.response?.data?.message || teacherSalaryI18n.errorClaimFailed, 'error');
@@ -640,11 +776,38 @@
         });
     }
 
+    function openViewClaimReplyModal(claim, monthLabel) {
+        document.getElementById('viewClaimMonthTitle').innerText = `{{ __('بخصوص مستحقات') }} (${monthLabel} {{ $year }})`;
+        document.getElementById('viewClaimOriginalText').innerText = claim.message || '';
+        document.getElementById('viewClaimDate').innerText = claim.created_at ? new Date(claim.created_at).toLocaleDateString() : '';
+
+        const replySec = document.getElementById('viewClaimReplySection');
+        const pendingSec = document.getElementById('viewClaimPendingSection');
+
+        if (claim.admin_reply) {
+            replySec.style.display = 'block';
+            pendingSec.style.display = 'none';
+            document.getElementById('viewClaimReplyText').innerText = claim.admin_reply;
+            document.getElementById('viewClaimReplyDate').innerText = claim.replied_at ? new Date(claim.replied_at).toLocaleString() : '';
+        } else {
+            replySec.style.display = 'none';
+            pendingSec.style.display = 'block';
+        }
+
+        document.getElementById('viewClaimReplyModal').style.display = 'flex';
+    }
+
+    function closeViewClaimReplyModal() {
+        document.getElementById('viewClaimReplyModal').style.display = 'none';
+    }
+
     window.onclick = function(e) {
         const payslip = document.getElementById('payslipModal');
         const claim = document.getElementById('claimModal');
+        const viewClaim = document.getElementById('viewClaimReplyModal');
         if (e.target === payslip) closePayslipModal();
         if (e.target === claim) closeClaimModal();
+        if (e.target === viewClaim) closeViewClaimReplyModal();
     }
 </script>
 

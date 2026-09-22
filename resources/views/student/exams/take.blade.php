@@ -148,23 +148,65 @@
             <!-- مسار تدفق الأسئلة (العمود الرئيسي 75%) -->
             <main class="ed-questions-arena" id="questionsArena">
                 
-                <!-- رسالة ترحيبية وتوجيهية كلاسيكية -->
-                <div class="ed-arena-header-card">
-                    <div class="ed-arena-header-content">
-                        <div class="ed-arena-seal">
-                            <i class="fa-solid fa-pen-nib"></i>
+                <!-- ورقة الامتحان الوزارية الكلاسيكية الرسمية (Palestinian Classical Official Exam Sheet Header) -->
+                <div class="ed-arena-header-card ed-palestine-exam-sheet">
+                    <div class="ed-sheet-crest-section">
+                        <div class="ed-sheet-gov-side">
+                            <div class="ed-state-title">{{ __('دولة فلسطين') }}</div>
+                            <div class="ed-ministry-title">{{ __('وزارة التربية والتعليم العالي') }}</div>
+                            <div class="ed-dept-title">{{ __('الإدارة العامة للامتحانات والتقويم والقياس') }}</div>
                         </div>
-                        <div>
-                            <h3>{{ __('ورقة الأسئلة الأكاديمية الرسمية') }}</h3>
-                            <p>{{ __('أجب عن جميع الأسئلة الآتية بدقة. يمكنك تمييز أي سؤال ترغب بمراجعته قبل الاعتماد النهائي.') }}</p>
+
+                        <div class="ed-sheet-emblem-center">
+                            <div class="ed-emblem-seal">
+                                <i class="fa-solid fa-feather-pointed"></i>
+                            </div>
+                            <span class="ed-emblem-label">{{ __('ورقة امتحان رسمية') }}</span>
+                            <span class="ed-exam-cycle">{{ __('جلسة الاختبار الأكاديمي الرقمي') }}</span>
+                        </div>
+
+                        <div class="ed-sheet-meta-side">
+                            <div class="ed-meta-item">
+                                <span class="lbl">{{ __('المبحث:') }}</span>
+                                <strong class="val">{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</strong>
+                            </div>
+                            <div class="ed-meta-item">
+                                <span class="lbl">{{ __('المرحلة / الصف:') }}</span>
+                                <strong class="val">{{ $exam->academicYear->name_ar ?? $exam->academicYear->name ?? __('المرحلة الثانوية العامة') }}</strong>
+                            </div>
+                            <div class="ed-meta-item">
+                                <span class="lbl">{{ __('زمن الإجابة:') }}</span>
+                                <strong class="val">{{ $exam->duration_minutes }} {{ __('دقيقة') }}</strong>
+                            </div>
                         </div>
                     </div>
-                    <div class="ed-arena-stats-strip">
-                        <span><i class="fa-solid fa-layer-group"></i> {{ count($exam->questions) }} {{ __('أسئلة') }}</span>
-                        <span class="sep">•</span>
-                        <span><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</span>
-                        <span class="sep">•</span>
-                        <span><i class="fa-solid fa-award"></i> {{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('درجة إجمالية') }}</span>
+
+                    <!-- بطاقة معلومات الجلسة والدرجات في جدول امتحاني كلاسيكي مذهب -->
+                    <div class="ed-sheet-info-table">
+                        <div class="ed-info-col">
+                            <span class="ed-col-lbl"><i class="fa-solid fa-user-graduate"></i> {{ __('اسم الطالب الممتحن') }}</span>
+                            <strong class="ed-col-val">{{ auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب نظامي') }}</strong>
+                        </div>
+                        <div class="ed-info-col">
+                            <span class="ed-col-lbl"><i class="fa-solid fa-fingerprint"></i> {{ __('رقم الجلسة الأكاديمية') }}</span>
+                            <strong class="ed-col-val ltr-code">EX-{{ $exam->id }}-{{ auth()->id() }}</strong>
+                        </div>
+                        <div class="ed-info-col">
+                            <span class="ed-col-lbl"><i class="fa-solid fa-file-circle-question"></i> {{ __('مجموع الأسئلة') }}</span>
+                            <strong class="ed-col-val">{{ count($exam->questions) }} {{ __('أسئلة') }}</strong>
+                        </div>
+                        <div class="ed-info-col highlight">
+                            <span class="ed-col-lbl"><i class="fa-solid fa-award"></i> {{ __('مجموع العلامات الكلية') }}</span>
+                            <strong class="ed-col-val">{{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('علامة') }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="ed-sheet-instructions-strip">
+                        <div class="ed-strip-icon"><i class="fa-solid fa-circle-exclamation"></i></div>
+                        <div class="ed-strip-text">
+                            <strong>{{ __('توجيهات وإرشادات هامة للممتحن:') }}</strong>
+                            <span>{{ __('أجب عن جميع الأسئلة الواردة في هذه الورقة بعناية. تأكد من تظليل خيار الإجابة المطلوب أو كتابة الشرح المفصل، ويتم حفظ إجاباتك تلقائياً.') }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -363,21 +405,55 @@
                 </article>
                 @endforeach
 
-                <!-- كرت الختام والتسليم النهائي -->
-                <div class="ed-arena-footer-card">
-                    <div class="ed-arena-footer-content">
-                        <div class="ed-footer-seal">
-                            <i class="fa-solid fa-flag-checkered"></i>
+                <!-- كرت الختام والتسليم النهائي الكلاسيكي الوزاري (Palestinian Ministerial Exam Closing Sheet) -->
+                <div class="ed-arena-footer-card ed-palestine-footer-sheet">
+                    <div class="ed-palestine-closing-banner">
+                        <div class="ed-closing-crest"><i class="fa-solid fa-feather-pointed"></i></div>
+                        <div class="ed-closing-text">
+                            <h4>{{ __('انتـهـت الأسـئـلـة بـحـمـد الـلـه وتـوفـيـقـه') }}</h4>
+                            <p>{{ __('مع أطيب التمنيات لجميع طلبتنا الأعزاء بالتوفيق والنجاح الباهر') }}</p>
                         </div>
-                        <div>
-                            <h4>{{ __('هل أكملت حل جميع الأسئلة والمراجعة؟') }}</h4>
-                            <p>{{ __('عند الضغط على تسليم الاختبار، سيتم رصد وحفظ إجاباتك وإصدار تقرير النتائج الرسمي.') }}</p>
+                        <div class="ed-closing-crest"><i class="fa-solid fa-feather-pointed"></i></div>
+                    </div>
+
+                    <!-- جدول التواقيع والاعتماد الأكاديمي الكلاسيكي -->
+                    <div class="ed-signature-grid">
+                        <div class="ed-sig-box">
+                            <span class="ed-sig-title">{{ __('إقرار الطالب الممتحن') }}</span>
+                            <div class="ed-sig-line">
+                                <i class="fa-solid fa-signature text-navy"></i>
+                                <span>{{ auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب نظامي') }}</span>
+                            </div>
+                            <span class="ed-sig-note">{{ __('أقر بأنني أجبت عن الأسئلة بنزاهة تامة') }}</span>
+                        </div>
+                        <div class="ed-sig-box">
+                            <span class="ed-sig-title">{{ __('لجنة المراقبة والنزاهة الرقمية') }}</span>
+                            <div class="ed-sig-line">
+                                <i class="fa-solid fa-shield-check text-emerald"></i>
+                                <span class="text-emerald">{{ __('نظام الرصد الذكي مؤكد') }}</span>
+                            </div>
+                            <span class="ed-sig-note">{{ __('الجلسة موثقة ومحمية برمجياً') }}</span>
+                        </div>
+                        <div class="ed-sig-box">
+                            <span class="ed-sig-title">{{ __('لجنة التصحيح والاعتماد') }}</span>
+                            <div class="ed-sig-line">
+                                <i class="fa-solid fa-stamp text-amber"></i>
+                                <span>{{ __('معتمد رقمياً') }}</span>
+                            </div>
+                            <span class="ed-sig-note">{{ __('الدرجة الكلية: ') }} {{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('علامة') }}</span>
                         </div>
                     </div>
-                    <button type="button" onclick="confirmSubmission()" class="ed-btn-grand-submit" id="submitBtn">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>{{ __('تسليم ورقة الاختبار النهائية الآن') }}</span>
-                    </button>
+
+                    <div class="ed-footer-action-wrap">
+                        <div class="ed-footer-notice">
+                            <i class="fa-solid fa-circle-info text-navy"></i>
+                            <span>{{ __('عند الضغط على الزر أدناه، سيتم تسليم ورقة الامتحان نهائياً وحفظ جميع الإجابات وإصدار تقرير نتيجتك.') }}</span>
+                        </div>
+                        <button type="button" onclick="confirmSubmission()" class="ed-btn-grand-submit" id="submitBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>{{ __('تسليم ورقة الامتحان والاعتماد النهائي') }}</span>
+                        </button>
+                    </div>
                 </div>
 
             </main>
@@ -729,68 +805,185 @@
         box-sizing: border-box;
     }
 
-    /* بطاقة التوجيه الرسمية بالرأس */
-    .ed-arena-header-card {
+    /* =========================================================
+       2. ورقة الامتحان الوزارية الكلاسيكية (Palestinian Ministerial Exam Sheet)
+       ========================================================= */
+    .ed-palestine-exam-sheet {
         background: #ffffff;
-        border: 1px solid var(--ed-slate-200);
-        border-right: 4px solid var(--ed-navy-700);
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 14px;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+        border: 2px solid var(--ed-navy-950);
+        outline: 3px double #d97706;
+        outline-offset: -4px;
+        border-radius: 14px;
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(9, 26, 46, 0.06);
+        position: relative;
     }
 
-    .ed-arena-header-content {
-        display: flex;
+    .ed-sheet-crest-section {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        gap: 14px;
+        gap: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
     }
 
-    .ed-arena-seal {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        background: #eff6ff;
-        color: var(--ed-navy-700);
+    .ed-sheet-gov-side {
+        text-align: right;
+    }
+
+    .ed-state-title {
+        font-size: 1.15rem;
+        font-weight: 900;
+        color: var(--ed-navy-950);
+        letter-spacing: -0.2px;
+    }
+
+    .ed-ministry-title {
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: var(--ed-amber-700);
+        margin: 2px 0;
+    }
+
+    .ed-dept-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--ed-slate-500);
+    }
+
+    .ed-sheet-emblem-center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+    }
+
+    .ed-emblem-seal {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--ed-navy-950) 0%, var(--ed-navy-800) 100%);
+        border: 2px solid var(--ed-amber-500);
+        color: #fef08a;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        font-size: 1.4rem;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.15);
+    }
+
+    .ed-emblem-label {
+        font-size: 0.86rem;
+        font-weight: 800;
+        color: var(--ed-navy-950);
+    }
+
+    .ed-exam-cycle {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--ed-slate-500);
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .ed-sheet-meta-side {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        align-items: flex-end;
+    }
+
+    .ed-meta-item {
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ed-meta-item .lbl {
+        color: var(--ed-slate-500);
+        font-weight: 600;
+    }
+
+    .ed-meta-item .val {
+        color: var(--ed-navy-950);
+        font-weight: 800;
+    }
+
+    /* جدول معلومات الجلسة والدرجات الكلاسيكي المذهب */
+    .ed-sheet-info-table {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin: 18px 0;
+        background: #fbfbf9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 16px;
+    }
+
+    .ed-info-col {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .ed-info-col .ed-col-lbl {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: var(--ed-slate-500);
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .ed-info-col .ed-col-val {
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: var(--ed-navy-950);
+    }
+
+    .ed-info-col.highlight .ed-col-val {
+        color: var(--ed-amber-700);
+        font-size: 1.02rem;
+    }
+
+    .ltr-code {
+        direction: ltr;
+        display: inline-block;
+        font-family: 'Consolas', monospace;
+    }
+
+    /* شريط التوجيهات الوزارية */
+    .ed-sheet-instructions-strip {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-right: 4px solid var(--ed-emerald-600);
+        border-radius: 8px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: #166534;
+        line-height: 1.5;
+    }
+
+    .ed-strip-icon {
+        color: var(--ed-emerald-600);
+        font-size: 1.05rem;
+        margin-top: 2px;
         flex-shrink: 0;
     }
 
-    .ed-arena-header-content h3 {
-        font-size: 1.05rem;
-        font-weight: 800;
-        color: var(--ed-slate-900);
-        margin: 0 0 4px;
-    }
-
-    .ed-arena-header-content p {
-        font-size: 0.85rem;
-        color: var(--ed-slate-500);
-        margin: 0;
-    }
-
-    .ed-arena-stats-strip {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.82rem;
-        color: var(--ed-slate-700);
-        font-weight: 700;
-        background: var(--ed-slate-100);
-        padding: 6px 14px;
-        border-radius: 8px;
-    }
-
-    .ed-arena-stats-strip .sep {
-        color: #94a3b8;
+    .ed-strip-text strong {
+        color: #14532d;
+        margin-left: 4px;
     }
 
     /* =========================================================
@@ -1028,66 +1221,78 @@
     .ed-mcq-card {
         display: flex;
         align-items: center;
-        gap: 14px;
-        padding: 14px 18px;
+        gap: 16px;
+        padding: 16px 20px;
         border: 1.5px solid #cbd5e1;
         border-radius: 12px;
         background: #ffffff;
-        transition: all 0.2s ease;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
-        min-height: 56px;
+        min-height: 60px;
         box-sizing: border-box;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
     }
 
     .ed-mcq-label:hover .ed-mcq-card {
-        border-color: #93c5fd;
-        background: #f8fafc;
+        border-color: #94a3b8;
+        background: #fafaf8;
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
     }
 
     /* حالة التحديد */
     .ed-mcq-input:checked + .ed-mcq-card {
-        border-color: var(--ed-navy-700);
-        background: #eff6ff;
-        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+        border-color: var(--ed-navy-950);
+        background: #f0f7ff;
+        box-shadow: 0 0 0 3px rgba(15, 36, 61, 0.12), 0 4px 14px rgba(15, 23, 42, 0.06);
     }
 
+    /* ميدالية الحرف الكلاسيكية الوزارية */
     .ed-opt-letter-disc {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: #f1f5f9;
-        border: 1px solid #e2e8f0;
-        color: #475569;
-        font-weight: 800;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #f8fafc;
+        border: 2px solid #cbd5e1;
+        color: var(--ed-navy-950);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-direction: column;
         flex-shrink: 0;
-        transition: all 0.2s ease;
+        transition: all 0.22s ease;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
     }
 
     .ed-opt-letter-disc .letter-ar {
-        font-size: 0.92rem;
+        font-family: 'Amiri', 'Traditional Arabic', serif, system-ui;
+        font-size: 1.25rem;
+        font-weight: 900;
         line-height: 1;
+        color: var(--ed-navy-950);
     }
 
     .ed-opt-letter-disc .letter-en {
-        font-size: 0.62rem;
+        font-size: 0.58rem;
         color: #94a3b8;
         line-height: 1;
         margin-top: 1px;
+        font-weight: 700;
+        text-transform: uppercase;
     }
 
     .ed-mcq-input:checked + .ed-mcq-card .ed-opt-letter-disc {
-        background: var(--ed-navy-700);
-        border-color: var(--ed-navy-700);
+        background: linear-gradient(135deg, var(--ed-navy-950) 0%, var(--ed-navy-800) 100%);
+        border-color: var(--ed-amber-500);
+        box-shadow: 0 2px 8px rgba(15, 36, 61, 0.25);
+    }
+
+    .ed-mcq-input:checked + .ed-mcq-card .ed-opt-letter-disc .letter-ar {
         color: #ffffff;
     }
 
     .ed-mcq-input:checked + .ed-mcq-card .ed-opt-letter-disc .letter-en {
-        color: #bfdbfe;
+        color: #fef08a;
     }
 
     .ed-opt-payload {
@@ -1339,73 +1544,139 @@
         background: var(--ed-emerald-700);
     }
 
-    /* كرت الختام والتسليم الكبير */
-    .ed-arena-footer-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border: 1.5px solid #cbd5e1;
+    /* كرت الختام والتسليم الوزاري الكلاسيكي */
+    .ed-palestine-footer-sheet {
+        background: #ffffff;
+        border: 2px solid var(--ed-navy-950);
+        outline: 3px double #d97706;
+        outline-offset: -4px;
         border-radius: 14px;
-        padding: 24px;
+        padding: 24px 28px;
+        margin-top: 30px;
+        box-shadow: 0 4px 20px rgba(9, 26, 46, 0.06);
+    }
+
+    .ed-palestine-closing-banner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .ed-closing-crest {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #eff6ff;
+        border: 1.5px solid var(--ed-navy-800);
+        color: var(--ed-navy-900);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .ed-closing-text h4 {
+        font-size: 1.25rem;
+        font-weight: 900;
+        color: var(--ed-navy-950);
+        margin: 0 0 4px;
+        letter-spacing: -0.2px;
+    }
+
+    .ed-closing-text p {
+        font-size: 0.88rem;
+        color: var(--ed-amber-700);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    /* جدول التواقيع الأكاديمي الكلاسيكي */
+    .ed-signature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin: 22px 0;
+    }
+
+    .ed-sig-box {
+        background: #fbfbf9;
+        border: 1px dashed #cbd5e1;
+        border-radius: 10px;
+        padding: 14px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ed-sig-title {
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: var(--ed-slate-500);
+    }
+
+    .ed-sig-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: var(--ed-navy-950);
+        min-height: 28px;
+    }
+
+    .ed-sig-note {
+        font-size: 0.7rem;
+        color: #94a3b8;
+    }
+
+    .ed-footer-action-wrap {
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 20px;
-        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
-        margin-top: 30px;
-    }
-
-    .ed-arena-footer-content {
-        display: flex;
-        align-items: center;
         gap: 16px;
+        padding-top: 14px;
+        border-top: 1px solid #f1f5f9;
     }
 
-    .ed-footer-seal {
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
-        background: var(--ed-emerald-50);
-        color: var(--ed-emerald-600);
-        display: flex;
+    .ed-footer-notice {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-
-    .ed-arena-footer-content h4 {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: var(--ed-slate-900);
-        margin: 0 0 4px;
-    }
-
-    .ed-arena-footer-content p {
-        font-size: 0.88rem;
-        color: var(--ed-slate-500);
-        margin: 0;
+        gap: 8px;
+        font-size: 0.82rem;
+        color: var(--ed-slate-600);
+        font-weight: 600;
+        max-width: 600px;
     }
 
     .ed-btn-grand-submit {
-        background: linear-gradient(135deg, var(--ed-emerald-600) 0%, var(--ed-emerald-700) 100%);
-        color: #ffffff;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        padding: 14px 32px;
-        border-radius: 10px;
+        background: linear-gradient(135deg, var(--ed-navy-950) 0%, var(--ed-navy-800) 100%);
+        color: #fef08a;
+        border: 2px solid var(--ed-amber-500);
+        padding: 14px 34px;
+        border-radius: 12px;
         font-size: 1.05rem;
         font-weight: 800;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
-        gap: 10px;
-        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
-        transition: all 0.2s ease;
+        gap: 12px;
+        box-shadow: 0 4px 18px rgba(15, 36, 61, 0.35);
+        transition: all 0.22s ease;
     }
 
     .ed-btn-grand-submit:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: linear-gradient(135deg, #091a2e 0%, #1e3a8a 100%);
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+        box-shadow: 0 6px 24px rgba(15, 36, 61, 0.45);
+        color: #ffffff;
     }
 
     /* =========================================================
@@ -2009,14 +2280,48 @@
             justify-content: center;
         }
 
-        .ed-arena-footer-card {
+        .ed-palestine-exam-sheet {
+            padding: 16px 14px;
+        }
+
+        .ed-sheet-crest-section {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 14px;
+        }
+
+        .ed-sheet-gov-side, .ed-sheet-meta-side {
+            text-align: center;
+            align-items: center;
+        }
+
+        .ed-sheet-info-table {
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .ed-palestine-footer-sheet {
+            padding: 18px 14px;
+        }
+
+        .ed-palestine-closing-banner {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ed-signature-grid {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .ed-footer-action-wrap {
             flex-direction: column;
             text-align: center;
         }
 
-        .ed-arena-footer-content {
-            flex-direction: column;
-            text-align: center;
+        .ed-footer-notice {
+            justify-content: center;
         }
 
         .ed-btn-grand-submit {
