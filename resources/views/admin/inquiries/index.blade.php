@@ -112,7 +112,7 @@
                 </thead>
                 <tbody>
                     @forelse($inquiries as $inq)
-                        <tr>
+                        <tr id="inquiry-row-{{ $inq->id }}" class="{{ request('open_id') == $inq->id ? 'highlighted-inquiry-row' : '' }}">
                             <td>
                                 <div class="sender-name">{{ $inq->name }}</div>
                                 <div class="sender-email font-mono">{{ $inq->email }}</div>
@@ -122,7 +122,7 @@
                             </td>
                             <td>
                                 <span class="category-badge">
-                                    {{ $inq->category ? __($inq->category) : __('استفسار عام') }}
+                                    {{ $inq->category ? __($inq->category) : ($inq->type ? __($inq->type) : __('استفسار عام')) }}
                                 </span>
                                 <div class="subject-title">{{ $inq->subject ?? __('بدون عنوان') }}</div>
                             </td>
@@ -152,7 +152,7 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="action-buttons-group">
-                                    <button type="button" onclick="openReplyModal({{ json_encode($inq) }})" class="btn-reply-action" title="{{ __('قراءة التذكرة والرد') }}">
+                                    <button type="button" id="btn-reply-{{ $inq->id }}" onclick="openReplyModal({{ json_encode($inq) }})" class="btn-reply-action" title="{{ __('قراءة التذكرة والرد') }}">
                                         <i class="fa-solid fa-reply"></i> {{ __('رد') }}
                                     </button>
 
@@ -305,9 +305,37 @@
         const modal = document.getElementById('replyModalOverlay');
         if (e.target === modal) closeReplyModal();
     }
+
+    // فتح التذكرة المحددة تلقائياً عند النقر على إشعار من الإدارة
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const openId = urlParams.get('open_id');
+        if (openId) {
+            const targetRow = document.getElementById('inquiry-row-' + openId);
+            const targetBtn = document.getElementById('btn-reply-' + openId);
+            if (targetRow) {
+                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (targetBtn) {
+                setTimeout(() => {
+                    targetBtn.click();
+                }, 350);
+            }
+        }
+    });
 </script>
 
 <style>
+    .highlighted-inquiry-row {
+        background: #fef9c3 !important;
+        outline: 2px solid #f59e0b;
+        animation: pulseHighlight 2s ease;
+    }
+    @keyframes pulseHighlight {
+        0% { background: #fef08a !important; }
+        50% { background: #fef9c3 !important; }
+        100% { background: #fef9c3 !important; }
+    }
     .inquiries-page-wrapper {
         width: 100%;
         max-width: 100%;

@@ -109,6 +109,7 @@ class NotificationController extends Controller
         }
 
         $targetUrl = null;
+        $data = [];
 
         // 1. إذا كان التنبيه رسالة محادثة خاصة (ID يبدأ بـ msg_)
         if (str_starts_with($id, 'msg_')) {
@@ -159,7 +160,31 @@ class NotificationController extends Controller
             }
         }
 
-        // 3. روابط بديلة ذكية في حال لم يتوفر رابط بالبيانات
+        // 3. توجيه ذكي لإشعارات الشكاوى والاستفسارات والتذاكر لشاشة الدعم والاستفسارات
+        if ($user && $user->role === 'admin' && !empty($data)) {
+            $notifTitle = $data['title'] ?? '';
+            $notifMsg   = $data['message'] ?? '';
+            $notifType  = $data['type'] ?? '';
+
+            if (str_contains($notifTitle, 'شكوى') || 
+                str_contains($notifTitle, 'استفسار') || 
+                str_contains($notifTitle, 'تذكرة') || 
+                str_contains($notifTitle, 'شكاوى') ||
+                str_contains($notifMsg, 'شكوى') ||
+                str_contains($notifMsg, 'تذكرة') ||
+                $notifType === 'support') {
+
+                // إذا كان الرابط القديم يشير خطأً إلى الرسائل المباشرة /inbox أو لم يكن محدداً
+                if (empty($targetUrl) || str_contains($targetUrl, 'inbox') || str_contains($targetUrl, 'messages')) {
+                    $openId = $data['open_id'] ?? $data['complaint_id'] ?? $data['inquiry_id'] ?? null;
+                    $targetUrl = $openId 
+                        ? route('admin.inquiries.index', ['open_id' => $openId]) 
+                        : route('admin.inquiries.index');
+                }
+            }
+        }
+
+        // 4. روابط بديلة ذكية في حال لم يتوفر رابط بالبيانات
         if (empty($targetUrl)) {
             if ($student) {
                 $targetUrl = route('student.dashboard');

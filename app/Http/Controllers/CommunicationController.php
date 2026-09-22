@@ -214,13 +214,28 @@ class CommunicationController extends Controller
                 'message'     => $fullMessage,
             ]);
 
+            $student = Student::find($studentId);
+            $complaint = null;
             try {
-                $student = Student::find($studentId);
+                $complaint = \App\Models\Complaint::create([
+                    'name'     => $student?->name_ar ?? $student?->name ?? 'طالب مسجل',
+                    'email'    => $student?->email,
+                    'phone'    => $student?->phone,
+                    'type'     => 'استفسار أكاديمي عن المساقات',
+                    'category' => 'استفسار أكاديمي عن المساقات',
+                    'subject'  => $request->input('subject') ?: 'تذكرة دعم فني واستفسار من طالب',
+                    'message'  => trim($request->message),
+                    'status'   => 'new',
+                ]);
+            } catch (\Throwable $e) {}
+
+            try {
+                $actionUrl = $complaint ? route('admin.inquiries.index', ['open_id' => $complaint->id]) : route('admin.inquiries.index');
                 NotificationService::notifyAdmin(
                     'تذكرة دعم فني جديدة',
-                    "أرسل الطالب (" . ($student?->name_ar ?? $student?->name ?? 'طالب') . ") تذكرة دعم فني: " . Str::limit($request->message, 70),
+                    "أرسل الطالب (" . ($student?->name_ar ?? $student?->name ?? 'طالب') . ") تذكرة: " . Str::limit($request->message, 70),
                     'support',
-                    route('admin.messages.index', ['student_id' => $studentId]),
+                    $actionUrl,
                     'fa-headset'
                 );
             } catch (\Throwable $e) {}

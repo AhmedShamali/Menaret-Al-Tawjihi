@@ -41,25 +41,29 @@ class PublicController extends Controller
             'message.required' => 'يرجى كتابة نص الرسالة بالتفصيل.',
         ]);
 
+        $complaint = null;
         try {
-            \App\Models\Complaint::create([
-                'name'    => $validated['name'],
-                'email'   => $validated['email'],
-                'phone'   => $request->input('phone'),
-                'type'    => $validated['type'],
-                'message' => $validated['message'],
-                'status'  => 'pending',
+            $complaint = \App\Models\Complaint::create([
+                'name'     => $validated['name'],
+                'email'    => $validated['email'],
+                'phone'    => $request->input('phone'),
+                'type'     => $validated['type'],
+                'category' => $validated['type'],
+                'subject'  => $validated['type'],
+                'message'  => $validated['message'],
+                'status'   => 'new',
             ]);
         } catch (\Throwable $e) {
-            \Log::error('Error saving complaint: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('Error saving complaint: ' . $e->getMessage());
         }
 
         try {
+            $actionUrl = $complaint ? route('admin.inquiries.index', ['open_id' => $complaint->id]) : route('admin.inquiries.index');
             \App\Services\NotificationService::notifyAdmin(
                 'شكوى / استفسار جديد 📩',
                 "وردت رسالة جديدة من ({$validated['name']}) بخصوص: {$validated['type']}.",
                 'support',
-                route('admin.messages.index'),
+                $actionUrl,
                 'fa-envelope'
             );
         } catch (\Throwable $e) {}

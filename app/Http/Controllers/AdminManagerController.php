@@ -679,7 +679,14 @@ class AdminManagerController extends Controller {
      */
     public function academicInquiries(Request $request)
     {
-        $query = \App\Models\Complaint::latest();
+        $query = \App\Models\Complaint::query();
+
+        if ($request->filled('open_id')) {
+            $openId = (int) $request->open_id;
+            $query->orderByRaw("CASE WHEN id = {$openId} THEN 0 ELSE 1 END");
+        }
+
+        $query->latest();
 
         if ($request->filled('category') && $request->category !== 'all') {
             $query->where('category', $request->category);
@@ -703,7 +710,7 @@ class AdminManagerController extends Controller {
 
         $stats = [
             'total'     => \App\Models\Complaint::count(),
-            'pending'   => \App\Models\Complaint::where('status', 'new')->count(),
+            'pending'   => \App\Models\Complaint::whereIn('status', ['new', 'pending'])->count(),
             'replied'   => \App\Models\Complaint::where('status', 'replied')->count(),
             'academics' => \App\Models\Complaint::where('category', 'like', '%أكاديمي%')->count(),
         ];
