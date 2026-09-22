@@ -82,7 +82,10 @@
                     </div>
                 </div>
 
-                <div class="header-student-tag">
+                <div class="header-student-tag" style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="tool-btn" id="soundToggleBtn" onclick="toggleAudioChime()" title="{{ __('كتم/تفعيل صوت التنبيه') }}" style="width: 36px; height: 36px; border-radius: 8px; background: #f8fafc; border: 1px solid var(--sup-border); color: #64748b; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                    </button>
                     <span class="branch-pill">
                         <i class="fa-solid fa-graduation-cap"></i>
                         {{ $studentStage ?? __('طالب توجيهي') }}
@@ -812,6 +815,46 @@
         fetchMessages();
     }
 
+    let lastMessagesJson = "";
+    let isSoundEnabled = true;
+    let audioCtx = null;
+
+    function playNotificationTone() {
+        if (!isSoundEnabled) return;
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.12); // A5
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        } catch(e) {
+            console.log('Audio error:', e);
+        }
+    }
+
+    function toggleAudioChime() {
+        isSoundEnabled = !isSoundEnabled;
+        const icon = document.getElementById('soundIcon');
+        if (isSoundEnabled) {
+            icon.className = 'fa-solid fa-volume-high';
+            playNotificationTone();
+        } else {
+            icon.className = 'fa-solid fa-volume-xmark text-danger';
+        }
+    }
+
     function fetchMessages() {
         if (!activeAdminId) return;
         const container = document.getElementById('chat_messages');
@@ -820,6 +863,12 @@
             .then(res => res.json())
             .then(data => {
                 if (data.status === 'success' && data.messages) {
+                    const currentJson = JSON.stringify(data.messages);
+                    if (currentJson === lastMessagesJson) return;
+
+                    const hadPrevious = (lastMessagesJson !== "" && lastMessagesJson !== "[]");
+                    lastMessagesJson = currentJson;
+
                     if (data.messages.length === 0) {
                         container.innerHTML = `
                             <div class="support-welcome-placeholder">
@@ -832,8 +881,10 @@
                         `;
                     } else {
                         let html = '';
+                        let hasNewAdminMsg = false;
                         data.messages.forEach(msg => {
                             const isMe = (msg.sender_type && msg.sender_type.toLowerCase() === 'student');
+                            if (!isMe) hasNewAdminMsg = true;
                             const author = isMe ? 'أنت' : activeAdminName;
                             const time = msg.created_at_formatted || '';
 
@@ -851,6 +902,10 @@
                             `;
                         });
                         container.innerHTML = html;
+
+                        if (hadPrevious && hasNewAdminMsg) {
+                            playNotificationTone();
+                        }
                     }
                     container.scrollTop = container.scrollHeight;
                 }

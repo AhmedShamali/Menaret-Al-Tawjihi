@@ -115,6 +115,24 @@
                         {{ $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.') }}
                     </p>
 
+                    <!-- التسعيرة ونسبة الخصم الأكاديمية -->
+                    <div class="course-pricing-strip">
+                        @if($sub->is_free)
+                            <span class="price-pill-free"><i class="fa-solid fa-gift"></i> {{ __('مجانية تجريبية 100%') }}</span>
+                        @elseif($sub->has_discount)
+                            <div class="price-discount-box">
+                                <span class="price-old font-mono">{{ number_format($sub->price_ils, 0) }} ₪</span>
+                                <span class="price-now font-mono">{{ number_format($sub->price_after_discount, 0) }} ₪</span>
+                                <span class="discount-badge"><i class="fa-solid fa-arrow-down"></i> {{ __('خصم') }} {{ $sub->discount_percentage }}%</span>
+                            </div>
+                        @else
+                            <div class="price-regular-box">
+                                <span class="price-now font-mono">{{ number_format($sub->price_ils, 0) }} ₪</span>
+                                <span class="price-note">{{ __('شامل الدورة الكاملة') }}</span>
+                            </div>
+                        @endif
+                    </div>
+
                     <!-- المؤشرات الأكاديمية -->
                     <div class="course-stats-line">
                         <span class="stat-pill" title="{{ __('الدروس والشروحات المرئية') }}">
@@ -153,7 +171,12 @@
                                 'lessons' => $sub->contents_count ?? 0,
                                 'exams' => $sub->exams_count ?? 0,
                                 'icon' => $sub->icon ?? 'fa-book-open',
-                                'color' => $themeColor
+                                'color' => $themeColor,
+                                'price_ils' => (float)$sub->price_ils,
+                                'price_after_discount' => (float)$sub->price_after_discount,
+                                'has_discount' => $sub->has_discount,
+                                'discount_percentage' => $sub->discount_percentage,
+                                'is_free' => (bool)$sub->is_free,
                             ]) }})">
                                 <i class="fa-solid fa-circle-info"></i>
                                 <span>{{ __('تفاصيل المنهاج') }}</span>
@@ -231,6 +254,10 @@
                         <small>{{ __('تغطية وزارية') }}</small>
                     </div>
                 </div>
+            </div>
+
+            <div id="modalPricingBox" class="modal-pricing-summary-box">
+                <!-- يُملأ ديناميكياً بواسطة JavaScript -->
             </div>
 
             <div class="modal-enroll-note">
@@ -885,6 +912,81 @@ html[dir="ltr"] .modal-close-btn {
 .btn-modal-secondary:hover {
     background: #e2e8f0;
 }
+
+/* بطاقات التسعير والخصومات في دليل المواد */
+.course-pricing-strip {
+    margin: 8px 0 12px;
+    padding: 7px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+.price-pill-free {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ecfdf5;
+    color: #15803d;
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid #bbf7d0;
+}
+.price-discount-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.price-old {
+    text-decoration: line-through;
+    color: #94a3b8;
+    font-size: 0.82rem;
+    margin-inline-end: 6px;
+}
+.price-now {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ea580c;
+}
+.discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+.price-regular-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.price-regular-box .price-now {
+    color: #1e3a8a;
+}
+.price-note {
+    font-size: 0.74rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.modal-pricing-summary-box {
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+}
+.m-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 </style>
 
 <script>
@@ -902,6 +1004,34 @@ function openSubjectModal(data) {
     iconBox.style.background = (data.color || '#1e3a8a') + '15';
     iconBox.style.border = '1px solid ' + (data.color || '#1e3a8a') + '30';
     icon.className = 'fa-solid ' + (data.icon || 'fa-book-open');
+
+    const pricingBox = document.getElementById('modalPricingBox');
+    if (data.is_free) {
+        pricingBox.innerHTML = `
+            <div class="m-price-row">
+                <span class="price-pill-free"><i class="fa-solid fa-gift"></i> {{ __('المادة مجانية بالكامل لكافة الطلاب 🎁') }}</span>
+                <span class="font-mono font-bold" style="color: #15803d;">0 ₪</span>
+            </div>
+        `;
+    } else if (data.has_discount) {
+        pricingBox.innerHTML = `
+            <div class="m-price-row">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.82rem; color: #64748b;">{{ __('الرسوم:') }}</span>
+                    <span style="text-decoration: line-through; color: #94a3b8; font-family: monospace;">${Math.round(data.price_ils)} ₪</span>
+                    <strong style="color: #ea580c; font-size: 1.1rem; font-family: monospace;">${Math.round(data.price_after_discount)} ₪</strong>
+                </div>
+                <span class="discount-badge"><i class="fa-solid fa-arrow-down"></i> {{ __('خصم') }} ${data.discount_percentage}%</span>
+            </div>
+        `;
+    } else {
+        pricingBox.innerHTML = `
+            <div class="m-price-row">
+                <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('رسوم الاشتراك المعتمدة:') }}</span>
+                <strong style="color: #1e3a8a; font-size: 1.1rem; font-family: monospace;">${Math.round(data.price_ils)} ₪</strong>
+            </div>
+        `;
+    }
 
     const modal = document.getElementById('subjectModal');
     modal.style.display = 'flex';

@@ -334,8 +334,20 @@
                                 <strong style="color: #0f172a; font-size: 0.88rem; display: block;">{{ $itemName }}</strong>
                                 <small style="color: #64748b; font-size: 0.72rem;">{{ $stageName }}</small>
                             </div>
-                            <div style="font-weight: 700; font-size: 0.9rem; color: #1d4ed8; font-family: monospace;">
-                                {{ number_format($item['price'], 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}
+                            <div style="text-align: left; font-family: monospace;">
+                                @if(!empty($item['is_free']))
+                                    <span style="color: #16a34a; font-weight: 800; font-size: 0.85rem;">{{ __('مجاناً') }}</span>
+                                @elseif(!empty($item['has_discount']))
+                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                        <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.8rem;">{{ number_format($item['orig_price'], 0) }}</span>
+                                        <strong style="color: #ea580c; font-size: 0.95rem;">{{ number_format($item['price'], 0) }} ₪</strong>
+                                        <span style="background: #fef2f2; color: #dc2626; font-size: 0.72rem; font-weight: 800; padding: 1px 5px; border-radius: 4px;">-{{ $item['discount_percentage'] }}%</span>
+                                    </div>
+                                @else
+                                    <strong style="font-weight: 700; font-size: 0.9rem; color: #1d4ed8;">
+                                        {{ number_format($item['price'], 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}
+                                    </strong>
+                                @endif
                             </div>
                         </div>
                     @endforeach

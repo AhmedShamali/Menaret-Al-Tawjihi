@@ -678,15 +678,32 @@
 
         let html = '';
         currentStage.subjects.forEach(sub => {
-            const price = sub.discount_price_ils || sub.price_ils || 100;
+            const basePrice = parseFloat(sub.price_ils) || 150;
+            const discountPrice = (sub.discount_price_ils !== null && parseFloat(sub.discount_price_ils) > 0) ? parseFloat(sub.discount_price_ils) : null;
+            const isFree = (sub.is_free == 1);
             const subTitle = (isEn && sub.name_en) ? sub.name_en : (sub.name_ar || sub.name);
+
+            let priceHtml = '';
+            if (isFree) {
+                priceHtml = `<span style="color: #15803d; font-weight: 800;">{{ __('مجانية 🎁') }}</span>`;
+            } else if (discountPrice && discountPrice < basePrice) {
+                const pct = Math.round(((basePrice - discountPrice) / basePrice) * 100);
+                priceHtml = `
+                    <span style="text-decoration: line-through; color: #94a3b8; font-size: 10.5px; margin-inline-end: 4px;">${basePrice} ${regI18n.currency}</span>
+                    <strong style="color: #ea580c; font-size: 12px;">${discountPrice} ${regI18n.currency}</strong>
+                    <span style="background: #fef2f2; color: #dc2626; font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-inline-start: 4px;">-${pct}%</span>
+                `;
+            } else {
+                priceHtml = `<span style="font-size: 11px; color: #475569; font-weight: 700;">${basePrice} ${regI18n.currency}</span>`;
+            }
+
             html += `
-                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 8px; cursor: pointer; user-select: none;">
+                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; cursor: pointer; user-select: none;">
                     <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 15px; height: 15px; accent-color: var(--ed-primary); cursor: pointer;">
                     <span style="font-size: 1rem;">${sub.icon || '📘'}</span>
                     <div style="flex: 1;">
                         <div style="font-size: 12px; font-weight: 700; color: #0f172a;">${subTitle}</div>
-                        <div style="font-size: 11px; color: #64748b;">${price} ${regI18n.currency}</div>
+                        <div style="display: flex; align-items: center; gap: 2px; margin-top: 2px;">${priceHtml}</div>
                     </div>
                 </label>
             `;

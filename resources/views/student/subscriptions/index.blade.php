@@ -21,42 +21,55 @@
         </div>
     </div>
 
-    {{-- بطاقات الملخص الكلاسيكية للطالب --}}
+    {{-- بطاقات الملخص المالي الكلاسيكية للطالب (كم عليّ / كم دفعت / كم ضل قسط مستحق) --}}
     <div class="stats-row-clean">
-        <div class="stat-card-clean" style="--card-accent: #059669;">
-            <span class="stat-label">{{ __('Paid Months') }}</span>
+        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
+            <span class="stat-label">{{ __('كم عليّ (إجمالي الرسوم المطلوبة)') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-emerald">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
+                <span class="stat-number text-navy">{{ number_format($totalDueAmount ?? 1800, 2) }} ₪</span>
+                <i class="fa-solid fa-file-invoice-dollar stat-icon text-navy"></i>
+            </div>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('إجمالي الأقساط المقررة لكامل العام الدراسي') }}</small>
+        </div>
+
+        <div class="stat-card-clean" style="--card-accent: #059669;">
+            <span class="stat-label">{{ __('كم دفعت (المبلغ المسدد المعتمد)') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-emerald">{{ number_format($totalPaidAmount, 2) }} ₪</span>
                 <i class="fa-solid fa-circle-check stat-icon text-emerald"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Active and approved enrollment in subjects') }}</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('المبالغ المقبوضة والمعتمدة رسمياً بسجلات المنصة') }}</small>
         </div>
 
-        <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
-            <span class="stat-label">{{ __('Total Paid Amount') }}</span>
+        <div class="stat-card-clean" style="--card-accent: #dc2626;">
+            <span class="stat-label">{{ __('كم ضل قسط مستحق (المتبقي عليك)') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-navy">{{ number_format($totalPaidAmount, 2) }} ₪</span>
-                <i class="fa-solid fa-wallet stat-icon text-navy"></i>
+                <span class="stat-number {{ ($totalRemainingAmount ?? 0) > 0 ? 'text-rose' : 'text-emerald' }}">
+                    {{ number_format($totalRemainingAmount ?? 0, 2) }} ₪
+                </span>
+                <i class="fa-solid {{ ($totalRemainingAmount ?? 0) > 0 ? 'fa-triangle-exclamation text-rose' : 'fa-badge-check text-emerald' }} stat-icon"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Officially verified payments') }}</small>
-        </div>
-
-        <div class="stat-card-clean" style="--card-accent: #d97706;">
-            <span class="stat-label">{{ __('Under Verification') }}</span>
-            <div class="stat-value-wrap">
-                <span class="stat-number {{ $pendingCount > 0 ? 'text-amber' : '' }}">{{ $pendingCount }}</span>
-                <i class="fa-solid fa-hourglass-half stat-icon text-amber"></i>
-            </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Awaiting supervisor verification') }}</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                @if(($totalRemainingAmount ?? 0) > 0)
+                    {{ __('متبقي بذمتك حتى نهاية العام الدراسي') }}
+                @else
+                    {{ __('ذمتك المالية بريئة وخالصة تماماً ✅') }}
+                @endif
+            </small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;">
-            <span class="stat-label">{{ __('Remaining Due Months') }}</span>
+            <span class="stat-label">{{ __('الأقساط الخالصة') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-indigo">{{ $unpaidCount }}</span>
-                <i class="fa-solid fa-calendar-xmark stat-icon text-indigo"></i>
+                <span class="stat-number text-indigo">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
+                <i class="fa-solid fa-calendar-check stat-icon text-indigo"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('Annual installments during the school year') }}</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
+                @if($partialCount > 0)
+                    {{ __(':count أشهر دفع جزئي', ['count' => $partialCount]) }} • 
+                @endif
+                {{ __('الاشتراك مفعل في المساقات المعتمدة') }}
+            </small>
         </div>
     </div>
 
@@ -94,21 +107,19 @@
                     </div>
 
                     <div class="month-card-body">
-                        <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10))) }}</h4>
+                        <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? ($monthsNames[$sub->month] ?? "Month {$sub->month}")) }}</h4>
                         <div class="month-amount-row">
-                            <span class="amount-label">{{ __('المبلغ المطلوب:') }}</span>
+                            <span class="amount-label">{{ __('المطلوب (كم عليك):') }}</span>
                             <strong class="amount-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
                         </div>
-                        @if($isPartial)
-                            <div class="month-amount-row" style="color: #059669; font-size: 0.85rem;">
-                                <span class="amount-label">{{ __('المدفوع:') }}</span>
-                                <strong class="amount-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
-                            </div>
-                            <div class="month-amount-row" style="color: #dc2626; font-size: 0.85rem;">
-                                <span class="amount-label">{{ __('المتبقي عليك:') }}</span>
-                                <strong class="amount-val font-mono font-bold">{{ number_format($remAmt, 2) }} ₪</strong>
-                            </div>
-                        @endif
+                        <div class="month-amount-row" style="color: #059669; font-size: 0.85rem;">
+                            <span class="amount-label">{{ __('المدفوع (كم دفعت):') }}</span>
+                            <strong class="amount-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
+                        </div>
+                        <div class="month-amount-row" style="{{ $remAmt > 0 ? 'color: #dc2626;' : 'color: #059669;' }} font-size: 0.85rem;">
+                            <span class="amount-label">{{ __('المتبقي (ضل عليك):') }}</span>
+                            <strong class="amount-val font-mono font-bold">{{ number_format($remAmt, 2) }} ₪</strong>
+                        </div>
                         @if($isPaid && $sub->paid_at)
                             <div class="paid-date-note font-mono">
                                 <i class="fa-regular fa-calendar-check"></i> {{ __('Payment Date:') }} {{ $sub->paid_at->format('Y-m-d') }}

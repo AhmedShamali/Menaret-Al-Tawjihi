@@ -483,7 +483,7 @@ class PlatformAuditTest extends TestCase
         $this->assertEquals(1, $student->paidMonthsCount());
         $this->assertTrue($student->isMonthlyFeeDue());
         $this->assertEquals(2, $student->currentDueMonth());
-        $this->assertEquals('الشهر الثاني', $student->currentDueMonthName());
+        $this->assertEquals('2- الشهر الثاني', $student->currentDueMonthName());
         $this->assertEquals(150.00, $student->monthlyAmountDue());
     }
 

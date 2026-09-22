@@ -99,12 +99,14 @@ class CourseEnrollmentController extends Controller
             $subtotal += $effectivePrice;
 
             $items[] = [
-                'id'         => $sub->id,
-                'name_ar'    => $sub->name_ar,
-                'stage'      => optional($sub->stage)->name ?? optional($sub->stage)->name_ar ?? 'توجيهي',
-                'price'      => $effectivePrice,
-                'orig_price' => (float) $sub->price_ils,
-                'is_free'    => (bool) $sub->is_free
+                'id'                  => $sub->id,
+                'name_ar'             => $sub->name_ar,
+                'stage'               => optional($sub->stage)->name ?? optional($sub->stage)->name_ar ?? 'توجيهي',
+                'price'               => $effectivePrice,
+                'orig_price'          => (float) $sub->price_ils,
+                'has_discount'        => (bool) $sub->has_discount,
+                'discount_percentage' => (int) $sub->discount_percentage,
+                'is_free'             => (bool) $sub->is_free
             ];
         }
 

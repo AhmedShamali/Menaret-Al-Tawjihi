@@ -27,6 +27,45 @@ class Subject extends Model
     ];
 
     /**
+     * هل يوجد خصم ترويجي ساري للمادة؟
+     */
+    public function getHasDiscountAttribute(): bool
+    {
+        return !$this->is_free && $this->discount_price_ils !== null && (float)$this->discount_price_ils > 0 && (float)$this->discount_price_ils < (float)$this->price_ils;
+    }
+
+    /**
+     * نسبة الخصم المئوية المحسوبة (%)
+     */
+    public function getDiscountPercentageAttribute(): int
+    {
+        if (!$this->has_discount || empty($this->price_ils) || (float)$this->price_ils <= 0) {
+            return 0;
+        }
+        $discountAmount = (float)$this->price_ils - (float)$this->discount_price_ils;
+        return (int) round(($discountAmount / (float)$this->price_ils) * 100);
+    }
+
+    /**
+     * السعر بعد الخصم بالشيكل (₪)
+     */
+    public function getPriceAfterDiscountAttribute(): float
+    {
+        return $this->getEffectivePriceAttribute();
+    }
+
+    /**
+     * قيمة الخصم المالي المباشر (₪)
+     */
+    public function getDiscountAmountAttribute(): float
+    {
+        if ($this->has_discount) {
+            return max(0.00, round((float)$this->price_ils - (float)$this->discount_price_ils, 2));
+        }
+        return 0.00;
+    }
+
+    /**
      * حساب السعر الفعلي للمادة بعد الخصومات أو المجانية
      */
     public function getEffectivePriceAttribute(): float

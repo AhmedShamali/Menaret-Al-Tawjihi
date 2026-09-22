@@ -347,8 +347,25 @@ class AdminSubscriptionController extends Controller
         $paidCount = $subscriptions->where('status', 'paid')->count();
         $unpaidCount = $subscriptions->where('status', 'unpaid')->count();
         $pendingCount = $subscriptions->where('status', 'pending')->count();
-        $totalPaidAmount = $subscriptions->where('status', 'paid')->sum('amount');
+        $partialCount = $subscriptions->where('status', 'partial')->count();
 
-        return view('student.subscriptions.index', compact('student', 'subscriptions', 'year', 'monthsNames', 'paidCount', 'unpaidCount', 'pendingCount', 'totalPaidAmount'));
+        // 1. كم عليه (إجمالي الرسوم المطلوبة طوال العام)
+        $totalDueAmount = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
+
+        // 2. كم دفع (إجمالي المبالغ المسددة فعلياً)
+        $totalPaidAmount = (float) $subscriptions->sum(function($s) {
+            if ($s->status === 'waived') return 0.00;
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
+            return (float)($s->paid_amount ?? 0);
+        });
+
+        // 3. كم ضل قسط مستحق (المبلغ المتبقي المطلوب سداده)
+        $totalRemainingAmount = max(0.00, round($totalDueAmount - $totalPaidAmount, 2));
+
+        return view('student.subscriptions.index', compact(
+            'student', 'subscriptions', 'year', 'monthsNames', 
+            'paidCount', 'unpaidCount', 'pendingCount', 'partialCount',
+            'totalDueAmount', 'totalPaidAmount', 'totalRemainingAmount'
+        ));
     }
 }

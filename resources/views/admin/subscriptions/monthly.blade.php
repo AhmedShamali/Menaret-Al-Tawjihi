@@ -200,7 +200,7 @@
     <div class="students-list-wrapper">
         <div class="list-header-row">
             <span class="col-head-student">{{ __('بيانات الطالب والمرحلة') }}</span>
-            <span class="col-head-finance">{{ __('الموقف المالي (المطلوب / المدفوع / المتبقي)') }}</span>
+            <span class="col-head-finance">{{ __('الموقف المالي (كم عليه / كم دفع / كم ضل قسط مستحق)') }}</span>
             <span class="col-head-timeline">{{ __('مسير الشهور الـ 12 (انقر على أي شهر لتعديله أو تسجيل دفع جزئي)') }}</span>
             <span class="col-head-actions">{{ __('سند وكشف الذمة') }}</span>
         </div>
@@ -256,19 +256,19 @@
                     </div>
                 </div>
 
-                {{-- الموقف المالي للطالب (المطلوب / المدفوع / المتبقي) --}}
+                {{-- الموقف المالي للطالب (كم عليه / كم دفع / كم ضل قسط مستحق) --}}
                 <div class="student-financial-summary-block">
                     <div class="fin-pill-group">
-                        <div class="fin-pill fin-due" title="{{ __('إجمالي الرسوم المطلوبة من الطالب طوال السنة') }}">
-                            <span class="fin-lbl">{{ __('المطلوب:') }}</span>
+                        <div class="fin-pill fin-due" title="{{ __('إجمالي الرسوم المطلوبة من الطالب طوال السنة (كم عليه)') }}">
+                            <span class="fin-lbl">{{ __('كم عليه:') }}</span>
                             <strong class="font-mono" id="std_due_{{ $student->id }}">{{ number_format($studentDue, 0) }} ₪</strong>
                         </div>
-                        <div class="fin-pill fin-paid" title="{{ __('إجمالي ما قام الطالب بسداده فعلياً') }}">
-                            <span class="fin-lbl">{{ __('المدفوع:') }}</span>
+                        <div class="fin-pill fin-paid" title="{{ __('إجمالي ما قام الطالب بسداده فعلياً (كم دفع)') }}">
+                            <span class="fin-lbl">{{ __('كم دفع:') }}</span>
                             <strong class="font-mono text-emerald font-bold" id="std_paid_{{ $student->id }}">{{ number_format($studentPaid, 0) }} ₪</strong>
                         </div>
-                        <div class="fin-pill fin-remaining {{ $studentRemaining > 0 ? 'has-remaining-alert' : 'is-clear' }}" title="{{ __('المبلغ المتبقي بذمة الطالب') }}">
-                            <span class="fin-lbl">{{ __('المتبقي:') }}</span>
+                        <div class="fin-pill fin-remaining {{ $studentRemaining > 0 ? 'has-remaining-alert' : 'is-clear' }}" title="{{ __('المبلغ المتبقي بذمة الطالب (كم ضل قسط مستحق)') }}">
+                            <span class="fin-lbl">{{ __('كم ضل عليه:') }}</span>
                             <strong class="font-mono font-bold" id="std_rem_{{ $student->id }}">
                                 @if($studentRemaining > 0)
                                     {{ number_format($studentRemaining, 0) }} ₪ ⚠️
@@ -359,9 +359,9 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('الشهر') }}</th>
-                                    <th>{{ __('المطلوب (₪)') }}</th>
-                                    <th>{{ __('المدفوع فعلياً (₪)') }}</th>
-                                    <th>{{ __('المتبقي عليه (₪)') }}</th>
+                                    <th>{{ __('المطلوب - كم عليه (₪)') }}</th>
+                                    <th>{{ __('المدفوع - كم دفع (₪)') }}</th>
+                                    <th>{{ __('المتبقي - كم ضل قسط مستحق (₪)') }}</th>
                                     <th>{{ __('حالة الدفعة') }}</th>
                                     <th>{{ __('تاريخ السداد') }}</th>
                                     <th>{{ __('البيان والملاحظات') }}</th>
@@ -643,15 +643,15 @@
             {{-- ملخص الأرقام الكبرى للسند --}}
             <div class="sheet-kpi-row">
                 <div class="sheet-kpi-item">
-                    <span>{{ __('إجمالي الرسوم المطلوبة:') }}</span>
+                    <span>{{ __('إجمالي المطلوب (كم عليه):') }}</span>
                     <strong class="font-mono" id="stmtTotalDue">0 ₪</strong>
                 </div>
                 <div class="sheet-kpi-item text-emerald">
-                    <span>{{ __('إجمالي المسدد فعلياً:') }}</span>
+                    <span>{{ __('إجمالي المسدد (كم دفع):') }}</span>
                     <strong class="font-mono" id="stmtTotalPaid">0 ₪</strong>
                 </div>
                 <div class="sheet-kpi-item text-rose">
-                    <span>{{ __('صافي المتبقي بذمة الطالب:') }}</span>
+                    <span>{{ __('المتبقي بذمته (كم ضل قسط مستحق):') }}</span>
                     <strong class="font-mono" id="stmtTotalRemaining">0 ₪</strong>
                 </div>
             </div>
@@ -662,9 +662,9 @@
                     <tr>
                         <th>#</th>
                         <th>{{ __('الشهر الدراسي') }}</th>
-                        <th>{{ __('المطلوب (₪)') }}</th>
-                        <th>{{ __('المدفوع (₪)') }}</th>
-                        <th>{{ __('المتبقي (₪)') }}</th>
+                        <th>{{ __('المطلوب - كم عليه (₪)') }}</th>
+                        <th>{{ __('المدفوع - كم دفع (₪)') }}</th>
+                        <th>{{ __('المتبقي - ضل عليه (₪)') }}</th>
                         <th>{{ __('حالة الدفعة') }}</th>
                         <th>{{ __('تاريخ السداد') }}</th>
                         <th>{{ __('ملاحظات وبيان الدفعة') }}</th>
@@ -675,11 +675,11 @@
                 </tbody>
             </table>
 
-            {{-- التواقيع والأختام الرسمية المعتمدة كالصورة --}}
+            {{-- التواقيع والأختام الرسمية المعتمدة --}}
             <div class="sheet-footer-stamps">
                 <div class="stamp-col">
                     <span class="stamp-title">{{ __('المشرف العام وإدارة المنصة') }}</span>
-                    <div class="signature-line">أ. المشرف العام للمنصة</div>
+                    <div class="signature-line">م. أحمد شمالي</div>
                     <small>{{ __('منارة التوجيهي للتعليم الأكاديمي') }}</small>
                 </div>
 

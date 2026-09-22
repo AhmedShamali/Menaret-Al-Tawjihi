@@ -264,6 +264,12 @@
                                     <i class="fa-regular fa-folder-open"></i>
                                 </a>
 
+                                <a href="{{ route('admin.subscriptions.monthly', ['search' => $student->nid ?: $student->name_ar]) }}"
+                                   class="tbl-btn-icon text-navy"
+                                   title="{{ __('كشف واشتراكات الشهور الـ 12 والذمم المالية') }}">
+                                    <i class="fa-solid fa-receipt"></i>
+                                </a>
+
                                 <button type="button" 
                                         onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($studentDispName) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
                                         class="tbl-btn-icon"

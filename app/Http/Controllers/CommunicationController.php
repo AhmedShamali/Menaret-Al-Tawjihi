@@ -406,8 +406,10 @@ class CommunicationController extends Controller
             Message::where('student_id', $student_id)
                 ->where('teacher_id', $teacherId)
                 ->where('sender_type', 'student')
-                ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
-                ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+                ->where(function($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->update(['is_read' => true]);
 
             $messages = Message::where('student_id', $student_id)
                 ->where('teacher_id', $teacherId)
@@ -563,44 +565,50 @@ class CommunicationController extends Controller
     {
         $teacher = Auth::user();
 
-        $messages = DB::table('messages')
-            ->where(function($q) use ($teacher, $student_id) {
-                $q->where('sender_id', $teacher->id)->where('receiver_id', $student_id);
+        Message::where('student_id', $student_id)
+            ->where('teacher_id', $teacher->id)
+            ->where('sender_type', 'student')
+            ->where(function($q) {
+                $q->where('is_read', false)->orWhereNull('is_read');
             })
-            ->orWhere(function($q) use ($teacher, $student_id) {
-                $q->where('sender_id', $student_id)->where('receiver_id', $teacher->id);
-            })
+            ->update(['is_read' => true]);
+
+        $messages = Message::where('student_id', $student_id)
+            ->where('teacher_id', $teacher->id)
             ->orderBy('created_at', 'asc')
             ->get()
-            ->map(function($msg) use ($teacher) {
-                $msg->sender_type = ($msg->sender_id == $teacher->id) ? 'teacher' : 'student';
-                $msg->created_at_formatted = \Carbon\Carbon::parse($msg->created_at)->format('H:i');
-                return $msg;
+            ->map(function($msg) {
+                return [
+                    'id'                   => $msg->id,
+                    'message'              => $msg->message,
+                    'sender_type'          => strtolower(trim($msg->sender_type ?? 'student')),
+                    'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                ];
             });
 
-        return response()->json(['messages' => $messages]);
+        return response()->json(['status' => 'success', 'messages' => $messages]);
     }
 
     public function sendToStudent(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|exists:users,id',
-            'message' => 'required|string|max:1000',
+            'student_id' => 'required',
+            'message'    => 'required|string|max:1000',
         ]);
 
         $teacher = Auth::user();
 
-        DB::table('messages')->insert([
-            'sender_id' => $teacher->id,
-            'receiver_id' => $request->student_id,
-            'message' => $request->message,
-            'created_at' => now(),
-            'updated_at' => now(),
+        $message = Message::create([
+            'student_id'  => $request->student_id,
+            'teacher_id'  => $teacher->id,
+            'sender_type' => 'teacher',
+            'message'     => trim($request->message),
+            'is_read'     => false,
         ]);
 
         try {
             NotificationService::notifyStudent(
-                $request->student_id,
+                (int)$request->student_id,
                 'رسالة جديدة من معلمك 💬',
                 "أرسل الأستاذ ({$teacher->name}): " . Str::limit($request->message, 60),
                 'message',
@@ -609,7 +617,15 @@ class CommunicationController extends Controller
             );
         } catch (\Throwable $e) {}
 
-        return response()->json(['status' => 'success']);
+        return response()->json([
+            'status' => 'success',
+            'data'   => [
+                'id'                   => $message->id,
+                'message'              => $message->message,
+                'sender_type'          => 'teacher',
+                'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+            ]
+        ]);
     }
 
     public function fetchTeacherMessages($teacher_id)
@@ -622,8 +638,10 @@ class CommunicationController extends Controller
         Message::where('student_id', $student->id)
             ->where('teacher_id', $teacher_id)
             ->where('sender_type', 'teacher')
-            ->where('is_read', \Illuminate\Support\Facades\DB::raw('false'))
-            ->update(['is_read' => \Illuminate\Support\Facades\DB::raw('true')]);
+            ->where(function($q) {
+                $q->where('is_read', false)->orWhereNull('is_read');
+            })
+            ->update(['is_read' => true]);
 
         $messages = Message::where('student_id', $student->id)
             ->where('teacher_id', $teacher_id)
@@ -638,7 +656,7 @@ class CommunicationController extends Controller
                 ];
             });
 
-        return response()->json(['messages' => $messages]);
+        return response()->json(['status' => 'success', 'messages' => $messages]);
     }
 
     public function sendToTeacher(Request $request)
@@ -695,9 +713,7 @@ class CommunicationController extends Controller
 
     public function adminTeacherChat($teacher_id)
     {
-        $admin = Auth::user();
-        $teacher = User::where('role', 'teacher')->findOrFail($teacher_id);
-        return view('admin.management.teacher_chat', compact('teacher', 'admin'));
+        return redirect()->route('admin.teachers.chat', ['teacher_id' => $teacher_id]);
     }
 
     public function fetchAdminTeacherMessages($teacher_id)

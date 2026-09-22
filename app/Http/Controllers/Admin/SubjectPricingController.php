@@ -41,10 +41,11 @@ class SubjectPricingController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'price_ils'          => 'required|numeric|min:0',
-            'discount_price_ils' => 'nullable|numeric|min:0',
-            'is_free'            => 'nullable|boolean',
-            'description'        => 'nullable|string|max:1000',
+            'price_ils'           => 'required|numeric|min:0',
+            'discount_price_ils'  => 'nullable|numeric|min:0',
+            'discount_percentage' => 'nullable|numeric|min:0|max:100',
+            'is_free'             => 'nullable|boolean',
+            'description'         => 'nullable|string|max:1000',
         ], [
             'price_ils.required' => 'يرجى إدخال السعر الأساسي بالشيكل.',
             'price_ils.min'      => 'السعر يجب أن لا يكون سالباً.',
@@ -53,19 +54,38 @@ class SubjectPricingController extends Controller
         $subject = Subject::findOrFail($id);
 
         $isFree = $request->has('is_free') && ($request->is_free == '1' || $request->is_free === true);
+        $price = (float) $request->price_ils;
+        $discountPrice = $request->filled('discount_price_ils') ? (float) $request->discount_price_ils : null;
+
+        // إذا أدخل نسبة الخصم ولم يدخل السعر بعد الخصم
+        if ($request->filled('discount_percentage') && (float)$request->discount_percentage > 0 && !$request->filled('discount_price_ils') && $price > 0) {
+            $pct = (float) $request->discount_percentage;
+            $discountPrice = round($price * (1 - ($pct / 100)), 2);
+        }
+
+        // إذا كانت مجانية
+        if ($isFree) {
+            $discountPrice = null;
+        }
 
         $subject->update([
-            'price_ils'          => $request->price_ils,
-            'discount_price_ils' => $request->discount_price_ils ?: null,
+            'price_ils'          => $price,
+            'discount_price_ils' => $discountPrice,
             'is_free'            => $isFree,
             'description'        => $request->description,
         ]);
 
+        $subject->refresh();
+
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'status'  => 'success',
-                'message' => "تم تحديث تسعيرة ({$subject->name_ar}) بنجاح! 💰",
-                'subject' => $subject
+                'status'                => 'success',
+                'message'               => "تم تحديث تسعيرة ({$subject->name_ar}) بنجاح! 💰",
+                'subject'               => $subject,
+                'has_discount'          => $subject->has_discount,
+                'discount_percentage'   => $subject->discount_percentage,
+                'price_after_discount'  => $subject->price_after_discount,
+                'effective_price'       => $subject->effective_price,
             ]);
         }
 

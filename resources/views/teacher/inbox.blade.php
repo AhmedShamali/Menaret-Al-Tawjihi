@@ -1,204 +1,237 @@
 @extends('layouts.app')
 
-@section('title', __('Student Inquiries & Chat Center') . ' | ' . config('app.name'))
+@section('title', __('مركز استفسارات ومراسلات الطلاب') . ' - ' . config('app.name', 'منارة التوجيهي'))
 
 @section('content')
-<div class="teacher-chat-wrapper">
-    <div class="telegram-inbox-grid">
+<div class="academic-inbox-wrapper">
+    <div class="academic-inbox-grid" id="teacher_inbox_container">
 
-        <!-- القائمة الجانبية للطلاب (Sidebar) -->
-        <div class="chat-sidebar-pane">
+        {{-- 1. القائمة الجانبية للطلاب (Sidebar) --}}
+        <aside class="chat-sidebar-pane" id="chat_sidebar">
             <div class="sidebar-top-bar">
                 <div class="sidebar-title-row">
-                    <h2 class="sidebar-headline"><i class="fa-solid fa-comments" style="color: #1e3a8a;"></i> {{ __('Student Chats') }}</h2>
-                    <span class="badge-total-students" id="count_badge">{{ count($students) }} {{ __('conversations') }}</span>
+                    <div class="sidebar-crest-icon">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div>
+                        <h2 class="sidebar-headline">{{ __('استفسارات الطلاب') }}</h2>
+                        <p class="sidebar-subtext">{{ __('المتابعة الدراسية والتواصل المباشر') }}</p>
+                    </div>
                 </div>
+
+                {{-- البحث والفلترة --}}
                 <div class="search-input-wrapper">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="search_student" onkeyup="filterStudents()" placeholder="{{ __('Search by student name or email...') }}" autocomplete="off">
+                    <input type="text" id="search_student" oninput="filterStudents()" placeholder="{{ __('ابحث باسم الطالب أو الفرع...') }}" autocomplete="off">
                 </div>
             </div>
 
-            <!-- قائمة كروت الطلاب -->
+            {{-- قائمة كروت الطلاب --}}
             <div class="students-scroll-list" id="student_list">
                 @forelse($students as $student)
-                @php
-                    $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: __('Student');
-                    $stageName = $student->stage->name_ar ?? __('High School Branch');
-                @endphp
-                <div onclick="loadChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}')"
-                     class="student-thread-card"
-                     id="user_{{ $student->id }}"
-                     data-search="{{ mb_strtolower($studentName . ' ' . ($student->email ?? '') . ' ' . $stageName) }}">
+                    @php
+                        $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: __('طالب');
+                        $firstLetter = mb_substr($studentName, 0, 1);
+                        $stageName = $student->stage->name_ar ?? (optional($student->stage)->label_ar ?? __('توجيهي فلسطين'));
+                    @endphp
+                    <div onclick="loadTeacherChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}')"
+                         class="student-thread-card"
+                         id="user_{{ $student->id }}"
+                         data-student-id="{{ $student->id }}"
+                         data-search="{{ mb_strtolower($studentName . ' ' . ($student->email ?? '') . ' ' . $stageName) }}">
 
-                    <div class="student-avatar-box">
-                        {{ mb_substr($studentName, 0, 1) }}
-                    </div>
-                    <div class="student-thread-meta">
-                        <div class="thread-top">
-                            <strong class="student-name-text">{{ $studentName }}</strong>
-                            <span class="thread-time-tag">{{ __('Student') }}</span>
+                        <div class="student-avatar-box">
+                            {{ $firstLetter }}
+                            <span class="online-indicator-dot"></span>
                         </div>
-                        <div class="thread-bottom">
-                            <span class="student-stage-subtext">{{ $stageName }}</span>
+
+                        <div class="student-thread-meta">
+                            <div class="thread-top">
+                                <strong class="student-name-text">{{ $studentName }}</strong>
+                                <span class="role-sub-tag">{{ __('طالب') }}</span>
+                            </div>
+                            <div class="thread-bottom">
+                                <span class="student-stage-subtext">{{ $stageName }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
                 @empty
-                <div class="empty-threads-state">
-                    <i class="fa-regular fa-folder-open fa-2x mb-2 text-muted"></i>
-                    <p>{{ __('No student chats registered currently') }}</p>
-                </div>
+                    <div class="empty-threads-state">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <p>{{ __('لا توجد محادثات طلاب مسجلة حالياً') }}</p>
+                    </div>
                 @endforelse
                 <div id="no_results" class="empty-threads-state" style="display: none;">
-                    <i class="fa-solid fa-user-slash fa-2x mb-2 text-muted"></i>
-                    <p>{{ __('No matching students found') }}</p>
+                    <i class="fa-solid fa-user-slash"></i>
+                    <p>{{ __('لم يتم العثور على أي طلاب مطابقين') }}</p>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- ساحة المحادثة الرئيسية (Main Chat Pane) -->
-        <div class="chat-viewport-pane">
+        {{-- 2. ساحة المحادثة الرئيسية (Main Chat Pane) --}}
+        <main class="chat-viewport-pane" id="chat_main">
 
-            <!-- هيدر المحادثة النشطة -->
-            <div id="chat_header" class="active-chat-header" style="display: none;">
+            {{-- هيدر المحادثة النشطة --}}
+            <header id="chat_header" class="active-chat-header" style="display: none;">
                 <div class="header-student-profile">
-                    <div class="header-avatar-circle" id="active_avatar">S</div>
-                    <div>
-                        <div class="d-flex align-items-center gap-2">
-                            <h3 id="active_user_name" class="active-student-title">{{ __('Select a student') }}</h3>
-                            <span id="active_stage_tag" class="badge-stage-tag">{{ __('High School') }}</span>
+                    <button type="button" class="mobile-return-btn" onclick="toggleMobileSidebar()" title="{{ __('العودة لقائمة الطلاب') }}">
+                        <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i>
+                    </button>
+
+                    <div class="header-avatar-circle" id="active_avatar">ط</div>
+
+                    <div class="active-student-meta">
+                        <div class="name-stage-row">
+                            <h3 id="active_user_name" class="active-student-title">{{ __('اختر طالباً') }}</h3>
+                            <span id="active_stage_tag" class="badge-stage-tag">{{ __('توجيهي') }}</span>
                         </div>
                         <span class="student-online-status">
-                            <span class="status-green-dot"></span> {{ __('Online on platform') }}
+                            <span class="status-green-dot"></span> {{ __('طالب مسجل في المنصة') }}
                         </span>
                     </div>
                 </div>
 
                 <div class="chat-header-actions">
-                    <button type="button" class="action-circle-btn" onclick="scrollToBottom()" title="{{ __('Jump to latest message') }}">
-                        <i class="fa-solid fa-arrow-down"></i>
+                    <button type="button" class="action-circle-btn" id="soundToggleBtn" onclick="toggleAudioChime()" title="{{ __('كتم/تفعيل صوت الإشعارات') }}">
+                        <i class="fa-solid fa-volume-high" id="soundIcon"></i>
+                    </button>
+                    <button type="button" class="action-circle-btn" onclick="fetchMessages(true)" title="{{ __('تحديث المحادثة') }}">
+                        <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
+                    </button>
+                    <button type="button" class="action-circle-btn" onclick="scrollToBottomSmooth()" title="{{ __('الانتقال لآخر رسالة') }}">
+                        <i class="fa-solid fa-angles-down"></i>
                     </button>
                 </div>
-            </div>
+            </header>
 
-            <!-- كبسولات الردود الأكاديمية السريعة للمعلم (Quick Teacher Feedback) -->
+            {{-- كبسولات الردود الأكاديمية السريعة للمعلم --}}
             <div id="quick_teacher_prompts" class="teacher-canned-prompts-bar" style="display: none;">
-                <span class="canned-label"><i class="fa-solid fa-wand-magic-sparkles text-warning"></i> {{ __('Quick Responses:') }}</span>
+                <span class="canned-label"><i class="fa-solid fa-bolt text-amber"></i> {{ __('ردود أكاديمية سريعة:') }}</span>
                 <div class="canned-scroll-lane">
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Well done, outstanding and 100% correct answer! 👏') }}')">
-                        {{ __('Model Answer 👏') }}
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('إجابة نموذجية وممتازة 100%، استمر يا بطل! 👏')">
+                        👏 إجابة نموذجية
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Please review given parameters and apply rule step by step ✍️') }}')">
-                        {{ __('Review Laws & Steps ✍️') }}
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('أرجو مراجعة المعطيات وتطبيق القانون الوزاري خطوة بخطوة ✍️')">
+                        ✍️ راجع القوانين والخطوات
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('This is a very important and recurrent ministerial exam question 🎯') }}')">
-                        {{ __('Important Ministerial Question 🎯') }}
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('هذا السؤال وزاري مهم ومتكرر في امتحانات الثانوية العامة 🎯')">
+                        🎯 فكرة وزارية هامة
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('I will explain this point in detail in our next class ⏰') }}')">
-                        {{ __('Explain Next Class ⏰') }}
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('سأقوم بشرح هذه الجزئية بالتفصيل في الحصة القادمة ⏰')">
+                        ⏰ شرح بالحصة القادمة
                     </button>
-                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('{{ __('Best wishes for your high school excellence and 99%+ marks! 🌹') }}')">
-                        {{ __('Encouragement 🌹') }}
+                    <button type="button" class="canned-pill" onclick="insertTeacherCanned('كل التوفيق والتفوق، علامتك بإذن الله 99%+ في التوجيهي 🌹')">
+                        🌹 تشجيع وتفوق
                     </button>
                 </div>
             </div>
 
-            <!-- شريط الرسائل -->
+            {{-- شريط تدفق الرسائل --}}
             <div id="chat_messages" class="messages-flow-canvas">
-                <div class="no-selection-placeholder">
+                <div class="no-selection-placeholder" id="placeholderView">
                     <div class="placeholder-icon-circle">
-                        <i class="fa-regular fa-comment-dots"></i>
+                        <i class="fa-solid fa-chalkboard-user"></i>
                     </div>
-                    <h3>{{ __('Welcome to Academic Inquiries Center') }}</h3>
-                    <p>{{ __('Select a student from the sidebar to view questions and respond.') }}</p>
+                    <h3>{{ __('مركز استفسارات المنهاج والتواصل مع الطلاب') }}</h3>
+                    <p>{{ __('اختر طالباً من القائمة الجانبية للاطلاع على أسئلته ومتابعة تحصيله الدراسي وتقديم التوجيه الأكاديمي المباشر.') }}</p>
                 </div>
             </div>
 
-            <!-- شريط إدخال الرد -->
+            {{-- شريط إدخال الرد --}}
             <div id="input_area" class="teacher-composer-area" style="display: none;">
-                <form id="chatForm" onsubmit="return false;">
-                    <div class="composer-flex-container">
-                        <input type="text" id="msg_input" class="teacher-msg-input" placeholder="{{ __('Type your academic response here...') }}" autocomplete="off">
-                        <button type="button" class="btn-send-reply" id="btn_send" onclick="sendTeacherReply()">
-                            <span>{{ __('Send Reply') }}</span>
+                <form id="chatForm" onsubmit="event.preventDefault(); sendTeacherReply();" class="composer-form-inner">
+                    <div class="composer-field-wrapper">
+                        <textarea id="msg_input" 
+                                  class="composer-textarea"
+                                  placeholder="{{ __('اكتب توجيهك أو ردك الأكاديمي للطالب هنا... (اضغط Enter للإرسال)') }}" 
+                                  rows="1" 
+                                  autocomplete="off"
+                                  onkeydown="handleComposerKeydown(event)"
+                                  oninput="autoExpandTextarea(this)"></textarea>
+
+                        <button type="submit" id="btn_send" class="composer-send-btn" title="{{ __('إرسال الرد') }}">
+                            <span>{{ __('إرسال') }}</span>
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
+                    </div>
+                    <div class="composer-hint-row">
+                        <span><i class="fa-regular fa-keyboard"></i> {{ __('اضغط Enter للإرسال، أو Shift + Enter لسطر جديد') }}</span>
+                        <span id="charCountEl" class="font-mono text-muted">0 / 1000</span>
                     </div>
                 </form>
             </div>
 
-        </div>
+        </main>
+
     </div>
 </div>
 
 <style>
-:root {
-    --side-width: 360px;
-    --app-height: calc(100vh - 120px);
-}
-
-.teacher-chat-wrapper {
-    width: 100%;
+/* =========================================================
+   CLASSIC ACADEMIC TEACHER INBOX (Institutional Prestige)
+   ========================================================= */
+.academic-inbox-wrapper {
     max-width: 100%;
     margin: 0 auto;
-    padding: 0 0 40px;
-    box-sizing: border-box;
+    padding: 0 0 16px;
 }
 
-.telegram-inbox-grid {
-    height: var(--app-height);
-    min-height: 560px;
+.academic-inbox-grid {
     display: grid;
-    grid-template-columns: var(--side-width) 1fr;
+    grid-template-columns: 340px 1fr;
+    height: calc(100vh - 120px);
+    min-height: 540px;
     background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
     overflow: hidden;
 }
 
-/* القائمة الجانبية */
+/* Sidebar */
 .chat-sidebar-pane {
-    background: #f8fafc;
+    background: #ffffff;
     border-inline-end: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    height: 100%;
+    overflow: hidden;
 }
 
 .sidebar-top-bar {
-    padding: 16px 20px;
-    background: #ffffff;
+    padding: 16px;
+    background: #f8fafc;
     border-bottom: 1px solid #e2e8f0;
-    flex-shrink: 0;
 }
 
 .sidebar-title-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 10px;
     margin-bottom: 12px;
 }
 
-.sidebar-headline {
-    margin: 0;
+.sidebar-crest-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #1e3a8a;
+    color: #ffffff;
+    display: grid;
+    place-items: center;
     font-size: 1.1rem;
-    font-weight: 800;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
-.badge-total-students {
-    background: #eff6ff;
-    color: #1e3a8a;
-    border: 1px solid #bfdbfe;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 700;
+.sidebar-headline {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.sidebar-subtext {
+    font-size: 0.74rem;
+    color: #64748b;
+    margin: 0;
 }
 
 .search-input-wrapper {
@@ -207,60 +240,50 @@
 
 .search-icon {
     position: absolute;
-    inset-inline-start: 12px;
+    right: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: #94a3b8;
     font-size: 0.85rem;
 }
 
-#search_student {
+.search-input-wrapper input {
     width: 100%;
-    padding: 8px 12px 8px 36px;
-    padding-inline-start: 36px;
-    padding-inline-end: 12px;
-    background: #f8fafc;
+    padding: 8px 34px 8px 12px;
     border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    font-size: 0.84rem;
+    border-radius: 8px;
     outline: none;
-    box-sizing: border-box;
-}
-
-#search_student:focus {
-    border-color: #1e3a8a;
+    font-size: 0.84rem;
     background: #ffffff;
+    transition: border-color 0.15s;
 }
 
-/* قائمة كروت الطلاب */
+.search-input-wrapper input:focus {
+    border-color: #1e3a8a;
+}
+
 .students-scroll-list {
     flex: 1;
     overflow-y: auto;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
 }
 
 .student-thread-card {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
-    border-radius: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #ffffff;
-    border: 1px solid transparent;
+    transition: background-color 0.15s;
 }
 
 .student-thread-card:hover {
-    background: #f1f5f9;
+    background: #f8fafc;
 }
 
 .student-thread-card.active {
     background: #eff6ff;
-    border-color: #bfdbfe;
+    border-inline-start: 4px solid #1e3a8a;
 }
 
 .student-avatar-box {
@@ -271,9 +294,21 @@
     color: #ffffff;
     display: grid;
     place-items: center;
-    font-weight: 800;
     font-size: 1rem;
+    font-weight: 800;
+    position: relative;
     flex-shrink: 0;
+}
+
+.online-indicator-dot {
+    position: absolute;
+    bottom: -2px;
+    left: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #ffffff;
 }
 
 .student-thread-meta {
@@ -290,33 +325,55 @@
 
 .student-name-text {
     font-size: 0.88rem;
-    font-weight: 800;
+    font-weight: 700;
     color: #0f172a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.thread-time-tag {
-    font-size: 0.7rem;
-    color: #94a3b8;
+.role-sub-tag {
+    font-size: 0.68rem;
+    color: #1e3a8a;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
 }
 
 .student-stage-subtext {
     font-size: 0.74rem;
     color: #64748b;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ساحة المحادثة */
+.empty-threads-state {
+    text-align: center;
+    padding: 30px 16px;
+    color: #94a3b8;
+}
+
+.empty-threads-state i {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+/* Chat Main */
 .chat-viewport-pane {
     display: flex;
     flex-direction: column;
     height: 100%;
     background: #f8fafc;
+    position: relative;
 }
 
 .active-chat-header {
-    padding: 14px 20px;
+    padding: 12px 20px;
     background: #ffffff;
     border-bottom: 1px solid #e2e8f0;
     display: flex;
@@ -331,6 +388,15 @@
     gap: 12px;
 }
 
+.mobile-return-btn {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.1rem;
+    color: #1e3a8a;
+    cursor: pointer;
+}
+
 .header-avatar-circle {
     width: 42px;
     height: 42px;
@@ -343,99 +409,115 @@
     font-size: 1.1rem;
 }
 
+.name-stage-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
 .active-student-title {
-    margin: 0;
     font-size: 1.05rem;
     font-weight: 800;
     color: #0f172a;
+    margin: 0;
 }
 
 .badge-stage-tag {
-    background: #eff6ff;
-    color: #1e3a8a;
-    padding: 2px 8px;
-    border-radius: 6px;
     font-size: 0.72rem;
     font-weight: 700;
+    color: #1e3a8a;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 1px 7px;
+    border-radius: 4px;
 }
 
 .student-online-status {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.74rem;
+    font-size: 0.76rem;
     color: #059669;
+    font-weight: 600;
 }
 
 .status-green-dot {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: #10b981;
+}
+
+.chat-header-actions {
+    display: flex;
+    gap: 8px;
 }
 
 .action-circle-btn {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    background: #ffffff;
-    color: #64748b;
-    cursor: pointer;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #cbd5e1;
+    color: #475569;
     display: grid;
     place-items: center;
-    transition: all 0.2s;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.15s;
 }
 
 .action-circle-btn:hover {
+    background: #eff6ff;
     color: #1e3a8a;
-    border-color: #1e3a8a;
+    border-color: #93c5fd;
 }
 
 /* Canned Prompts */
 .teacher-canned-prompts-bar {
-    background: #ffffff;
-    border-bottom: 1px solid #f1f5f9;
-    padding: 8px 20px;
+    padding: 8px 18px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
     display: flex;
     align-items: center;
     gap: 10px;
+    overflow-x: auto;
     flex-shrink: 0;
 }
 
 .canned-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #64748b;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #334155;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .canned-scroll-lane {
     display: flex;
     gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    white-space: nowrap;
 }
 
-.canned-scroll-lane::-webkit-scrollbar { display: none; }
-
 .canned-pill {
-    background: #f8fafc;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
     color: #334155;
-    border: 1px solid #e2e8f0;
-    padding: 4px 12px;
-    border-radius: 50px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.15s;
 }
 
 .canned-pill:hover {
-    background: #1e3a8a;
-    color: #ffffff;
-    border-color: #1e3a8a;
+    background: #eff6ff;
+    color: #1e3a8a;
+    border-color: #93c5fd;
 }
 
 /* Messages Canvas */
@@ -445,135 +527,184 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+}
+
+.bubble-item {
+    max-width: 75%;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    word-break: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.teacher-sent {
+    align-self: flex-end;
+    background: #1e3a8a;
+    color: #ffffff;
+    border: 1px solid #1e3a8a;
+    border-top-left-radius: 2px;
+}
+
+.student-incoming {
+    align-self: flex-start;
+    background: #ffffff;
+    color: #0f172a;
+    border: 1px solid #cbd5e1;
+    border-top-right-radius: 2px;
+}
+
+.msg-time-tag {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.7rem;
+}
+
+.teacher-sent .msg-time-tag {
+    color: #bfdbfe;
+}
+
+.student-incoming .msg-time-tag {
+    color: #64748b;
 }
 
 .no-selection-placeholder {
     margin: auto;
     text-align: center;
+    max-width: 440px;
+    padding: 30px 16px;
     color: #64748b;
-    max-width: 380px;
 }
 
 .placeholder-icon-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
     background: #eff6ff;
     color: #1e3a8a;
     display: grid;
     place-items: center;
     font-size: 1.8rem;
-    margin: 0 auto 14px;
+    margin: 0 auto 12px;
 }
 
-.bubble-item {
-    max-width: 72%;
-    padding: 10px 16px;
-    border-radius: 14px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    word-break: break-word;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-}
-
-.bubble-item.teacher-sent {
-    align-self: flex-start;
-    background: #1e3a8a;
-    color: #ffffff;
-    border-bottom-inline-start-radius: 2px;
-}
-
-.bubble-item.student-incoming {
-    align-self: flex-end;
-    background: #ffffff;
+.no-selection-placeholder h3 {
+    font-size: 1.15rem;
+    font-weight: 800;
     color: #0f172a;
-    border: 1px solid #e2e8f0;
-    border-bottom-inline-end-radius: 2px;
+    margin-bottom: 6px;
 }
 
-.msg-time-tag {
-    display: block;
-    font-size: 0.68rem;
-    margin-top: 4px;
-    opacity: 0.8;
-}
-
-/* Composer Area */
+/* Composer */
 .teacher-composer-area {
-    padding: 12px 20px;
+    padding: 12px 18px;
     background: #ffffff;
     border-top: 1px solid #e2e8f0;
     flex-shrink: 0;
 }
 
-.composer-flex-container {
+.composer-field-wrapper {
     display: flex;
     gap: 10px;
-    align-items: center;
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 14px;
-    padding: 6px 12px;
+    align-items: flex-end;
 }
 
-.teacher-msg-input {
+.composer-textarea {
     flex: 1;
-    border: none;
-    background: transparent;
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 10px 14px;
     outline: none;
     font-size: 0.92rem;
     color: #0f172a;
+    line-height: 1.5;
+    resize: none;
+    max-height: 120px;
+    transition: border-color 0.15s;
 }
 
-.btn-send-reply {
+.composer-textarea:focus {
+    border-color: #1e3a8a;
+    background: #ffffff;
+}
+
+.composer-send-btn {
     background: #1e3a8a;
     color: #ffffff;
     border: none;
-    padding: 9px 20px;
     border-radius: 10px;
-    font-weight: 700;
-    font-size: 0.85rem;
+    padding: 11px 22px;
+    font-weight: 800;
+    font-size: 0.88rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: all 0.2s;
+    transition: background 0.15s;
+    flex-shrink: 0;
 }
 
-.btn-send-reply:hover {
-    background: #172554;
+.composer-send-btn:hover {
+    background: #0f172a;
 }
 
-.empty-threads-state {
-    padding: 2.5rem 1rem;
-    text-align: center;
-    color: #94a3b8;
-    font-size: 0.88rem;
+.composer-hint-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 0.72rem;
+    color: #64748b;
 }
 
-@media (max-width: 820px) {
-    .telegram-inbox-grid {
+/* Responsive */
+@media (max-width: 768px) {
+    .academic-inbox-grid {
         grid-template-columns: 1fr;
+        height: calc(100vh - 80px);
+        border-radius: 0;
+        border: none;
     }
+    .chat-sidebar-pane.mobile-hidden { display: none; }
+    .chat-viewport-pane.mobile-hidden { display: none; }
+    .mobile-return-btn { display: block; }
+    .bubble-item { max-width: 88%; }
 }
 </style>
 
 <script>
     let activeStudentId = null;
     let pollInterval = null;
-    let lastHash = "";
+    let lastContentHash = "";
+    let soundEnabled = true;
 
-    function loadChat(id, name, stage) {
+    const audioChime = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbqWE2M1yct9e6ei8xWpu50rJ3LS5ZoLTIsHMwLlimtMWmcTItV5+wvKZwLCxVoK6yqG0vLFKcq62nbjAsUKKkpqJuLS1No6Ghnm8tLUueoJ+cbistTZubm5prKy1MmpeVlmcrLEuXlZSUZiwtSpOUk5JkLC1KkpKSkmMsLEqSkZCRZCws');
+
+    function toggleAudioChime() {
+        soundEnabled = !soundEnabled;
+        const icon = document.getElementById('soundIcon');
+        if (icon) {
+            icon.className = soundEnabled ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+        }
+    }
+
+    function playAudioChime() {
+        if (!soundEnabled) return;
+        try {
+            audioChime.currentTime = 0;
+            audioChime.play().catch(() => {});
+        } catch(e) {}
+    }
+
+    function loadTeacherChat(id, name, stage) {
         activeStudentId = id;
-        lastHash = "";
-
-        const box = document.getElementById('chat_messages');
-        box.innerHTML = `
-            <div class="text-center my-auto py-5 text-muted">
-                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
-                <p class="mt-2" style="font-size: 0.85rem;">{{ __('Syncing student inquiries...') }}</p>
-            </div>`;
+        lastContentHash = "";
 
         document.getElementById('chat_header').style.display = 'flex';
         document.getElementById('quick_teacher_prompts').style.display = 'flex';
@@ -581,22 +712,38 @@
 
         document.getElementById('active_user_name').innerText = name;
         document.getElementById('active_avatar').innerText = name.charAt(0);
-        if(stage) {
+        if (stage) {
             document.getElementById('active_stage_tag').innerText = stage;
         }
 
         document.querySelectorAll('.student-thread-card').forEach(c => c.classList.remove('active'));
         const card = document.getElementById('user_' + id);
-        if(card) card.classList.add('active');
+        if (card) card.classList.add('active');
+
+        // On mobile, show chat pane and hide sidebar
+        if (window.innerWidth <= 768) {
+            document.getElementById('chat_sidebar').classList.add('mobile-hidden');
+            document.getElementById('chat_main').classList.remove('mobile-hidden');
+        }
 
         fetchMessages(true);
 
         if (pollInterval) clearInterval(pollInterval);
-        pollInterval = setInterval(() => fetchMessages(false), 3000);
+        pollInterval = setInterval(() => fetchMessages(false), 3500);
     }
 
-    function fetchMessages(isFirst = false) {
+    function toggleMobileSidebar() {
+        if (window.innerWidth <= 768) {
+            document.getElementById('chat_sidebar').classList.remove('mobile-hidden');
+            document.getElementById('chat_main').classList.add('mobile-hidden');
+        }
+    }
+
+    function fetchMessages(forceScroll = false) {
         if (!activeStudentId) return;
+
+        const refreshIcon = document.getElementById('refreshIcon');
+        if (refreshIcon) refreshIcon.classList.add('fa-spin');
 
         axios.get('/teacher/messages/' + activeStudentId)
             .then(res => {
@@ -604,15 +751,19 @@
                 const messages = res.data.messages || [];
 
                 const currentHash = JSON.stringify(messages);
-                if (currentHash === lastHash && !isFirst) return;
-                lastHash = currentHash;
+                if (currentHash === lastContentHash && !forceScroll) return;
+
+                const isNearBottom = box.scrollHeight - box.scrollTop <= box.clientHeight + 120;
+                const isNewFromStudent = lastContentHash !== "" && messages.length > 0 && messages[messages.length - 1].sender_type === 'student';
+
+                lastContentHash = currentHash;
 
                 if (messages.length === 0) {
                     box.innerHTML = `
                         <div class="no-selection-placeholder">
                             <div class="placeholder-icon-circle"><i class="fa-solid fa-graduation-cap"></i></div>
-                            <h3>{{ __('No previous messages with student') }}</h3>
-                            <p>{{ __('You can send guidance or study follow-up now.') }}</p>
+                            <h3>{{ __('لا توجد رسائل سابقة مع الطالب') }}</h3>
+                            <p>{{ __('يمكنك بدء المحادثة وتوجيه الطالب دراسياً الآن.') }}</p>
                         </div>`;
                     return;
                 }
@@ -621,33 +772,67 @@
                 messages.forEach(m => {
                     const sender = (m.sender_type || '').toLowerCase().trim();
                     const isMe = (sender === 'teacher');
-                    const time = m.created_at_formatted || '';
+                    const time = m.created_at_formatted || 'الآن';
 
                     const item = document.createElement('div');
                     item.className = `bubble-item ${isMe ? 'teacher-sent' : 'student-incoming'}`;
                     item.innerHTML = `
-                        <div>${escapeHtml(m.message)}</div>
-                        ${time ? `<span class="msg-time-tag">${time} ${isMe ? '✓✓' : ''}</span>` : ''}
+                        <div style="white-space: pre-wrap;">${escapeHtml(m.message)}</div>
+                        <div class="msg-time-tag font-mono">
+                            <span>${isMe ? '{{ __("أنت (المعلم)") }}' : '{{ __("الطالب") }}'}</span>
+                            <span>•</span>
+                            <span>${time} ${isMe ? '✓✓' : ''}</span>
+                        </div>
                     `;
                     box.appendChild(item);
                 });
 
-                if (isFirst || isScrolledNearBottom(box)) {
-                    scrollToBottom();
+                if (isNewFromStudent) {
+                    playAudioChime();
+                }
+
+                if (forceScroll || isNearBottom) {
+                    scrollToBottomSmooth();
                 }
             })
-            .catch(err => console.error("Fetch Messages Error: ", err));
+            .catch(err => console.error("Fetch Messages Error: ", err))
+            .finally(() => {
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            });
     }
 
     function sendTeacherReply() {
         const input = document.getElementById('msg_input');
         const text = input.value.trim();
         const sendBtn = document.getElementById('btn_send');
+        const charCountEl = document.getElementById('charCountEl');
 
         if (!text || !activeStudentId) return;
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> {{ __('Sending...') }}`;
+        sendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+        input.value = '';
+        input.style.height = 'auto';
+        if (charCountEl) charCountEl.innerText = '0 / 1000';
+
+        // Optimistic render
+        const box = document.getElementById('chat_messages');
+        const ph = box.querySelector('.no-selection-placeholder');
+        if (ph) box.innerHTML = '';
+
+        const optimisticBubble = document.createElement('div');
+        optimisticBubble.className = 'bubble-item teacher-sent';
+        optimisticBubble.innerHTML = `
+            <div style="white-space: pre-wrap;">${escapeHtml(text)}</div>
+            <div class="msg-time-tag font-mono">
+                <span>{{ __("أنت (المعلم)") }}</span>
+                <span>•</span>
+                <span>الآن ✓</span>
+            </div>
+        `;
+        box.appendChild(optimisticBubble);
+        scrollToBottomSmooth();
 
         axios.post('/teacher/send-message', {
             student_id: activeStudentId,
@@ -660,16 +845,14 @@
             }
         })
         .then(res => {
-            input.value = '';
-            lastHash = "";
             fetchMessages(true);
         })
         .catch(err => {
-            alert('{{ __("Error sending reply, please try again.") }}');
+            alert('{{ __("حدث خطأ أثناء إرسال الرد، يرجى المحاولة مرة أخرى.") }}');
         })
         .finally(() => {
             sendBtn.disabled = false;
-            sendBtn.innerHTML = `<span>{{ __('Send Reply') }}</span> <i class="fa-solid fa-paper-plane"></i>`;
+            sendBtn.innerHTML = `<span>{{ __('إرسال') }}</span> <i class="fa-solid fa-paper-plane"></i>`;
             input.focus();
         });
     }
@@ -677,23 +860,29 @@
     function insertTeacherCanned(text) {
         const input = document.getElementById('msg_input');
         input.value = text;
+        autoExpandTextarea(input);
         input.focus();
     }
 
-    document.getElementById('msg_input')?.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    function autoExpandTextarea(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+        const counter = document.getElementById('charCountEl');
+        if (counter) {
+            counter.innerText = `${el.value.length} / 1000`;
+        }
+    }
+
+    function handleComposerKeydown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendTeacherReply();
         }
-    });
-
-    function scrollToBottom() {
-        const box = document.getElementById('chat_messages');
-        if (box) box.scrollTop = box.scrollHeight;
     }
 
-    function isScrolledNearBottom(box) {
-        return box.scrollHeight - box.clientHeight <= box.scrollTop + 140;
+    function scrollToBottomSmooth() {
+        const box = document.getElementById('chat_messages');
+        if (box) box.scrollTo({ top: box.scrollHeight, behavior: 'smooth' });
     }
 
     function filterStudents() {
@@ -715,9 +904,9 @@
     }
 
     function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML.replace(/\n/g, '<br>');
+        if (!text) return '';
+        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+        return text.replace(/[&<>"']/g, m => map[m]);
     }
 
     document.addEventListener('DOMContentLoaded', function() {
