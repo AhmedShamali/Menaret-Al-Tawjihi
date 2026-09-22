@@ -277,4 +277,37 @@ class MonthlySubscriptionTest extends TestCase
         $response->assertSee('خصم باقة التوجيهي (15%)');
         $response->assertSee('357');
     }
+
+    public function test_admin_can_search_subscriptions_by_nid(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Test',
+            'email' => 'admin_search@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'محمود الفلسطيني',
+            'name_en' => 'Mahmoud Palestinian',
+            'nid' => '875478542',
+            'email' => 'mahmoud@tawjihi.ps',
+            'password' => bcrypt('secret123'),
+            'phone' => '0599887766',
+            'age' => 18,
+            'gender' => 'male',
+            'status' => 'active',
+            'stage_id' => $stage->id,
+            'monthly_fee' => 150.00,
+        ]);
+
+        // Search by nid 875478542
+        $response = $this->actingAs($admin)
+            ->get(route('admin.subscriptions.monthly', ['search' => '875478542']));
+
+        $response->assertStatus(200);
+        $response->assertSee('محمود الفلسطيني');
+        $response->assertSee('875478542');
+    }
 }

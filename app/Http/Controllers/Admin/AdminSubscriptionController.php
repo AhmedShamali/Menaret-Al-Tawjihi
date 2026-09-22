@@ -37,9 +37,10 @@ class AdminSubscriptionController extends Controller
             $search = trim($search);
             $studentsQuery->where(function ($q) use ($search) {
                 $q->where('name_ar', 'like', "%{$search}%")
+                  ->orWhere('name_en', 'like', "%{$search}%")
                   ->orWhere('phone', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('id_number', 'like', "%{$search}%");
+                  ->orWhere('nid', 'like', "%{$search}%");
             });
         }
 
