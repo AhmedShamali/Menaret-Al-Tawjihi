@@ -1,205 +1,323 @@
 @extends('layouts.app')
 
-@section('title', __('قاعة الاختبار الرقمية') . ' | ' . $exam->title)
+@section('title', __('قاعة الاختبار الأكاديمية') . ' | ' . $exam->title)
 @section('no-sidebar', 'true')
 
 @section('content')
-<div class="ed-exam-take-wrapper">
+<div class="ed-exam-take-wrapper" id="examTakeWrapper">
 
-    <!-- شاشة تأكيد البدء الأكاديمية (University Pre-flight Modal) -->
+    <!-- شاشة تأكيد البدء والتعليمات الأكاديمية الرسمية (Classical Academic Pre-flight Modal) -->
     <div id="examPreflightModal" class="ed-preflight-overlay">
         <div class="ed-preflight-card">
-            <div class="ed-preflight-icon">
-                <i class="fa-solid fa-graduation-cap"></i>
+            <div class="ed-preflight-crest">
+                <div class="ed-crest-seal">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div class="ed-crest-titles">
+                    <span class="ed-crest-gov">{{ __('دولة فلسطين • وزارة التربية والتعليم') }}</span>
+                    <span class="ed-crest-sub">{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</span>
+                </div>
             </div>
 
-            <span class="ed-preflight-sub-tag">
-                {{ $exam->subject->name_ar ?? __('مادة دراسية') }}
-            </span>
             <h2 class="ed-preflight-title">{{ $exam->title }}</h2>
-            <p class="ed-preflight-desc">{{ __('يرجى مراجعة تفاصيل وتعليمات الاختبار الأكاديمي قبل بدء الوقت الرسمي.') }}</p>
+            <p class="ed-preflight-desc">{{ __('جلسة اختبار رسمي إلكتروني خاضعة لنظام المراقبة والرصد الأكاديمي المباشر.') }}</p>
 
             <div class="ed-preflight-stats">
                 <div class="ed-stat-box">
                     <i class="fa-regular fa-clock text-amber"></i>
                     <strong>{{ $exam->duration_minutes }} {{ __('دقيقة') }}</strong>
-                    <span>{{ __('المدة الزمنية') }}</span>
+                    <span>{{ __('المدة الزمنية المقررة') }}</span>
                 </div>
                 <div class="ed-stat-box">
                     <i class="fa-solid fa-list-check text-navy"></i>
-                    <strong>{{ count($exam->questions) }} {{ __('أسئلة') }}</strong>
-                    <span>{{ __('إجمالي الأسئلة') }}</span>
+                    <strong>{{ count($exam->questions) }} {{ __('سؤالاً') }}</strong>
+                    <span>{{ __('عدد أسئلة الاختبار') }}</span>
                 </div>
                 <div class="ed-stat-box">
-                    <i class="fa-solid fa-star text-emerald"></i>
+                    <i class="fa-solid fa-award text-emerald"></i>
                     <strong>{{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('درجة') }}</strong>
-                    <span>{{ __('الدرجة الكلية') }}</span>
+                    <span>{{ __('الدرجة الكلية القصوى') }}</span>
                 </div>
             </div>
 
             <div class="ed-preflight-rules">
                 <h4>
-                    <i class="fa-solid fa-shield-halved text-navy"></i> {{ __('الإرشادات الأكاديمية وضوابط النزاهة:') }}
+                    <i class="fa-solid fa-shield-halved text-navy"></i> {{ __('ضوابط النزاهة الأكاديمية وتعليمات الجلسة:') }}
                 </h4>
-                <ul>
-                    <li>{{ __('يبدأ العداد التنازلي فور النقر على زر "أوافق وأبدأ الاختبار الآن".') }}</li>
-                    <li><strong class="text-danger">{{ __('ممنوع مغادرة الصفحة أو تبديل التبويب:') }}</strong> {{ __('النظام يرصد حركات الشاشة ويخطر المعلم بأي نشاط مريب.') }}</li>
-                    <li><strong class="text-danger">{{ __('ممنوع أخذ لقطات شاشة (Screenshot):') }}</strong> {{ __('محاولات التصوير محظورة وتُسجل كمخالفة نزاهة أكاديمية.') }}</li>
-                    <li>{{ __('عند انتهاء الوقت سيتم تسليم إجاباتك المحفوظة تلقائياً وبشكل فوري.') }}</li>
-                </ul>
+                <div class="ed-rules-grid">
+                    <div class="ed-rule-item">
+                        <i class="fa-solid fa-stopwatch text-amber"></i>
+                        <span>{{ __('يبدأ احتساب وقت الاختبار تلقائياً فور النقر على زر "بدء الاختبار الآن".') }}</span>
+                    </div>
+                    <div class="ed-rule-item">
+                        <i class="fa-solid fa-expand text-blue"></i>
+                        <span>{{ __('يُستحسن تفعيل وضع "ملء الشاشة" لضمان أعلى مستويات التركيز وعدم التشتت.') }}</span>
+                    </div>
+                    <div class="ed-rule-item danger">
+                        <i class="fa-solid fa-triangle-exclamation text-danger"></i>
+                        <span><strong>{{ __('حظر مغادرة التبويب:') }}</strong> {{ __('رصد التنقل بين النوافذ أو التطبيقات يُسجل فورياً في سجل المخالفات الأكاديمية.') }}</span>
+                    </div>
+                    <div class="ed-rule-item danger">
+                        <i class="fa-solid fa-camera-slash text-danger"></i>
+                        <span><strong>{{ __('حظر تصوير الشاشة:') }}</strong> {{ __('محاولات لقطات الشاشة أو النسخ محظورة وتخطر لجنة التدقيق.') }}</span>
+                    </div>
+                    <div class="ed-rule-item">
+                        <i class="fa-solid fa-cloud-arrow-up text-emerald"></i>
+                        <span>{{ __('عند نفاد الوقت المتبقي، سيتم حفظ واعتماد إجاباتك إلكترونياً بشكل تلقائي.') }}</span>
+                    </div>
+                </div>
             </div>
 
             <div class="ed-preflight-actions">
                 <a href="{{ route('student.exams.index') }}" class="ed-btn-cancel">
-                    {{ __('العودة لاحقاً') }}
+                    <i class="fa-solid fa-arrow-right"></i>
+                    <span>{{ __('العودة لقائمة الاختبارات') }}</span>
                 </a>
                 <button type="button" onclick="startExamOfficially()" class="ed-btn-start">
-                    <i class="fa-solid fa-play"></i>
-                    <span>{{ __('أوافق وأبدأ الاختبار الآن') }}</span>
+                    <i class="fa-solid fa-circle-play"></i>
+                    <span>{{ __('أوافق على الضوابط وأبدأ الاختبار الآن') }}</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- شريط الاختبار العلوي الثابت مع التجاوب التام -->
-    <header class="ed-take-topbar">
-        <div class="ed-take-bar-content">
-            <div class="ed-exam-meta-block">
-                <div class="ed-exam-badge-tag">
-                    <i class="fas fa-book-open"></i>
+    <!-- الشريط الأكاديمي العلوي الثابت مع ملء الشاشة والعداد -->
+    <header class="ed-exam-topbar" id="examTopbar">
+        <div class="ed-topbar-inner">
+            
+            <!-- معلومات المادة والاختبار -->
+            <div class="ed-topbar-meta">
+                <div class="ed-subject-tag">
+                    <i class="fa-solid fa-book-bookmark"></i>
                     <span>{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</span>
                 </div>
-                <h1 class="ed-exam-title">{{ $exam->title }}</h1>
+                <h1 class="ed-topbar-title">{{ $exam->title }}</h1>
             </div>
 
-            <!-- شارة المراقبة ومكافحة الغش الحية -->
-            <div class="ed-proctoring-status" id="proctoringBadge" title="{{ __('نظام الرصد الذكي لمكافحة الغش نشط') }}">
-                <span class="proctoring-dot"></span>
-                <i class="fa-solid fa-shield-halved"></i>
-                <span id="proctoringText">{{ __('المراقبة الأكاديمية: نشطة') }}</span>
+            <!-- العداد التنازلي الكلاسيكي الدقيق -->
+            <div class="ed-topbar-center">
+                <div class="ed-timer-pod" id="examTimerPod">
+                    <div class="ed-timer-header">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>{{ __('الوقت المتبقي للجلسة') }}</span>
+                    </div>
+                    <div class="ed-timer-display" id="countdown_timer">00:00:00</div>
+                </div>
             </div>
 
-            <div class="ed-timer-block">
-                <span class="timer-label"><i class="far fa-clock"></i> {{ __('الوقت المتبقي') }}</span>
-                <div id="countdown_timer">00:00</div>
+            <!-- أزرار التحكم وشارة المراقبة وزر ملء الشاشة -->
+            <div class="ed-topbar-controls">
+                
+                <!-- شارة المراقبة الحية -->
+                <div class="ed-proctor-pill" id="proctoringBadge" title="{{ __('نظام الرصد والنزاهة الأكاديمية يعمل بنجاح') }}">
+                    <span class="ed-pulse-dot"></span>
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span id="proctoringText">{{ __('المراقبة: نشطة') }}</span>
+                </div>
+
+                <!-- زر ملء الشاشة الكلاسيكي الحقيقي -->
+                <button type="button" class="ed-ctrl-btn ed-fullscreen-btn" id="btnFullscreen" onclick="toggleExamFullscreen()" title="{{ __('التبديل إلى وضع ملء الشاشة للتركيز الكامل') }}">
+                    <i class="fa-solid fa-expand" id="fullscreenIcon"></i>
+                    <span id="fullscreenText">{{ __('ملء الشاشة') }}</span>
+                </button>
+
+                <!-- زر التسليم السريع من الشريط العلوي -->
+                <button type="button" class="ed-ctrl-btn ed-quick-submit-btn" onclick="confirmSubmission()" title="{{ __('تسليم ورقة الاختبار واعتماد الإجابات') }}">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>{{ __('تسليم الاختبار') }}</span>
+                </button>
             </div>
+
         </div>
 
-        <div class="ed-take-progress-track">
-            <div class="ed-take-progress-fill" id="examProgressBar"></div>
+        <!-- شريط تقدم الإنجاز الأكاديمي الدقيق -->
+        <div class="ed-progress-track">
+            <div class="ed-progress-fill" id="examProgressBar" style="width: 0%;"></div>
         </div>
     </header>
 
-    <!-- نموذج الاختبار والأسئلة -->
+    <!-- الهيكل الرئيسي للاختبار (الأسئلة + الفهرس الجانبي) -->
     <form id="fullExamForm" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="tab_switches_count" id="tabSwitchesCount" value="0">
         <input type="hidden" name="screenshots_count" id="screenshotsCount" value="0">
         <input type="hidden" name="cheating_flags" id="cheatingFlagsInput" value="[]">
 
-        <div class="ed-take-layout">
+        <div class="ed-exam-container">
 
-            <!-- قائمة الأسئلة -->
-            <main class="ed-questions-flow">
-                @foreach($exam->questions as $index => $q)
-                <article class="ed-question-card" id="q_card_{{ $q->id }}">
-                    
-                    <div class="ed-q-header">
-                        <div class="ed-q-info">
-                            <span class="ed-q-number">سؤال {{ $index + 1 }} من {{ count($exam->questions) }}</span>
-                            <span class="ed-q-score"><i class="far fa-star"></i> {{ $q->points }} درجات</span>
+            <!-- مسار تدفق الأسئلة (العمود الرئيسي 75%) -->
+            <main class="ed-questions-arena" id="questionsArena">
+                
+                <!-- رسالة ترحيبية وتوجيهية كلاسيكية -->
+                <div class="ed-arena-header-card">
+                    <div class="ed-arena-header-content">
+                        <div class="ed-arena-seal">
+                            <i class="fa-solid fa-pen-nib"></i>
                         </div>
-                        <button type="button" class="ed-flag-btn" onclick="toggleFlag({{ $q->id }}, {{ $index }})" title="{{ __('تمييز للمراجعة') }}">
-                            <i class="far fa-bookmark" id="flag_icon_{{ $q->id }}"></i>
-                            <span>{{ __('مراجعة') }}</span>
+                        <div>
+                            <h3>{{ __('ورقة الأسئلة الأكاديمية الرسمية') }}</h3>
+                            <p>{{ __('أجب عن جميع الأسئلة الآتية بدقة. يمكنك تمييز أي سؤال ترغب بمراجعته قبل الاعتماد النهائي.') }}</p>
+                        </div>
+                    </div>
+                    <div class="ed-arena-stats-strip">
+                        <span><i class="fa-solid fa-layer-group"></i> {{ count($exam->questions) }} {{ __('أسئلة') }}</span>
+                        <span class="sep">•</span>
+                        <span><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</span>
+                        <span class="sep">•</span>
+                        <span><i class="fa-solid fa-award"></i> {{ $exam->total_grade ?? $exam->questions->sum('points') }} {{ __('درجة إجمالية') }}</span>
+                    </div>
+                </div>
+
+                @foreach($exam->questions as $index => $q)
+                @php
+                    $qCandidates = $q->getImageCandidates();
+                    $firstQImg = !empty($qCandidates) ? $qCandidates[0] : null;
+                @endphp
+                <article class="ed-q-card" id="q_card_{{ $q->id }}" data-question-id="{{ $q->id }}" data-index="{{ $index }}">
+                    
+                    <!-- رأس بطاقة السؤال الكلاسيكي -->
+                    <div class="ed-q-card-head">
+                        <div class="ed-q-meta">
+                            <div class="ed-q-number-badge">
+                                <span class="ed-num-prefix">{{ __('السؤال') }}</span>
+                                <strong class="ed-num-val">{{ $index + 1 }}</strong>
+                                <span class="ed-num-total">/ {{ count($exam->questions) }}</span>
+                            </div>
+                            <div class="ed-q-points-badge">
+                                <i class="fa-solid fa-award"></i>
+                                <span>{{ $q->points }} {{ __('درجات') }}</span>
+                            </div>
+                            <span class="ed-q-type-pill {{ $q->type == 'mcq' ? 'mcq' : 'essay' }}">
+                                {{ $q->type == 'mcq' ? __('اختيار من متعدد') : __('سؤال مقالي / تحليلي') }}
+                            </span>
+                        </div>
+
+                        <button type="button" class="ed-flag-action" onclick="toggleFlag({{ $q->id }}, {{ $index }})" id="flag_btn_{{ $q->id }}" title="{{ __('تمييز السؤال لمراجعته لاحقاً') }}">
+                            <i class="fa-regular fa-bookmark" id="flag_icon_{{ $q->id }}"></i>
+                            <span id="flag_text_{{ $q->id }}">{{ __('مراجعة') }}</span>
                         </button>
                     </div>
 
-                    <div class="ed-q-body">
-                        <h2 class="ed-q-text">{!! nl2br(e($q->question_text)) !!}</h2>
+                    <!-- متن نص السؤال والمرفق -->
+                    <div class="ed-q-card-body">
+                        <div class="ed-q-text-box">
+                            <h2 class="ed-q-main-text">{!! nl2br(e($q->question_text)) !!}</h2>
+                        </div>
 
-                        @php
-                            $qImg = $q->image_url;
-                            $localFallback = $q->local_image_url;
-                        @endphp
-
-                        @if(!empty($qImg) || !empty($q->image))
-                        <div class="ed-q-image-box">
-                            <div class="ed-q-image-header">
-                                <span class="ed-q-image-tag"><i class="fa-solid fa-image"></i> {{ __('مرفق السؤال (رسم توضيحي / مسألة)') }}</span>
-                                <button type="button" class="ed-zoom-btn" onclick="openImageModal(this.dataset.src || '{{ $qImg }}')" data-src="{{ $qImg }}">
-                                    <i class="fas fa-search-plus"></i> {{ __('تكبير الصورة بدقة عالية') }}
+                        <!-- عرض صورة السؤال التوضيحية (بدون أي رسائل خطأ، مع التحقق السلس) -->
+                        @if(!empty($firstQImg))
+                        <div class="ed-q-figure-box" id="q_fig_box_{{ $q->id }}">
+                            <div class="ed-q-figure-topbar">
+                                <span class="ed-q-figure-title">
+                                    <i class="fa-solid fa-file-image"></i>
+                                    {{ __('الرسم الهندسي / المرفق التوضيحي للسؤال:') }}
+                                </span>
+                                <button type="button" class="ed-zoom-action-btn" onclick="openImageModal(document.getElementById('q_img_{{ $q->id }}').src)">
+                                    <i class="fa-solid fa-magnifying-glass-plus"></i>
+                                    <span>{{ __('تكبير الصورة بدقة كاملة') }}</span>
                                 </button>
                             </div>
-                            <div class="ed-img-canvas">
-                                <img src="{{ $qImg }}" 
-                                     alt="{{ __('مرفق السؤال') }}" 
-                                     class="ed-q-img" 
+                            <div class="ed-q-figure-frame">
+                                <img id="q_img_{{ $q->id }}"
+                                     src="{{ $firstQImg }}" 
+                                     alt="{{ __('مرفق السؤال الأكاديمي') }}" 
+                                     class="ed-q-figure-img"
                                      onclick="openImageModal(this.src)" 
                                      loading="lazy"
-                                     onerror="if(!this.dataset.triedFallback && '{{ $localFallback }}'){ this.dataset.triedFallback='1'; this.src='{{ $localFallback }}'; const btn = this.closest('.ed-q-image-box').querySelector('.ed-zoom-btn'); if(btn) btn.dataset.src='{{ $localFallback }}'; } else { this.closest('.ed-q-image-box').classList.add('load-failed'); }">
-                                <div class="ed-img-fallback-notice">
-                                    <i class="fa-solid fa-circle-exclamation" style="color: #d97706; font-size: 1.1rem;"></i>
-                                    <span>{{ __('تعذر جلب المرفق السحابي مؤقتاً') }}</span>
-                                    <button type="button" class="ed-btn-retry" onclick="const img = this.closest('.ed-q-image-box').querySelector('img'); img.src = '{{ $qImg }}?r=' + Date.now(); this.closest('.ed-q-image-box').classList.remove('load-failed');">
-                                        <i class="fas fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
-                                    </button>
-                                </div>
+                                     data-candidates="{{ implode('|', $qCandidates) }}"
+                                     data-candidate-idx="0"
+                                     onerror="handleExamImageFallback(this)">
                             </div>
                         </div>
                         @endif
 
+                        <!-- خيارات الإجابة للسؤال (MCQ) -->
                         @if($q->type == 'mcq')
-                            <div class="ed-options-grid">
-                                @foreach(['a', 'b', 'c', 'd'] as $option)
-                                @php
-                                    $optImg = $q->getOptionImageUrl($option);
-                                    $hasOptImg = !empty($optImg);
-                                    $hasOptText = !empty($q->$option);
-                                @endphp
-                                @if($hasOptText || $hasOptImg)
-                                <label class="ed-option-item {{ $hasOptImg ? 'has-opt-img' : '' }}">
-                                    <input 
-                                        type="radio" 
-                                        name="answers[{{ $q->id }}]" 
-                                        value="{{ $option }}" 
-                                        hidden 
-                                        onchange="markAsAnswered({{ $index }}, {{ $q->id }})"
-                                    >
-                                    <div class="ed-option-box">
-                                        <span class="ed-opt-letter">{{ strtoupper($option) }}</span>
-                                        <div class="ed-opt-content">
-                                            @if($hasOptText)
-                                                <span class="ed-opt-text">{{ $q->$option }}</span>
-                                            @endif
-                                            @if($hasOptImg)
-                                                <div class="ed-opt-img-wrapper" onclick="event.stopPropagation(); openImageModal('{{ $optImg }}')" title="{{ __('انقر لتكبير صورة الخيار') }}">
-                                                    <img src="{{ $optImg }}" alt="خيار {{ strtoupper($option) }}" class="ed-opt-thumb" loading="lazy">
-                                                    <span class="ed-opt-zoom-tag"><i class="fas fa-search-plus"></i> {{ __('تكبير') }}</span>
-                                                </div>
-                                            @endif
+                            <div class="ed-mcq-container">
+                                <div class="ed-mcq-grid">
+                                    @php
+                                        $lettersAr = ['a' => 'أ', 'b' => 'ب', 'c' => 'ج', 'd' => 'د'];
+                                    @endphp
+                                    @foreach(['a', 'b', 'c', 'd'] as $option)
+                                    @php
+                                        $optCandidates = $q->getOptionImageCandidates($option);
+                                        $firstOptImg = !empty($optCandidates) ? $optCandidates[0] : null;
+                                        $hasOptImg = !empty($firstOptImg);
+                                        $hasOptText = !empty($q->$option);
+                                    @endphp
+                                    @if($hasOptText || $hasOptImg)
+                                    <label class="ed-mcq-label {{ $hasOptImg ? 'with-image' : '' }}">
+                                        <input 
+                                            type="radio" 
+                                            name="answers[{{ $q->id }}]" 
+                                            value="{{ $option }}" 
+                                            class="ed-mcq-input"
+                                            onchange="markAsAnswered({{ $index }}, {{ $q->id }})"
+                                        >
+                                        <div class="ed-mcq-card">
+                                            <div class="ed-opt-letter-disc">
+                                                <span class="letter-ar">{{ $lettersAr[$option] ?? strtoupper($option) }}</span>
+                                                <span class="letter-en">{{ strtoupper($option) }}</span>
+                                            </div>
+                                            <div class="ed-opt-payload">
+                                                @if($hasOptText)
+                                                    <div class="ed-opt-text">{{ $q->$option }}</div>
+                                                @endif
+                                                @if($hasOptImg)
+                                                    <div class="ed-opt-img-wrapper ed-opt-visual-wrapper" onclick="event.stopPropagation(); openImageModal(this.querySelector('img').src)" title="{{ __('انقر لتكبير صورة الخيار') }}">
+                                                        <img src="{{ $firstOptImg }}" 
+                                                             alt="خيار {{ strtoupper($option) }}" 
+                                                             class="ed-opt-thumb ed-opt-visual-thumb" 
+                                                             loading="lazy"
+                                                             data-candidates="{{ implode('|', $optCandidates) }}"
+                                                             data-candidate-idx="0"
+                                                             onerror="handleExamImageFallback(this)">
+                                                        <span class="ed-opt-zoom-chip">
+                                                            <i class="fa-solid fa-magnifying-glass-plus"></i> {{ __('تكبير') }}
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                            <div class="ed-opt-radio-marker">
+                                                <i class="fa-solid fa-check"></i>
+                                            </div>
                                         </div>
-                                    </div>
-                                </label>
-                                @endif
-                                @endforeach
+                                    </label>
+                                    @endif
+                                    @endforeach
+                                </div>
                             </div>
                         @else
-                            <div class="ed-written-answer-box">
-                                <label class="ed-input-label">{{ __('اكتب إجابتك النموذجية:') }}</label>
+                            <!-- إجابة مقالية تحريرية / كتابية -->
+                            <div class="ed-written-arena">
+                                <div class="ed-written-header">
+                                    <label class="ed-written-title">
+                                        <i class="fa-solid fa-pen-fancy"></i>
+                                        <span>{{ __('الإجابة النموذجية والشرح الأكاديمي:') }}</span>
+                                    </label>
+                                    <span class="ed-written-hint">{{ __('اكتب حلك المنظم بدقة ووضوح في المساحة المخصصة أدناه.') }}</span>
+                                </div>
+
                                 <textarea 
                                     name="answers[{{ $q->id }}]" 
-                                    rows="4" 
-                                    placeholder="{{ __('دون إجابتك هنا بوضوح وبشكل كامل...') }}" 
-                                    class="ed-textarea" 
+                                    rows="5" 
+                                    placeholder="{{ __('اكتب صياغة الحل هنا بدقة مع ذكر الخطوات الحسابية أو التعليل الأكاديمي...') }}" 
+                                    class="ed-written-textarea" 
                                     oninput="markAsAnswered({{ $index }}, {{ $q->id }})"
                                 ></textarea>
 
                                 @if($q->require_file)
-                                <div class="ed-file-upload-zone">
-                                    <label class="ed-file-upload-btn">
-                                        <i class="fas fa-cloud-upload-alt"></i>
-                                        <span>{{ __('إرفاق ملف الحل أو صورة (PDF, JPG, PNG)') }}</span>
+                                <div class="ed-upload-dossier">
+                                    <div class="ed-upload-notice">
+                                        <i class="fa-solid fa-paperclip text-navy"></i>
+                                        <div>
+                                            <strong>{{ __('مطلوب إرفاق مسودة الحل اليدوي أو رسم بياني (PDF أو صورة):') }}</strong>
+                                            <span>{{ __('يمكنك التقاط صورة واضحة لورقة الحل وإرفاقها هنا مباشرة.') }}</span>
+                                        </div>
+                                    </div>
+                                    <label class="ed-upload-dropzone">
+                                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                                        <span class="ed-dropzone-prompt">{{ __('انقر لاختيار الملف من جهازك (JPG, PNG, PDF)') }}</span>
                                         <input 
                                             type="file" 
                                             name="files[{{ $q->id }}]" 
@@ -208,52 +326,129 @@
                                             onchange="updateFileName(this, {{ $q->id }}, {{ $index }})"
                                         >
                                     </label>
-                                    <span class="ed-selected-file-name" id="file_name_{{ $q->id }}"></span>
+                                    <div class="ed-selected-file-pill" id="file_name_{{ $q->id }}" style="display: none;"></div>
                                 </div>
                                 @endif
                             </div>
                         @endif
+
+                    </div>
+
+                    <!-- شريط التنقل السفلي السريع للبطاقة -->
+                    <div class="ed-q-card-foot">
+                        <div class="ed-q-foot-nav">
+                            @if($index > 0)
+                                <a href="#q_card_{{ $exam->questions[$index - 1]->id }}" class="ed-btn-step prev">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                    <span>{{ __('السابق') }}</span>
+                                </a>
+                            @else
+                                <span></span>
+                            @endif
+
+                            @if($index < count($exam->questions) - 1)
+                                <a href="#q_card_{{ $exam->questions[$index + 1]->id }}" class="ed-btn-step next">
+                                    <span>{{ __('التالي') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </a>
+                            @else
+                                <button type="button" onclick="confirmSubmission()" class="ed-btn-step submit">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                    <span>{{ __('إنهاء وتسليم الاختبار') }}</span>
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
                 </article>
                 @endforeach
 
-                <div class="ed-exam-footer-submit">
-                    <button type="button" onclick="confirmSubmission()" class="ed-btn ed-btn-submit" id="submitBtn">
-                        <i class="fas fa-paper-plane"></i>
-                        <span>{{ __('تسليم الاختبار النهائي') }}</span>
+                <!-- كرت الختام والتسليم النهائي -->
+                <div class="ed-arena-footer-card">
+                    <div class="ed-arena-footer-content">
+                        <div class="ed-footer-seal">
+                            <i class="fa-solid fa-flag-checkered"></i>
+                        </div>
+                        <div>
+                            <h4>{{ __('هل أكملت حل جميع الأسئلة والمراجعة؟') }}</h4>
+                            <p>{{ __('عند الضغط على تسليم الاختبار، سيتم رصد وحفظ إجاباتك وإصدار تقرير النتائج الرسمي.') }}</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="confirmSubmission()" class="ed-btn-grand-submit" id="submitBtn">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>{{ __('تسليم ورقة الاختبار النهائية الآن') }}</span>
                     </button>
-                    <p class="ed-submit-hint">{{ __('تأكد من مراجعة كافة الأسئلة وإجاباتك قبل الضغط على تسليم الاختبار.') }}</p>
                 </div>
+
             </main>
 
-            <!-- خريطة الأسئلة الجانبية (سطح المكتب والتابلت) -->
-            <aside class="ed-take-sidebar" id="examNavSidebar">
-                <div class="ed-nav-card">
-                    <div class="ed-nav-header">
-                        <h4><i class="fas fa-map-marked-alt"></i> {{ __('خريطة الأسئلة') }}</h4>
-                        <span class="ed-progress-counter"><strong id="answeredCounter">0</strong> / {{ count($exam->questions) }}</span>
+            <!-- اللوحة الجانبية الكلاسيكية: خريطة الأسئلة ومتابعة التقدم (25%) -->
+            <aside class="ed-exam-navigator" id="examNavSidebar">
+                <div class="ed-nav-dossier">
+                    
+                    <div class="ed-dossier-header">
+                        <div class="ed-dossier-title">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                            <h4>{{ __('فهرس الأسئلة') }}</h4>
+                        </div>
+                        <div class="ed-dossier-count">
+                            <strong id="answeredCounter">0</strong>
+                            <span>/ {{ count($exam->questions) }}</span>
+                        </div>
                     </div>
 
-                    <div class="ed-nav-legend">
-                        <span class="legend-item"><span class="dot answered"></span>{{ __('تم الحل') }}</span>
-                        <span class="legend-item"><span class="dot flagged"></span>{{ __('للمراجعة') }}</span>
-                        <span class="legend-item"><span class="dot unvisited"></span>{{ __('متبقي') }}</span>
+                    <!-- مفتاح ألوان الأسئلة -->
+                    <div class="ed-nav-legend-bar">
+                        <div class="ed-legend-item">
+                            <span class="legend-swatch answered"></span>
+                            <span>{{ __('تم الحل') }}</span>
+                        </div>
+                        <div class="ed-legend-item">
+                            <span class="legend-swatch flagged"></span>
+                            <span>{{ __('للمراجعة') }}</span>
+                        </div>
+                        <div class="ed-legend-item">
+                            <span class="legend-swatch unvisited"></span>
+                            <span>{{ __('متبقي') }}</span>
+                        </div>
                     </div>
 
-                    <div class="ed-nav-grid">
+                    <!-- شبكة الأسئلة الرقمية الكلاسيكية -->
+                    <div class="ed-nav-questions-grid">
                         @foreach($exam->questions as $index => $q)
-                        <a href="#q_card_{{ $q->id }}" class="ed-nav-cell" id="nav_btn_{{ $index }}">
-                            {{ $index + 1 }}
+                        <a href="#q_card_{{ $q->id }}" class="ed-nav-cell" id="nav_btn_{{ $index }}" title="{{ __('الانتقال إلى السؤال رقم') }} {{ $index + 1 }}">
+                            <span class="cell-num">{{ $index + 1 }}</span>
+                            <span class="cell-flag-dot" id="nav_flag_{{ $index }}"></span>
                         </a>
                         @endforeach
                     </div>
 
-                    <div class="ed-sidebar-submit">
-                        <button type="button" onclick="confirmSubmission()" class="ed-btn ed-btn-outline" style="width: 100%; justify-content: center;">
-                            <i class="fas fa-check-circle"></i> {{ __('تسليم الاختبار') }}
+                    <!-- بطاقة معلومات الطالب والأمان -->
+                    <div class="ed-student-proctor-card">
+                        <div class="ed-proctor-row">
+                            <span class="ed-proctor-lbl">{{ __('اسم الطالب:') }}</span>
+                            <strong class="ed-proctor-val">{{ auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب أكاديمي') }}</strong>
+                        </div>
+                        <div class="ed-proctor-row">
+                            <span class="ed-proctor-lbl">{{ __('رقم الجلسة:') }}</span>
+                            <span class="ed-proctor-val">EX-{{ $exam->id }}-{{ auth()->id() }}</span>
+                        </div>
+                        <div class="ed-proctor-row">
+                            <span class="ed-proctor-lbl">{{ __('حالة النزاهة:') }}</span>
+                            <span class="ed-proctor-val text-emerald" id="proctorStateText">
+                                <i class="fa-solid fa-shield-check"></i> {{ __('مطابق للضوابط') }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- زر التسليم الرئيسي من الشريط الجانبي -->
+                    <div class="ed-nav-submit-box">
+                        <button type="button" onclick="confirmSubmission()" class="ed-btn-side-submit">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>{{ __('اعتماد وتسليم الإجابات') }}</span>
                         </button>
                     </div>
+
                 </div>
             </aside>
 
@@ -262,75 +457,176 @@
 
 </div>
 
-<!-- زر عائم لخريطة الأسئلة على الهواتف -->
-<button type="button" class="ed-floating-map-toggle" onclick="toggleMobileNavDrawer()" title="{{ __('خريطة الأسئلة') }}">
-    <i class="fas fa-list-ol"></i>
-    <span class="floating-counter" id="floatingAnsweredCounter">0/{{ count($exam->questions) }}</span>
+<!-- زر عائم لخريطة الأسئلة على الأجهزة المحمولة -->
+<button type="button" class="ed-mobile-fab-map" onclick="toggleMobileNavDrawer()" title="{{ __('خريطة الأسئلة') }}">
+    <i class="fa-solid fa-list-ol"></i>
+    <span class="ed-fab-count" id="floatingAnsweredCounter">0/{{ count($exam->questions) }}</span>
 </button>
 
-<!-- نافذة تكبير الصورة -->
-<div class="ed-image-modal" id="imageModal" onclick="closeImageModal()">
-    <span class="ed-image-modal-close">&times;</span>
-    <img id="modalImageTarget" src="" alt="{{ __('صورة مكبرة') }}">
+<!-- نافذة تكبير الصورة عالية الدقة الكلاسيكية (High-Res Image Modal) -->
+<div class="ed-modal-lightbox" id="imageModal" onclick="closeImageModal()">
+    <div class="ed-lightbox-container" onclick="event.stopPropagation()">
+        <button type="button" class="ed-lightbox-close" onclick="closeImageModal()" aria-label="{{ __('إغلاق') }}">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="ed-lightbox-img-wrap">
+            <img id="modalImageTarget" src="" alt="{{ __('رسم توضيحي مكبر') }}">
+        </div>
+        <div class="ed-lightbox-footer">
+            <span><i class="fa-solid fa-magnifying-glass"></i> {{ __('عرض كامل الشاشة بدقة عالية. انقر على زر الإغلاق أو اضغط Esc للخروج.') }}</span>
+        </div>
+    </div>
 </div>
 
 <style>
-    /* Reset and Layout Base */
+    /* =========================================================
+       أنماط التصميم الكلاسيكي الملكي لقاعة الاختبارات الأكاديمية
+       (Royal Palestinian Classic Academic Examination Arena)
+       ========================================================= */
+
+    :root {
+        --ed-navy-950: #091a2e;
+        --ed-navy-900: #0f243d;
+        --ed-navy-800: #173252;
+        --ed-navy-700: #1e3a8a;
+        --ed-navy-600: #2563eb;
+        --ed-amber-700: #b45309;
+        --ed-amber-600: #d97706;
+        --ed-amber-500: #f59e0b;
+        --ed-amber-100: #fef3c7;
+        --ed-emerald-700: #047857;
+        --ed-emerald-600: #059669;
+        --ed-emerald-50: #ecfdf5;
+        --ed-red-600: #dc2626;
+        --ed-red-50: #fef2f2;
+        --ed-slate-900: #0f172a;
+        --ed-slate-800: #1e293b;
+        --ed-slate-700: #334155;
+        --ed-slate-500: #64748b;
+        --ed-slate-200: #e2e8f0;
+        --ed-slate-100: #f1f5f9;
+        --ed-bg: #f8fafc;
+    }
+
+    body {
+        background-color: var(--ed-bg) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
     .ed-exam-take-wrapper {
-        max-width: 1240px;
-        margin: 0 auto;
-        padding: 16px 16px 80px;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 0 80px 0 !important;
         box-sizing: border-box;
-        width: 100%;
+        background-color: var(--ed-bg);
+        min-height: 100vh;
     }
 
-    /* Fixed Topbar */
-    .ed-take-topbar {
+    /* =========================================================
+       1. الشريط الأكاديمي العلوي الثابت (Sticky Academic Topbar)
+       ========================================================= */
+    .ed-exam-topbar {
         position: sticky;
-        top: 10px;
-        z-index: 950;
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        top: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, var(--ed-navy-950) 0%, var(--ed-navy-900) 50%, var(--ed-navy-800) 100%);
         color: #ffffff;
-        border-radius: 16px;
-        padding: 14px 20px 0;
-        margin-bottom: 24px;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 2px solid var(--ed-amber-600);
+        box-shadow: 0 8px 24px rgba(9, 26, 46, 0.25);
+        padding: 0;
     }
 
-    .ed-take-bar-content {
+    .ed-topbar-inner {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 12px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 12px;
+        gap: 16px;
         flex-wrap: wrap;
-        gap: 12px;
     }
 
-    .ed-exam-meta-block .ed-exam-title {
-        font-size: 1.2rem;
-        font-weight: 800;
-        margin: 3px 0 0;
-        color: #ffffff;
-        line-height: 1.3;
+    .ed-topbar-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
     }
 
-    .ed-exam-badge-tag {
+    .ed-subject-tag {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.74rem;
-        color: #93c5fd;
+        font-size: 0.76rem;
         font-weight: 700;
+        color: #93c5fd;
+        letter-spacing: 0.2px;
     }
 
-    /* شارة المراقبة الحية لمكافحة الغش */
-    .ed-proctoring-status {
+    .ed-topbar-title {
+        font-size: 1.18rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin: 0;
+        line-height: 1.3;
+        letter-spacing: -0.2px;
+    }
+
+    /* عداد الوقت الرقمي الكلاسيكي */
+    .ed-topbar-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ed-timer-pod {
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 12px;
+        padding: 6px 20px;
+        text-align: center;
+        backdrop-filter: blur(8px);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .ed-timer-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 0.68rem;
+        color: #cbd5e1;
+        font-weight: 600;
+        margin-bottom: 2px;
+    }
+
+    .ed-timer-display {
+        font-family: 'Consolas', 'Courier New', Courier, monospace;
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: #38bdf8;
+        direction: ltr;
+        letter-spacing: 1.5px;
+        line-height: 1.1;
+        transition: color 0.3s ease;
+    }
+
+    /* شارات وأزرار التحكم بالرأس */
+    .ed-topbar-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ed-proctor-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.35);
+        border: 1px solid rgba(16, 185, 129, 0.4);
         color: #34d399;
         padding: 6px 14px;
         border-radius: 30px;
@@ -339,196 +635,361 @@
         transition: all 0.3s ease;
     }
 
-    .ed-proctoring-status .proctoring-dot {
+    .ed-pulse-dot {
         width: 8px;
         height: 8px;
         border-radius: 50%;
         background: #10b981;
         box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-        animation: pulseProctor 1.8s infinite;
+        animation: pulseProctorClassic 2s infinite;
     }
 
-    @keyframes pulseProctor {
+    @keyframes pulseProctorClassic {
         0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
         70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
         100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
 
-    .ed-proctoring-status.warning {
-        background: rgba(220, 38, 38, 0.2);
-        border-color: rgba(239, 68, 68, 0.5);
-        color: #f87171;
+    .ed-proctor-pill.warning {
+        background: rgba(220, 38, 38, 0.25);
+        border-color: rgba(239, 68, 68, 0.6);
+        color: #fca5a5;
     }
 
-    .ed-proctoring-status.warning .proctoring-dot {
+    .ed-proctor-pill.warning .ed-pulse-dot {
         background: #ef4444;
         box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
     }
 
-    .ed-timer-block {
-        background: rgba(255, 255, 255, 0.08);
+    .ed-ctrl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+    }
+
+    /* زر ملء الشاشة */
+    .ed-fullscreen-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+    }
+
+    .ed-fullscreen-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: translateY(-1px);
+    }
+
+    /* زر التسليم السريع */
+    .ed-quick-submit-btn {
+        background: linear-gradient(135deg, var(--ed-emerald-600) 0%, var(--ed-emerald-700) 100%);
+        color: #ffffff;
         border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        padding: 6px 16px;
-        text-align: center;
-        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
     }
 
-    .timer-label {
-        display: block;
-        font-size: 0.68rem;
-        color: #cbd5e1;
-        font-weight: 600;
+    .ed-quick-submit-btn:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
     }
 
-    #countdown_timer {
-        font-family: 'Inter', monospace;
-        font-size: 1.45rem;
-        font-weight: 900;
-        color: #38bdf8;
-        direction: ltr;
-        line-height: 1.1;
-    }
-
-    .ed-take-progress-track {
-        height: 5px;
+    /* شريط تقدم الإنجاز */
+    .ed-progress-track {
+        height: 4px;
         background: rgba(255, 255, 255, 0.12);
-        border-radius: 999px;
+        width: 100%;
         overflow: hidden;
     }
 
-    .ed-take-progress-fill {
+    .ed-progress-fill {
         height: 100%;
-        width: 0%;
-        background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%);
-        transition: width 0.3s ease;
+        background: linear-gradient(90deg, #38bdf8 0%, var(--ed-amber-500) 50%, var(--ed-emerald-600) 100%);
+        transition: width 0.35s ease;
     }
 
-    /* Layout Grid */
-    .ed-take-layout {
+    /* =========================================================
+       2. تخطيط ساحة الاختبار الكلاسيكية (Exam Arena Layout)
+       ========================================================= */
+    .ed-exam-container {
+        max-width: 1600px;
+        margin: 24px auto 0;
+        padding: 0 24px;
         display: grid;
-        grid-template-columns: 1fr 280px;
-        gap: 20px;
+        grid-template-columns: minmax(0, 1fr) 330px;
+        gap: 24px;
         align-items: start;
-    }
-
-    /* Question Cards */
-    .ed-question-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         box-sizing: border-box;
     }
 
-    .ed-q-header {
+    /* بطاقة التوجيه الرسمية بالرأس */
+    .ed-arena-header-card {
+        background: #ffffff;
+        border: 1px solid var(--ed-slate-200);
+        border-right: 4px solid var(--ed-navy-700);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding-bottom: 14px;
-        margin-bottom: 18px;
-        border-bottom: 1px solid #f1f5f9;
+        flex-wrap: wrap;
+        gap: 14px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
     }
 
-    .ed-q-info {
+    .ed-arena-header-content {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .ed-arena-seal {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: var(--ed-navy-700);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .ed-arena-header-content h3 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: var(--ed-slate-900);
+        margin: 0 0 4px;
+    }
+
+    .ed-arena-header-content p {
+        font-size: 0.85rem;
+        color: var(--ed-slate-500);
+        margin: 0;
+    }
+
+    .ed-arena-stats-strip {
         display: flex;
         align-items: center;
         gap: 10px;
+        font-size: 0.82rem;
+        color: var(--ed-slate-700);
+        font-weight: 700;
+        background: var(--ed-slate-100);
+        padding: 6px 14px;
+        border-radius: 8px;
     }
 
-    .ed-q-number {
-        font-size: 0.82rem;
-        font-weight: 800;
-        color: #1d4ed8;
+    .ed-arena-stats-strip .sep {
+        color: #94a3b8;
+    }
+
+    /* =========================================================
+       3. بطاقات الأسئلة الأكاديمية (Question Cards)
+       ========================================================= */
+    .ed-q-card {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        margin-bottom: 22px;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        scroll-margin-top: 100px;
+    }
+
+    .ed-q-card:hover {
+        border-color: #94a3b8;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+    }
+
+    .ed-q-card-head {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 14px 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .ed-q-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .ed-q-number-badge {
         background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: var(--ed-navy-700);
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .ed-num-val {
+        font-size: 0.95rem;
+        font-weight: 900;
+    }
+
+    .ed-num-total {
+        color: #64748b;
+        font-size: 0.78rem;
+    }
+
+    .ed-q-points-badge {
+        background: var(--ed-amber-100);
+        border: 1px solid #fde68a;
+        color: var(--ed-amber-700);
+        padding: 5px 10px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .ed-q-type-pill {
+        font-size: 0.74rem;
+        font-weight: 700;
         padding: 4px 10px;
         border-radius: 6px;
     }
 
-    .ed-q-score {
-        font-size: 0.78rem;
-        color: #64748b;
-        font-weight: 700;
+    .ed-q-type-pill.mcq {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
     }
 
-    .ed-flag-btn {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
-        padding: 6px 12px;
-        border-radius: 6px;
+    .ed-q-type-pill.essay {
+        background: #f0fdf4;
+        color: var(--ed-emerald-700);
+        border: 1px solid #bbf7d0;
+    }
+
+    /* زر التمييز للمراجعة */
+    .ed-flag-action {
+        background: #ffffff;
+        border: 1px solid var(--ed-slate-200);
+        color: var(--ed-slate-500);
+        padding: 6px 14px;
+        border-radius: 8px;
         font-size: 0.78rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        transition: all 0.15s;
+        transition: all 0.2s ease;
     }
 
-    .ed-flag-btn:hover, .ed-flag-btn.flagged {
-        background: #fffbeb;
-        color: #d97706;
-        border-color: #fde68a;
+    .ed-flag-action:hover, .ed-flag-action.flagged {
+        background: var(--ed-amber-100);
+        border-color: var(--ed-amber-500);
+        color: var(--ed-amber-700);
     }
 
-    .ed-q-text {
-        font-size: 1.1rem;
+    .ed-flag-action.flagged i {
+        color: var(--ed-amber-600);
+    }
+
+    /* جسم السؤال */
+    .ed-q-card-body {
+        padding: 24px;
+    }
+
+    .ed-q-text-box {
+        margin-bottom: 20px;
+    }
+
+    .ed-q-main-text {
+        font-size: 1.15rem;
         font-weight: 700;
-        color: #0f172a;
-        line-height: 1.8;
-        margin: 0 0 18px;
+        color: var(--ed-slate-900);
+        line-height: 1.85;
+        margin: 0;
         word-break: break-word;
     }
 
-    /* Classic Question Image Display */
-    .ed-q-image-box {
-        position: relative;
+    /* إطار صور السؤال الكلاسيكي المتقن */
+    .ed-q-figure-box {
         background: #ffffff;
-        border: 1px solid #cbd5e1;
+        border: 1.5px solid #cbd5e1;
         border-radius: 12px;
         padding: 16px;
         margin-bottom: 22px;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-        transition: all 0.2s ease;
     }
 
-    .ed-q-image-header {
+    .ed-q-figure-topbar {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 12px;
         padding-bottom: 10px;
+        margin-bottom: 12px;
         border-bottom: 1px solid #f1f5f9;
         flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ed-q-figure-title {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--ed-navy-700);
+        display: inline-flex;
+        align-items: center;
         gap: 8px;
     }
 
-    .ed-q-image-tag {
-        font-size: 0.8rem;
-        font-weight: 800;
-        color: #1e3a8a;
+    .ed-zoom-action-btn {
         background: #eff6ff;
-        padding: 4px 10px;
-        border-radius: 6px;
+        border: 1px solid #bfdbfe;
+        color: var(--ed-navy-700);
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        transition: all 0.2s ease;
     }
 
-    .ed-img-canvas {
-        position: relative;
+    .ed-zoom-action-btn:hover {
+        background: var(--ed-navy-700);
+        color: #ffffff;
+        border-color: var(--ed-navy-700);
+    }
+
+    .ed-q-figure-frame {
         text-align: center;
         background: #f8fafc;
         border-radius: 8px;
-        padding: 12px;
-        border: 1px dashed #e2e8f0;
+        padding: 16px;
+        border: 1px dashed #cbd5e1;
     }
 
-    .ed-q-img {
-        max-height: 420px;
+    .ed-q-figure-img {
+        max-height: 440px;
         max-width: 100%;
         border-radius: 6px;
         object-fit: contain;
@@ -536,153 +997,140 @@
         transition: transform 0.2s ease;
     }
 
-    .ed-q-img:hover {
-        transform: scale(1.01);
+    .ed-q-figure-img:hover {
+        transform: scale(1.015);
     }
 
-    .ed-zoom-btn {
-        background: #1e3a8a;
-        color: #ffffff;
-        border: 1px solid #172554;
-        padding: 6px 14px;
-        border-radius: 6px;
-        font-size: 0.78rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: background 0.2s;
+    /* شبكة خيارات السؤال (MCQ) الكلاسيكية */
+    .ed-mcq-container {
+        margin-top: 16px;
     }
 
-    .ed-zoom-btn:hover {
-        background: #1d4ed8;
-    }
-
-    .ed-img-fallback-notice {
-        display: none;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        padding: 12px;
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        border-radius: 6px;
-        margin-top: 10px;
-        font-size: 0.82rem;
-        color: #92400e;
-        font-weight: 600;
-    }
-
-    .ed-q-image-box.load-failed .ed-img-fallback-notice {
-        display: flex;
-    }
-
-    .ed-btn-retry {
-        background: #d97706;
-        color: #ffffff;
-        border: none;
-        padding: 4px 10px;
-        border-radius: 4px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    /* MCQ Options Grid */
-    .ed-options-grid {
+    .ed-mcq-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .ed-option-item {
+    .ed-mcq-label {
         cursor: pointer;
         display: block;
         margin: 0;
+        user-select: none;
     }
 
-    .ed-option-box {
+    .ed-mcq-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .ed-mcq-card {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 10px;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
         background: #ffffff;
         transition: all 0.2s ease;
+        position: relative;
+        min-height: 56px;
         box-sizing: border-box;
     }
 
-    .ed-option-item:hover .ed-option-box {
+    .ed-mcq-label:hover .ed-mcq-card {
         border-color: #93c5fd;
         background: #f8fafc;
+        transform: translateY(-1px);
     }
 
-    .ed-option-item input:checked + .ed-option-box {
-        border-color: #1d4ed8;
+    /* حالة التحديد */
+    .ed-mcq-input:checked + .ed-mcq-card {
+        border-color: var(--ed-navy-700);
         background: #eff6ff;
-        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
     }
 
-    .ed-opt-letter {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+    .ed-opt-letter-disc {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
         background: #f1f5f9;
+        border: 1px solid #e2e8f0;
         color: #475569;
         font-weight: 800;
-        font-size: 0.88rem;
-        display: grid;
-        place-items: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
         flex-shrink: 0;
         transition: all 0.2s ease;
     }
 
-    .ed-option-item input:checked + .ed-option-box .ed-opt-letter {
-        background: #1d4ed8;
+    .ed-opt-letter-disc .letter-ar {
+        font-size: 0.92rem;
+        line-height: 1;
+    }
+
+    .ed-opt-letter-disc .letter-en {
+        font-size: 0.62rem;
+        color: #94a3b8;
+        line-height: 1;
+        margin-top: 1px;
+    }
+
+    .ed-mcq-input:checked + .ed-mcq-card .ed-opt-letter-disc {
+        background: var(--ed-navy-700);
+        border-color: var(--ed-navy-700);
         color: #ffffff;
     }
 
-    .ed-opt-text {
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #1e293b;
-        line-height: 1.5;
-        flex: 1;
-        word-break: break-word;
+    .ed-mcq-input:checked + .ed-mcq-card .ed-opt-letter-disc .letter-en {
+        color: #bfdbfe;
     }
 
-    .ed-opt-content {
+    .ed-opt-payload {
+        flex: 1;
         display: flex;
         flex-direction: column;
         gap: 8px;
-        flex: 1;
         min-width: 0;
     }
 
-    .ed-opt-img-wrapper {
+    .ed-opt-text {
+        font-size: 0.96rem;
+        font-weight: 600;
+        color: var(--ed-slate-800);
+        line-height: 1.55;
+        word-break: break-word;
+    }
+
+    .ed-mcq-input:checked + .ed-mcq-card .ed-opt-text {
+        color: var(--ed-navy-950);
+        font-weight: 700;
+    }
+
+    /* عرض صورة الخيار */
+    .ed-opt-visual-wrapper {
         position: relative;
         display: inline-block;
         max-width: 100%;
         cursor: zoom-in;
         border-radius: 8px;
         overflow: hidden;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         background: #f8fafc;
         padding: 4px;
         transition: all 0.2s ease;
     }
 
-    .ed-opt-img-wrapper:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    .ed-opt-visual-wrapper:hover {
+        border-color: var(--ed-navy-600);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     }
 
-    .ed-opt-thumb {
+    .ed-opt-visual-thumb {
         max-height: 120px;
         max-width: 100%;
         display: block;
@@ -690,507 +1138,906 @@
         object-fit: contain;
     }
 
-    .ed-opt-zoom-tag {
+    .ed-opt-zoom-chip {
         position: absolute;
         bottom: 4px;
         left: 4px;
         background: rgba(15, 23, 42, 0.85);
         color: #ffffff;
-        font-size: 0.68rem;
+        font-size: 0.66rem;
         font-weight: 700;
         padding: 2px 6px;
         border-radius: 4px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
         pointer-events: none;
     }
 
-    /* Written / Essay */
-    .ed-textarea {
-        width: 100%;
-        padding: 12px 14px;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 10px;
-        font-family: inherit;
-        font-size: 0.92rem;
-        color: #0f172a;
-        background: #f8fafc;
-        resize: vertical;
-        box-sizing: border-box;
-        outline: none;
-    }
-
-    .ed-textarea:focus {
-        border-color: #1d4ed8;
-        background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
-    }
-
-    .ed-file-upload-zone {
-        margin-top: 12px;
-    }
-
-    .ed-file-upload-btn {
-        display: inline-flex;
+    /* علامة الراديو */
+    .ed-opt-radio-marker {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid #cbd5e1;
+        display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        background: #f1f5f9;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #475569;
-        cursor: pointer;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: transparent;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
     }
 
-    .ed-file-upload-btn:hover {
-        background: #e0e7ff;
-        color: #1d4ed8;
-        border-color: #1d4ed8;
-    }
-
-    /* Submit Button Footer */
-    .ed-exam-footer-submit {
-        text-align: center;
-        padding: 24px 0 30px;
-    }
-
-    .ed-btn-submit {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    .ed-mcq-input:checked + .ed-mcq-card .ed-opt-radio-marker {
+        border-color: var(--ed-navy-700);
+        background: var(--ed-navy-700);
         color: #ffffff;
-        font-size: 1.05rem;
-        font-weight: 800;
-        padding: 14px 44px;
-        border-radius: 30px;
-        border: none;
-        cursor: pointer;
-        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.25);
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .ed-btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 28px rgba(5, 150, 105, 0.35);
+    /* الأسئلة المقالية والتحريرية */
+    .ed-written-arena {
+        margin-top: 14px;
     }
 
-    .ed-submit-hint {
-        font-size: 0.8rem;
-        color: #64748b;
-        margin-top: 10px;
-    }
-
-    /* Sidebar Navigation Card */
-    .ed-nav-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 20px;
-        position: sticky;
-        top: 90px;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-    }
-
-    .ed-nav-header {
+    .ed-written-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 14px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 6px;
     }
 
-    .ed-nav-header h4 {
-        margin: 0;
-        font-size: 0.92rem;
+    .ed-written-title {
+        font-size: 0.88rem;
         font-weight: 800;
-        color: #0f172a;
+        color: var(--ed-slate-800);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ed-written-hint {
+        font-size: 0.78rem;
+        color: var(--ed-slate-500);
+    }
+
+    .ed-written-textarea {
+        width: 100%;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 0.95rem;
+        color: var(--ed-slate-900);
+        line-height: 1.7;
+        font-family: inherit;
+        background: #ffffff;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        resize: vertical;
+    }
+
+    .ed-written-textarea:focus {
+        outline: none;
+        border-color: var(--ed-navy-700);
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+    }
+
+    /* منطقة رفع ملفات الحل */
+    .ed-upload-dossier {
+        margin-top: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+    }
+
+    .ed-upload-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--ed-slate-700);
+        margin-bottom: 12px;
+    }
+
+    .ed-upload-notice strong {
+        color: var(--ed-navy-950);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .ed-upload-dropzone {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px;
+        border: 2px dashed #94a3b8;
+        border-radius: 8px;
+        background: #ffffff;
+        cursor: pointer;
+        color: var(--ed-navy-700);
+        font-weight: 700;
+        font-size: 0.86rem;
+        transition: all 0.2s ease;
+    }
+
+    .ed-upload-dropzone:hover {
+        border-color: var(--ed-navy-700);
+        background: #eff6ff;
+    }
+
+    .ed-selected-file-pill {
+        margin-top: 10px;
+        background: var(--ed-emerald-50);
+        border: 1px solid #a7f3d0;
+        color: var(--ed-emerald-700);
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* شريط أسفل بطاقة السؤال للتنقل السريع */
+    .ed-q-card-foot {
+        background: #f8fafc;
+        border-top: 1px solid #f1f5f9;
+        padding: 12px 24px;
+    }
+
+    .ed-q-foot-nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ed-btn-step {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+
+    .ed-btn-step.prev {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        color: var(--ed-slate-700);
+    }
+
+    .ed-btn-step.prev:hover {
+        background: var(--ed-slate-100);
+        border-color: #94a3b8;
+    }
+
+    .ed-btn-step.next {
+        background: var(--ed-navy-700);
+        color: #ffffff;
+        border-color: var(--ed-navy-700);
+    }
+
+    .ed-btn-step.next:hover {
+        background: var(--ed-navy-600);
+        box-shadow: 0 3px 10px rgba(30, 58, 138, 0.25);
+    }
+
+    .ed-btn-step.submit {
+        background: var(--ed-emerald-600);
+        color: #ffffff;
+        border-color: var(--ed-emerald-600);
+    }
+
+    .ed-btn-step.submit:hover {
+        background: var(--ed-emerald-700);
+    }
+
+    /* كرت الختام والتسليم الكبير */
+    .ed-arena-footer-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border: 1.5px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+        margin-top: 30px;
+    }
+
+    .ed-arena-footer-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .ed-footer-seal {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        background: var(--ed-emerald-50);
+        color: var(--ed-emerald-600);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .ed-arena-footer-content h4 {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: var(--ed-slate-900);
+        margin: 0 0 4px;
+    }
+
+    .ed-arena-footer-content p {
+        font-size: 0.88rem;
+        color: var(--ed-slate-500);
+        margin: 0;
+    }
+
+    .ed-btn-grand-submit {
+        background: linear-gradient(135deg, var(--ed-emerald-600) 0%, var(--ed-emerald-700) 100%);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 14px 32px;
+        border-radius: 10px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+        transition: all 0.2s ease;
+    }
+
+    .ed-btn-grand-submit:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.45);
+    }
+
+    /* =========================================================
+       4. اللوحة الجانبية الكلاسيكية (Exam Navigator Panel)
+       ========================================================= */
+    .ed-exam-navigator {
+        position: sticky;
+        top: 88px;
+        z-index: 900;
+    }
+
+    .ed-nav-dossier {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        padding: 20px;
+        box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    }
+
+    .ed-dossier-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .ed-dossier-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--ed-navy-950);
+    }
+
+    .ed-dossier-title h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .ed-dossier-count {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        color: var(--ed-navy-700);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.84rem;
+        font-weight: 700;
+    }
+
+    .ed-nav-legend-bar {
+        display: flex;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 0.72rem;
+        color: #475569;
+        font-weight: 700;
+    }
+
+    .ed-legend-item {
         display: flex;
         align-items: center;
         gap: 6px;
     }
 
-    .ed-progress-counter {
-        font-size: 0.8rem;
-        color: #64748b;
-        font-weight: 700;
+    .legend-swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
     }
 
-    .ed-progress-counter strong {
-        color: #1d4ed8;
+    .legend-swatch.answered {
+        background: var(--ed-emerald-600);
     }
 
-    .ed-nav-legend {
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.72rem;
-        color: #64748b;
-        margin-bottom: 14px;
+    .legend-swatch.flagged {
+        background: var(--ed-amber-500);
     }
 
-    .legend-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
+    .legend-swatch.unvisited {
+        background: #e2e8f0;
+        border: 1px solid #cbd5e1;
     }
 
-    .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        display: inline-block;
-    }
-    .dot.answered { background: #10b981; }
-    .dot.flagged { background: #f59e0b; }
-    .dot.unvisited { background: #cbd5e1; }
-
-    .ed-nav-grid {
+    /* شبكة أزرار أرقام الأسئلة */
+    .ed-nav-questions-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 8px;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        max-height: 380px;
+        overflow-y: auto;
+        padding: 2px;
     }
 
     .ed-nav-cell {
+        aspect-ratio: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 38px;
-        border-radius: 8px;
-        border: 1px solid #e2e8f0;
         background: #f8fafc;
-        color: #334155;
-        font-size: 0.84rem;
-        font-weight: 700;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        color: #475569;
+        font-size: 0.88rem;
+        font-weight: 800;
         text-decoration: none;
+        position: relative;
         transition: all 0.15s ease;
     }
 
     .ed-nav-cell:hover {
+        border-color: var(--ed-navy-600);
+        color: var(--ed-navy-700);
         background: #eff6ff;
-        border-color: #93c5fd;
-        color: #1d4ed8;
+        transform: translateY(-1px);
     }
 
     .ed-nav-cell.answered {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        color: #059669;
+        background: var(--ed-emerald-600);
+        border-color: var(--ed-emerald-700);
+        color: #ffffff;
     }
 
     .ed-nav-cell.flagged {
-        background: #fffbeb;
-        border-color: #fde68a;
-        color: #d97706;
+        border-color: var(--ed-amber-500);
+        background: var(--ed-amber-100);
+        color: var(--ed-amber-700);
     }
 
-    /* Preflight Modal */
-    .ed-preflight-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(8px);
-        z-index: 9999;
+    .ed-nav-cell.answered.flagged {
+        background: linear-gradient(135deg, var(--ed-emerald-600) 50%, var(--ed-amber-500) 50%);
+        color: #ffffff;
+    }
+
+    .cell-flag-dot {
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: transparent;
+    }
+
+    .ed-nav-cell.flagged .cell-flag-dot {
+        background: var(--ed-amber-600);
+    }
+
+    /* بطاقة الأمان والمراقبة بالطالب */
+    .ed-student-proctor-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        font-size: 0.76rem;
+    }
+
+    .ed-proctor-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ed-proctor-lbl {
+        color: var(--ed-slate-500);
+    }
+
+    .ed-proctor-val {
+        font-weight: 700;
+        color: var(--ed-slate-900);
+    }
+
+    .ed-btn-side-submit {
+        width: 100%;
+        background: #ffffff;
+        border: 1.5px solid var(--ed-emerald-600);
+        color: var(--ed-emerald-700);
+        padding: 12px;
+        border-radius: 8px;
+        font-size: 0.92rem;
+        font-weight: 800;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .ed-btn-side-submit:hover {
+        background: var(--ed-emerald-600);
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+    }
+
+    /* زر عائم للجوال */
+    .ed-mobile-fab-map {
+        display: none;
+        position: fixed;
+        bottom: 24px;
+        left: 24px;
+        z-index: 990;
+        background: var(--ed-navy-800);
+        color: #ffffff;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 18px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.4);
+        font-size: 1rem;
+        font-weight: 800;
+        cursor: pointer;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ed-fab-count {
+        background: var(--ed-amber-500);
+        color: var(--ed-slate-900);
+        font-size: 0.72rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+    }
+
+    /* =========================================================
+       5. نافذة التعليمات الكلاسيكية (Pre-flight Modal)
+       ========================================================= */
+    .ed-preflight-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(9, 26, 46, 0.85);
+        backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
     }
 
     .ed-preflight-card {
         background: #ffffff;
-        border-radius: 20px;
-        max-width: 580px;
+        border: 2px solid var(--ed-amber-600);
+        border-radius: 18px;
+        max-width: 680px;
         width: 100%;
-        padding: 28px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        border: 1px solid #e2e8f0;
-        text-align: center;
+        padding: 32px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        text-align: right;
         box-sizing: border-box;
+        animation: modalClassicIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .ed-preflight-icon {
-        width: 58px;
-        height: 58px;
-        border-radius: 16px;
-        background: #eff6ff;
-        color: #1e3a8a;
-        display: grid;
-        place-items: center;
-        font-size: 1.6rem;
-        margin: 0 auto 12px;
+    @keyframes modalClassicIn {
+        from { opacity: 0; transform: scale(0.96) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    .ed-preflight-sub-tag {
-        background: #eff6ff;
-        color: #1e3a8a;
-        padding: 4px 12px;
-        border-radius: 6px;
+    .ed-preflight-crest {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 16px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .ed-crest-seal {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--ed-navy-700);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.3);
+    }
+
+    .ed-crest-titles {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .ed-crest-gov {
         font-size: 0.78rem;
+        color: var(--ed-amber-700);
+        font-weight: 800;
+    }
+
+    .ed-crest-sub {
+        font-size: 0.95rem;
+        color: var(--ed-slate-700);
         font-weight: 700;
-        display: inline-block;
-        margin-bottom: 6px;
     }
 
     .ed-preflight-title {
-        font-size: 1.25rem;
-        font-weight: 900;
-        color: #0f172a;
-        margin: 0 0 8px;
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: var(--ed-slate-900);
+        margin: 0 0 6px;
+        line-height: 1.35;
     }
 
     .ed-preflight-desc {
-        color: #64748b;
-        font-size: 0.84rem;
-        margin: 0 0 16px;
+        font-size: 0.88rem;
+        color: var(--ed-slate-500);
+        margin: 0 0 20px;
     }
 
     .ed-preflight-stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 12px;
+        margin-bottom: 22px;
     }
 
     .ed-stat-box {
         background: #f8fafc;
-        padding: 10px;
-        border-radius: 10px;
         border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ed-stat-box i {
+        font-size: 1.25rem;
+        margin-bottom: 2px;
     }
 
     .ed-stat-box strong {
-        font-size: 0.95rem;
-        color: #0f172a;
-        display: block;
-        margin-top: 4px;
+        font-size: 1.15rem;
+        color: var(--ed-slate-900);
     }
 
     .ed-stat-box span {
-        font-size: 0.7rem;
-        color: #64748b;
+        font-size: 0.72rem;
+        color: var(--ed-slate-500);
+        font-weight: 700;
     }
 
     .ed-preflight-rules {
         background: #f8fafc;
-        border-radius: 10px;
-        padding: 14px;
-        margin-bottom: 20px;
         border: 1px solid #e2e8f0;
-        text-align: right;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 24px;
     }
 
     .ed-preflight-rules h4 {
-        margin: 0 0 8px;
-        font-size: 0.82rem;
+        margin: 0 0 12px;
+        font-size: 0.92rem;
         font-weight: 800;
-        color: #0f172a;
+        color: var(--ed-slate-900);
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
-    .ed-preflight-rules ul {
-        margin: 0;
-        padding-inline-start: 18px;
-        font-size: 0.78rem;
-        color: #334155;
-        line-height: 1.7;
+    .ed-rules-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ed-rule-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 0.82rem;
+        color: var(--ed-slate-700);
+        line-height: 1.55;
+    }
+
+    .ed-rule-item i {
+        margin-top: 3px;
+        flex-shrink: 0;
+    }
+
+    .ed-rule-item.danger {
+        color: #991b1b;
+        background: #fef2f2;
+        padding: 6px 10px;
+        border-radius: 6px;
+        border-right: 3px solid #dc2626;
     }
 
     .ed-preflight-actions {
         display: flex;
-        gap: 10px;
-        justify-content: center;
+        justify-content: flex-end;
+        gap: 12px;
     }
 
     .ed-btn-cancel {
-        padding: 10px 18px;
-        border-radius: 8px;
-        background: #f8fafc;
-        color: #64748b;
-        border: 1px solid #e2e8f0;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 0.85rem;
-    }
-
-    .ed-btn-start {
-        padding: 10px 24px;
-        border-radius: 8px;
-        background: #1e3a8a;
-        color: #ffffff;
-        border: none;
-        font-weight: 800;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: var(--ed-slate-700);
+        padding: 12px 20px;
+        border-radius: 10px;
         font-size: 0.88rem;
-        cursor: pointer;
+        font-weight: 700;
+        text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 8px;
+        transition: all 0.2s;
     }
 
-    /* Image Modal */
-    .ed-image-modal {
-        display: none;
+    .ed-btn-cancel:hover {
+        background: var(--ed-slate-100);
+    }
+
+    .ed-btn-start {
+        background: linear-gradient(135deg, var(--ed-emerald-600) 0%, var(--ed-emerald-700) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        padding: 12px 26px;
+        border-radius: 10px;
+        font-size: 0.96rem;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
+        transition: all 0.2s;
+    }
+
+    .ed-btn-start:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(5, 150, 105, 0.4);
+    }
+
+    /* =========================================================
+       6. نافذة تكبير الصورة (Lightbox Modal)
+       ========================================================= */
+    .ed-modal-lightbox {
         position: fixed;
         inset: 0;
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(6px);
-        z-index: 99999;
-        justify-content: center;
+        background: rgba(9, 26, 46, 0.92);
+        backdrop-filter: blur(8px);
+        z-index: 3000;
+        display: none;
         align-items: center;
+        justify-content: center;
         padding: 20px;
     }
 
-    .ed-image-modal img {
-        max-width: 92vw;
-        max-height: 88vh;
-        border-radius: 12px;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    .ed-lightbox-container {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        background: #0f172a;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
     }
 
-    .ed-image-modal-close {
+    .ed-lightbox-close {
         position: absolute;
-        top: 18px;
-        right: 22px;
+        top: 14px;
+        left: 14px;
+        background: rgba(0, 0, 0, 0.6);
         color: #ffffff;
-        font-size: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        font-size: 1.1rem;
         cursor: pointer;
-    }
-
-    /* Floating map button on mobile */
-    .ed-floating-map-toggle {
-        display: none;
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        z-index: 900;
-        background: #1e3a8a;
-        color: #ffffff;
-        border: none;
-        border-radius: 30px;
-        padding: 10px 18px;
-        box-shadow: 0 8px 20px rgba(30, 58, 138, 0.4);
-        font-size: 0.85rem;
-        font-weight: 700;
-        cursor: pointer;
+        display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        z-index: 10;
+        transition: background 0.2s;
     }
 
-    .floating-counter {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 2px 8px;
-        border-radius: 20px;
-        font-size: 0.74rem;
+    .ed-lightbox-close:hover {
+        background: #dc2626;
     }
 
-    /* ====================================================================
-       قواعد التجاوب الكامل للشاشات (Mobile, Tablet, Desktop)
-       ==================================================================== */
-    @media (max-width: 1024px) {
-        .ed-take-layout {
+    .ed-lightbox-img-wrap {
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+    }
+
+    .ed-lightbox-img-wrap img {
+        max-width: 85vw;
+        max-height: 75vh;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .ed-lightbox-footer {
+        background: #1e293b;
+        padding: 10px 20px;
+        text-align: center;
+        font-size: 0.78rem;
+        color: #94a3b8;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* =========================================================
+       7. التجاوب مع مختلف الشاشات والأجهزة
+       ========================================================= */
+    @media (max-width: 1100px) {
+        .ed-exam-container {
             grid-template-columns: 1fr;
+            padding: 0 16px;
         }
-        .ed-take-sidebar {
-            display: none; /* يتم إتاحتها عبر الزر العائم أو نقلها للأسفل */
-        }
-        .ed-floating-map-toggle {
-            display: inline-flex;
-        }
-        .ed-take-sidebar.mobile-open {
-            display: block;
+
+        .ed-exam-navigator {
+            display: none;
             position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.65);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2500;
+            background: rgba(9, 26, 46, 0.7);
             backdrop-filter: blur(4px);
-            z-index: 9990;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
+        }
+
+        .ed-exam-navigator.mobile-open {
+            display: flex;
+        }
+
+        .ed-nav-dossier {
+            max-width: 440px;
+            width: 100%;
+            max-height: 85vh;
             overflow-y: auto;
         }
-        .ed-take-sidebar.mobile-open .ed-nav-card {
-            max-width: 450px;
-            margin: 40px auto;
-            position: relative;
-            top: 0;
+
+        .ed-mobile-fab-map {
+            display: inline-flex;
         }
     }
 
     @media (max-width: 768px) {
-        .ed-exam-take-wrapper {
-            padding: 10px 8px 60px;
-        }
-        .ed-take-topbar {
-            padding: 12px 14px 0;
-            margin-bottom: 16px;
-            border-radius: 12px;
-        }
-        .ed-take-bar-content {
-            gap: 8px;
-        }
-        .ed-exam-meta-block .ed-exam-title {
-            font-size: 1.05rem;
-        }
-        .ed-proctoring-status {
-            padding: 4px 10px;
-            font-size: 0.72rem;
-        }
-        #countdown_timer {
-            font-size: 1.25rem;
-        }
-        .ed-question-card {
-            padding: 16px 14px;
-            border-radius: 12px;
-            margin-bottom: 14px;
-        }
-        .ed-q-text {
-            font-size: 0.98rem;
-            line-height: 1.7;
-        }
-        /* على الشاشات الأصغر من 768px، الخيارات تصبح عموداً واحداً مريحاً */
-        .ed-options-grid {
-            grid-template-columns: 1fr;
-            gap: 8px;
-        }
-        .ed-option-box {
+        .ed-topbar-inner {
             padding: 10px 14px;
         }
-        .ed-btn-submit {
-            width: 100%;
-            padding: 12px;
-            font-size: 0.95rem;
-            justify-content: center;
+
+        .ed-topbar-title {
+            font-size: 1rem;
         }
-        .ed-preflight-card {
-            padding: 20px 16px;
+
+        .ed-timer-display {
+            font-size: 1.25rem;
         }
+
+        .ed-ctrl-btn span {
+            display: none;
+        }
+
+        .ed-mcq-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .ed-q-main-text {
+            font-size: 1.02rem;
+            line-height: 1.7;
+        }
+
         .ed-preflight-stats {
             grid-template-columns: 1fr;
-            gap: 6px;
+            gap: 8px;
         }
+
         .ed-preflight-actions {
             flex-direction: column;
         }
+
         .ed-btn-cancel, .ed-btn-start {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .ed-arena-footer-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .ed-arena-footer-content {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .ed-btn-grand-submit {
             width: 100%;
             justify-content: center;
         }
     }
 </style>
 
+<!-- مكتبات الاتصال والتنبيهات -->
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    // منع الرجوع العشوائي بالمتصفح أثناء الاختبار
     history.pushState(null, null, location.href);
     window.onpopstate = function () {
         history.go(1);
     };
 
+    // تأكيد قبل مغادرة الصفحة أثناء سير الاختبار
     window.addEventListener('beforeunload', function (e) {
         if (isExamRunning && !isSubmittingExam) {
             e.preventDefault();
@@ -1205,7 +2052,7 @@
     const timerBox = document.getElementById('countdown_timer');
     let timerInterval = null;
 
-    // حالة المراقبة ومكافحة الغش
+    // حالة المراقبة والأمان
     let isExamRunning = false;
     let isSubmittingExam = false;
     let tabSwitches = 0;
@@ -1214,11 +2061,91 @@
     let lastTabSwitchTime = 0;
     let lastScreenshotTime = 0;
 
+    // ==========================================
+    // 1. إدارة ملء الشاشة الكلاسيكية الحقيقية
+    // ==========================================
+    function toggleExamFullscreen() {
+        const doc = document.documentElement;
+        const icon = document.getElementById('fullscreenIcon');
+        const text = document.getElementById('fullscreenText');
+
+        if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+            if (doc.requestFullscreen) {
+                doc.requestFullscreen().catch(err => {});
+            } else if (doc.webkitRequestFullscreen) {
+                doc.webkitRequestFullscreen();
+            } else if (doc.mozRequestFullScreen) {
+                doc.mozRequestFullScreen();
+            } else if (doc.msRequestFullscreen) {
+                doc.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('mozfullscreenchange', updateFullscreenButtonState);
+    document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
+
+    function updateFullscreenButtonState() {
+        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        const icon = document.getElementById('fullscreenIcon');
+        const text = document.getElementById('fullscreenText');
+        if (icon) {
+            icon.className = isFull ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+        }
+        if (text) {
+            text.textContent = isFull ? 'تصغير الشاشة' : 'ملء الشاشة';
+        }
+    }
+
+    // ==========================================
+    // 2. معالج الصور الهادئ بدون أي رسائل تنبيهية مزعجة
+    // ==========================================
+    function handleExamImageFallback(img) {
+        const raw = img.getAttribute('data-candidates');
+        if (!raw) {
+            const box = img.closest('.ed-q-figure-box') || img.closest('.ed-opt-visual-wrapper');
+            if (box) box.style.display = 'none';
+            return;
+        }
+
+        const candidates = raw.split('|').filter(Boolean);
+        let idx = parseInt(img.getAttribute('data-candidate-idx') || '0', 10) + 1;
+
+        if (idx < candidates.length) {
+            img.setAttribute('data-candidate-idx', idx);
+            img.src = candidates[idx];
+        } else {
+            // استنفاد جميع البدائل بهدوء ودون إظهار أي رسالة خطأ مزعجة للطالب
+            const box = img.closest('.ed-q-figure-box') || img.closest('.ed-opt-visual-wrapper');
+            if (box) box.style.display = 'none';
+        }
+    }
+
+    // ==========================================
+    // 3. بدء الاختبار والعداد الزمني
+    // ==========================================
     function startExamOfficially() {
         const modal = document.getElementById('examPreflightModal');
         if (modal) modal.style.display = 'none';
 
         isExamRunning = true;
+
+        // محاولة الانتقال لملء الشاشة بتجربة مستخدم ممتازة
+        try {
+            toggleExamFullscreen();
+        } catch(e) {}
 
         if (!sessionStorage.getItem('exam_start_time_{{ $exam->id }}')) {
             sessionStorage.setItem('exam_start_time_{{ $exam->id }}', Date.now());
@@ -1226,26 +2153,37 @@
 
         if (timerInterval) clearInterval(timerInterval);
 
-        timerInterval = setInterval(function() {
-            let mins = Math.floor(timeLeft / 60);
+        function renderTimer() {
+            let hours = Math.floor(timeLeft / 3600);
+            let mins = Math.floor((timeLeft % 3600) / 60);
             let secs = timeLeft % 60;
-            timerBox.textContent = (mins < 10 ? '0' : '') + mins + " : " + (secs < 10 ? '0' : '') + secs;
+
+            let hStr = hours > 0 ? (hours < 10 ? '0' : '') + hours + ' : ' : '';
+            let mStr = (mins < 10 ? '0' : '') + mins;
+            let sStr = (secs < 10 ? '0' : '') + secs;
+
+            timerBox.textContent = hStr + mStr + " : " + sStr;
 
             if (timeLeft <= 60) {
                 timerBox.style.color = '#ef4444';
             } else if (timeLeft <= 300) {
-                timerBox.style.color = '#f97316';
+                timerBox.style.color = '#f59e0b';
+            } else {
+                timerBox.style.color = '#38bdf8';
             }
 
             if (--timeLeft < 0) {
                 clearInterval(timerInterval);
-                timerBox.textContent = "00 : 00";
+                timerBox.textContent = "00 : 00 : 00";
                 autoSubmitExam();
             }
-        }, 1000);
+        }
+
+        renderTimer();
+        timerInterval = setInterval(renderTimer, 1000);
     }
 
-    // استعادة وقت الجلسة تلقائياً في حال إعادة تحميل الصفحة
+    // استعادة وقت الجلسة تلقائياً في حال تحديث الصفحة
     document.addEventListener('DOMContentLoaded', function() {
         const storedStart = sessionStorage.getItem('exam_start_time_{{ $exam->id }}');
         if (storedStart) {
@@ -1259,7 +2197,7 @@
     });
 
     // ==========================================
-    // محرك مكافحة الغش الأكاديمي والرصد الذكي
+    // 4. محرك النزاهة الأكاديمية والرصد الذكي
     // ==========================================
     function recordCheatingIncident(type, details) {
         if (!isExamRunning || isSubmittingExam) return;
@@ -1283,15 +2221,20 @@
         document.getElementById('screenshotsCount').value = screenshots;
         document.getElementById('cheatingFlagsInput').value = JSON.stringify(cheatingFlags);
 
-        // تحديث الشارة اللحظية بهدوء في الشريط العلوي
+        // تحديث الشارة اللحظية
         const badge = document.getElementById('proctoringBadge');
         const text = document.getElementById('proctoringText');
+        const stateText = document.getElementById('proctorStateText');
         if (badge && text) {
             badge.classList.add('warning');
             text.textContent = `تنبيه رصد (${tabSwitches + screenshots})`;
         }
+        if (stateText) {
+            stateText.className = 'ed-proctor-val text-danger';
+            stateText.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> تم تسجيل نشاط (${tabSwitches + screenshots})`;
+        }
 
-        // إشعار الخادم فورياً في الخلفية بدون تعطيل الطالب
+        // إشعار الخادم في الخلفية
         try {
             axios.post("{{ route('student.exams.cheatingIncident', $exam->id) }}", {
                 violation_type: type,
@@ -1299,54 +2242,54 @@
             }).catch(() => {});
         } catch (e) {}
 
-        // إشعار علوي هادئ وغير معطّل لتدفق الاختبار (Non-blocking discreet toast)
+        // تنبيه علوي هادئ وغير معطّل لتدفق الاختبار
         Swal.fire({
             toast: true,
             position: 'top-end',
             icon: 'warning',
-            title: `تم رصد نشاط خارج صفحة الاختبار (${details}) وتوثيقه للمعلم.`,
+            title: `تم توثيق حركة خارج نطاق الاختبار (${details}) للأستاذ المشرف.`,
             showConfirmButton: false,
             timer: 3500,
             timerProgressBar: true
         });
     }
 
-    // 1. رصد مغادرة التبويب (Visibility Change)
+    // رصد مغادرة التبويب (Visibility Change)
     document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'hidden' && isExamRunning && !isSubmittingExam) {
-            recordCheatingIncident('tab_switch', 'مغادرة تبويب الاختبار أو تصغير المتصفح');
+            recordCheatingIncident('tab_switch', 'مغادرة نافذة الاختبار');
         }
     });
 
-    // 2. رصد فقدان تركيز النافذة (Window Blur) - مع تجاهل نافذة تكبير الصور
+    // رصد فقدان تركيز النافذة (Window Blur)
     window.addEventListener('blur', function() {
         const modal = document.getElementById('imageModal');
         const isZoomOpen = modal && modal.style.display === 'flex';
         if (isExamRunning && !isSubmittingExam && !isZoomOpen) {
-            recordCheatingIncident('tab_switch', 'الخروج من نافذة الاختبار إلى تطبيق آخر');
+            recordCheatingIncident('tab_switch', 'الخروج من نافذة الاختبار');
         }
     });
 
-    // 3. اعتراض أزرار واختصارات لقطات الشاشة والطباعة
+    // اعتراض محاولات تصوير الشاشة
     window.addEventListener('keydown', function(e) {
         if (!isExamRunning || isSubmittingExam) return;
 
         if (e.key === 'PrintScreen' || e.code === 'PrintScreen') {
             try { navigator.clipboard?.writeText(''); } catch(ex){}
-            recordCheatingIncident('screenshot', 'الضغط على زر تصوير الشاشة (PrintScreen)');
+            recordCheatingIncident('screenshot', 'الضغط على زر تصوير الشاشة');
         } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
-            recordCheatingIncident('screenshot', 'محاولة استخدام أداة قص الشاشة (Win+Shift+S)');
+            recordCheatingIncident('screenshot', 'أداة قص الشاشة');
         } else if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
             e.preventDefault();
-            recordCheatingIncident('screenshot', 'محاولة طباعة أو تصدير صفحة الاختبار PDF');
+            recordCheatingIncident('screenshot', 'محاولة طباعة الصفحة');
         } else if (e.metaKey && e.shiftKey && ['3', '4', '5'].includes(e.key)) {
             e.preventDefault();
             recordCheatingIncident('screenshot', 'محاولة تصوير الشاشة في نظام Mac');
         }
     });
 
-    // 4. منع النسخ والقائمة المنسدلة
+    // منع النسخ والقائمة المنسدلة
     document.addEventListener('copy', function(e) {
         if (isExamRunning && !isSubmittingExam) {
             e.preventDefault();
@@ -1367,7 +2310,9 @@
         }
     });
 
-    // إدارة الإجابات والتقدم
+    // ==========================================
+    // 5. إدارة الإجابات والتقدم والتنقل
+    // ==========================================
     function markAsAnswered(index, qId) {
         answeredSet.add(qId);
         const navBtn = document.getElementById('nav_btn_' + index);
@@ -1386,22 +2331,38 @@
 
     function toggleFlag(qId, index) {
         const icon = document.getElementById('flag_icon_' + qId);
+        const btn = document.getElementById('flag_btn_' + qId);
+        const text = document.getElementById('flag_text_' + qId);
         const navBtn = document.getElementById('nav_btn_' + index);
-        const btn = navBtn ? navBtn : null;
 
-        icon.classList.toggle('far');
-        icon.classList.toggle('fas');
         if (btn) btn.classList.toggle('flagged');
+        if (navBtn) navBtn.classList.toggle('flagged');
+
+        if (icon) {
+            if (icon.classList.contains('fa-regular')) {
+                icon.classList.remove('fa-regular');
+                icon.classList.add('fa-solid');
+                if (text) text.textContent = 'مميّز';
+            } else {
+                icon.classList.remove('fa-solid');
+                icon.classList.add('fa-regular');
+                if (text) text.textContent = 'مراجعة';
+            }
+        }
     }
 
     function updateFileName(input, qId, index) {
         if (input.files && input.files[0]) {
-            document.getElementById('file_name_' + qId).innerHTML = "<i class='fas fa-check-circle text-emerald'></i> " + input.files[0].name;
+            const pill = document.getElementById('file_name_' + qId);
+            pill.style.display = 'flex';
+            pill.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> <span>${input.files[0].name}</span>`;
             markAsAnswered(index, qId);
         }
     }
 
+    // إدارة تكبير الصور (Image Modal)
     function openImageModal(src) {
+        if (!src) return;
         document.getElementById('modalImageTarget').src = src;
         document.getElementById('imageModal').style.display = 'flex';
     }
@@ -1410,6 +2371,11 @@
         document.getElementById('imageModal').style.display = 'none';
     }
 
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeImageModal();
+    });
+
+    // خريطة الأسئلة للهواتف
     function toggleMobileNavDrawer() {
         const sidebar = document.getElementById('examNavSidebar');
         if (sidebar) {
@@ -1417,16 +2383,35 @@
         }
     }
 
+    // إغلاق الدرج عند النقر على أي سؤال بالجوال
+    document.querySelectorAll('.ed-nav-cell').forEach(cell => {
+        cell.addEventListener('click', function() {
+            const sidebar = document.getElementById('examNavSidebar');
+            if (sidebar && sidebar.classList.contains('mobile-open')) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+    });
+
+    // ==========================================
+    // 6. تسليم الاختبار النهائي
+    // ==========================================
     function confirmSubmission() {
+        const unCount = totalQuestions - answeredSet.size;
+        let warningText = `لقد قمت بحل ${answeredSet.size} من أصل ${totalQuestions} سؤالاً.`;
+        if (unCount > 0) {
+            warningText += `\nهنالك ${unCount} سؤالاً لم تقم بالإجابة عليها بعد.`;
+        }
+
         Swal.fire({
-            title: 'هل ترغب في تسليم الاختبار الآن؟',
-            text: `لقد قمت بالإجابة على ${answeredSet.size} من أصل ${totalQuestions} سؤال.`,
-            icon: 'question',
+            title: 'هل ترغب في تسليم ورقة الاختبار رسمياً؟',
+            text: warningText,
+            icon: unCount > 0 ? 'warning' : 'question',
             showCancelButton: true,
-            confirmButtonColor: '#1d4ed8',
+            confirmButtonColor: '#059669',
             cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، قم بالتسليم النهائي',
-            cancelButtonText: 'متابعة المراجعة'
+            confirmButtonText: 'نعم، اعتمد التسليم النهائي',
+            cancelButtonText: 'العودة للمراجعة'
         }).then((result) => {
             if (result.isConfirmed) finalizeExamSubmission();
         });
@@ -1440,8 +2425,10 @@
         const btn = document.getElementById('submitBtn');
         const formData = new FormData(document.getElementById('fullExamForm'));
 
-        btn.disabled = true;
-        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> جاري حفظ وإرسال الإجابات...";
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> جاري توثيق واعتماد الإجابات...";
+        }
 
         axios.post("{{ route('student.exams.submit', $exam->id) }}", formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
@@ -1450,38 +2437,42 @@
             if (res.data.success) {
                 sessionStorage.removeItem('exam_start_time_{{ $exam->id }}');
                 Swal.fire({
-                    title: 'تم التسليم بنجاح!',
-                    text: res.data.message || 'تم توثيق إجاباتك بنجاح.',
+                    title: 'تم تسليم الاختبار بنجاح!',
+                    text: res.data.message || 'تم توثيق إجاباتك وإصدار تقرير النتائج بنجاح.',
                     icon: 'success',
                     confirmButtonColor: '#059669',
-                    confirmButtonText: 'عرض سجل الاختبارات'
+                    confirmButtonText: 'عرض النتائج والتقرير الأكاديمي'
                 }).then(() => {
                     window.location.href = res.data.redirect || "{{ route('student.exams.index') }}";
                 });
             } else {
-                Swal.fire('تنبيه', res.data.message || 'حدث خطأ أثناء المعالجة.', 'warning');
-                btn.disabled = false;
-                btn.innerHTML = "<i class='fas fa-paper-plane'></i> إعادة محاولة التسليم";
+                Swal.fire('تنبيه أكاديمي', res.data.message || 'حدث خطأ أثناء معالجة الإجابات.', 'warning');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = "<i class='fa-solid fa-paper-plane'></i> إعادة محاولة التسليم";
+                }
                 isSubmittingExam = false;
             }
         })
         .catch(err => {
-            let errorMsg = 'حدثت مشكلة في الاتصال أثناء إرسال الإجابات، يرجى المحاولة ثانية.';
+            let errorMsg = 'تعذر الاتصال بالخادم لإرسال الإجابات، يرجى المحاولة فوراً.';
             if (err.response && err.response.data && err.response.data.message) {
                 errorMsg = err.response.data.message;
             }
             Swal.fire('خطأ في الاتصال', errorMsg, 'error');
-            btn.disabled = false;
-            btn.innerHTML = "<i class='fas fa-paper-plane'></i> إعادة محاولة التسليم";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = "<i class='fa-solid fa-paper-plane'></i> إعادة محاولة التسليم";
+            }
             isSubmittingExam = false;
         });
     }
 
     function autoSubmitExam() {
         Swal.fire({
-            title: 'انتهى الوقت المحدد للاختبار!',
-            text: 'جاري تسليم وحفظ إجاباتك تلقائياً الآن...',
-            icon: 'warning',
+            title: 'انتهت المدة الزمنية المقررة للاختبار!',
+            text: 'جاري تسليم واعتماد إجاباتك إلكترونياً وبشكل فوري...',
+            icon: 'info',
             showConfirmButton: false,
             timer: 2500
         }).then(() => finalizeExamSubmission());

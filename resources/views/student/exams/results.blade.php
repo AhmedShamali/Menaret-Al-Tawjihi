@@ -162,8 +162,8 @@
                             $icon = 'fa-clock';
                         }
 
-                        $qImg = $ans->question ? $ans->question->image_url : null;
-                        $localFallback = $ans->question ? $ans->question->local_image_url : null;
+                        $qCandidates = $ans->question ? $ans->question->getImageCandidates() : [];
+                        $firstQImg = !empty($qCandidates) ? $qCandidates[0] : null;
                     @endphp
 
                     <div class="ed-question-item {{ $statusClass }}">
@@ -178,13 +178,15 @@
                         <div class="ed-q-content">
                             <h3 class="ed-q-text">{!! nl2br(e($ans->question->question_text ?? '')) !!}</h3>
 
-                            @if(!empty($qImg) || (!empty($ans->question) && !empty($ans->question->image)))
+                            @if(!empty($firstQImg))
                             <div class="ed-result-q-image">
-                                <img src="{{ $qImg }}" alt="{{ __('مرفق السؤال') }}" 
+                                <img src="{{ $firstQImg }}" alt="{{ __('مرفق السؤال') }}" 
                                      onclick="window.open(this.src, '_blank')" 
                                      style="cursor: zoom-in;"
                                      title="{{ __('انقر لفتح الصورة بالحجم الكامل') }}"
-                                     onerror="if(!this.dataset.retried && '{{ $localFallback }}'){ this.dataset.retried=1; this.src='{{ $localFallback }}'; } else { this.parentElement.style.display='none'; }">
+                                     data-candidates="{{ implode('|', $qCandidates) }}"
+                                     data-candidate-idx="0"
+                                     onerror="handleResultImageFallback(this)">
                             </div>
                             @endif
 
@@ -192,8 +194,9 @@
                                 <div class="ed-mcq-options">
                                     @foreach(['a', 'b', 'c', 'd'] as $opt)
                                         @php
-                                            $optImg = $ans->question ? $ans->question->getOptionImageUrl($opt) : null;
-                                            $hasOptImg = !empty($optImg);
+                                            $optCandidates = $ans->question ? $ans->question->getOptionImageCandidates($opt) : [];
+                                            $firstOptImg = !empty($optCandidates) ? $optCandidates[0] : null;
+                                            $hasOptImg = !empty($firstOptImg);
                                             $hasOptText = !empty($ans->question->$opt);
                                         @endphp
                                         @if($hasOptText || $hasOptImg)
@@ -208,8 +211,11 @@
                                                         <span class="opt-text">{{ $ans->question->$opt }}</span>
                                                     @endif
                                                     @if($hasOptImg)
-                                                        <div class="ed-result-opt-img" onclick="window.open('{{ $optImg }}', '_blank')" title="{{ __('انقر لفتح صورة الخيار بالحجم الكامل') }}">
-                                                            <img src="{{ $optImg }}" alt="صورة الخيار {{ strtoupper($opt) }}">
+                                                        <div class="ed-result-opt-img" onclick="window.open(this.querySelector('img').src, '_blank')" title="{{ __('انقر لفتح صورة الخيار بالحجم الكامل') }}">
+                                                            <img src="{{ $firstOptImg }}" alt="صورة الخيار {{ strtoupper($opt) }}"
+                                                                 data-candidates="{{ implode('|', $optCandidates) }}"
+                                                                 data-candidate-idx="0"
+                                                                 onerror="handleResultImageFallback(this)">
                                                         </div>
                                                     @endif
                                                 </div>
@@ -874,6 +880,24 @@ function requestRetakePrompt() {
             }).then(() => location.reload());
         }
     });
+}
+
+function handleResultImageFallback(img) {
+    const raw = img.getAttribute('data-candidates');
+    if (!raw) {
+        const box = img.closest('.ed-result-q-image') || img.closest('.ed-result-opt-img');
+        if (box) box.style.display = 'none';
+        return;
+    }
+    const candidates = raw.split('|').filter(Boolean);
+    let idx = parseInt(img.getAttribute('data-candidate-idx') || '0', 10) + 1;
+    if (idx < candidates.length) {
+        img.setAttribute('data-candidate-idx', idx);
+        img.src = candidates[idx];
+    } else {
+        const box = img.closest('.ed-result-q-image') || img.closest('.ed-result-opt-img');
+        if (box) box.style.display = 'none';
+    }
 }
 </script>
 @endsection

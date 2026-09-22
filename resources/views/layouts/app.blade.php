@@ -557,13 +557,24 @@
 
         .no-sidebar aside.sidebar,
         .no-sidebar .top-bar,
-        .no-sidebar .sidebar-overlay {
+        .no-sidebar .sidebar-overlay,
+        .no-sidebar .mobile-bottom-nav,
+        .no-sidebar .floating-action-btn {
             display: none !important;
         }
 
         .no-sidebar main.main-content {
             margin-right: 0 !important;
+            margin-left: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .no-sidebar .content-body {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
             width: 100% !important;
         }
 

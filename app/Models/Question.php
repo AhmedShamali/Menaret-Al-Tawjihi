@@ -30,23 +30,98 @@ class Question extends Model
     ];
 
     /**
-     * الحصول على رابط صورة الخيار (A, B, C, D)
+     * الحصول على مصفوفة بكافة روابط الصورة الممكنة (محلياً وسحابياً)
      */
-    public function getOptionImageUrl(string $opt): ?string
+    public function getImageCandidates(): array
+    {
+        if (empty($this->image)) {
+            return [];
+        }
+
+        $candidates = [];
+        $raw = trim($this->image);
+        $cleanPath = ltrim(str_replace(['storage/', 'public/', 'app/public/'], '', $raw), '/');
+        $filename = basename($raw);
+
+        // 1. فحص وجود الملف محلياً في مجلدات التخزين
+        if ($filename) {
+            foreach (['questions/' . $filename, 'question_options/' . $filename, 'uploads/' . $filename, $filename] as $tryPath) {
+                if (file_exists(public_path('storage/' . $tryPath)) || file_exists(storage_path('app/public/' . $tryPath))) {
+                    $candidates[] = asset('storage/' . $tryPath);
+                    $candidates[] = '/storage/' . $tryPath;
+                    break;
+                }
+            }
+        }
+
+        // 2. فحص الرابط الأصلي المحفوظ
+        if (str_starts_with($raw, 'http://') || str_starts_with($raw, 'https://')) {
+            $candidates[] = $raw;
+        } else {
+            $candidates[] = asset('storage/' . $cleanPath);
+            $candidates[] = '/storage/' . $cleanPath;
+        }
+
+        // 3. بدائل سحابية في حال كان الملف مرفوعاً على Supabase أو Render
+        if ($filename) {
+            $candidates[] = "https://jdvcftdzwgydtztyszlg.supabase.co/storage/v1/object/public/educational-files/questions/{$filename}";
+            $candidates[] = "https://menaret-al-tawjihi.onrender.com/storage/questions/{$filename}";
+        }
+
+        return array_values(array_unique(array_filter($candidates)));
+    }
+
+    /**
+     * الحصول على مصفوفة بكافة روابط صورة الخيار الممكنة
+     */
+    public function getOptionImageCandidates(string $opt): array
     {
         $field = strtolower($opt) . '_image';
         $val = $this->$field ?? null;
         if (empty($val)) {
-            return null;
+            return [];
         }
 
-        $img = trim($val);
-        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
-            return $img;
+        $candidates = [];
+        $raw = trim($val);
+        $cleanPath = ltrim(str_replace(['storage/', 'public/', 'app/public/'], '', $raw), '/');
+        $filename = basename($raw);
+
+        // 1. فحص وجود الملف محلياً
+        if ($filename) {
+            foreach (['question_options/' . $filename, 'questions/' . $filename, 'uploads/' . $filename, $filename] as $tryPath) {
+                if (file_exists(public_path('storage/' . $tryPath)) || file_exists(storage_path('app/public/' . $tryPath))) {
+                    $candidates[] = asset('storage/' . $tryPath);
+                    $candidates[] = '/storage/' . $tryPath;
+                    break;
+                }
+            }
         }
 
-        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $img), '/');
-        return asset('storage/' . $cleanPath);
+        // 2. الرابط الأصلي
+        if (str_starts_with($raw, 'http://') || str_starts_with($raw, 'https://')) {
+            $candidates[] = $raw;
+        } else {
+            $candidates[] = asset('storage/' . $cleanPath);
+            $candidates[] = '/storage/' . $cleanPath;
+        }
+
+        // 3. بدائل سحابية
+        if ($filename) {
+            $candidates[] = "https://jdvcftdzwgydtztyszlg.supabase.co/storage/v1/object/public/educational-files/question_options/{$filename}";
+            $candidates[] = "https://menaret-al-tawjihi.onrender.com/storage/question_options/{$filename}";
+        }
+
+        return array_values(array_unique(array_filter($candidates)));
+    }
+
+    /**
+     * الحصول على رابط صورة الخيار (A, B, C, D) مع أفضل مسار متوفر
+     */
+    public function getOptionImageUrl(string $opt): ?string
+    {
+        $candidates = $this->getOptionImageCandidates($opt);
+        return !empty($candidates) ? $candidates[0] : null;
     }
 
     protected $casts = [
@@ -58,32 +133,16 @@ class Question extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        if (empty($this->image)) {
-            return null;
-        }
-
-        $img = trim($this->image);
-        if (str_starts_with($img, 'http://') || str_starts_with($img, 'https://')) {
-            return $img;
-        }
-
-        $cleanPath = ltrim(str_replace(['storage/', 'public/'], '', $img), '/');
-        return asset('storage/' . $cleanPath);
+        $candidates = $this->getImageCandidates();
+        return !empty($candidates) ? $candidates[0] : null;
     }
 
     /**
-     * رابط محلي بديل في حال تعذر الاتصال السحابي
+     * رابط محلي بديل
      */
     public function getLocalImageUrlAttribute(): ?string
     {
-        if (empty($this->image)) {
-            return null;
-        }
-        $cleanPath = ltrim(str_replace('storage/', '', trim($this->image)), '/');
-        if (str_starts_with($cleanPath, 'http')) {
-            $parts = explode('/', $cleanPath);
-            $cleanPath = 'questions/' . end($parts);
-        }
-        return asset('storage/' . $cleanPath);
+        $candidates = $this->getImageCandidates();
+        return count($candidates) > 1 ? $candidates[1] : ($candidates[0] ?? null);
     }
 }
