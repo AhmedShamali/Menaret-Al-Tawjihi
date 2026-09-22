@@ -1153,28 +1153,513 @@
 }
 
 /* ==========================================================================
-   مودال وسند كشف الحساب المعتمد
+   نظام النوافذ والمودالات الملكية المعتمدة (Classic Royal Academic Modals)
    ========================================================================== */
+.modal-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    z-index: 999999 !important;
+    display: none;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 20px !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+}
+
+.modal-card-box {
+    background: #ffffff !important;
+    border-radius: 24px !important;
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.45), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+    width: 100% !important;
+    max-width: 620px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative !important;
+    margin: auto !important;
+    padding: 28px 32px;
+    animation: modalScaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-sizing: border-box !important;
+}
+
+@keyframes modalScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.modal-card-box::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-card-box::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+.modal-card-box::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 8px;
+}
+.modal-card-box::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* رأس المودال الملكي */
+.modal-header-royal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 18px;
+    border-bottom: 1.5px solid #e2e8f0;
+}
+.modal-header-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.modal-avatar-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    display: grid;
+    place-items: center;
+    color: #1e3a8a;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1);
+}
+.modal-avatar-badge.text-amber {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #d97706;
+}
+.modal-student-name {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #0f172a;
+    line-height: 1.3;
+}
+.modal-month-subtitle {
+    margin: 3px 0 0;
+    font-size: 0.84rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.btn-close-x {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 1.35rem;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+.btn-close-x:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+    transform: rotate(90deg);
+}
+
+/* جسم النموذج */
+.form-body-wrap {
+    padding: 20px 0 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.section-label-royal {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+.form-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.field-label-royal {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.field-hint {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* حقول الإدخال النظيفة */
+.clean-input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f172a;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+.clean-input:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 3.5px rgba(30, 58, 138, 0.12);
+}
+.clean-input::placeholder {
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* حقل العملة بالشيكل ₪ */
+.input-with-currency {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+.input-with-currency .clean-input {
+    padding-left: 48px;
+    padding-right: 16px;
+    font-family: monospace, inherit;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+.input-with-currency .curr-tag {
+    position: absolute;
+    left: 12px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #475569;
+    background: #f1f5f9;
+    padding: 3px 9px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    pointer-events: none;
+}
+
+/* شبكة كروت اختيار حالة السداد الملكية */
+.status-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
+}
+.status-card-opt {
+    position: relative;
+    cursor: pointer;
+    display: block;
+    user-select: none;
+}
+.status-card-opt input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+.status-card-opt .opt-content {
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #f8fafc;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 100%;
+    box-sizing: border-box;
+}
+.status-card-opt .opt-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+.status-card-opt .opt-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+.status-card-opt .opt-text strong {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.25;
+}
+.status-card-opt .opt-text small {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-top: 2px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.status-card-opt:hover .opt-content {
+    border-color: #cbd5e1;
+    background: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* تلوين الحالات عند التحديد */
+.opt-paid .opt-icon { color: #059669; }
+.opt-paid input[type="radio"]:checked + .opt-content,
+.opt-paid.is-selected .opt-content {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.2);
+    transform: translateY(-2px);
+}
+.opt-paid input[type="radio"]:checked + .opt-content strong,
+.opt-paid.is-selected .opt-content strong { color: #065f46; }
+
+.opt-partial .opt-icon { color: #d97706; }
+.opt-partial input[type="radio"]:checked + .opt-content,
+.opt-partial.is-selected .opt-content {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+    transform: translateY(-2px);
+}
+.opt-partial input[type="radio"]:checked + .opt-content strong,
+.opt-partial.is-selected .opt-content strong { color: #92400e; }
+
+.opt-unpaid .opt-icon { color: #dc2626; }
+.opt-unpaid input[type="radio"]:checked + .opt-content,
+.opt-unpaid.is-selected .opt-content {
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+    transform: translateY(-2px);
+}
+.opt-unpaid input[type="radio"]:checked + .opt-content strong,
+.opt-unpaid.is-selected .opt-content strong { color: #991b1b; }
+
+.opt-pending .opt-icon { color: #2563eb; }
+.opt-pending input[type="radio"]:checked + .opt-content,
+.opt-pending.is-selected .opt-content {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.2);
+    transform: translateY(-2px);
+}
+.opt-pending input[type="radio"]:checked + .opt-content strong,
+.opt-pending.is-selected .opt-content strong { color: #1e40af; }
+
+.opt-waived .opt-icon { color: #8b5cf6; }
+.opt-waived input[type="radio"]:checked + .opt-content,
+.opt-waived.is-selected .opt-content {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.2);
+    transform: translateY(-2px);
+}
+.opt-waived input[type="radio"]:checked + .opt-content strong,
+.opt-waived.is-selected .opt-content strong { color: #5b21b6; }
+
+/* شبكة مبالغ الاستحقاق والسداد */
+.amounts-calc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+@media (max-width: 520px) {
+    .amounts-calc-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* خيارات سريعة */
+.presets-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+}
+.presets-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+}
+.btn-preset {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.btn-preset:hover {
+    background: #1e3a8a;
+    color: #ffffff;
+    border-color: #1e3a8a;
+    transform: translateY(-1.5px);
+    box-shadow: 0 3px 8px rgba(30, 58, 138, 0.25);
+}
+
+/* شريط الحساب اللحظي المباشر */
+.live-calc-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+.calc-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+.remaining-display {
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #dc2626;
+    letter-spacing: -0.5px;
+}
+.calc-status-indicator {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #cbd5e1;
+    font-size: 0.82rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.calc-status-indicator.is-paid { color: #059669; }
+.calc-status-indicator.is-partial { color: #d97706; }
+.calc-status-indicator.is-unpaid { color: #dc2626; }
+
+/* أزرار أسفل المودال */
+.modal-footer-royal {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1.5px solid #e2e8f0;
+}
+.btn-save-sub {
+    background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border: none;
+    height: 46px;
+    padding: 0 24px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(30, 58, 138, 0.28);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-save-sub:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 18px rgba(30, 58, 138, 0.38);
+}
+.btn-save-sub:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-cancel-sub {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #cbd5e1;
+    height: 46px;
+    padding: 0 20px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.btn-cancel-sub:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* مودال رسوم الطالب */
 .modal-fee-box {
-    max-width: 500px;
+    max-width: 520px;
 }
 .checkbox-box-royal {
     background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-top: 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
 }
 .custom-chk-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.8rem;
+    gap: 10px;
+    font-size: 0.84rem;
     font-weight: 700;
     color: #1e293b;
     cursor: pointer;
 }
+.custom-chk-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #1e3a8a;
+    cursor: pointer;
+}
 
+/* مودال كشف الحساب وسند الذمة */
 .modal-statement-sheet-wrap {
     max-width: 880px;
     max-height: 92vh;
@@ -1185,24 +1670,31 @@
 }
 .statement-toolbar {
     background: #1e293b;
-    padding: 12px 20px;
+    padding: 14px 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: 20px 20px 0 0;
+    border-radius: 24px 24px 0 0;
 }
 .btn-print-action {
     background: #10b981;
     color: #ffffff;
     border: none;
-    border-radius: 8px;
-    padding: 8px 16px;
-    font-size: 0.85rem;
+    border-radius: 10px;
+    padding: 9px 18px;
+    font-size: 0.88rem;
     font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s;
+}
+.btn-print-action:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 .statement-document {
     padding: 32px 36px;
@@ -1365,6 +1857,19 @@
 </style>
 
 <script>
+// مزامنة حالة كرت الخيار المحدد
+function syncSelectedStatusCard(status) {
+    document.querySelectorAll('.status-card-opt').forEach(el => {
+        el.classList.remove('is-selected');
+    });
+    const radio = document.getElementById('st_' + status);
+    if (radio) {
+        radio.checked = true;
+        const parent = radio.closest('.status-card-opt');
+        if (parent) parent.classList.add('is-selected');
+    }
+}
+
 // فتح نافذة تعديل الشهر المحدد
 function openMonthModalFromEl(btn) {
     const d = btn.dataset;
@@ -1381,9 +1886,8 @@ function openMonthModalFromEl(btn) {
     document.getElementById('formPaidAmount').value = paid.toFixed(2);
     document.getElementById('formNotes').value = d.notes || '';
 
-    // اختيار زر الراديو المناسب
-    const radio = document.getElementById('st_' + st);
-    if (radio) radio.checked = true;
+    // اختيار وزخرفة زر الراديو المناسب
+    syncSelectedStatusCard(st);
 
     calcRemainingRealtime();
 
@@ -1397,6 +1901,8 @@ function closeMonthModal() {
 
 // تغيير الراديو وضبط المبالغ تلقائياً
 function onStatusRadioChange(status) {
+    syncSelectedStatusCard(status);
+
     const amtInput = document.getElementById('formAmount');
     const paidInput = document.getElementById('formPaidAmount');
     let amt = parseFloat(amtInput.value) || 0;
@@ -1434,18 +1940,15 @@ function calcRemainingRealtime() {
     if (paid >= amt && amt > 0) {
         statusNotice.className = 'calc-status-indicator is-paid';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪)') }}</span>';
-        const r = document.getElementById('st_paid');
-        if (r) r.checked = true;
+        syncSelectedStatusCard('paid');
     } else if (paid > 0 && paid < amt) {
         statusNotice.className = 'calc-status-indicator is-partial';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-half-stroke"></i> <span>{{ __('سداد جزئي ⚠️ (الرصيد المتبقي: ') }}' + remaining.toFixed(2) + ' ₪)</span>';
-        const r = document.getElementById('st_partial');
-        if (r) r.checked = true;
+        syncSelectedStatusCard('partial');
     } else if (paid === 0 && amt > 0) {
         statusNotice.className = 'calc-status-indicator is-unpaid';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>{{ __('غير مسدد ❌ (إجمالي المستحق: ') }}' + amt.toFixed(2) + ' ₪)</span>';
-        const r = document.getElementById('st_unpaid');
-        if (r) r.checked = true;
+        syncSelectedStatusCard('unpaid');
     }
 }
 
@@ -1608,5 +2111,20 @@ function openStatementModal() {
 function closeStatementModal() {
     document.getElementById('statementModal').style.display = 'none';
 }
+
+// إغلاق النوافذ عند النقر على الخلفية المعتمة أو الضغط على Escape
+window.addEventListener('click', function(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('modal-overlay')) {
+        e.target.style.display = 'none';
+    }
+});
+window.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        ['editMonthModal', 'studentFeeModal', 'statementModal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    }
+});
 </script>
 @endsection
