@@ -12,7 +12,7 @@
     @endif
 
     <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
-    <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج المعتمد، تدريبات وبنك أسئلة تقييمية شاملة، ومتابعة دراسية بإشراف أ. أحمد حسين شمالي.') }}">
+    <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج المعتمد، تدريبات وبنك أسئلة تقييمية شاملة، ومتابعة دراسية بإشراف م.أحمد شمالي.') }}">
 
     <!-- الخطوط الموحدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -903,7 +903,7 @@
                 </div>
                 <div class="supervisor-meta">
                     <span class="sup-title">{{ __('المشرف العام على المنظومة:') }}</span>
-                    <span class="sup-name">{{ __('أ. أحمد حسين شمالي') }}</span>
+                    <span class="sup-name">{{ __('م.أحمد شمالي') }}</span>
                 </div>
             </div>
         </div>
@@ -1121,7 +1121,7 @@
                                         </td>
                                         <td style="padding: 14px 18px;">
                                             <strong style="color: #0f172a; font-size: 0.92rem; display: block; margin-bottom: 2px;">{{ __('إشراف ومتابعة مستمرة') }}</strong>
-                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('تواصل أكاديمي ومتابعة مباشرة من المشرف أ. أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.') }}</span>
+                                            <span style="color: #64748b; font-size: 0.82rem;">{{ __('تواصل أكاديمي ومتابعة مباشرة من المشرف م.أحمد شمالي لدعم مسيرة تفوق الطلاب خطوة بخطوة.') }}</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1214,14 +1214,14 @@
                             <div class="supervisor-avatar-lg">
                                 <i class="fa-solid fa-chalkboard-user"></i>
                             </div>
-                            <h4>{{ __('أ. أحمد حسين شمالي') }}</h4>
+                            <h4>{{ __('م.أحمد شمالي') }}</h4>
                             <span>{{ __('المشرف العام على المنظومة') }}</span>
 
                             @php
                                 $waDigits = '970597694385';
                                 $waMsg = urlencode(app()->getLocale() === 'ar' 
-                                    ? "السلام عليكم أستاذ أحمد شمالي، أود الاستفسار والتسجيل في منصة منارة التوجيهي." 
-                                    : "Hello Mr. Ahmed Shamali, I would like to inquire and register in Menaret Al-Tawjihi platform.");
+                                    ? "السلام عليكم بشمهندس أحمد شمالي، أود الاستفسار والتسجيل في منصة منارة التوجيهي." 
+                                    : "Hello Eng. Ahmed Shamali, I would like to inquire and register in Menaret Al-Tawjihi platform.");
                             @endphp
 
                             <a href="https://wa.me/{{ $waDigits }}?text={{ $waMsg }}" target="_blank" class="btn-whatsapp-full">
@@ -1264,7 +1264,7 @@
                     {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى تيسير وصول العلم والشروحات النموذجية المتوافقة مع تحديثات وزارة التربية والتعليم لكافة بيوت فلسطين.') }}
                 </p>
                 <div style="margin-top: 8px; color: var(--ed-primary); font-weight: 700; font-size: 12.5px;">
-                    {{ __('إشراف ومتابعة: الأستاذ أحمد حسين شمالي') }}
+                    {{ __('إشراف ومتابعة: المهندس أحمد شمالي') }}
                 </div>
             </div>
 

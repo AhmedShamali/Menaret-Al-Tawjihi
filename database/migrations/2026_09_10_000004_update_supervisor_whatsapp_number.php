@@ -25,7 +25,7 @@ return new class extends Migration
 
             Setting::updateOrCreate(
                 ['key' => 'supervisor_name'],
-                ['value' => 'أ. أحمد حسين شمالي']
+                ['value' => 'م.أحمد شمالي']
             );
         } catch (\Throwable $e) {
             // Ignore if settings table does not exist yet

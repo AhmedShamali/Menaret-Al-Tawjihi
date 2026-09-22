@@ -461,10 +461,10 @@
                 <div class="sig-column">
                     <div class="sig-header">{{ __('المشرف العام والمالي') }}</div>
                     <div class="sig-space">
-                        <span class="official-signature-facsimile">أحمد حسين شمالي</span>
+                        <span class="official-signature-facsimile">م.أحمد شمالي</span>
                         <div class="sig-handwritten-line">........................................</div>
                     </div>
-                    <div class="sig-name">{{ __('أ. أحمد حسين شمالي') }}</div>
+                    <div class="sig-name">{{ __('م.أحمد شمالي') }}</div>
                 </div>
             </footer>
 

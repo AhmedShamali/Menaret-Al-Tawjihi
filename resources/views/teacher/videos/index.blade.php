@@ -262,7 +262,7 @@
                 <div class="f-row">
                     <div class="f-group" style="flex: 1;">
                         <label class="f-label">{{ __('اسم القناة / المصدر الأكاديمي') }}</label>
-                        <input type="text" name="channel_name" value="{{ auth()->user()->name_ar ?? auth()->user()->name }}" placeholder="{{ __('مثال: أ. أحمد شمالي') }}" class="f-control">
+                        <input type="text" name="channel_name" value="{{ auth()->user()->name_ar ?? auth()->user()->name }}" placeholder="{{ __('مثال: م.أحمد شمالي') }}" class="f-control">
                     </div>
 
                     <div class="f-group" style="width: 130px;">
