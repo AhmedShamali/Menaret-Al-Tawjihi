@@ -987,9 +987,6 @@
                 <li class="nav-item"><a href="#branches" class="nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
                 <li class="nav-item"><a href="#features" class="nav-link"><i class="fa-solid fa-list-check"></i> {{ __('خدمات المنصة') }}</a></li>
                 <li class="nav-item"><a href="{{ route('courses.catalog') }}" class="nav-link"><i class="fa-solid fa-graduation-cap"></i> {{ __('دليل المقررات') }}</a></li>
-                @if(Route::has('public.past_exams.index'))
-                    <li class="nav-item"><a href="{{ route('public.past_exams.index') }}" class="nav-link"><i class="fa-solid fa-file-pdf"></i> {{ __('أرشيف الامتحانات الوزارية') }}</a></li>
-                @endif
                 @if(Route::has('tawjihi.calculator'))
                     <li class="nav-item"><a href="{{ route('tawjihi.calculator') }}" class="nav-link"><i class="fa-solid fa-calculator"></i> {{ __('حساب المعدل') }}</a></li>
                 @endif
@@ -1341,7 +1338,6 @@
                 <h4>{{ __('روابط سريعة') }}</h4>
                 <ul class="footer-links-list">
                     <li><a href="{{ route('home') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('الرئيسية') }}</a></li>
-                    <li><a href="{{ route('public.past_exams.index') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('أرشيف الامتحانات الوزارية') }}</a></li>
                     <li><a href="{{ route('tawjihi.calculator') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('حاسبة معدل التوجيهي') }}</a></li>
                     <li><a href="{{ route('public.terms') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('الشروط والأحكام') }}</a></li>
                     <li><a href="{{ route('public.privacy') }}"><i class="fa-solid fa-angle-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i> {{ __('سياسة الخصوصية') }}</a></li>

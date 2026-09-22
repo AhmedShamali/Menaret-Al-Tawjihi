@@ -65,8 +65,6 @@ Route::get('/contact', [PublicController::class, 'contact'])->name('public.conta
 Route::post('/contact/submit', [PublicController::class, 'submitContact'])->name('contact.submit');
 Route::get('/terms', [PublicController::class, 'terms'])->name('public.terms');
 Route::get('/privacy', [PublicController::class, 'privacy'])->name('public.privacy');
-Route::get('/past-exams', [\App\Http\Controllers\PastExamController::class, 'index'])->name('public.past_exams.index');
-Route::get('/past-exams/{id}/download', [\App\Http\Controllers\PastExamController::class, 'downloadPaper'])->name('public.past_exams.download');
 
 Route::get('/stages', [StageController::class, 'index'])->name('stages.index');
 Route::get('/stages/{id}', [StageController::class, 'show'])->name('stages.show');
@@ -91,8 +89,8 @@ Route::resource('educational_contents', EducationalContentController::class);
 Route::get('/tawjihi-calculator', [\App\Http\Controllers\TawjihiCalculatorController::class, 'index'])->name('tawjihi.calculator');
 Route::post('/tawjihi-calculator/calculate', [\App\Http\Controllers\TawjihiCalculatorController::class, 'calculate'])->name('tawjihi.calculate');
 
-// أرشيف الامتحانات الوزارية للثانوية العامة
-Route::redirect('/tawjihi-archive', '/past-exams')->name('tawjihi.archive');
+// إعادة توجيه أرشيف الامتحانات إلى دليل المقررات
+Route::redirect('/tawjihi-archive', '/catalog')->name('tawjihi.archive');
 
 // بطاقات الاستذكار السريع والقوانين (Flashcards) للعامة والطلاب
 Route::get('/public-flashcards', [\App\Http\Controllers\Student\FlashcardController::class, 'index'])->name('smart.learning.flashcards');
