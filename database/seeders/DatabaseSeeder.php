@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
         $admin = \App\Models\User::firstOrCreate(
             ['email' => 'ahmad@admin.ps'],
             [
-                'name' => 'أحمد شمالي (مدير النظام)',
+                'name' => 'م. أحمد شمالي (مدير النظام)',
                 'password' => bcrypt('44200479'),
                 'role' => 'admin',
                 'phone' => '0567897212',

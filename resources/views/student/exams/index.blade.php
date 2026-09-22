@@ -16,7 +16,7 @@
             </div>
             <h1>{{ __('قاعة الاختبارات والتقييم الأكاديمي') }}</h1>
             <p>
-                {{ __('مرحباً بك') }} <strong style="color: #0f172a;">{{ optional($student)->name_ar ?? auth()->user()->name }}</strong>، {{ __('إليك جدول الاختبارات والتقييمات المعتمدة لمسيرتك الدراسية.') }}
+                {{ __('مرحباً بك') }} <strong style="color: #0f172a;">{{ optional($student)->name_ar ?? auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب') }}</strong>، {{ __('إليك جدول الاختبارات والتقييمات المعتمدة لمسيرتك الدراسية.') }}
             </p>
         </div>
 

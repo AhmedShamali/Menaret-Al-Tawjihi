@@ -85,7 +85,7 @@
                 </div>
                 <h1 class="ed-report-title">{{ $submission->exam->title }}</h1>
                 <p class="ed-report-subtitle">
-                    {{ __('مراجعة الإجابات المفصلة') }} — {{ optional($submission->student)->name_ar ?? auth()->user()->name }}
+                    {{ __('مراجعة الإجابات المفصلة') }} — {{ optional($submission->student)->name_ar ?? auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب') }}
                 </p>
             </div>
 

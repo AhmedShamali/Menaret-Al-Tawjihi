@@ -96,7 +96,7 @@
     <div class="sticky-header">
         <div>
             <h2 style="font-size: 1.2rem; margin: 0;">{{ $exam->title }}</h2>
-            <span style="font-size: 0.8rem; opacity: 0.8;">الطالب: {{ auth()->user()->name }}</span>
+            <span style="font-size: 0.8rem; opacity: 0.8;">{{ __('الطالب:') }} {{ auth('student')->user()?->name_ar ?? auth('student')->user()?->name ?? auth()->user()?->name ?? __('طالب') }}</span>
         </div>
         <div class="timer-box">
             <div style="font-size: 0.6rem; text-transform: uppercase;">{{ __('الوقت المتبقي') }}</div>

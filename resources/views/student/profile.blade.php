@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('الملف الشخصي') . ' | ' . ($student->name_ar ?? auth()->user()->name ?? __('طالب')))
+@section('title', __('الملف الشخصي') . ' | ' . ($student->name_ar ?? auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب')))
 
 @section('content')
 <div class="ed-profile-container">
@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <h2 class="ed-student-name">{{ $student->name_ar ?? auth()->user()->name }}</h2>
+            <h2 class="ed-student-name">{{ $student->name_ar ?? auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب') }}</h2>
             <div class="ed-stage-badge">
                 <i class="fa-solid fa-flag"></i>
                 <span>{{ optional(optional($student)->stage)->label_ar ?? __('الثانوية العامة - فلسطين') }}</span>
@@ -85,7 +85,7 @@
                 </div>
                 <div class="ed-detail-row">
                     <span class="detail-label"><i class="fa-solid fa-envelope"></i> {{ __('البريد:') }}</span>
-                    <strong class="detail-value font-mono text-sm">{{ $student->email ?? auth()->user()->email }}</strong>
+                    <strong class="detail-value font-mono text-sm">{{ $student->email ?? auth('student')->user()?->email ?? auth()->user()?->email ?? '---' }}</strong>
                 </div>
                 <div class="ed-detail-row">
                     <span class="detail-label"><i class="fa-solid fa-phone"></i> {{ __('الجوال:') }}</span>
