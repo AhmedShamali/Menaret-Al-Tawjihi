@@ -16,7 +16,7 @@ class SettingController extends Controller
             'contact_whatsapp' => Setting::get('contact_whatsapp', '00970597694385'),
             'registration_status' => Setting::get('registration_status', 'open'),
         ];
-        return view('admin.settings.index', compact('settings'));
+        return view('admin.management.settings', compact('settings'));
     }
 
     public function update(Request $request)

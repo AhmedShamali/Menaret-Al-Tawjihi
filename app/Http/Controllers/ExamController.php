@@ -42,7 +42,7 @@ class ExamController extends Controller
             return view('admin.exams.show', compact('exam'));
         }
 
-        return redirect()->route('admin.exams.index');
+        return redirect()->route('admin.exams.edit', $exam->id);
     }
 
     public function create()

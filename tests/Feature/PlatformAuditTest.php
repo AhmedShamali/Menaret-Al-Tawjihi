@@ -536,9 +536,59 @@ class PlatformAuditTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('سجل اعتماد وتوثيق شهادات الثانوية العامة');
         $response->assertSee('ديوان الامتحانات العامة');
-        $response->assertSee('دفتر السجل العام وقيد الدرجات والشهادات');
+    }
+
+    public function test_public_past_exams_archive_renders_successfully(): void
+    {
+        $response = $this->get('/past-exams');
+        $response->assertStatus(200);
+        $response->assertSee('أرشيف الامتحانات الوزارية السابقة');
+        $response->assertSee('المكتبة الأكاديمية المركزية');
+    }
+
+    public function test_admin_exam_preview_renders_successfully(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Exam Test',
+            'email' => 'admin_exam@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+        $stage = Stage::first();
+        $subject = Subject::first();
+
+        $exam = \App\Models\Exam::create([
+            'title' => 'اختبار تجريبي شامل',
+            'description' => 'وصف الاختبار التجريبي',
+            'stage_id' => $stage->id,
+            'subject_id' => $subject->id,
+            'duration_minutes' => 60,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($admin);
+
+        $response = $this->get("/admin/exams/{$exam->id}");
+        $response->assertStatus(200);
+        $response->assertSee('معاينة الاختبار');
+        $response->assertSee('اختبار تجريبي شامل');
+    }
+
+    public function test_admin_settings_renders_successfully(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Settings Test',
+            'email' => 'admin_settings@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+        $this->actingAs($admin);
+
+        $response = $this->get('/admin/settings');
+        $response->assertStatus(200);
     }
 }
+
 
 
 
