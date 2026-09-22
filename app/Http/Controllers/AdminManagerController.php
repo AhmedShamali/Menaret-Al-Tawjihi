@@ -457,6 +457,7 @@ class AdminManagerController extends Controller {
             'city'               => $city,
             'school_name'        => $schoolName,
             'password'           => Hash::make($request->password),
+            'plain_password'     => $request->password,
             'stage_id'           => $stageId,
             'gender'             => $gender,
             'photo'              => $photoPath,
@@ -470,7 +471,7 @@ class AdminManagerController extends Controller {
         try {
             $student = Student::create($studentData);
         } catch (\Illuminate\Database\QueryException $e) {
-            unset($studentData['city'], $studentData['school_name'], $studentData['guardian_phone']);
+            unset($studentData['city'], $studentData['school_name'], $studentData['guardian_phone'], $studentData['plain_password']);
             $student = Student::create($studentData);
         }
 
@@ -1217,4 +1218,59 @@ class AdminManagerController extends Controller {
             }
         }
     }
+
+    /**
+     * إعادة تعيين كلمة مرور الطالب من قِبل المدير فورياً (AJAX)
+     */
+    public function resetStudentPassword(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+
+        $newPass = $request->filled('new_password') ? trim($request->new_password) : \Illuminate\Support\Str::random(8);
+        if (strlen($newPass) < 6) {
+            return response()->json(['success' => false, 'message' => 'كلمة المرور يجب أن لا تقل عن 6 خانات.'], 422);
+        }
+
+        $student->password = Hash::make($newPass);
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('students', 'plain_password')) {
+                $student->plain_password = $newPass;
+            }
+        } catch (\Throwable $e) {}
+        $student->save();
+
+        return response()->json([
+            'success'        => true,
+            'message'        => 'تم تعيين وتحديث كلمة مرور الطالب بنجاح! 🔒',
+            'plain_password' => $newPass,
+        ]);
+    }
+
+    /**
+     * إعادة تعيين كلمة مرور المعلم من قِبل المدير فورياً (AJAX)
+     */
+    public function resetTeacherPassword(Request $request, $id)
+    {
+        $teacher = User::where('role', 'teacher')->findOrFail($id);
+
+        $newPass = $request->filled('new_password') ? trim($request->new_password) : \Illuminate\Support\Str::random(8);
+        if (strlen($newPass) < 6) {
+            return response()->json(['success' => false, 'message' => 'كلمة المرور يجب أن لا تقل عن 6 خانات.'], 422);
+        }
+
+        $teacher->password = Hash::make($newPass);
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'plain_password')) {
+                $teacher->plain_password = $newPass;
+            }
+        } catch (\Throwable $e) {}
+        $teacher->save();
+
+        return response()->json([
+            'success'        => true,
+            'message'        => 'تم تعيين وتحديث كلمة مرور المعلم بنجاح! 🔒',
+            'plain_password' => $newPass,
+        ]);
+    }
 }
+

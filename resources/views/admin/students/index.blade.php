@@ -184,10 +184,17 @@
                                     </div>
                                     <div class="meta-line">
                                         <span class="student-email" dir="ltr">{{ $student->email }}</span>
-                                        <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password ?: '123456' }}', '{{ __('تم نسخ كلمة المرور') }}')">
-                                            <i class="fa-solid fa-key"></i>
-                                            <code>{{ $student->plain_password ?: '123456' }}</code>
-                                        </span>
+                                        @if(!empty($student->plain_password))
+                                            <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password }}', '{{ __('تم نسخ كلمة المرور') }}')">
+                                                <i class="fa-solid fa-key"></i>
+                                                <code>{{ $student->plain_password }}</code>
+                                            </span>
+                                        @else
+                                            <span class="pwd-snippet" style="background: #f1f5f9; color: #64748b; border-color: #cbd5e1;" title="{{ __('مشفرة بأمان في النظام') }}">
+                                                <i class="fa-solid fa-shield-halved"></i>
+                                                <code>{{ __('مشفرة') }}</code>
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>

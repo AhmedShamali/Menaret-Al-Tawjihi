@@ -192,11 +192,15 @@ class StudentController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             // استبعاد الأعمدة الإضافية في حال عدم اكتمال هجرة قاعدة البيانات الخارجية
             unset(
-                $studentData['plain_password'],
                 $studentData['city'], $studentData['school_name'], $studentData['guardian_phone'],
                 $studentData['google_id'], $studentData['provider'], $studentData['avatar_url']
             );
-            $student = Student::create($studentData);
+            try {
+                $student = Student::create($studentData);
+            } catch (\Illuminate\Database\QueryException $e2) {
+                unset($studentData['plain_password']);
+                $student = Student::create($studentData);
+            }
         }
 
 
@@ -1112,9 +1116,16 @@ class StudentController extends Controller
             return response()->json(['status' => 'error', 'message' => 'كلمة المرور القديمة غير صحيحة.'], 422);
         }
 
-        $student->update([
+        $updateData = [
             'password' => Hash::make($request->new_password)
-        ]);
+        ];
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('students', 'plain_password')) {
+                $updateData['plain_password'] = $request->new_password;
+            }
+        } catch (\Throwable $e) {}
+
+        $student->update($updateData);
 
         return response()->json(['status' => 'success', 'message' => 'تم تحديث كلمة المرور بنجاح! 🔒']);
     }

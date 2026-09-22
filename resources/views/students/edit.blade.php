@@ -99,16 +99,22 @@
                                 </span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <span class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: #1e293b; background: #ffffff; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; flex: 1; display: flex; justify-content: space-between; align-items: center;" dir="ltr">
-                                    <span id="studentEditPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a;">{{ $student->plain_password ?: '123456' }}</span>
-                                    <span id="studentEditPassMasked" style="display: none; letter-spacing: 2px; color: #64748b;">••••••••</span>
-                                    <button type="button" onclick="toggleStudentEditPass()" style="background: none; border: none; cursor: pointer; color: #64748b;" title="{{ __('إظهار / إخفاء') }}">
-                                        <i id="studentEditPassIcon" class="fas fa-eye-slash"></i>
+                                @if(!empty($student->plain_password))
+                                    <span class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: #1e293b; background: #ffffff; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; flex: 1; display: flex; justify-content: space-between; align-items: center;" dir="ltr">
+                                        <span id="studentEditPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a;">{{ $student->plain_password }}</span>
+                                        <span id="studentEditPassMasked" style="display: none; letter-spacing: 2px; color: #64748b;">••••••••</span>
+                                        <button type="button" onclick="toggleStudentEditPass()" style="background: none; border: none; cursor: pointer; color: #64748b;" title="{{ __('إظهار / إخفاء') }}">
+                                            <i id="studentEditPassIcon" class="fas fa-eye-slash"></i>
+                                        </button>
+                                    </span>
+                                    <button type="button" onclick="copyStudentEditPass('{{ $student->plain_password }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: #334155;" title="{{ __('نسخ كلمة المرور') }}">
+                                        <i class="far fa-copy me-1"></i> {{ __('نسخ') }}
                                     </button>
-                                </span>
-                                <button type="button" onclick="copyStudentEditPass('{{ $student->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; color: #334155;" title="{{ __('نسخ كلمة المرور') }}">
-                                    <i class="far fa-copy me-1"></i> {{ __('نسخ') }}
-                                </button>
+                                @else
+                                    <span style="background: #f1f5f9; color: #475569; padding: 8px 14px; border-radius: 6px; border: 1px dashed #cbd5e1; font-size: 0.84rem; font-weight: 700; flex: 1; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-shield-alt text-slate"></i> {{ __('مشفرة بأمان في النظام (يمكنك كتابة كلمة جديدة في الحقل أدناه)') }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
                         <div class="f-group full-width">

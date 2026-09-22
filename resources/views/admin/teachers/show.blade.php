@@ -76,19 +76,31 @@
                         <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
                     </span>
                 </div>
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;">
-                    <span class="info-value font-mono" dir="ltr">
-                        <span id="teacherPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $teacher->plain_password ?: '123456' }}</span>
-                        <span id="teacherPassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
-                    </span>
-                    <div style="display: flex; align-items: center; gap: 4px;">
-                        <button type="button" onclick="toggleTeacherPassVisibility()" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
-                            <i id="teacherPassIcon" class="fa-solid fa-eye-slash"></i>
+                <div id="teacherPassContainer" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                    @if(!empty($teacher->plain_password))
+                        <span class="info-value font-mono" dir="ltr">
+                            <span id="teacherPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $teacher->plain_password }}</span>
+                            <span id="teacherPassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                        </span>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <button type="button" onclick="toggleTeacherPassVisibility()" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
+                                <i id="teacherPassIcon" class="fa-solid fa-eye-slash"></i>
+                            </button>
+                            <button type="button" onclick="copyTeacherPass('{{ $teacher->plain_password }}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <button type="button" onclick="quickResetTeacherPass({{ $teacher->id }}, '{{ addslashes($teacher->name) }}')" style="background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;" title="{{ __('تعيين كلمة مرور جديدة') }}">
+                                <i class="fa-solid fa-key"></i> {{ __('تعديل') }}
+                            </button>
+                        </div>
+                    @else
+                        <span id="teacherPassPlain" style="background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 6px; border: 1px dashed #cbd5e1; font-weight: 700; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-shield-halved text-slate"></i> {{ __('مشفرة بأمان في النظام') }}
+                        </span>
+                        <button type="button" onclick="quickResetTeacherPass({{ $teacher->id }}, '{{ addslashes($teacher->name) }}')" style="background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                            <i class="fa-solid fa-key"></i> {{ __('تعيين كلمة مرور') }}
                         </button>
-                        <button type="button" onclick="copyTeacherPass('{{ $teacher->plain_password ?: '123456' }}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
-                            <i class="fa-regular fa-copy"></i>
-                        </button>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
@@ -448,6 +460,104 @@ function copyTeacherPass(text) {
         });
     } else {
         alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+
+function quickResetTeacherPass(teacherId, teacherName) {
+    const defaultPass = 'Teacher@' + Math.floor(1000 + Math.random() * 9000);
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '{{ __("تعيين كلمة مرور جديدة للمعلم") }}',
+            html: `
+                <div style="text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #475569;">
+                    {{ __("سيتم تعيين كلمة مرور جديدة للمعلم:") }} <strong>${teacherName}</strong>
+                </div>
+                <div style="text-align: right; margin-bottom: 6px;">
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155;">{{ __("كلمة المرور الجديدة:") }}</label>
+                </div>
+                <input id="swalNewTeacherPassInput" class="swal2-input" style="width: 85%; margin: 0 auto; font-family: monospace; font-weight: 700;" value="${defaultPass}" placeholder="{{ __('أدخل كلمة مرور (6 خانات على الأقل)') }}">
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa-solid fa-save"></i> {{ __("حفظ وتعيين الآن") }}',
+            cancelButtonText: '{{ __("إلغاء") }}',
+            preConfirm: () => {
+                const pass = document.getElementById('swalNewTeacherPassInput').value.trim();
+                if (!pass || pass.length < 6) {
+                    Swal.showValidationMessage('{{ __("يجب أن تتكون كلمة المرور من 6 خانات على الأقل.") }}');
+                    return false;
+                }
+                return pass;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const newPass = result.value;
+                Swal.fire({
+                    title: '{{ __("جاري التعيين...") }}',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                fetch(`{{ url('admin/teachers') }}/${teacherId}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ new_password: newPass })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        copyTeacherPass(data.plain_password);
+                        const container = document.getElementById('teacherPassContainer');
+                        if (container) {
+                            container.innerHTML = `
+                                <span class="info-value font-mono" dir="ltr">
+                                    <span id="teacherPassPlain" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; border: 1px solid #86efac; font-weight: 800; font-size: 0.95rem;">${data.plain_password}</span>
+                                    <span id="teacherPassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                                </span>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <button type="button" onclick="toggleTeacherPassVisibility()" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء') }}">
+                                        <i id="teacherPassIcon" class="fa-solid fa-eye-slash"></i>
+                                    </button>
+                                    <button type="button" onclick="copyTeacherPass('${data.plain_password}')" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ') }}">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                    <button type="button" onclick="quickResetTeacherPass(${teacherId}, '${teacherName}')" style="background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+                                        <i class="fa-solid fa-key"></i> {{ __('تعديل') }}
+                                    </button>
+                                </div>
+                            `;
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("تم تعيين كلمة المرور بنجاح ✅") }}',
+                            html: `<strong>${data.plain_password}</strong><br><small style="color:#64748b;">{{ __("تم نسخ كلمة المرور الجديدة إلى الحافظة تلقائياً.") }}</small>`,
+                            confirmButtonColor: '#059669',
+                            confirmButtonText: '{{ __("حسناً") }}'
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: data.message || '{{ __("تعذر تعيين كلمة المرور.") }}' });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("حدث خطأ أثناء الاتصال بالخادم.") }}' });
+                });
+            }
+        });
+    } else {
+        const pass = prompt('{{ __("أدخل كلمة المرور الجديدة للمعلم:") }}', defaultPass);
+        if (pass && pass.length >= 6) {
+            fetch(`{{ url('admin/teachers') }}/${teacherId}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                body: JSON.stringify({ new_password: pass })
+            }).then(() => location.reload());
+        }
     }
 }
 </script>

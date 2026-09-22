@@ -95,16 +95,25 @@
                                 <i class="fa-solid fa-shield-halved"></i> {{ __('خاص بالإدارة') }}
                             </span>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span class="font-mono" dir="ltr">
-                                <span id="studentProfilePassPlain" style="background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $student->plain_password ?: '123456' }}</span>
-                                <span id="studentProfilePassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
-                            </span>
-                            <button type="button" onclick="toggleStudentProfilePass()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
-                                <i id="studentProfilePassIcon" class="fa-solid fa-eye-slash"></i>
-                            </button>
-                            <button type="button" onclick="copyStudentProfilePass('{{ $student->plain_password ?: '123456' }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
-                                <i class="fa-regular fa-copy"></i>
+                        <div id="studentPassContainer" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            @if(!empty($student->plain_password))
+                                <span class="font-mono" dir="ltr">
+                                    <span id="studentProfilePassPlain" style="background: #fef3c7; color: #92400e; padding: 3px 10px; border-radius: 6px; border: 1px solid #fde68a; font-weight: 800; font-size: 0.95rem;">{{ $student->plain_password }}</span>
+                                    <span id="studentProfilePassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                                </span>
+                                <button type="button" onclick="toggleStudentProfilePass()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء كلمة المرور') }}">
+                                    <i id="studentProfilePassIcon" class="fa-solid fa-eye-slash"></i>
+                                </button>
+                                <button type="button" onclick="copyStudentProfilePass('{{ $student->plain_password }}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ كلمة المرور') }}">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            @else
+                                <span id="studentProfilePassPlain" style="background: #f1f5f9; color: #475569; padding: 3px 9px; border-radius: 6px; border: 1px dashed #cbd5e1; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fa-solid fa-shield-halved text-slate"></i> {{ __('مشفرة بأمان في النظام') }}
+                                </span>
+                            @endif
+                            <button type="button" onclick="quickResetStudentPass({{ $student->id }}, '{{ addslashes($student->name_ar ?? $student->name_en) }}')" style="background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;" title="{{ __('تعيين أو إعادة تعيين كلمة مرور جديدة') }}">
+                                <i class="fa-solid fa-key"></i> {{ __('تعيين جديدة') }}
                             </button>
                         </div>
                     </div>
@@ -351,6 +360,102 @@ function copyStudentProfilePass(text) {
         });
     } else {
         alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+    }
+}
+
+function quickResetStudentPass(studentId, studentName) {
+    const defaultPass = 'Tawjihi@' + Math.floor(1000 + Math.random() * 9000);
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '{{ __("تعيين كلمة مرور جديدة") }}',
+            html: `
+                <div style="text-align: right; margin-bottom: 12px; font-size: 0.88rem; color: #475569;">
+                    {{ __("سيتم تعيين كلمة مرور جديدة للطالب:") }} <strong>${studentName}</strong>
+                </div>
+                <div style="text-align: right; margin-bottom: 6px;">
+                    <label style="font-size: 0.82rem; font-weight: 700; color: #334155;">{{ __("كلمة المرور الجديدة:") }}</label>
+                </div>
+                <input id="swalNewPassInput" class="swal2-input" style="width: 85%; margin: 0 auto; font-family: monospace; font-weight: 700;" value="${defaultPass}" placeholder="{{ __('أدخل كلمة مرور (6 خانات على الأقل)') }}">
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0284c7',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="fa-solid fa-save"></i> {{ __("حفظ وتعيين الآن") }}',
+            cancelButtonText: '{{ __("إلغاء") }}',
+            preConfirm: () => {
+                const pass = document.getElementById('swalNewPassInput').value.trim();
+                if (!pass || pass.length < 6) {
+                    Swal.showValidationMessage('{{ __("يجب أن تتكون كلمة المرور من 6 خانات على الأقل.") }}');
+                    return false;
+                }
+                return pass;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const newPass = result.value;
+                Swal.fire({
+                    title: '{{ __("جاري التعيين...") }}',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ new_password: newPass })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        copyStudentProfilePass(data.plain_password);
+                        const container = document.getElementById('studentPassContainer');
+                        if (container) {
+                            container.innerHTML = `
+                                <span class="font-mono" dir="ltr">
+                                    <span id="studentProfilePassPlain" style="background: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 6px; border: 1px solid #86efac; font-weight: 800; font-size: 0.95rem;">${data.plain_password}</span>
+                                    <span id="studentProfilePassMasked" style="display: none; letter-spacing: 2px; color: #64748b; font-size: 1rem;">••••••••</span>
+                                </span>
+                                <button type="button" onclick="toggleStudentProfilePass()" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('إظهار / إخفاء') }}">
+                                    <i id="studentProfilePassIcon" class="fa-solid fa-eye-slash"></i>
+                                </button>
+                                <button type="button" onclick="copyStudentProfilePass('${data.plain_password}')" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px; font-size: 0.75rem; cursor: pointer; color: #475569;" title="{{ __('نسخ') }}">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                                <button type="button" onclick="quickResetStudentPass(${studentId}, '${studentName}')" style="background: #0284c7; color: #ffffff; border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fa-solid fa-key"></i> {{ __('تعديل') }}
+                                </button>
+                            `;
+                        }
+                        Swal.fire({
+                            icon: 'success',
+                            title: '{{ __("تم تعيين كلمة المرور بنجاح ✅") }}',
+                            html: `<strong>${data.plain_password}</strong><br><small style="color:#64748b;">{{ __("تم نسخ كلمة المرور الجديدة إلى الحافظة تلقائياً.") }}</small>`,
+                            confirmButtonColor: '#059669',
+                            confirmButtonText: '{{ __("حسناً") }}'
+                        });
+                    } else {
+                        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: data.message || '{{ __("تعذر تعيين كلمة المرور.") }}' });
+                    }
+                })
+                .catch(err => {
+                    Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("حدث خطأ أثناء الاتصال بالخادم.") }}' });
+                });
+            }
+        });
+    } else {
+        const pass = prompt('{{ __("أدخل كلمة المرور الجديدة للطالب:") }}', defaultPass);
+        if (pass && pass.length >= 6) {
+            fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+                body: JSON.stringify({ new_password: pass })
+            }).then(() => location.reload());
+        }
     }
 }
 </script>

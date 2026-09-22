@@ -30,13 +30,23 @@ class ProfileController extends Controller
             'new_password' => 'required|min:8|confirmed'
         ]);
 
-        $student = Student::findOrFail(1);
+        $student = auth('student')->user() ?? Student::find(1);
+        if (!$student) {
+            return response()->json(['icon' => 'error', 'title' => 'تعذر العثور على حساب الطالب'], 404);
+        }
 
         if (!Hash::check($request->old_password, $student->password)) {
             return response()->json(['icon' => 'error', 'title' => 'كلمة المرور القديمة غير صحيحة']);
         }
 
-        $student->update(['password' => Hash::make($request->new_password)]);
+        $updateData = ['password' => Hash::make($request->new_password)];
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('students', 'plain_password')) {
+                $updateData['plain_password'] = $request->new_password;
+            }
+        } catch (\Throwable $e) {}
+
+        $student->update($updateData);
 
         // تسجيل نشاط "تغيير كلمة المرور"
         Activity::create([

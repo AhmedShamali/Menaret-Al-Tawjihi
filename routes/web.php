@@ -141,6 +141,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
     Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
     Route::post('/students/{id}/monthly-fee', [StudentController::class, 'updateMonthlyFee'])->name('students.monthlyFee');
+    Route::post('/students/{id}/reset-password', [AdminManagerController::class, 'resetStudentPassword'])->name('students.resetPassword');
 
     // مسارات الحذف الجماعي والتصفير الشامل وتصدير الطلاب
     Route::get('/students/export', [AdminManagerController::class, 'exportStudents'])->name('students.export');
@@ -151,6 +152,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/management', [AdminManagerController::class, 'teachersInfo'])->name('management.index');
     Route::get('/teachers/create', [AdminManagerController::class, 'teacherCreate'])->name('teachers.create');
     Route::post('/teachers/store', [AdminManagerController::class, 'teacherStore'])->name('teachers.store');
+    Route::post('/teachers/{id}/reset-password', [AdminManagerController::class, 'resetTeacherPassword'])->name('teachers.resetPassword');
     Route::get('/teachers/export', [AdminManagerController::class, 'exportTeachers'])->name('teachers.export');
     Route::post('/teachers/import', [AdminManagerController::class, 'importTeachers'])->name('teachers.import');
     Route::post('/teachers/bulk-delete', [AdminManagerController::class, 'bulkDeleteTeachers'])->name('teachers.bulkDelete');
