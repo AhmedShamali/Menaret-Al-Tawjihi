@@ -477,6 +477,9 @@ class ExamController extends Controller
     public function studentIndex()
     {
         $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
         $studentStageId = $student ? $student->stage_id : null;
         $currentStageName = $student?->stage?->name_ar ?? 'الثانوية العامة (التوجيهي)';
 
@@ -484,15 +487,25 @@ class ExamController extends Controller
             ? \App\Models\Enrollment::where('student_id', $student->id)->where('status', 'active')->get()->keyBy('subject_id') 
             : collect();
 
-        $allExams = Exam::with(['subject', 'stage', 'submissions' => function($query) use ($student) {
+        $enrolledSubjectIds = $enrollments->keys()->toArray();
+
+        // حصر قطعي: إذا كان الحساب طالباً وليس لديه أي اشتراك نشط في أي مادة، لا تظهر له أي اختبارات
+        if ($student && empty($enrolledSubjectIds)) {
+            $exams = collect();
+            return view('student.exams.index', compact('exams', 'student', 'currentStageName'));
+        }
+
+        $allExamsQuery = Exam::with(['subject', 'stage', 'submissions' => function($query) use ($student) {
             if ($student) {
                 $query->where('student_id', $student->id);
             }
         }])
-        ->withCount('questions')
-        ->when($studentStageId, function ($query) use ($studentStageId) {
-            // عزل صارم: يظهر الاختبار فقط إن كان مخصصاً لمرحلة الطالب، أو مخصصاً لمادة تنتمي لنفس مرحلة الطالب حصراً
-            $query->where(function ($q) use ($studentStageId) {
+        ->withCount('questions');
+
+        if ($student && !empty($enrolledSubjectIds)) {
+            $allExamsQuery->whereIn('subject_id', $enrolledSubjectIds);
+        } elseif ($studentStageId) {
+            $allExamsQuery->where(function ($q) use ($studentStageId) {
                 $q->where('stage_id', $studentStageId)
                   ->orWhere(function ($subQ) use ($studentStageId) {
                       $subQ->whereNull('stage_id')
@@ -501,9 +514,9 @@ class ExamController extends Controller
                            });
                   });
             });
-        })
-        ->latest()
-        ->get();
+        }
+
+        $allExams = $allExamsQuery->latest()->get();
 
         // تصفية الاختبارات بناءً على صلاحيات الوصول وخانات الاختيار [✓] التي حددها المعلم
         $exams = $allExams->filter(function ($exam) use ($student, $enrollments) {
@@ -511,8 +524,8 @@ class ExamController extends Controller
 
             $enr = $enrollments->get($exam->subject_id);
             if (!$enr) {
-                // إذا لم يكن مسجلاً في المادة، يظهر الاختبار فقط إن كان تجريبياً عاماً
-                return $exam->is_free ?? true;
+                // الطالب غير مسجل في هذه المادة نهائياً -> حجب قطعي
+                return false;
             }
 
             // إذا كان اشتراكه كاملاً، تظهر جميع اختبارات المادة
@@ -549,6 +562,26 @@ class ExamController extends Controller
 
         $exam = Exam::with(['questions', 'subject', 'stage'])->findOrFail($examId);
 
+        // التحقق الصارم: هل الطالب مسجل ومشترك في مادة هذا الاختبار؟
+        $enr = \App\Models\Enrollment::where('student_id', $student->id)
+            ->where('subject_id', $exam->subject_id)
+            ->where('status', 'active')
+            ->first();
+
+        if (!$enr) {
+            return redirect()->route('student.exams.index')->with('error', 'عذراً، هذا الاختبار متاح فقط للطلبة المسجلين والمشتركين في هذه المادة.');
+        }
+
+        if ($enr->access_mode !== 'all') {
+            $hasAccess = \App\Models\ExamAssignment::where('enrollment_id', $enr->id)
+                ->where('exam_id', $exam->id)
+                ->where('is_visible', true)
+                ->exists();
+            if (!$hasAccess) {
+                return redirect()->route('student.exams.index')->with('error', 'عذراً، هذا الاختبار غير مفعل في خطتك الدراسية المخصصة.');
+            }
+        }
+
         // التحقق من توقيت وجدولة الاختبار
         if ($exam->isUpcoming()) {
             $formattedStart = $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('Y/m/d - h:i A');
@@ -581,6 +614,34 @@ class ExamController extends Controller
                 }
 
                 $exam = Exam::with('questions')->findOrFail($id);
+
+                // التحقق الصارم من اشتراك الطالب في المادة عند الإرسال
+                $enr = \App\Models\Enrollment::where('student_id', $student->id)
+                    ->where('subject_id', $exam->subject_id)
+                    ->where('status', 'active')
+                    ->first();
+
+                if (!$enr) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'عذراً، لا يمكنك تسليم اختبار لمادة غير مسجل بها أو غير مشترك فيها!',
+                        'error'   => 'عذراً، لا يمكنك تسليم اختبار لمادة غير مسجل بها أو غير مشترك فيها!'
+                    ], 403);
+                }
+
+                if ($enr->access_mode !== 'all') {
+                    $hasAccess = \App\Models\ExamAssignment::where('enrollment_id', $enr->id)
+                        ->where('exam_id', $exam->id)
+                        ->where('is_visible', true)
+                        ->exists();
+                    if (!$hasAccess) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'عذراً، هذا الاختبار غير مفعل في خطتك الدراسية المخصصة!',
+                            'error'   => 'عذراً، هذا الاختبار غير مفعل في خطتك الدراسية المخصصة!'
+                        ], 403);
+                    }
+                }
 
                 if ($exam->isUpcoming()) {
                     return response()->json([

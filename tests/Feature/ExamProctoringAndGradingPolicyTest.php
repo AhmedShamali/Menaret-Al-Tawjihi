@@ -69,6 +69,13 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
             'stage_id'    => $this->stage->id,
             'status'      => 'active',
         ]);
+
+        \App\Models\Enrollment::create([
+            'student_id'  => $this->student->id,
+            'subject_id'  => $this->subject->id,
+            'status'      => 'active',
+            'access_mode' => 'all',
+        ]);
     }
 
     /**
@@ -601,5 +608,48 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
         // الطالب يدخل بنجاح للاختبار المتاح
         $takeActive = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $activeExam->id));
         $takeActive->assertOk();
+    }
+
+    /**
+     * اختبار صارم: الطالب يرى ويقدم اختبارات المواد المسجل بها فقط، ويُحجب عنه أي اختبار لمادة غير مسجل بها
+     */
+    public function test_student_only_sees_and_takes_exams_for_enrolled_subjects_and_non_enrolled_are_strictly_forbidden()
+    {
+        // مادة ثانية غير مسجل بها الطالب نهائياً (الدراسات التاريخية)
+        $unregisteredSubject = Subject::create([
+            'stage_id'    => $this->stage->id,
+            'name_ar'     => 'الدراسات التاريخية',
+            'subject_key' => 'history_unregistered',
+            'price_ils'   => 120,
+        ]);
+
+        $unregisteredExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $unregisteredSubject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار الدراسات التاريخية التجريبي',
+            'duration_minutes' => 60,
+        ]);
+
+        // 1. فحص لوحة تحكم الطالب (Dashboard)
+        $dashResponse = $this->actingAs($this->student, 'student')->get(route('student.dashboard'));
+        $dashResponse->assertOk();
+        $dashResponse->assertDontSee('اختبار الدراسات التاريخية التجريبي');
+
+        // 2. فحص صفحة قائمة الاختبارات (My Exams)
+        $examsIndexResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.index'));
+        $examsIndexResponse->assertOk();
+        $examsIndexResponse->assertDontSee('اختبار الدراسات التاريخية التجريبي');
+
+        // 3. محاولة فتح الاختبار غير المسجل بها -> يجب أن يتم منعه وتوجيهه لقائمة الاختبارات مع رسالة خطأ
+        $takeForbidden = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $unregisteredExam->id));
+        $takeForbidden->assertRedirect(route('student.exams.index'));
+        $takeForbidden->assertSessionHas('error');
+
+        // 4. محاولة تسليم إجابات للاختبار غير المسجل به -> يجب أن يتم الرفض بـ 403 Forbidden
+        $submitForbidden = $this->actingAs($this->student, 'student')->post(route('student.exams.submit', $unregisteredExam->id), [
+            'answers' => [],
+        ]);
+        $submitForbidden->assertStatus(403);
     }
 }

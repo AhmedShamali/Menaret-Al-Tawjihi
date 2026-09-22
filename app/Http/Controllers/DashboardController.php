@@ -102,6 +102,19 @@ class DashboardController extends Controller {
             ->latest()
             ->get();
 
+        // حصر الاختبارات حصرياً بالطلبة المسجلين والمشتركين في المادة
+        if (!$isAdminOrTeacher) {
+            if (!$enrollment || $enrollment->status !== 'active') {
+                $exams = collect();
+            } elseif ($enrollment->access_mode !== 'all') {
+                $allowedExamIds = \App\Models\ExamAssignment::where('enrollment_id', $enrollment->id)
+                    ->where('is_visible', true)
+                    ->pluck('exam_id')
+                    ->toArray();
+                $exams = $exams->whereIn('id', $allowedExamIds)->values();
+            }
+        }
+
         // 4. جلب الاختبارات التي حلها الطالب مسبقاً
         $submissions = $student_id 
             ? ExamSubmission::where('student_id', $student_id)->whereIn('exam_id', $exams->pluck('id'))->get()->keyBy('exam_id') 
@@ -146,35 +159,57 @@ class DashboardController extends Controller {
 
     public function studentIndex() {
         $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User) {
+            $student = $student->student ?? \App\Models\Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
         $student_id = $student?->id ?? 1;
 
         // 1. جلب آي دي الاختبارات التي حلها الطالب مسبقاً
         $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
 
-        // 2. جلب الاختبارات المتاحة مع استثناء التي تم حلها مسبقاً وحصرها في المواد المسجل بها الطالب
-        $examsQuery = Exam::latest()->whereNotIn('id', $solvedExamIds);
+        // 2. حصر الاختبارات قطيعاً في المواد المسجل بها الطالب ومشترك فيها باشتراك نشط حصراً
+        $available_exams = collect();
+        $availableExamsCount = 0;
+
         if ($student) {
-            $enrolledSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
+            $enrollments = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('status', 'active')
-                ->pluck('subject_id')
-                ->toArray();
+                ->get()
+                ->keyBy('subject_id');
+
+            $enrolledSubjectIds = $enrollments->keys()->toArray();
 
             if (!empty($enrolledSubjectIds)) {
-                $examsQuery->whereIn('subject_id', $enrolledSubjectIds);
-            } elseif ($student->stage_id) {
-                $examsQuery->whereHas('subject', function($q) use ($student) {
-                    $q->where('stage_id', $student->stage_id);
-                });
-            }
-        }
-        $availableExamsCount = (clone $examsQuery)->count();
-        $available_exams = $examsQuery->take(6)->get();
+                // جلب الاختبارات التابعة للمواد المسجل بها فقط
+                $candidateExams = Exam::whereIn('subject_id', $enrolledSubjectIds)
+                    ->whereNotIn('id', $solvedExamIds)
+                    ->with(['subject', 'stage'])
+                    ->withCount('questions')
+                    ->latest()
+                    ->get();
 
-        // إذا لم تتوفر امتحانات للمرحلة، نجلب الاختبارات العامة كبديل
-        if ($available_exams->isEmpty()) {
-            $fallbackQuery = Exam::latest()->whereNotIn('id', $solvedExamIds);
-            $availableExamsCount = (clone $fallbackQuery)->count();
-            $available_exams = $fallbackQuery->take(3)->get();
+                // تصفية صلاحيات الوصول وخطة المادة المعتمدة
+                $filteredExams = $candidateExams->filter(function ($exam) use ($enrollments) {
+                    $enr = $enrollments->get($exam->subject_id);
+                    if (!$enr) {
+                        return false;
+                    }
+
+                    // إن كان اشتراكاً كاملاً في المادة
+                    if ($enr->access_mode === 'all') {
+                        return true;
+                    }
+
+                    // إن كان اشتراكاً مخصصاً، يجب أن يكون المعلم قد حدد هذا الاختبار للطالب
+                    return \App\Models\ExamAssignment::where('enrollment_id', $enr->id)
+                        ->where('exam_id', $exam->id)
+                        ->where('is_visible', true)
+                        ->exists();
+                });
+
+                $availableExamsCount = $filteredExams->count();
+                $available_exams = $filteredExams->take(6)->values();
+            }
         }
 
         $my_stats = [
