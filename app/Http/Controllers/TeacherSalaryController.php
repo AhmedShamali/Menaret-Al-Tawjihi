@@ -10,9 +10,34 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class TeacherSalaryController extends Controller
 {
+    /**
+     * التحقق من وجود جدول استفسارات رواتب المعلمين وإنشاؤه ذاتياً إن لم تكن الهجرة قد نُفذت
+     */
+    private function ensureClaimsTableExists(): void
+    {
+        if (!Schema::hasTable('teacher_salary_claims')) {
+            try {
+                Schema::create('teacher_salary_claims', function (Blueprint $table) {
+                    $table->id();
+                    $table->foreignId('teacher_id')->constrained('users')->onDelete('cascade');
+                    $table->integer('year');
+                    $table->integer('month');
+                    $table->text('message');
+                    $table->text('admin_reply')->nullable();
+                    $table->foreignId('replied_by')->nullable()->constrained('users')->nullOnDelete();
+                    $table->timestamp('replied_at')->nullable();
+                    $table->string('status')->default('pending');
+                    $table->timestamps();
+                });
+            } catch (\Throwable $e) {}
+        }
+    }
+
     /**
      * واجهة حساب المعلم لاستعراض ومتابعة الرواتب ومسير الشهور وقسائم الراتب (Payslips)
      */
@@ -22,6 +47,8 @@ class TeacherSalaryController extends Controller
         if (!$teacher || $teacher->role !== 'teacher') {
             abort(403, 'غير مصرح لك بالوصول لبوابة رواتب المعلمين.');
         }
+
+        $this->ensureClaimsTableExists();
 
         $year = (int)$request->query('year', date('Y'));
         $monthsNames = TeacherSalary::monthNames();
@@ -33,11 +60,54 @@ class TeacherSalaryController extends Controller
             ->keyBy('month');
 
         // استفسارات المعلم المالية والردود الإدارية الواردة عن هذه السنة
-        $myClaims = TeacherSalaryClaim::with('repliedBy')
-            ->where('teacher_id', $teacher->id)
-            ->where('year', $year)
-            ->latest()
-            ->get();
+        $myClaims = collect();
+        if (Schema::hasTable('teacher_salary_claims')) {
+            $myClaims = TeacherSalaryClaim::with('repliedBy')
+                ->where('teacher_id', $teacher->id)
+                ->where('year', $year)
+                ->latest()
+                ->get();
+        }
+
+        // دمج ومزامنة أي استفسارات مالية للمعلم مسجلة في جدول الشكاوى المركزي
+        try {
+            $complaints = Complaint::where(function($q) use ($teacher) {
+                    $q->where('email', $teacher->email)
+                      ->orWhere('name', $teacher->name);
+                })
+                ->where(function($q) {
+                    $q->where('category', 'like', '%مالي%')
+                      ->orWhere('type', 'like', '%مالي%')
+                      ->orWhere('subject', 'like', '%راتب%');
+                })
+                ->latest()
+                ->get();
+
+            foreach ($complaints as $comp) {
+                // التأكد من عدم وجود الاستفسار مسبقاً بنفس الرسالة أو الرد
+                $exists = $myClaims->first(function($c) use ($comp) {
+                    return $c->message === $comp->message || ($comp->reply && $c->admin_reply === $comp->reply);
+                });
+
+                if (!$exists) {
+                    preg_match('/شهر\s+(\d+)/u', $comp->subject . ' ' . $comp->message, $m);
+                    $mNum = isset($m[1]) ? (int)$m[1] : (int)date('m');
+                    $virtualClaim = new TeacherSalaryClaim([
+                        'teacher_id'  => $teacher->id,
+                        'year'        => $year,
+                        'month'       => $mNum,
+                        'message'     => $comp->message,
+                        'admin_reply' => $comp->reply,
+                        'replied_at'  => $comp->replied_at,
+                        'status'      => $comp->status === 'replied' ? 'replied' : 'pending',
+                    ]);
+                    $virtualClaim->id = $comp->id;
+                    $virtualClaim->created_at = $comp->created_at;
+                    $myClaims->push($virtualClaim);
+                }
+            }
+        } catch (\Throwable $e) {}
+
         $myClaimsByMonth = $myClaims->groupBy('month');
 
         // إحصائيات عامة لحساب المعلم عن السنة المحددة
@@ -74,20 +144,26 @@ class TeacherSalaryController extends Controller
 
         $request->validate([
             'year'    => 'required|integer|min:2024|max:2030',
-            'month'   => 'required|integer|between:1,12',
-            'message' => 'required|string|max:1000',
+            'month'   => 'nullable|integer|between:1,12',
+            'message' => 'required|string|min:2|max:1000',
         ]);
 
-        $monthName = TeacherSalary::monthNamesAr()[$request->month] ?? "شهر {$request->month}";
+        $this->ensureClaimsTableExists();
+
+        $month = $request->filled('month') ? (int)$request->month : (int)date('m');
+        $monthName = TeacherSalary::monthNamesAr()[$month] ?? "شهر {$month}";
 
         // 1. تسجيل الاستفسار المالي في جدول المطالبات المالية للمعلمين
-        $claim = TeacherSalaryClaim::create([
-            'teacher_id' => $teacher->id,
-            'year'       => (int)$request->year,
-            'month'      => (int)$request->month,
-            'message'    => trim($request->message),
-            'status'     => 'pending',
-        ]);
+        $claim = null;
+        try {
+            $claim = TeacherSalaryClaim::create([
+                'teacher_id' => $teacher->id,
+                'year'       => (int)$request->year,
+                'month'      => $month,
+                'message'    => trim($request->message),
+                'status'     => 'pending',
+            ]);
+        } catch (\Throwable $e) {}
 
         // 2. تسجيل نسخة في جدول الشكاوى والاستفسارات لتظهر أيضاً في صندوق الوارد الإداري المركزي
         try {
@@ -107,7 +183,7 @@ class TeacherSalaryController extends Controller
         try {
             NotificationService::notifyAdmin(
                 "استفسار مالي بخصوص راتب {$monthName} 💵",
-                "أرسل المعلم ({$teacher->name}) ملاحظة بخصوص راتب ({$monthName} {$request->year}): " . $request->message,
+                "أرسل المعلم ({$teacher->name}) استفساراً مالياً بخصوص راتب ({$monthName} {$request->year}): " . $request->message,
                 'support',
                 route('admin.teachers.salaries', ['teacher_id' => $teacher->id, 'year' => $request->year]),
                 'fa-money-bill-wave'
@@ -135,6 +211,8 @@ class TeacherSalaryController extends Controller
             'reply' => 'required|string|min:2|max:1500',
         ]);
 
+        $this->ensureClaimsTableExists();
+
         $claim = TeacherSalaryClaim::with('teacher')->findOrFail($id);
         $claim->admin_reply = trim($request->reply);
         $claim->replied_by = $user->id;
@@ -142,12 +220,26 @@ class TeacherSalaryController extends Controller
         $claim->status = 'replied';
         $claim->save();
 
+        // تحديث سجل الشكاوى المطابق إن وجد لضمان المزامنة التامة
+        try {
+            Complaint::where(function($q) use ($claim) {
+                $q->where('email', $claim->teacher?->email)
+                  ->orWhere('name', $claim->teacher?->name);
+            })
+            ->where('status', 'new')
+            ->update([
+                'reply'      => $claim->admin_reply,
+                'status'     => 'replied',
+                'replied_at' => now(),
+            ]);
+        } catch (\Throwable $e) {}
+
         // إشعار المعلم فورياً باعتماد الرد
         try {
             NotificationService::notifyUser(
                 $claim->teacher_id,
-                "رد إداري على استفسارك المالي 📬",
-                "وردك رد رسمي من الإدارة العامة بخصوص استفسار راتب ({$claim->month_name_ar} {$claim->year}): " . \Illuminate\Support\Str::limit($claim->admin_reply, 80),
+                "رد إداري رسمي على استفسارك المالي 📬",
+                "وردك رد من الإدارة العامة بخصوص استفسار راتب ({$claim->month_name_ar} {$claim->year}): " . \Illuminate\Support\Str::limit($claim->admin_reply, 80),
                 'support',
                 route('teacher.salaries.index', ['year' => $claim->year]),
                 'fa-reply'
@@ -166,6 +258,8 @@ class TeacherSalaryController extends Controller
      */
     public function adminIndex(Request $request)
     {
+        $this->ensureClaimsTableExists();
+
         $year = (int)$request->query('year', date('Y'));
         $teacherId = $request->query('teacher_id');
         $monthFilter = $request->query('month');
@@ -190,17 +284,68 @@ class TeacherSalaryController extends Controller
         $salaries = $query->orderBy('month', 'desc')->paginate(20)->withQueryString();
 
         // استفسارات وملاحظات المعلمين المالية
-        $claimsQuery = TeacherSalaryClaim::with(['teacher', 'repliedBy'])->where('year', $year);
-        if ($teacherId) {
-            $claimsQuery->where('teacher_id', $teacherId);
+        $financialClaims = collect();
+        if (Schema::hasTable('teacher_salary_claims')) {
+            $claimsQuery = TeacherSalaryClaim::with(['teacher', 'repliedBy'])->where('year', $year);
+            if ($teacherId) {
+                $claimsQuery->where('teacher_id', $teacherId);
+            }
+            if ($monthFilter) {
+                $claimsQuery->where('month', (int)$monthFilter);
+            }
+            $financialClaims = $claimsQuery->latest()->get();
         }
-        if ($monthFilter) {
-            $claimsQuery->where('month', (int)$monthFilter);
-        }
-        $financialClaims = $claimsQuery->latest()->get();
+
+        // أيضاً دمج أي استفسارات مالية للمعلمين وردت في جدول الشكاوى المركزي
+        try {
+            $complaintClaims = Complaint::where(function($q) {
+                    $q->where('category', 'like', '%مالي%')
+                      ->orWhere('type', 'like', '%مالي%')
+                      ->orWhere('subject', 'like', '%راتب%');
+                })
+                ->where('subject', 'like', "%{$year}%")
+                ->latest()
+                ->get();
+
+            foreach ($complaintClaims as $comp) {
+                $exists = $financialClaims->first(function($c) use ($comp) {
+                    return $c->message === $comp->message || ($comp->reply && $c->admin_reply === $comp->reply);
+                });
+
+                if (!$exists) {
+                    $tUser = User::where('role', 'teacher')->where(function($q) use ($comp) {
+                        $q->where('email', $comp->email)->orWhere('name', $comp->name);
+                    })->first();
+
+                    if ($tUser && (!$teacherId || $teacherId == $tUser->id)) {
+                        preg_match('/شهر\s+(\d+)/u', $comp->subject . ' ' . $comp->message, $m);
+                        $mNum = isset($m[1]) ? (int)$m[1] : (int)date('m');
+                        if (!$monthFilter || $monthFilter == $mNum) {
+                            $virtual = new TeacherSalaryClaim([
+                                'teacher_id'  => $tUser->id,
+                                'year'        => $year,
+                                'month'       => $mNum,
+                                'message'     => $comp->message,
+                                'admin_reply' => $comp->reply,
+                                'replied_at'  => $comp->replied_at,
+                                'status'      => $comp->status === 'replied' ? 'replied' : 'pending',
+                            ]);
+                            $virtual->id = $comp->id;
+                            $virtual->created_at = $comp->created_at;
+                            $virtual->setRelation('teacher', $tUser);
+                            $financialClaims->push($virtual);
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {}
 
         // إحصائيات عامة للمدير
         $allSalaries = TeacherSalary::where('year', $year)->get();
+        $allPendingClaimsCount = Schema::hasTable('teacher_salary_claims') 
+            ? TeacherSalaryClaim::where('status', 'pending')->count()
+            : 0;
+
         $stats = [
             'total_disbursed' => $allSalaries->where('status', 'paid')->sum('net_salary'),
             'total_pending'   => $allSalaries->where('status', 'pending')->sum('net_salary'),
@@ -209,6 +354,7 @@ class TeacherSalaryController extends Controller
             'paid_records'    => $allSalaries->where('status', 'paid')->count(),
             'teachers_count'  => $teachers->count(),
             'pending_claims'  => $financialClaims->where('status', 'pending')->count(),
+            'all_pending_claims' => $allPendingClaimsCount,
         ];
 
         $monthsNames = TeacherSalary::monthNames();

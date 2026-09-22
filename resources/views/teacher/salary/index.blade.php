@@ -33,6 +33,9 @@
         </div>
 
         <div class="header-actions">
+            <button type="button" onclick="openClaimModal({{ (int)date('m') }}, '{{ addslashes($monthsNames[(int)date('m')] ?? 'الشهر الحالي') }}')" class="btn-claim-header" style="background: #eff6ff; color: #1e40af; border: 1.5px solid #bfdbfe; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                <i class="fa-solid fa-comments-dollar text-primary"></i> {{ __('إرسال استفسار مالي للإدارة') }}
+            </button>
             <form method="GET" action="{{ route('teacher.salaries.index') }}" class="year-select-form">
                 <label for="yearSelect" class="select-label"><i class="fa-regular fa-calendar"></i> {{ __('اختر السنة:') }}</label>
                 <select name="year" id="yearSelect" class="year-dropdown font-mono" onchange="this.form.submit()">
@@ -46,6 +49,40 @@
             </button>
         </div>
     </div>
+
+    {{-- تنبيه الإدارة العامة بالردود المالية الجديدة للمعلم --}}
+    @php
+        $repliedClaims = $myClaims->where('status', 'replied');
+        $pendingClaims = $myClaims->where('status', 'pending');
+    @endphp
+    @if($repliedClaims->count() > 0)
+        <div class="teacher-reply-alert-banner" style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1.5px solid #10b981; border-radius: 12px; padding: 16px 20px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.12); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 46px; height: 46px; border-radius: 12px; background: #059669; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.35rem; flex-shrink: 0; box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 3px; font-size: 1.05rem; font-weight: 800; color: #064e3b;">
+                        {{ __('وردك رد رسمي من الإدارة العامة بخصوص استفسارك المالي!') }}
+                    </h4>
+                    <p style="margin: 0; font-size: 0.86rem; color: #047857; line-height: 1.5;">
+                        <strong>{{ __('بخصوص:') }}</strong> {{ $repliedClaims->first()->month_name_ar }} {{ $repliedClaims->first()->year }} — 
+                        <strong>{{ __('نص الرد:') }}</strong> "{{ \Illuminate\Support\Str::limit($repliedClaims->first()->admin_reply, 90) }}"
+                    </p>
+                </div>
+            </div>
+            <button type="button" class="btn-table-action" onclick="openViewClaimReplyModal({{ json_encode($repliedClaims->first()) }}, '{{ addslashes($repliedClaims->first()->month_name_ar) }}')" style="background: #059669; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);">
+                <i class="fa-solid fa-eye"></i> {{ __('استعراض الرد بالكامل') }}
+            </button>
+        </div>
+    @elseif($pendingClaims->count() > 0)
+        <div class="teacher-reply-alert-banner" style="background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 12px; padding: 14px 20px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px;">
+            <i class="fa-solid fa-clock-rotate-left text-amber" style="font-size: 1.3rem;"></i>
+            <span style="font-size: 0.88rem; font-weight: 700; color: #92400e;">
+                {{ __('لديك :count استفسار مالي قيد المراجعة لدى الإدارة العامة حالياً، وسيصلك الرد الرسمي هنا فور اعتماده.', ['count' => $pendingClaims->count()]) }}
+            </span>
+        </div>
+    @endif
 
     {{-- 2. بطاقات المؤشرات المالية الكلاسيكية الفاتحة --}}
     <div class="stats-row-clean">
@@ -216,14 +253,12 @@
                                             </button>
                                         @endif
                                     @else
-                                        @if(!$sal)
-                                            <button type="button" 
-                                                    class="btn-table-action btn-claim" 
-                                                    onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')" 
-                                                    title="{{ __('استفسار مالي') }}">
-                                                <i class="fa-regular fa-comment-dots"></i> {{ __('استفسار مالي') }}
-                                            </button>
-                                        @endif
+                                        <button type="button" 
+                                                class="btn-table-action btn-claim" 
+                                                onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')" 
+                                                title="{{ __('استفسار مالي') }}">
+                                            <i class="fa-regular fa-comment-dots"></i> {{ __('استفسار مالي') }}
+                                        </button>
                                     @endif
                                 </div>
                             </td>
@@ -308,11 +343,9 @@
                                 </button>
                             @endif
                         @else
-                            @if(!$sal)
-                                <button type="button" class="btn-table-action btn-claim w-full" onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')">
-                                    <i class="fa-regular fa-comment-dots"></i> {{ __('إرسال استفسار مالي') }}
-                                </button>
-                            @endif
+                            <button type="button" class="btn-table-action btn-claim w-full" onclick="openClaimModal({{ $monthNum }}, '{{ addslashes($monthLabel) }}')">
+                                <i class="fa-regular fa-comment-dots"></i> {{ __('إرسال استفسار مالي') }}
+                            </button>
                         @endif
                     </div>
                 </div>

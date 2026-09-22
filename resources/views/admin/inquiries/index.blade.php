@@ -55,6 +55,16 @@
                 <i class="fa-solid fa-book-bookmark stat-icon text-indigo"></i>
             </div>
         </div>
+
+        @if(($stats['financial'] ?? 0) > 0)
+        <div class="stat-card-clean" style="--card-accent: #b45309;">
+            <span class="stat-label">{{ __('استفسارات المعلمين المالية') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number text-amber">{{ $stats['financial'] }}</span>
+                <i class="fa-solid fa-comments-dollar stat-icon text-amber"></i>
+            </div>
+        </div>
+        @endif
     </div>
 
     {{-- شريط التصفية والبحث --}}
@@ -62,12 +72,13 @@
         <form method="GET" action="{{ route('admin.inquiries.index') }}" class="filters-action-form">
             <div class="search-input-wrap">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث باسم الطالب، البريد، أو نص الرسالة...') }}" class="search-input-field">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث باسم الطالب، المعلم، البريد، أو نص الرسالة...') }}" class="search-input-field">
             </div>
             
             <div class="select-field-wrap">
                 <select name="category" onchange="this.form.submit()" class="filter-select-field">
                     <option value="all">{{ __('كافة التصنيفات') }}</option>
+                    <option value="استفسار مالي - مستحقات المعلمين" {{ request('category') == 'استفسار مالي - مستحقات المعلمين' ? 'selected' : '' }}>💰 {{ __('استفسار مالي - مستحقات المعلمين') }}</option>
                     <option value="استفسار أكاديمي عن المساقات" {{ request('category') == 'استفسار أكاديمي عن المساقات' ? 'selected' : '' }}>📚 {{ __('استفسار أكاديمي عن المساقات') }}</option>
                     <option value="مشكلة فنية أو تقنية في المنصة" {{ request('category') == 'مشكلة فنية أو تقنية في المنصة' ? 'selected' : '' }}>⚙️ {{ __('مشكلة تقنية') }}</option>
                     <option value="طلب تفعيل حساب أو اشتراك" {{ request('category') == 'طلب تفعيل حساب أو اشتراك' ? 'selected' : '' }}>💳 {{ __('تفعيل حساب / اشتراك') }}</option>
@@ -121,9 +132,15 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="category-badge">
-                                    {{ $inq->category ? __($inq->category) : ($inq->type ? __($inq->type) : __('استفسار عام')) }}
-                                </span>
+                                @if(str_contains($inq->category ?? '', 'مالي') || str_contains($inq->type ?? '', 'مالي') || str_contains($inq->subject ?? '', 'راتب'))
+                                    <span class="category-badge" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; font-weight: 800;">
+                                        <i class="fa-solid fa-comments-dollar"></i> {{ __('استفسار مالي للمعلم') }}
+                                    </span>
+                                @else
+                                    <span class="category-badge">
+                                        {{ $inq->category ? __($inq->category) : ($inq->type ? __($inq->type) : __('استفسار عام')) }}
+                                    </span>
+                                @endif
                                 <div class="subject-title">{{ $inq->subject ?? __('بدون عنوان') }}</div>
                             </td>
                             <td class="message-preview-cell">

@@ -765,6 +765,17 @@ class CommunicationController extends Controller
             'message'     => trim($request->message),
         ]);
 
+        try {
+            NotificationService::notifyUser(
+                $request->teacher_id,
+                "رسالة جديدة من الإدارة العامة 📬",
+                \Illuminate\Support\Str::limit($request->message, 80),
+                'chat',
+                route('teacher.admin_chat'),
+                'fa-comments'
+            );
+        } catch (\Throwable $e) {}
+
         return response()->json(['status' => 'success', 'data' => $message]);
     }
 
@@ -821,6 +832,16 @@ class CommunicationController extends Controller
                 'sender_type' => 'teacher',
                 'message'     => trim($request->message),
             ]);
+
+            try {
+                NotificationService::notifyAdmin(
+                    "رسالة جديدة من المعلم ({$teacher->name})",
+                    \Illuminate\Support\Str::limit($request->message, 80),
+                    'chat',
+                    route('admin.teachers.chat', ['teacher_id' => $teacher->id]),
+                    'fa-comments'
+                );
+            } catch (\Throwable $e) {}
 
             return response()->json([
                 'status' => 'success',

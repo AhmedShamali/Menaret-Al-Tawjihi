@@ -54,6 +54,21 @@
                 <i class="fa-solid fa-users-rectangle stat-icon text-indigo"></i>
             </div>
         </div>
+
+        <div class="stat-card-clean" style="--card-accent: {{ ($stats['pending_claims'] > 0 || ($stats['all_pending_claims'] ?? 0) > 0) ? '#dc2626' : '#64748b' }};">
+            <span class="stat-label">{{ __('استفسارات المعلمين المالية') }}</span>
+            <div class="stat-value-wrap">
+                <span class="stat-number {{ ($stats['pending_claims'] > 0 || ($stats['all_pending_claims'] ?? 0) > 0) ? 'text-rose' : 'text-slate-500' }} font-mono">{{ $stats['pending_claims'] }}</span>
+                <i class="fa-solid fa-comments-dollar stat-icon {{ ($stats['pending_claims'] > 0 || ($stats['all_pending_claims'] ?? 0) > 0) ? 'text-rose' : 'text-slate-400' }}"></i>
+            </div>
+            @if($stats['pending_claims'] > 0)
+                <small style="color: #dc2626; font-size: 0.72rem; font-weight: 700;">{{ __('بانتظار رد الإدارة') }}</small>
+            @elseif(($stats['all_pending_claims'] ?? 0) > 0)
+                <small style="color: #d97706; font-size: 0.72rem; font-weight: 700;">{{ __('يوجد :count استفسار في فلاتر أخرى', ['count' => $stats['all_pending_claims']]) }}</small>
+            @else
+                <small style="color: #059669; font-size: 0.72rem; font-weight: 700;">{{ __('كافة الاستفسارات تمت الإجابة عليها ✅') }}</small>
+            @endif
+        </div>
     </div>
 
     {{-- 3. شريط الفلاتر والبحث --}}
@@ -163,6 +178,34 @@
                     </div>
                 @endforeach
             </div>
+        </div>
+    @else
+        <div class="claims-summary-card" style="padding: 16px 20px; margin-bottom: 20px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 40px; height: 40px; border-radius: 10px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <strong style="font-size: 0.94rem; color: #064e3b; display: block;">{{ __('لا توجد استفسارات مالية للمعلمين في هذا الفلتر') }}</strong>
+                    <small style="color: #64748b;">{{ __('أي استفسار مالي أو ملاحظة راتب يرسلها أي معلم ستظهر هنا فورياً للإدارة للتدقيق والرد عليها مباشرة.') }}</small>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- تنبيه لوجود استفسارات مالية معلقة خارج نطاق الفلتر الحالي --}}
+    @if(($stats['all_pending_claims'] ?? 0) > 0 && (!isset($financialClaims) || $financialClaims->where('status', 'pending')->count() == 0))
+        <div style="background: #fffbeb; border: 1.5px solid #f59e0b; border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; align-items: center; gap: 12px; color: #92400e;">
+                <i class="fa-solid fa-bell text-amber" style="font-size: 1.3rem;"></i>
+                <div>
+                    <strong style="font-size: 0.94rem; display: block;">{{ __('تنبيه إداري: يوجد :count استفسار مالي معلق من المعلمين في سنوات أو فلاتر أخرى بانتظار ردك.', ['count' => $stats['all_pending_claims']]) }}</strong>
+                    <span style="font-size: 0.8rem; color: #b45309;">{{ __('اضغط على الزر لإلغاء الفلترة واستعراض كافة الاستفسارات المعلقة للرد عليها.') }}</span>
+                </div>
+            </div>
+            <a href="{{ route('admin.teachers.salaries') }}" class="btn-clear-filter" style="background: #d97706; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-weight: 800; text-decoration: none; font-size: 0.84rem;">
+                <i class="fa-solid fa-filter-circle-xmark"></i> {{ __('عرض كافة الاستفسارات') }}
+            </a>
         </div>
     @endif
 

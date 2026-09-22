@@ -713,6 +713,7 @@ class AdminManagerController extends Controller {
             'pending'   => \App\Models\Complaint::whereIn('status', ['new', 'pending'])->count(),
             'replied'   => \App\Models\Complaint::where('status', 'replied')->count(),
             'academics' => \App\Models\Complaint::where('category', 'like', '%أكاديمي%')->count(),
+            'financial' => \App\Models\Complaint::where('category', 'like', '%مالي%')->count(),
         ];
 
         return view('admin.inquiries.index', compact('inquiries', 'stats'));
@@ -721,11 +722,11 @@ class AdminManagerController extends Controller {
     public function academicInquiryReply(Request $request, $id)
     {
         $request->validate([
-            'reply' => 'required|string|min:3',
+            'reply' => 'required|string|min:2',
         ]);
 
         $inquiry = \App\Models\Complaint::findOrFail($id);
-        $inquiry->reply = $request->reply;
+        $inquiry->reply = trim($request->reply);
         $inquiry->status = 'replied';
         $inquiry->replied_at = now();
         if ($request->filled('admin_notes')) {
@@ -733,9 +734,49 @@ class AdminManagerController extends Controller {
         }
         $inquiry->save();
 
+        // مزامنة الرد مع جدول استفسارات رواتب المعلمين وإرسال إشعار فوري للمعلم
+        try {
+            $teacherUser = null;
+            if ($inquiry->email) {
+                $teacherUser = \App\Models\User::where('email', $inquiry->email)->first();
+            }
+            if (!$teacherUser && $inquiry->name) {
+                $teacherUser = \App\Models\User::where('role', 'teacher')->where('name', $inquiry->name)->first();
+            }
+
+            if ($teacherUser) {
+                if (\Illuminate\Support\Facades\Schema::hasTable('teacher_salary_claims')) {
+                    $claim = \App\Models\TeacherSalaryClaim::where('teacher_id', $teacherUser->id)
+                        ->where(function($q) {
+                            $q->where('status', 'pending')->orWhereNull('admin_reply');
+                        })
+                        ->latest()
+                        ->first();
+
+                    if ($claim) {
+                        $claim->admin_reply = trim($request->reply);
+                        $claim->replied_by = \Illuminate\Support\Facades\Auth::id();
+                        $claim->replied_at = now();
+                        $claim->status = 'replied';
+                        $claim->save();
+                    }
+                }
+
+                // إرسال إشعار مباشر في لوحة تحكم المعلم
+                \App\Services\NotificationService::notifyUser(
+                    $teacherUser->id,
+                    "رد إداري رسمي على استفسارك المالي 📬",
+                    "وردك رد من إدارة المنصة: " . \Illuminate\Support\Str::limit($request->reply, 80),
+                    'support',
+                    route('teacher.salaries.index'),
+                    'fa-reply'
+                );
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success' => true,
-            'title'   => 'تم حفظ الرد على الاستفسار بنجاح ✅',
+            'title'   => 'تم حفظ الرد على الاستفسار وإشعار صاحب التذكرة بنجاح ✅',
             'status'  => 'replied'
         ]);
     }
