@@ -1830,6 +1830,14 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('public.past_exams.index') }}" target="_blank" class="nav-item">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-amber"><i class="fa-solid fa-file-pdf"></i></span>
+                            <span>{{ __('أرشيف الامتحانات الوزارية') }}</span>
+                        </div>
+                    </div>
+                </a>
 
                 <span class="group-label"><i class="fa-solid fa-circle-user"></i> {{ __('الحساب والدعم') }}</span>
                 <a href="{{ route('student.teachers.index') }}" class="nav-item {{ Request::is('student/teachers*') ? 'active' : '' }}">

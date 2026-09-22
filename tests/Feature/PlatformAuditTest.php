@@ -544,6 +544,13 @@ class PlatformAuditTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('أرشيف الامتحانات الوزارية السابقة');
         $response->assertSee('المكتبة الأكاديمية المركزية');
+        $response->assertSee('الرياضيات (الورقة الأولى)');
+        $response->assertSee('الفيزياء');
+
+        // Verify home page renders archive link
+        $home = $this->get('/');
+        $home->assertStatus(200);
+        $home->assertSee('/past-exams');
     }
 
     public function test_admin_exam_preview_renders_successfully(): void
