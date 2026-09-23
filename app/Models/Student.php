@@ -228,28 +228,25 @@ class Student extends Authenticatable
     }
 
     /**
-     * هل يستحق على الطالب سداد قسط شهر جديد غير مسدد؟
+     * هل يستحق على الطالب سداد قسط شهر جديد أو متأخرات سابقة؟
      */
     public function isMonthlyFeeDue(?string $academicYear = null): bool
     {
-        // إذا كان الطالب معفياً بنسبة 100%، لا يستحق عليه سداد
         if ($this->hasDiscount() && $this->custom_discount_percent >= 100) {
             return false;
         }
 
-        $currentMonth = $this->currentAcademicMonthIndex();
-        $paidMonths = $this->paidMonthsCount($academicYear);
-
-        return $currentMonth > $paidMonths;
+        $summary = $this->getFinancialSummary($academicYear);
+        return ($summary['total_due_now'] ?? 0) > 0;
     }
 
     /**
-     * رقم الشهر المستحق سداده حالياً
+     * رقم الشهر المستحق سداده حالياً (مع مراعاة أي شهر سابق به متبقي)
      */
     public function currentDueMonth(?string $academicYear = null): int
     {
-        $paid = $this->paidMonthsCount($academicYear);
-        return min(12, max(1, $paid + 1));
+        $summary = $this->getFinancialSummary($academicYear);
+        return $summary['active_due_month'] ?? min(12, max(1, $this->paidMonthsCount($academicYear) + 1));
     }
 
     /**
@@ -259,6 +256,116 @@ class Student extends Authenticatable
     {
         $monthNum = $this->currentDueMonth($academicYear);
         return \App\Models\StudentMonthlySubscription::monthNamesAr()[$monthNum] ?? "الشهر {$monthNum}";
+    }
+
+    /**
+     * كشف الحساب والبيان المالي الشامل للطالب (المتأخرات السابقة + قسط الشهر الحالي + الإجمالي المطلوب)
+     */
+    public function getFinancialSummary(?string $academicYear = null): array
+    {
+        $year = $academicYear ?? '2026-2027';
+
+        if ($this->monthlySubscriptions()->where('academic_year', $year)->count() < 12) {
+            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($this, $year);
+        }
+
+        $subscriptions = $this->monthlySubscriptions()
+            ->where('academic_year', $year)
+            ->orderBy('month')
+            ->get();
+
+        $currentCalMonth = $this->currentAcademicMonthIndex();
+
+        $arrearsList = [];
+        $previousUnpaidBalance = 0.0;
+        $currentMonthDue = 0.0;
+        $activeDueMonthNum = $currentCalMonth;
+
+        // البحث عن أول شهر يحتوي على رصيد متبقي غير مسدد
+        $firstIncompleteSub = $subscriptions->first(function ($s) {
+            return !in_array($s->status, ['paid', 'waived']) && ((float)$s->remaining_amount > 0);
+        });
+
+        if ($firstIncompleteSub) {
+            $activeDueMonthNum = $firstIncompleteSub->month;
+        }
+
+        // تقسيم الشهور: الشهور السابقة للشهر الحالي تعتبر متأخرات، والشهر الحالي يعتبر القسط النشط
+        foreach ($subscriptions as $s) {
+            if ($s->status === 'waived') continue;
+            $rem = (float) $s->remaining_amount;
+            if ($rem <= 0) continue;
+
+            if ($s->month < $currentCalMonth) {
+                // متأخرات مستحقة من شهور سابقة
+                $previousUnpaidBalance += $rem;
+                $arrearsList[] = [
+                    'month'            => $s->month,
+                    'name'             => $s->month_name_ar,
+                    'month_name'       => $s->month_name_ar,
+                    'status'           => $s->status,
+                    'amount'           => (float) $s->amount,
+                    'paid_amount'      => (float) $s->paid_amount,
+                    'remaining'        => $rem,
+                    'remaining_amount' => $rem,
+                ];
+            } elseif ($s->month == $currentCalMonth) {
+                // قسط الشهر الحالي
+                $currentMonthDue = $rem;
+            }
+        }
+
+        // تحديد الشهر النشط للدفع
+        if (!empty($arrearsList)) {
+            $activeDueMonthNum = $arrearsList[0]['month'];
+        } elseif ($currentMonthDue > 0) {
+            $activeDueMonthNum = $currentCalMonth;
+        } else {
+            // جميع الشهور المنقضية والحالية مسددة بالكامل
+            $activeDueMonthNum = $firstIncompleteSub ? $firstIncompleteSub->month : min(12, $currentCalMonth + 1);
+        }
+
+        $totalDueNow = round($previousUnpaidBalance + $currentMonthDue, 2);
+
+        // إجمالي العام الدراسي
+        $totalYearDue = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
+        $totalYearPaid = (float) $subscriptions->sum(function ($s) {
+            if ($s->status === 'waived') return 0.0;
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
+            return (float)($s->paid_amount ?? 0);
+        });
+        $totalYearRemaining = max(0.0, round($totalYearDue - $totalYearPaid, 2));
+
+        $paidMonthsCount = $subscriptions->whereIn('status', ['paid', 'waived'])->count();
+        $partialMonthsCount = $subscriptions->where('status', 'partial')->count();
+        $unpaidMonthsCount = $subscriptions->where('status', 'unpaid')->count();
+        $pendingMonthsCount = $subscriptions->where('status', 'pending')->count();
+
+        $monthNamesAr = \App\Models\StudentMonthlySubscription::monthNamesAr();
+        $activeDueMonthName = $monthNamesAr[$activeDueMonthNum] ?? "الشهر {$activeDueMonthNum}";
+        $currentCalMonthName = $monthNamesAr[$currentCalMonth] ?? "الشهر {$currentCalMonth}";
+
+        return [
+            'academic_year'           => $year,
+            'current_academic_month'  => $currentCalMonth,
+            'current_academic_name'   => $currentCalMonthName,
+            'active_due_month'        => $activeDueMonthNum,
+            'active_due_month_name'   => $activeDueMonthName,
+            'has_arrears'             => $previousUnpaidBalance > 0,
+            'previous_unpaid_balance' => round($previousUnpaidBalance, 2),
+            'arrears_details'         => $arrearsList,
+            'current_month_due'       => round($currentMonthDue, 2),
+            'total_due_now'           => $totalDueNow,
+            'total_year_due'          => round($totalYearDue, 2),
+            'total_year_paid'         => round($totalYearPaid, 2),
+            'total_year_remaining'    => $totalYearRemaining,
+            'paid_months_count'       => $paidMonthsCount,
+            'partial_months_count'    => $partialMonthsCount,
+            'unpaid_months_count'     => $unpaidMonthsCount,
+            'pending_months_count'    => $pendingMonthsCount,
+            'is_fully_paid'           => $totalYearRemaining <= 0,
+            'subscriptions'           => $subscriptions,
+        ];
     }
 
     /**

@@ -122,11 +122,13 @@ class AdminPaymentController extends Controller
                 }
             }
 
-            // مزامنة أقساط واشتراكات الشهور الـ 12 للطالب تلقائياً
+            // تخصيص وسداد أقساط واشتراكات الشهور الـ 12 للطالب بنظام FIFO
             if ($payment->student) {
                 try {
+                    \App\Models\StudentMonthlySubscription::allocatePayment($payment->student, (float)$payment->amount, $payment->id);
+                } catch (\Throwable $e) {
                     \App\Models\StudentMonthlySubscription::syncWithStudentPayments($payment->student);
-                } catch (\Throwable $e) {}
+                }
             }
 
             // إشعار الطالب

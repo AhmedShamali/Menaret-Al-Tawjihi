@@ -166,6 +166,55 @@
         </div>
     </div>
 
+    {{-- كشف الحساب والذمة اللحظية المتأخرة والمستحقة الآن --}}
+    @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0 || ($financialSummary['total_due_now'] ?? 0) > 0)
+        <div class="financial-arrears-alert-card {{ ($financialSummary['previous_unpaid_balance'] ?? 0) > 0 ? 'has-arrears-alert' : 'is-normal-due' }}">
+            <div class="alert-content-left">
+                <div class="alert-icon-royal">
+                    @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    @else
+                        <i class="fa-solid fa-circle-info"></i>
+                    @endif
+                </div>
+                <div class="alert-text-royal">
+                    <h3 class="alert-royal-title">
+                        @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                            {{ __('ذمة مالية متأخرة مستحقة التحصيل فوراً') }}
+                        @else
+                            {{ __('استحقاق القسط الشهري الحالي') }}
+                        @endif
+                    </h3>
+                    <p class="alert-royal-desc">
+                        @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                            {{ __('يوجد بذمة الطالب متأخرات غير مسددة من شهور سابقة بقيمة') }} 
+                            <strong class="font-mono text-danger">{{ number_format($financialSummary['previous_unpaid_balance'], 2) }} ₪</strong>
+                            @if(!empty($financialSummary['arrears_details']))
+                                ({{ __('عن الشهور:') }} 
+                                @foreach($financialSummary['arrears_details'] as $arr)
+                                    <span class="arrears-month-pill">{{ $arr['name'] }}: {{ number_format($arr['remaining'], 0) }} ₪</span>
+                                @endforeach
+                                )
+                            @endif
+                            ، {{ __('بالإضافة إلى قسط :month المستحق بقيمة', ['month' => $financialSummary['active_due_month_name']]) }}
+                            <strong class="font-mono">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>.
+                        @else
+                            {{ __('لا توجد متأخرات سابقة من شهور ماضية. القسط الشهري المستحق حالياً هو عن :month بقيمة', ['month' => $financialSummary['active_due_month_name']]) }}
+                            <strong class="font-mono text-primary">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>.
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert-action-right">
+                <div class="due-now-badge-box">
+                    <span class="badge-title">{{ __('إجمالي المطلوب سداده الآن') }}</span>
+                    <strong class="badge-amt font-mono">{{ number_format($financialSummary['total_due_now'], 2) }} ₪</strong>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- 4. لوحة التحكم والتحكم الفردي بجميع الشهور الـ 12 --}}
     <div class="months-control-section-classic">
         <div class="section-classic-header">
@@ -952,6 +1001,113 @@
     background: #7c3aed;
     border-radius: 6px;
     transition: width 0.4s ease;
+}
+
+/* كرت التنبيه المالي اللحظي والذمة المتأخرة */
+.financial-arrears-alert-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 16px;
+    padding: 18px 24px;
+    margin-bottom: 26px;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+.financial-arrears-alert-card.has-arrears-alert {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1.5px solid #fde68a;
+}
+.financial-arrears-alert-card.is-normal-due {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1.5px solid #bfdbfe;
+}
+.alert-content-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+}
+.alert-icon-royal {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+.has-arrears-alert .alert-icon-royal {
+    background: #fef08a;
+    color: #b45309;
+    border: 1px solid #fcd34d;
+}
+.is-normal-due .alert-icon-royal {
+    background: #bfdbfe;
+    color: #1d4ed8;
+    border: 1px solid #93c5fd;
+}
+.alert-text-royal {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.alert-royal-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+.has-arrears-alert .alert-royal-title {
+    color: #92400e;
+}
+.is-normal-due .alert-royal-title {
+    color: #1e3a8a;
+}
+.alert-royal-desc {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #334155;
+    line-height: 1.5;
+}
+.arrears-month-pill {
+    display: inline-block;
+    background: #ffffff;
+    border: 1px solid #f59e0b;
+    color: #b45309;
+    padding: 1px 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.76rem;
+    margin: 0 2px;
+}
+.due-now-badge-box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 12px 20px;
+    text-align: center;
+    border: 1.5px solid #cbd5e1;
+    min-width: 170px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.has-arrears-alert .due-now-badge-box {
+    border-color: #f59e0b;
+}
+.due-now-badge-box .badge-title {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.due-now-badge-box .badge-amt {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #0f172a;
+}
+.has-arrears-alert .due-now-badge-box .badge-amt {
+    color: #b45309;
 }
 
 /* 4. لوحة استعراض الشهور الـ 12 */

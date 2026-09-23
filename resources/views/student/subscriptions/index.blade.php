@@ -73,6 +73,94 @@
         </div>
     </div>
 
+    {{-- كشف الموقف المالي الفوري والأقساط المستحقة (معالجة المتأخرات والدفع الجزئي) --}}
+    @if(isset($financialSummary))
+        <div class="active-due-summary-card {{ $financialSummary['has_arrears'] ? 'has-arrears' : ($financialSummary['total_due_now'] > 0 ? 'has-due' : 'all-clear') }}">
+            <div class="due-card-header">
+                <div class="due-badge-pill">
+                    <i class="fa-solid {{ $financialSummary['has_arrears'] ? 'fa-triangle-exclamation text-amber' : ($financialSummary['total_due_now'] > 0 ? 'fa-bell text-blue' : 'fa-circle-check text-emerald') }}"></i>
+                    <span>
+                        @if($financialSummary['has_arrears'])
+                            {{ __('تنبيه محاسبي: يوجد رصيد متبقي ومتأخرات سابقة بانتظار استكمال السداد') }}
+                        @elseif($financialSummary['total_due_now'] > 0)
+                            {{ __('الموقف المالي: قسط الشهر الحالي مستحق للسداد') }}
+                        @else
+                            {{ __('الموقف المالي: كافة الأقساط مسددة ومبرأة بالكامل حتى تاريخه ✅') }}
+                        @endif
+                    </span>
+                </div>
+                <div class="due-month-tag">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span>{{ $financialSummary['active_due_month_name'] }}</span>
+                </div>
+            </div>
+
+            <div class="due-figures-grid">
+                @if($financialSummary['has_arrears'])
+                    <div class="due-fig-item arrears-highlight">
+                        <span class="fig-label text-rose">{{ __('المتأخرات والمتبقي من الشهور السابقة:') }}</span>
+                        <div class="fig-value-row">
+                            <strong class="fig-amt text-rose font-mono">{{ number_format($financialSummary['previous_unpaid_balance'], 2) }} ₪</strong>
+                            @if(count($financialSummary['arrears_details']) > 0)
+                                <span class="arrears-count-badge">
+                                    {{ count($financialSummary['arrears_details']) }} {{ __('شهور بها رصيد') }}
+                                </span>
+                            @endif
+                        </div>
+                        <small class="fig-sub">
+                            @foreach($financialSummary['arrears_details'] as $arr)
+                                <span>{{ $arr['month_name'] }} (متبقي: {{ number_format($arr['remaining_amount'], 0) }} ₪){{ !$loop->last ? ' • ' : '' }}</span>
+                            @endforeach
+                        </small>
+                    </div>
+                @endif
+
+                <div class="due-fig-item">
+                    <span class="fig-label">{{ __('قسط :month:', ['month' => $financialSummary['active_due_month_name']]) }}</span>
+                    <strong class="fig-amt text-navy font-mono">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>
+                    <small class="fig-sub">{{ __('الرسم الشهري المقبول بعد تطبيق المنح والخصومات') }}</small>
+                </div>
+
+                <div class="due-fig-item grand-due-item">
+                    <span class="fig-label">{{ __('إجمالي المبلغ المستحق للدفع حالياً:') }}</span>
+                    <strong class="fig-amt font-mono text-primary-net">{{ number_format($financialSummary['total_due_now'], 2) }} ₪</strong>
+                    <small class="fig-sub">
+                        @if($financialSummary['has_arrears'])
+                            {{ __('شاملاً متأخرات الشهور السابقة + قسط الشهر الحالي') }}
+                        @else
+                            {{ __('المبلغ المطلوب لسداد هذا الشهر بالكامل') }}
+                        @endif
+                    </small>
+                </div>
+            </div>
+
+            @if($financialSummary['total_due_now'] > 0)
+                <div class="due-action-options-strip">
+                    <div class="action-options-title">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <span>{{ __('خيارات السداد الإلكتروني المتاحة:') }}</span>
+                    </div>
+                    <div class="action-buttons-wrap">
+                        @if($financialSummary['has_arrears'])
+                            <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['previous_unpaid_balance'], 'month' => $financialSummary['arrears_details'][0]['month'] ?? 1, 'type' => 'arrears']) }}" class="btn-due-action secondary">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>{{ __('سداد المتأخرات السابقة فقط') }} ({{ number_format($financialSummary['previous_unpaid_balance'], 0) }} ₪)</span>
+                            </a>
+                        @endif
+                        <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['current_month_due'], 'month' => $financialSummary['active_due_month'], 'type' => 'current']) }}" class="btn-due-action secondary">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            <span>{{ __('سداد قسط :month فقط', ['month' => $financialSummary['active_due_month_name']]) }} ({{ number_format($financialSummary['current_month_due'], 0) }} ₪)</span>
+                        </a>
+                        <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['total_due_now'], 'month' => $financialSummary['active_due_month'], 'type' => 'total']) }}" class="btn-due-action primary-gold">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>{{ __('سداد الإجمالي كاملاً الآن') }} ({{ number_format($financialSummary['total_due_now'], 0) }} ₪)</span>
+                        </a>
+                    </div>
+                </div>
+            @endif
+        </div>
+    @endif
+
     {{-- شبكة الشهور الـ 12 التفاعلية --}}
     <div class="months-timeline-card">
         <div class="timeline-head">
@@ -138,7 +226,7 @@
                             </span>
                         @elseif($isPartial)
                             <div class="unpaid-actions-row">
-                                <a href="{{ route('student.pendingPayment.show') }}" class="btn-month-status pay" style="flex: 1; background: #b45309;">
+                                <a href="{{ route('student.pendingPayment.show', ['amount' => $remAmt, 'month' => $sub->month, 'type' => 'remaining']) }}" class="btn-month-status pay" style="flex: 1; background: #b45309;">
                                     <i class="fa-solid fa-receipt"></i> {{ __('سداد المتبقي') }} ({{ number_format($remAmt, 0) }} ₪)
                                 </a>
                                 <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود سداد باقي قسط (' . $sub->month_name_ar . ') وقيمته ' . number_format($remAmt, 0) . ' ₪ لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
@@ -155,8 +243,8 @@
                             </span>
                         @else
                             <div class="unpaid-actions-row">
-                                <a href="{{ route('student.pendingPayment.show') }}" class="btn-month-status pay" style="flex: 1;">
-                                    <i class="fa-solid fa-receipt"></i> {{ __('Pay this installment') }}
+                                <a href="{{ route('student.pendingPayment.show', ['amount' => $sub->amount, 'month' => $sub->month, 'type' => 'installment']) }}" class="btn-month-status pay" style="flex: 1;">
+                                    <i class="fa-solid fa-receipt"></i> {{ __('سداد هذا القسط') }} ({{ number_format($sub->amount, 0) }} ₪)
                                 </a>
                                 <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
                                     <i class="fa-brands fa-whatsapp"></i>
@@ -239,7 +327,7 @@
                             </td>
                             <td style="text-align: center;">
                                 @if(!$isPaid && !$isWaived)
-                                    <a href="{{ route('student.pendingPayment.show') }}" class="tbl-btn" style="background: {{ $isPartial ? '#b45309' : '#1e3a8a' }};">
+                                    <a href="{{ route('student.pendingPayment.show', ['amount' => $isPartial ? $remAmt : $sub->amount, 'month' => $sub->month, 'type' => $isPartial ? 'remaining' : 'installment']) }}" class="tbl-btn" style="background: {{ $isPartial ? '#b45309' : '#1e3a8a' }};">
                                         <i class="fa-solid fa-receipt"></i> {{ $isPartial ? __('سداد الباقي') : __('رفع إشعار') }}
                                     </a>
                                 @else
@@ -490,5 +578,167 @@
         transition: 0.2s;
     }
     .btn-month-status.whatsapp:hover { background: #128c7e; }
+
+    /* Active Due Summary Card Styles */
+    .active-due-summary-card {
+        background: #ffffff;
+        border: 2px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        margin-bottom: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .active-due-summary-card.has-arrears {
+        border-color: #fde68a;
+        background: linear-gradient(180deg, #fffbeb 0%, #ffffff 60px);
+    }
+    .active-due-summary-card.has-due {
+        border-color: #bfdbfe;
+        background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60px);
+    }
+    .active-due-summary-card.all-clear {
+        border-color: #a7f3d0;
+        background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 60px);
+    }
+    .due-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f1f5f9;
+        margin-bottom: 20px;
+    }
+    .due-badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .due-month-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f1f5f9;
+        color: #1e3a8a;
+        border: 1px solid #cbd5e1;
+        padding: 6px 14px;
+        border-radius: 30px;
+        font-size: 0.84rem;
+        font-weight: 800;
+    }
+    .due-figures-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .due-fig-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .due-fig-item.arrears-highlight {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+    .due-fig-item.grand-due-item {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+    }
+    .fig-label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 700;
+    }
+    .fig-value-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .fig-amt {
+        font-size: 1.45rem;
+        font-weight: 800;
+    }
+    .arrears-count-badge {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+    .fig-sub {
+        font-size: 0.76rem;
+        color: #64748b;
+        line-height: 1.4;
+    }
+    .due-action-options-strip {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+    .action-options-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #1e3a8a;
+        font-weight: 800;
+        font-size: 0.9rem;
+    }
+    .action-buttons-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn-due-action {
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-size: 0.86rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+    .btn-due-action.secondary {
+        background: #ffffff;
+        color: #1e3a8a;
+        border: 1.5px solid #cbd5e1;
+    }
+    .btn-due-action.secondary:hover {
+        background: #f1f5f9;
+        border-color: #94a3b8;
+    }
+    .btn-due-action.primary-gold {
+        background: linear-gradient(135deg, #1e3a8a, #0f172a);
+        color: #fbbf24;
+        border: 1.5px solid #d97706;
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+    }
+    .btn-due-action.primary-gold:hover {
+        background: linear-gradient(135deg, #0f172a, #1e3a8a);
+        transform: translateY(-2px);
+        color: #ffffff;
+    }
 </style>
 @endsection

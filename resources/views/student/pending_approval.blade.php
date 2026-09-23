@@ -158,13 +158,29 @@
                         <span class="fee-value text-emerald">- {{ number_format($bundleDiscount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                     </div>
                 @endif
-                <div class="fee-box discount">
-                    <span class="fee-title">{{ __('المنحة / الخصم الخاص') }}</span>
-                    <span class="fee-value text-emerald">- {{ number_format($discountAmount ?? 0, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
-                </div>
+                @if(isset($discountAmount) && $discountAmount > 0)
+                    <div class="fee-box discount">
+                        <span class="fee-title">{{ __('المنحة / الخصم الخاص') }}</span>
+                        <span class="fee-value text-emerald">- {{ number_format($discountAmount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
+                    </div>
+                @endif
+                @if(isset($financialSummary) && $financialSummary['has_arrears'])
+                    <div class="fee-box arrears-box" style="background: #fef2f2; border: 1.5px solid #fecaca;">
+                        <span class="fee-title text-rose">{{ __('المتأخرات السابقة') }}</span>
+                        <span class="fee-value text-rose">+ {{ number_format($financialSummary['previous_unpaid_balance'], 0) }} ₪</span>
+                    </div>
+                @endif
                 <div class="fee-box net-amount">
-                    <span class="fee-title">{{ __('المطلوب لسداد') }} ({{ $dueMonthName ?? __('الشهر الحالي') }})</span>
-                    <span class="fee-value text-primary-net">{{ number_format($finalAmount ?? 150, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
+                    <span class="fee-title">
+                        @if(isset($requestedAmount) && $requestedAmount > 0)
+                            {{ __('المبلغ المحدد للسداد') }}
+                        @elseif(isset($financialSummary) && $financialSummary['has_arrears'])
+                            {{ __('إجمالي المطلوب للدفع الآن') }}
+                        @else
+                            {{ __('المطلوب لسداد') }} ({{ $dueMonthName ?? __('الشهر الحالي') }})
+                        @endif
+                    </span>
+                    <span class="fee-value text-primary-net">{{ number_format($finalAmount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
             </div>
 
@@ -179,6 +195,20 @@
                 <div class="fee-note-alert" style="margin-top: 10px;">
                     <i class="fa-solid fa-gift"></i>
                     <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على رسوم الشهر.', ['amount' => number_format($discountAmount, 0)]) }}</span>
+                </div>
+            @endif
+
+            @if(isset($financialSummary) && $financialSummary['has_arrears'])
+                <div class="fee-note-alert" style="margin-top: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #b45309;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>
+                        <strong>{{ __('تنبيه محاسبي:') }}</strong>
+                        {{ __('يوجد لديك متأخرات سابقة بقيمة (:arrears ₪) إضافة إلى قسط الشهر الحالي (:cur ₪)، إجمالي المطلوب سداده: (:total ₪). يمكنك سداد المتأخرات أو القسط أو كلاهما معاً أدناه.', [
+                            'arrears' => number_format($financialSummary['previous_unpaid_balance'], 0),
+                            'cur'     => number_format($financialSummary['current_month_due'], 0),
+                            'total'   => number_format($financialSummary['total_due_now'], 0)
+                        ]) }}
+                    </span>
                 </div>
             @endif
 
@@ -335,28 +365,60 @@
 
                 <!-- 1. صندوق تحديد قيمة الدفعة المراد سدادها الذكي والمتطور -->
                 <div class="smart-payment-amount-container">
-                    <div class="due-amount-banner">
+                    <div class="due-amount-banner {{ (($financialSummary['previous_unpaid_balance'] ?? 0) > 0) ? 'has-arrears' : '' }}">
                         <div class="due-info">
-                            <span class="due-lbl">{{ __('القسط الشهري المطلوب رسمياً:') }}</span>
+                            <span class="due-lbl">
+                                @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                                    {{ __('إجمالي المبلغ المستحق للدفع الآن:') }}
+                                @else
+                                    {{ __('القسط الشهري المطلوب رسمياً:') }}
+                                @endif
+                            </span>
                             <div class="due-val-wrap">
                                 <strong class="due-val font-mono">{{ number_format($finalAmount, 2) }} ₪</strong>
-                                <span class="due-target-badge">{{ __('عن :month', ['month' => $dueMonthName]) }}</span>
+                                @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                                    <span class="due-target-badge arrears-badge">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                        {{ __('يشمل متأخرات :arr ₪ + قسط :m :cur ₪', [
+                                            'arr' => number_format($financialSummary['previous_unpaid_balance'], 0),
+                                            'm' => $financialSummary['active_due_month_name'] ?? $dueMonthName,
+                                            'cur' => number_format($financialSummary['current_month_due'] ?? $student->final_monthly_fee, 0)
+                                        ]) }}
+                                    </span>
+                                @else
+                                    <span class="due-target-badge">{{ __('عن :month', ['month' => $dueMonthName]) }}</span>
+                                @endif
                             </div>
                         </div>
                         @if($student->hasDiscount())
                             <div class="due-discount-tag">
                                 <i class="fa-solid fa-tag"></i>
-                                <span>{{ __('خصم معتمد لك: :orig ₪ ➜ :final ₪', ['orig' => number_format($monthlyFee, 0), 'final' => number_format($finalAmount, 0)]) }}</span>
+                                <span>{{ __('خصم معتمد لك: :orig ₪ ➜ :final ₪', ['orig' => number_format($monthlyFee, 0), 'final' => number_format($student->final_monthly_fee, 0)]) }}</span>
                             </div>
                         @endif
                     </div>
 
                     <!-- أزرار اختيار نمط الدفع المرن (Tabs) -->
-                    <div class="payment-mode-tabs">
-                        <button type="button" class="mode-tab-btn active" id="tabModeFull" onclick="selectPaymentMode('full')">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span>{{ __('سداد كامل القسط المطلوب (:amt ₪)', ['amt' => number_format($finalAmount, 0)]) }}</span>
-                        </button>
+                    <div class="payment-mode-tabs {{ (($financialSummary['previous_unpaid_balance'] ?? 0) > 0) ? 'has-arrears-grid' : '' }}">
+                        @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
+                            <button type="button" class="mode-tab-btn active" id="tabModeFull" onclick="selectPaymentMode('full')">
+                                <i class="fa-solid fa-circle-check text-emerald"></i>
+                                <span>{{ __('سداد الإجمالي كاملاً (:amt ₪)', ['amt' => number_format($financialSummary['total_due_now'] ?? $finalAmount, 0)]) }}</span>
+                            </button>
+                            <button type="button" class="mode-tab-btn" id="tabModeArrearsOnly" onclick="selectPaymentMode('arrears_only')">
+                                <i class="fa-solid fa-clock-rotate-left" style="color: #b45309;"></i>
+                                <span>{{ __('سداد المتأخرات فقط (:amt ₪)', ['amt' => number_format($financialSummary['previous_unpaid_balance'], 0)]) }}</span>
+                            </button>
+                            <button type="button" class="mode-tab-btn" id="tabModeCurrentOnly" onclick="selectPaymentMode('current_only')">
+                                <i class="fa-solid fa-calendar-day" style="color: #1d4ed8;"></i>
+                                <span>{{ __('سداد قسط هذا الشهر فقط (:amt ₪)', ['amt' => number_format($financialSummary['current_month_due'] ?? $student->final_monthly_fee, 0)]) }}</span>
+                            </button>
+                        @else
+                            <button type="button" class="mode-tab-btn active" id="tabModeFull" onclick="selectPaymentMode('full')">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>{{ __('سداد كامل القسط المطلوب (:amt ₪)', ['amt' => number_format($finalAmount, 0)]) }}</span>
+                            </button>
+                        @endif
                         <button type="button" class="mode-tab-btn" id="tabModeCustom" onclick="selectPaymentMode('custom')">
                             <i class="fa-solid fa-sliders"></i>
                             <span>{{ __('سداد دفعة مرنة مخصصة') }}</span>
@@ -541,12 +603,17 @@
     };
 
     const baseDueAmount = {{ (float)($finalAmount ?? 150) }};
+    const arrearsAmount = {{ (float)($financialSummary['previous_unpaid_balance'] ?? 0) }};
+    const currentMonthAmount = {{ (float)($financialSummary['current_month_due'] ?? $student->final_monthly_fee) }};
+    const totalDueNow = {{ (float)($financialSummary['total_due_now'] ?? $finalAmount) }};
     const dueMonthName = "{{ addslashes($dueMonthName ?? 'الشهر الحالي') }}";
     const studentDisplayName = "{{ addslashes($studentDispName ?? 'طالبنا العزيز') }}";
     const studentPhone = "{{ addslashes($student->phone ?? '') }}";
 
     function selectPaymentMode(mode) {
         document.getElementById('tabModeFull')?.classList.remove('active');
+        document.getElementById('tabModeArrearsOnly')?.classList.remove('active');
+        document.getElementById('tabModeCurrentOnly')?.classList.remove('active');
         document.getElementById('tabModeCustom')?.classList.remove('active');
         document.getElementById('tabModeMulti')?.classList.remove('active');
 
@@ -557,7 +624,13 @@
 
         if (mode === 'full') {
             document.getElementById('tabModeFull')?.classList.add('active');
-            updateCalculationsAndUI(baseDueAmount, 'full', 1);
+            updateCalculationsAndUI(totalDueNow > 0 ? totalDueNow : baseDueAmount, 'full', 1);
+        } else if (mode === 'arrears_only') {
+            document.getElementById('tabModeArrearsOnly')?.classList.add('active');
+            updateCalculationsAndUI(arrearsAmount, 'arrears_only', 1);
+        } else if (mode === 'current_only') {
+            document.getElementById('tabModeCurrentOnly')?.classList.add('active');
+            updateCalculationsAndUI(currentMonthAmount, 'current_only', 1);
         } else if (mode === 'custom') {
             document.getElementById('tabModeCustom')?.classList.add('active');
             if (customSec) customSec.style.display = 'block';
@@ -567,7 +640,7 @@
         } else if (mode === 'multi') {
             document.getElementById('tabModeMulti')?.classList.add('active');
             if (multiSec) multiSec.style.display = 'block';
-            updateCalculationsAndUI(baseDueAmount * 2, 'multi', 2);
+            updateCalculationsAndUI(currentMonthAmount * 2, 'multi', 2);
         }
     }
 
@@ -584,7 +657,8 @@
     }
 
     function setMultiMonths(count) {
-        const total = baseDueAmount * count;
+        const baseUnit = currentMonthAmount > 0 ? currentMonthAmount : (baseDueAmount > 0 ? baseDueAmount : 150);
+        const total = arrearsAmount + (baseUnit * count);
         updateCalculationsAndUI(total, 'multi', count);
     }
 
@@ -604,13 +678,23 @@
         }
 
         if (coverageEl) {
-            if (mode === 'full' || amount === baseDueAmount) {
-                coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪ عن') }} ${dueMonthName})`;
-            } else if (amount < baseDueAmount) {
-                const rem = baseDueAmount - amount;
-                coverageEl.innerHTML = `<i class="fa-solid fa-circle-half-stroke text-amber"></i> {{ __('دفعة جزئية على حساب') }} ${dueMonthName} ({{ __('المتبقي:') }} ${rem.toFixed(2)} ₪)`;
+            const targetTotal = totalDueNow > 0 ? totalDueNow : baseDueAmount;
+            if (mode === 'full' || amount >= targetTotal) {
+                if (arrearsAmount > 0) {
+                    coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('تسديد كامل المتأخرات السابقة (:arr ₪) وقسط هذا الشهر (:cur ₪) بالكامل ✅', ['arr' => number_format($financialSummary['previous_unpaid_balance'] ?? 0, 0), 'cur' => number_format($financialSummary['current_month_due'] ?? 0, 0)]) }}`;
+                } else {
+                    coverageEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald"></i> {{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪ عن') }} ${dueMonthName})`;
+                }
+            } else if (mode === 'arrears_only' || (arrearsAmount > 0 && Math.abs(amount - arrearsAmount) < 0.01)) {
+                coverageEl.innerHTML = `<i class="fa-solid fa-check-double text-amber"></i> {{ __('تسديد المتأخرات السابقة بالكامل، ويبقى قسط هذا الشهر') }} (${currentMonthAmount.toFixed(2)} ₪)`;
+            } else if (mode === 'current_only' || (currentMonthAmount > 0 && Math.abs(amount - currentMonthAmount) < 0.01)) {
+                coverageEl.innerHTML = `<i class="fa-solid fa-circle-notch text-blue"></i> {{ __('سداد قسط هذا الشهر، ويبقى رصيد المتأخرات السابق') }} (${arrearsAmount.toFixed(2)} ₪)`;
+            } else if (amount < targetTotal) {
+                const rem = targetTotal - amount;
+                coverageEl.innerHTML = `<i class="fa-solid fa-circle-half-stroke text-amber"></i> {{ __('دفعة جزئية (المتبقي من إجمالي المستحق:') }} ${rem.toFixed(2)} ₪)`;
             } else {
-                const monthsCovered = Math.floor(amount / (baseDueAmount > 0 ? baseDueAmount : 150));
+                const baseUnit = currentMonthAmount > 0 ? currentMonthAmount : 150;
+                const monthsCovered = Math.floor(amount / baseUnit);
                 coverageEl.innerHTML = `<i class="fa-solid fa-star text-emerald"></i> {{ __('سداد مسبق يغطي') }} (${monthsCovered}) {{ __('أشهر بنجاح! رصيد معتمد مقدماً 🎉') }}`;
             }
         }
@@ -1455,12 +1539,30 @@
         align-items: center;
         gap: 6px;
     }
+    .due-amount-banner.has-arrears {
+        background: #fffbeb;
+        border-color: #fde68a;
+    }
+    .due-amount-banner.has-arrears .due-lbl {
+        color: #92400e;
+    }
+    .due-amount-banner.has-arrears .due-val {
+        color: #b45309;
+    }
+    .due-target-badge.arrears-badge {
+        background: #fef3c7;
+        color: #92400e;
+        border: 1px solid #fde68a;
+    }
 
     .payment-mode-tabs {
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 8px;
         margin-bottom: 12px;
+    }
+    .payment-mode-tabs.has-arrears-grid {
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     }
     .mode-tab-btn {
         background: #f8fafc;

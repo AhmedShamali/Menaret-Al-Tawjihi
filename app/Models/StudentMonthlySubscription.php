@@ -242,4 +242,73 @@ class StudentMonthlySubscription extends Model
     {
         return $this->belongsTo(Payment::class);
     }
+
+    /**
+     * توزيع وسداد الدفعة المالية تلقائياً بنظام FIFO (الأقدم فالأحدث) لتسوية المتأخرات والأقساط المستحقة
+     */
+    public static function allocatePayment(Student $student, float $paymentAmount, ?int $paymentId = null, string $academicYear = '2026-2027'): array
+    {
+        self::syncWithStudentPayments($student, $academicYear);
+
+        $subscriptions = self::where('student_id', $student->id)
+            ->where('academic_year', $academicYear)
+            ->orderBy('month')
+            ->get();
+
+        $remainingToAllocate = round($paymentAmount, 2);
+        $settledMonths = [];
+
+        foreach ($subscriptions as $sub) {
+            if ($remainingToAllocate <= 0) {
+                break;
+            }
+
+            if ($sub->status === 'waived') {
+                continue;
+            }
+
+            $currentRem = (float) $sub->remaining_amount;
+            if ($currentRem <= 0) {
+                continue;
+            }
+
+            $currentPaid = (float) ($sub->paid_amount ?? 0);
+            $subAmt = (float) $sub->amount;
+
+            if ($remainingToAllocate >= $currentRem) {
+                // سداد الشهر بالكامل
+                $sub->paid_amount = $subAmt;
+                $sub->status = 'paid';
+                $sub->is_manual = true;
+                $sub->paid_at = now();
+                if ($paymentId) $sub->payment_id = $paymentId;
+                $sub->save();
+
+                $remainingToAllocate = round($remainingToAllocate - $currentRem, 2);
+                $settledMonths[] = [
+                    'month'       => $sub->month,
+                    'status'      => 'paid',
+                    'paid_amount' => $sub->paid_amount,
+                ];
+            } else {
+                // سداد جزئي للشهر
+                $newPaid = round($currentPaid + $remainingToAllocate, 2);
+                $sub->paid_amount = $newPaid;
+                $sub->status = 'partial';
+                $sub->is_manual = true;
+                $sub->paid_at = now();
+                if ($paymentId) $sub->payment_id = $paymentId;
+                $sub->save();
+
+                $settledMonths[] = [
+                    'month'       => $sub->month,
+                    'status'      => 'partial',
+                    'paid_amount' => $sub->paid_amount,
+                ];
+                $remainingToAllocate = 0.0;
+            }
+        }
+
+        return $settledMonths;
+    }
 }

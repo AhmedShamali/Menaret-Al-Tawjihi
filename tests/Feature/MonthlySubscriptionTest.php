@@ -352,4 +352,112 @@ class MonthlySubscriptionTest extends TestCase
         $response->assertSee('12- الشهر الثاني عشر');
         $response->assertSee('تسجيل وسداد القسط');
     }
+
+    /**
+     * فحص الخلل المحاسبي الدقيق:
+     * إذا كان القسط 200 شيكل ودفع الطالب 150 شيكل (المتبقي 50 شيكل)،
+     * عند حلول الشهر الثاني يظهر المستحق الكلي 250 شيكل (50 متأخرات + 200 قسط حالي)،
+     * وتعمل المحاسبة بطريقة FIFO لسداد أقدم المتأخرات أولاً.
+     */
+    public function test_partial_payment_and_arrears_accounting_in_month_two(): void
+    {
+        $admin = User::create([
+            'name' => 'Admin Arrears Test',
+            'email' => 'admin_arrears@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'صهيب الفلسطيني',
+            'name_en' => 'Suhaib Palestine',
+            'nid' => '944332211',
+            'email' => 'suhaib@tawjihi.ps',
+            'password' => bcrypt('secret123'),
+            'phone' => '0599443322',
+            'age' => 18,
+            'gender' => 'male',
+            'status' => 'pending_payment',
+            'stage_id' => $stage->id,
+            'monthly_fee' => 200.00,
+            'approved_at' => now()->subDays(35),
+            'created_at' => now()->subDays(35),
+        ]);
+
+        // 1. إنشاء اشتراكات الشهور الـ 12 للطالب بقسط 200 شيكل
+        for ($m = 1; $m <= 12; $m++) {
+            StudentMonthlySubscription::create([
+                'student_id' => $student->id,
+                'academic_year' => '2026-2027',
+                'month' => $m,
+                'status' => 'unpaid',
+                'amount' => 200.00,
+                'paid_amount' => 0.00,
+                'remaining_amount' => 200.00,
+                'is_manual' => false,
+            ]);
+        }
+
+        // 2. الطالب يدفع 150 شيكل للشهر الأول (سداد جزئي، المتبقي 50 شيكل)
+        $sub1 = StudentMonthlySubscription::where('student_id', $student->id)->where('month', 1)->first();
+        $sub1->update([
+            'status' => 'partial',
+            'paid_amount' => 150.00,
+            'remaining_amount' => 50.00,
+            'is_manual' => true,
+        ]);
+
+        // 3. فحص الخلاصة المالية للطالب
+        $summary = $student->getFinancialSummary('2026-2027');
+
+        // المتأخرات يجب أن تحتوي على 50 شيكل من شهر 1
+        $this->assertEquals(50.00, (float)$summary['previous_unpaid_balance'], 'المتأخرات السابقة يجب أن تكون 50 شيكل');
+        $this->assertNotEmpty($summary['arrears_details']);
+        $this->assertEquals(1, $summary['arrears_details'][0]['month']);
+        $this->assertEquals(50.00, (float)$summary['arrears_details'][0]['remaining']);
+
+        // القسط الحالي المستحق هو 200 شيكل
+        $this->assertEquals(200.00, (float)$summary['current_month_due'], 'قسط الشهر النشط يجب أن يكون 200 شيكل');
+
+        // إجمالي المستحق حالياً يجب أن يكون 250 شيكل (50 متأخرات + 200 قسط حالي)
+        $this->assertEquals(250.00, (float)$summary['total_due_now'], 'المستحق الإجمالي للدفع الآن يجب أن يكون 250 شيكل');
+
+        // 4. فحص ظهور المتأخرات في واجهة pending_approval للطالب
+        $response = $this->actingAs($student, 'student')
+            ->get(route('student.pendingPayment.show'));
+
+        $response->assertStatus(200);
+        $response->assertSee('50'); // المتأخرات
+        $response->assertSee('200'); // القسط
+        $response->assertSee('250'); // الإجمالي المستحق
+
+        // 5. فحص توزيع سداد 250 شيكل بطريقة FIFO عبر allocatePayment
+        $allocated = StudentMonthlySubscription::allocatePayment($student, 250.00, null, '2026-2027');
+
+        // يجب أن يكتمل سداد الشهر الأول (50 شيكل) والشهر الثاني (200 شيكل)
+        $sub1->refresh();
+        $sub2 = StudentMonthlySubscription::where('student_id', $student->id)->where('month', 2)->first();
+
+        $this->assertEquals('paid', $sub1->status);
+        $this->assertEquals(200.00, (float)$sub1->paid_amount);
+        $this->assertEquals(0.00, (float)$sub1->remaining_amount);
+
+        $this->assertEquals('paid', $sub2->status);
+        $this->assertEquals(200.00, (float)$sub2->paid_amount);
+        $this->assertEquals(0.00, (float)$sub2->remaining_amount);
+
+        // الرصيد المستحق الآن يصبح 0
+        $newSummary = $student->getFinancialSummary('2026-2027');
+        $this->assertEquals(0.00, (float)$newSummary['previous_unpaid_balance']);
+
+        // 6. بعد سداد المستحقات وتفعيل الحساب، يمكن للطالب استعراض واجهة سجل الاشتراكات بنجاح
+        $student->status = 'active';
+        $student->save();
+
+        $subIndexResp = $this->actingAs($student, 'student')
+            ->get(route('student.subscriptions.index'));
+        $subIndexResp->assertStatus(200);
+        $subIndexResp->assertSee('سجل الاشتراكات الشهرية');
+    }
 }

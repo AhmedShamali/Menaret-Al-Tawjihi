@@ -390,105 +390,48 @@
     background: #000 !important;
 }
 
-/* دروع حماية مشغل اليوتيوب وحجب الروابط الخارجية */
+/* مشغل اليوتيوب الأكاديمي الصافي - بدون سواد وبدون أي تأثير على ألوان وجودة الفيديو */
 .ed-yt-shield-container {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: #000000;
 }
 
-.ed-yt-top-curtain {
+.ed-yt-shield-container iframe {
+    position: absolute;
+    top: -46px;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 46px);
+    border: none;
+}
+
+/* حواجز نقر شفافة 100% لمنع فتح روابط يوتيوب الخارجية بدون أي طبقة سوداء أو تغيير بألوان المحتوى */
+.ed-yt-transparent-guard-top {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 75px;
-    background: #0b1120; /* لون داكن معتم 100% بدون أي شفافية لحجب بيانات يوتيوب تماماً */
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    pointer-events: auto; /* يحجب النقر على عنوان يوتيوب، وقناته، وزر المشاركة، وصورة الحساب */
-    user-select: none;
+    height: 48px;
+    background: transparent !important;
+    z-index: 4;
+    pointer-events: auto;
     cursor: default;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
 }
 
-.ed-yt-curtain-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-weight: 800;
-    max-width: 70%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.ed-yt-curtain-info i {
-    color: #60a5fa;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-}
-.ed-yt-curtain-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.ed-yt-curtain-badge {
-    background: rgba(30, 58, 138, 0.95);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    font-size: 0.75rem;
-    font-weight: 800;
-    padding: 4px 12px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-}
-.ed-yt-curtain-badge i {
-    color: #38bdf8;
-}
-
-.ed-yt-logo-shield {
+.ed-yt-transparent-guard-logo {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 180px;
-    height: 58px;
-    background: #0b1120; /* لون معتم 100% لحجب شعار يوتيوب المائي ومنع النقر عليه */
-    z-index: 10;
-    pointer-events: auto; /* يحجب النقر على شعار يوتيوب المائي */
-    display: flex;
-    align-items: center;
-    padding-left: 12px;
-    padding-bottom: 6px;
-    user-select: none;
+    width: 140px;
+    height: 45px;
+    background: transparent !important;
+    z-index: 4;
+    pointer-events: auto;
     cursor: default;
-    border-top-right-radius: 8px;
-}
-
-.ed-yt-logo-shield .shield-tag {
-    background: rgba(30, 58, 138, 0.95);
-    color: #e2e8f0;
-    font-size: 0.74rem;
-    font-weight: 800;
-    padding: 4px 10px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-.ed-yt-logo-shield .shield-tag i {
-    color: #60a5fa;
 }
 
 .ed-in-platform-tag {
@@ -1056,26 +999,11 @@
 
                                     @if(!empty($ytEmbed))
                                         <div class="ed-yt-shield-container">
-                                            {{-- الستارة الأكاديمية العلوية: تحجب عنوان وقناة يوتيوب وصورة الحساب وتمنع النقر للخروج --}}
-                                            <div class="ed-yt-top-curtain" onclick="event.stopPropagation();">
-                                                <div class="ed-yt-curtain-info">
-                                                    <i class="fa-solid fa-graduation-cap"></i>
-                                                    <span class="ed-yt-curtain-title">{{ $video->title }}</span>
-                                                </div>
-                                                <div class="ed-yt-curtain-badge">
-                                                    <i class="fa-solid fa-shield-halved"></i>
-                                                    <span>{{ __('منارة التوجيهي • مشغل محمي') }}</span>
-                                                </div>
-                                            </div>
+                                            {{-- حماية علوية وسفلية شفافة بالكامل تمنع النقر على روابط يوتيوب الخارجية بدون أي سواد أو حجب لمحتوى الحصة --}}
+                                            <div class="ed-yt-transparent-guard-top" onclick="event.stopPropagation();"></div>
+                                            <div class="ed-yt-transparent-guard-logo" onclick="event.stopPropagation();"></div>
 
-                                            {{-- الدرع السفلي الأيسر: يحجب شعار يوتيوب المائي ويمنع النقر عليه --}}
-                                            <div class="ed-yt-logo-shield" onclick="event.stopPropagation();" title="{{ __('مشغل أكاديمي مخصص داخل المنصة') }}">
-                                                <span class="shield-tag">
-                                                    <i class="fa-solid fa-graduation-cap"></i> {{ __('منارة التوجيهي') }}
-                                                </span>
-                                            </div>
-
-                                            <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                            <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%;">

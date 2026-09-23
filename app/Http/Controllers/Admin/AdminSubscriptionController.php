@@ -344,29 +344,27 @@ class AdminSubscriptionController extends Controller
         // مزامنة وربط الشهور الـ 12 تلقائياً مع مدفوعات الطالب وحالة تسجيله
         $subscriptions = StudentMonthlySubscription::syncWithStudentPayments($student, $year);
 
+        $financialSummary = $student->getFinancialSummary($year);
         $monthsNames = StudentMonthlySubscription::monthNames();
-        $paidCount = $subscriptions->where('status', 'paid')->count();
-        $unpaidCount = $subscriptions->where('status', 'unpaid')->count();
-        $pendingCount = $subscriptions->where('status', 'pending')->count();
-        $partialCount = $subscriptions->where('status', 'partial')->count();
+        $paidCount = $financialSummary['paid_months_count'];
+        $unpaidCount = $financialSummary['unpaid_months_count'];
+        $pendingCount = $financialSummary['pending_months_count'];
+        $partialCount = $financialSummary['partial_months_count'];
 
         // 1. كم عليه (إجمالي الرسوم المطلوبة طوال العام)
-        $totalDueAmount = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
+        $totalDueAmount = $financialSummary['total_year_due'];
 
         // 2. كم دفع (إجمالي المبالغ المسددة فعلياً)
-        $totalPaidAmount = (float) $subscriptions->sum(function($s) {
-            if ($s->status === 'waived') return 0.00;
-            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
-            return (float)($s->paid_amount ?? 0);
-        });
+        $totalPaidAmount = $financialSummary['total_year_paid'];
 
         // 3. كم ضل قسط مستحق (المبلغ المتبقي المطلوب سداده)
-        $totalRemainingAmount = max(0.00, round($totalDueAmount - $totalPaidAmount, 2));
+        $totalRemainingAmount = $financialSummary['total_year_remaining'];
 
         return view('student.subscriptions.index', compact(
             'student', 'subscriptions', 'year', 'monthsNames', 
             'paidCount', 'unpaidCount', 'pendingCount', 'partialCount',
-            'totalDueAmount', 'totalPaidAmount', 'totalRemainingAmount'
+            'totalDueAmount', 'totalPaidAmount', 'totalRemainingAmount',
+            'financialSummary'
         ));
     }
 
@@ -387,19 +385,17 @@ class AdminSubscriptionController extends Controller
             ->orderBy('month')
             ->get();
 
+        $financialSummary = $student->getFinancialSummary($year);
+
         // حساب المؤشرات المالية الرسمية للطالب
-        $studentDue = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
-        $studentPaid = (float) $subscriptions->sum(function ($s) {
-            if ($s->status === 'waived') return 0.00;
-            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float)$s->amount;
-            return (float)($s->paid_amount ?? 0);
-        });
-        $studentRemaining = max(0.00, round($studentDue - $studentPaid, 2));
-        $paidCount = $subscriptions->where('status', 'paid')->count();
-        $partialCount = $subscriptions->where('status', 'partial')->count();
+        $studentDue = $financialSummary['total_year_due'];
+        $studentPaid = $financialSummary['total_year_paid'];
+        $studentRemaining = $financialSummary['total_year_remaining'];
+        $paidCount = $financialSummary['paid_months_count'];
+        $partialCount = $financialSummary['partial_months_count'];
         $waivedCount = $subscriptions->where('status', 'waived')->count();
-        $pendingCount = $subscriptions->where('status', 'pending')->count();
-        $unpaidCount = $subscriptions->where('status', 'unpaid')->count();
+        $pendingCount = $financialSummary['pending_months_count'];
+        $unpaidCount = $financialSummary['unpaid_months_count'];
 
         $collectionRate = $studentDue > 0 ? round(($studentPaid / $studentDue) * 100, 1) : 100;
 
@@ -438,7 +434,8 @@ class AdminSubscriptionController extends Controller
             'collectionRate',
             'prevStudent',
             'nextStudent',
-            'allStageStudents'
+            'allStageStudents',
+            'financialSummary'
         ));
     }
 }

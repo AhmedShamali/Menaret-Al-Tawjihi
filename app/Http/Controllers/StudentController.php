@@ -306,22 +306,28 @@ class StudentController extends Controller
             \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student);
         } catch (\Throwable $e) {}
 
-        $subscriptions = $student->monthlySubscriptions()->get();
-        $dueMonthIndex = $student->currentDueMonth();
-        $dueMonthName = $student->currentDueMonthName();
+        $financialSummary = $student->getFinancialSummary('2026-2027');
+        $subscriptions = $financialSummary['subscriptions'];
+        $dueMonthIndex = $financialSummary['active_due_month'];
+        $dueMonthName = $financialSummary['active_due_month_name'];
         $monthlyFee = (float) $feeBreakdown['base_after_bundle'];
         $discountAmount = (float) $feeBreakdown['student_discount'];
-        $finalAmount = (float) $feeBreakdown['final_amount'];
+        $requestedAmount = request()->filled('amount') ? (float) request('amount') : null;
+        $requestedMonth = request()->filled('month') ? (int) request('month') : null;
+        $requestedType = request()->input('type', 'due');
+
+        $finalAmount = (float) ($requestedAmount ?: ($financialSummary['total_due_now'] > 0 ? $financialSummary['total_due_now'] : $feeBreakdown['final_amount']));
         $totalAmount = (float) $feeBreakdown['subtotal'];
         $bundleDiscount = (float) $feeBreakdown['bundle_discount'];
-        $isFeeDue = $student->isMonthlyFeeDue();
+        $isFeeDue = $financialSummary['total_due_now'] > 0;
 
         $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
 
         return view('student.pending_approval', compact(
             'student', 'pendingEnrollments', 'latestPayment', 
             'totalAmount', 'discountAmount', 'finalAmount', 'bundleDiscount', 'feeBreakdown',
-            'subscriptions', 'dueMonthIndex', 'dueMonthName', 'monthlyFee', 'isFeeDue'
+            'subscriptions', 'dueMonthIndex', 'dueMonthName', 'monthlyFee', 'isFeeDue',
+            'financialSummary', 'requestedAmount', 'requestedMonth', 'requestedType'
         ));
     }
 
@@ -350,8 +356,9 @@ class StudentController extends Controller
         }
 
         $txNo = $request->input('reference_no') ?: ($request->input('transaction_number') ?: 'TXN-' . time());
-        $dueAmount = $student->monthlyAmountDue();
-        $amount = (float)($request->input('amount') ?: ($dueAmount > 0 ? $dueAmount : 150));
+        $financialSummary = $student->getFinancialSummary('2026-2027');
+        $suggestedAmount = $financialSummary['total_due_now'] > 0 ? $financialSummary['total_due_now'] : $student->monthlyAmountDue();
+        $amount = (float)($request->input('amount') ?: ($suggestedAmount > 0 ? $suggestedAmount : 150));
 
         // تحويل اسم وسيلة الدفع إلى رمز البوابة المتوافق مع جدول payments
         $rawMethod = strtolower($request->payment_method);
