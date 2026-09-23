@@ -178,10 +178,49 @@ class ExamController extends Controller
         return response()->json(['message' => 'تم نشر الاختبار بنجاح 🚀'], 201);
     }
 
+    /**
+     * التحقق من صلاحية المعلم أو المدير على الاختبار
+     */
+    protected function isUserAuthorizedForExam($user, Exam $exam): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->role === 'admin') {
+            return true;
+        }
+        if ($user->role === 'teacher') {
+            $examTeacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+            return ((int) $examTeacherId === (int) $user->id);
+        }
+        return false;
+    }
+
+    /**
+     * التحقق من صلاحية المعلم أو المدير على تسليم الاختبار
+     */
+    protected function isUserAuthorizedForExamSubmission($user, ExamSubmission $submission): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->role === 'admin') {
+            return true;
+        }
+        if ($user->role === 'teacher') {
+            $exam = $submission->exam;
+            if (!$exam) {
+                return false;
+            }
+            return $this->isUserAuthorizedForExam($user, $exam);
+        }
+        return false;
+    }
+
     public function edit(Exam $exam)
     {
         $user = auth()->user();
-        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExam($user, $exam)) {
             abort(403, 'غير مصرح لك بتعديل هذا الاختبار');
         }
 
@@ -193,7 +232,7 @@ class ExamController extends Controller
     public function update(Request $request, Exam $exam)
     {
         $user = auth()->user();
-        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExam($user, $exam)) {
             abort(403, 'غير مصرح لك بتحديث هذا الاختبار');
         }
 
@@ -338,9 +377,9 @@ class ExamController extends Controller
     public function destroy($id)
     {
         $user = auth()->user();
-        $exam = Exam::findOrFail($id);
+        $exam = Exam::with('subject')->findOrFail($id);
 
-        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExam($user, $exam)) {
             return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا الاختبار');
         }
 
@@ -359,7 +398,7 @@ class ExamController extends Controller
     {
         $exam = Exam::with(['subject', 'questions', 'submissions.student'])->findOrFail($id);
         $user = auth()->user();
-        if ($user->role !== 'admin' && $exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExam($user, $exam)) {
             abort(403, 'غير مصرح لك بعرض إحصائيات هذا الاختبار');
         }
 
@@ -400,7 +439,7 @@ class ExamController extends Controller
     {
         $submission = ExamSubmission::with(['answers.question', 'student', 'exam.subject'])->findOrFail($id);
         $user = auth()->user();
-        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExamSubmission($user, $submission)) {
             abort(403, 'غير مصرح لك بتصحيح هذا التسليم');
         }
 
@@ -410,9 +449,9 @@ class ExamController extends Controller
     public function saveGrade(Request $request, $id)
     {
         try {
-            $submission = ExamSubmission::with(['exam', 'answers'])->findOrFail($id);
+            $submission = ExamSubmission::with(['exam.subject', 'answers'])->findOrFail($id);
             $user = auth()->user();
-            if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+            if (!$this->isUserAuthorizedForExamSubmission($user, $submission)) {
                 return response()->json(['success' => false, 'error' => 'غير مصرح لك برصد الدرجات لهذا التسليم'], 403);
             }
 
@@ -848,6 +887,17 @@ class ExamController extends Controller
     public function showResult($id)
     {
         $submission = ExamSubmission::with(['exam.subject', 'exam.questions', 'answers.question'])->findOrFail($id);
+
+        $actor = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($actor instanceof \App\Models\User && !in_array($actor->role, ['admin', 'teacher'])) {
+            $actor = $actor->student ?? Student::where('id', $actor->id)->orWhere('email', $actor->email)->first();
+        }
+
+        // حماية الخصوصية: منع أي طالب من استعراض نتائج طالب آخر
+        if ($actor instanceof \App\Models\Student && $submission->student_id && (int)$submission->student_id !== (int)$actor->id) {
+            return redirect()->route('student.exams.index')->with('error', 'عذراً، لا تملك صلاحية الاطلاع على نتيجة هذا الاختبار.');
+        }
+
         $canViewResult = $submission->canStudentViewResult();
         return view('student.exams.results', compact('submission', 'canViewResult'));
     }
@@ -925,7 +975,7 @@ class ExamController extends Controller
         $user = auth()->user();
         $submission = ExamSubmission::with(['exam.subject', 'student'])->findOrFail($id);
 
-        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExamSubmission($user, $submission)) {
             return response()->json(['success' => false, 'error' => 'غير مصرح لك بنشر نتائج هذا الاختبار'], 403);
         }
 
@@ -985,7 +1035,7 @@ class ExamController extends Controller
             return response()->json(['success' => false, 'error' => 'حساب الطالب غير مصرح'], 403);
         }
 
-        $submission = ExamSubmission::with('exam')->where('exam_id', $id)->where('student_id', $student->id)->latest()->firstOrFail();
+        $submission = ExamSubmission::with('exam.subject')->where('exam_id', $id)->where('student_id', $student->id)->latest()->firstOrFail();
 
         $submission->update([
             'retake_requested' => true,
@@ -994,7 +1044,7 @@ class ExamController extends Controller
 
         try {
             $exam = $submission->exam;
-            $teacherId = $exam->teacher_id;
+            $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
             $studentName = $student->name_ar ?? $student->name ?? 'طالب';
 
             if ($teacherId) {
@@ -1028,9 +1078,9 @@ class ExamController extends Controller
     public function allowRetake($id)
     {
         $user = auth()->user();
-        $submission = ExamSubmission::with(['exam', 'student'])->findOrFail($id);
+        $submission = ExamSubmission::with(['exam.subject', 'student'])->findOrFail($id);
 
-        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExamSubmission($user, $submission)) {
             return response()->json(['success' => false, 'error' => 'غير مصرح لك بمنح صلاحية الإعادة لهذا الاختبار'], 403);
         }
 
@@ -1063,9 +1113,9 @@ class ExamController extends Controller
     public function denyRetake($id)
     {
         $user = auth()->user();
-        $submission = ExamSubmission::with(['exam', 'student'])->findOrFail($id);
+        $submission = ExamSubmission::with(['exam.subject', 'student'])->findOrFail($id);
 
-        if ($user->role !== 'admin' && $submission->exam->teacher_id !== $user->id) {
+        if (!$this->isUserAuthorizedForExamSubmission($user, $submission)) {
             return response()->json(['success' => false, 'error' => 'غير مصرح'], 403);
         }
 

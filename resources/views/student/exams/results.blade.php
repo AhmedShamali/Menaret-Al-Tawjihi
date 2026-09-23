@@ -201,8 +201,8 @@
                                         @endphp
                                         @if($hasOptText || $hasOptImg)
                                             @php
-                                                $isCorrectOpt = (strtolower(trim($ans->question->correct_answer)) == $opt);
-                                                $isStudentOpt = (strtolower(trim($ans->answer_text)) == $opt);
+                                                $isCorrectOpt = (strtolower(trim((string)($ans->question->correct_answer ?? ''))) == $opt);
+                                                $isStudentOpt = (strtolower(trim((string)($ans->answer_text ?? ''))) == $opt);
                                             @endphp
                                             <div class="ed-option-cell {{ $isCorrectOpt ? 'option-correct' : ($isStudentOpt && !$isCorrectOpt ? 'option-wrong' : '') }}">
                                                 <strong class="opt-letter">{{ strtoupper($opt) }}:</strong>

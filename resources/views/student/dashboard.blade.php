@@ -95,7 +95,7 @@
                     <a href="{{ route('student.checkout.receipt', $pendingPay->id) }}" class="ed-btn-classic secondary" style="font-size: 0.8rem; padding: 7px 14px;">
                         <i class="far fa-file-alt"></i> {{ __('الإيصال') }}
                     </a>
-                    @php $waDirect = '970597694385'; @endphp
+                    @php $waDirect = preg_replace('/[^0-9]/', '', \App\Models\Setting::get('contact_whatsapp', '970597694385')) ?: '970597694385'; @endphp
                     <a href="https://wa.me/{{ $waDirect }}?text={{ urlencode('مرحباً إدارة منارة التوجيهي، قمت برفع إشعار دفع برقم: ' . $pendingPay->transaction_number . ' للاعتماد.') }}" target="_blank" class="ed-btn-classic success" style="font-size: 0.8rem; padding: 7px 14px;">
                         <i class="fab fa-whatsapp"></i> {{ __('تواصل مع المشرف (واتساب)') }}
                     </a>
