@@ -40,6 +40,24 @@
                 </div>
             </div>
 
+            @php
+                $timingBadge = $exam->timing_badge_data;
+            @endphp
+            <div class="ed-preflight-schedule-banner">
+                <div class="schedule-info-group">
+                    <div class="schedule-icon-wrap">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <span class="schedule-lbl">{{ __('ساعات وموعد فتح الاختبار الأكاديمي:') }}</span>
+                        <strong class="schedule-val">{{ $exam->formatted_timing_text }}</strong>
+                    </div>
+                </div>
+                <span class="badge-timing-schedule {{ $timingBadge['status'] === 'upcoming' ? 'upcoming' : ($timingBadge['status'] === 'expired' ? 'expired' : ($timingBadge['status'] === 'active_limited' ? 'active-limited' : 'always-open')) }}">
+                    <i class="{{ $timingBadge['icon'] }}"></i> {{ $timingBadge['label'] }}
+                </span>
+            </div>
+
             <div class="ed-preflight-rules">
                 <h4>
                     <i class="fa-solid fa-shield-halved text-navy"></i> {{ __('ضوابط النزاهة الأكاديمية وتعليمات الجلسة:') }}
@@ -2030,6 +2048,83 @@
         font-size: 0.72rem;
         color: var(--ed-slate-500);
         font-weight: 700;
+    }
+
+    .ed-preflight-schedule-banner {
+        background: #f0f7ff;
+        border: 1.5px solid #bfdbfe;
+        border-radius: 12px;
+        padding: 12px 18px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .schedule-info-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .schedule-icon-wrap {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--ed-navy-700);
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+    }
+
+    .schedule-lbl {
+        font-size: 0.75rem;
+        color: #475569;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .schedule-val {
+        font-size: 0.96rem;
+        color: var(--ed-slate-900);
+        font-weight: 800;
+    }
+
+    .badge-timing-schedule {
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .badge-timing-schedule.upcoming {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+    .badge-timing-schedule.active-limited {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .badge-timing-schedule.always-open {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+    }
+    .badge-timing-schedule.expired {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
     }
 
     .ed-preflight-rules {

@@ -652,4 +652,51 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
         ]);
         $submitForbidden->assertStatus(403);
     }
+
+    /**
+     * اختبار تنسيق ساعات ومواعيد فتح الاختبار والشارات الزمنية
+     */
+    public function test_exam_opening_hours_and_timing_schedule_formatting()
+    {
+        // 1. اختبار متاح دائماً بدون مواعيد
+        $openExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار متاح دائماً بدون قيود',
+            'duration_minutes' => 30,
+            'starts_at'        => null,
+            'ends_at'          => null,
+        ]);
+
+        $this->assertStringContainsString('متاح للتقديم دائماً', $openExam->formatted_timing_text);
+        $this->assertEquals('always_open', $openExam->timing_badge_data['status']);
+
+        // 2. اختبار محدد بساعات نافذة في نفس اليوم
+        $scheduledExam = Exam::create([
+            'teacher_id'       => $this->teacher->id,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار مجدول بساعات محددة',
+            'duration_minutes' => 60,
+            'starts_at'        => \Carbon\Carbon::parse('2026-10-15 09:00:00', 'Asia/Gaza'),
+            'ends_at'          => \Carbon\Carbon::parse('2026-10-15 13:00:00', 'Asia/Gaza'),
+        ]);
+
+        $timingText = $scheduledExam->formatted_timing_text;
+        $this->assertStringContainsString('2026/10/15', $timingText);
+        $this->assertStringContainsString('09:00 ص', $timingText);
+        $this->assertStringContainsString('01:00 م', $timingText);
+
+        // 3. التحقق من ظهور ساعات ومواعيد الفتح في صفحة الاختبارات وقاعة الاختبار
+        $indexResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.index'));
+        $indexResponse->assertOk();
+        $indexResponse->assertSee('ساعات وموعد فتح الاختبار');
+        $indexResponse->assertSee($openExam->formatted_timing_text);
+
+        $takeResponse = $this->actingAs($this->student, 'student')->get(route('student.exams.take', $openExam->id));
+        $takeResponse->assertOk();
+        $takeResponse->assertSee('ساعات وموعد فتح الاختبار الأكاديمي');
+        $takeResponse->assertSee($openExam->formatted_timing_text);
+    }
 }

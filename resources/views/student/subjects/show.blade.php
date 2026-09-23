@@ -17,6 +17,37 @@
     box-sizing: border-box;
 }
 
+.badge-timing-schedule {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
+}
+.badge-timing-schedule.upcoming {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+.badge-timing-schedule.active-limited {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+.badge-timing-schedule.always-open {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+.badge-timing-schedule.expired {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
 /* 1. شريط التنقل العلوي الكلاسيكي */
 .ed-top-nav-bar {
     display: flex;
@@ -1205,6 +1236,7 @@
                             $isSolved = !is_null($subm);
                             $isUpcoming = $exam->isUpcoming();
                             $isExpired = $exam->isExpired();
+                            $tb = $exam->timing_badge_data;
                         @endphp
                         <div class="ed-exam-card {{ $isSolved ? 'solved' : '' }}">
                             <div style="display: flex; align-items: center; gap: 16px;">
@@ -1214,30 +1246,20 @@
                                 <div>
                                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
                                         <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ $exam->title }}</h3>
-                                        @if($isUpcoming)
-                                            <span style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
-                                                <i class="fa-regular fa-clock"></i> {{ __('قادم') }} ({{ $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }})
-                                            </span>
-                                        @elseif($isExpired)
-                                            <span style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
-                                                <i class="fa-solid fa-lock"></i> {{ __('منتهي الصلاحية') }}
-                                            </span>
-                                        @elseif($exam->starts_at || $exam->ends_at)
-                                            <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
-                                                <i class="fa-solid fa-bolt"></i> {{ __('متاح حالياً') }}
-                                            </span>
-                                        @endif
+                                        <span class="badge-timing-schedule {{ $tb['status'] === 'upcoming' ? 'upcoming' : ($tb['status'] === 'expired' ? 'expired' : ($tb['status'] === 'active_limited' ? 'active-limited' : 'always-open')) }}" style="font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">
+                                            <i class="{{ $tb['icon'] }}"></i> {{ $tb['label'] }}
+                                        </span>
                                     </div>
-                                    <div style="display: flex; gap: 12px; align-items: center; font-size: 0.78rem; color: #64748b; font-weight: 700;">
+                                    <div style="display: flex; gap: 12px; align-items: center; font-size: 0.78rem; color: #64748b; font-weight: 700; flex-wrap: wrap;">
                                         <span><i class="fa-regular fa-clock"></i> {{ $exam->duration_minutes }} {{ __('دقيقة') }}</span>
                                         <span>•</span>
                                         <span><i class="fa-solid fa-list-check"></i> {{ $exam->questions_count }} {{ __('أسئلة') }}</span>
                                         <span>•</span>
                                         <span style="color: #b45309;"><i class="fa-solid fa-star"></i> {{ $exam->total_grade ?? 100 }} {{ __('علامة') }}</span>
-                                        @if($exam->ends_at && !$isExpired)
                                         <span>•</span>
-                                        <span style="color: #475569;"><i class="fa-regular fa-calendar-xmark"></i> {{ __('ينتهي في:') }} {{ $exam->ends_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }}</span>
-                                        @endif
+                                        <span style="color: #1e3a8a; font-weight: 800; background: #eff6ff; padding: 2px 8px; border-radius: 6px; border: 1px solid #bfdbfe;">
+                                            <i class="fa-regular fa-calendar-check"></i> {{ __('ساعات وموعد الفتح:') }} {{ $exam->formatted_timing_text }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

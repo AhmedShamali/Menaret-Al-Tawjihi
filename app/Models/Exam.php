@@ -79,6 +79,103 @@ class Exam extends Model
         return 'always_open';
     }
 
+    /**
+     * تنسيق التاريخ والوقت بتوقيت القدس مع استبدال ص/م
+     */
+    public function formatScheduleDateTime(?\Carbon\Carbon $datetime): string
+    {
+        if (!$datetime) return '';
+        $tz = config('app.timezone', 'Asia/Gaza');
+        $dt = $datetime->copy()->timezone($tz);
+        $timeStr = $dt->format('Y/m/d h:i A');
+        return str_replace(['AM', 'PM'], [__('ص'), __('م')], $timeStr);
+    }
+
+    /**
+     * تنسيق الوقت فقط مع ص/م
+     */
+    public function formatScheduleTimeOnly(?\Carbon\Carbon $datetime): string
+    {
+        if (!$datetime) return '';
+        $tz = config('app.timezone', 'Asia/Gaza');
+        $dt = $datetime->copy()->timezone($tz);
+        $timeStr = $dt->format('h:i A');
+        return str_replace(['AM', 'PM'], [__('ص'), __('م')], $timeStr);
+    }
+
+    /**
+     * نص توقيت وساعات فتح الاختبار بشكل واضح وأكاديمي
+     */
+    public function getFormattedTimingTextAttribute(): string
+    {
+        $tz = config('app.timezone', 'Asia/Gaza');
+
+        if ($this->starts_at && $this->ends_at) {
+            $start = $this->starts_at->copy()->timezone($tz);
+            $end = $this->ends_at->copy()->timezone($tz);
+
+            if ($start->isSameDay($end)) {
+                return $start->format('Y/m/d') . ' (' . __('من') . ' ' . $this->formatScheduleTimeOnly($start) . ' ' . __('إلى') . ' ' . $this->formatScheduleTimeOnly($end) . ')';
+            }
+
+            return __('من:') . ' ' . $this->formatScheduleDateTime($start) . ' ' . __('إلى:') . ' ' . $this->formatScheduleDateTime($end);
+        }
+
+        if ($this->starts_at) {
+            return __('يبدأ ويفتح في:') . ' ' . $this->formatScheduleDateTime($this->starts_at);
+        }
+
+        if ($this->ends_at) {
+            return __('مفتوح حتى موعد الإغلاق:') . ' ' . $this->formatScheduleDateTime($this->ends_at);
+        }
+
+        return __('متاح للتقديم دائماً (بدون قيود زمنية)');
+    }
+
+    /**
+     * شارة التوقيت وتفاصيل الفتح
+     */
+    public function getTimingBadgeDataAttribute(): array
+    {
+        if ($this->isUpcoming()) {
+            return [
+                'status' => 'upcoming',
+                'class'  => 'badge-upcoming',
+                'icon'   => 'fa-regular fa-clock',
+                'label'  => __('يفتح في:') . ' ' . $this->formatScheduleDateTime($this->starts_at),
+                'is_open'=> false,
+            ];
+        }
+
+        if ($this->isExpired()) {
+            return [
+                'status' => 'expired',
+                'class'  => 'badge-expired',
+                'icon'   => 'fa-solid fa-lock',
+                'label'  => __('انتهى موعد الاختبار') . ($this->ends_at ? ' (' . $this->formatScheduleDateTime($this->ends_at) . ')' : ''),
+                'is_open'=> false,
+            ];
+        }
+
+        if ($this->ends_at) {
+            return [
+                'status' => 'active_limited',
+                'class'  => 'badge-limited',
+                'icon'   => 'fa-solid fa-hourglass-half',
+                'label'  => __('مفتوح حالياً - ينتهي:') . ' ' . $this->formatScheduleDateTime($this->ends_at),
+                'is_open'=> true,
+            ];
+        }
+
+        return [
+            'status' => 'always_open',
+            'class'  => 'badge-always-open',
+            'icon'   => 'fa-solid fa-bolt',
+            'label'  => __('متاح للتقديم دائماً'),
+            'is_open'=> true,
+        ];
+    }
+
     public function questions()
     {
         return $this->hasMany(Question::class);

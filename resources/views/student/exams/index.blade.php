@@ -78,6 +78,7 @@
                 $canRetake = $submissionRecord && (bool)$submissionRecord->allow_retake;
                 $isUpcoming = $exam->isUpcoming();
                 $isExpired = $exam->isExpired();
+                $tb = $exam->timing_badge_data;
             @endphp
             <div class="ed-exam-card {{ $hasCompletedSubmission ? 'completed' : '' }}">
                 <div class="ed-exam-card-body">
@@ -88,19 +89,9 @@
                         <span class="ed-badge ed-badge-gray">
                             {{ optional($exam->stage)->name_ar ?? (optional($exam->stage)->name ?? __('عام')) }}
                         </span>
-                        @if($isUpcoming)
-                            <span class="ed-badge" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">
-                                <i class="fa-regular fa-clock"></i> {{ __('قادم') }}
-                            </span>
-                        @elseif($isExpired)
-                            <span class="ed-badge" style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
-                                <i class="fa-solid fa-lock"></i> {{ __('منتهي') }}
-                            </span>
-                        @elseif($exam->starts_at || $exam->ends_at)
-                            <span class="ed-badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0;">
-                                <i class="fa-solid fa-bolt"></i> {{ __('متاح حالياً') }}
-                            </span>
-                        @endif
+                        <span class="ed-badge {{ $tb['status'] === 'upcoming' ? 'badge-upcoming' : ($tb['status'] === 'expired' ? 'badge-expired' : ($tb['status'] === 'active_limited' ? 'badge-limited' : 'badge-always-open')) }}" style="font-weight: 800;">
+                            <i class="{{ $tb['icon'] }}"></i> {{ $tb['label'] }}
+                        </span>
                     </div>
 
                     <h3 class="ed-exam-title">{{ $exam->title }}</h3>
@@ -117,6 +108,14 @@
                         <div class="ed-meta-item">
                             <span class="meta-label">{{ __('عدد الأسئلة') }}</span>
                             <span class="meta-val"><i class="far fa-question-circle"></i> {{ $exam->questions_count ?? ($exam->questions ? $exam->questions->count() : 0) }} {{ __('سؤال') }}</span>
+                        </div>
+                        <div class="ed-meta-item ed-meta-schedule" style="grid-column: 1 / -1; border-left: none; border-top: 1px solid #e2e8f0; padding-top: 10px; margin-top: 2px; text-align: right;">
+                            <span class="meta-label" style="display: flex; align-items: center; gap: 6px; color: #1e3a8a; font-weight: 800; font-size: 0.78rem;">
+                                <i class="fa-regular fa-calendar-check" style="font-size: 0.95rem;"></i> {{ __('ساعات وموعد فتح الاختبار:') }}
+                            </span>
+                            <span class="meta-val" style="color: #0f172a; font-size: 0.86rem; font-weight: 800; margin-top: 3px; display: block;">
+                                {{ $exam->formatted_timing_text }}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -149,14 +148,14 @@
                             @endif
                         </div>
                     @elseif($isUpcoming)
-                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.7; cursor: not-allowed; background: #fffbeb; color: #b45309; border-color: #fde68a;">
+                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.8; cursor: not-allowed; background: #fffbeb; color: #b45309; border-color: #fde68a; font-weight: 700;">
                             <i class="fa-regular fa-clock"></i>
-                            <span>{{ __('يبدأ في:') }} {{ $exam->starts_at->timezone(config('app.timezone', 'Asia/Gaza'))->format('m/d h:i A') }}</span>
+                            <span>{{ __('يفتح في:') }} {{ $exam->formatScheduleDateTime($exam->starts_at) }}</span>
                         </button>
                     @elseif($isExpired)
-                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.6; cursor: not-allowed; background: #fef2f2; color: #b91c1c; border-color: #fecaca;">
+                        <button type="button" class="ed-btn ed-btn-outline" disabled style="width: 100%; justify-content: center; opacity: 0.7; cursor: not-allowed; background: #fef2f2; color: #b91c1c; border-color: #fecaca; font-weight: 700;">
                             <i class="fa-solid fa-lock"></i>
-                            <span>{{ __('انتهى موعد الاختبار') }}</span>
+                            <span>{{ __('انتهى موعد تقديم الاختبار') }}</span>
                         </button>
                     @else
                         <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="ed-btn ed-btn-primary" style="width: 100%; justify-content: center;">
@@ -184,8 +183,9 @@
                         <th style="width: 50px; text-align: center;">#</th>
                         <th>{{ __('عنوان الاختبار الأكاديمي') }}</th>
                         <th style="width: 170px;">{{ __('المادة الدراسية') }}</th>
-                        <th style="width: 120px;">{{ __('المدة') }}</th>
-                        <th style="width: 110px;">{{ __('الأسئلة') }}</th>
+                        <th style="min-width: 190px;">{{ __('ساعات وموعد فتح الاختبار') }}</th>
+                        <th style="width: 110px;">{{ __('المدة') }}</th>
+                        <th style="width: 100px;">{{ __('الأسئلة') }}</th>
                         <th style="width: 140px; text-align: center;">{{ __('الحالة والنتيجة') }}</th>
                         <th style="width: 130px; text-align: center;">{{ __('الإجراء') }}</th>
                     </tr>
@@ -196,6 +196,9 @@
                             $submissionRecord = ($student && $exam->submissions) ? $exam->submissions->where('student_id', $student->id)->first() : null;
                             $hasCompletedSubmission = $submissionRecord && $submissionRecord->answers()->exists();
                             $canRetake = $submissionRecord && (bool)$submissionRecord->allow_retake;
+                            $isRowUpcoming = $exam->isUpcoming();
+                            $isRowExpired = $exam->isExpired();
+                            $rowTb = $exam->timing_badge_data;
                         @endphp
                         <tr>
                             <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
@@ -209,6 +212,16 @@
                                     <span class="dot"></span>
                                     {{ optional($exam->subject)->name_ar ?? (optional($exam->subject)->name ?? __('مادة عامة')) }}
                                 </span>
+                            </td>
+                            <td style="font-size: 0.83rem;">
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span class="ed-badge {{ $rowTb['status'] === 'upcoming' ? 'badge-upcoming' : ($rowTb['status'] === 'expired' ? 'badge-expired' : ($rowTb['status'] === 'active_limited' ? 'badge-limited' : 'badge-always-open')) }}" style="font-size: 0.72rem; padding: 2px 7px; width: fit-content; font-weight: 700;">
+                                        <i class="{{ $rowTb['icon'] }}"></i> {{ $rowTb['label'] }}
+                                    </span>
+                                    <span style="color: #1e293b; font-weight: 700; line-height: 1.3;">
+                                        {{ $exam->formatted_timing_text }}
+                                    </span>
+                                </div>
                             </td>
                             <td style="color: #475569; font-size: 0.84rem;">
                                 <i class="fa-regular fa-clock" style="color: #94a3b8; margin-inline-end: 4px;"></i>
@@ -228,7 +241,7 @@
                                         <span class="dot"></span>
                                         {{ __('تم التقديم') }}
                                         @if($submissionRecord && $submissionRecord->status === 'graded')
-                                            ({{ $submissionRecord->total_earned_grade }} علامة)
+                                             ({{ $submissionRecord->total_earned_grade }} علامة)
                                         @endif
                                     </span>
                                 @else
@@ -258,6 +271,14 @@
                                             <i class="fa-solid fa-check"></i> {{ __('مكتمل') }}
                                         </span>
                                     @endif
+                                @elseif($isRowUpcoming)
+                                    <button type="button" class="tbl-btn" disabled style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; cursor: not-allowed; opacity: 0.85;">
+                                        <i class="fa-regular fa-clock"></i> {{ __('يفتح قريباً') }}
+                                    </button>
+                                @elseif($isRowExpired)
+                                    <button type="button" class="tbl-btn" disabled style="background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; cursor: not-allowed; opacity: 0.85;">
+                                        <i class="fa-solid fa-lock"></i> {{ __('منتهي') }}
+                                    </button>
                                 @else
                                     <button type="button" onclick="confirmStartExam('{{ route('student.exams.take', $exam->id) }}')" class="tbl-btn" style="background: #1e3a8a;">
                                         <i class="fa-solid fa-play"></i> {{ __('بدء الاختبار') }}
@@ -265,10 +286,9 @@
                                 @endif
                             </td>
                         </tr>
-                        </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+                            <td colspan="8" style="text-align: center; padding: 40px; color: #94a3b8;">
                                 {{ __('لا توجد اختبارات متاحة حالياً لمرحلتك الدراسية.') }}
                             </td>
                         </tr>
@@ -472,6 +492,27 @@
         border-radius: 6px;
         font-size: 0.75rem;
         font-weight: 700;
+    }
+
+    .badge-upcoming {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+    .badge-expired {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .badge-limited {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .badge-always-open {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
     }
 
     .ed-exam-title {

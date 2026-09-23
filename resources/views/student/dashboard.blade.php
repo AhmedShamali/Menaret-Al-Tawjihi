@@ -270,23 +270,42 @@
                 @forelse($available_exams as $ex)
                     @php
                         $subjectName = (app()->getLocale() === 'en' && !empty($ex->subject->name_en)) ? $ex->subject->name_en : ($ex->subject->name_ar ?? __('مبحث دراسي'));
+                        $tb = $ex->timing_badge_data;
                     @endphp
                     <div class="ed-exam-item-row">
                         <div class="exam-info">
-                            <span class="exam-subject-tag">
-                                {{ $subjectName }}
-                            </span>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px;">
+                                <span class="exam-subject-tag">
+                                    {{ $subjectName }}
+                                </span>
+                                <span class="badge-timing-schedule {{ $tb['status'] === 'active_limited' ? 'active-limited' : $tb['status'] }}">
+                                    <i class="{{ $tb['icon'] }}"></i> {{ $tb['label'] }}
+                                </span>
+                            </div>
                             <h4>{{ $ex->title }}</h4>
-                            <div class="exam-meta">
+                            <div class="exam-meta" style="flex-wrap: wrap; row-gap: 6px; align-items: center;">
                                 <span><i class="far fa-question-circle"></i> {{ $ex->questions_count ?? ($ex->questions ? $ex->questions->count() : 10) }} {{ __('سؤال') }}</span>
-                                <span><i class="far fa-clock"></i> {{ $ex->duration_minutes ?? '30' }} {{ __('دقيقة') }}</span>
+                                <span><i class="far fa-clock"></i> {{ $ex->duration_minutes ?? '30' }} {{ __('دقيقة إجابة') }}</span>
+                                <span class="exam-schedule-highlight"><i class="fa-regular fa-calendar-check"></i> {{ __('ساعات وموعد الفتح:') }} <strong>{{ $ex->formatted_timing_text }}</strong></span>
                             </div>
                         </div>
 
-                        <a href="{{ route('student.exams.take', $ex->id) }}" class="ed-btn-classic primary" style="font-size: 0.85rem; padding: 8px 16px; white-space: nowrap;">
-                            <span>{{ __('بدء الاختبار') }}</span>
-                            <i class="fas fa-arrow-left"></i>
-                        </a>
+                        @if($ex->isUpcoming())
+                            <button type="button" class="ed-btn-classic secondary" disabled style="opacity: 0.75; cursor: not-allowed; font-size: 0.82rem; padding: 8px 14px; white-space: nowrap; background: #fffbeb; color: #b45309; border: 1px solid #fde68a;">
+                                <i class="fa-regular fa-clock"></i>
+                                <span>{{ __('يفتح قريباً') }}</span>
+                            </button>
+                        @elseif($ex->isExpired())
+                            <button type="button" class="ed-btn-classic secondary" disabled style="opacity: 0.65; cursor: not-allowed; font-size: 0.82rem; padding: 8px 14px; white-space: nowrap; background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca;">
+                                <i class="fa-solid fa-lock"></i>
+                                <span>{{ __('انتهى الموعد') }}</span>
+                            </button>
+                        @else
+                            <a href="{{ route('student.exams.take', $ex->id) }}" class="ed-btn-classic primary" style="font-size: 0.85rem; padding: 8px 16px; white-space: nowrap;">
+                                <span>{{ __('بدء الاختبار') }}</span>
+                                <i class="fas fa-arrow-left"></i>
+                            </a>
+                        @endif
                     </div>
                 @empty
                     <div class="ed-empty-state">
@@ -920,6 +939,51 @@
         gap: 16px;
         font-size: 0.78rem;
         color: #64748b;
+    }
+
+    .badge-timing-schedule {
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 3px 8px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        line-height: 1.2;
+    }
+    .badge-timing-schedule.upcoming {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+    .badge-timing-schedule.active-limited {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .badge-timing-schedule.always-open {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+    }
+    .badge-timing-schedule.expired {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .exam-schedule-highlight {
+        color: #1e3a8a !important;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        padding: 3px 9px;
+        border-radius: 6px;
+        border: 1px solid #bfdbfe;
+    }
+    .exam-schedule-highlight strong {
+        color: #0f172a;
     }
 
     .ed-empty-state {
