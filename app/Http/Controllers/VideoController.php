@@ -7,21 +7,51 @@ use Illuminate\Http\Request;
 class VideoController extends Controller
 {
     public function stream($filename)
-{
-    // تنظيف المسار من أي زوائد
-    $filename = str_replace(['public/', 'storage/'], '', $filename);
+    {
+        // منع أي محاولات لتخطي المسار (Path Traversal) أو إدخال حروف غير صالحة
+        if (str_contains($filename, '..') || str_contains($filename, "\0")) {
+            abort(403, 'مسار غير مصرح به.');
+        }
 
-    // فحص المسار في storage/app/public
-    $path = storage_path('app/public/' . $filename);
+        // تنظيف المسار من أي زوائد
+        $filename = ltrim(str_replace(['public/', 'storage/'], '', $filename), '/\\');
 
-    if (!file_exists($path)) {
-        // محاولة ثانية للفحص في حال كان الملف بالمجلد الرئيسي storage/app
-        $path = storage_path('app/' . $filename);
-    }
+        $allowedBaseDirs = array_filter([
+            realpath(storage_path('app/public')),
+            realpath(storage_path('app')),
+            realpath(public_path('storage')),
+        ]);
 
-    if (!file_exists($path)) {
-        abort(404, 'Video file not found at: ' . $path);
-    }
+        $resolvedPath = null;
+        $candidates = [
+            storage_path('app/public/' . $filename),
+            storage_path('app/' . $filename),
+            public_path('storage/' . $filename),
+        ];
+
+        foreach ($candidates as $cand) {
+            $real = realpath($cand);
+            if ($real && is_file($real)) {
+                foreach ($allowedBaseDirs as $base) {
+                    if (str_starts_with($real, $base)) {
+                        $resolvedPath = $real;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        if (!$resolvedPath) {
+            abort(404, 'ملف الفيديو غير موجود.');
+        }
+
+        $allowedExtensions = ['mp4', 'webm', 'ogg', 'mov', 'mkv', 'm4v'];
+        $ext = strtolower(pathinfo($resolvedPath, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowedExtensions)) {
+            abort(403, 'نوع الملف غير مدعوم للبث.');
+        }
+
+        $path = $resolvedPath;
 
     $size = filesize($path);
     $file = fopen($path, 'rb');

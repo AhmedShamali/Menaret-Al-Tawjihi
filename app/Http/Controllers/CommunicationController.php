@@ -771,7 +771,7 @@ class CommunicationController extends Controller
                 "رسالة جديدة من الإدارة العامة 📬",
                 \Illuminate\Support\Str::limit($request->message, 80),
                 'chat',
-                route('teacher.admin_chat'),
+                route('teacher.admin.chat'),
                 'fa-comments'
             );
         } catch (\Throwable $e) {}

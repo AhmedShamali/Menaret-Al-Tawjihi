@@ -553,6 +553,7 @@
     html[dir="ltr"] .ed-question-item.correct { border-right: 1px solid #e2e8f0; border-left: 4px solid #10b981; }
     html[dir="ltr"] .ed-question-item.wrong { border-right: 1px solid #e2e8f0; border-left: 4px solid #ef4444; }
     html[dir="ltr"] .ed-question-item.pending { border-right: 1px solid #e2e8f0; border-left: 4px solid #f59e0b; }
+    html[dir="ltr"] .arrow-icon { transform: rotate(180deg); display: inline-block; }
 
     .ed-q-topbar {
         display: flex;

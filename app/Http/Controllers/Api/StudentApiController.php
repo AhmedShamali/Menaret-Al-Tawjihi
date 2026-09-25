@@ -19,6 +19,31 @@ use Illuminate\Support\Facades\Validator;
 class StudentApiController extends Controller
 {
     /**
+     * استخراج الطالب الموثق عبر Bearer Token أو الترويسة
+     */
+    protected function resolveStudent(Request $request): ?Student
+    {
+        $authHeader = $request->header('Authorization');
+        if ($authHeader && preg_match('/Bearer\s+(\S+)/i', $authHeader, $m)) {
+            $raw = base64_decode($m[1], true);
+            if ($raw && str_contains($raw, '|')) {
+                [$id, $hash] = explode('|', $raw, 2);
+                $std = Student::find($id);
+                if ($std && md5($std->password . config('app.key')) === $hash) {
+                    return $std;
+                }
+            }
+        }
+
+        $studentId = $request->header('X-Student-Id') ?? $request->get('student_id');
+        if ($studentId) {
+            return Student::find($studentId);
+        }
+
+        return null;
+    }
+
+    /**
      * تسجيل دخول الطالب للتطبيق
      */
     public function login(Request $request)
@@ -124,8 +149,7 @@ class StudentApiController extends Controller
      */
     public function dashboard(Request $request)
     {
-        $studentId = $request->header('X-Student-Id') ?? $request->get('student_id');
-        $student = Student::with('stage')->find($studentId);
+        $student = $this->resolveStudent($request);
 
         if (!$student) {
             return response()->json(['success' => false, 'message' => 'غير مصرح'], 401);
@@ -154,18 +178,36 @@ class StudentApiController extends Controller
      */
     public function subjects(Request $request)
     {
-        $studentId = $request->header('X-Student-Id') ?? $request->get('student_id');
-        $student = Student::find($studentId);
+        $student = $this->resolveStudent($request);
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 401);
+        }
 
-        $stageId = $student?->stage_id ?? $request->get('stage_id');
+        $studentId = $student->id;
+        $stageId = $student->stage_id;
 
-        $subjectsQuery = Subject::with(['teacher:id,name,phone']);
+        // حصر قطعي: فقط المواد المسجل بها باشتراك نشط وتتبع فرع الطالب الأصلي
+        $enrolledSubjectIds = Enrollment::where('student_id', $studentId)
+            ->where('status', 'active')
+            ->pluck('subject_id')
+            ->toArray();
+
+        if (empty($enrolledSubjectIds)) {
+            return response()->json([
+                'success'  => true,
+                'subjects' => [],
+            ]);
+        }
+
+        $subjectsQuery = Subject::with(['teacher:id,name,phone'])
+            ->whereIn('id', $enrolledSubjectIds);
+
         if ($stageId) {
             $subjectsQuery->where('stage_id', $stageId);
         }
 
         $subjects = $subjectsQuery->get()->map(function ($sub) use ($studentId) {
-            $enrollment = $studentId ? Enrollment::where('student_id', $studentId)->where('subject_id', $sub->id)->first() : null;
+            $enrollment = Enrollment::where('student_id', $studentId)->where('subject_id', $sub->id)->where('status', 'active')->first();
 
             return [
                 'id'             => $sub->id,
@@ -176,7 +218,7 @@ class StudentApiController extends Controller
                     'id'   => optional($sub->teacher)->id,
                     'name' => optional($sub->teacher)->name ?? 'معلم المادة',
                 ],
-                'is_enrolled'    => (bool) ($enrollment && $enrollment->status === 'active'),
+                'is_enrolled'    => true,
                 'access_mode'    => $enrollment ? $enrollment->access_mode : 'none', // all, custom, none
             ];
         });
@@ -192,14 +234,35 @@ class StudentApiController extends Controller
      */
     public function subjectDetails(Request $request, $id)
     {
-        $studentId = $request->header('X-Student-Id') ?? $request->get('student_id');
+        $student = $this->resolveStudent($request);
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 401);
+        }
+
+        $studentId = $student->id;
         $subject = Subject::with(['stage', 'teacher'])->findOrFail($id);
 
-        $enrollment = $studentId ? Enrollment::where('student_id', $studentId)->where('subject_id', $id)->first() : null;
-        $isFullAccess = $enrollment && ($enrollment->access_mode === 'all');
+        // حظر المادة إن كانت تتبع فرعاً دراسياً غير فرع الطالب الأصلي
+        if ($student->stage_id && $subject->stage_id && (int)$subject->stage_id !== (int)$student->stage_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'عذراً، هذه المادة لا تنتمي إلى فرعك الدراسي الأصلي.'
+            ], 403);
+        }
+
+        // حظر المادة إن لم يكن الطالب مسجلاً بها باشتراك نشط معتمد
+        $enrollment = Enrollment::where('student_id', $studentId)->where('subject_id', $id)->where('status', 'active')->first();
+        if (!$enrollment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'عذراً، لا يمكنك عرض محتوى هذه المادة لأنك غير مسجل بها باشتراك نشط.'
+            ], 403);
+        }
+
+        $isFullAccess = ($enrollment->access_mode === 'all');
         $allowedIds = [];
 
-        if ($enrollment && !$isFullAccess) {
+        if (!$isFullAccess) {
             $allowedIds = ContentAssignment::where('enrollment_id', $enrollment->id)
                 ->where('is_visible', true)
                 ->pluck('educational_content_id')
@@ -209,9 +272,8 @@ class StudentApiController extends Controller
         $contents = EducationalContent::where('subject_id', $id)
             ->orderBy('order', 'asc')
             ->get()
-            ->map(function ($item) use ($isFullAccess, $allowedIds, $enrollment) {
-                // إذا لم يكن هناك اشتراك بعد، نفتح أول درسين تجريبياً
-                $isUnlocked = $isFullAccess || in_array($item->id, $allowedIds) || (!$enrollment && $item->order <= 2);
+            ->map(function ($item) use ($isFullAccess, $allowedIds) {
+                $isUnlocked = $isFullAccess || in_array($item->id, $allowedIds);
 
                 return [
                     'id'           => $item->id,
@@ -235,8 +297,8 @@ class StudentApiController extends Controller
                     'id'   => optional($subject->teacher)->id,
                     'name' => optional($subject->teacher)->name,
                 ],
-                'is_enrolled' => (bool) ($enrollment && $enrollment->status === 'active'),
-                'access_mode' => $enrollment ? $enrollment->access_mode : 'none',
+                'is_enrolled' => true,
+                'access_mode' => $enrollment->access_mode,
             ],
             'contents' => $contents,
         ]);
@@ -247,13 +309,21 @@ class StudentApiController extends Controller
      */
     public function offlineSync(Request $request)
     {
-        $studentId = $request->header('X-Student-Id') ?? $request->get('student_id');
-        if (!$studentId) {
-            return response()->json(['success' => false, 'message' => 'معرف الطالب مطلوب'], 400);
+        $student = $this->resolveStudent($request);
+        if (!$student) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح'], 401);
         }
+        $studentId = $student->id;
 
-        // جلب جميع المواد والدروس المفتوحة لهذا الطالب
-        $enrollments = Enrollment::where('student_id', $studentId)->where('status', 'active')->get();
+        // جلب جميع المواد والدروس المفتوحة لهذا الطالب التابعة لفرعه الأصلي
+        $enrollments = Enrollment::where('student_id', $studentId)
+            ->where('status', 'active')
+            ->whereHas('subject', function($q) use ($student) {
+                if ($student->stage_id) {
+                    $q->where('stage_id', $student->stage_id);
+                }
+            })
+            ->get();
         $allowedContents = [];
 
         foreach ($enrollments as $enr) {
@@ -289,8 +359,11 @@ class StudentApiController extends Controller
      */
     public function redeemVoucher(Request $request)
     {
+        $student = $this->resolveStudent($request);
+        $targetStudentId = $student ? $student->id : $request->student_id;
+
         $validator = Validator::make($request->all(), [
-            'student_id' => 'required|exists:students,id',
+            'student_id' => $student ? 'nullable|exists:students,id' : 'required|exists:students,id',
             'code'       => 'required|string',
         ]);
 
@@ -311,7 +384,7 @@ class StudentApiController extends Controller
 
         Enrollment::updateOrCreate(
             [
-                'student_id' => $request->student_id,
+                'student_id' => $targetStudentId,
                 'subject_id' => $voucher->subject_id,
             ],
             [
@@ -324,7 +397,7 @@ class StudentApiController extends Controller
 
         $voucher->update([
             'is_used' => true,
-            'used_by_student_id' => $request->student_id,
+            'used_by_student_id' => $targetStudentId,
             'used_at' => now(),
         ]);
 

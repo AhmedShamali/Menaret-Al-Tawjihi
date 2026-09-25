@@ -30,12 +30,12 @@ class DatabaseSeeder extends Seeder
         // 1. المراحل والصفوف الدراسية أولاً (StageSeeder)
         $this->call(StageSeeder::class);
 
-        // 2. إنشاء المستخدمين الأساسيين (مدير النظام ومعلم تجريبي)
-        $admin = \App\Models\User::firstOrCreate(
-            ['email' => 'ahmad@admin.ps'],
+        // 2. إنشاء وتحديث المستخدمين الأساسيين (مدير النظام)
+        $admin = \App\Models\User::updateOrCreate(
+            ['email' => 'ahmadshamali@admin.ps'],
             [
-                'name' => 'م. أحمد شمالي (مدير النظام)',
-                'password' => bcrypt('44200479'),
+                'name' => 'م. أحمد شمالي',
+                'password' => bcrypt('44712004'),
                 'role' => 'admin',
                 'phone' => '0567897212',
                 'major' => 'إدارة المنصة والإشراف الأكاديمي',

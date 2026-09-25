@@ -2,7 +2,6 @@ const CACHE_NAME = 'tawjihi-platform-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
-  '/js/offline-video-manager.js',
   'https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js',

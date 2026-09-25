@@ -303,6 +303,12 @@ class EducationalContentController extends Controller
         $content = EducationalContent::find($id);
 
         if ($content) {
+            $user = auth()->user();
+            if ($user && $user->role !== 'admin' && !empty($user->subject_id)) {
+                if ((int)$content->subject_id !== (int)$user->subject_id) {
+                    return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
+                }
+            }
             if ($content->pdf_path) {
                 try {
                     if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {

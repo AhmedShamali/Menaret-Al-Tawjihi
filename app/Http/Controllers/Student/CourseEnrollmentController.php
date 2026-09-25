@@ -91,6 +91,17 @@ class CourseEnrollmentController extends Controller
 
         $selectedSubjects = Subject::whereIn('id', $request->subject_ids)->get();
 
+        // حظر شراء أو الاشتراك في مواد تتبع فرعاً دراسياً غير فرع الطالب الأصلي
+        if ($student->stage_id) {
+            $invalidSubject = $selectedSubjects->first(function ($sub) use ($student) {
+                return $sub->stage_id && (int)$sub->stage_id !== (int)$student->stage_id;
+            });
+
+            if ($invalidSubject) {
+                return redirect()->route('student.courses.catalog')->with('error', 'عذراً، يمكنك الاشتراك فقط في مواد فرعك الدراسي الأصلي (' . optional($student->stage)->label_ar . ').');
+            }
+        }
+
         $subtotal = 0;
         $items = [];
 

@@ -580,6 +580,199 @@ class PlatformAuditTest extends TestCase
         $response = $this->get('/admin/settings');
         $response->assertStatus(200);
     }
+
+    public function test_video_stream_blocks_path_traversal_attempts(): void
+    {
+        // 1. Direct path traversal attempt
+        $res1 = $this->get('/video-stream/../../.env');
+        $this->assertContains($res1->getStatusCode(), [403, 404]);
+
+        // 2. URL-encoded path traversal attempt
+        $res2 = $this->get('/video-stream/..%2F..%2F.env');
+        $this->assertContains($res2->getStatusCode(), [403, 404]);
+
+        // 3. Null byte injection attempt
+        $res3 = $this->get('/video-stream/test%00.mp4');
+        $this->assertContains($res3->getStatusCode(), [403, 404]);
+    }
+
+    public function test_educational_contents_resource_requires_authentication(): void
+    {
+        // Guest attempting to create content must be redirected to login
+        $createRes = $this->get('/educational_contents/create');
+        $createRes->assertRedirect('/login');
+
+        // Guest attempting to store content must be redirected to login
+        $storeRes = $this->post('/educational_contents', [
+            'title' => 'اختراق محتوى غير مصرح به',
+            'subject_id' => 1,
+            'order' => 1,
+        ]);
+        $storeRes->assertRedirect('/login');
+    }
+
+    public function test_exam_submission_rejects_dangerous_file_extensions(): void
+    {
+        $stage = Stage::first();
+        $student = Student::create([
+            'name_ar' => 'طالب فحص الرفع',
+            'name_en' => 'Upload Test Student',
+            'nid' => '400991122',
+            'email' => 'upload_sec@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'phone' => '0599991122',
+            'age' => 18,
+            'gender' => 'ذكر',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+        ]);
+
+        $subject = Subject::first();
+        \App\Models\Enrollment::create([
+            'student_id'     => $student->id,
+            'subject_id'     => $subject->id,
+            'status'         => 'active',
+            'access_mode'    => 'all',
+            'payment_status' => 'paid',
+        ]);
+
+        $exam = \App\Models\Exam::create([
+            'title' => 'اختبار رفع الملفات',
+            'subject_id' => $subject->id,
+            'stage_id' => $stage->id,
+            'duration_minutes' => 60,
+            'is_active' => true,
+        ]);
+
+        $question = \App\Models\Question::create([
+            'exam_id' => $exam->id,
+            'type' => 'essay',
+            'question_text' => 'أجب عن السؤال التالي وارفعه كملف',
+            'points' => 10,
+        ]);
+
+        auth('student')->login($student);
+
+        // Uploading a dangerous .php script should fail validation
+        $fakePhpScript = \Illuminate\Http\UploadedFile::fake()->create('malicious_shell.php', 10, 'text/x-php');
+
+        $response = $this->post(route('student.exams.submit', $exam->id), [
+            'answers' => [$question->id => 'إجابة تجريبية'],
+            'files' => [$question->id => $fakePhpScript],
+        ]);
+
+        $response->assertSessionHasErrors();
+    }
+
+    public function test_all_blade_templates_compile_cleanly(): void
+    {
+        $viewsPath = resource_path('views');
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($viewsPath));
+        $errors = [];
+        $checked = 0;
+
+        foreach ($files as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.blade.php')) {
+                $checked++;
+                $content = file_get_contents($file->getRealPath());
+                try {
+                    $compiled = \Illuminate\Support\Facades\Blade::compileString($content);
+                    $tmp = tempnam(sys_get_temp_dir(), 'blade_lint_');
+                    file_put_contents($tmp, $compiled);
+                    $res = shell_exec('php -l ' . escapeshellarg($tmp) . ' 2>&1');
+                    @unlink($tmp);
+                    if (!str_contains($res, 'No syntax errors detected')) {
+                        $errors[$file->getFilename()] = trim($res);
+                    }
+                } catch (\Throwable $e) {
+                    $errors[$file->getFilename()] = $e->getMessage();
+                }
+            }
+        }
+
+        $this->assertGreaterThan(20, $checked, "Should have checked many Blade files");
+        $this->assertEmpty($errors, "Blade templates with errors: " . json_encode($errors, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+
+    public function test_all_blade_route_references_exist(): void
+    {
+        $viewsPath = resource_path('views');
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($viewsPath));
+        $missingRoutes = [];
+
+        foreach ($files as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.blade.php')) {
+                $lines = file($file->getRealPath());
+                foreach ($lines as $lineNum => $line) {
+                    if (preg_match_all('/route\(\s*[\'"]([a-zA-Z0-9_\-\.]+)[\'"]/', $line, $matches)) {
+                        foreach ($matches[1] as $routeName) {
+                            if (!\Illuminate\Support\Facades\Route::has($routeName)) {
+                                $missingRoutes[] = [
+                                    'file' => $file->getFilename(),
+                                    'line' => $lineNum + 1,
+                                    'route' => $routeName,
+                                    'content' => trim($line),
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty($missingRoutes, "Found missing route references in Blade templates:\n" . json_encode($missingRoutes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+
+    public function test_all_controller_view_references_exist(): void
+    {
+        $controllersPath = app_path('Http/Controllers');
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersPath));
+        $missingViews = [];
+
+        foreach ($files as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
+                $content = file_get_contents($file->getRealPath());
+                if (preg_match_all('/\b(?:view|View::make)\s*\(\s*[\'"]([a-zA-Z0-9_\-\.]+)[\'"]/', $content, $matches)) {
+                    foreach ($matches[1] as $viewName) {
+                        if (!view()->exists($viewName)) {
+                            $missingViews[] = [
+                                'file' => $file->getFilename(),
+                                'view' => $viewName,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty($missingViews, "Found missing views referenced in Controllers:\n" . json_encode($missingViews, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
+
+    public function test_all_controller_route_references_exist(): void
+    {
+        $controllersPath = app_path('Http/Controllers');
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($controllersPath));
+        $missingRoutes = [];
+
+        foreach ($files as $file) {
+            if ($file->isFile() && str_ends_with($file->getFilename(), '.php')) {
+                $content = file_get_contents($file->getRealPath());
+                // Match route('...') helper calls, excluding $request->route('...')
+                if (preg_match_all('/(?<!->)\broute\s*\(\s*[\'"]([a-zA-Z0-9_\-\.]+)[\'"]/', $content, $matches)) {
+                    foreach ($matches[1] as $routeName) {
+                        if (!\Illuminate\Support\Facades\Route::has($routeName)) {
+                            $missingRoutes[] = [
+                                'file' => $file->getFilename(),
+                                'route' => $routeName,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        $this->assertEmpty($missingRoutes, "Found missing route references in Controllers:\n" . json_encode($missingRoutes, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    }
 }
 
 

@@ -4,7 +4,6 @@
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="/js/offline-video-manager.js"></script>
 
 <style>
 /* ==========================================================================
@@ -390,61 +389,22 @@
     background: #000 !important;
 }
 
-/* مشغل اليوتيوب الأكاديمي الصافي - بدون سواد وبدون أي تأثير على ألوان وجودة الفيديو */
+/* مشغل الفيديو الأكاديمي الصافي - بدون أي حواجز أو طبقات إضافية على الفيديو */
 .ed-yt-shield-container {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    overflow: hidden;
-    background: #000000;
+    background: #090d16;
 }
 
 .ed-yt-shield-container iframe {
     position: absolute;
-    top: -46px;
-    left: 0;
-    width: 100%;
-    height: calc(100% + 46px);
-    border: none;
-}
-
-/* حواجز نقر شفافة 100% لمنع فتح روابط يوتيوب الخارجية بدون أي طبقة سوداء أو تغيير بألوان المحتوى */
-.ed-yt-transparent-guard-top {
-    position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    height: 48px;
-    background: transparent !important;
-    z-index: 4;
-    pointer-events: auto;
-    cursor: default;
-}
-
-.ed-yt-transparent-guard-logo {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 140px;
-    height: 45px;
-    background: transparent !important;
-    z-index: 4;
-    pointer-events: auto;
-    cursor: default;
-}
-
-.ed-in-platform-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #f1f5f9;
-    color: #475569;
-    border: 1px solid #e2e8f0;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 /* شريط تحكم الفيديو الذكي */
@@ -519,66 +479,37 @@
     font-weight: 600;
 }
 
-.ed-video-actions-box {
-    padding: 12px 22px;
-    background: #fcfdfe;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.btn-offline-save {
-    background: #f0fdf4;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 800;
-    cursor: pointer;
+.ed-stream-tag {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    transition: 0.2s;
-}
-.btn-offline-save:hover {
-    background: #dcfce7;
-}
-
-.btn-offline-downloaded {
+    gap: 6px;
     background: #eff6ff;
-    color: #1e40af;
+    color: #1d4ed8;
     border: 1px solid #bfdbfe;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 0.82rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
     font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
 }
 
-.btn-direct-download {
-    background: #0284c7;
-    color: #ffffff;
-    border: 1px solid #0284c7;
-    padding: 8px 16px;
-    border-radius: 8px;
+.ed-btn-lecture-pdf {
+    color: #b91c1c;
     font-size: 0.82rem;
     font-weight: 800;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    background: #fef2f2;
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid #fecaca;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
 }
-.btn-direct-download:hover {
-    background: #0369a1;
-    color: #ffffff;
-    border-color: #0369a1;
+.ed-btn-lecture-pdf:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
 }
 
 .note-item-card {
@@ -805,7 +736,7 @@
     flex-shrink: 0;
 }
 
-/* أوفلاين والمودال */
+/* المودال الأكاديمي */
 .offline-drawer-backdrop {
     display: none;
     position: fixed;
@@ -813,24 +744,6 @@
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(4px);
     z-index: 9999;
-}
-.offline-drawer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 420px;
-    max-width: 90vw;
-    background: #ffffff;
-    box-shadow: 20px 0 50px rgba(0,0,0,0.2);
-    z-index: 10000;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.offline-drawer.open {
-    transform: translateX(0);
 }
 </style>
 
@@ -932,11 +845,6 @@
                 </button>
             @endif
 
-            <button type="button" onclick="openOfflineDrawer()" class="ed-btn-royal secondary">
-                <i class="fa-solid fa-download" style="color: #1e3a8a;"></i>
-                <span>{{ __('فيديوهاتي بدون إنترنت') }}</span>
-                <span id="heroOfflineBadge" style="background: #1e3a8a; color: #ffffff; padding: 1px 7px; border-radius: 8px; font-size: 0.72rem; font-weight: 800;">0</span>
-            </button>
 
             @if($subject->hasAssignedTeacher() && $subject->teacher)
                 <a href="{{ route('student.chat.teacher', $subject->teacher->id) }}" class="ed-btn-royal secondary">
@@ -999,14 +907,10 @@
 
                                     @if(!empty($ytEmbed))
                                         <div class="ed-yt-shield-container">
-                                            {{-- حماية علوية وسفلية شفافة بالكامل تمنع النقر على روابط يوتيوب الخارجية بدون أي سواد أو حجب لمحتوى الحصة --}}
-                                            <div class="ed-yt-transparent-guard-top" onclick="event.stopPropagation();"></div>
-                                            <div class="ed-yt-transparent-guard-logo" onclick="event.stopPropagation();"></div>
-
                                             <iframe id="player_yt_{{ $video->id }}" src="{{ $ytEmbed }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
-                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
@@ -1042,7 +946,7 @@
                                     </div>
 
                                     <div style="display: flex; align-items: center; gap: 6px;">
-                                        <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض داخل المنصة مع استمرار الحماية') }}">
+                                        <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                             <i class="fa-solid fa-expand"></i>
                                             <span>{{ __('ملء الشاشة') }}</span>
                                         </button>
@@ -1068,49 +972,25 @@
                                     </div>
                                 </div>
 
-                                {{-- بيانات المحاضرة --}}
+                                {{-- بيانات المحاضرة والمرفقات الدراسية --}}
                                 <div class="ed-video-info-box">
                                     <div>
-                                        <span style="background: #eff6ff; color: #1e3a8a; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-block; margin-bottom: 6px;">
+                                        <span style="background: #eff6ff; color: #1e3a8a; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-block; margin-bottom: 6px;">
                                             {{ $video->channel_name ?? __('الدرس') . ' #' . $video->order }}
                                         </span>
                                         <h3 class="ed-vtitle">{{ $video->title }}</h3>
                                     </div>
-                                    <span class="ed-vmeta">
-                                        <i class="fa-regular fa-clock"></i> #{{ $video->order }}
-                                    </span>
-                                </div>
-
-                                {{-- إجراءات التنزيل والملفات المرفقة --}}
-                                <div class="ed-video-actions-box">
-                                    <div id="offline_action_box_{{ $video->id }}" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        @if($isDirectVideo && $directVideoUrl)
-                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-direct-download" title="{{ __('تحميل ملف الفيديو الأصلي بجودة عالية إلى جهازك') }}">
-                                                <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل الفيديو (MP4)') }}
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        @if(!empty($video->pdf_path))
+                                            <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
+                                                <i class="fa-solid fa-file-pdf"></i>
+                                                <span>{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}</span>
                                             </a>
-                                            <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="downloadVideoOffline('{{ $video->id }}', '{{ $directVideoUrl }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '{{ $subject->id }}')">
-                                                <i class="fa-solid fa-download"></i> {{ __('حفظ بدون إنترنت') }}
-                                            </button>
-                                        @elseif($isYt)
-                                            <button type="button" class="btn-direct-download" onclick="handlePlatformVideoDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}', '', false)" title="{{ __('تحميل وتسجيل الشرح المرئي داخل المنصة للمشاهدة بدون إنترنت') }}">
-                                                <i class="fa-solid fa-cloud-arrow-down"></i> <span>{{ __('تحميل الفيديو داخل المنصة') }}</span>
-                                            </button>
-                                            <button type="button" class="btn-offline-save" id="btn_save_offline_{{ $video->id }}" onclick="saveLessonToPlatformLibrary('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->name_ar ?? $subject->name) }}')">
-                                                <i class="fa-solid fa-bookmark"></i> {{ __('حفظ بالمكتبة') }}
-                                            </button>
-                                            <span class="ed-in-platform-tag">
-                                                <i class="fa-solid fa-shield-halved" style="color: #2563eb;"></i> {{ __('عرض مخصص ومحمي بالمنصة') }}
-                                            </span>
-                                        @else
-                                            <span style="font-size: 0.8rem; color: #64748b;"><i class="fa-solid fa-file-circle-check"></i> {{ __('ملف ومرفق دراسي') }}</span>
                                         @endif
+                                        <span class="ed-stream-tag">
+                                            <i class="fa-solid fa-circle-play"></i> {{ __('مشاهدة مباشرة فائقة الدقة') }}
+                                        </span>
                                     </div>
-
-                                    @if(!empty($video->pdf_path))
-                                        <a href="{{ route('content.download', $video->id) }}" style="color: #1e3a8a; font-size: 0.82rem; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; padding: 7px 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
-                                            <i class="fa-solid fa-file-pdf" style="color: #dc2626;"></i> {{ __('تحميل ملزمة المحاضرة') }}
-                                        </a>
-                                    @endif
                                 </div>
                             </article>
                         @else
@@ -1327,21 +1207,6 @@
 
     </div>
 </div>
-
-{{-- أوفلاين دراور --}}
-<div class="offline-drawer-backdrop" id="drawerBackdrop" onclick="closeOfflineDrawer()"></div>
-<div class="offline-drawer" id="offlineDrawer">
-    <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-        <div>
-            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #0f172a;">{{ __('فيديوهاتي بدون إنترنت') }}</h3>
-            <span style="font-size: 0.78rem; color: #64748b;">{{ __('محفوظة بأمان محلياً في جهازك') }}</span>
-        </div>
-        <button onclick="closeOfflineDrawer()" style="background: none; border: none; font-size: 1.4rem; color: #94a3b8; cursor: pointer;">&times;</button>
-    </div>
-
-    <div style="padding: 20px; overflow-y: auto; flex: 1;" id="offlineVideosList"></div>
-</div>
-
 {{-- مودال تفعيل الكود --}}
 <div class="offline-drawer-backdrop" id="redeemModalBackdrop" style="display: none; justify-content: center; align-items: center; padding: 20px;">
     <div style="background: #ffffff; border-radius: 18px; max-width: 460px; width: 100%; padding: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.25);">
@@ -1390,122 +1255,6 @@ function switchSubjectTab(tab) {
     }
 }
 
-// أوفلاين مانيجر
-document.addEventListener('DOMContentLoaded', async () => {
-    refreshOfflineBadges();
-});
-
-async function refreshOfflineBadges() {
-    if (!window.offlineVideoManager) return;
-    const allDownloaded = await window.offlineVideoManager.getAllDownloaded();
-    const heroBadge = document.getElementById('heroOfflineBadge');
-    if (heroBadge) heroBadge.textContent = allDownloaded.length;
-
-    allDownloaded.forEach(item => {
-        markVideoAsDownloadedUI(item.id);
-    });
-}
-
-function markVideoAsDownloadedUI(videoId) {
-    const box = document.getElementById(`offline_action_box_${videoId}`);
-    if (!box) return;
-
-    box.innerHTML = `
-        <span class="btn-offline-downloaded">
-            <i class="fa-solid fa-circle-check" style="color: #059669;"></i> {{ __('محفوظ للمشاهدة بدون إنترنت') }}
-        </span>
-        <button type="button" onclick="playLocalOfflineVideo('${videoId}')" class="ed-btn-royal primary" style="padding: 6px 12px; font-size: 0.78rem;">
-            <i class="fa-solid fa-play"></i> {{ __('تشغيل محلي') }}
-        </button>
-        <button type="button" onclick="deleteLocalVideo('${videoId}')" title="{{ __('حذف من الذاكرة المحلية') }}" style="background: none; border: none; color: #ef4444; font-size: 0.9rem; cursor: pointer; padding: 4px;">
-            <i class="fa-solid fa-trash-can"></i>
-        </button>
-    `;
-}
-
-async function downloadVideoOffline(videoId, videoUrl, title, subjectName, subjectId) {
-    const btn = document.getElementById(`btn_save_offline_${videoId}`);
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري التحميل محلياً...') }}';
-    }
-
-    try {
-        await window.offlineVideoManager.downloadVideo(videoId, videoUrl, title, subjectName, subjectId);
-        markVideoAsDownloadedUI(videoId);
-        refreshOfflineBadges();
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                icon: 'success',
-                title: '{{ __('تم التنزيل بنجاح!') }}',
-                text: '{{ __('تم حفظ الفيديو داخل المنصة، يمكنك مشاهدته في أي وقت بدون إنترنت.') }}',
-                confirmButtonColor: '#1e3a8a',
-                confirmButtonText: '{{ __('حسناً') }}'
-            });
-        }
-    } catch (err) {
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> {{ __('فشل التحميل، أعد المحاولة') }}';
-        }
-    }
-}
-
-function saveLessonToPlatformLibrary(videoId, title, subjectName) {
-    const key = 'platform_saved_lesson_' + videoId;
-    localStorage.setItem(key, JSON.stringify({
-        id: videoId,
-        title: title,
-        subject: subjectName,
-        savedAt: new Date().toISOString()
-    }));
-    const btn = document.getElementById(`btn_save_offline_${videoId}`);
-    if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#059669;"></i> {{ __('محفوظ في مكتبة المنصة') }}';
-        btn.style.background = '#ecfdf5';
-        btn.style.color = '#065f46';
-        btn.style.borderColor = '#a7f3d0';
-    }
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            icon: 'success',
-            title: '{{ __('تم الحفظ في مكتبة المنصة!') }}',
-            text: '{{ __('تم تثبيت هذا الدرس في قائمة المشاهدة والمتابعة الخاصة بك للرجوع إليه وتدوين ملاحظاتك في أي وقت.') }}',
-            confirmButtonColor: '#1e3a8a',
-            confirmButtonText: '{{ __('حسناً') }}'
-        });
-    }
-}
-
-function handlePlatformVideoDownload(videoId, title, subjectName, directUrl, isDirect) {
-    if (isDirect && directUrl) {
-        window.location.href = `/educational-contents/${videoId}/download-video`;
-        return;
-    }
-    saveLessonToPlatformLibrary(videoId, title, subjectName);
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            icon: 'success',
-            title: '{{ __("تم تنزيل الحصة داخل المنصة ✅") }}',
-            html: `{{ __("تم حفظ درس") }} <strong>"${title}"</strong> {{ __("بنجاح في مكتبتك الرقمية داخل المنصة (فيديوهاتي بدون إنترنت). يمكنك الآن متابعته في أي وقت بدون استهلاك للإنترنت مع حماية كاملة.") }}`,
-            confirmButtonColor: '#1e3a8a',
-            confirmButtonText: '{{ __("فتح فيديوهاتي المحفوظة") }}',
-            showCancelButton: true,
-            cancelButtonText: '{{ __("متابعة المشاهدة") }}'
-        }).then((res) => {
-            if (res.isConfirmed) {
-                const drawer = document.getElementById('offlineDrawer');
-                const backdrop = document.getElementById('drawerBackdrop');
-                if (drawer && backdrop) {
-                    drawer.classList.add('open');
-                    backdrop.style.display = 'block';
-                    if (window.renderOfflineVideosList) window.renderOfflineVideosList();
-                }
-            }
-        });
-    }
-}
-
 function togglePlatformFullscreen(videoId) {
     const frame = document.getElementById(`player_frame_${videoId}`);
     if (!frame) return;
@@ -1526,35 +1275,6 @@ function togglePlatformFullscreen(videoId) {
             document.msExitFullscreen();
         }
     }
-}
-
-async function playLocalOfflineVideo(videoId) {
-    const item = await window.offlineVideoManager.getVideo(videoId);
-    if (!item || !item.blob) return;
-
-    const player = document.getElementById(`player_${videoId}`);
-    if (player) {
-        player.src = URL.createObjectURL(item.blob);
-        player.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        player.play();
-    }
-}
-
-async function deleteLocalVideo(videoId) {
-    if (confirm('{{ __('هل ترغب في حذف الفيديو من المشاهدة بدون إنترنت لتوفير المساحة؟') }}')) {
-        await window.offlineVideoManager.deleteVideo(videoId);
-        window.location.reload();
-    }
-}
-
-function openOfflineDrawer() {
-    document.getElementById('offlineDrawer').classList.add('open');
-    document.getElementById('drawerBackdrop').style.display = 'block';
-}
-
-function closeOfflineDrawer() {
-    document.getElementById('offlineDrawer').classList.remove('open');
-    document.getElementById('drawerBackdrop').style.display = 'none';
 }
 
 function openRedeemModal() {

@@ -543,7 +543,9 @@ class ExamController extends Controller
 
         if ($student && !empty($enrolledSubjectIds)) {
             $allExamsQuery->whereIn('subject_id', $enrolledSubjectIds);
-        } elseif ($studentStageId) {
+        }
+
+        if ($studentStageId) {
             $allExamsQuery->where(function ($q) use ($studentStageId) {
                 $q->where('stage_id', $studentStageId)
                   ->orWhere(function ($subQ) use ($studentStageId) {
@@ -601,7 +603,13 @@ class ExamController extends Controller
 
         $exam = Exam::with(['questions', 'subject', 'stage'])->findOrFail($examId);
 
-        // التحقق الصارم: هل الطالب مسجل ومشترك في مادة هذا الاختبار؟
+        // 1. التحقق الصارم: هل ينتمي هذا الاختبار أو مادته إلى فرع الطالب الأصلي؟
+        $examStageId = $exam->stage_id ?? $exam->subject?->stage_id;
+        if ($student->stage_id && $examStageId && (int)$examStageId !== (int)$student->stage_id) {
+            return redirect()->route('student.exams.index')->with('error', 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي ولا يمكن تقديمه.');
+        }
+
+        // 2. التحقق الصارم: هل الطالب مسجل ومشترك في مادة هذا الاختبار باشتراك نشط؟
         $enr = \App\Models\Enrollment::where('student_id', $student->id)
             ->where('subject_id', $exam->subject_id)
             ->where('status', 'active')
@@ -637,6 +645,13 @@ class ExamController extends Controller
 
     public function submitExam(Request $request, $id)
     {
+        $request->validate([
+            'files.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp,doc,docx|max:10240',
+        ], [
+            'files.*.mimes' => 'صيغ الملفات المسموح بها للإجابة هي: PDF, DOC, DOCX, JPG, PNG, WEBP.',
+            'files.*.max'   => 'الحد الأقصى لحجم الملف هو 10 ميغابايت.',
+        ]);
+
         try {
             return DB::transaction(function () use ($request, $id) {
                 $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
@@ -652,9 +667,19 @@ class ExamController extends Controller
                     ], 422);
                 }
 
-                $exam = Exam::with('questions')->findOrFail($id);
+                $exam = Exam::with(['questions', 'subject'])->findOrFail($id);
 
-                // التحقق الصارم من اشتراك الطالب في المادة عند الإرسال
+                // 1. التحقق الصارم من الفرع الأصلي للطالب عند الإرسال
+                $examStageId = $exam->stage_id ?? $exam->subject?->stage_id;
+                if ($student->stage_id && $examStageId && (int)$examStageId !== (int)$student->stage_id) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي!',
+                        'error'   => 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي!'
+                    ], 403);
+                }
+
+                // 2. التحقق الصارم من اشتراك الطالب في المادة عند الإرسال
                 $enr = \App\Models\Enrollment::where('student_id', $student->id)
                     ->where('subject_id', $exam->subject_id)
                     ->where('status', 'active')
@@ -662,7 +687,7 @@ class ExamController extends Controller
 
                 if (!$enr) {
                     return response()->json([
-                        'success' => false,
+                        'success' => false, 
                         'message' => 'عذراً، لا يمكنك تسليم اختبار لمادة غير مسجل بها أو غير مشترك فيها!',
                         'error'   => 'عذراً، لا يمكنك تسليم اختبار لمادة غير مسجل بها أو غير مشترك فيها!'
                     ], 403);

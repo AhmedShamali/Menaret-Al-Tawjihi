@@ -83,7 +83,9 @@ Route::get('/students', function () {
     return view('visitor');
 });
 
-Route::resource('educational_contents', EducationalContentController::class);
+Route::middleware('auth')->group(function () {
+    Route::resource('educational_contents', EducationalContentController::class);
+});
 
 // حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي
 Route::get('/tawjihi-calculator', [\App\Http\Controllers\TawjihiCalculatorController::class, 'index'])->name('tawjihi.calculator');
@@ -285,7 +287,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/messages/{student_id}', [CommunicationController::class, 'fetchTeacherStudentMessages'])->name('messages.fetch');
     Route::post('/send-message', [CommunicationController::class, 'sendFromTeacher'])->name('messages.send');
 
-    Route::get('/chat', [CommunicationController::class, 'teacherAdminChat'])->name('teacher.admin.chat');
+    Route::get('/chat', [CommunicationController::class, 'teacherAdminChat'])->name('admin_chat');
     Route::get('/messages', [CommunicationController::class, 'fetchTeacherAdminMessages'])->name('admin.chat.messages_legacy');
     Route::post('/send', [CommunicationController::class, 'sendFromTeacherToAdmin'])->name('admin.chat.send_legacy');
 

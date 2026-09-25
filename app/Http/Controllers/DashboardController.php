@@ -30,44 +30,59 @@ class DashboardController extends Controller {
     public function showSubject($id)
     {
         $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User && $student->role === 'student') {
+            $student = $student->student ?? \App\Models\Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
         $student_id = $student?->id ?? auth()->id();
 
         // جلب المادة مع كامل علاقاتها
         $subject = Subject::with(['stage', 'teacher', 'contents', 'educationalContents', 'exams'])->findOrFail($id);
+
+        $isAdminOrTeacher = auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher']);
+
+        // التحقق الصارم للطالب: حظر الوصول تماماً إن لم تكن المادة تابعة لفرعه الأصلي أو لم يكن مسجلاً بها باشتراك نشط
+        $enrollment = null;
+        if (!$isAdminOrTeacher) {
+            if (!$student) {
+                return redirect()->route('login')->with('error', 'يرجى تسجيل الدخول أولاً للوصول إلى هذا المقرر.');
+            }
+
+            // 1. التحقق الصارم من الفرع الأكاديمي الأصلي للطالب
+            if ($student->stage_id && $subject->stage_id && (int)$subject->stage_id !== (int)$student->stage_id) {
+                return redirect()->route('student.subjects.index')->with('error', 'عذراً، هذه المادة لا تنتمي إلى فرعك الدراسي الأصلي ولا يمكن الوصول إليها.');
+            }
+
+            // 2. التحقق الصارم من وجود تسجيل واشتراك نشط معتمد
+            $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
+                ->where('subject_id', $subject->id)
+                ->where('status', 'active')
+                ->first();
+
+            if (!$enrollment) {
+                return redirect()->route('student.subjects.index')->with('error', 'عذراً، لا يمكنك عرض محتوى هذه المادة لأنك غير مسجل بها باشتراك نشط معتمد.');
+            }
+        }
 
         // الاعتماد على المحتوى المتاح في المادة
         $allContents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
 
         // للطلاب: إظهار المحتوى المعتمد والمرئي فقط (حيث is_visible != 0)
         // أما المعلم أو المدير فيمكنهما رؤية كافة المحتويات عند المعاينة
-        $isAdminOrTeacher = auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher']);
-        
         $contents = $isAdminOrTeacher 
             ? $allContents 
             : $allContents->filter(fn($item) => $item->is_visible !== false && $item->is_visible !== 0 && $item->is_visible !== '0');
 
-        // فحص اشتراك الطالب وصلاحياته في هذه المادة
-        $enrollment = null;
+        // فحص صلاحيات الوصول لدروس المادة
         $isFullAccess = $isAdminOrTeacher || (bool) $subject->is_free || ($subject->effective_price <= 0);
         $allowedIds = [];
 
-        if (!$isFullAccess && $student) {
-            $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
-                ->where('subject_id', $subject->id)
-                ->first();
-
-            if ($enrollment && $enrollment->status === 'active') {
-                $isFullAccess = ($enrollment->access_mode === 'all');
-                if (!$isFullAccess) {
-                    $allowedIds = \App\Models\ContentAssignment::where('enrollment_id', $enrollment->id)
-                        ->where('is_visible', true)
-                        ->pluck('educational_content_id')
-                        ->toArray();
-                }
-            } else {
-                // إذا لم يكن مسجلاً باشتراك نشط، يتاح الدرس الأول والثاني مجاناً كتجربة استعراضية
-                $isFullAccess = false;
-                $allowedIds = $contents->where('order', '<=', 2)->pluck('id')->toArray();
+        if (!$isFullAccess && $student && $enrollment) {
+            $isFullAccess = ($enrollment->access_mode === 'all');
+            if (!$isFullAccess) {
+                $allowedIds = \App\Models\ContentAssignment::where('enrollment_id', $enrollment->id)
+                    ->where('is_visible', true)
+                    ->pluck('educational_content_id')
+                    ->toArray();
             }
         }
 
@@ -96,11 +111,19 @@ class DashboardController extends Controller {
             return !empty($pdf);
         })->sortBy('order');
 
-        // 3. جلب بنك الاختبارات المعتمدة للمادة
-        $exams = Exam::where('subject_id', $subject->id)
+        // 3. جلب بنك الاختبارات المعتمدة للمادة التابعة لفرع الطالب الأصلي
+        $examsQuery = Exam::where('subject_id', $subject->id)
             ->withCount('questions')
-            ->latest()
-            ->get();
+            ->latest();
+
+        if (!$isAdminOrTeacher && $student && $student->stage_id) {
+            $examsQuery->where(function ($q) use ($student) {
+                $q->where('stage_id', $student->stage_id)
+                  ->orWhereNull('stage_id');
+            });
+        }
+
+        $exams = $examsQuery->get();
 
         // حصر الاختبارات حصرياً بالطلبة المسجلين والمشتركين في المادة
         if (!$isAdminOrTeacher) {
@@ -133,22 +156,33 @@ class DashboardController extends Controller {
     public function studentSubjectsIndex()
     {
         $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User && $student->role === 'student') {
+            $student = $student->student ?? \App\Models\Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
+
+        if (!$student) {
+            return redirect()->route('login');
+        }
 
         // جلب معرف المرحلة الخاص بالطالب
-        $stageId = $student?->stage_id ?? optional($student?->student)->stage_id;
+        $stageId = $student->stage_id ?? optional($student->student)->stage_id;
 
-        // جلب المواد مع عدادات المحتوى والاختبارات
-        $query = \App\Models\Subject::with(['stage', 'teacher'])->withCount(['educationalContents', 'contents', 'exams']);
+        // حصر العرض قطيعاً بالمواد التي سجّل بها الطالب واعتمدتها الإدارة (الاشتراكات النشطة)
+        $enrolledSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
+            ->where('status', 'active')
+            ->pluck('subject_id')
+            ->toArray();
 
-        if ($student) {
-            // حصر العرض حصرياً بالمواد التي سجّل بها الطالب واعتمدتها الإدارة (الاشتراكات النشطة)
-            $enrolledSubjectIds = \App\Models\Enrollment::where('student_id', $student->id)
-                ->where('status', 'active')
-                ->pluck('subject_id')
-                ->toArray();
+        if (empty($enrolledSubjectIds)) {
+            $subjects = collect();
+            return view('student.subjects.index', compact('subjects'));
+        }
 
-            $query->whereIn('id', $enrolledSubjectIds);
-        } elseif ($stageId) {
+        // جلب المواد مع عدادات المحتوى والاختبارات التابعة لفرعه الأصلي فقط
+        $query = \App\Models\Subject::with(['stage', 'teacher'])->withCount(['educationalContents', 'contents', 'exams'])
+            ->whereIn('id', $enrolledSubjectIds);
+
+        if ($stageId) {
             $query->where('stage_id', $stageId);
         }
 
@@ -167,7 +201,7 @@ class DashboardController extends Controller {
         // 1. جلب آي دي الاختبارات التي حلها الطالب مسبقاً
         $solvedExamIds = ExamSubmission::where('student_id', $student_id)->pluck('exam_id');
 
-        // 2. حصر الاختبارات قطيعاً في المواد المسجل بها الطالب ومشترك فيها باشتراك نشط حصراً
+        // 2. حصر الاختبارات قطيعاً في المواد المسجل بها الطالب ومشترك فيها باشتراك نشط حصراً ولفرعه الأصلي
         $available_exams = collect();
         $availableExamsCount = 0;
 
@@ -180,13 +214,26 @@ class DashboardController extends Controller {
             $enrolledSubjectIds = $enrollments->keys()->toArray();
 
             if (!empty($enrolledSubjectIds)) {
-                // جلب الاختبارات التابعة للمواد المسجل بها فقط
-                $candidateExams = Exam::whereIn('subject_id', $enrolledSubjectIds)
+                // جلب الاختبارات التابعة للمواد المسجل بها فقط ولفرع الطالب الأصلي
+                $candidateExamsQuery = Exam::whereIn('subject_id', $enrolledSubjectIds)
                     ->whereNotIn('id', $solvedExamIds)
                     ->with(['subject', 'stage'])
                     ->withCount('questions')
-                    ->latest()
-                    ->get();
+                    ->latest();
+
+                if ($student->stage_id) {
+                    $candidateExamsQuery->where(function ($q) use ($student) {
+                        $q->where('stage_id', $student->stage_id)
+                          ->orWhere(function ($subQ) use ($student) {
+                              $subQ->whereNull('stage_id')
+                                   ->whereHas('subject', function ($sQ) use ($student) {
+                                       $sQ->where('stage_id', $student->stage_id);
+                                   });
+                          });
+                    });
+                }
+
+                $candidateExams = $candidateExamsQuery->get();
 
                 // تصفية صلاحيات الوصول وخطة المادة المعتمدة
                 $filteredExams = $candidateExams->filter(function ($exam) use ($enrollments) {

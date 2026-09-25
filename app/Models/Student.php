@@ -23,7 +23,7 @@ class Student extends Authenticatable
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'plain_password', 'remember_token',
     ];
 
     public function stage() {

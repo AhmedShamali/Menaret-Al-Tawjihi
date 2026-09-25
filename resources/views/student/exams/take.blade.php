@@ -190,7 +190,7 @@
                             </div>
                             <div class="ed-meta-item">
                                 <span class="lbl">{{ __('المرحلة / الصف:') }}</span>
-                                <strong class="val">{{ $exam->academicYear->name_ar ?? $exam->academicYear->name ?? __('المرحلة الثانوية العامة') }}</strong>
+                                <strong class="val">{{ $exam->stage->name_ar ?? $exam->stage->name ?? __('المرحلة الثانوية العامة') }}</strong>
                             </div>
                             <div class="ed-meta-item">
                                 <span class="lbl">{{ __('زمن الإجابة:') }}</span>
