@@ -1,0 +1,162 @@
+name: CI/CD Pipeline - Hostinger Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. CI Job: Automated Tests & Code Verification
+  # ---------------------------------------------------------------------------
+  tests:
+    name: Run Tests & Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_sqlite, pdo_mysql, bcmath, curl, zip
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer Dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare Test Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Install NPM Dependencies & Build Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run Test Suite
+        run: php artisan test
+
+  # ---------------------------------------------------------------------------
+  # 2. CD Job: Build & Deploy to Hostinger via SSH
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to Hostinger
+    needs: tests
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, bcmath, curl, zip
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Production Composer Dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Install NPM Dependencies & Build Production Assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync Files to Hostinger via Rsync
+        env:
+          SSH_PASSWORD: ${{ secrets.HOSTINGER_PASSWORD }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT || 65002 }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          REMOTE_PATH: ${{ secrets.HOSTINGER_PATH }}
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y sshpass rsync
+
+          # Sync application files to Hostinger
+          # Preserves production .env, user uploads in storage, and active logs/sessions
+          sshpass -p "$SSH_PASSWORD" rsync -avz --delete \
+            -e "ssh -p $SSH_PORT -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.env' \
+            --exclude='.env.*' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='phpunit.xml' \
+            --exclude='storage/app/public/*' \
+            --exclude='storage/app/private/*' \
+            --exclude='storage/logs/*' \
+            --exclude='storage/framework/cache/data/*' \
+            --exclude='storage/framework/sessions/*' \
+            --exclude='storage/framework/views/*' \
+            --exclude='public/storage' \
+            ./ "$SSH_USER@$SSH_HOST:$REMOTE_PATH/"
+
+      - name: Run Post-Deployment Commands on Hostinger
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.HOSTINGER_HOST }}
+          username: ${{ secrets.HOSTINGER_USER }}
+          password: ${{ secrets.HOSTINGER_PASSWORD }}
+          port: ${{ secrets.HOSTINGER_PORT || 65002 }}
+          script: |
+            cd ${{ secrets.HOSTINGER_PATH }}
+
+            # Ensure storage and bootstrap directories have correct permissions
+            chmod -R 775 storage bootstrap/cache
+
+            # Put site into maintenance mode during migrations and cache rebuild
+            php artisan down --render="errors::503" || true
+
+            # Run database migrations and seeders
+            php artisan migrate --force
+            php artisan db:seed --force
+
+            # Create storage symlink if not already created
+            php artisan storage:link || true
+
+            # Clear old caches and generate optimized production caches
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            php artisan event:cache
+
+            # Restart queue workers if any are running
+            php artisan queue:restart || true
+
+            # Bring site back online
+            php artisan up
