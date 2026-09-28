@@ -90,7 +90,7 @@ class PublicController extends Controller
         session(['locale' => $locale]);
         cookie()->queue('app_locale', $locale, 60 * 24 * 365);
 
-        return redirect()->back();
+        return redirect()->back(fallback: route('home'));
     }
 }
 

@@ -24,8 +24,9 @@ use App\Http\Controllers\{
 | 1. الروابط العامة (Public Routes)
 |--------------------------------------------------------------------------
 */
-Route::get('/', [PublicController::class, 'index'])->name('home');
-Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
+Route::get('/change-language/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
+Route::get('/language/{locale}', [PublicController::class, 'switchLanguage']);
+Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage']);
 Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::get('/educational-contents/{id}/download-video', [EducationalContentController::class, 'downloadVideo'])->name('content.downloadVideo');
 Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->name('question.image');

@@ -80,7 +80,7 @@
             <div class="videos-grid">
                 @forelse($videos as $index => $video)
                     <div class="video-card">
-                        <div class="custom-video-wrapper">
+                        <div class="custom-video-wrapper" oncontextmenu="return false;">
                             @php
                                 $url = $video->url_path;
                                 $isYoutube = \Illuminate\Support\Str::contains($url, ['youtube.com', 'youtu.be']);
@@ -90,8 +90,19 @@
                                 @php
                                     preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $matches);
                                     $ytId = $matches[1] ?? $url;
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1";
                                 @endphp
-                                <iframe class="custom-iframe" src="https://www.youtube.com/embed/{{ $ytId }}" frameborder="0" allowfullscreen></iframe>
+                                <div class="yt-shield-top" title="{{ __('مشغل تعليمي آمن') }}"></div>
+                                <div class="yt-shield-bottom-left"></div>
+                                <div class="yt-shield-bottom-right"></div>
+                                <iframe class="custom-iframe" 
+                                        src="{{ $ytSafeSrc }}" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                                        allowfullscreen 
+                                        loading="lazy">
+                                </iframe>
                             @else
                                 <video class="custom-video-element" preload="metadata" controlsList="nodownload">
                                     <source src="{{ route('video.stream', ['filename' => $video->url_path]) }}" type="video/mp4">
@@ -114,7 +125,7 @@
                         <div class="video-card-body">
                             <h4 class="video-title">{{ $video->title }}</h4>
                             <p class="video-channel">
-                                <span>📺</span> {{ $video->channel_name ?? 'القناة التعليمية' }}
+                                <span>🎓</span> {{ __('مشغل دراسي آمن') }}
                             </p>
                         </div>
                     </div>
@@ -321,6 +332,41 @@
         aspect-ratio: 16/9;
         background-color: #000;
         overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .custom-video-wrapper .yt-shield-top {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 65px;
+        z-index: 5;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .custom-video-wrapper .yt-shield-bottom-left {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 110px;
+        height: 48px;
+        z-index: 5;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .custom-video-wrapper .yt-shield-bottom-right {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 90px;
+        height: 48px;
+        z-index: 5;
+        background: transparent;
+        cursor: pointer;
     }
 
     .custom-video-element, .custom-iframe {

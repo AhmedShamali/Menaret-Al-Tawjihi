@@ -124,8 +124,8 @@
                             <label class="f-label">{{ __('رابط فيديو YouTube المعتمد') }} *</label>
                             <input type="url" name="video_url" id="input_video_url" class="f-input" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewCreateYt(this.value)">
                             <small style="color: var(--ed-text-muted, #64748b);">{{ __('يدعم جميع صيغ روابط YouTube (العادية والمختصرة و Shorts).') }}</small>
-                            <div id="createYtPreview" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
-                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                            <div id="createYtPreview" oncontextmenu="return false;" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
+                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
                             </div>
                         </div>
 

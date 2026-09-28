@@ -26,19 +26,46 @@ class EducationalContentController extends Controller
 
     public function store(Request $request)
     {
+        // التحقق الأولي السريع من وجود ملف فيديو وأي خطأ مرتبط برفعه قبل التحقق العام
+        if ($request->hasFile('video_file')) {
+            $file = $request->file('video_file');
+            if (!$file->isValid()) {
+                $errCode = $file->getError();
+                $errMsg = match($errCode) {
+                    UPLOAD_ERR_INI_SIZE => 'حجم ملف الفيديو يتجاوز الحد الأقصى المسموح به في إعدادات السيرفر.',
+                    UPLOAD_ERR_FORM_SIZE => 'حجم ملف الفيديو يتجاوز الحجم المسموح به في النموذج.',
+                    UPLOAD_ERR_PARTIAL => 'تم رفع جزء من ملف الفيديو فقط، يرجى إعادة المحاولة.',
+                    UPLOAD_ERR_NO_FILE => 'لم يتم استلام ملف الفيديو، يرجى اختياره مجدداً.',
+                    default => 'حدث خطأ أثناء رفع ملف الفيديو (رمز الخطأ: ' . $errCode . ').'
+                };
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => $errMsg
+                ], 422);
+            }
+
+            $ext = strtolower($file->getClientOriginalExtension());
+            $allowedExtensions = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'mkv'];
+            if (!in_array($ext, $allowedExtensions)) {
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'صيغ ملفات الفيديو المعتمدة هي: ' . implode(', ', array_map('strtoupper', $allowedExtensions)) . '.'
+                ], 422);
+            }
+        }
+
         $validator = validator($request->all(), [
             'subject_id'      => 'required',
             'title'           => 'required|string|min:3',
             'order'           => 'required|numeric',
             'video_url'       => 'nullable|url',
-            'video_file'      => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v,mkv|max:512000',
+            'video_file'      => 'nullable|file|max:1048576', // حتى 1 جيجابايت
             'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
             'pdf_url'         => 'nullable|url',
         ], [
             'title.required'      => 'يرجى إدخال عنوان الدرس أو المحتوى التعليمي.',
             'subject_id.required' => 'يرجى تحديد المادة الدراسية.',
-            'video_file.mimes'    => 'صيغ ملفات الفيديو المعتمدة هي: MP4, WebM, MOV, OGG, M4V.',
-            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 500 ميغابايت.',
+            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 1000 ميغابايت (1 جيجابايت).',
         ]);
 
         if ($validator->fails()) {
@@ -61,8 +88,19 @@ class EducationalContentController extends Controller
             $uploadedVideo = $request->file('video_file');
             $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
             $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
-            $path = $uploadedVideo->store('educational/videos', 'public');
-            $content->url_path = $path;
+            
+            if (app()->environment('testing') || empty(config('filesystems.disks.supabase.key'))) {
+                $path = $uploadedVideo->store('educational/videos', 'public');
+                $content->url_path = $path;
+            } else {
+                try {
+                    $path = $uploadedVideo->store('educational/videos', 'supabase');
+                    $content->url_path = Storage::disk('supabase')->url($path);
+                } catch (\Throwable $e) {
+                    $path = $uploadedVideo->store('educational/videos', 'public');
+                    $content->url_path = $path;
+                }
+            }
         } elseif ($request->filled('video_url')) {
             $dummy = new EducationalContent(['url_path' => $request->video_url]);
             $content->url_path = $request->video_url;

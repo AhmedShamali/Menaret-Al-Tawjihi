@@ -93,19 +93,31 @@
             @endphp
             <div class="ed-video-card">
                 <div>
-                    <div class="video-frame-wrap">
+                    <div class="video-frame-wrap" oncontextmenu="return false;">
                         @php
                             $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $vid->url_path ?? '') || str_contains($vid->url_path ?? '', 'educational/videos');
                             $directVidUrl = $isDirectVid ? (filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path)) : null;
+                            $ytTargetUrl = $vid->youtube_embed_url ?? $embedUrl;
+                            if (!empty($ytTargetUrl) && !str_contains($ytTargetUrl, 'youtube-nocookie.com')) {
+                                $ytTargetUrl = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytTargetUrl);
+                            }
                         @endphp
                         @if($isDirectVid && $directVidUrl)
-                            <video controls preload="metadata" playsinline style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
+                            <video controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
                                 <source src="{{ $directVidUrl }}" type="video/mp4">
                             </video>
-                        @elseif($vid->youtube_id)
-                            <iframe src="{{ $vid->youtube_embed_url }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
                         @else
-                            <iframe src="{{ $embedUrl }}" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen loading="lazy"></iframe>
+                            {{-- دروع الحماية المادية الخفية لمنع النقر على العنوان، صورة القناة، شعار يوتيوب، أو المشاركة --}}
+                            <div class="yt-shield-top" title="{{ __('مشغل تعليمي آمن') }}"></div>
+                            <div class="yt-shield-bottom-left"></div>
+                            <div class="yt-shield-bottom-right"></div>
+                            <iframe src="{{ $ytTargetUrl }}" 
+                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                                    allowfullscreen 
+                                    loading="lazy">
+                            </iframe>
                         @endif
                     </div>
                     <div class="video-info-box">
@@ -125,8 +137,8 @@
                                 <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
                                 <span style="color: #1e40af; font-weight: 700;">{{ __('ملف فيديو محلي مرفوع على المنصة') }}</span>
                             @else
-                                <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
-                                <span>{{ $vid->channel_name ?? config('app.name', 'منارة التوجيهي') }}</span>
+                                <i class="fa-solid fa-circle-play" style="color: #2563eb;"></i>
+                                <span style="color: #1e3a8a; font-weight: 700;">{{ __('مشغل الفيديو الآمن للمنصة') }}</span>
                             @endif
                         </p>
                     </div>
@@ -191,7 +203,7 @@
             <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
         </div>
 
-        <form id="uploadVideoForm" onsubmit="submitVideoForm(event)">
+        <form id="uploadVideoForm" enctype="multipart/form-data" onsubmit="submitVideoForm(event)">
             @csrf
             <input type="hidden" name="type" value="video">
 
@@ -489,6 +501,43 @@
     position: relative;
     padding-top: 56.25%;
     background: #0f172a;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* دروع الحماية المادية الخفية لمنع الخروج لليوتيوب */
+.yt-shield-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 65px;
+    z-index: 5;
+    background: transparent;
+    cursor: pointer;
+}
+
+.yt-shield-bottom-left {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 110px;
+    height: 48px;
+    z-index: 5;
+    background: transparent;
+    cursor: pointer;
+}
+
+.yt-shield-bottom-right {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 90px;
+    height: 48px;
+    z-index: 5;
+    background: transparent;
+    cursor: pointer;
 }
 
 .video-info-box {
@@ -867,6 +916,16 @@ function previewLocalVideo(input) {
     const localVideo = document.getElementById('localPreviewVideo');
 
     if (file) {
+        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+        if (file.size > 500 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("تنبيه بشأن حجم الفيديو") }}',
+                text: `{{ __("حجم الفيديو المختار كبير:") }} (${sizeMb} MB). {{ __("الحد الأقصى الموصى به هو 500 ميغابايت لتجنب بطء الرفع أو انقطاعه.") }}`,
+                confirmButtonText: '{{ __("متابعة") }}',
+                confirmButtonColor: '#1e3a8a'
+            });
+        }
         ytFrame.style.display = 'none';
         ytFrame.src = '';
         localVideo.src = URL.createObjectURL(file);
@@ -887,7 +946,7 @@ function previewYoutube(url) {
     if (videoId) {
         localVideo.style.display = 'none';
         frame.style.display = 'block';
-        frame.src = `https://www.youtube.com/embed/${videoId}?rel=0`;
+        frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1`;
         container.style.display = 'block';
     } else {
         frame.src = '';
@@ -903,7 +962,7 @@ async function submitVideoForm(e) {
     const btn = document.getElementById('btnSubmitVideo');
     const originalText = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري الحفظ والرفع...") }}';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري تجهيز وبدء الرفع...") }}';
 
     const form = document.getElementById('uploadVideoForm');
     const formData = new FormData(form);
@@ -911,7 +970,20 @@ async function submitVideoForm(e) {
     const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
 
     try {
-        const res = await axios.post(storeUrl, formData);
+        const res = await axios.post(storeUrl, formData, {
+            headers: {
+                'Accept': 'application/json'
+            },
+            timeout: 0, // إلغاء المهلة الزمنية لرفع الفيديوهات الكبيرة حتى تكتمل
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity,
+            onUploadProgress: (progressEvent) => {
+                if (progressEvent.total) {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-bounce"></i> {{ __("جاري رفع الفيديو...") }} ${percent}%`;
+                }
+            }
+        });
         Swal.fire({
             icon: 'success',
             title: res.data.title || '{{ __("تم حفظ ونشر درس الفيديو بنجاح 🎉") }}',
@@ -921,8 +993,33 @@ async function submitVideoForm(e) {
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        const msg = err.response?.data?.title || err.response?.data?.message || '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
-        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: msg });
+        
+        let msg = '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
+        if (err.response) {
+            if (err.response.status === 413) {
+                msg = '{{ __("حجم ملف الفيديو كبير جداً ويتجاوز الحد الأقصى المسموح به في إعدادات السيرفر (PHP / Web Server Limit). يرجى ضغط الفيديو أو تقليل حجمه.") }}';
+            } else if (err.response.data) {
+                if (err.response.data.title) {
+                    msg = err.response.data.title;
+                } else if (err.response.data.message) {
+                    msg = err.response.data.message;
+                } else if (err.response.data.errors) {
+                    msg = Object.values(err.response.data.errors).flat().join('<br>');
+                }
+            }
+        } else if (err.code === 'ECONNABORTED') {
+            msg = '{{ __("استغرقت عملية الرفع وقتاً طويلاً وتم قطع الاتصال، يرجى التحقق من سرعة الإنترنت.") }}';
+        } else if (err.message && err.message.toLowerCase().includes('network')) {
+            msg = '{{ __("فشل الاتصال بالسيرفر أثناء رفع الملف، غالباً بسبب حجم الفيديو الكبير جداً الذي تم قطعه بواسطة السيرفر.") }}';
+        }
+
+        Swal.fire({ 
+            icon: 'error', 
+            title: '{{ __("خطأ في رفع الفيديو") }}', 
+            html: msg,
+            confirmButtonText: '{{ __("حسناً") }}',
+            confirmButtonColor: '#ef4444'
+        });
     }
 }
 

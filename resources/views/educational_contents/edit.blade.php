@@ -99,8 +99,8 @@
                             <input type="url" name="video_url" id="editVideoUrl" value="{{ $isDirectVideo ? '' : $content->url_path }}" class="input-style font-mono" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
                             <small class="upload-hint">{{ __('يدعم روابط YouTube العادية والمختصرة و Shorts.') }}</small>
                             
-                            <div id="editYtPreview" style="{{ ($content->youtube_id && !$isDirectVideo) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" allowfullscreen></iframe>
+                            <div id="editYtPreview" oncontextmenu="return false;" style="{{ ($content->youtube_id && !$isDirectVideo) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
                             </div>
                         </div>
 
