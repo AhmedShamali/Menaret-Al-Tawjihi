@@ -109,7 +109,7 @@
                             @php
                                 $isYtLink = \Illuminate\Support\Str::contains($video->url_path, ['youtube.com', 'youtu.be']);
                                 $videoUrl = $isYtLink 
-                                    ? (auth()->user()?->isStudent() ? route('student.subjects.show', $video->subject_id) : route('subjects.show', $video->subject_id))
+                                    ? route('student.subjects.show', $video->subject_id)
                                     : (filter_var($video->url_path, FILTER_VALIDATE_URL) ? $video->url_path : asset('storage/' . $video->url_path));
                             @endphp
 

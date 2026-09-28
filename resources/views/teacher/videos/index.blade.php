@@ -198,13 +198,13 @@
     <div class="modal-card">
         <div class="modal-head">
             <h3>
-                <i class="fa-solid fa-video text-primary"></i>
-                <span>{{ __('إضافة درس أو شرح فيديو جديد (ملف مباشر للمنصة أو YouTube)') }}</span>
+                <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+                <span>{{ __('إضافة درس أو شرح فيديو جديد (YouTube)') }}</span>
             </h3>
             <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
         </div>
 
-        <form id="uploadVideoForm" enctype="multipart/form-data" onsubmit="submitVideoForm(event)">
+        <form id="uploadVideoForm" onsubmit="submitVideoForm(event)">
             @csrf
             <input type="hidden" name="type" value="video">
 
@@ -228,68 +228,21 @@
                     <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
                 </div>
 
-                <!-- اختيار نوع المصدر: يوتيوب أو ملف فيديو مباشر -->
-                <div class="f-group">
-                    <label class="f-label">{{ __('طريقة إضافة الفيديو *') }}</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <button type="button" id="tabSourceYt" onclick="switchVideoSourceType('youtube')" style="padding: 10px; border-radius: 8px; border: 2px solid #1e3a8a; background: #eff6ff; color: #1e3a8a; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 1.1rem;"></i>
-                            <span>{{ __('رابط YouTube') }}</span>
-                        </button>
-                        <button type="button" id="tabSourceFile" onclick="switchVideoSourceType('file')" style="padding: 10px; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                            <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb; font-size: 1.1rem;"></i>
-                            <span>{{ __('رفع ملف للمنصة (MP4)') }}</span>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- حقل رابط YouTube -->
                 <div class="f-group" id="groupVideoUrl">
                     <label class="f-label">
                         <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
                         <span>{{ __('رابط فيديو YouTube *') }}</span>
                     </label>
-                    <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
-                    <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts).') }}</small>
+                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
+                    <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts). محمي بمشغل المنصة الآمن.') }}</small>
                 </div>
-
-                <!-- حقل رفع ملف فيديو مباشر للمنصة -->
-                <div class="f-group" id="groupVideoFile" style="display: none;">
-                    <label class="f-label">
-                        <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
-                        <span>{{ __('اختر ملف الفيديو من جهازك * (MP4 / WebM / MOV)') }}</span>
-                    </label>
-                    <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska" onchange="previewLocalVideo(this)" class="f-control">
-                    <small class="f-hint">{{ __('نظام الرفع الذكي المقسم (Chunked Upload) يدعم رفع ملفات الفيديو الكبيرة حتى 2 جيجابايت بدون انقطاع وبسرعة فائقة.') }}</small>
-                </div>
-
-                <!-- شريط تقدم الرفع المجزأ للفيديوهات الكبيرة -->
-                <div id="uploadProgressBarContainer" style="display: none; background: #f8fafc; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-top: 6px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; font-weight: 700; margin-bottom: 8px;">
-                        <span id="uploadProgressStatus" style="color: #1e40af; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-cloud-arrow-up fa-bounce" style="color: #2563eb;"></i>
-                            <span>{{ __('جاري رفع الفيديو عبر الأجزاء الذكية...') }}</span>
-                        </span>
-                        <span id="uploadProgressPercent" style="color: #1e3a8a; font-family: monospace; font-size: 0.95rem; font-weight: 900;">0%</span>
-                    </div>
-                    <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden; position: relative;">
-                        <div id="uploadProgressBarFill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 6px; transition: width 0.2s ease;"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.74rem; color: #64748b;">
-                        <span id="uploadProgressDetails" style="font-family: monospace; direction: ltr;"></span>
-                        <span style="color: #059669; font-weight: 600;"><i class="fa-solid fa-shield-check"></i> {{ __('رفع آمن ومحمي') }}</span>
-                    </div>
-                </div>
-
-                <input type="hidden" name="uploaded_video_path" id="uploadedVideoPathInput">
-                <input type="hidden" name="formatted_size" id="formattedSizeInput">
 
                 <!-- معاينة فورية للفيديو -->
                 <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
                     <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو:') }}</label>
                     <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">
                         <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
-                        <video id="localPreviewVideo" controls style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
                     </div>
                 </div>
 
@@ -892,102 +845,18 @@ function parseYouTubeId(url) {
     return (match && match[2].length === 11) ? match[2] : null;
 }
 
-let currentVideoSourceType = 'youtube';
-
-function switchVideoSourceType(type) {
-    currentVideoSourceType = type;
-    const tabYt = document.getElementById('tabSourceYt');
-    const tabFile = document.getElementById('tabSourceFile');
-    const groupUrl = document.getElementById('groupVideoUrl');
-    const groupFile = document.getElementById('groupVideoFile');
-    const urlInput = document.getElementById('videoUrlInput');
-    const fileInput = document.getElementById('videoFileInput');
-    const container = document.getElementById('ytPreviewContainer');
-    const ytFrame = document.getElementById('ytPreviewFrame');
-    const localVideo = document.getElementById('localPreviewVideo');
-
-    if (type === 'youtube') {
-        tabYt.style.border = '2px solid #1e3a8a';
-        tabYt.style.background = '#eff6ff';
-        tabYt.style.color = '#1e3a8a';
-        tabFile.style.border = '1.5px solid #cbd5e1';
-        tabFile.style.background = '#ffffff';
-        tabFile.style.color = '#64748b';
-
-        groupUrl.style.display = 'flex';
-        groupFile.style.display = 'none';
-        fileInput.value = '';
-
-        localVideo.style.display = 'none';
-        localVideo.pause();
-        previewYoutube(urlInput.value);
-    } else {
-        tabFile.style.border = '2px solid #1e3a8a';
-        tabFile.style.background = '#eff6ff';
-        tabFile.style.color = '#1e3a8a';
-        tabYt.style.border = '1.5px solid #cbd5e1';
-        tabYt.style.background = '#ffffff';
-        tabYt.style.color = '#64748b';
-
-        groupFile.style.display = 'flex';
-        groupUrl.style.display = 'none';
-        urlInput.value = '';
-
-        ytFrame.style.display = 'none';
-        ytFrame.src = '';
-        if (fileInput.files && fileInput.files[0]) {
-            previewLocalVideo(fileInput);
-        } else {
-            container.style.display = 'none';
-        }
-    }
-}
-
-function previewLocalVideo(input) {
-    const file = input.files ? input.files[0] : null;
-    const container = document.getElementById('ytPreviewContainer');
-    const ytFrame = document.getElementById('ytPreviewFrame');
-    const localVideo = document.getElementById('localPreviewVideo');
-
-    if (file) {
-        const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-        if (file.size > 500 * 1024 * 1024) {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __("تنبيه بشأن حجم الفيديو") }}',
-                text: `{{ __("حجم الفيديو المختار كبير:") }} (${sizeMb} MB). {{ __("الحد الأقصى الموصى به هو 500 ميغابايت لتجنب بطء الرفع أو انقطاعه.") }}`,
-                confirmButtonText: '{{ __("متابعة") }}',
-                confirmButtonColor: '#1e3a8a'
-            });
-        }
-        ytFrame.style.display = 'none';
-        ytFrame.src = '';
-        localVideo.src = URL.createObjectURL(file);
-        localVideo.style.display = 'block';
-        container.style.display = 'block';
-    } else {
-        localVideo.src = '';
-        localVideo.style.display = 'none';
-        container.style.display = 'none';
-    }
-}
-
 function previewYoutube(url) {
     const videoId = parseYouTubeId(url.trim());
     const container = document.getElementById('ytPreviewContainer');
     const frame = document.getElementById('ytPreviewFrame');
-    const localVideo = document.getElementById('localPreviewVideo');
     if (videoId) {
-        localVideo.style.display = 'none';
         frame.style.display = 'block';
         frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1`;
         container.style.display = 'block';
     } else {
         frame.src = '';
         frame.style.display = 'none';
-        if (currentVideoSourceType === 'youtube') {
-            container.style.display = 'none';
-        }
+        container.style.display = 'none';
     }
 }
 
@@ -996,125 +865,22 @@ async function submitVideoForm(e) {
     const btn = document.getElementById('btnSubmitVideo');
     const originalText = btn.innerHTML;
     const form = document.getElementById('uploadVideoForm');
+    const urlInput = document.getElementById('videoUrlInput');
 
-    const progressContainer = document.getElementById('uploadProgressBarContainer');
-    const progressFill = document.getElementById('uploadProgressBarFill');
-    const progressPercent = document.getElementById('uploadProgressPercent');
-    const progressDetails = document.getElementById('uploadProgressDetails');
-    const progressStatus = document.getElementById('uploadProgressStatus');
-
-    const uploadedVideoPathInput = document.getElementById('uploadedVideoPathInput');
-    const formattedSizeInput = document.getElementById('formattedSizeInput');
-    const fileInput = document.getElementById('videoFileInput');
-
-    // إذا اختار المعلم رفع ملف فيديو مباشر من جهازه
-    if (currentVideoSourceType === 'upload') {
-        if (!fileInput.files || !fileInput.files[0]) {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __("تنبيه") }}',
-                text: '{{ __("يرجى اختيار ملف الفيديو من جهازك أولاً.") }}',
-                confirmButtonText: '{{ __("حسناً") }}',
-                confirmButtonColor: '#1e3a8a'
-            });
-            return;
-        }
-
-        const file = fileInput.files[0];
-        const fileSizeMb = (file.size / (1024 * 1024)).toFixed(1);
-
-        btn.disabled = true;
-        progressContainer.style.display = 'block';
-        progressFill.style.width = '0%';
-        progressPercent.innerText = '0%';
-        progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-bounce" style="color: #2563eb;"></i> {{ __("جاري رفع الفيديو عبر الأجزاء الذكية...") }}`;
-        progressDetails.innerText = `0 / ${fileSizeMb} MB`;
-
-        // تجزئة الفيديو لأجزاء كل جزء 2.5 ميجابايت لتجاوز كافة قيود ومحددات السيرفر
-        const CHUNK_SIZE = 2.5 * 1024 * 1024;
-        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-        const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-        const chunkUrl = "{{ route('educational_contents.upload_chunk') }}";
-
-        let finalPath = '';
-        let finalFormattedSize = '';
-
-        try {
-            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-                const start = chunkIndex * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, file.size);
-                const chunkBlob = file.slice(start, end);
-
-                const chunkFormData = new FormData();
-                chunkFormData.append('_token', '{{ csrf_token() }}');
-                chunkFormData.append('file_id', fileId);
-                chunkFormData.append('chunk_index', chunkIndex);
-                chunkFormData.append('total_chunks', totalChunks);
-                chunkFormData.append('file_name', file.name);
-                chunkFormData.append('chunk', chunkBlob, file.name);
-
-                let uploadSuccess = false;
-                let lastErr = null;
-
-                // إعادة المحاولة التلقائية حتى 3 مرات لكل جزء في حال تذبذب اتصال الإنترنت
-                for (let attempt = 1; attempt <= 3; attempt++) {
-                    try {
-                        const chunkRes = await axios.post(chunkUrl, chunkFormData, {
-                            headers: { 'Accept': 'application/json' },
-                            timeout: 120000
-                        });
-                        uploadSuccess = true;
-                        if (chunkRes.data.done) {
-                            finalPath = chunkRes.data.uploaded_video_path;
-                            finalFormattedSize = chunkRes.data.formatted_size;
-                        }
-                        break;
-                    } catch (err) {
-                        lastErr = err;
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                }
-
-                if (!uploadSuccess) {
-                    throw lastErr || new Error('فشل رفع أحد أجزاء الفيديو بعد عدة محاولات.');
-                }
-
-                const uploadedMb = (end / (1024 * 1024)).toFixed(1);
-                const pct = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-                progressFill.style.width = pct + '%';
-                progressPercent.innerText = pct + '%';
-                progressDetails.innerText = `${uploadedMb} / ${fileSizeMb} MB (${chunkIndex + 1}/${totalChunks})`;
-                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${pct}% {{ __("جاري الرفع...") }}`;
-            }
-
-            progressStatus.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i> {{ __("تم اكتمال الرفع والدمج بنجاح! جاري حفظ بيانات الدرس...") }}`;
-            uploadedVideoPathInput.value = finalPath;
-            formattedSizeInput.value = finalFormattedSize;
-
-            // إزالة حقل الملف الخام قبل إرسال الفورم لمنع إعادة رفع الملف الضخم ثانيةً
-            fileInput.disabled = true;
-
-        } catch (uploadErr) {
-            btn.disabled = false;
-            btn.innerHTML = originalText;
-            progressContainer.style.display = 'none';
-
-            let msg = uploadErr.response?.data?.message || uploadErr.message || '{{ __("فشل رفع ملف الفيديو") }}';
-            Swal.fire({
-                icon: 'error',
-                title: '{{ __("خطأ في رفع الفيديو") }}',
-                text: msg,
-                confirmButtonText: '{{ __("حسناً") }}',
-                confirmButtonColor: '#ef4444'
-            });
-            return;
-        }
-    } else {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ الدرس...") }}';
+    if (!urlInput.value || !parseYouTubeId(urlInput.value.trim())) {
+        Swal.fire({
+            icon: 'warning',
+            title: '{{ __("رابط غير صحيح") }}',
+            text: '{{ __("يرجى إدخال رابط فيديو YouTube صحيح (يدعم الروابط العادية ومقاطع Shorts).") }}',
+            confirmButtonText: '{{ __("حسناً") }}',
+            confirmButtonColor: '#1e3a8a'
+        });
+        return;
     }
 
-    // إرسال النموذج وحفظ المحتوى التعليمي
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ الدرس...") }}';
+
     const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
     const mainFormData = new FormData(form);
 
@@ -1131,8 +897,6 @@ async function submitVideoForm(e) {
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        if (fileInput) fileInput.disabled = false;
-        if (progressContainer) progressContainer.style.display = 'none';
 
         let msg = '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
         if (err.response && err.response.data) {
