@@ -2351,6 +2351,26 @@
                 }
             }
         }, { passive: true });
+
+        // حماية خصوصية المحتوى التعليمي ومنع تسريب أو نسخ روابط يوتيوب إلى الحافظة
+        (function() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                const origWrite = navigator.clipboard.writeText.bind(navigator.clipboard);
+                navigator.clipboard.writeText = function(text) {
+                    if (typeof text === 'string' && (/youtube\.com|youtu\.be/i.test(text))) {
+                        return Promise.reject(new Error('Protected video content'));
+                    }
+                    return origWrite(text);
+                };
+            }
+            document.addEventListener('copy', function(e) {
+                const sel = window.getSelection ? window.getSelection().toString() : '';
+                if (/youtube\.com|youtu\.be/i.test(sel)) {
+                    e.preventDefault();
+                    if (e.clipboardData) e.clipboardData.setData('text/plain', '');
+                }
+            }, true);
+        })();
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

@@ -93,12 +93,13 @@
                                     $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1";
                                 @endphp
                                 <div class="yt-shield-top" title="{{ __('مشغل تعليمي آمن') }}"></div>
+                                <div class="yt-shield-copy-link"></div>
                                 <div class="yt-shield-bottom-left"></div>
                                 <div class="yt-shield-bottom-right"></div>
                                 <iframe class="custom-iframe" 
                                         src="{{ $ytSafeSrc }}" 
                                         frameborder="0" 
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                         sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                         allowfullscreen 
                                         loading="lazy">
@@ -341,32 +342,43 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 65px;
-        z-index: 5;
+        height: 75px;
+        z-index: 25;
         background: transparent;
-        cursor: pointer;
+        cursor: default;
+    }
+
+    .custom-video-wrapper .yt-shield-copy-link {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 120px;
+        height: 110px;
+        z-index: 30;
+        background: transparent;
+        cursor: default;
     }
 
     .custom-video-wrapper .yt-shield-bottom-left {
         position: absolute;
         bottom: 0;
         left: 0;
-        width: 110px;
-        height: 48px;
-        z-index: 5;
+        width: 120px;
+        height: 110px;
+        z-index: 25;
         background: transparent;
-        cursor: pointer;
+        cursor: default;
     }
 
     .custom-video-wrapper .yt-shield-bottom-right {
         position: absolute;
         bottom: 0;
         right: 0;
-        width: 90px;
-        height: 48px;
-        z-index: 5;
+        width: 130px;
+        height: 65px;
+        z-index: 25;
         background: transparent;
-        cursor: pointer;
+        cursor: default;
     }
 
     .custom-video-element, .custom-iframe {

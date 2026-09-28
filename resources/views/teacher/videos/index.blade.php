@@ -107,13 +107,14 @@
                                 <source src="{{ $directVidUrl }}" type="video/mp4">
                             </video>
                         @else
-                            {{-- دروع الحماية المادية الخفية لمنع النقر على العنوان، صورة القناة، شعار يوتيوب، أو المشاركة --}}
+                            {{-- دروع الحماية المادية الخفية لمنع النقر على العنوان، صورة القناة، شعار يوتيوب، أو نسخ الرابط --}}
                             <div class="yt-shield-top" title="{{ __('مشغل تعليمي آمن') }}"></div>
+                            <div class="yt-shield-copy-link" title=""></div>
                             <div class="yt-shield-bottom-left"></div>
                             <div class="yt-shield-bottom-right"></div>
                             <iframe src="{{ $ytTargetUrl }}" 
                                     style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                     sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                     allowfullscreen 
                                     loading="lazy">
@@ -287,7 +288,7 @@
                 <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
                     <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو:') }}</label>
                     <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;">
-                        <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allowfullscreen></iframe>
+                        <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
                         <video id="localPreviewVideo" controls style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;"></video>
                     </div>
                 </div>
@@ -527,38 +528,50 @@
     -webkit-user-select: none;
 }
 
-/* دروع الحماية المادية الخفية لمنع الخروج لليوتيوب */
+/* دروع الحماية المادية الخفية لمنع الخروج لليوتيوب أو نسخ الرابط */
 .yt-shield-top {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 65px;
-    z-index: 5;
+    height: 75px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
+}
+
+/* درع حماية مانع لنقر ونسخ رابط الفيديو من أيقونة الرابط */
+.yt-shield-copy-link {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 110px;
+    z-index: 30;
+    background: transparent;
+    cursor: default;
 }
 
 .yt-shield-bottom-left {
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 110px;
-    height: 48px;
-    z-index: 5;
+    width: 120px;
+    height: 110px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
 }
 
 .yt-shield-bottom-right {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 90px;
-    height: 48px;
-    z-index: 5;
+    width: 130px;
+    height: 65px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
 }
 
 .video-info-box {

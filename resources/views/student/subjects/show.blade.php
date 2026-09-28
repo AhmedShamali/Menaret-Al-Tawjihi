@@ -416,10 +416,22 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 68px;
-    z-index: 10;
+    height: 75px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
+}
+
+/* درع حماية مانع لنقر ونسخ رابط الفيديو من أيقونة الرابط */
+.ed-yt-shield-container .yt-shield-copy-link {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 120px;
+    height: 110px;
+    z-index: 30;
+    background: transparent;
+    cursor: default;
 }
 
 /* دروع الحماية السفلية للأركان: تمنع النقر على شعار يوتيوب المائي وزر المشاهدة على يوتيوب */
@@ -428,21 +440,21 @@
     bottom: 0;
     left: 0;
     width: 120px;
-    height: 50px;
-    z-index: 10;
+    height: 110px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
 }
 
 .ed-yt-shield-container .yt-shield-bottom-right {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 100px;
-    height: 50px;
-    z-index: 10;
+    width: 130px;
+    height: 65px;
+    z-index: 25;
     background: transparent;
-    cursor: pointer;
+    cursor: default;
 }
 
 /* واجهة الإيقاف المؤقت المخصصة: تحجب أي مقترحات فيديوهات من يوتيوب وتمنح تجربة مشغل احترافي صافي */
@@ -997,6 +1009,9 @@
                                             {{-- درع الحماية العلوي: يمنع تماماً النقر على العنوان، صورة القناة، وأزرار المشاركة --}}
                                             <div class="yt-shield-top" onclick="toggleYtPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}"></div>
 
+                                             {{-- درع الحماية المخصص لمنع النقر على أيقونة نسخ الرابط --}}
+                                            <div class="yt-shield-copy-link" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
+
                                             {{-- دروع الحماية السفلية للأركان: تمنع كلياً النقر على شعار يوتيوب أو زر المشاهدة على يوتيوب --}}
                                             <div class="yt-shield-bottom-left" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
                                             <div class="yt-shield-bottom-right" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
@@ -1011,7 +1026,7 @@
 
                                             <iframe id="player_yt_{{ $video->id }}" 
                                                     src="{{ $ytEmbed }}" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                                     sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                                     allowfullscreen 
                                                     loading="lazy">
@@ -1022,7 +1037,7 @@
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
-                                        <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
                                     @else
                                         {{-- في حال كان الدرس مرفقاً بملف أو دوسية بدون فيديو --}}
                                         <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
