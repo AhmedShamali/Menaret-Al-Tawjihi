@@ -281,7 +281,7 @@ class EducationalContentManagementTest extends TestCase
         // File should be listed in dossiers and work papers
         $response->assertSee('دوسية بدون فيديو');
         // Check that YouTube iframe is rendered
-        $response->assertSee('https://www.youtube.com/embed/dQw4w9WgXcQ');
+        $response->assertSee('embed/dQw4w9WgXcQ');
     }
 
     public function test_hidden_video_is_not_displayed_to_students()

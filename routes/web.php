@@ -24,6 +24,7 @@ use App\Http\Controllers\{
 | 1. الروابط العامة (Public Routes)
 |--------------------------------------------------------------------------
 */
+Route::get('/', [PublicController::class, 'index'])->name('home');
 Route::get('/change-language/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
 Route::get('/language/{locale}', [PublicController::class, 'switchLanguage']);
 Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage']);

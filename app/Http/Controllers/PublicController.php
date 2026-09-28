@@ -81,16 +81,34 @@ class PublicController extends Controller
     /**
      * تبديل لغة المنصة وحفظها في الجلسة والكوكي (عربي / إنجليزي)
      */
-    public function switchLanguage($locale)
+    public function switchLanguage(Request $request, $locale)
     {
         if (!in_array($locale, ['ar', 'en'])) {
             $locale = 'ar';
         }
 
-        session(['locale' => $locale]);
-        cookie()->queue('app_locale', $locale, 60 * 24 * 365);
+        \Illuminate\Support\Facades\Session::put('locale', $locale);
+        \Illuminate\Support\Facades\Session::save();
+        \Illuminate\Support\Facades\App::setLocale($locale);
 
-        return redirect()->back(fallback: route('home'));
+        $cookie = cookie()->forever('app_locale', $locale);
+
+        $referer = $request->headers->get('referer');
+
+        if (
+            !$referer ||
+            str_contains($referer, '/change-language') ||
+            str_contains($referer, '/language/') ||
+            preg_match('#/lang/(ar|en)#', $referer)
+        ) {
+            return redirect()->route('home', ['lang' => $locale])->withCookie($cookie);
+        }
+
+        $cleanReferer = preg_replace('/([?&])lang=[^&]*(&|$)/', '$1', $referer);
+        $cleanReferer = rtrim($cleanReferer, '?&');
+        $targetUrl = $cleanReferer . (str_contains($cleanReferer, '?') ? '&' : '?') . 'lang=' . $locale;
+
+        return redirect()->to($targetUrl)->withCookie($cookie);
     }
 }
 
