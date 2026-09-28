@@ -33,6 +33,10 @@ Route::get('/educational-contents/{id}/download-video', [EducationalContentContr
 Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->name('question.image');
 Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'questionOptionImage'])->name('question.option_image');
 
+Route::middleware('auth')->group(function () {
+    Route::post('/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'handleLogin'])->name('login.post');

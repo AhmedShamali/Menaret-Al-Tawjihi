@@ -423,5 +423,53 @@ class EducationalContentManagementTest extends TestCase
         $delRes->assertStatus(200);
         $delRes->assertJson(['success' => true]);
     }
+
+    public function test_teacher_can_upload_video_using_chunked_upload()
+    {
+        $fileId = 'test_chunk_vid_' . time();
+        $chunk1 = UploadedFile::fake()->create('part1.mp4', 50);
+        $chunk2 = UploadedFile::fake()->create('part2.mp4', 50);
+
+        // Upload chunk 0
+        $res1 = $this->actingAs($this->teacher)->postJson(route('educational_contents.upload_chunk'), [
+            'file_id'      => $fileId,
+            'chunk_index'  => 0,
+            'total_chunks' => 2,
+            'file_name'    => 'large_lesson.mp4',
+            'chunk'        => $chunk1,
+        ]);
+        $res1->assertStatus(200);
+        $res1->assertJson(['done' => false, 'chunk_index' => 0]);
+
+        // Upload chunk 1 (final)
+        $res2 = $this->actingAs($this->teacher)->postJson(route('educational_contents.upload_chunk'), [
+            'file_id'      => $fileId,
+            'chunk_index'  => 1,
+            'total_chunks' => 2,
+            'file_name'    => 'large_lesson.mp4',
+            'chunk'        => $chunk2,
+        ]);
+        $res2->assertStatus(200);
+        $res2->assertJson(['done' => true]);
+        $uploadedPath = $res2->json('uploaded_video_path');
+
+        // Now save educational content using the uploaded path
+        $storeRes = $this->actingAs($this->teacher)->postJson(route('teacher.educational_contents.store'), [
+            'subject_id'          => $this->subject->id,
+            'title'               => 'درس فيديو كبير مجزأ',
+            'order'               => 10,
+            'uploaded_video_path' => $uploadedPath,
+            'formatted_size'      => '100 KB',
+        ]);
+        $storeRes->assertStatus(200);
+        $storeRes->assertJson(['icon' => 'success']);
+
+        $this->assertDatabaseHas('educational_contents', [
+            'title'      => 'درس فيديو كبير مجزأ',
+            'subject_id' => $this->subject->id,
+            'url_path'   => $uploadedPath,
+            'type'       => 'video',
+        ]);
+    }
 }
 

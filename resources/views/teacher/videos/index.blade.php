@@ -259,8 +259,29 @@
                         <span>{{ __('اختر ملف الفيديو من جهازك * (MP4 / WebM / MOV)') }}</span>
                     </label>
                     <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska" onchange="previewLocalVideo(this)" class="f-control">
-                    <small class="f-hint">{{ __('يتم رفع وتخزين الفيديو مباشرة على المنصة مع دعم تنزيله وسرعات المشاهدة المتعددة (حتى 500 ميغابايت).') }}</small>
+                    <small class="f-hint">{{ __('نظام الرفع الذكي المقسم (Chunked Upload) يدعم رفع ملفات الفيديو الكبيرة حتى 2 جيجابايت بدون انقطاع وبسرعة فائقة.') }}</small>
                 </div>
+
+                <!-- شريط تقدم الرفع المجزأ للفيديوهات الكبيرة -->
+                <div id="uploadProgressBarContainer" style="display: none; background: #f8fafc; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 14px; margin-top: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; font-weight: 700; margin-bottom: 8px;">
+                        <span id="uploadProgressStatus" style="color: #1e40af; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-cloud-arrow-up fa-bounce" style="color: #2563eb;"></i>
+                            <span>{{ __('جاري رفع الفيديو عبر الأجزاء الذكية...') }}</span>
+                        </span>
+                        <span id="uploadProgressPercent" style="color: #1e3a8a; font-family: monospace; font-size: 0.95rem; font-weight: 900;">0%</span>
+                    </div>
+                    <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 6px; overflow: hidden; position: relative;">
+                        <div id="uploadProgressBarFill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 6px; transition: width 0.2s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.74rem; color: #64748b;">
+                        <span id="uploadProgressDetails" style="font-family: monospace; direction: ltr;"></span>
+                        <span style="color: #059669; font-weight: 600;"><i class="fa-solid fa-shield-check"></i> {{ __('رفع آمن ومحمي') }}</span>
+                    </div>
+                </div>
+
+                <input type="hidden" name="uploaded_video_path" id="uploadedVideoPathInput">
+                <input type="hidden" name="formatted_size" id="formattedSizeInput">
 
                 <!-- معاينة فورية للفيديو -->
                 <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
@@ -961,28 +982,132 @@ async function submitVideoForm(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
     const originalText = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري تجهيز وبدء الرفع...") }}';
-
     const form = document.getElementById('uploadVideoForm');
-    const formData = new FormData(form);
 
+    const progressContainer = document.getElementById('uploadProgressBarContainer');
+    const progressFill = document.getElementById('uploadProgressBarFill');
+    const progressPercent = document.getElementById('uploadProgressPercent');
+    const progressDetails = document.getElementById('uploadProgressDetails');
+    const progressStatus = document.getElementById('uploadProgressStatus');
+
+    const uploadedVideoPathInput = document.getElementById('uploadedVideoPathInput');
+    const formattedSizeInput = document.getElementById('formattedSizeInput');
+    const fileInput = document.getElementById('videoFileInput');
+
+    // إذا اختار المعلم رفع ملف فيديو مباشر من جهازه
+    if (currentVideoSourceType === 'upload') {
+        if (!fileInput.files || !fileInput.files[0]) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("تنبيه") }}',
+                text: '{{ __("يرجى اختيار ملف الفيديو من جهازك أولاً.") }}',
+                confirmButtonText: '{{ __("حسناً") }}',
+                confirmButtonColor: '#1e3a8a'
+            });
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const fileSizeMb = (file.size / (1024 * 1024)).toFixed(1);
+
+        btn.disabled = true;
+        progressContainer.style.display = 'block';
+        progressFill.style.width = '0%';
+        progressPercent.innerText = '0%';
+        progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-bounce" style="color: #2563eb;"></i> {{ __("جاري رفع الفيديو عبر الأجزاء الذكية...") }}`;
+        progressDetails.innerText = `0 / ${fileSizeMb} MB`;
+
+        // تجزئة الفيديو لأجزاء كل جزء 2.5 ميجابايت لتجاوز كافة قيود ومحددات السيرفر
+        const CHUNK_SIZE = 2.5 * 1024 * 1024;
+        const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+        const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+        const chunkUrl = "{{ route('educational_contents.upload_chunk') }}";
+
+        let finalPath = '';
+        let finalFormattedSize = '';
+
+        try {
+            for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                const start = chunkIndex * CHUNK_SIZE;
+                const end = Math.min(start + CHUNK_SIZE, file.size);
+                const chunkBlob = file.slice(start, end);
+
+                const chunkFormData = new FormData();
+                chunkFormData.append('_token', '{{ csrf_token() }}');
+                chunkFormData.append('file_id', fileId);
+                chunkFormData.append('chunk_index', chunkIndex);
+                chunkFormData.append('total_chunks', totalChunks);
+                chunkFormData.append('file_name', file.name);
+                chunkFormData.append('chunk', chunkBlob, file.name);
+
+                let uploadSuccess = false;
+                let lastErr = null;
+
+                // إعادة المحاولة التلقائية حتى 3 مرات لكل جزء في حال تذبذب اتصال الإنترنت
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                    try {
+                        const chunkRes = await axios.post(chunkUrl, chunkFormData, {
+                            headers: { 'Accept': 'application/json' },
+                            timeout: 120000
+                        });
+                        uploadSuccess = true;
+                        if (chunkRes.data.done) {
+                            finalPath = chunkRes.data.uploaded_video_path;
+                            finalFormattedSize = chunkRes.data.formatted_size;
+                        }
+                        break;
+                    } catch (err) {
+                        lastErr = err;
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+                }
+
+                if (!uploadSuccess) {
+                    throw lastErr || new Error('فشل رفع أحد أجزاء الفيديو بعد عدة محاولات.');
+                }
+
+                const uploadedMb = (end / (1024 * 1024)).toFixed(1);
+                const pct = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+                progressFill.style.width = pct + '%';
+                progressPercent.innerText = pct + '%';
+                progressDetails.innerText = `${uploadedMb} / ${fileSizeMb} MB (${chunkIndex + 1}/${totalChunks})`;
+                btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${pct}% {{ __("جاري الرفع...") }}`;
+            }
+
+            progressStatus.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i> {{ __("تم اكتمال الرفع والدمج بنجاح! جاري حفظ بيانات الدرس...") }}`;
+            uploadedVideoPathInput.value = finalPath;
+            formattedSizeInput.value = finalFormattedSize;
+
+            // إزالة حقل الملف الخام قبل إرسال الفورم لمنع إعادة رفع الملف الضخم ثانيةً
+            fileInput.disabled = true;
+
+        } catch (uploadErr) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            progressContainer.style.display = 'none';
+
+            let msg = uploadErr.response?.data?.message || uploadErr.message || '{{ __("فشل رفع ملف الفيديو") }}';
+            Swal.fire({
+                icon: 'error',
+                title: '{{ __("خطأ في رفع الفيديو") }}',
+                text: msg,
+                confirmButtonText: '{{ __("حسناً") }}',
+                confirmButtonColor: '#ef4444'
+            });
+            return;
+        }
+    } else {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ الدرس...") }}';
+    }
+
+    // إرسال النموذج وحفظ المحتوى التعليمي
     const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+    const mainFormData = new FormData(form);
 
     try {
-        const res = await axios.post(storeUrl, formData, {
-            headers: {
-                'Accept': 'application/json'
-            },
-            timeout: 0, // إلغاء المهلة الزمنية لرفع الفيديوهات الكبيرة حتى تكتمل
-            maxContentLength: Infinity,
-            maxBodyLength: Infinity,
-            onUploadProgress: (progressEvent) => {
-                if (progressEvent.total) {
-                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-bounce"></i> {{ __("جاري رفع الفيديو...") }} ${percent}%`;
-                }
-            }
+        const res = await axios.post(storeUrl, mainFormData, {
+            headers: { 'Accept': 'application/json' }
         });
         Swal.fire({
             icon: 'success',
@@ -993,29 +1118,22 @@ async function submitVideoForm(e) {
     } catch (err) {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        
-        let msg = '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
-        if (err.response) {
-            if (err.response.status === 413) {
-                msg = '{{ __("حجم ملف الفيديو كبير جداً ويتجاوز الحد الأقصى المسموح به في إعدادات السيرفر (PHP / Web Server Limit). يرجى ضغط الفيديو أو تقليل حجمه.") }}';
-            } else if (err.response.data) {
-                if (err.response.data.title) {
-                    msg = err.response.data.title;
-                } else if (err.response.data.message) {
-                    msg = err.response.data.message;
-                } else if (err.response.data.errors) {
-                    msg = Object.values(err.response.data.errors).flat().join('<br>');
-                }
-            }
-        } else if (err.code === 'ECONNABORTED') {
-            msg = '{{ __("استغرقت عملية الرفع وقتاً طويلاً وتم قطع الاتصال، يرجى التحقق من سرعة الإنترنت.") }}';
-        } else if (err.message && err.message.toLowerCase().includes('network')) {
-            msg = '{{ __("فشل الاتصال بالسيرفر أثناء رفع الملف، غالباً بسبب حجم الفيديو الكبير جداً الذي تم قطعه بواسطة السيرفر.") }}';
-        }
+        if (fileInput) fileInput.disabled = false;
+        if (progressContainer) progressContainer.style.display = 'none';
 
-        Swal.fire({ 
-            icon: 'error', 
-            title: '{{ __("خطأ في رفع الفيديو") }}', 
+        let msg = '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
+        if (err.response && err.response.data) {
+            if (err.response.data.title) {
+                msg = err.response.data.title;
+            } else if (err.response.data.message) {
+                msg = err.response.data.message;
+            } else if (err.response.data.errors) {
+                msg = Object.values(err.response.data.errors).flat().join('<br>');
+            }
+        }
+        Swal.fire({
+            icon: 'error',
+            title: '{{ __("خطأ في حفظ الدرس") }}',
             html: msg,
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#ef4444'

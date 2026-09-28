@@ -7,6 +7,7 @@ use App\Models\Stage;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class EducationalContentController extends Controller
 {
@@ -22,6 +23,102 @@ class EducationalContentController extends Controller
         $stages = Stage::with('subjects')->get();
 
         return view('educational_contents.create', compact('mySubject', 'stages'));
+    }
+
+    /**
+     * رفع ملفات الفيديو الكبيرة بنظام الأجزاء المتعددة (Chunked Upload)
+     * لتجاوز كافة قيود السيرفر (PHP Limit / Cloudflare / HTTP 413) ودعم أي حجم حتى 2GB+
+     */
+    public function uploadChunk(Request $request)
+    {
+        $request->validate([
+            'file_id'      => 'required|string',
+            'chunk_index'  => 'required|integer|min:0',
+            'total_chunks' => 'required|integer|min:1',
+            'file_name'    => 'required|string',
+            'chunk'        => 'required|file',
+        ]);
+
+        $fileId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->file_id);
+        $chunkIndex = (int) $request->chunk_index;
+        $totalChunks = (int) $request->total_chunks;
+        $ext = strtolower(pathinfo($request->file_name, PATHINFO_EXTENSION));
+
+        $allowedExtensions = ['mp4', 'webm', 'ogg', 'mov', 'm4v', 'mkv'];
+        if (!in_array($ext, $allowedExtensions)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'صيغة الفيديو غير مدعومة. الصيغ المسموحة هي: ' . implode(', ', array_map('strtoupper', $allowedExtensions))
+            ], 422);
+        }
+
+        $chunksFolder = storage_path('app/chunks/' . $fileId);
+        if (!file_exists($chunksFolder)) {
+            mkdir($chunksFolder, 0777, true);
+        }
+
+        $chunk = $request->file('chunk');
+        $chunk->move($chunksFolder, 'part_' . $chunkIndex);
+
+        // التحقق من اكتمال استلام كافة الأجزاء
+        $allPresent = true;
+        for ($i = 0; $i < $totalChunks; $i++) {
+            if (!file_exists($chunksFolder . '/part_' . $i)) {
+                $allPresent = false;
+                break;
+            }
+        }
+
+        if ($allPresent) {
+            $finalFilename = 'video_' . time() . '_' . Str::random(12) . '.' . $ext;
+            $relativeDir = 'educational/videos';
+            $targetDir = storage_path('app/public/' . $relativeDir);
+            if (!file_exists($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+            $finalPath = $targetDir . '/' . $finalFilename;
+
+            $output = fopen($finalPath, 'wb');
+            for ($i = 0; $i < $totalChunks; $i++) {
+                $partPath = $chunksFolder . '/part_' . $i;
+                $input = fopen($partPath, 'rb');
+                while (!feof($input)) {
+                    $buffer = fread($input, 65536);
+                    fwrite($output, $buffer);
+                }
+                fclose($input);
+                @unlink($partPath);
+            }
+            fclose($output);
+            @rmdir($chunksFolder);
+
+            $relativeStoragePath = $relativeDir . '/' . $finalFilename;
+            $fileSizeBytes = file_exists($finalPath) ? filesize($finalPath) : 0;
+            $sizeMb = round($fileSizeBytes / (1024 * 1024), 1);
+            $formattedSize = $sizeMb > 0 ? $sizeMb . ' MB' : round($fileSizeBytes / 1024) . ' KB';
+
+            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                try {
+                    $supabasePath = Storage::disk('supabase')->putFileAs($relativeDir, new \Illuminate\Http\File($finalPath), $finalFilename);
+                    if ($supabasePath) {
+                        $relativeStoragePath = Storage::disk('supabase')->url($supabasePath);
+                    }
+                } catch (\Throwable $e) {}
+            }
+
+            return response()->json([
+                'done'                => true,
+                'uploaded_video_path' => $relativeStoragePath,
+                'formatted_size'      => $formattedSize,
+                'message'             => 'تم اكتمال رفع ودمج الفيديو بنجاح',
+            ]);
+        }
+
+        return response()->json([
+            'done'        => false,
+            'chunk_index' => $chunkIndex,
+            'percent'     => round((($chunkIndex + 1) / $totalChunks) * 100),
+        ]);
     }
 
     public function store(Request $request)
@@ -55,17 +152,19 @@ class EducationalContentController extends Controller
         }
 
         $validator = validator($request->all(), [
-            'subject_id'      => 'required',
-            'title'           => 'required|string|min:3',
-            'order'           => 'required|numeric',
-            'video_url'       => 'nullable|url',
-            'video_file'      => 'nullable|file|max:1048576', // حتى 1 جيجابايت
-            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
-            'pdf_url'         => 'nullable|url',
+            'subject_id'          => 'required',
+            'title'               => 'required|string|min:3',
+            'order'               => 'required|numeric',
+            'video_url'           => 'nullable|url',
+            'video_file'          => 'nullable|file|max:2097152', // حتى 2 جيجابايت
+            'uploaded_video_path' => 'nullable|string',
+            'formatted_size'      => 'nullable|string',
+            'file_upload_pdf'     => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
+            'pdf_url'             => 'nullable|url',
         ], [
             'title.required'      => 'يرجى إدخال عنوان الدرس أو المحتوى التعليمي.',
             'subject_id.required' => 'يرجى تحديد المادة الدراسية.',
-            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 1000 ميغابايت (1 جيجابايت).',
+            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 2000 ميغابايت (2 جيجابايت).',
         ]);
 
         if ($validator->fails()) {
@@ -83,8 +182,15 @@ class EducationalContentController extends Controller
         $content->order        = $request->order;
         $content->is_visible   = true;
 
-        // معالجة ملف الفيديو المباشر المرفوع على المنصة
-        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
+        // معالجة ملف الفيديو المرفوع مسبقاً بنظام الأجزاء (Chunked Upload)
+        if ($request->filled('uploaded_video_path')) {
+            $content->url_path = $request->uploaded_video_path;
+            if ($request->filled('formatted_size')) {
+                $content->file_size = $request->formatted_size;
+            }
+        }
+        // معالجة ملف الفيديو المباشر المرفوع على المنصة بالصيغة التقليدية
+        elseif ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
             $uploadedVideo = $request->file('video_file');
             $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
             $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
