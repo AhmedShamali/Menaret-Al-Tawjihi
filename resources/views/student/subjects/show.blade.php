@@ -444,6 +444,40 @@
     background: #2563eb;
 }
 
+/* دروع حماية إضافية للأركان والعنوان لمنع أي تسريب لأزرار يوتيوب */
+.ed-shield-corner-bl {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 140px;
+    height: 100px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ed-shield-corner-br {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 140px;
+    height: 70px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ed-shield-top-band {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
+}
+
 /* شريط التحكم الداخلي الذكي للمنصة */
 .ed-student-player-bar {
     position: absolute;
@@ -1048,20 +1082,25 @@
 
                                     @if(!empty($ytEmbed))
                                         <div class="ed-yt-shield-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
-                                            {{-- درع الشاشة التفاعلي: النقر على الفيديو يشغل ويوقف بسلاسة تامة دون أي وصول ليوتيوب --}}
-                                            <div class="ed-student-screen-shield" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
-                                                <div class="ed-center-play-circle" id="center_play_{{ $video->id }}">
-                                                    <i class="fa-solid fa-play"></i>
-                                                </div>
-                                            </div>
-
                                             <iframe id="player_yt_{{ $video->id }}" 
                                                     src="{{ $ytEmbed }}" 
                                                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                                     sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                                     loading="lazy"
-                                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
+                                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;">
                                             </iframe>
+
+                                            {{-- درع الشاشة التفاعلي: النقر على الفيديو يشغل ويوقف بسلاسة تامة دون أي وصول ليوتيوب --}}
+                                            <div class="ed-student-screen-shield" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}" style="z-index: 20;">
+                                                <div class="ed-center-play-circle" id="center_play_{{ $video->id }}">
+                                                    <i class="fa-solid fa-play"></i>
+                                                </div>
+                                            </div>
+
+                                            {{-- دروع حماية إضافية تمنع النقر أو استخراج الروابط من الأركان والعنوان --}}
+                                            <div class="ed-shield-corner-bl" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
+                                            <div class="ed-shield-corner-br" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
+                                            <div class="ed-shield-top-band" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
 
                                             {{-- شريط تحكم داخلي أنيق خاص بالمنصة مدمج في مشغل الفيديو --}}
                                             <div class="ed-student-player-bar" id="bar_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
@@ -1089,7 +1128,7 @@
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
-                                        <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none;"></iframe>
+                                        <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;"></iframe>
                                     @else
                                         {{-- في حال كان الدرس مرفقاً بملف أو دوسية بدون فيديو --}}
                                         <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">

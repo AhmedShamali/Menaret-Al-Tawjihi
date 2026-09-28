@@ -113,15 +113,28 @@
                                 }
                             @endphp
 
+                            <iframe id="iframe_teacher_{{ $vid->id }}" 
+                                    src="{{ $ytTargetUrl }}" 
+                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
+                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
+                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                                    loading="lazy">
+                            </iframe>
+
                             <!-- واجهة التشغيل المركزية التفاعلية للمنصة -->
-                            <div class="ed-screen-shield" id="shield_vid_{{ $vid->id }}" onclick="toggleTeacherPlayback('{{ $vid->id }}')">
+                            <div class="ed-screen-shield" id="shield_vid_{{ $vid->id }}" onclick="toggleTeacherPlayback('{{ $vid->id }}')" style="z-index: 20;">
                                 <button type="button" class="ed-center-play-btn" id="center_play_{{ $vid->id }}" aria-label="{{ __('تشغيل') }}">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
                             </div>
 
+                            <!-- دروع إضافية للأركان والعنوان لمنع أي تسريب تفاعلي للروابط -->
+                            <div class="ed-shield-corner-bl" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
+                            <div class="ed-shield-corner-br" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
+                            <div class="ed-shield-top-band" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
+
                             <!-- شريط التحكم السفلي المدمج الخاص بالمنصة -->
-                            <div class="ed-inline-player-bar" onclick="event.stopPropagation();">
+                            <div class="ed-inline-player-bar" onclick="event.stopPropagation();" oncontextmenu="event.preventDefault(); return false;">
                                 <button type="button" class="btn-ctrl-action" onclick="toggleTeacherPlayback('{{ $vid->id }}')" id="bar_btn_{{ $vid->id }}" title="{{ __('تشغيل / إيقاف') }}">
                                     <i class="fa-solid fa-play"></i>
                                 </button>
@@ -131,14 +144,6 @@
                                     <i class="fa-solid fa-expand"></i>
                                 </button>
                             </div>
-
-                            <iframe id="iframe_teacher_{{ $vid->id }}" 
-                                    src="{{ $ytTargetUrl }}" 
-                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none;" 
-                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                    loading="lazy">
-                            </iframe>
                         @endif
                     </div>
                     <div class="video-info-box">
@@ -535,6 +540,40 @@
     transform: scale(1.1);
     background: #2563eb;
     border-color: #60a5fa;
+}
+
+/* دروع حماية إضافية للأركان والعنوان لمنع أي تسريب لأزرار يوتيوب */
+.ed-shield-corner-bl {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 140px;
+    height: 100px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ed-shield-corner-br {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 140px;
+    height: 70px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
+}
+
+.ed-shield-top-band {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 80px;
+    z-index: 25;
+    background: transparent;
+    cursor: pointer;
 }
 
 .ed-inline-player-bar {

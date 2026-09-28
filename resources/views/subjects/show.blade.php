@@ -114,6 +114,11 @@
                                 </div>
                             </div>
 
+                            <!-- دروع حماية إضافية للأركان والعنوان لمنع أي تسريب -->
+                            <div class="ed-shield-corner-bl" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})"></div>
+                            <div class="ed-shield-corner-br" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})"></div>
+                            <div class="ed-shield-top-band" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})"></div>
+
                             <!-- شريط التحكم المخصص للمنصة المانع لأي وصول خارجي -->
                             <div class="custom-player-controls" oncontextmenu="event.preventDefault(); return false;">
                                 <button type="button" class="btn-play-pause" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})">▶</button>
@@ -368,6 +373,39 @@
     .pub-screen-shield:hover .pub-center-play {
         transform: scale(1.12);
         background: #1d4ed8;
+    }
+
+    .ed-shield-corner-bl {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 140px;
+        height: 100px;
+        z-index: 25;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .ed-shield-corner-br {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 140px;
+        height: 70px;
+        z-index: 25;
+        background: transparent;
+        cursor: pointer;
+    }
+
+    .ed-shield-top-band {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
+        z-index: 25;
+        background: transparent;
+        cursor: pointer;
     }
 
     .custom-video-wrapper:fullscreen,
