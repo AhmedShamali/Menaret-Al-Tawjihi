@@ -107,14 +107,14 @@
                             <h5 class="fw-bold text-dark mb-3 line-clamp-2">{{ $video->title }}</h5>
 
                             @php
-                                $videoUrl = filter_var($video->url_path, FILTER_VALIDATE_URL)
-                                    ? $video->url_path
-                                    : asset('storage/' . $video->url_path);
+                                $isYtLink = \Illuminate\Support\Str::contains($video->url_path, ['youtube.com', 'youtu.be']);
+                                $videoUrl = $isYtLink 
+                                    ? (auth()->user()?->isStudent() ? route('student.subjects.show', $video->subject_id) : route('subjects.show', $video->subject_id))
+                                    : (filter_var($video->url_path, FILTER_VALIDATE_URL) ? $video->url_path : asset('storage/' . $video->url_path));
                             @endphp
 
                             <div class="d-grid gap-2">
-                                <a href="{{ $videoUrl }}" target="_blank" class="btn btn-primary rounded-3">{{ __('مشاهدة الآن') }}<i class="fas fa-external-link-alt ms-1"></i>
-                                </a>
+                                <a href="{{ $videoUrl }}" class="btn btn-primary rounded-3">{{ __('مشاهدة في مشغل المنصة الآمن') }} <i class="fas fa-play-circle ms-1"></i></a>
                                 @if($video->pdf_path)
                                     @php
                                         $videoPdfUrl = filter_var($video->pdf_path, FILTER_VALIDATE_URL)
