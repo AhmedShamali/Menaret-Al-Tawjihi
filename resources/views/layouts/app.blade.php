@@ -2370,6 +2370,15 @@
                     if (e.clipboardData) e.clipboardData.setData('text/plain', '');
                 }
             }, true);
+
+            // منع النقر بالزر الأيمن على كافة مشغلات وحاويات الفيديو لحظر أي وصول لروابط يوتيوب نهائياً
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.ed-player-frame, .ed-yt-shield-container, .video-frame-wrap, .custom-video-wrapper, [id^="player_frame_"], [id^="card_video_"], iframe')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true);
         })();
     </script>
 

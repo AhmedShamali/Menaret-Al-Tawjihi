@@ -115,8 +115,8 @@
                             <label class="f-label">{{ __('رابط فيديو YouTube المعتمد') }} *</label>
                             <input type="url" name="video_url" id="input_video_url" class="f-input font-mono text-ltr" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewCreateYt(this.value)">
                             <small style="color: var(--ed-text-muted, #64748b);">{{ __('يدعم جميع صيغ روابط YouTube (العادية والمختصرة و Shorts). محمي بمشغل المنصة.') }}</small>
-                            <div id="createYtPreview" oncontextmenu="return false;" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
-                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
+                            <div id="createYtPreview" oncontextmenu="event.preventDefault(); return false;" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
+                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none !important;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
                             </div>
                         </div>
                     </div>
@@ -281,7 +281,7 @@
         const preview = document.getElementById('createYtPreview');
         const frame = document.getElementById('createYtFrame');
         if (id) {
-            frame.src = 'https://www.youtube.com/embed/' + id + '?rel=0';
+            frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?controls=0&showinfo=0&fs=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1';
             preview.style.display = 'block';
         } else {
             frame.src = '';

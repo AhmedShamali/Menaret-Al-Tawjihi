@@ -80,7 +80,7 @@
             <div class="videos-grid">
                 @forelse($videos as $index => $video)
                     <div class="video-card">
-                        <div class="custom-video-wrapper" oncontextmenu="return false;">
+                        <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
                             @php
                                 $url = $video->url_path;
                                 $isYoutube = \Illuminate\Support\Str::contains($url, ['youtube.com', 'youtu.be']);
@@ -90,37 +90,38 @@
                                 @php
                                     preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $url, $matches);
                                     $ytId = $matches[1] ?? $url;
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1";
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1";
                                 @endphp
-                                <div class="yt-shield-top" title="{{ __('مشغل تعليمي آمن') }}"></div>
-                                <div class="yt-shield-copy-link"></div>
-                                <div class="yt-shield-bottom-left"></div>
-                                <div class="yt-shield-bottom-right"></div>
                                 <iframe class="custom-iframe" 
+                                        id="pub_yt_{{ $video->id }}"
                                         src="{{ $ytSafeSrc }}" 
                                         frameborder="0" 
                                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                         sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                        allowfullscreen 
-                                        loading="lazy">
+                                        loading="lazy"
+                                        style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
                                 </iframe>
                             @else
-                                <video class="custom-video-element" preload="metadata" controlsList="nodownload">
+                                <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
                                     <source src="{{ route('video.stream', ['filename' => $video->url_path]) }}" type="video/mp4">
                                 </video>
-
-                                <!-- شريط التحكم المخصص المانع للـ IDM والمُعزّز للتقديم والتأخير الدقيق -->
-                                <div class="custom-player-controls">
-                                    <button type="button" class="btn-play-pause">▶</button>
-                                    <span class="time-display current-time">00:00</span>
-
-                                    <!-- شريط السحب والدقائق -->
-                                    <input type="range" class="seek-slider" value="0" min="0" max="100" step="0.1">
-
-                                    <span class="time-display total-duration">00:00</span>
-                                    <button type="button" class="btn-fullscreen">⛶</button>
-                                </div>
                             @endif
+
+                            <!-- شاشة النقر التفاعلية لتشغيل / إيقاف الفيديو -->
+                            <div class="pub-screen-shield" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
+                                <div class="pub-center-play" id="pub_play_icon_{{ $video->id }}">
+                                    <i class="fa-solid fa-play"></i>
+                                </div>
+                            </div>
+
+                            <!-- شريط التحكم المخصص للمنصة المانع لأي وصول خارجي -->
+                            <div class="custom-player-controls" oncontextmenu="event.preventDefault(); return false;">
+                                <button type="button" class="btn-play-pause" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})">▶</button>
+                                <span class="time-display current-time" id="pub_cur_time_{{ $video->id }}">00:00</span>
+                                <input type="range" class="seek-slider" id="pub_seek_{{ $video->id }}" value="0" min="0" max="100" step="0.1" oninput="seekSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }}, this.value)">
+                                <span class="time-display total-duration" id="pub_dur_time_{{ $video->id }}">00:00</span>
+                                <button type="button" class="btn-fullscreen" onclick="toggleSubjectFullscreen(this)">⛶</button>
+                            </div>
                         </div>
 
                         <div class="video-card-body">
@@ -337,48 +338,58 @@
         -webkit-user-select: none;
     }
 
-    .custom-video-wrapper .yt-shield-top {
+    .pub-screen-shield {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 75px;
-        z-index: 25;
+        inset: 0;
+        z-index: 15;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: transparent;
-        cursor: default;
     }
 
-    .custom-video-wrapper .yt-shield-copy-link {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 120px;
-        height: 110px;
-        z-index: 30;
-        background: transparent;
-        cursor: default;
+    .pub-center-play {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.9);
+        border: 2px solid #ffffff;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+        pointer-events: none;
     }
 
-    .custom-video-wrapper .yt-shield-bottom-left {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 120px;
-        height: 110px;
-        z-index: 25;
-        background: transparent;
-        cursor: default;
+    .pub-screen-shield:hover .pub-center-play {
+        transform: scale(1.12);
+        background: #1d4ed8;
     }
 
-    .custom-video-wrapper .yt-shield-bottom-right {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 130px;
-        height: 65px;
-        z-index: 25;
-        background: transparent;
-        cursor: default;
+    .custom-video-wrapper:fullscreen,
+    .custom-video-wrapper:-webkit-full-screen {
+        width: 100vw !important;
+        height: 100vh !important;
+        background: #000 !important;
+    }
+
+    .custom-video-wrapper:fullscreen .custom-player-controls,
+    .custom-video-wrapper:-webkit-full-screen .custom-player-controls {
+        position: fixed;
+        bottom: 24px;
+        left: 40px;
+        right: 40px;
+        height: 52px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        padding: 0 20px;
+        z-index: 999999;
     }
 
     .custom-video-element, .custom-iframe {
@@ -593,69 +604,194 @@
     }
 </style>
 
-<!-- Scripts -->
+<!-- Scripts: مشغل فيديو المنصة الآمن كلياً -->
 <script>
+    let pubYtPlayers = {};
+    let pubYtIntervals = {};
+
+    function onYouTubeIframeAPIReady() {
+        document.querySelectorAll('iframe[id^="pub_yt_"]').forEach(iframe => {
+            initPubYtPlayer(iframe.id);
+        });
+    }
+
+    function initPubYtPlayer(iframeId) {
+        const vidId = iframeId.replace('pub_yt_', '');
+        if (pubYtPlayers[vidId]) return pubYtPlayers[vidId];
+        if (window.YT && window.YT.Player) {
+            try {
+                pubYtPlayers[vidId] = new YT.Player(iframeId, {
+                    events: {
+                        'onStateChange': function(e) {
+                            handlePubYtStateChange(vidId, e.data);
+                        }
+                    }
+                });
+                return pubYtPlayers[vidId];
+            } catch(e) {}
+        }
+        return null;
+    }
+
+    function handlePubYtStateChange(vidId, state) {
+        const icon = document.getElementById(`pub_play_icon_${vidId}`);
+        const btn = document.getElementById(`pub_btn_${vidId}`);
+        if (state === 1) { // مشتغل
+            if (icon) icon.style.opacity = '0';
+            if (btn) btn.textContent = '❚❚';
+            startPubYtTracking(vidId);
+        } else { // متوقف
+            if (icon) {
+                icon.style.opacity = '1';
+                icon.innerHTML = (state === 0) ? '<i class="fa-solid fa-rotate-right"></i>' : '<i class="fa-solid fa-play"></i>';
+            }
+            if (btn) btn.textContent = '▶';
+            stopPubYtTracking(vidId);
+        }
+    }
+
+    function toggleSubjectVideo(vidId, isYt) {
+        if (isYt) {
+            const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
+            if (yt && typeof yt.getPlayerState === 'function') {
+                const state = yt.getPlayerState();
+                if (state === 1) yt.pauseVideo(); else yt.playVideo();
+                return;
+            }
+            const iframe = document.getElementById(`pub_yt_${vidId}`);
+            if (iframe && iframe.contentWindow) {
+                const icon = document.getElementById(`pub_play_icon_${vidId}`);
+                const isPlaying = icon && icon.style.opacity === '0';
+                iframe.contentWindow.postMessage(JSON.stringify({
+                    event: 'command',
+                    func: isPlaying ? 'pauseVideo' : 'playVideo',
+                    args: []
+                }), '*');
+                if (icon) icon.style.opacity = isPlaying ? '1' : '0';
+                const btn = document.getElementById(`pub_btn_${vidId}`);
+                if (btn) btn.textContent = isPlaying ? '▶' : '❚❚';
+                if (!isPlaying) startPubYtTracking(vidId); else stopPubYtTracking(vidId);
+            }
+        } else {
+            const video = document.getElementById(`pub_vid_${vidId}`);
+            const icon = document.getElementById(`pub_play_icon_${vidId}`);
+            const btn = document.getElementById(`pub_btn_${vidId}`);
+            if (!video) return;
+            if (video.paused) {
+                video.play();
+                if (btn) btn.textContent = '❚❚';
+                if (icon) icon.style.opacity = '0';
+            } else {
+                video.pause();
+                if (btn) btn.textContent = '▶';
+                if (icon) icon.style.opacity = '1';
+            }
+        }
+    }
+
+    function startPubYtTracking(vidId) {
+        stopPubYtTracking(vidId);
+        pubYtIntervals[vidId] = setInterval(() => {
+            const yt = pubYtPlayers[vidId];
+            if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
+                const cur = yt.getCurrentTime() || 0;
+                const dur = yt.getDuration() || 0;
+                const curEl = document.getElementById(`pub_cur_time_${vidId}`);
+                const durEl = document.getElementById(`pub_dur_time_${vidId}`);
+                const seekSlider = document.getElementById(`pub_seek_${vidId}`);
+                if (curEl) curEl.textContent = formatPubTime(cur);
+                if (durEl && dur > 0) durEl.textContent = formatPubTime(dur);
+                if (seekSlider && dur > 0) seekSlider.value = (cur / dur) * 100;
+            }
+        }, 500);
+    }
+
+    function stopPubYtTracking(vidId) {
+        if (pubYtIntervals[vidId]) {
+            clearInterval(pubYtIntervals[vidId]);
+            delete pubYtIntervals[vidId];
+        }
+    }
+
+    function seekSubjectVideo(vidId, isYt, percentage) {
+        if (isYt) {
+            const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
+            if (yt && typeof yt.getDuration === 'function') {
+                const dur = yt.getDuration() || 0;
+                yt.seekTo((percentage / 100) * dur, true);
+            } else {
+                const iframe = document.getElementById(`pub_yt_${vidId}`);
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage(JSON.stringify({
+                        event: 'command',
+                        func: 'seekTo',
+                        args: [parseFloat(percentage), true]
+                    }), '*');
+                }
+            }
+        } else {
+            const video = document.getElementById(`pub_vid_${vidId}`);
+            if (video && video.duration) {
+                video.currentTime = (percentage / 100) * video.duration;
+            }
+        }
+    }
+
+    function toggleSubjectFullscreen(btn) {
+        const wrap = btn.closest('.custom-video-wrapper');
+        if (!wrap) return;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (wrap.requestFullscreen) wrap.requestFullscreen();
+            else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+    }
+
+    function formatPubTime(seconds) {
+        if (!seconds || isNaN(seconds)) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-        const wrappers = document.querySelectorAll('.custom-video-wrapper');
-
-        wrappers.forEach(wrapper => {
-            const video = wrapper.querySelector('.custom-video-element');
-            if (!video) return;
-
-            const playBtn = wrapper.querySelector('.btn-play-pause');
-            const seekSlider = wrapper.querySelector('.seek-slider');
-            const currentTimeEl = wrapper.querySelector('.current-time');
-            const durationEl = wrapper.querySelector('.total-duration');
-            const fullscreenBtn = wrapper.querySelector('.btn-fullscreen');
-
-            const formatTime = (seconds) => {
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
-            };
-
-            playBtn.addEventListener('click', () => {
-                if (video.paused) {
-                    video.play();
-                    playBtn.textContent = '❚❚';
-                } else {
-                    video.pause();
-                    playBtn.textContent = '▶';
-                }
-            });
-
+        document.querySelectorAll('.custom-video-element').forEach(video => {
+            const vidId = video.id.replace('pub_vid_', '');
+            const curEl = document.getElementById(`pub_cur_time_${vidId}`);
+            const durEl = document.getElementById(`pub_dur_time_${vidId}`);
+            const seekSlider = document.getElementById(`pub_seek_${vidId}`);
+            
             video.addEventListener('loadedmetadata', () => {
-                durationEl.textContent = formatTime(video.duration);
+                if (durEl) durEl.textContent = formatPubTime(video.duration);
             });
-
             video.addEventListener('timeupdate', () => {
-                if (video.duration && !seekSlider.isDragging) {
-                    const percentage = (video.currentTime / video.duration) * 100;
-                    seekSlider.value = percentage;
-                    currentTimeEl.textContent = formatTime(video.currentTime);
-                }
-            });
-
-            seekSlider.addEventListener('mousedown', () => seekSlider.isDragging = true);
-            seekSlider.addEventListener('mouseup', () => seekSlider.isDragging = false);
-
-            seekSlider.addEventListener('input', () => {
                 if (video.duration) {
-                    const seekTo = (seekSlider.value / 100) * video.duration;
-                    video.currentTime = seekTo;
-                    currentTimeEl.textContent = formatTime(seekTo);
+                    if (seekSlider) seekSlider.value = (video.currentTime / video.duration) * 100;
+                    if (curEl) curEl.textContent = formatPubTime(video.currentTime);
                 }
             });
-
-            fullscreenBtn.addEventListener('click', () => {
-                if (!document.fullscreenElement) {
-                    wrapper.requestFullscreen().catch(err => console.log(err));
-                } else {
-                    document.exitFullscreen();
+            video.addEventListener('ended', () => {
+                const icon = document.getElementById(`pub_play_icon_${vidId}`);
+                const btn = document.getElementById(`pub_btn_${vidId}`);
+                if (icon) {
+                    icon.style.opacity = '1';
+                    icon.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
                 }
+                if (btn) btn.textContent = '▶';
             });
         });
     });
+
+    // منع النقر بالزر الأيمن على مشغل الفيديو نهائياً
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.custom-video-wrapper, iframe')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
 </script>
+<script src="https://www.youtube.com/iframe_api"></script>
 @endsection

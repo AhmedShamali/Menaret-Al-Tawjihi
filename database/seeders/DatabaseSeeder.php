@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'ahmadshamali@admin.ps'],
             [
                 'name' => 'م. أحمد شمالي',
-                'password' => bcrypt('44712004'),
+                'password' => bcrypt('44712004'), 
                 'role' => 'admin',
                 'phone' => '0567897212',
                 'major' => 'إدارة المنصة والإشراف الأكاديمي',

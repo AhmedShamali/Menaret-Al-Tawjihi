@@ -408,74 +408,115 @@
     width: 100%;
     height: 100%;
     border: none;
+    pointer-events: none !important;
 }
 
-/* درع الحماية العلوي: يمنع النقر على العنوان وصورة القناة وأزرار المشاركة */
-.ed-yt-shield-container .yt-shield-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 75px;
-    z-index: 25;
-    background: transparent;
-    cursor: default;
-}
-
-/* درع حماية مانع لنقر ونسخ رابط الفيديو من أيقونة الرابط */
-.ed-yt-shield-container .yt-shield-copy-link {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 120px;
-    height: 110px;
-    z-index: 30;
-    background: transparent;
-    cursor: default;
-}
-
-/* دروع الحماية السفلية للأركان: تمنع النقر على شعار يوتيوب المائي وزر المشاهدة على يوتيوب */
-.ed-yt-shield-container .yt-shield-bottom-left {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 120px;
-    height: 110px;
-    z-index: 25;
-    background: transparent;
-    cursor: default;
-}
-
-.ed-yt-shield-container .yt-shield-bottom-right {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 130px;
-    height: 65px;
-    z-index: 25;
-    background: transparent;
-    cursor: default;
-}
-
-/* واجهة الإيقاف المؤقت المخصصة: تحجب أي مقترحات فيديوهات من يوتيوب وتمنح تجربة مشغل احترافي صافي */
-.ed-yt-shield-container .yt-pause-overlay {
+/* درع الشاشة التفاعلي */
+.ed-student-screen-shield {
     position: absolute;
     inset: 0;
-    background: rgba(15, 23, 42, 0.82);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    display: none;
-    flex-direction: column;
+    z-index: 20;
+    cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    z-index: 12;
-    cursor: pointer;
-    transition: opacity 0.25s ease;
+    background: transparent;
 }
 
-.ed-yt-shield-container .yt-pause-overlay.active {
+.ed-center-play-circle {
+    width: 66px;
+    height: 66px;
+    border-radius: 50%;
+    background: rgba(30, 58, 138, 0.9);
+    border: 3px solid rgba(255, 255, 255, 0.85);
+    color: #ffffff;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease, background 0.2s;
+    pointer-events: none;
+}
+
+.ed-student-screen-shield:hover .ed-center-play-circle {
+    transform: scale(1.12);
+    background: #2563eb;
+}
+
+/* شريط التحكم الداخلي الذكي للمنصة */
+.ed-student-player-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 46px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.95) 100%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    z-index: 30;
+    user-select: none;
+    direction: ltr;
+}
+
+.ed-student-player-bar .btn-ctrl-action {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 0.92rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+}
+
+.ed-student-player-bar .btn-ctrl-action:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.ed-student-player-bar .btn-ctrl-action:active {
+    transform: scale(0.92);
+}
+
+.ed-student-player-bar .ctrl-time-text {
+    font-family: monospace;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #cbd5e1;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.ed-student-player-bar .ctrl-seek-range {
+    flex: 1;
+    accent-color: #38bdf8;
+    cursor: pointer;
+    height: 5px;
+    border-radius: 3px;
+    outline: none;
+}
+
+.ed-player-frame:fullscreen .ed-student-player-bar,
+.ed-player-frame:-webkit-full-screen .ed-student-player-bar {
+    position: fixed;
+    bottom: 24px;
+    left: 36px;
+    right: 36px;
+    height: 54px;
+    padding: 0 20px;
+    border-radius: 14px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    z-index: 999999;
 }
 
 .ed-yt-shield-container .pause-play-btn {
@@ -986,16 +1027,17 @@
                                         if ($isYt) {
                                             if (empty($ytEmbed) && !empty($rawUrl)) {
                                                 if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
-                                                    $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1';
+                                                    $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1';
                                                 } else {
                                                     $ytEmbed = str_replace(['watch?v=', 'youtube.com/embed/'], ['embed/', 'youtube-nocookie.com/embed/'], $rawUrl);
                                                 }
                                             }
                                             if (!empty($ytEmbed)) {
                                                 if (!str_contains($ytEmbed, 'enablejsapi=1')) {
-                                                    $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&disablekb=1&playsinline=1';
+                                                    $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1';
                                                 }
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
+                                                $ytEmbed = str_replace(['controls=1', 'fs=1'], ['controls=0', 'fs=0'], $ytEmbed);
                                             }
                                         }
                                         $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
@@ -1005,32 +1047,42 @@
                                     @endphp
 
                                     @if(!empty($ytEmbed))
-                                        <div class="ed-yt-shield-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="return false;">
-                                            {{-- درع الحماية العلوي: يمنع تماماً النقر على العنوان، صورة القناة، وأزرار المشاركة --}}
-                                            <div class="yt-shield-top" onclick="toggleYtPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}"></div>
-
-                                             {{-- درع الحماية المخصص لمنع النقر على أيقونة نسخ الرابط --}}
-                                            <div class="yt-shield-copy-link" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
-
-                                            {{-- دروع الحماية السفلية للأركان: تمنع كلياً النقر على شعار يوتيوب أو زر المشاهدة على يوتيوب --}}
-                                            <div class="yt-shield-bottom-left" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
-                                            <div class="yt-shield-bottom-right" onclick="toggleYtPlayback('{{ $video->id }}')"></div>
-
-                                            {{-- واجهة الإيقاف المؤقت الآمنة المخصصة: تحجب أي مقترحات فيديوهات من يوتيوب وتمنع مغادرة المنصة --}}
-                                            <div class="yt-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeYtPlayback('{{ $video->id }}')">
-                                                <div class="pause-play-btn">
+                                        <div class="ed-yt-shield-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
+                                            {{-- درع الشاشة التفاعلي: النقر على الفيديو يشغل ويوقف بسلاسة تامة دون أي وصول ليوتيوب --}}
+                                            <div class="ed-student-screen-shield" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
+                                                <div class="ed-center-play-circle" id="center_play_{{ $video->id }}">
                                                     <i class="fa-solid fa-play"></i>
                                                 </div>
-                                                <span class="pause-text">{{ __('انقر للمتابعة والدراسة ▶') }}</span>
                                             </div>
 
                                             <iframe id="player_yt_{{ $video->id }}" 
                                                     src="{{ $ytEmbed }}" 
                                                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                                     sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                                    allowfullscreen 
-                                                    loading="lazy">
+                                                    loading="lazy"
+                                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
                                             </iframe>
+
+                                            {{-- شريط تحكم داخلي أنيق خاص بالمنصة مدمج في مشغل الفيديو --}}
+                                            <div class="ed-student-player-bar" id="bar_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
+                                                <button type="button" class="btn-ctrl-action" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف مؤقت') }}">
+                                                    <i class="fa-solid fa-play"></i>
+                                                </button>
+                                                <button type="button" class="btn-ctrl-action" onclick="seekStudentRelative('{{ $video->id }}', -10)" title="{{ __('تأخير 10 ثوانٍ') }}">
+                                                    <i class="fa-solid fa-rotate-left"></i>
+                                                </button>
+                                                <button type="button" class="btn-ctrl-action" onclick="seekStudentRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
+                                                    <i class="fa-solid fa-rotate-right"></i>
+                                                </button>
+                                                <span class="ctrl-time-text" id="time_txt_{{ $video->id }}">00:00 / 00:00</span>
+                                                <input type="range" class="ctrl-seek-range" id="seek_range_{{ $video->id }}" min="0" max="100" step="0.1" value="0" oninput="seekStudentAbsolute('{{ $video->id }}', this.value)">
+                                                <button type="button" class="btn-ctrl-action" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت') }}">
+                                                    <i class="fa-solid fa-volume-high"></i>
+                                                </button>
+                                                <button type="button" class="btn-ctrl-action" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
+                                                    <i class="fa-solid fa-expand"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
@@ -1445,8 +1497,9 @@ async function handleRedeemCode(e) {
     }
 }
 
-// YouTube API & Video Management
+// YouTube API & Video Management (مشغل المنصة الآمن كلياً)
 let ytPlayers = {};
+let studentProgressIntervals = {};
 
 function onYouTubeIframeAPIReady() {
     document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
@@ -1463,7 +1516,7 @@ function initSingleYtPlayer(iframeId) {
             ytPlayers[videoId] = new YT.Player(iframeId, {
                 events: {
                     'onReady': function(event) {
-                        // Ready
+                        updateStudentTimeDisplay(videoId);
                     },
                     'onStateChange': function(event) {
                         handleYtStateChange(videoId, event.data);
@@ -1479,22 +1532,27 @@ function initSingleYtPlayer(iframeId) {
 }
 
 function handleYtStateChange(videoId, state) {
-    const overlay = document.getElementById(`pause_overlay_${videoId}`);
-    if (!overlay) return;
+    const centerBtn = document.getElementById(`center_play_${videoId}`);
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
     
-    // 2 = PAUSED, 0 = ENDED
-    if (state === 2 || state === 0) {
-        overlay.classList.add('active');
-        const txt = overlay.querySelector('.pause-text');
-        if (txt) {
-            txt.textContent = (state === 0) ? '{{ __("إعادة مشاهدة الدرس ↺") }}' : '{{ __("انقر للمتابعة والدراسة ▶") }}';
+    // 1 = PLAYING
+    if (state === 1) {
+        if (centerBtn) centerBtn.style.opacity = '0';
+        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        startStudentProgressTracking(videoId);
+    } else { // 2 = PAUSED, 0 = ENDED, etc.
+        if (centerBtn) {
+            centerBtn.style.opacity = '1';
+            centerBtn.innerHTML = (state === 0) 
+                ? '<i class="fa-solid fa-rotate-right"></i>' 
+                : '<i class="fa-solid fa-play"></i>';
         }
-    } else if (state === 1 || state === 3) { // 1 = PLAYING, 3 = BUFFERING
-        overlay.classList.remove('active');
+        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        stopStudentProgressTracking(videoId);
     }
 }
 
-function toggleYtPlayback(videoId) {
+function toggleStudentPlayback(videoId) {
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.getPlayerState === 'function') {
         try {
@@ -1510,31 +1568,111 @@ function toggleYtPlayback(videoId) {
     
     const iframe = document.getElementById(`player_yt_${videoId}`);
     if (iframe && iframe.contentWindow) {
+        const centerBtn = document.getElementById(`center_play_${videoId}`);
+        const isPlaying = centerBtn && centerBtn.style.opacity === '0';
         iframe.contentWindow.postMessage(JSON.stringify({
             event: 'command',
-            func: 'pauseVideo',
+            func: isPlaying ? 'pauseVideo' : 'playVideo',
             args: []
         }), '*');
+        if (centerBtn) centerBtn.style.opacity = isPlaying ? '1' : '0';
+        const barBtn = document.getElementById(`bar_btn_${videoId}`);
+        if (barBtn) barBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+        if (!isPlaying) startStudentProgressTracking(videoId); else stopStudentProgressTracking(videoId);
     }
 }
 
-function resumeYtPlayback(videoId) {
+// التوافقية مع أي استدعاء قديم
+function toggleYtPlayback(videoId) { toggleStudentPlayback(videoId); }
+function resumeYtPlayback(videoId) { toggleStudentPlayback(videoId); }
+
+function seekStudentRelative(videoId, secondsOffset) {
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
-    if (yt && typeof yt.playVideo === 'function') {
+    if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
         try {
+            const cur = yt.getCurrentTime() || 0;
+            const dur = yt.getDuration() || 0;
+            const target = Math.max(0, Math.min(dur, cur + secondsOffset));
+            yt.seekTo(target, true);
             yt.playVideo();
+            return;
         } catch(e) {}
     }
-    const overlay = document.getElementById(`pause_overlay_${videoId}`);
-    if (overlay) overlay.classList.remove('active');
+    const cur = getVideoCurrentTime(videoId);
+    seekVideoTo(videoId, Math.max(0, cur + secondsOffset));
+}
 
+function seekStudentAbsolute(videoId, percentage) {
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.getDuration === 'function') {
+        try {
+            const dur = yt.getDuration() || 0;
+            const targetSec = (percentage / 100) * dur;
+            yt.seekTo(targetSec, true);
+            return;
+        } catch(e) {}
+    }
     const iframe = document.getElementById(`player_yt_${videoId}`);
     if (iframe && iframe.contentWindow) {
         iframe.contentWindow.postMessage(JSON.stringify({
             event: 'command',
-            func: 'playVideo',
-            args: []
+            func: 'seekTo',
+            args: [parseFloat(percentage), true]
         }), '*');
+    }
+}
+
+function toggleStudentMute(videoId) {
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    const muteBtn = document.getElementById(`mute_btn_${videoId}`);
+    if (yt && typeof yt.isMuted === 'function') {
+        try {
+            if (yt.isMuted()) {
+                yt.unMute();
+                if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+            } else {
+                yt.mute();
+                if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+            }
+        } catch(e) {}
+    }
+}
+
+function formatDurationSec(sec) {
+    if (!sec || isNaN(sec)) return '00:00';
+    sec = Math.floor(sec);
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+}
+
+function updateStudentTimeDisplay(videoId) {
+    const yt = ytPlayers[videoId];
+    if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
+        try {
+            const cur = yt.getCurrentTime() || 0;
+            const dur = yt.getDuration() || 0;
+            const timeTxt = document.getElementById(`time_txt_${videoId}`);
+            const seekRange = document.getElementById(`seek_range_${videoId}`);
+            if (timeTxt) timeTxt.textContent = `${formatDurationSec(cur)} / ${formatDurationSec(dur)}`;
+            if (seekRange && dur > 0) {
+                seekRange.value = (cur / dur) * 100;
+            }
+        } catch(e) {}
+    }
+}
+
+function startStudentProgressTracking(videoId) {
+    stopStudentProgressTracking(videoId);
+    studentProgressIntervals[videoId] = setInterval(() => {
+        updateStudentTimeDisplay(videoId);
+    }, 500);
+}
+
+function stopStudentProgressTracking(videoId) {
+    if (studentProgressIntervals[videoId]) {
+        clearInterval(studentProgressIntervals[videoId]);
+        delete studentProgressIntervals[videoId];
     }
 }
 
@@ -1822,6 +1960,15 @@ function showPlayerToast(message) {
         toast.style.transform = 'translateX(-50%) translateY(10px)';
     }, 2400);
 }
+
+// منع القائمة المنبثقة بالزر الأيمن على مشغل الفيديو نهائياً
+document.addEventListener('contextmenu', function(e) {
+    if (e.target.closest('.ed-player-frame, .ed-yt-shield-container, .ed-student-player-bar, iframe')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+}, true);
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection

@@ -86,8 +86,8 @@
                             <input type="url" name="video_url" id="editVideoUrl" value="{{ $content->url_path }}" class="input-style font-mono text-ltr" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
                             <small class="upload-hint">{{ __('يدعم كافة روابط YouTube (الروابط الكاملة، المختصرة، ومقاطع Shorts). محمي بمشغل المنصة.') }}</small>
                             
-                            <div id="editYtPreview" oncontextmenu="return false;" style="{{ ($content->youtube_id || !empty($content->url_path)) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" allowfullscreen></iframe>
+                            <div id="editYtPreview" oncontextmenu="event.preventDefault(); return false;" style="{{ ($content->youtube_id || !empty($content->url_path)) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
+                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none !important;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
                             </div>
                         </div>
                     </div>
@@ -217,7 +217,7 @@
         const preview = document.getElementById('editYtPreview');
         const frame = document.getElementById('editYtFrame');
         if (id) {
-            frame.src = 'https://www.youtube.com/embed/' + id + '?rel=0';
+            frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?controls=0&showinfo=0&fs=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1';
             preview.style.display = 'block';
         } else {
             frame.src = '';
