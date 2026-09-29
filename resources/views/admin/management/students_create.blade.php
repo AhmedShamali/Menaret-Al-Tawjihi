@@ -203,10 +203,10 @@
                         </div>
 
                         <div class="upload-box" id="box-id" onclick="document.getElementById('i_file').click()">
-                            <img id="preview-id" src="" alt="preview">
-                            <input type="file" name="id_photo" id="i_file" accept="image/*" hidden>
+                            <img id="preview-id" src="" alt="preview" style="display: none;">
+                            <input type="file" name="id_photo" id="i_file" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" hidden>
                             <span class="icon">🪪</span>
-                            <span class="text">{{ __('صورة الهوية (اختياري)') }}</span>
+                            <span class="text">{{ __('وثيقة الهوية / شهادة الميلاد (اختياري)') }}</span>
                         </div>
                     </div>
                 </div>
@@ -231,16 +231,26 @@
 
         input.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    iconSpan.style.display = 'none';
-                    textSpan.innerText = 'تم اختيار: ' + input.files[0].name.substring(0, 15) + '...';
-                    box.style.borderColor = '#10b981';
-                    box.style.background = '#f0fdf4';
+                const file = this.files[0];
+                const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+                if (isPdf) {
+                    preview.style.display = 'none';
+                    iconSpan.innerText = '📄';
+                    iconSpan.style.display = 'block';
+                    textSpan.innerText = 'ملف PDF: ' + file.name.substring(0, 20);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        iconSpan.style.display = 'none';
+                    };
+                    reader.readAsDataURL(file);
+                    textSpan.innerText = 'تم اختيار: ' + file.name.substring(0, 15) + '...';
                 }
-                reader.readAsDataURL(this.files[0]);
+                box.style.borderColor = '#10b981';
+                box.style.background = '#f0fdf4';
             }
         });
     }

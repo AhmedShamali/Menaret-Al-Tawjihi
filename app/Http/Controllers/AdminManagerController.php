@@ -394,8 +394,8 @@ class AdminManagerController extends Controller {
             'nid'      => 'required|digits:9|unique:students,nid',
             'stage_id' => 'required',
             'phone'    => 'nullable|string|max:20',
-            'photo'    => 'nullable|image|max:3072',
-            'id_photo' => 'nullable|image|max:3072'
+            'photo'    => 'nullable|file|mimes:jpeg,png,jpg,webp|max:10240',
+            'id_photo' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240'
         ], [
             'name_ar.required'  => 'يرجى إدخال الاسم الرباعي للطالب.',
             'email.required'    => 'يرجى إدخال البريد الإلكتروني.',
@@ -406,6 +406,10 @@ class AdminManagerController extends Controller {
             'nid.digits'        => 'رقم الهوية يجب أن يتكون من 9 أرقام بدقة.',
             'nid.unique'        => 'رقم الهوية مسجل مسبقاً في النظام.',
             'stage_id.required' => 'يرجى اختيار المرحلة أو الفرع الدراسي.',
+            'photo.mimes'       => 'الصورة الشخصية يجب أن تكون من نوع JPG أو PNG أو WEBP.',
+            'photo.max'         => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.mimes'    => 'وثيقة الهوية يجب أن تكون صورة (JPG, PNG, WEBP) أو ملف PDF.',
+            'id_photo.max'      => 'حجم وثيقة الهوية يجب ألا يتجاوز 10 ميغابايت.',
         ]);
 
         if ($validator->fails()) {

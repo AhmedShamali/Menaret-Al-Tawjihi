@@ -45,11 +45,34 @@
                 <p class="id-title">{{ __('بطاقة الهوية الوطنية') }}</p>
                 @if($student->id_photo)
                     @php
+                        $isPdf = $student->is_id_pdf;
                         $idUrl = $student->id_photo_url;
+                        $downloadUrl = route('admin.students.document.download', [$student->id, 'id_photo']);
+                        $viewUrl = route('admin.students.document.view', [$student->id, 'id_photo']);
                     @endphp
-                    <a href="{{ $idUrl }}" target="_blank" title="{{ __('اضغط للتكبير') }}">
-                        <img src="{{ $idUrl }}" alt="{{ __('الهوية') }}">
-                    </a>
+                    @if($isPdf)
+                        <div style="padding: 20px 12px; background: #fef2f2; border: 1.5px dashed #fca5a5; border-radius: 10px; text-align: center; margin-bottom: 8px;">
+                            <i class="fa-solid fa-file-pdf" style="font-size: 2.4rem; color: #dc2626; margin-bottom: 6px; display: block;"></i>
+                            <span style="font-size: 0.78rem; font-weight: 800; color: #991b1b; display: block; margin-bottom: 10px;">{{ __('وثيقة PDF رسمية') }}</span>
+                            <div style="display: flex; gap: 6px; justify-content: center;">
+                                <a href="{{ $viewUrl }}" target="_blank" style="background: #dc2626; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-decoration: none;">
+                                    <i class="fa-solid fa-eye"></i> {{ __('عرض') }}
+                                </a>
+                                <a href="{{ $downloadUrl }}" style="background: #1e293b; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 700; text-decoration: none;">
+                                    <i class="fa-solid fa-download"></i> {{ __('تنزيل') }}
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <a href="{{ $viewUrl }}" target="_blank" title="{{ __('اضغط للمعاينة الكاملة') }}">
+                            <img src="{{ $idUrl }}" alt="{{ __('الهوية') }}" style="max-height: 200px; width: 100%; object-fit: contain; border-radius: 8px;">
+                        </a>
+                        <div style="margin-top: 8px; text-align: center;">
+                            <a href="{{ $downloadUrl }}" style="display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem; font-weight: 700; color: #0284c7; text-decoration: none;">
+                                <i class="fa-solid fa-download"></i> {{ __('تنزيل الوثيقة الرسمية') }}
+                            </a>
+                        </div>
+                    @endif
                 @else
                     <div class="no-id">
                         <i class="fa-solid fa-id-card"></i>

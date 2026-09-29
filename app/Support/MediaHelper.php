@@ -106,4 +106,128 @@ class MediaHelper
 
         return $relativePath;
     }
+
+    /**
+     * إنشاء استجابة تنزيل أو استعراض لوثيقة أو ملف في النظام
+     * يضمن التنزيل السلس المباشر وتجاوز قيود الـ CORS وتعيين الاسم العربي واللاحقة بدقة
+     *
+     * @param string|null $path المسار في قاعدة البيانات أو التخزين
+     * @param string $downloadFilename الاسم المطلوب للملف المنزّل
+     * @param bool $inline هل يتم العرض المباشر (inline) أم الإجبار على التنزيل (attachment)
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public static function documentResponse(?string $path, string $downloadFilename, bool $inline = false)
+    {
+        if (empty($path)) {
+            abort(404, __('عذراً، الوثيقة المطلوبة غير متوفرة أو لم تُرفع بعد.'));
+        }
+
+        $cleanPath = ltrim(preg_replace('/^(storage\/|public\/|app\/public\/)/', '', trim($path)), '/');
+        $extension = strtolower(pathinfo($cleanPath, PATHINFO_EXTENSION) ?: pathinfo($downloadFilename, PATHINFO_EXTENSION) ?: 'jpg');
+
+        $mimeTypes = [
+            'pdf'  => 'application/pdf',
+            'png'  => 'image/png',
+            'jpg'  => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'webp' => 'image/webp',
+            'gif'  => 'image/gif',
+            'svg'  => 'image/svg+xml',
+        ];
+        $mime = $mimeTypes[$extension] ?? 'application/octet-stream';
+
+        // التأكد من لاحقة اسم الملف عند التنزيل
+        if (!str_ends_with(strtolower($downloadFilename), '.' . $extension)) {
+            $downloadFilename .= '.' . $extension;
+        }
+
+        $asciiFallback = 'document_' . time() . '.' . $extension;
+        $encodedFilename = rawurlencode($downloadFilename);
+        $disposition = $inline ? 'inline' : 'attachment';
+        $dispositionHeader = "{$disposition}; filename=\"{$asciiFallback}\"; filename*=UTF-8''{$encodedFilename}";
+
+        // 1. الفحص في القرص المحلي عبر Storage::disk('public') لدعم كافة البيئات والتخزين الوهمي في الفحوصات
+        try {
+            if (Storage::disk('public')->exists($cleanPath)) {
+                $stream = Storage::disk('public')->readStream($cleanPath);
+                if ($stream) {
+                    return response()->stream(function () use ($stream) {
+                        fpassthru($stream);
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }, 200, [
+                        'Content-Type' => $mime,
+                        'Content-Disposition' => $dispositionHeader,
+                        'Cache-Control' => 'private, no-cache, no-store, must-revalidate',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Local disk public readStream failed for {$cleanPath}: " . $e->getMessage());
+        }
+
+        // فحص مباشر للملفات المحلية بالمسار الفيزيائي إن وجدت
+        $localFile = null;
+        if (file_exists(storage_path('app/public/' . $cleanPath))) {
+            $localFile = storage_path('app/public/' . $cleanPath);
+        } elseif (file_exists(public_path('storage/' . $cleanPath))) {
+            $localFile = public_path('storage/' . $cleanPath);
+        }
+
+        if ($localFile) {
+            return response()->file($localFile, [
+                'Content-Type' => $mime,
+                'Content-Disposition' => $dispositionHeader,
+                'Cache-Control' => 'private, no-cache, no-store, must-revalidate',
+            ]);
+        }
+
+        // 2. الفحص في قرص Supabase Storage
+        try {
+            if (Storage::disk('supabase')->exists($cleanPath)) {
+                $stream = Storage::disk('supabase')->readStream($cleanPath);
+                if ($stream) {
+                    return response()->stream(function () use ($stream) {
+                        fpassthru($stream);
+                        if (is_resource($stream)) {
+                            fclose($stream);
+                        }
+                    }, 200, [
+                        'Content-Type' => $mime,
+                        'Content-Disposition' => $dispositionHeader,
+                        'Cache-Control' => 'private, no-cache, no-store, must-revalidate',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("Supabase readStream failed for {$cleanPath}: " . $e->getMessage());
+        }
+
+        // 3. المحاولة عبر الرابط العام بواسطة Http Client
+        try {
+            $url = self::url($cleanPath);
+            if ($url) {
+                $res = \Illuminate\Support\Facades\Http::timeout(20)->get($url);
+                if ($res->successful()) {
+                    return response($res->body(), 200, [
+                        'Content-Type' => $mime,
+                        'Content-Disposition' => $dispositionHeader,
+                        'Content-Length' => strlen($res->body()),
+                        'Cache-Control' => 'private, no-cache, no-store, must-revalidate',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::error("Http download failed for {$cleanPath}: " . $e->getMessage());
+        }
+
+        // 4. في أسوأ الظروف، إعادة توجيه مباشرة إلى الرابط العام
+        $directUrl = self::url($cleanPath);
+        if ($directUrl) {
+            return redirect()->away($directUrl);
+        }
+
+        abort(404, __('عذراً، تعذر العثور على ملف الوثيقة.'));
+    }
 }

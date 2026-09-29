@@ -209,6 +209,8 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     // مسارات الطلاب بشكل آمن بدون تعارض
     Route::get('students/records/all', [StudentController::class, 'profile_all'])->name('students.profile_all');
     Route::get('students/profile/{id}', [StudentController::class, 'profile'])->name('students.profile')->whereNumber('id');
+    Route::get('students/{student}/document/{type}/download', [StudentController::class, 'downloadDocument'])->name('students.document.download')->whereNumber('student');
+    Route::get('students/{student}/document/{type}/view', [StudentController::class, 'viewDocument'])->name('students.document.view')->whereNumber('student');
     Route::resource('students', StudentController::class);
 
     // إدارة ومسير رواتب المعلمين (يجب أن تسبق مسار teachers/{id} لتفادي أي تعارض)
@@ -321,6 +323,7 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/dashboard', [DashboardController::class, 'studentIndex'])->name('dashboard');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
     Route::post('/profile/update-password', [StudentController::class, 'updatePassword'])->name('profile.updatePassword');
+    Route::get('/my-document/{type}/download', [StudentController::class, 'studentDownloadDocument'])->name('document.download');
 
     Route::get('/my-exams', [ExamController::class, 'studentIndex'])->name('exams.index');
     Route::get('/exams/{id}/take', [ExamController::class, 'takeExam'])->name('exams.take');

@@ -94,7 +94,12 @@
                 <div class="ed-detail-row">
                     <span class="detail-label"><i class="fa-solid fa-address-card"></i> {{ __('بطاقة الهوية:') }}</span>
                     @if(!empty($student->id_photo))
-                        <span class="ed-badge-status green"><i class="fa-solid fa-circle-check"></i> {{ __('مرفقة ومعتمدة') }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="ed-badge-status green"><i class="fa-solid fa-circle-check"></i> {{ __('مرفقة ومعتمدة') }}</span>
+                            <a href="{{ route('student.document.download', 'id_photo') }}" style="color: #0284c7; font-weight: 700; font-size: 0.78rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('تنزيل نسختك المرفقة') }}">
+                                <i class="fa-solid fa-download"></i> {{ __('تنزيل') }}
+                            </a>
+                        </div>
                     @else
                         <span class="ed-badge-status red"><i class="fa-solid fa-circle-exclamation"></i> {{ __('غير مرفقة') }}</span>
                     @endif

@@ -279,28 +279,31 @@
 
                 @if($student->id_photo)
                     @php
-                        $isIdPdf = \Illuminate\Support\Str::endsWith(strtolower($student->id_photo), '.pdf');
+                        $isIdPdf = $student->is_id_pdf;
                         $idUrl = $student->id_photo_url ?? \App\Support\MediaHelper::url($student->id_photo);
+                        $downloadUrl = route('admin.students.document.download', [$student->id, 'id_photo']);
+                        $viewUrl = route('admin.students.document.view', [$student->id, 'id_photo']);
                     @endphp
                     <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; margin-bottom: 12px;">
                         @if($isIdPdf)
-                            <div style="padding: 20px; color: #ef4444;">
-                                <i class="fa-solid fa-file-pdf" style="font-size: 2.5rem; margin-bottom: 6px;"></i>
-                                <span style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155;">{{ __('مستند PDF: بطاقة الهوية') }}</span>
+                            <div style="padding: 24px 16px; color: #ef4444; background: #fef2f2; border-radius: 6px; cursor: pointer; transition: all 0.2s;" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($studentDispName) }}', '{{ $student->nid }}', true, '{{ $downloadUrl }}', '{{ $viewUrl }}')">
+                                <i class="fa-solid fa-file-pdf" style="font-size: 2.8rem; margin-bottom: 8px; display: block;"></i>
+                                <span style="display: block; font-size: 0.88rem; font-weight: 800; color: #991b1b;">{{ __('مستند PDF: بطاقة الهوية / شهادة الميلاد') }}</span>
+                                <span style="display: inline-block; margin-top: 6px; font-size: 0.75rem; background: #fee2e2; color: #b91c1c; padding: 3px 10px; border-radius: 12px; font-weight: 700;">
+                                    <i class="fa-solid fa-expand"></i> {{ __('انقر للمعاينة داخل النظام') }}
+                                </span>
                             </div>
                         @else
-                            <img src="{{ $idUrl }}" alt="{{ __('بطاقة الهوية') }}" style="max-height: 200px; max-width: 100%; border-radius: 6px; object-fit: contain; cursor: pointer;" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($studentDispName) }}', '{{ $student->nid }}')">
+                            <img src="{{ $idUrl }}" alt="{{ __('بطاقة الهوية') }}" style="max-height: 200px; max-width: 100%; border-radius: 6px; object-fit: contain; cursor: pointer;" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($studentDispName) }}', '{{ $student->nid }}', false, '{{ $downloadUrl }}', '{{ $viewUrl }}')">
                         @endif
                     </div>
 
                     <div style="display: flex; gap: 8px;">
-                        @if(!$isIdPdf)
-                            <button type="button" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($studentDispName) }}', '{{ $student->nid }}')" style="flex: 1; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                                <i class="fa-solid fa-expand"></i> {{ __('معاينة وتكبير') }}
-                            </button>
-                        @endif
-                        <a href="{{ $idUrl }}" target="_blank" download style="flex: 1; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-                            <i class="fa-solid fa-download"></i> {{ __('فتح / تنزيل') }}
+                        <button type="button" onclick="previewIdModal('{{ $idUrl }}', '{{ addslashes($studentDispName) }}', '{{ $student->nid }}', {{ $isIdPdf ? 'true' : 'false' }}, '{{ $downloadUrl }}', '{{ $viewUrl }}')" style="flex: 1; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i class="fa-solid fa-expand"></i> {{ __('معاينة الوثيقة') }}
+                        </button>
+                        <a href="{{ $downloadUrl }}" style="flex: 1; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i class="fa-solid fa-download"></i> {{ __('تنزيل الوثيقة') }}
                         </a>
                     </div>
                 @else
@@ -849,11 +852,12 @@
             </div>
             <button type="button" onclick="closeIdModal()" style="background: transparent; border: none; color: #64748b; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
-        <div style="padding: 20px; background: #f8fafc; text-align: center; max-height: 70vh; overflow-y: auto;">
-            <img id="modalIdImg" src="" alt="{{ __('بطاقة الهوية') }}" style="max-height: 480px; max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); object-fit: contain;">
+        <div style="padding: 16px; background: #f8fafc; text-align: center; max-height: 75vh; overflow-y: auto;">
+            <img id="modalIdImg" src="" alt="{{ __('بطاقة الهوية') }}" style="max-height: 520px; max-width: 100%; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); object-fit: contain; display: none; margin: 0 auto;">
+            <iframe id="modalIdIframe" src="" style="width: 100%; height: 520px; border: 1px solid #cbd5e1; border-radius: 8px; display: none; background: white;"></iframe>
         </div>
         <div style="padding: 14px 20px; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <a id="modalDownloadBtn" href="#" target="_blank" download style="background: var(--ed-primary, #1d4ed8); color: white; padding: 8px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+            <a id="modalDownloadBtn" href="#" style="background: var(--ed-primary, #1d4ed8); color: white; padding: 8px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                 <i class="fa-solid fa-download"></i> {{ __('تنزيل الوثيقة الرسمية') }}
             </a>
             <button type="button" onclick="closeIdModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
@@ -864,17 +868,35 @@
 </div>
 
 <script>
-function previewIdModal(imgUrl, studentName, studentNid) {
-    document.getElementById('modalIdImg').src = imgUrl;
-    document.getElementById('modalDownloadBtn').href = imgUrl;
-    document.getElementById('modalStudentName').textContent = studentShowI18n.idCardPrefix + ' ' + studentName;
-    document.getElementById('modalStudentNid').textContent = studentShowI18n.nidPrefix + ' ' + studentNid;
+function previewIdModal(imgUrl, studentName, studentNid, isPdf, downloadUrl, viewUrl) {
+    const img = document.getElementById('modalIdImg');
+    const iframe = document.getElementById('modalIdIframe');
+    const downloadBtn = document.getElementById('modalDownloadBtn');
+
+    downloadBtn.href = downloadUrl || imgUrl;
+
+    if (isPdf) {
+        img.style.display = 'none';
+        img.src = '';
+        iframe.style.display = 'block';
+        iframe.src = viewUrl || imgUrl;
+    } else {
+        iframe.style.display = 'none';
+        iframe.src = '';
+        img.style.display = 'inline-block';
+        img.src = viewUrl || imgUrl;
+    }
+
+    document.getElementById('modalStudentName').textContent = (typeof studentShowI18n !== 'undefined' ? studentShowI18n.idCardPrefix : 'بطاقة الهوية:') + ' ' + studentName;
+    document.getElementById('modalStudentNid').textContent = (typeof studentShowI18n !== 'undefined' ? studentShowI18n.nidPrefix : 'رقم الهوية:') + ' ' + studentNid;
     const modal = document.getElementById('idPhotoModalOverlay');
     modal.style.display = 'flex';
 }
 
 function closeIdModal() {
     document.getElementById('idPhotoModalOverlay').style.display = 'none';
+    const iframe = document.getElementById('modalIdIframe');
+    if (iframe) iframe.src = '';
 }
 
 function saveStudentMonthlyFee(studentId) {

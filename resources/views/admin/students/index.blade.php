@@ -207,7 +207,18 @@
 
                         {{-- الهوية الوطنية --}}
                         <td>
-                            <span class="nid-text-clean font-mono">{{ $student->nid ?: '-' }}</span>
+                            <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span class="nid-text-clean font-mono">{{ $student->nid ?: '-' }}</span>
+                                @if($student->id_photo)
+                                    <a href="{{ route('admin.students.document.download', [$student->id, 'id_photo']) }}" 
+                                       title="{{ __('تنزيل وثيقة الهوية الرسمية للطالب') }}"
+                                       style="color: #0284c7; font-size: 0.82rem; transition: transform 0.15s;" 
+                                       onmouseover="this.style.transform='scale(1.2)'" 
+                                       onmouseout="this.style.transform='scale(1)'">
+                                        <i class="fa-solid fa-file-arrow-down"></i>
+                                    </a>
+                                @endif
+                            </div>
                         </td>
 
                         {{-- الحالة --}}

@@ -28,8 +28,35 @@
             </div>
 
             <div>
-                <span style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">{{ __('صورة بطاقة الهوية') }}</span>
-                <img src="{{ $student->id_photo_url }}" style="width: 100%; border-radius: 15px; border: 1px solid #e2e8f0; cursor: zoom-in;" onclick="window.open(this.src)">
+                <span style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">{{ __('وثيقة الهوية / شهادة الميلاد') }}</span>
+                @if($student->id_photo)
+                    @if($student->is_id_pdf)
+                        <div style="padding: 25px 15px; background: #fef2f2; border: 2px dashed #fca5a5; border-radius: 15px; text-align: center;">
+                            <i class="fa-solid fa-file-pdf" style="font-size: 3rem; color: #dc2626; margin-bottom: 8px; display: block;"></i>
+                            <span style="font-size: 0.85rem; font-weight: 800; color: #991b1b; display: block; margin-bottom: 12px;">{{ __('وثيقة هوية رسمية بصيغة PDF') }}</span>
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <a href="{{ route('admin.students.document.view', [$student->id, 'id_photo']) }}" target="_blank" class="btn btn-sm" style="background: #dc2626; color: white; padding: 6px 14px; border-radius: 8px; font-weight: 700; text-decoration: none;">
+                                    <i class="fa-solid fa-eye"></i> {{ __('عرض المستند') }}
+                                </a>
+                                <a href="{{ route('admin.students.document.download', [$student->id, 'id_photo']) }}" class="btn btn-sm" style="background: #1e293b; color: white; padding: 6px 14px; border-radius: 8px; font-weight: 700; text-decoration: none;">
+                                    <i class="fa-solid fa-download"></i> {{ __('تنزيل') }}
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <img src="{{ $student->id_photo_url }}" style="width: 100%; border-radius: 15px; border: 1px solid #e2e8f0; cursor: zoom-in; max-height: 250px; object-fit: contain;" onclick="window.open('{{ route('admin.students.document.view', [$student->id, 'id_photo']) }}')" title="{{ __('انقر للمعاينة الكاملة') }}">
+                        <div style="margin-top: 8px; text-align: center;">
+                            <a href="{{ route('admin.students.document.download', [$student->id, 'id_photo']) }}" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; color: var(--primary); text-decoration: none;">
+                                <i class="fa-solid fa-download"></i> {{ __('تنزيل الوثيقة الرسمية') }}
+                            </a>
+                        </div>
+                    @endif
+                @else
+                    <div style="padding: 25px 15px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 15px; color: #94a3b8; font-size: 0.85rem; text-align: center;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; color: #f59e0b; margin-bottom: 8px; display: block;"></i>
+                        <span>{{ __('لم يقم الطالب بإرفاق وثيقة الهوية') }}</span>
+                    </div>
+                @endif
             </div>
         </div>
 

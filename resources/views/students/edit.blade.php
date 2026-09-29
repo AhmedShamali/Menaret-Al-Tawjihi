@@ -226,27 +226,53 @@
                         <!-- صورة الهوية -->
                         <div class="media-upload-item">
                             <label class="f-label">صورة الهوية الفلسطينية / شهادة الميلاد</label>
-                            <div class="preview-box" style="position: relative;">
+                            <div class="preview-box" id="id-preview-box" style="position: relative;">
+                                @php
+                                    $isIdPdf = $student->is_id_pdf;
+                                @endphp
                                 @if($student->id_photo)
-                                    <img id="id-photo-preview" src="{{ $student->id_photo_url }}" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                                    @if($isIdPdf)
+                                        <div id="id-pdf-badge" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #dc2626; font-size: 0.82rem; gap: 6px; padding: 12px; text-align: center;">
+                                            <i class="fas fa-file-pdf" style="font-size: 2.5rem; color: #ef4444;"></i>
+                                            <span style="font-weight: 700; color: #991b1b;">{{ __('مستند PDF: وثيقة الهوية') }}</span>
+                                        </div>
+                                        <img id="id-photo-preview" src="" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; display: none;">
+                                    @else
+                                        <img id="id-photo-preview" src="{{ $student->id_photo_url }}" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                                        <div id="id-pdf-badge" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #dc2626; font-size: 0.82rem; gap: 6px; padding: 12px; text-align: center;">
+                                            <i class="fas fa-file-pdf" style="font-size: 2.5rem; color: #ef4444;"></i>
+                                            <span style="font-weight: 700; color: #991b1b;">{{ __('مستند PDF تم اختياره') }}</span>
+                                        </div>
+                                    @endif
                                 @else
                                     <div id="id-photo-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.8rem; gap: 6px;">
                                         <i class="fas fa-id-card" style="font-size: 2.2rem; color: #cbd5e1;"></i>
                                         <span>{{ __('لم تُرفع هوية بعد') }}</span>
+                                    </div>
+                                    <div id="id-pdf-badge" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #dc2626; font-size: 0.82rem; gap: 6px; padding: 12px; text-align: center;">
+                                        <i class="fas fa-file-pdf" style="font-size: 2.5rem; color: #ef4444;"></i>
+                                        <span style="font-weight: 700; color: #991b1b;">{{ __('مستند PDF تم اختياره') }}</span>
                                     </div>
                                     <img id="id-photo-preview" src="" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; display: none;">
                                 @endif
                             </div>
 
                             @if($student->id_photo)
-                                <a href="{{ $student->id_photo_url }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-top: 8px; background: #e0f2fe; color: #0369a1; border-radius: 10px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
-                                    <i class="fas fa-expand"></i>{{ __('معاينة الوثيقة بالحجم الكامل') }}</a>
+                                <div style="display: flex; gap: 6px; margin-top: 8px;">
+                                    <a href="{{ route('admin.students.document.view', [$student->id, 'id_photo']) }}" target="_blank" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px; background: #e0f2fe; color: #0369a1; border-radius: 8px; font-size: 0.76rem; font-weight: 700; text-decoration: none;">
+                                        <i class="fas fa-expand"></i> {{ __('معاينة') }}
+                                    </a>
+                                    <a href="{{ route('admin.students.document.download', [$student->id, 'id_photo']) }}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 7px; background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.76rem; font-weight: 700; text-decoration: none;">
+                                        <i class="fas fa-download"></i> {{ __('تنزيل') }}
+                                    </a>
+                                </div>
                             @endif
 
-                            <input type="file" name="id_photo" id="i_file" class="file-input-hidden" accept="image/*,application/pdf" onchange="previewImage(this, 'id-photo-preview')">
+                            <input type="file" name="id_photo" id="i_file" class="file-input-hidden" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" onchange="previewStudentDocument(this)">
                             <label for="i_file" class="btn-upload-trigger" style="margin-top: 8px;">
                                 <span>🔄 رفع / تحديث صورة الهوية</span>
                             </label>
+                            <small id="id-file-selected-name" style="display: none; margin-top: 4px; font-size: 0.75rem; color: #16a34a; font-weight: 600; text-align: center;"></small>
                         </div>
 
                     </div>
@@ -439,15 +465,51 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // معاينة الصور فور اختيارها من الجهاز
+    // معاينة الصور والوثائق فور اختيارها من الجهاز
     function previewImage(input, previewId) {
         const preview = document.getElementById(previewId);
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 preview.src = e.target.result;
+                preview.style.display = 'block';
             }
             reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function previewStudentDocument(input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+
+        const previewImg = document.getElementById('id-photo-preview');
+        const pdfBadge = document.getElementById('id-pdf-badge');
+        const placeholder = document.getElementById('id-photo-placeholder');
+        const nameLabel = document.getElementById('id-file-selected-name');
+
+        if (placeholder) placeholder.style.display = 'none';
+
+        if (nameLabel) {
+            nameLabel.textContent = '✓ ' + file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+            nameLabel.style.display = 'block';
+        }
+
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+            if (previewImg) previewImg.style.display = 'none';
+            if (pdfBadge) {
+                pdfBadge.style.display = 'flex';
+                pdfBadge.innerHTML = '<i class="fas fa-file-pdf" style="font-size: 2.5rem; color: #ef4444;"></i><span style="font-weight: 700; color: #991b1b;">' + file.name + '</span>';
+            }
+        } else {
+            if (pdfBadge) pdfBadge.style.display = 'none';
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (previewImg) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                }
+            };
+            reader.readAsDataURL(file);
         }
     }
 

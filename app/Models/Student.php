@@ -191,6 +191,28 @@ class Student extends Authenticatable
     }
 
     /**
+     * هل وثيقة الهوية المرفقة بصيغة PDF؟
+     */
+    public function getIsIdPdfAttribute(): bool
+    {
+        if (empty($this->id_photo)) {
+            return false;
+        }
+        $clean = strtolower(parse_url($this->id_photo, PHP_URL_PATH) ?? $this->id_photo);
+        return str_ends_with($clean, '.pdf');
+    }
+
+    /**
+     * اسم الملف المخصص والمناسب عند تنزيل وثيقة الهوية
+     */
+    public function getIdPhotoDownloadNameAttribute(): string
+    {
+        $name = preg_replace('/[^\p{L}\p{N}_\-]/u', '_', $this->name_ar ?: $this->name_en ?: 'student');
+        $ext = $this->is_id_pdf ? 'pdf' : (pathinfo($this->id_photo ?? '', PATHINFO_EXTENSION) ?: 'jpg');
+        return "وثيقة_هوية_{$this->nid}_{$name}.{$ext}";
+    }
+
+    /**
      * الاشتراكات الشهرية للطالب على مدار السنة
      */
     public function monthlySubscriptions()

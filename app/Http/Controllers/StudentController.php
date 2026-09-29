@@ -104,8 +104,8 @@ class StudentController extends Controller
             'guardian_phone'=> 'nullable|string|max:20',
             'city'          => 'nullable|string|max:100',
             'school_name'   => 'nullable|string|max:255',
-            'photo'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120',
-            'id_photo'      => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:6144',
+            'photo'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
+            'id_photo'      => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
         ], [
             'name_ar.required' => 'يرجى كتابة الاسم الرباعي كاملاً.',
             'nid.required'     => 'يرجى إدخال رقم الهوية الفلسطينية.',
@@ -116,8 +116,9 @@ class StudentController extends Controller
             'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
             'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
             'photo.image'      => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
-            'photo.max'        => 'حجم الصورة الشخصية يجب ألا يتجاوز 5 ميغابايت.',
-            'id_photo.max'     => 'حجم صورة الهوية يجب ألا يتجاوز 6 ميغابايت.',
+            'photo.max'        => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.max'     => 'حجم وثيقة الهوية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.mimes'   => 'وثيقة الهوية يجب أن تكون صورة (JPG, PNG, WEBP) أو ملف PDF.',
         ]);
 
         if ($validator->fails()) {
@@ -667,6 +668,24 @@ class StudentController extends Controller
 
     // 5. دالة التحديث (Update) - معدلة لدعم مزامنة المواد للطلاب الحاليين والقدامى
     public function update(Request $request, $id) {
+        $validator = Validator::make($request->all(), [
+            'photo'    => 'nullable|file|mimes:jpeg,png,jpg,webp|max:10240',
+            'id_photo' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
+        ], [
+            'photo.mimes'    => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
+            'photo.max'      => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.mimes' => 'وثيقة الهوية يجب أن تكون صورة صالحة أو مستند PDF.',
+            'id_photo.max'   => 'حجم وثيقة الهوية يجب ألا يتجاوز 10 ميغابايت.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'icon'    => 'error',
+                'title'   => $validator->errors()->first(),
+                'message' => $validator->errors()->first()
+            ], 422);
+        }
+
         $student = Student::findOrFail($id);
 
         // استبعاد الصور وكلمة المرور من التحديث التلقائي لمعالجتها يدوياً
@@ -947,6 +966,67 @@ class StudentController extends Controller
         $allStages = Stage::with(['subjects.teacher'])->get();
 
         return view('admin.students.show', compact('student', 'allStages'));
+    }
+
+    /**
+     * تنزيل وثيقة رسمية للطالب (هوية أو صورة) مباشرة وباسم معرب دون قيود CORS
+     */
+    public function downloadDocument(Request $request, $studentId, $type = 'id_photo')
+    {
+        $student = Student::findOrFail($studentId);
+        $path = $type === 'photo' ? $student->photo : $student->id_photo;
+
+        if (empty($path)) {
+            abort(404, __('عذراً، لا توجد وثيقة رسمية مرفقة لهذا الطالب.'));
+        }
+
+        $filename = $type === 'photo'
+            ? "صورة_شخصية_{$student->nid}.jpg"
+            : $student->id_photo_download_name;
+
+        return \App\Support\MediaHelper::documentResponse($path, $filename, false);
+    }
+
+    /**
+     * استعراض وثيقة الطالب داخل المتصفح بأمان (للمعاينة والمودال وتضمين PDF)
+     */
+    public function viewDocument(Request $request, $studentId, $type = 'id_photo')
+    {
+        $student = Student::findOrFail($studentId);
+        $path = $type === 'photo' ? $student->photo : $student->id_photo;
+
+        if (empty($path)) {
+            abort(404, __('عذراً، لا توجد وثيقة رسمية مرفقة لهذا الطالب.'));
+        }
+
+        $filename = $type === 'photo'
+            ? "صورة_شخصية_{$student->nid}.jpg"
+            : $student->id_photo_download_name;
+
+        return \App\Support\MediaHelper::documentResponse($path, $filename, true);
+    }
+
+    /**
+     * تنزيل الطالب لوثيقته الخاصة من حسابه الشخصي
+     */
+    public function studentDownloadDocument(Request $request, $type = 'id_photo')
+    {
+        $student = Auth::guard('student')->user();
+        if (!$student) {
+            abort(403, __('غير مصرح لك بتنزيل هذه الوثيقة.'));
+        }
+
+        $path = $type === 'photo' ? $student->photo : $student->id_photo;
+
+        if (empty($path)) {
+            abort(404, __('عذراً، لم تقم بإرفاق هذه الوثيقة بعد.'));
+        }
+
+        $filename = $type === 'photo'
+            ? "صورة_شخصية_{$student->nid}.jpg"
+            : $student->id_photo_download_name;
+
+        return \App\Support\MediaHelper::documentResponse($path, $filename, false);
     }
 
     /**
