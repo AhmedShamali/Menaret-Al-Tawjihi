@@ -31,13 +31,10 @@
         </div>
 
         <div class="profile-avatar-area">
-            @if($teacher->photo)
-                <img src="{{ asset('storage/' . $teacher->photo) }}" alt="{{ $teacher->name }}" class="profile-avatar-img">
-            @else
-                <div class="profile-avatar-placeholder">
-                    {{ mb_substr($teacher->name, 0, 2) }}
-                </div>
-            @endif
+            <img src="{{ $teacher->photo_url }}" 
+                 alt="{{ $teacher->name }}" 
+                 class="profile-avatar-img"
+                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacher->name) }}&background=0284c7&color=fff&size=200&bold=true';">
         </div>
 
         <div class="profile-main-info">

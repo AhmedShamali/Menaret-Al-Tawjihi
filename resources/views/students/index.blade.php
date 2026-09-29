@@ -43,7 +43,7 @@
                         <td>
                             <div class="student-profile">
                                 <div class="avatar-container">
-                                    <img src="{{ asset('storage/'.$student->photo) }}"
+                                    <img src="{{ $student->photo_url }}"
                                          onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar) }}&background=6366f1&color=fff&bold=true'"
                                          alt="">
                                     <div class="status-dot {{ $student->status == 'active' ? 'online' : 'offline' }}"></div>

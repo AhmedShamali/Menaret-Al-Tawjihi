@@ -36,11 +36,10 @@
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
             <div style="display: flex; align-items: center; gap: 16px;">
                 <div style="width: 72px; height: 72px; border-radius: 50%; background: #eff6ff; color: var(--ed-primary, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid #bfdbfe; overflow: hidden;">
-                    @if($student->photo)
-                        <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $studentDispName }}" style="width: 100%; height: 100%; object-fit: cover;">
-                    @else
-                        <i class="fa-solid fa-user-graduate"></i>
-                    @endif
+                    <img src="{{ $student->photo_url }}" 
+                         alt="{{ $studentDispName }}" 
+                         style="width: 100%; height: 100%; object-fit: cover;"
+                         onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($studentDispName) }}&background=0284c7&color=fff&size=200&bold=true';">
                 </div>
 
                 <div>
@@ -281,7 +280,7 @@
                 @if($student->id_photo)
                     @php
                         $isIdPdf = \Illuminate\Support\Str::endsWith(strtolower($student->id_photo), '.pdf');
-                        $idUrl = asset('storage/' . $student->id_photo);
+                        $idUrl = $student->id_photo_url ?? \App\Support\MediaHelper::url($student->id_photo);
                     @endphp
                     <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center; margin-bottom: 12px;">
                         @if($isIdPdf)
@@ -323,7 +322,10 @@
 
                 <div style="display: flex; gap: 14px; align-items: center; background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
                     <div style="width: 68px; height: 68px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; flex-shrink: 0;">
-                        <img src="{{ $student->photo_url }}" alt="{{ __('الصورة الشخصية') }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ $student->photo_url }}" 
+                             alt="{{ __('الصورة الشخصية') }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;"
+                             onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($studentDispName) }}&background=0284c7&color=fff&size=200&bold=true';">
                     </div>
                     <div>
                         <strong style="font-size: 0.95rem; color: #0f172a; display: block; margin-bottom: 3px;">{{ $studentDispName }}</strong>

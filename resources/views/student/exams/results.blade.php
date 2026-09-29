@@ -235,7 +235,7 @@
                                     <p class="essay-text">{{ $ans->answer_text ?? __('لم يتم تقديم إجابة نصية.') }}</p>
                                     @if($ans->file_path)
                                         <div class="essay-file-link">
-                                            <a href="{{ asset('storage/' . $ans->file_path) }}" target="_blank" class="ed-btn-file">
+                                            <a href="{{ \App\Support\MediaHelper::url($ans->file_path) }}" target="_blank" class="ed-btn-file">
                                                 <i class="fa-solid fa-paperclip"></i>
                                                 <span>{{ __('عرض الملف/الصورة المرفقة مع الحل') }}</span>
                                             </a>

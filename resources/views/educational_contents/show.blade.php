@@ -110,16 +110,14 @@
                                 $isYtLink = \Illuminate\Support\Str::contains($video->url_path, ['youtube.com', 'youtu.be']);
                                 $videoUrl = $isYtLink 
                                     ? route('student.subjects.show', $video->subject_id)
-                                    : (filter_var($video->url_path, FILTER_VALIDATE_URL) ? $video->url_path : asset('storage/' . $video->url_path));
+                                    : ($video->video_url ?? \App\Support\MediaHelper::url($video->url_path));
                             @endphp
 
                             <div class="d-grid gap-2">
                                 <a href="{{ $videoUrl }}" class="btn btn-primary rounded-3">{{ __('مشاهدة في مشغل المنصة الآمن') }} <i class="fas fa-play-circle ms-1"></i></a>
                                 @if($video->pdf_path)
                                     @php
-                                        $videoPdfUrl = filter_var($video->pdf_path, FILTER_VALIDATE_URL)
-                                            ? $video->pdf_path
-                                            : asset('storage/' . $video->pdf_path);
+                                        $videoPdfUrl = $video->pdf_url ?? \App\Support\MediaHelper::url($video->pdf_path);
                                     @endphp
                                     <a href="{{ $videoPdfUrl }}" target="_blank" class="btn btn-outline-danger btn-sm border-0">
                                         <i class="fas fa-file-pdf"></i> ملخص الدرس PDF
@@ -164,9 +162,7 @@
                             </div>
 
                             @php
-                                $pdfUrl = filter_var($file->pdf_path, FILTER_VALIDATE_URL)
-                                    ? $file->pdf_path
-                                    : asset('storage/' . $file->pdf_path);
+                                $pdfUrl = $file->pdf_url ?? \App\Support\MediaHelper::url($file->pdf_path);
                             @endphp
 
                             <div class="d-flex gap-2">

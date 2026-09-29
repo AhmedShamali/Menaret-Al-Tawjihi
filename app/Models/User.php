@@ -48,10 +48,12 @@ class User extends Authenticatable
 
     public function getPhotoUrlAttribute(): string
     {
-        if ($this->photo) {
-            return asset('storage/' . $this->photo);
+        $name = $this->name_ar ?? $this->name ?? 'مستخدم';
+        if (!empty($this->photo)) {
+            $role = $this->role ?? 'user';
+            return \App\Support\MediaHelper::avatarUrl($this->photo, $name, $role);
         }
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name_ar ?? $this->name ?? 'مستخدم') . '&background=0284c7&color=fff&size=200&bold=true';
+        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=0284c7&color=fff&size=200&bold=true';
     }
 
     // دالة تجلب نص آخر ظهور أو متصل الآن بشكل جاهز

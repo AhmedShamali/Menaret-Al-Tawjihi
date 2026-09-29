@@ -244,7 +244,7 @@
                         <td>
                             <div class="user-profile">
                                 @if($teacher->photo)
-                                    <img src="{{ asset('storage/' . $teacher->photo) }}" class="user-avatar">
+                                    <img src="{{ $teacher->photo_url }}" class="user-avatar" alt="{{ $teacher->name }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacher->name) }}&background=0284c7&color=fff&size=80&bold=true';">
                                 @else
                                     <div class="user-avatar d-flex align-items-center justify-content-center bg-light text-muted">
                                         <i class="fas fa-user"></i>

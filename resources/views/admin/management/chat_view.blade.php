@@ -7,7 +7,7 @@
     <div class="chat-header">
         <div class="header-info">
             <a href="{{ route('admin.messages.index') }}" class="back-btn">←</a>
-            <img src="{{ asset('storage/'.$student->photo) }}" class="student-avatar">
+            <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $student->name_ar }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar) }}&background=0284c7&color=fff&size=80&bold=true';">
             <div>
                 <h3 class="student-name">{{ $student->name_ar }}</h3>
                 <span class="student-status">طالب في {{ $student->stage->label_ar }}</span>

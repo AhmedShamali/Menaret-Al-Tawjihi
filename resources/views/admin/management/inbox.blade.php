@@ -73,7 +73,7 @@
                         
                         <div class="item-avatar-wrapper">
                             @if(!empty($student->photo))
-                                <img src="{{ asset('storage/' . $student->photo) }}" 
+                                <img src="{{ $student->photo_url }}" 
                                      alt="" 
                                      class="item-avatar-img"
                                      onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">

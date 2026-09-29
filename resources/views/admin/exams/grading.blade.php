@@ -170,7 +170,7 @@
                                 <div style="line-height: 1.8; font-size: 1rem; color: #0f172a; background: white; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0; white-space: pre-wrap;">{{ $ans->answer_text ?? 'لم يتم تدوين نص إجابة من قبل الطالب' }}</div>
 
                                 @if($ans->file_path)
-                                    <a href="{{ asset('storage/'.$ans->file_path) }}" target="_blank" style="margin-top: 12px; background: white; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 0.88rem;">
+                                    <a href="{{ \App\Support\MediaHelper::url($ans->file_path) }}" target="_blank" style="margin-top: 12px; background: white; border: 1px solid #cbd5e1; color: #0f172a; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 10px; text-decoration: none; font-size: 0.88rem;">
                                         <span>📂</span> فتح ملف الحل المرفق للطالب (PDF/صورة)
                                     </a>
                                 @endif

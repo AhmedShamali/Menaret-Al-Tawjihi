@@ -28,18 +28,10 @@
         <!-- الجانب الأول: بطاقة السجل الأكاديمي للطالب -->
         <aside class="ed-profile-card">
             <div class="ed-avatar-wrapper">
-                @php
-                    $photoPath = $student->photo ?? null;
-                    $fullPath = $photoPath ? public_path('storage/' . $photoPath) : null;
-                @endphp
-
-                @if(!empty($photoPath) && file_exists($fullPath))
-                    <img src="{{ asset('storage/' . $photoPath) }}" class="ed-student-photo" alt="{{ $student->name_ar ?? 'طالب' }}">
-                @else
-                    <div class="ed-student-avatar-fallback">
-                        👨‍🎓
-                    </div>
-                @endif
+                <img src="{{ $student->photo_url }}" 
+                     class="ed-student-photo" 
+                     alt="{{ $student->name_ar ?? 'طالب' }}"
+                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=200&bold=true';">
                 <div class="ed-verified-badge" title="{{ __('نشط') }}">
                     <i class="fa-solid fa-check"></i>
                 </div>

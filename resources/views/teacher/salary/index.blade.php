@@ -13,7 +13,7 @@
     <div class="salary-header-card">
         <div class="header-main-info">
             <div class="avatar-seal-box">
-                <img src="{{ $teacher->photo ? asset('storage/' . $teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacherDisplayName) . '&background=0284c7&color=fff&size=140&bold=true' }}" alt="{{ $teacherDisplayName }}" class="teacher-avatar-img">
+                <img src="{{ $teacher->photo_url }}" alt="{{ $teacherDisplayName }}" class="teacher-avatar-img" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacherDisplayName) }}&background=0284c7&color=fff&size=140&bold=true';">
                 <span class="role-badge-gold"><i class="fa-solid fa-chalkboard-user"></i> {{ __('كادر التدريس') }}</span>
             </div>
             <div class="teacher-details">

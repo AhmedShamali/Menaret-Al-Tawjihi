@@ -20,7 +20,7 @@
                 <tr id="row_{{ $s->id }}" style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 20px;">
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <img src="{{ asset('storage/'.$s->photo) }}" style="width: 45px; height: 45px; border-radius: 12px; object-fit: cover;">
+                            <img src="{{ $s->photo_url }}" style="width: 45px; height: 45px; border-radius: 12px; object-fit: cover;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($s->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=50&bold=true';">
                             <div><div style="font-weight: 700;">{{ $s->name_ar }}</div><div style="font-size: 0.7rem; color: #94a3b8;">{{ $s->email }}</div></div>
                         </div>
                     </td>

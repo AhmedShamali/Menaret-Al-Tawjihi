@@ -33,7 +33,7 @@
                 <tr id="row_{{ $student->id }}" class="student-row" style="border-bottom: 1px solid #f1f5f9; transition: 0.3s;">
                     <td style="padding: 20px;">
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <img src="{{ asset('storage/'.$student->photo) }}" style="width: 50px; height: 50px; border-radius: 14px; object-fit: cover; border: 2px solid #f1f5f9;">
+                            <img src="{{ $student->photo_url }}" style="width: 50px; height: 50px; border-radius: 14px; object-fit: cover; border: 2px solid #f1f5f9;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=100&bold=true';">
                             <div>
                                 <div style="font-weight: 700; color: var(--primary);">{{ $student->name_ar }}</div>
                                 <div style="font-size: 0.75rem; color: var(--text-light);">{{ $student->email }}</div>

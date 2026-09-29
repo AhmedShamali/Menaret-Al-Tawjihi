@@ -49,7 +49,7 @@
         @forelse($files as $file)
             @php
                 $filePath = $file->pdf_path;
-                $fileUrl = filter_var($filePath, FILTER_VALIDATE_URL) ? $filePath : asset('storage/' . $filePath);
+                $fileUrl = $file->pdf_url ?? \App\Support\MediaHelper::url($filePath);
                 $ext = $file->file_extension ?? pathinfo($filePath, PATHINFO_EXTENSION) ?: 'pdf';
                 $meta = $file->file_meta ?? [
                     'icon' => 'fa-solid fa-file-pdf',

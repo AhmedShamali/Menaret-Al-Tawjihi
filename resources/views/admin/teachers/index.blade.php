@@ -128,7 +128,7 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 10px;">
                                 @if(!empty($teacher->photo))
-                                    <img src="{{ asset('storage/' . $teacher->photo) }}" alt="{{ $teacherDispName }}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;">
+                                    <img src="{{ $teacher->photo_url }}" alt="{{ $teacherDispName }}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacherDispName) }}&background=0284c7&color=fff&size=80&bold=true';">
                                 @else
                                     <div style="width: 34px; height: 34px; border-radius: 50%; background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; display: grid; place-items: center; font-size: 0.8rem; font-weight: 800; flex-shrink: 0;">
                                         {{ mb_substr($teacherDispName, 0, 1) }}

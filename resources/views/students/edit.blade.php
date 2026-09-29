@@ -228,7 +228,7 @@
                             <label class="f-label">صورة الهوية الفلسطينية / شهادة الميلاد</label>
                             <div class="preview-box" style="position: relative;">
                                 @if($student->id_photo)
-                                    <img id="id-photo-preview" src="{{ asset('storage/'.$student->id_photo) }}" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+                                    <img id="id-photo-preview" src="{{ $student->id_photo_url }}" alt="الهوية" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
                                 @else
                                     <div id="id-photo-placeholder" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 0.8rem; gap: 6px;">
                                         <i class="fas fa-id-card" style="font-size: 2.2rem; color: #cbd5e1;"></i>
@@ -239,7 +239,7 @@
                             </div>
 
                             @if($student->id_photo)
-                                <a href="{{ asset('storage/'.$student->id_photo) }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-top: 8px; background: #e0f2fe; color: #0369a1; border-radius: 10px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
+                                <a href="{{ $student->id_photo_url }}" target="_blank" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: 8px; margin-top: 8px; background: #e0f2fe; color: #0369a1; border-radius: 10px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
                                     <i class="fas fa-expand"></i>{{ __('معاينة الوثيقة بالحجم الكامل') }}</a>
                             @endif
 

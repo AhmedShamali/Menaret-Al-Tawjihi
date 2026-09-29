@@ -2379,6 +2379,44 @@
                     return false;
                 }
             }, true);
+
+            // معالج ذكي شامل لحماية كافة صور المنصة من الانكسار (Global Image Fallback)
+            document.addEventListener('error', function(e) {
+                if (e.target && e.target.tagName === 'IMG') {
+                    const img = e.target;
+                    if (img.dataset.failedOnce) {
+                        return;
+                    }
+                    img.dataset.failedOnce = 'true';
+
+                    const currentSrc = img.src || '';
+                    const altText = (img.getAttribute('alt') || '').trim();
+                    const cleanAlt = (altText && altText.length > 0 && !altText.includes('http')) ? altText : 'مستخدم';
+
+                    // 1. إذا كان رابط الصورة محلياً من مجلد /storage/ وفشل، نجرب جلبه فوراً من السحابة Supabase
+                    if (currentSrc.includes('/storage/')) {
+                        const pathParts = currentSrc.split('/storage/');
+                        if (pathParts[1]) {
+                            const supabaseBase = "https://jdvcftdzwgydtztyszlg.supabase.co/storage/v1/object/public/educational-files/";
+                            const candidateCloudUrl = supabaseBase + pathParts[1].replace(/^\/+/, '');
+                            if (currentSrc !== candidateCloudUrl) {
+                                img.src = candidateCloudUrl;
+                                return;
+                            }
+                        }
+                    }
+
+                    // 2. إذا كانت الصورة بطاقة هوية أو إيصال أو مستند، نظهر قالباً رسمياً أنيقاً
+                    if (currentSrc.includes('/ids/') || currentSrc.includes('receipt') || currentSrc.includes('exam_files') || cleanAlt.includes('هوية') || cleanAlt.includes('إيصال')) {
+                        img.style.objectFit = 'contain';
+                        img.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='100' viewBox='0 0 160 100'><rect width='160' height='100' rx='8' fill='%23f8fafc' stroke='%23cbd5e1' stroke-width='2'/><text x='50%25' y='45%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='22'>📄</text><text x='50%25' y='75%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='10' font-weight='bold' fill='%2364748b'>مستند غير متوفر</text></svg>";
+                        return;
+                    }
+
+                    // 3. لبقية الصور الشخصية والرمزية: نظهر رمزاً بديل بأحرف الاسم فوراً
+                    img.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(cleanAlt) + '&background=0284c7&color=fff&size=200&bold=true';
+                }
+            }, true);
         })();
     </script>
 

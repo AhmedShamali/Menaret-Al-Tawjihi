@@ -64,9 +64,10 @@ class AdminManagerController extends Controller {
 
         if ($request->hasFile('photo')) {
             if ($teacher->photo) {
-                Storage::disk('public')->delete($teacher->photo);
+                try { Storage::disk('public')->delete($teacher->photo); } catch(\Throwable $e){}
+                try { Storage::disk('supabase')->delete($teacher->photo); } catch(\Throwable $e){}
             }
-            $teacher->photo = $request->file('photo')->store('teachers/photos', 'public');
+            $teacher->photo = \App\Support\MediaHelper::store($request->file('photo'), 'teachers/photos');
         }
 
         $oldSubjectId = $teacher->subject_id;
@@ -159,7 +160,7 @@ class AdminManagerController extends Controller {
 
         $photoPath = null;
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('teachers/photos', 'public');
+            $photoPath = \App\Support\MediaHelper::store($request->file('photo'), 'teachers/photos');
         }
 
         $teacherData = [
@@ -417,12 +418,12 @@ class AdminManagerController extends Controller {
 
         $photoPath = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $photoPath = $request->file('photo')->store('students/photos', 'public');
+            $photoPath = \App\Support\MediaHelper::store($request->file('photo'), 'students/photos');
         }
 
         $idPhotoPath = null;
         if ($request->hasFile('id_photo') && $request->file('id_photo')->isValid()) {
-            $idPhotoPath = $request->file('id_photo')->store('students/ids', 'public');
+            $idPhotoPath = \App\Support\MediaHelper::store($request->file('id_photo'), 'students/ids');
         }
 
         $rawGender = $request->input('gender', 'ذكر');

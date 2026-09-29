@@ -23,13 +23,10 @@
         <!-- الكارت الجانبي: الصورة والمعلومات الأساسية -->
         <div class="side-card">
             <div class="avatar-container">
-                @if($student->photo && !str_contains($student->photo, 'C:'))
-                    <img src="{{ asset('storage/' . $student->photo) }}" alt="{{ $student->name_ar }}" class="main-avatar">
-                @else
-                    <div class="avatar-placeholder">
-                        {{ $student ? mb_substr($student->name_ar, 0, 1) : 'S' }}
-                    </div>
-                @endif
+                <img src="{{ $student->photo_url }}" 
+                     alt="{{ $student->name_ar ?? 'طالب' }}" 
+                     class="main-avatar"
+                     onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=200&bold=true';">
                 <div class="status-indicator {{ $student->status == 'active' ? 'active' : 'pending' }}"></div>
             </div>
 
@@ -46,9 +43,12 @@
             <!-- صورة الهوية -->
             <div class="id-card-preview">
                 <p class="id-title">{{ __('بطاقة الهوية الوطنية') }}</p>
-                @if($student->id_photo && !str_contains($student->id_photo, 'C:'))
-                    <a href="{{ asset('storage/' . $student->id_photo) }}" target="_blank" title="{{ __('اضغط للتكبير') }}">
-                        <img src="{{ asset('storage/' . $student->id_photo) }}" alt="{{ __('الهوية') }}">
+                @if($student->id_photo)
+                    @php
+                        $idUrl = $student->id_photo_url;
+                    @endphp
+                    <a href="{{ $idUrl }}" target="_blank" title="{{ __('اضغط للتكبير') }}">
+                        <img src="{{ $idUrl }}" alt="{{ __('الهوية') }}">
                     </a>
                 @else
                     <div class="no-id">

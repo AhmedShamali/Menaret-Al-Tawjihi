@@ -161,13 +161,14 @@ class Student extends Authenticatable
      */
     public function getPhotoUrlAttribute(): string
     {
-        if ($this->photo) {
-            return asset('storage/' . $this->photo);
+        $name = $this->name_ar ?? $this->name_en ?? 'طالب';
+        if (!empty($this->photo)) {
+            return \App\Support\MediaHelper::avatarUrl($this->photo, $name, 'student');
         }
         if (!empty($this->avatar_url)) {
-            return $this->avatar_url;
+            return \App\Support\MediaHelper::avatarUrl($this->avatar_url, $name, 'student');
         }
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name_ar ?? 'طالب') . '&background=0284c7&color=fff&size=200&bold=true';
+        return 'https://ui-avatars.com/api/?name=' . urlencode($name) . '&background=0284c7&color=fff&size=200&bold=true';
     }
 
     /**
@@ -175,8 +176,8 @@ class Student extends Authenticatable
      */
     public function getIdPhotoUrlAttribute(): ?string
     {
-        if ($this->id_photo) {
-            return asset('storage/' . $this->id_photo);
+        if (!empty($this->id_photo)) {
+            return \App\Support\MediaHelper::url($this->id_photo);
         }
         return null;
     }

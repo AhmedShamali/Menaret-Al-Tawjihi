@@ -24,12 +24,12 @@
 
             <div style="margin-bottom: 30px;">
                 <span style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">{{ __('الصورة الشخصية') }}</span>
-                <img src="{{ asset('storage/'.$student->photo) }}" style="width: 200px; height: 200px; border-radius: 30px; object-fit: cover; border: 5px solid #f8fafc; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <img src="{{ $student->photo_url }}" style="width: 200px; height: 200px; border-radius: 30px; object-fit: cover; border: 5px solid #f8fafc; box-shadow: 0 10px 30px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=200&bold=true';">
             </div>
 
             <div>
                 <span style="display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 10px;">{{ __('صورة بطاقة الهوية') }}</span>
-                <img src="{{ asset('storage/'.$student->id_photo) }}" style="width: 100%; border-radius: 15px; border: 1px solid #e2e8f0; cursor: zoom-in;" onclick="window.open(this.src)">
+                <img src="{{ $student->id_photo_url }}" style="width: 100%; border-radius: 15px; border: 1px solid #e2e8f0; cursor: zoom-in;" onclick="window.open(this.src)">
             </div>
         </div>
 

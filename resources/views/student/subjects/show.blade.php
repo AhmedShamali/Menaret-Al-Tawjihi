@@ -1076,7 +1076,7 @@
                                         }
                                         $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
                                         $directVideoUrl = $isDirectVideo 
-                                            ? (filter_var($rawUrl, FILTER_VALIDATE_URL) ? $rawUrl : asset('storage/' . $rawUrl))
+                                            ? \App\Support\MediaHelper::url($rawUrl)
                                             : null;
                                     @endphp
 

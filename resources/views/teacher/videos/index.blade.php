@@ -90,8 +90,8 @@
         @forelse($videos as $vid)
             @php
                 $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $vid->url_path ?? '') || str_contains($vid->url_path ?? '', 'educational/videos');
-                $directVidUrl = $isDirectVid ? (filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path)) : null;
-                $embedUrl = $vid->youtube_embed_url ?? ($directVidUrl ?? (filter_var($vid->url_path, FILTER_VALIDATE_URL) ? $vid->url_path : asset('storage/' . $vid->url_path)));
+                $directVidUrl = $isDirectVid ? \App\Support\MediaHelper::url($vid->url_path) : null;
+                $embedUrl = $vid->youtube_embed_url ?? ($directVidUrl ?? \App\Support\MediaHelper::url($vid->url_path));
             @endphp
             <div class="ed-video-card">
                 <div>

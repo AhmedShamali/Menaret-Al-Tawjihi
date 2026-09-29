@@ -53,7 +53,7 @@ class SubmissionAnswerController extends Controller
                     // معالجة الملف المرفق
                     $path = null;
                     if ($request->hasFile("files.$qId")) {
-                        $path = $request->file("files.$qId")->store('exam_files', 'public');
+                        $path = \App\Support\MediaHelper::store($request->file("files.$qId"), 'exam_files');
                     }
 
                     // حفظ الإجابة

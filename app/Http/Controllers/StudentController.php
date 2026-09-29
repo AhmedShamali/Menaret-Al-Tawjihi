@@ -130,13 +130,13 @@ class StudentController extends Controller
         // رفع وتخزين الصورة الشخصية اختيارياً
         $photoPath = null;
         if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
-            $photoPath = $request->file('photo')->store('students/photos', 'public');
+            $photoPath = \App\Support\MediaHelper::store($request->file('photo'), 'students/photos');
         }
 
         // رفع وتخزين صورة الهوية اختيارياً
         $idPhotoPath = null;
         if ($request->hasFile('id_photo') && $request->file('id_photo')->isValid()) {
-            $idPhotoPath = $request->file('id_photo')->store('students/ids', 'public');
+            $idPhotoPath = \App\Support\MediaHelper::store($request->file('id_photo'), 'students/ids');
         }
 
         // مطابقة الجنس بدقة مع قيود قاعدة البيانات PostgreSQL (ذكر / أنثى)
@@ -352,7 +352,7 @@ class StudentController extends Controller
         $receiptFile = $request->file('receipt_photo') ?? $request->file('receipt_file');
         $receiptPath = null;
         if ($receiptFile && $receiptFile->isValid()) {
-            $receiptPath = $receiptFile->store('payments/receipts', 'public');
+            $receiptPath = \App\Support\MediaHelper::store($receiptFile, 'payments/receipts');
         }
 
         $txNo = $request->input('reference_no') ?: ($request->input('transaction_number') ?: 'TXN-' . time());
@@ -679,15 +679,21 @@ class StudentController extends Controller
 
         if ($request->hasFile('photo')) {
             // اختياري: حذف الصورة القديمة من السيرفر لتوفير المساحة
-            if($student->photo) Storage::disk('public')->delete($student->photo);
+            if($student->photo) {
+                try { Storage::disk('public')->delete($student->photo); } catch(\Throwable $e){}
+                try { Storage::disk('supabase')->delete($student->photo); } catch(\Throwable $e){}
+            }
 
-            $data['photo'] = $request->file('photo')->store('students/photos', 'public');
+            $data['photo'] = \App\Support\MediaHelper::store($request->file('photo'), 'students/photos');
         }
 
         if ($request->hasFile('id_photo')) {
-            if($student->id_photo) Storage::disk('public')->delete($student->id_photo);
+            if($student->id_photo) {
+                try { Storage::disk('public')->delete($student->id_photo); } catch(\Throwable $e){}
+                try { Storage::disk('supabase')->delete($student->id_photo); } catch(\Throwable $e){}
+            }
 
-            $data['id_photo'] = $request->file('id_photo')->store('students/ids', 'public');
+            $data['id_photo'] = \App\Support\MediaHelper::store($request->file('id_photo'), 'students/ids');
         }
 
         $student->update($data);

@@ -112,7 +112,7 @@ class PaymentGatewayController extends Controller
 
         $receiptPath = null;
         if ($request->hasFile('receipt_file') && $request->file('receipt_file')->isValid()) {
-            $receiptPath = $request->file('receipt_file')->store('receipts/payments', 'public');
+            $receiptPath = \App\Support\MediaHelper::store($request->file('receipt_file'), 'receipts/payments');
         }
 
         // إنشاء رقم عملية مرجعي فلسطيني معتمد

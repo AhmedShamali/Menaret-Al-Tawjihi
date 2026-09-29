@@ -234,7 +234,7 @@
                         <tr>
                             <td>
                                 <div class="teacher-meta-cell">
-                                    <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacherDisplayName) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}">
+                                    <img src="{{ $sal->teacher->photo_url }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacherDisplayName) }}&background=0284c7&color=fff&size=80&bold=true';">
                                     <div class="teacher-meta-text">
                                         <strong class="teacher-name-text">{{ $teacherDisplayName }}</strong>
                                         <span class="teacher-subject-pill">{{ $subjectDisplayName }}</span>
@@ -303,7 +303,7 @@
                 <div class="payroll-mob-card">
                     <div class="mob-card-header">
                         <div class="teacher-meta-cell">
-                            <img src="{{ $sal->teacher->photo ? asset('storage/' . $sal->teacher->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($teacherDisplayName) . '&background=0284c7&color=fff&size=80&bold=true' }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}">
+                            <img src="{{ $sal->teacher->photo_url }}" class="teacher-thumb" alt="{{ $teacherDisplayName }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacherDisplayName) }}&background=0284c7&color=fff&size=80&bold=true';">
                             <div>
                                 <strong class="teacher-name-text">{{ $teacherDisplayName }}</strong>
                                 <span class="teacher-subject-pill">{{ $subjectDisplayName }}</span>

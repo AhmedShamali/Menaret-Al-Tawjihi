@@ -89,8 +89,10 @@
                     <h3 style="margin-bottom: 20px; font-size: 1.1rem;">{{ __('الصور والوثائق') }}</h3>
                     @if(isset($student))
                         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                            <img src="{{ asset('storage/'.$student->photo) }}" style="width: 50px; height: 50px; border-radius: 10px;">
-                            <img src="{{ asset('storage/'.$student->id_photo) }}" style="width: 50px; height: 50px; border-radius: 10px;">
+                            <img src="{{ $student->photo_url }}" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=50&bold=true';">
+                            @if($student->id_photo)
+                                <img src="{{ $student->id_photo_url }}" style="width: 50px; height: 50px; border-radius: 10px; object-fit: cover;">
+                            @endif
                         </div>
                     @endif
                     <div class="up-zone">

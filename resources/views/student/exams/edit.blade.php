@@ -103,11 +103,11 @@
                     {{-- عرض الصور الحالية --}}
                     <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                         <div class="preview-box">
-                            <img src="{{ asset('storage/'.$student->photo) }}" title="{{ __('الصورة الشخصية') }}">
+                            <img src="{{ $student->photo_url }}" title="{{ __('الصورة الشخصية') }}" style="object-fit: cover;" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($student->name_ar ?? 'طالب') }}&background=0284c7&color=fff&size=80&bold=true';">
                             <span>{{ __('الشخصية') }}</span>
                         </div>
                         <div class="preview-box">
-                            <img src="{{ asset('storage/'.$student->id_photo) }}" title="{{ __('صورة الهوية') }}">
+                            <img src="{{ $student->id_photo_url }}" title="{{ __('صورة الهوية') }}" style="object-fit: cover;">
                             <span>{{ __('الهوية') }}</span>
                         </div>
                     </div>

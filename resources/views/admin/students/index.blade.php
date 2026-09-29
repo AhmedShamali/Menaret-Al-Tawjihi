@@ -170,7 +170,7 @@
                             <div class="cell-student-info">
                                 <div class="student-avatar-clean">
                                     @if(!empty($student->photo))
-                                        <img src="{{ asset('storage/'.$student->photo) }}" alt="{{ $studentDispName }}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+                                        <img src="{{ $student->photo_url }}" alt="{{ $studentDispName }}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
                                         <span class="avatar-initials" style="display: none;">{{ mb_substr($studentDispName, 0, 2) }}</span>
                                     @else
                                         <span class="avatar-initials">{{ mb_substr($studentDispName, 0, 2) }}</span>

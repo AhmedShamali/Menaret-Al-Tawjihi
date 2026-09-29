@@ -113,7 +113,7 @@
                     <label class="academic-label">{{ __('الصورة الشخصية للمعلم') }}</label>
                     <div class="photo-upload-box">
                         @if($teacher->photo)
-                            <img src="{{ asset('storage/' . $teacher->photo) }}" class="teacher-preview-thumb" alt="{{ $teacher->name }}">
+                            <img src="{{ $teacher->photo_url }}" class="teacher-preview-thumb" alt="{{ $teacher->name }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($teacher->name) }}&background=0284c7&color=fff&size=100&bold=true';">
                         @else
                             <div class="teacher-placeholder-thumb">
                                 <i class="fa-solid fa-user"></i>

@@ -90,4 +90,20 @@ class EducationalContent extends Model
             default       => ['icon' => 'fa-solid fa-file-pdf', 'color' => '#ef4444', 'bg' => '#fef2f2', 'label' => 'PDF'],
         };
     }
+
+    /**
+     * الرابط المباشر لملف PDF التعليمي عبر MediaHelper
+     */
+    public function getPdfUrlAttribute(): ?string
+    {
+        return !empty($this->pdf_path) ? \App\Support\MediaHelper::url($this->pdf_path) : null;
+    }
+
+    /**
+     * الرابط المباشر للفيديو التعليمي عبر MediaHelper
+     */
+    public function getVideoUrlAttribute(): ?string
+    {
+        return !empty($this->url_path) ? \App\Support\MediaHelper::url($this->url_path) : null;
+    }
 }

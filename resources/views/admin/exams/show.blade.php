@@ -101,7 +101,7 @@
                             <p class="q-text">{{ $q->question_text }}</p>
                             @if($q->image)
                                 <div class="q-img-wrap">
-                                    <img src="{{ asset('storage/' . $q->image) }}" alt="Question Image">
+                                    <img src="{{ \App\Support\MediaHelper::url($q->image) }}" alt="Question Image">
                                 </div>
                             @endif
 
@@ -114,7 +114,7 @@
                                                 <span class="opt-content">
                                                     {{ $q->$key }}
                                                     @if(!empty($q->{$key . '_image'}))
-                                                        <img src="{{ asset('storage/' . $q->{$key . '_image'}) }}" class="opt-img" alt="Option Image">
+                                                        <img src="{{ \App\Support\MediaHelper::url($q->{$key . '_image'}) }}" class="opt-img" alt="Option Image">
                                                     @endif
                                                 </span>
                                                 @if($q->correct_answer === $key)
