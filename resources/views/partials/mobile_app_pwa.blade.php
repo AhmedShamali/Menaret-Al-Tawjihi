@@ -66,43 +66,123 @@
     </div>
 </aside>
 
-<!-- 3. نافذة إرشاد التثبيت على هواتف آيفون (iOS Safari Native Install Modal) -->
-<div class="stepvoro-ios-modal-overlay" id="stepvoroIosModal" onclick="closeIosModal(event)" style="display: none;">
+<!-- 3. نافذة التثبيت الشاملة لجميع الأجهزة (Universal App Install Modal) -->
+<div class="stepvoro-ios-modal-overlay" id="stepByStepInstallModal" onclick="closeInstallModal(event)" style="display: none;">
     <div class="stepvoro-ios-sheet" onclick="event.stopPropagation()">
         <div class="ios-sheet-handle"></div>
         <div class="ios-sheet-header">
-            <img src="/icons/icon.svg" alt="Step by Step Icon" width="54" height="54" class="ios-app-icon">
-            <div>
-                <h3>{{ __('تثبيت تطبيق Step by Step على iPhone') }}</h3>
-                <p>{{ __('احصل على التطبيق مباشرة على شاشتك الرئيسية في خطوتين') }}</p>
+            <img src="/icons/icon.svg" alt="Step by Step Icon" width="54" height="54" class="ios-app-icon" style="border-radius: 14px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);">
+            <div style="flex: 1; text-align: right; margin-right: 12px;">
+                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">{{ __('تثبيت تطبيق Step by Step') }}</h3>
+                <p style="margin: 3px 0 0; font-size: 0.78rem; color: #64748b;">{{ __('يعمل بدون إنترنت • سريع وفوري • لجميع الأجهزة') }}</p>
             </div>
-            <button type="button" class="btn-close-sheet" onclick="closeIosModal()"><i class="fa-solid fa-xmark"></i></button>
+            <button type="button" class="btn-close-sheet" onclick="closeInstallModal()"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <div class="ios-steps-list">
-            <div class="ios-step-item">
-                <div class="step-num">1</div>
-                <div class="step-text">
-                    <span>اضغط على زر المشاركة <strong>(Share)</strong> في شريط متصفح Safari السفلي:</span>
-                    <span class="ios-icon-hint"><i class="fa-solid fa-arrow-up-from-bracket"></i> أو مربع السهم لأعلى</span>
-                </div>
+        <!-- أشرطة اختيار نوع الجهاز -->
+        <div class="install-device-tabs">
+            <button type="button" class="install-tab-btn" onclick="switchInstallTab('android')" id="tabBtnAndroid">
+                <i class="fa-brands fa-android"></i> <span>أندرويد</span>
+            </button>
+            <button type="button" class="install-tab-btn" onclick="switchInstallTab('ios')" id="tabBtnIos">
+                <i class="fa-brands fa-apple"></i> <span>آيفون iOS</span>
+            </button>
+            <button type="button" class="install-tab-btn" onclick="switchInstallTab('desktop')" id="tabBtnDesktop">
+                <i class="fa-solid fa-desktop"></i> <span>الكمبيوتر</span>
+            </button>
+        </div>
+
+        <!-- محتوى أندرويد -->
+        <div class="install-tab-content" id="tabContentAndroid" style="display: none;">
+            <div style="margin-bottom: 14px; text-align: center;">
+                <button type="button" class="btn-direct-pwa-install" onclick="executeNativeInstallPrompt()">
+                    <i class="fa-solid fa-download"></i>
+                    <span>{{ __('تثبيت التطبيق بنقرة واحدة (تطبيق الويب الفوري)') }}</span>
+                </button>
             </div>
-            <div class="ios-step-item">
-                <div class="step-num">2</div>
-                <div class="step-text">
-                    <span>مرر القائمة لأسفل ثم اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong>:</span>
-                    <span class="ios-icon-hint"><i class="fa-regular fa-square-plus"></i> إضافة إلى الشاشة الرئيسية</span>
+            <div class="ios-steps-list">
+                <div class="ios-step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">
+                        <span>افتح قائمة خيارات متصفح كروم (الثلاث نقاط <strong>⋮</strong> في زاوية الشاشة):</span>
+                        <span class="ios-icon-hint"><i class="fa-solid fa-ellipsis-vertical"></i> خيارات المتصفح</span>
+                    </div>
                 </div>
-            </div>
-            <div class="ios-step-item">
-                <div class="step-num">3</div>
-                <div class="step-text">
-                    <span>اضغط على <strong>"إضافة" (Add)</strong> في الزاوية العلوية ومبارك عليك التطبيق! 🎉</span>
+                <div class="ios-step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text">
+                        <span>اضغط على <strong>"تثبيت التطبيق" (Install app)</strong> أو <strong>"إضافة إلى الشاشة الرئيسية"</strong>:</span>
+                        <span class="ios-icon-hint"><i class="fa-solid fa-mobile-screen-button"></i> تثبيت التطبيق</span>
+                    </div>
+                </div>
+                <div class="ios-step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text">
+                        <span>سيظهر التطبيق فوراً بأيقونته الرسمية على هاتفك ويعمل حتى مع انقطاع الإنترنت! 🎉</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <button type="button" class="btn-ios-done" onclick="closeIosModal()">
+        <!-- محتوى آيفون iOS -->
+        <div class="install-tab-content" id="tabContentIos" style="display: none;">
+            <div class="ios-steps-list">
+                <div class="ios-step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">
+                        <span>اضغط على زر المشاركة <strong>(Share)</strong> في شريط متصفح Safari السفلي:</span>
+                        <span class="ios-icon-hint"><i class="fa-solid fa-arrow-up-from-bracket"></i> مربع السهم لأعلى</span>
+                    </div>
+                </div>
+                <div class="ios-step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text">
+                        <span>مرر القائمة لأسفل ثم اختر <strong>"إضافة إلى الشاشة الرئيسية" (Add to Home Screen)</strong>:</span>
+                        <span class="ios-icon-hint"><i class="fa-regular fa-square-plus"></i> إضافة إلى الشاشة الرئيسية</span>
+                    </div>
+                </div>
+                <div class="ios-step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text">
+                        <span>اضغط على <strong>"إضافة" (Add)</strong> في الزاوية العلوية ومبارك عليك التطبيق! 🎉</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- محتوى الكمبيوتر Desktop -->
+        <div class="install-tab-content" id="tabContentDesktop" style="display: none;">
+            <div style="margin-bottom: 14px; text-align: center;">
+                <button type="button" class="btn-direct-pwa-install" onclick="executeNativeInstallPrompt()">
+                    <i class="fa-solid fa-desktop"></i>
+                    <span>{{ __('تثبيت التطبيق على جهاز الكمبيوتر الآن') }}</span>
+                </button>
+            </div>
+            <div class="ios-steps-list">
+                <div class="ios-step-item">
+                    <div class="step-num">1</div>
+                    <div class="step-text">
+                        <span>انظر إلى شريط العنوان (URL) في متصفحك بالأعلى بجوار النجمة:</span>
+                        <span class="ios-icon-hint"><i class="fa-solid fa-arrow-down-to-bracket"></i> ستجد أيقونة التثبيت (⊕ أو رمز التطبيق)</span>
+                    </div>
+                </div>
+                <div class="ios-step-item">
+                    <div class="step-num">2</div>
+                    <div class="step-text">
+                        <span>اضغط عليها ثم اختر <strong>"تثبيت" (Install)</strong>، أو من قائمة المتصفح (الثلاث نقاط <strong>⋮</strong>) اختر <strong>"تثبيت Step by Step"</strong>:</span>
+                        <span class="ios-icon-hint"><i class="fa-solid fa-window-maximize"></i> تثبيت Step by Step</span>
+                    </div>
+                </div>
+                <div class="ios-step-item">
+                    <div class="step-num">3</div>
+                    <div class="step-text">
+                        <span>سيفتح التطبيق في نافذة مستقلة وسريعة على سطح المكتب وشريط المهام! 🚀</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="btn-ios-done" onclick="closeInstallModal()" style="margin-top: 14px;">
             <i class="fa-solid fa-check"></i>
             <span>{{ __('فهمت ذلك، شكراً لك') }}</span>
         </button>
@@ -758,12 +838,96 @@ body[class*="exam"] .stepvoro-bottom-nav,
     display: none !important;
 }
 
-/* إخفاء أزرار دعوة التثبيت عندما يكون المستخدم داخل التطبيق بالفعل */
-body.in-standalone-app .btn-nav-app-install,
-body.in-standalone-app .stepvoro-install-banner,
-body.in-standalone-app #bottomNavInstallBtn,
-body.in-standalone-app .pwa-only-browser {
-    display: none !important;
+/* علامات تبويب اختيار الجهاز في نافذة التثبيت */
+.install-device-tabs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 5px;
+    border-radius: 14px;
+    margin: 10px 0 16px;
+}
+
+.install-tab-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 6px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.install-tab-btn.active {
+    background: #ffffff;
+    color: #1d4ed8;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.btn-direct-pwa-install {
+    width: 100%;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #ffffff;
+    border: none;
+    border-radius: 14px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-direct-pwa-install:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+}
+
+.btn-direct-pwa-install:active {
+    transform: scale(0.98);
+}
+
+/* إشعار عائم راقي بدون أي Alert مزعج */
+.stepvoro-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(15, 23, 42, 0.95);
+    color: #ffffff;
+    padding: 12px 22px;
+    border-radius: 16px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 999999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepvoro-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
 }
 </style>
 
@@ -817,20 +981,93 @@ body.in-standalone-app .pwa-only-browser {
         sessionStorage.setItem('stepvoro_pwa_dismissed', '1');
     }
 
-    // 3. إطلاق التثبيت التفاعلي المباشر (أندرويد أو آيفون)
+    // دالة إشعار عائمة راقية (Toast Notification)
+    function showPwaToast(msg, type = 'info') {
+        let toast = document.getElementById('stepvoroToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'stepvoroToast';
+            toast.className = 'stepvoro-toast';
+            document.body.appendChild(toast);
+        }
+        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check" style="color:#10b981;"></i>' : (type === 'error' ? '<i class="fa-solid fa-circle-exclamation" style="color:#ef4444;"></i>' : '<i class="fa-solid fa-circle-info" style="color:#38bdf8;"></i>');
+        toast.innerHTML = icon + '<span>' + msg + '</span>';
+        toast.classList.add('show');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3600);
+    }
+
+    // التنقل بين تبويبات الأجهزة داخل نافذة التثبيت
+    function switchInstallTab(device) {
+        document.querySelectorAll('.install-tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.install-tab-content').forEach(c => c.style.display = 'none');
+
+        if (device === 'android') {
+            const btn = document.getElementById('tabBtnAndroid');
+            const content = document.getElementById('tabContentAndroid');
+            if (btn) btn.classList.add('active');
+            if (content) content.style.display = 'block';
+        } else if (device === 'ios') {
+            const btn = document.getElementById('tabBtnIos');
+            const content = document.getElementById('tabContentIos');
+            if (btn) btn.classList.add('active');
+            if (content) content.style.display = 'block';
+        } else {
+            const btn = document.getElementById('tabBtnDesktop');
+            const content = document.getElementById('tabContentDesktop');
+            if (btn) btn.classList.add('active');
+            if (content) content.style.display = 'block';
+        }
+    }
+
+    // فتح نافذة التثبيت الشاملة مع التحديد التلقائي لنوع جهاز المستخدم
+    function openInstallModal() {
+        const modal = document.getElementById('stepByStepInstallModal');
+        if (!modal) return;
+
+        if (isIos) {
+            switchInstallTab('ios');
+        } else if (/Android/i.test(navigator.userAgent)) {
+            switchInstallTab('android');
+        } else {
+            // الكمبيوتر / سطح المكتب (Windows / Mac / Chrome / Edge)
+            switchInstallTab('desktop');
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeInstallModal(e) {
+        if (e && e.target && e.target.closest('.stepvoro-ios-sheet') && !e.target.closest('.btn-close-sheet') && !e.target.closest('.btn-ios-done')) {
+            return;
+        }
+        const modal = document.getElementById('stepByStepInstallModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    // تشغيل طلب التثبيت الرسمي عند الضغط على زر التثبيت المباشر
+    function executeNativeInstallPrompt() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    dismissPwaBanner();
+                    closeInstallModal();
+                    showPwaToast('جاري تثبيت تطبيق Step by Step على جهازك...', 'success');
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            showPwaToast('يرجى اتباع الخطوات الموضحة في النافذة لإكمال التثبيت على متصفحك.', 'info');
+        }
+    }
+
+    // 3. إطلاق التثبيت التفاعلي المباشر لجميع الأجهزة
     function triggerPwaInstall() {
         if (isStandalone) {
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'أنت تستخدم التطبيق بالفعل!',
-                    text: 'تطبيق Step by Step مثبت وجاهز على هاتفك وتعمل في وضع التطبيق المستقل.',
-                    confirmButtonText: 'حسناً',
-                    confirmButtonColor: '#1d4ed8'
-                });
-            } else {
-                alert('أنت تستخدم التطبيق بالفعل على هاتفك!');
-            }
+            showPwaToast('أنت تستخدم تطبيق Step by Step بالفعل على جهازك!', 'success');
             return;
         }
 
@@ -839,44 +1076,22 @@ body.in-standalone-app .pwa-only-browser {
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     dismissPwaBanner();
+                    showPwaToast('جاري تثبيت تطبيق Step by Step على جهازك...', 'success');
                 }
                 deferredPrompt = null;
             });
-        } else if (isIos) {
-            openIosModal();
         } else {
-            if (window.Swal) {
-                Swal.fire({
-                    title: 'تثبيت تطبيق Step by Step',
-                    html: `
-                        <div style="text-align: right; font-size: 0.9rem; line-height: 1.7; color: #334155;">
-                            لتثبيت التطبيق على جهازك بنقرة واحدة:<br>
-                            1. افتح قائمة خيارات المتصفح (الثلاث نقاط <strong>⋮</strong> في الزاوية).<br>
-                            2. اضغط على <strong>"تثبيت التطبيق" (Install App)</strong> أو <strong>"إضافة إلى الشاشة الرئيسية"</strong>.<br>
-                            3. سيظهر التطبيق فوراً على شاشة هاتفك بأيقونته الرسمية.
-                        </div>
-                    `,
-                    icon: 'question',
-                    confirmButtonText: 'ممتاز، سأقوم بذلك',
-                    confirmButtonColor: '#1d4ed8'
-                });
-            } else {
-                alert('لتثبيت التطبيق: افتح قائمة خيارات المتصفح واضغط "إضافة إلى الشاشة الرئيسية"');
-            }
+            openInstallModal();
         }
     }
 
+    // دوال التوافق القديمة
     function openIosModal() {
-        const modal = document.getElementById('stepvoroIosModal');
-        if (modal) modal.style.display = 'flex';
+        openInstallModal();
     }
 
     function closeIosModal(e) {
-        if (e && e.target && e.target.closest('.stepvoro-ios-sheet') && !e.target.closest('.btn-close-sheet') && !e.target.closest('.btn-ios-done')) {
-            return;
-        }
-        const modal = document.getElementById('stepvoroIosModal');
-        if (modal) modal.style.display = 'none';
+        closeInstallModal(e);
     }
 
     // =========================================================================
@@ -962,7 +1177,7 @@ body.in-standalone-app .pwa-only-browser {
         if (!window.StepvoroOfflineDB) return;
         StepvoroOfflineDB.getVideo(id).then((record) => {
             if (!record || !record.blob) {
-                alert('ملف الفيديو غير موجود في الذاكرة.');
+                showPwaToast('ملف الفيديو غير متوفر في الذاكرة المحلية.', 'error');
                 return;
             }
 
