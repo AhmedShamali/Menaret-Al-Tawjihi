@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#1d4ed8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <meta name="apple-mobile-web-app-title" content="Step by Step">
     <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
     <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 

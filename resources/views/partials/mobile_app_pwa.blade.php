@@ -49,7 +49,7 @@
             <span class="app-verified-badge"><i class="fa-solid fa-check"></i></span>
         </div>
         <div class="banner-text">
-            <h4>{{ __('تطبيق Stepvoro على هاتفك') }}</h4>
+            <h4>{{ __('تطبيق Step by Step على هاتفك') }}</h4>
             <p>{{ __('تصفح فائق السرعة، استهلاك أقل للإنترنت، ودراسة بدون متصفح.') }}</p>
         </div>
         <div class="banner-actions">
@@ -71,7 +71,7 @@
         <div class="ios-sheet-header">
             <img src="/icons/icon.svg" alt="Stepvoro Icon" width="54" height="54" class="ios-app-icon">
             <div>
-                <h3>{{ __('تثبيت تطبيق Stepvoro على iPhone') }}</h3>
+                <h3>{{ __('تثبيت تطبيق Step by Step على iPhone') }}</h3>
                 <p>{{ __('احصل على التطبيق مباشرة على شاشتك الرئيسية في خطوتين') }}</p>
             </div>
             <button type="button" class="btn-close-sheet" onclick="closeIosModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -799,7 +799,7 @@ body.in-standalone-app .pwa-only-browser {
                 Swal.fire({
                     icon: 'info',
                     title: 'أنت تستخدم التطبيق بالفعل!',
-                    text: 'تطبيق Stepvoro مثبت وجاهز على هاتفك وتعمل في وضع التطبيق المستقل.',
+                    text: 'تطبيق Step by Step مثبت وجاهز على هاتفك وتعمل في وضع التطبيق المستقل.',
                     confirmButtonText: 'حسناً',
                     confirmButtonColor: '#1d4ed8'
                 });
@@ -822,7 +822,7 @@ body.in-standalone-app .pwa-only-browser {
         } else {
             if (window.Swal) {
                 Swal.fire({
-                    title: 'تثبيت تطبيق Stepvoro',
+                    title: 'تثبيت تطبيق Step by Step',
                     html: `
                         <div style="text-align: right; font-size: 0.9rem; line-height: 1.7; color: #334155;">
                             لتثبيت التطبيق على جهازك بنقرة واحدة:<br>

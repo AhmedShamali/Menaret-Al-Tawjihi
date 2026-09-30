@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <meta name="apple-mobile-web-app-title" content="Step by Step">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
     <meta name="csrf-token" content="{{ csrf_token() }}">
