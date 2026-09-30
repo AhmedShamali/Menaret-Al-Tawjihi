@@ -807,10 +807,10 @@
                     <input type="hidden" name="role" id="role_input" value="student">
 
                     <div class="form-group">
-                        <label class="form-label" id="usernameLabel">{{ __('البريد الإلكتروني أو اسم المستخدم') }}</label>
+                        <label class="form-label" id="usernameLabel">{{ __('البريد الإلكتروني، اسم المستخدم، أو رقم الهوية (9 أرقام)') }}</label>
                         <div class="input-wrap">
                             <i class="fa-regular fa-envelope input-icon"></i>
-                            <input type="text" name="email" id="email_field" class="form-control" placeholder="student@example.com" value="{{ old('email') }}" required autofocus>
+                            <input type="text" name="email" id="email_field" class="form-control" placeholder="{{ __('اسم المستخدم، البريد، أو رقم الهوية (9 أرقام)') }}" value="{{ old('email') }}" required autofocus>
                         </div>
                     </div>
 
@@ -927,19 +927,19 @@
             const roleIcon = document.getElementById('roleIcon');
 
             if (role === 'student') {
-                emailInput.placeholder = 'student@example.com';
+                emailInput.placeholder = "{{ __('اسم المستخدم، البريد، أو رقم الهوية (9 أرقام)') }}";
                 submitLabel.innerText = i18n.studentSubmit;
                 if (regBox) regBox.style.display = 'block';
                 roleIcon.className = 'fa-solid fa-user-graduate';
                 roleText.innerText = i18n.studentText;
             } else if (role === 'teacher') {
-                emailInput.placeholder = 'teacher@menaret-tawjihi.ps';
+                emailInput.placeholder = 'teacher@tawjihi.ps';
                 submitLabel.innerText = i18n.teacherSubmit;
                 if (regBox) regBox.style.display = 'none';
                 roleIcon.className = 'fa-solid fa-chalkboard-user';
                 roleText.innerText = i18n.teacherText;
             } else if (role === 'admin') {
-                emailInput.placeholder = 'admin@menaret-tawjihi.ps';
+                emailInput.placeholder = 'admin@tawjihi.ps';
                 submitLabel.innerText = i18n.adminSubmit;
                 if (regBox) regBox.style.display = 'none';
                 roleIcon.className = 'fa-solid fa-shield-halved';

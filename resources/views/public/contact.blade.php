@@ -71,7 +71,7 @@
                     </div>
                 @endif
 
-                <form id="contactComplaintsForm" action="{{ route('contact.submit') }}" method="POST">
+                <form id="contactComplaintsForm" action="{{ route('contact.submit') }}" method="POST" onsubmit="const b=document.getElementById('btnSubmitComplaint'); b.disabled=true; b.innerHTML='<i class=\'fa-solid fa-spinner fa-spin\'></i> {{ __('جاري إرسال التذكرة...') }}';">
                     @csrf
                     
                     <div class="input-row-grid">
@@ -82,7 +82,7 @@
 
                         <div class="input-field-wrap">
                             <label><i class="fa-regular fa-envelope"></i>{{ __('البريد الإلكتروني') }}<span class="req">*</span></label>
-                            <input type="email" name="email" class="custom-input" placeholder="username@tawjihi-gaza.ps" required value="{{ old('email', auth('student')->user()?->email ?? auth()->user()?->email ?? '') }}">
+                            <input type="email" name="email" class="custom-input" placeholder="username@tawjihi.ps" required value="{{ old('email', auth('student')->user()?->email ?? auth()->user()?->email ?? '') }}">
                         </div>
                     </div>
 

@@ -23,3 +23,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /scratch/
+/android_app/.gradle/
+/android_app/build/
+/android_app/app/build/

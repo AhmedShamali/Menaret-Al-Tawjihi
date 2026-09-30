@@ -207,13 +207,13 @@
 
         <!-- Footer / Input -->
         <div class="chat-footer">
-            <form id="chatForm" onsubmit="return false;">
+            <form id="chatForm" onsubmit="event.preventDefault(); sendMessage();">
                 @csrf
                 <input type="hidden" id="teacherIdInput" value="{{ $teacher->id ?? 1 }}">
 
                 <div class="chat-input-group">
                     <input type="text" id="messageInput" class="chat-input" placeholder="{{ __('اكتب رسالتك...') }}" autocomplete="off">
-                    <button type="button" id="sendBtn" class="btn-send">
+                    <button type="submit" id="sendBtn" class="btn-send">
                         <span>{{ __('إرسال') }}</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                     </button>
@@ -305,8 +305,11 @@
         }
 
         $('#sendBtn').on('click', sendMessage);
-        $('#messageInput').on('keypress', function (e) {
-            if (e.which === 13) sendMessage();
+        $('#messageInput').on('keydown', function (e) {
+            if (e.which === 13 || e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
         });
 
         loadMessages();

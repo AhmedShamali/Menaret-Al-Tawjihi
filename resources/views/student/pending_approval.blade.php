@@ -360,7 +360,7 @@
                 </div>
             @endif
 
-            <form id="pendingPaymentForm" action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data" onsubmit="return validatePaymentForm(event)">
+            <form id="pendingPaymentForm" action="{{ route('student.pendingPayment.submit') }}" method="POST" enctype="multipart/form-data" novalidate onsubmit="return validatePaymentForm(event)">
                 @csrf
 
                 <!-- 1. صندوق تحديد قيمة الدفعة المراد سدادها الذكي والمتطور -->

@@ -1142,7 +1142,7 @@
     <!-- 3. شريط القوائم الرئيسي -->
     <nav class="main-navbar">
         <div class="navbar-inner">
-            <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="{{ __('القائمة') }}">
+            <button type="button" class="mobile-menu-btn" id="mobileMenuToggle" aria-label="{{ __('القائمة') }}">
                 <i class="fa-solid fa-bars"></i> {{ __('القائمة') }}
             </button>
 

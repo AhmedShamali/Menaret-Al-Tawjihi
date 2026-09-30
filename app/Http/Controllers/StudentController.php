@@ -123,7 +123,13 @@ class StudentController extends Controller
 
         if ($validator->fails()) {
             if ($request->ajax() || $request->wantsJson()) {
-                return response()->json(['icon' => 'error', 'title' => $validator->errors()->first()], 422);
+                return response()->json([
+                    'success' => false,
+                    'icon'    => 'error',
+                    'title'   => $validator->errors()->first(),
+                    'message' => $validator->errors()->first(),
+                    'errors'  => $validator->errors()->toArray()
+                ], 422);
             }
             return back()->withErrors($validator)->withInput();
         }
@@ -268,6 +274,7 @@ class StudentController extends Controller
                 'icon'     => 'info',
                 'title'    => 'تم استلام طلبك بنجاح! ⏳',
                 'text'     => 'يرجى مراجعة إشعار سداد الرسوم لإتمام تفعيل اشتراكك.',
+                'message'  => 'تم استلام طلبك بنجاح! ⏳ يرجى مراجعة إشعار سداد الرسوم لإتمام تفعيل اشتراكك.',
                 'redirect' => route('student.pending-approval')
             ]);
         }

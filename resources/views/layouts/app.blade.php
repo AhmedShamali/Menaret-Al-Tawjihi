@@ -2354,7 +2354,7 @@
 
                 <!-- قائمة الإشعارات والتنبيهات الشاملة -->
                 <div class="notifications-dropdown-container" style="position: relative;">
-                    <button id="notificationsToggle" style="background: var(--ed-surface); border: 1px solid var(--ed-border); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; position: relative; display: grid; place-items: center; transition: var(--transition-smooth); color: var(--ed-text-body);">
+                    <button type="button" id="notificationsToggle" style="background: var(--ed-surface); border: 1px solid var(--ed-border); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; position: relative; display: grid; place-items: center; transition: var(--transition-smooth); color: var(--ed-text-body);">
                         <i class="fa-regular fa-bell" style="font-size: 1.1rem;"></i>
                         <span id="navUnreadBadge" style="{{ $unreadCount > 0 ? '' : 'display: none;' }} position: absolute; top: -3px; right: -3px; background: var(--ed-danger); color: white; font-size: 0.62rem; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--ed-surface); font-weight: 700;">{{ $unreadCount }}</span>
                     </button>
@@ -2365,7 +2365,7 @@
                                 <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> {{ __('مركز التنبيهات') }}
                             </span>
                             @if(auth()->check() || auth('student')->check())
-                                <button onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.74rem; color: var(--ed-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                <button type="button" onclick="markAllReadFromNav()" style="background: none; border: none; font-size: 0.74rem; color: var(--ed-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
                                     <i class="fa-solid fa-check-double"></i> {{ __('تحديد الكل كمقروء') }}
                                 </button>
                             @endif

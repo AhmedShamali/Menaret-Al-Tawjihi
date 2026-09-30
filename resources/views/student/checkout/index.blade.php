@@ -126,7 +126,7 @@
                     </h2>
                 </div>
 
-                <form id="paymentForm" onsubmit="handlePaymentSubmit(event)">
+                <form id="paymentForm" novalidate onsubmit="handlePaymentSubmit(event)">
                     @csrf
                     <input type="hidden" name="gateway" id="selectedGateway" value="jawwal_pay">
 
@@ -295,7 +295,7 @@
                                 </button>
                             </div>
 
-                            <input type="file" name="receipt_file" id="receipt_file_input" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" required style="display: none;" onchange="handleReceiptFileChange(this)">
+                            <input type="file" name="receipt_file" id="receipt_file_input" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" style="display: none;" onchange="handleReceiptFileChange(this)">
                         </div>
                     </div>
 
@@ -573,6 +573,9 @@ function handlePaymentSubmit(e) {
             if (err.response?.data?.errors) {
                 const first = Object.values(err.response.data.errors)[0];
                 if (Array.isArray(first)) msg = first[0];
+                else if (typeof first === 'string') msg = first;
+            } else if (err.response?.data?.title) {
+                msg = err.response.data.title;
             } else if (err.response?.data?.message) {
                 msg = err.response.data.message;
             }

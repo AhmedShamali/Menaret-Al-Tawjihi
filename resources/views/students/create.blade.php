@@ -427,7 +427,7 @@
                 </div>
             @endif
 
-            <form id="registerForm" onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
+            <form id="registerForm" novalidate onsubmit="handleRegisterSubmit(event)" enctype="multipart/form-data">
                 @csrf
                 <!-- الاسم الكامل ورقم الهوية -->
                 <div class="grid-2-cols">
@@ -826,9 +826,9 @@
         axios.post('{{ route("students.store") }}', formData)
             .then(res => {
                 Swal.fire({
-                    icon: 'success',
-                    title: regI18n.createdTitle,
-                    text: res.data.message || '',
+                    icon: res.data.icon || 'success',
+                    title: res.data.title || regI18n.createdTitle,
+                    text: res.data.text || res.data.message || '',
                     confirmButtonColor: '#1d4ed8',
                     confirmButtonText: regI18n.confirmBtn
                 }).then(() => {
@@ -846,6 +846,9 @@
                 if (err.response?.data?.errors) {
                     const first = Object.values(err.response.data.errors)[0];
                     if (Array.isArray(first)) msg = first[0];
+                    else if (typeof first === 'string') msg = first;
+                } else if (err.response?.data?.title) {
+                    msg = err.response.data.title;
                 } else if (err.response?.data?.message) {
                     msg = err.response.data.message;
                 }

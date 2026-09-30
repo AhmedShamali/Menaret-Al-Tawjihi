@@ -20,18 +20,31 @@ class AuthController extends Controller
     public function handleLogin(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
-            'password' => 'required',
+            'email'    => 'required|string',
+            'password' => 'required|string',
             'role'     => 'required|in:student,teacher,admin',
+        ], [
+            'email.required'    => 'يرجى إدخال اسم المستخدم، البريد الأكاديمي، أو رقم الهوية.',
+            'password.required' => 'يرجى إدخال كلمة المرور.',
+            'role.required'     => 'يرجى تحديد نوع الحساب.',
         ]);
 
-        $credentials = $request->only('email', 'password');
+        $input = trim($request->input('email'));
+        $password = $request->input('password');
         $role = $request->role; // طالب، مدرس، أو مدير
 
         // 1. محاولة الدخول كطالب
         if ($role === 'student') {
-            if (Auth::guard('student')->attempt($credentials)) {
-                $student = Auth::guard('student')->user();
+            // البحث عن الطالب عبر البريد أو رقم الهوية أو الهاتف أو اسم المستخدم
+            $student = Student::where('email', $input)
+                ->orWhere('nid', $input)
+                ->orWhere('phone', $input)
+                ->orWhere('email', strtolower($input) . '@tawjihi.ps')
+                ->orWhere('email', strtolower($input) . '@tawjihi-gaza.ps')
+                ->first();
+
+            if ($student && Hash::check($password, $student->password)) {
+                Auth::guard('student')->login($student, $request->filled('remember'));
 
                 // تنظيف كامل للجلسة وإعادتها لتجنب التداخل
                 $request->session()->regenerate();
@@ -41,16 +54,58 @@ class AuthController extends Controller
                     return redirect()->route('student.pending-approval');
                 }
 
-                // استخدام redirect() مباشر بدلاً من intended لتجنب التوجيه القديم
+                return redirect()->route('student.dashboard');
+            }
+
+            // محاولة بديلة عبر attempt القياسي
+            if (Auth::guard('student')->attempt(['email' => $input, 'password' => $password], $request->filled('remember'))) {
+                $student = Auth::guard('student')->user();
+                $request->session()->regenerate();
+
+                if ($student->status !== 'active') {
+                    return redirect()->route('student.pending-approval');
+                }
+
                 return redirect()->route('student.dashboard');
             }
         }
         // 2. محاولة الدخول لموظفي النظام (مدرس/مدير)
         else {
-            if (Auth::guard('web')->attempt($credentials)) {
+            // البحث عن المستخدم عبر البريد أو الاسم أو النطاق الرسمي
+            $user = User::where('email', $input)
+                ->orWhere('email', strtolower($input) . '@tawjihi.ps')
+                ->orWhere('name', $input)
+                ->first();
+
+            if ($user && Hash::check($password, $user->password)) {
+                // التحقق: هل الدور الذي اختاره المستخدم يطابق دوره في قاعدة البيانات؟
+                if ($role !== $user->role) {
+                    $roleName = $user->role === 'admin' ? 'مدير' : ($user->role === 'teacher' ? 'مدرس' : $user->role);
+                    $requestedRoleName = $role === 'admin' ? 'مدير' : ($role === 'teacher' ? 'مدرس' : $role);
+
+                    return back()->withErrors([
+                        'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
+                    ])->withInput();
+                }
+
+                Auth::guard('web')->login($user, $request->filled('remember'));
+
+                $request->session()->regenerate();
+                $request->session()->forget('url.intended');
+
+                if ($user->role === 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
+
+                if ($user->role === 'teacher') {
+                    return redirect()->route('teacher.dashboard');
+                }
+            }
+
+            // محاولة بديلة عبر attempt القياسي
+            if (Auth::guard('web')->attempt(['email' => $input, 'password' => $password], $request->filled('remember'))) {
                 $user = Auth::user();
 
-                // التحقق: هل الدور الذي اختاره المستخدم يطابق دوره في قاعدة البيانات؟
                 if ($role !== $user->role) {
                     Auth::guard('web')->logout();
                     $request->session()->invalidate();
@@ -61,14 +116,12 @@ class AuthController extends Controller
 
                     return back()->withErrors([
                         'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
-                    ]);
+                    ])->withInput();
                 }
 
-                // تنظيف الـ Session وإعادة توليد المعرّف لمنع التوجيهات القديمة (Intended Cache)
                 $request->session()->regenerate();
                 $request->session()->forget('url.intended');
 
-                // التوجيه الصريح والصارم بناءً على دور المستخدم المخزن في قاعدة البيانات
                 if ($user->role === 'admin') {
                     return redirect()->route('admin.dashboard');
                 }
@@ -79,7 +132,7 @@ class AuthController extends Controller
             }
         }
 
-        return back()->withErrors(['error' => 'بيانات الدخول غير صحيحة أو الحساب غير موجود.']);
+        return back()->withErrors(['error' => 'بيانات الدخول غير صحيحة أو الحساب غير موجود.'])->withInput();
     }
 
     public function handleForgot(Request $request)
@@ -98,11 +151,13 @@ class AuthController extends Controller
         $email = trim($request->email);
         $nid = trim($request->nid);
 
-        // فحص سجلات الطلاب أولاً بمطابقة الإيميل ورقم الهوية بدقة
+        // فحص سجلات الطلاب أولاً بمطابقة الإيميل أو اسم المستخدم أو الهاتف ورقم الهوية بدقة
         $student = Student::where('nid', $nid)
             ->where(function ($q) use ($email) {
                 $q->where('email', $email)
+                  ->orWhere('email', strtolower($email) . '@tawjihi.ps')
                   ->orWhere('email', strtolower($email) . '@tawjihi-gaza.ps')
+                  ->orWhere('phone', $email)
                   ->orWhere('name_ar', 'like', "%{$email}%");
             })
             ->first();
