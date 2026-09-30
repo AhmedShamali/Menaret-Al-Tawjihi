@@ -7,6 +7,7 @@
      - Modern App Bottom Navigation Bar
      ========================================================================= --}}
 
+@if(!View::hasSection('content'))
 <!-- 1. شريط التنقل السفلي للهواتف الذكية (Native Mobile Bottom Navigation Bar) -->
 <nav class="stepvoro-bottom-nav" id="stepvoroBottomNav" aria-label="Mobile Navigation">
     <a href="{{ route('home') }}" class="nav-tab {{ request()->is('/') ? 'active' : '' }}">
@@ -40,6 +41,7 @@
         </button>
     @endif
 </nav>
+@endif
 
 <!-- 2. بطاقة التثبيت السريعة العائمة للهواتف (Smart App Install Floating Banner) -->
 <aside class="stepvoro-install-banner" id="stepvoroInstallBanner" style="display: none;">
@@ -274,6 +276,8 @@
 
 /* بطاقة التثبيت العائمة الذكية */
 .stepvoro-install-banner {
+    display: none;
+    pointer-events: none;
     position: fixed;
     bottom: calc(74px + env(safe-area-inset-bottom, 0px));
     left: 14px;
@@ -289,6 +293,12 @@
     box-shadow: 0 16px 36px rgba(15, 23, 42, 0.35);
     z-index: 996;
     animation: slideUpBanner 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepvoro-install-banner.active,
+.stepvoro-install-banner[style*="display: block"] {
+    display: block !important;
+    pointer-events: auto !important;
 }
 
 @keyframes slideUpBanner {
@@ -407,10 +417,17 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     z-index: 9999;
-    display: flex;
+    display: none;
+    pointer-events: none;
     align-items: flex-end;
     justify-content: center;
     animation: fadeInModal 0.25s ease-out;
+}
+
+.stepvoro-ios-modal-overlay.active,
+.stepvoro-ios-modal-overlay[style*="display: flex"] {
+    display: flex !important;
+    pointer-events: auto !important;
 }
 
 @keyframes fadeInModal {
@@ -690,6 +707,7 @@
     gap: 8px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.2);
     animation: fadeInDown 0.3s ease;
+    pointer-events: none !important;
 }
 
 .network-status-pill.offline {
@@ -723,14 +741,21 @@
     gap: 8px;
 }
 
-/* تحسين تجربة التطبيق الأصلي للشاشات التي تعمل باللمس ووضع الـ Standalone */
+/* تحسين تجربة التطبيق للشاشات التي تعمل باللمس ووضع الـ Standalone */
 html, body {
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
 }
 
 body.in-standalone-app {
     padding-top: env(safe-area-inset-top, 0px) !important;
+}
+
+/* منع تداخل شريط التنقل مع الامتحانات أو شريط القالب الأساسي */
+.no-sidebar .stepvoro-bottom-nav,
+body.in-exam .stepvoro-bottom-nav,
+body[class*="exam"] .stepvoro-bottom-nav,
+.mobile-bottom-nav ~ .stepvoro-bottom-nav {
+    display: none !important;
 }
 
 /* إخفاء أزرار دعوة التثبيت عندما يكون المستخدم داخل التطبيق بالفعل */

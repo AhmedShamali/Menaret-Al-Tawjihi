@@ -2459,10 +2459,10 @@
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span>{{ __('اختباراتي') }}</span>
             </a>
-            <a href="{{ route('student.achievements') }}" class="bottom-nav-item {{ Request::is('student/achievements*') ? 'active' : '' }}">
-                <i class="fa-solid fa-award"></i>
-                <span>{{ __('الشهادات') }}</span>
-            </a>
+            <button type="button" class="bottom-nav-item" onclick="openOfflineVault()" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0;" title="{{ __('دروسي المحفوظة بدون إنترنت') }}">
+                <i class="fa-solid fa-cloud-arrow-down" style="color: #10b981;"></i>
+                <span>{{ __('أوفلاين ⚡') }}</span>
+            </button>
             <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ Request::is('student/profile*') ? 'active' : '' }}">
                 <i class="fa-solid fa-user"></i>
                 <span>{{ __('حسابي') }}</span>

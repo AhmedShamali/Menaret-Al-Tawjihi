@@ -1081,12 +1081,16 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+            }
             .ed-scroll-top-btn {
-                bottom: 20px;
+                bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
                 left: 16px;
                 width: 38px;
                 height: 38px;
                 font-size: 0.92rem;
+                z-index: 990;
             }
             html[dir="ltr"] .ed-scroll-top-btn {
                 left: auto;
