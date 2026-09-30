@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('مركز الدعم والمساعدة الأكاديمية') . ' | ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('مركز الدعم والمساعدة الأكاديمية') . ' | ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="support-classic-container">

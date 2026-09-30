@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('بنك الاختبارات والتقييمات الأكاديمية') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('بنك الاختبارات والتقييمات الأكاديمية') . ' | ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 <!-- استدعاء مكتبة SweetAlert2 للتنبيهات الفاخرة -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">

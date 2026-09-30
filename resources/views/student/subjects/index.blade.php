@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('موادي ومقرراتي الدراسية') . ' | ' . __('منارة التوجيهي'))
+@section('title', __('موادي ومقرراتي الدراسية') . ' | ' . __('Step by Step'))
 
 @section('content')
 <div class="ed-subjects-catalog">

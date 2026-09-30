@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('سجل الإنجاز والشهادات الأكاديمية') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('سجل الإنجاز والشهادات الأكاديمية') . ' | ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 <div class="achievements-page-wrapper">

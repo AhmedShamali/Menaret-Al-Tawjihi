@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('بوابة الدفع الإلكتروني الفلسطينية | منارة التوجيهي'))
+@section('title', __('بوابة الدفع الإلكتروني الفلسطينية | Step by Step'))
 
 @section('content')
 <div style="max-width: 1140px; margin: 0 auto; padding-bottom: 70px; animation: fadeIn 0.3s ease;">
@@ -303,7 +303,7 @@
                     <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
                         <i class="fa-solid fa-shield-halved" style="color: #d97706; font-size: 1.2rem; flex-shrink: 0;"></i>
                         <div style="font-size: 0.78rem; color: #92400e; line-height: 1.55;">
-                            <strong>{{ __('آلية اعتماد منصة منارة التوجيهي:') }}</strong> {{ __('فور إرسال الإشعار، يقوم المشرف العام بمطابقة الحوالة وتفعيل موادك رسمياً خلال دقائق، وستصلك رسالة تأكيد فورية في لوحة حسابك الدراسي.') }}
+                            <strong>{{ __('آلية اعتماد منصة Step by Step:') }}</strong> {{ __('فور إرسال الإشعار، يقوم المشرف العام بمطابقة الحوالة وتفعيل موادك رسمياً خلال دقائق، وستصلك رسالة تأكيد فورية في لوحة حسابك الدراسي.') }}
                         </div>
                     </div>
 

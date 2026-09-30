@@ -494,7 +494,7 @@
             <div class="cert-header">
                 <div class="header-col-ar">
                     <h3>دولة فلسطين 🇵🇸</h3>
-                    <p>{{ __('منظومة منارة التوجيهي للتعليم الأكاديمي') }}</p>
+                    <p>{{ __('منظومة Step by Step للتعليم الأكاديمي') }}</p>
                     <p style="font-size: 0.72rem; color: #94a3b8;">{{ __('إشراف ومتابعة الثانوية العامة') }}</p>
                 </div>
 
@@ -513,7 +513,7 @@
 
                 <div class="header-col-en">
                     <h3>STATE OF PALESTINE</h3>
-                    <p>Menaret Al-Tawjihi Educational Platform</p>
+                    <p>Step by Step Educational Platform</p>
                     <p style="font-size: 0.72rem; color: #94a3b8;">Official Academic Certification</p>
                 </div>
             </div>

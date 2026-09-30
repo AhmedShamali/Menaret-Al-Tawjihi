@@ -30,7 +30,7 @@ class PaymentGatewayController extends Controller
         // بيانات الحسابات المعتمدة في فلسطين (مربوطة بإعدادات مدير النظام ديناميكياً)
         $palPhone = \App\Models\Setting::get('payment_phone', '0567897212');
         $palOwner = \App\Models\Setting::get('payment_account_name', 'م.أحمد شمالي');
-        $palSiteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $palSiteName = \App\Models\Setting::get('site_name', 'Step by Step');
         $whatsappRaw = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
         
         // استخراج رقم الواتساب بالصيغة الدولية المباشرة للروابط
@@ -45,7 +45,7 @@ class PaymentGatewayController extends Controller
         $studentName = $student?->name_ar ?? 'طالب توجيهي';
         $totalAmt = $cart['total'] ?? 0;
         $itemsList = implode(' + ', array_column($cart['items'] ?? [], 'name_ar'));
-        $waMessage = "مرحباً إدارة منارة التوجيهي 🇵🇸\nأنا الطالب: {$studentName}\nأريد تأكيد اشتراكي في باقة المواد: ({$itemsList})\nالمبلغ الإجمالي: {$totalAmt} ₪\nوأرفق لكم صورة وصل/إشعار التحويل للاعتماد والتفعيل الفوري.";
+        $waMessage = "مرحباً إدارة Step by Step 🇵🇸\nأنا الطالب: {$studentName}\nأريد تأكيد اشتراكي في باقة المواد: ({$itemsList})\nالمبلغ الإجمالي: {$totalAmt} ₪\nوأرفق لكم صورة وصل/إشعار التحويل للاعتماد والتفعيل الفوري.";
         $whatsappUrl = "https://wa.me/{$waPhone}?text=" . urlencode($waMessage);
 
         $palGatewaysConfig = [

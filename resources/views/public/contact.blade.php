@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'مركز الدعم الفني والشكاوى الأكاديمية | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
+@section('title', 'مركز الدعم الفني والشكاوى الأكاديمية | ' . \App\Models\Setting::get('site_name', 'Step by Step'))
 
 @section('content')
 <div class="contact-page-wrapper">
@@ -10,7 +10,7 @@
         <div class="hero-text-side">
             <span class="palestine-badge">{{ __('صوتك مسموع ومحل اهتمامنا دائماً') }}</span>
             <h1 class="hero-title">{{ __('مركز خدمة المستفيدين') }}<br><span class="gradient-text">{{ __('والدعم والشكاوى المباشر') }}</span></h1>
-            <p class="hero-desc">{{ __('سواء كنت طالباً، ولي أمر، أو معلماً؛ إدارة منصة') }}<strong>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</strong>{{ __('والمشرف العام حريصون على متابعة استفساراتك وشكاواك وحلها فورياً لضمان تجربة تعليمية متميزة.') }}</p>
+            <p class="hero-desc">{{ __('سواء كنت طالباً، ولي أمر، أو معلماً؛ إدارة منصة') }}<strong>{{ \App\Models\Setting::get('site_name', 'Step by Step') }}</strong>{{ __('والمشرف العام حريصون على متابعة استفساراتك وشكاواك وحلها فورياً لضمان تجربة تعليمية متميزة.') }}</p>
 
             <div class="quick-contacts-grid">
                 <div class="contact-card-box">
@@ -26,7 +26,7 @@
                     $cleanWa = preg_replace('/[^0-9]/', '', $rawWa);
                     if (str_starts_with($cleanWa, '00')) $cleanWa = substr($cleanWa, 2);
                     elseif (str_starts_with($cleanWa, '0')) $cleanWa = '970' . substr($cleanWa, 1);
-                    $waLink = "https://wa.me/" . ($cleanWa ?: '970597694385') . "?text=" . urlencode("مرحباً إدارة منارة التوجيهي، أحتاج إلى مساعدة / لدي استفسار وشكوى.");
+                    $waLink = "https://wa.me/" . ($cleanWa ?: '970597694385') . "?text=" . urlencode("مرحباً إدارة Step by Step، أحتاج إلى مساعدة / لدي استفسار وشكوى.");
                 @endphp
                 <div class="contact-card-box wa-card-box">
                     <div class="contact-icon wa-icon"><i class="fa-brands fa-whatsapp"></i></div>

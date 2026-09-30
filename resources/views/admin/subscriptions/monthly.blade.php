@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('مصفوفة وسجل الاشتراكات والذمم المالية للطلاب') . ' - ' . __('منارة التوجيهي'))
+@section('title', __('مصفوفة وسجل الاشتراكات والذمم المالية للطلاب') . ' - ' . __('Step by Step'))
 
 @section('content')
 <div class="subs-matrix-wrapper">
@@ -9,7 +9,7 @@
         <div class="royal-header-frame">
             <div class="header-col-ar">
                 <h3 class="state-title-ar">دولة فلسطين 🇵🇸</h3>
-                <p class="inst-title-ar">{{ __('منظومة منارة التوجيهي للتعليم الأكاديمي') }}</p>
+                <p class="inst-title-ar">{{ __('منظومة Step by Step للتعليم الأكاديمي') }}</p>
                 <span class="dept-badge">{{ __('الإدارة العامة والشؤون المالية والمتابعة') }}</span>
             </div>
 
@@ -31,7 +31,7 @@
 
             <div class="header-col-en">
                 <h3 class="state-title-en">STATE OF PALESTINE</h3>
-                <p class="inst-title-en">Menaret Al-Tawjihi Educational Platform</p>
+                <p class="inst-title-en">Step by Step Educational Platform</p>
                 <span class="dept-badge-en">Financial Administration & Students Registry</span>
             </div>
         </div>
@@ -506,7 +506,7 @@
             <div class="sheet-header">
                 <div class="sheet-col-ar">
                     <h3>دولة فلسطين 🇵🇸</h3>
-                    <p>{{ __('منظومة منارة التوجيهي للتعليم الأكاديمي') }}</p>
+                    <p>{{ __('منظومة Step by Step للتعليم الأكاديمي') }}</p>
                     <small>{{ __('إشراف ومتابعة الثانوية العامة - الشؤون المالية') }}</small>
                 </div>
 
@@ -523,7 +523,7 @@
 
                 <div class="sheet-col-en">
                     <h3>STATE OF PALESTINE</h3>
-                    <p>Menaret Al-Tawjihi Educational Platform</p>
+                    <p>Step by Step Educational Platform</p>
                     <small>Official Academic & Financial Statement</small>
                 </div>
             </div>
@@ -597,14 +597,14 @@
                 <div class="stamp-col">
                     <span class="stamp-title">{{ __('المشرف العام وإدارة المنصة') }}</span>
                     <div class="signature-line">م. أحمد شمالي</div>
-                    <small>{{ __('منارة التوجيهي للتعليم الأكاديمي') }}</small>
+                    <small>{{ __('Step by Step للتعليم الأكاديمي') }}</small>
                 </div>
 
                 <div class="stamp-col stamp-center">
                     <div class="official-seal-box">
                         <i class="fa-solid fa-certificate"></i>
                         <span>{{ __('ختم الشؤون المالية') }}</span>
-                        <small>{{ __('منارة التوجيهي') }}</small>
+                        <small>{{ __('Step by Step') }}</small>
                     </div>
                     <div class="doc-verification-code font-mono">
                         TAWJIHI-FIN-{{ date('Y') }}-CONFIRMED
@@ -686,7 +686,7 @@
         <div class="modal-header-row">
             <div>
                 <h3 style="margin: 0 0 4px; font-size: 1.2rem; color: #0f172a;">{{ __('الرسوم الشهرية العامة للمنصة') }}</h3>
-                <p style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ __('القسط الشهري الافتراضي لكافة طلاب منارة التوجيهي') }}</p>
+                <p style="margin: 0; font-size: 0.85rem; color: #64748b;">{{ __('القسط الشهري الافتراضي لكافة طلاب Step by Step') }}</p>
             </div>
             <button type="button" class="btn-close-x" onclick="closeGlobalFeeModal()">&times;</button>
         </div>
@@ -1243,7 +1243,7 @@
 
 <style>
     /* =========================================================================
-       التصميم الأكاديمي الملكي الكلاسيكي - منصة منارة التوجيهي
+       التصميم الأكاديمي الملكي الكلاسيكي - منصة Step by Step
        مطابق للألوان والخطوط والترويسة الرسمية في صورة الشهادة
        ========================================================================= */
     .subs-matrix-wrapper {

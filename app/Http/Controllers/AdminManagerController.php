@@ -13,7 +13,7 @@ class AdminManagerController extends Controller {
     public function settings()
     {
         $settings = [
-            'site_name'         => Setting::get('site_name', 'منارة التوجيهي'),
+            'site_name'         => Setting::get('site_name', 'Step by Step'),
             'contact_email'       => Setting::get('contact_email', 'info@jesr.ps'),
             'contact_whatsapp'    => Setting::get('contact_whatsapp', '00970597694385'),
             'registration_status' => Setting::get('registration_status', 'open'),
@@ -502,7 +502,7 @@ class AdminManagerController extends Controller {
         try {
             \App\Services\NotificationService::notifyStudent(
                 $student->id,
-                'أهلاً بك في منصة منارة التوجيهي! 🎓',
+                'أهلاً بك في منصة Step by Step! 🎓',
                 "تم إنشاء وتفعيل حسابك الأكاديمي رسمياً من قِبل إدارة المنصة. نتمنى لك رحلة تعليمية موفقة ومتميزة!",
                 'system',
                 route('student.dashboard'),

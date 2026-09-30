@@ -174,7 +174,7 @@
                         <div>
                             <label class="field-label">{{ __('اسم المنصة الرسمي (يظهر في الشريط العلوي والعناوين والشهادات)') }}</label>
                             <input type="text" name="site_name" id="name_input"
-                                   value="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}"
+                                   value="{{ \App\Models\Setting::get('site_name', 'Step by Step') }}"
                                    class="field-input" oninput="livePreview(this.value)">
                             <small style="color: #94a3b8; font-size: 0.78rem; display: block; margin-top: 6px;">{{ __('* يتغير فورياً في شريط المتصفح، الفواتير، الإيصالات، ولوحة الطلاب والمعلمين.') }}</small>
                         </div>
@@ -291,7 +291,7 @@
                                 <span>{{ __('الكلمات الدلالية ومفردات البحث (SEO Meta Keywords)') }}</span>
                                 <span style="font-size: 0.75rem; color: #3b82f6; font-weight: normal;">{{ __('موصى بها لأرشفة جوجل وتصدر النتائج الأولى') }}</span>
                             </label>
-                            <textarea id="seo_keywords_input" name="seo_keywords" rows="4" class="field-input" style="height: auto; line-height: 1.6; font-size: 0.85rem;">{{ \App\Models\Setting::get('seo_keywords', 'منارة التوجيهي, منصة ستيب, منصة ستيب التعليمية, ستيب, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي') }}</textarea>
+                            <textarea id="seo_keywords_input" name="seo_keywords" rows="4" class="field-input" style="height: auto; line-height: 1.6; font-size: 0.85rem;">{{ \App\Models\Setting::get('seo_keywords', 'Step by Step, منصة ستيب, منصة ستيب التعليمية, ستيب, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي') }}</textarea>
                             
                             <!-- كبسولات الكلمات السريعة لإضافتها بنقرة واحدة -->
                             <div style="margin-top: 8px;">
@@ -320,7 +320,7 @@
 
                         <div style="grid-column: span 2;">
                             <label class="field-label">{{ __('الوصف الافتراضي للمنصة في نتائج بحث جوجل (SEO Meta Description)') }}</label>
-                            <textarea name="seo_description" rows="3" class="field-input" style="height: auto; line-height: 1.6;">{{ \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.') }}</textarea>
+                            <textarea name="seo_description" rows="3" class="field-input" style="height: auto; line-height: 1.6;">{{ \App\Models\Setting::get('seo_description', 'Step by Step - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.') }}</textarea>
                             <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">{{ __('النص الذي يظهر أسفل عنوان موقعك في صفحة نتائج بحث جوجل (يفضل أن يحتوي على الكلمات المستهدفة بدقة).') }}</small>
                         </div>
                     </div>
@@ -341,15 +341,15 @@
                         <div id="logo_letter" style="width: 50px; height: 50px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; display: grid; place-items: center; font-size: 1.5rem; font-weight: 900; color: #1d4ed8; overflow: hidden; padding: 3px; flex-shrink: 0;">
                             @if(\App\Models\Setting::get('site_logo'))
                                 <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" id="sidebar_preview_logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px; background: white; padding: 2px;">
-                                <span id="sidebar_preview_letter" style="display: none;">{{ mb_substr(\App\Models\Setting::get('site_name', 'منارة التوجيهي'), 0, 1) }}</span>
+                                <span id="sidebar_preview_letter" style="display: none;">{{ mb_substr(\App\Models\Setting::get('site_name', 'Step by Step'), 0, 1) }}</span>
                             @else
-                                <span id="sidebar_preview_letter">{{ mb_substr(\App\Models\Setting::get('site_name', 'منارة التوجيهي'), 0, 1) }}</span>
+                                <span id="sidebar_preview_letter">{{ mb_substr(\App\Models\Setting::get('site_name', 'Step by Step'), 0, 1) }}</span>
                                 <img id="sidebar_preview_logo" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px; background: white; padding: 2px; display: none;">
                             @endif
                         </div>
                         <div>
                             <h3 id="logo_name_preview" style="font-size: 1.15rem; font-weight: 800; margin: 0; color: #0f172a;">
-                                {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}
+                                {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}
                             </h3>
                             <small id="slogan_preview" style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 2px;">
                                 {{ __(\App\Models\Setting::get('site_slogan', 'المنصة الوطنية الرائدة لطلبة الثانوية العامة في فلسطين')) }}
@@ -661,7 +661,7 @@
 
 <script>
     const settingsI18n = {
-        defaultSiteName: @json(__('منارة التوجيهي')),
+        defaultSiteName: @json(__('Step by Step')),
         savingBranding: @json(__('جاري رفع الشعار وحفظ الهوية...')),
         savedTitle: @json(__('تم تحديث الإعدادات بنجاح! 🎉')),
         savedText: @json(__('تم تعميم الشعار وهوية المنصة وبيانات الدفع على كافة أرجاء النظام.')),

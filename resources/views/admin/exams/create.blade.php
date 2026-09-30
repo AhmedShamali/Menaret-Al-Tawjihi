@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('بناء اختبار جديد') . ' - ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('بناء اختبار جديد') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="exam-edit-wrapper">

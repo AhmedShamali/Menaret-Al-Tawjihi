@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('سند قبض مالي رسمي') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('سند قبض مالي رسمي') . ' | ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 @php
@@ -61,7 +61,7 @@
                 <div class="gov-header-col right-col">
                     <div class="gov-text-line"><strong>دولة فلسطين</strong></div>
                     <div class="gov-text-line">وزارة التربية والتعليم العالي</div>
-                    <div class="gov-text-line">منصة منارة التوجيهي للثانوية العامة</div>
+                    <div class="gov-text-line">منصة Step by Step للثانوية العامة</div>
                     <div class="gov-text-sub">الدائرة المالية • قسم الاشتراكات والتحصيل</div>
                 </div>
 
@@ -290,7 +290,7 @@
                     <div class="authentic-school-stamp">
                         <div class="stamp-outer-circle">
                             <div class="stamp-middle-circle">
-                                <div class="stamp-text-arc-top">منارة التوجيهي • بوابة الثانوية العامة</div>
+                                <div class="stamp-text-arc-top">Step by Step • بوابة الثانوية العامة</div>
                                 <div class="stamp-center-content">
                                     <i class="fa-solid fa-stamp stamp-inner-icon"></i>
                                     <div class="stamp-state-txt">{{ $isPaid ? 'معتمد ومقبوض' : 'قيد التدقيق' }}</div>
@@ -317,7 +317,7 @@
 
             <!-- شريط الملاحظة القانونية في أسفل السند -->
             <div class="voucher-legal-footer">
-                <span>{{ __('ملاحظة هامة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة منارة التوجيهي وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال أي تعديل أو شطب يدوي دون مصادقة الإدارة.') }}</span>
+                <span>{{ __('ملاحظة هامة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة Step by Step وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال أي تعديل أو شطب يدوي دون مصادقة الإدارة.') }}</span>
                 <span class="footer-ref font-mono">{{ $payment->transaction_number }} • {{ date('Y-m-d H:i') }}</span>
             </div>
 

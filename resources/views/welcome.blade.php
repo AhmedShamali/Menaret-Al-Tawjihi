@@ -23,12 +23,12 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
+    <title>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
 
     @php
-        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
-        $siteDesc = \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
-        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, منارة التوجيهي, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
+        $siteName = \App\Models\Setting::get('site_name', 'Step by Step');
+        $siteDesc = \App\Models\Setting::get('seo_description', 'Step by Step - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
+        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, Step by Step, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
         $canonicalUrl = url('/');
         $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
         $googleVerify = \App\Models\Setting::get('google_site_verification');
@@ -37,7 +37,7 @@
 
     <meta name="description" content="{{ $siteDesc }}">
     <meta name="keywords" content="{{ $siteKeywords }}">
-    <meta name="author" content="م. أحمد شمالي - منارة التوجيهي">
+    <meta name="author" content="م. أحمد شمالي - Step by Step">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <link rel="canonical" href="{{ $canonicalUrl }}">
 
@@ -52,7 +52,7 @@
     <meta property="og:title" content="{{ $siteName }} | بوابة ومنظومة الثانوية العامة لدولة فلسطين">
     <meta property="og:description" content="{{ $siteDesc }}">
     <meta property="og:image" content="{{ $siteLogo }}">
-    <meta property="og:site_name" content="{{ $siteName }} (Stepvoro)">
+    <meta property="og:site_name" content="{{ $siteName }}">
     <meta property="og:locale" content="{{ app()->getLocale() === 'en' ? 'en_US' : 'ar_AR' }}">
 
     {{-- Twitter Card --}}
@@ -71,7 +71,7 @@
                     '@type' => 'EducationalOrganization',
                     '@id' => url('/') . '#organization',
                     'name' => $siteName,
-                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'منارة التوجيهي'],
+                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'Step by Step'],
                     'url' => url('/'),
                     'logo' => $siteLogo,
                     'description' => $siteDesc,
@@ -1119,10 +1119,10 @@
         <div class="header-inner">
             <div class="header-brand">
                 <div class="header-logo-icon" style="padding: 2px; overflow: hidden; background: #ffffff;">
-                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Stepvoro - منارة التوجيهي')) }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
+                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
                 </div>
                 <div class="header-titles">
-                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h1>
+                    <h1>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h1>
                     <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المناهج التعليمية والتقييمات المعتمدة') }}</p>
                 </div>
             </div>
@@ -1162,7 +1162,7 @@
                 <button type="button" 
                         class="btn-nav-app-install" 
                         onclick="triggerPwaInstall()" 
-                        title="{{ __('تثبيت تطبيق Stepvoro على هاتفك') }}">
+                        title="{{ __('تثبيت تطبيق Step by Step على هاتفك') }}">
                     <i class="fa-solid fa-mobile-screen-button"></i>
                     <span>{{ __('تطبيق الجوال') }}</span>
                 </button>
@@ -1213,7 +1213,7 @@
                 <div class="welcome-hero-card">
                     <h2>
                         <i class="fa-solid fa-graduation-cap" style="color: var(--ed-primary);"></i>
-                        {{ __('منارة التوجيهي | المنصة التعليمية الرائدة لطلبة فلسطين') }}
+                        {{ __('Step by Step | المنصة التعليمية الرائدة لطلبة فلسطين') }}
                     </h2>
                     <p>
                         {{ __('المنظومة الأكاديمية التعليمية المتخصصة لطلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). نوفر لطلابنا بيئة تعليمية متكاملة تضاهي كبرى المنصات مثل ستيب التعليمية وأبواب، مع شروحات تعليمية لكافة الدروس، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص المناهج، وبطاقات الاستذكار السريع بإشراف م.أحمد شمالي.') }}
@@ -1458,8 +1458,8 @@
                             @php
                                 $waDigits = '970597694385';
                                 $waMsg = urlencode(app()->getLocale() === 'ar' 
-                                    ? "السلام عليكم بشمهندس أحمد شمالي، أود الاستفسار والتسجيل في منصة منارة التوجيهي." 
-                                    : "Hello Eng. Ahmed Shamali, I would like to inquire and register in Menaret Al-Tawjihi platform.");
+                                    ? "السلام عليكم بشمهندس أحمد شمالي، أود الاستفسار والتسجيل في منصة Step by Step." 
+                                    : "Hello Eng. Ahmed Shamali, I would like to inquire and register in Step by Step platform.");
                             @endphp
 
                             <a href="https://wa.me/{{ $waDigits }}?text={{ $waMsg }}" target="_blank" class="btn-whatsapp-full">
@@ -1497,7 +1497,7 @@
     <footer class="main-footer">
         <div class="footer-inner">
             <div class="footer-brand">
-                <h3>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h3>
+                <h3>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h3>
                 <p>
                     {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). منصة تعليمية متكاملة تقدم شروحات تعليمية، دروس أونلاين، دوسيات، بنك أسئلة، وحاسبة معدل التوجيهي متوافقة مع منهاج وزارة التربية والتعليم الفلسطينية.') }}
                 </p>
@@ -1542,7 +1542,7 @@
 
         <div class="footer-bottom-bar">
             <div class="footer-bottom-inner">
-                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')), 'academic' => \App\Models\Setting::academicYear()]) }}</span>
+                <span>{{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م', ['year' => date('Y'), 'site_name' => __(\App\Models\Setting::get('site_name', 'Step by Step')), 'academic' => \App\Models\Setting::academicYear()]) }}</span>
                 <span>{{ __('متوافق تماماً مع المنهاج الرسمي لوزارة التربية والتعليم الفلسطينية') }}</span>
             </div>
         </div>

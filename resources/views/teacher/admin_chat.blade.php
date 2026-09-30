@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('مراسلة الإدارة العامة والشؤون الأكاديمية') . ' - ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('مراسلة الإدارة العامة والشؤون الأكاديمية') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="academic-chat-container">

@@ -10,6 +10,10 @@ class Setting extends Model {
     protected static bool $dbAvailable = true;
 
     public static function get($key, $default = null) {
+        if ($key === 'site_name' || $key === 'site_title') {
+            return 'Step by Step';
+        }
+
         if (array_key_exists($key, static::$cache)) {
             return static::$cache[$key] ?? $default;
         }
@@ -20,8 +24,12 @@ class Setting extends Model {
 
         try {
             $setting = self::where('key', $key)->first();
-            static::$cache[$key] = $setting ? $setting->value : $default;
-            return static::$cache[$key] ?? $default;
+            $val = $setting ? $setting->value : $default;
+            if (is_string($val)) {
+                $val = str_replace(['منارة التوجيهي', 'Stepvoro'], 'Step by Step', $val);
+            }
+            static::$cache[$key] = $val;
+            return $val;
         } catch (\Throwable $e) {
             static::$dbAvailable = false;
             return $default;

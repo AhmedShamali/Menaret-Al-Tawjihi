@@ -177,7 +177,7 @@ class EducationalContentController extends Controller
         $content = new EducationalContent();
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
-        $content->channel_name = $request->channel_name ?? 'منارة التوجيهي';
+        $content->channel_name = $request->channel_name ?? 'Step by Step';
         $content->file_size    = $request->file_size ?? 'غير محدد';
         $content->order        = $request->order;
         $content->is_visible   = true;

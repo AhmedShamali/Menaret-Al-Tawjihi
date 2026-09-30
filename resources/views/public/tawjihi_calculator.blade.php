@@ -9,12 +9,12 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
     <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
-    <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+    <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     @php
-        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $siteName = \App\Models\Setting::get('site_name', 'Step by Step');
         $calcDesc = 'حاسبة معدل التوجيهي فلسطين 2026 الرسمية: احسب معدلك في الثانوية العامة بدقة لكافة الفروع (العلمي، الأدبي، الشرعي، الريادة والأعمال، الصناعي) واكتشف التخصصات ومعدلات القبول في الجامعات الفلسطينية.';
-        $calcKeywords = 'حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, معدل التوجيهي 2026, طريقة حساب معدل التوجيهي, منصة تعليمية, منصة ستيب, موقع تعليمي, شروحات تعليمية, معدلات القبول جامعة النجاح, معدلات القبول جامعة بيرزيت, القبول الموحد فلسطين, توجيهي فلسطين, منارة التوجيهي';
+        $calcKeywords = 'حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, معدل التوجيهي 2026, طريقة حساب معدل التوجيهي, منصة تعليمية, منصة ستيب, موقع تعليمي, شروحات تعليمية, معدلات القبول جامعة النجاح, معدلات القبول جامعة بيرزيت, القبول الموحد فلسطين, توجيهي فلسطين, Step by Step';
         $canonicalUrl = route('tawjihi.calculator');
         $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
         $gaId = \App\Models\Setting::get('google_analytics_id');
@@ -710,7 +710,7 @@
                 <div class="brand-logo-badge">
                     <i class="fas fa-graduation-cap"></i>
                 </div>
-                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
+                <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
             </a>
             <div class="nav-links">
                 <!-- زر تبديل اللغة خالي من أي كلمة عربية في وضع الإنجليزية -->

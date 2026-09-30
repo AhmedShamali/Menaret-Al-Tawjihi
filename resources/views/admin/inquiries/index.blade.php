@@ -178,7 +178,7 @@
                                             $wa = preg_replace('/[^0-9]/', '', $inq->phone);
                                             if (str_starts_with($wa, '05')) $wa = '970' . substr($wa, 1);
                                         @endphp
-                                        <a href="https://wa.me/{{ $wa }}?text={{ urlencode(__('أهلاً بك أ. :name، بخصوص استفسارك في منارة التوجيهي:', ['name' => $inq->name])) }}" target="_blank" class="btn-whatsapp-action" title="{{ __('مراسلة سريعة عبر واتساب') }}">
+                                        <a href="https://wa.me/{{ $wa }}?text={{ urlencode(__('أهلاً بك أ. :name، بخصوص استفسارك في Step by Step:', ['name' => $inq->name])) }}" target="_blank" class="btn-whatsapp-action" title="{{ __('مراسلة سريعة عبر واتساب') }}">
                                             <i class="fa-brands fa-whatsapp"></i>
                                         </a>
                                     @endif

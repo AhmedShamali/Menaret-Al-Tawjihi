@@ -10,7 +10,7 @@
         : (optional($student->stage)->label_ar ?? optional($student->stage)->name_ar ?? __('الثانوية العامة (التوجيهي)'));
 @endphp
 
-@section('title', $isFrozen ? __('الحساب مجمد مؤقتاً | منارة التوجيهي') : __('بانتظار موافقة الإدارة وتفعيل الاشتراك | منارة التوجيهي'))
+@section('title', $isFrozen ? __('الحساب مجمد مؤقتاً | Step by Step') : __('بانتظار موافقة الإدارة وتفعيل الاشتراك | Step by Step'))
 
 @section('content')
 <div class="pending-approval-wrapper">
@@ -25,7 +25,7 @@
             <!-- شارات الحالة الرسمية -->
             <div class="status-badges-row">
                 <span class="badge-tag danger"><i class="fa-solid fa-lock"></i> {{ __('الحساب مجمد بقرار إداري') }}</span>
-                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('منارة التوجيهي - فلسطين') }}</span>
+                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('Step by Step - فلسطين') }}</span>
             </div>
 
             <h1 class="card-title text-danger">{{ __('تم تجميد حساب الطالب مؤقتاً') }}</h1>
@@ -83,7 +83,7 @@
             <!-- شارات الحالة الرسمية -->
             <div class="status-badges-row">
                 <span class="badge-tag pending"><i class="fa-solid fa-clock-rotate-left"></i> {{ __('قيد المراجعة والاعتماد الأكاديمي') }}</span>
-                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('منارة التوجيهي - فلسطين') }}</span>
+                <span class="badge-tag palestine"><i class="fa-solid fa-landmark"></i> {{ __('Step by Step - فلسطين') }}</span>
             </div>
 
             <h1 class="card-title">{{ __('طلب التحاق الطالب قيد الاعتماد الأكاديمي') }}</h1>
@@ -124,7 +124,7 @@
                 <div class="fees-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 <div>
                     <h3>{{ __('الرسوم الدراسية الشهرية') }} - <span style="color: var(--ed-primary);">{{ $dueMonthName ?? __('الشهر الأول') }}</span></h3>
-                    <p>{{ __('نظام الاشتراك الأكاديمي المعتمد وفق المواد الدراسية المختارة - منارة التوجيهي') }}</p>
+                    <p>{{ __('نظام الاشتراك الأكاديمي المعتمد وفق المواد الدراسية المختارة - Step by Step') }}</p>
                 </div>
             </div>
 
@@ -546,8 +546,8 @@
         <div class="pending-actions-wrap">
             @php
                 $waMsg = urlencode(app()->getLocale() === 'ar'
-                    ? ("مرحباً بشمهندس أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة منارة التوجيهي وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
-                    : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Menaret Al-Tawjihi platform and paid tuition. Please verify and activate my enrollment."));
+                    ? ("مرحباً بشمهندس أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة Step by Step وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
+                    : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Step by Step platform and paid tuition. Please verify and activate my enrollment."));
             @endphp
             <a href="https://wa.me/970567897212?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
                 <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام (م.أحمد شمالي) عبر واتساب') }}
@@ -575,7 +575,7 @@
 
         <div class="pending-footer-note">
             <i class="fa-solid fa-shield-halved" style="color: var(--ed-success);"></i>
-            <span>{{ __('منصة منارة التوجيهي - فلسطين | بياناتك ووثائقك محفوظة بأعلى معايير الأمان الأكاديمي.') }}</span>
+            <span>{{ __('منصة Step by Step - فلسطين | بياناتك ووثائقك محفوظة بأعلى معايير الأمان الأكاديمي.') }}</span>
         </div>
     </div>
 
@@ -707,7 +707,7 @@
         const method = document.getElementById('paymentMethodSelect')?.value || 'محفظة جوال باي';
         const notes = document.getElementById('paymentNotesInput')?.value || '';
         
-        let msg = `السلام عليكم م.أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة منارة التوجيهي بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
+        let msg = `السلام عليكم م.أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة Step by Step بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
         if (notes) {
             msg += ` ملاحظات: [${notes}].`;
         }

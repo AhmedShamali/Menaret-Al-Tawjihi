@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('لوحة الإدارة المركزية') . ' | ' . __(config('app.name', 'منارة التوجيهي')))
+@section('title', __('لوحة الإدارة المركزية') . ' | ' . __(config('app.name', 'Step by Step')))
 
 @section('content')
 <div class="dash-wrapper">
@@ -13,7 +13,7 @@
                 {{ __('لوحة الإدارة المركزية') }}
             </h1>
             <div class="dash-breadcrumbs">
-                <span>{{ __(config('app.name', 'منارة التوجيهي')) }}</span>
+                <span>{{ __(config('app.name', 'Step by Step')) }}</span>
                 <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} sep"></i>
                 <span class="active">{{ __('المؤشرات العامة ومتابعة المنصة') }}</span>
             </div>

@@ -5,7 +5,7 @@
     $stageDisplayName = (app()->getLocale() === 'en' && !empty($student->stage->name_en)) ? $student->stage->name_en : ($student->stage->label_ar ?? ($student->stage->name_ar ?? __('عام')));
 @endphp
 
-@section('title', __('الملف المالي وسجل اشتراكات الطالب') . ' | ' . $studentDisplayName . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('الملف المالي وسجل اشتراكات الطالب') . ' | ' . $studentDisplayName . ' | ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 <div class="student-profile-finance-wrap">
@@ -578,7 +578,7 @@
                 <div class="doc-header-col text-right">
                     <strong>{{ __('دولة فلسطين') }} 🇵🇸</strong>
                     <span>{{ __('منظومة التعليم الأكاديمي المعتمدة') }}</span>
-                    <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
+                    <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
                 </div>
                 <div class="doc-header-logo">
                     <img src="{{ asset('images/logo.png') }}" onerror="this.src='/images/logo.png'" alt="Logo" class="doc-logo-img">
@@ -685,7 +685,7 @@
                     </div>
                     <div class="doc-stamp-box">
                         <div class="stamp-circle">
-                            <span>{{ __('منارة التوجيهي') }}</span>
+                            <span>{{ __('Step by Step') }}</span>
                             <small>{{ __('معتمد رسمياً') }}</small>
                             <i class="fa-solid fa-stamp"></i>
                         </div>

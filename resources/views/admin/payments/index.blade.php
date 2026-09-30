@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('إدارة الاشتراكات والمدفوعات المالية') . ' - ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('إدارة الاشتراكات والمدفوعات المالية') . ' - ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 <style>

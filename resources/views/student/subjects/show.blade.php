@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', ($subject->name_ar ?? $subject->name) . ' | ' . __('منارة التوجيهي'))
+@section('title', ($subject->name_ar ?? $subject->name) . ' | ' . __('Step by Step'))
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

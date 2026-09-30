@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('كشف مسير الرواتب والمستحقات المالية') . ' - ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('كشف مسير الرواتب والمستحقات المالية') . ' - ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 @php
@@ -19,7 +19,7 @@
             <div class="teacher-details">
                 <div class="badge-tag">
                     <i class="fa-solid fa-building-columns"></i>
-                    <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('الإدارة المالية والأكاديمية') }}</span>
+                    <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }} | {{ __('الإدارة المالية والأكاديمية') }}</span>
                 </div>
                 <h1 class="page-title">{{ __('كشف ومسير الرواتب والمستحقات المالية') }}</h1>
                 <p class="teacher-subtitle">
@@ -128,7 +128,7 @@
         <div class="table-header-row">
             <div>
                 <h2 class="table-title"><i class="fa-solid fa-file-invoice-dollar text-primary"></i> {{ __('كشف مسير رواتب الشهور (1 - 12) لعام :year', ['year' => $year]) }}</h2>
-                <p class="table-subtitle">{{ __('يتم تحديث وإصدار الرواتب شهرياً بواسطة الإدارة المالية لمنصة منارة التوجيهي') }}</p>
+                <p class="table-subtitle">{{ __('يتم تحديث وإصدار الرواتب شهرياً بواسطة الإدارة المالية لمنصة Step by Step') }}</p>
             </div>
             <div class="table-header-badge">
                 <i class="fa-solid fa-shield-halved text-emerald"></i>
@@ -413,7 +413,7 @@
                 <div class="gov-header-col right-col">
                     <div class="gov-text-line"><strong>دولة فلسطين</strong></div>
                     <div class="gov-text-line">وزارة التربية والتعليم العالي</div>
-                    <div class="gov-text-line">منصة منارة التوجيهي للثانوية العامة</div>
+                    <div class="gov-text-line">منصة Step by Step للثانوية العامة</div>
                     <div class="gov-text-sub">الإدارة المالية • شؤون الكادر التعليمي</div>
                 </div>
 
@@ -567,7 +567,7 @@
                     <div class="authentic-school-stamp">
                         <div class="stamp-outer-circle">
                             <div class="stamp-middle-circle">
-                                <div class="stamp-text-arc-top">منارة التوجيهي • بوابة الثانوية العامة</div>
+                                <div class="stamp-text-arc-top">Step by Step • بوابة الثانوية العامة</div>
                                 <div class="stamp-center-content">
                                     <i class="fa-solid fa-stamp stamp-inner-icon"></i>
                                     <div class="stamp-state-txt">معتمد ومصروف</div>
@@ -593,7 +593,7 @@
 
             <!-- شريط الملاحظة القانونية -->
             <div class="voucher-legal-footer">
-                <span>{{ __('ملاحظة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة منارة التوجيهي وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال الكشط أو التعديل اليدوي.') }}</span>
+                <span>{{ __('ملاحظة: هذا السند وثيقة مالية رسمية صادرة إلكترونياً عن منصة Step by Step وموثقة بالسجلات المصرفية. يعتبر السند لاغياً في حال الكشط أو التعديل اليدوي.') }}</span>
                 <span class="footer-ref font-mono">{{ date('Y-m-d') }} • فلسطين</span>
             </div>
 
@@ -695,7 +695,7 @@
     const teacherSalaryI18n = {
         adSuffix: "{{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}",
         defaultMethod: "{{ __('تحويل بنكي / محفظة إلكترونية') }}",
-        defaultNotes: "{{ __('تم اعتماد وصرف الراتب كاملاً وفقاً للائحة منصة منارة التوجيهي.') }}",
+        defaultNotes: "{{ __('تم اعتماد وصرف الراتب كاملاً وفقاً للائحة منصة Step by Step.') }}",
         claimTitlePrefix: "{{ __('بخصوص راتب ومستحقات') }}",
         sending: "{{ __('جاري الإرسال...') }}",
         claimSuccessTitle: "{{ __('تم إرسال استفسارك بنجاح') }}",

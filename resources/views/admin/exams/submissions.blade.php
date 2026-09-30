@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('تسليمات الطلاب والتقييمات') . ' | ' . __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')))
+@section('title', __('تسليمات الطلاب والتقييمات') . ' | ' . __(\App\Models\Setting::get('site_name', 'Step by Step')))
 
 @section('content')
 <div class="submissions-dashboard-clean">

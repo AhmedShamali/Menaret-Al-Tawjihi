@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('عذراً، الصفحة المطلوبة غير متاحة') }} | {{ config('app.name', 'منارة التوجيهي') }}</title>
+    <title>{{ __('عذراً، الصفحة المطلوبة غير متاحة') }} | {{ config('app.name', 'Step by Step') }}</title>
     <meta name="robots" content="noindex, follow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,7 +113,7 @@
                 <i class="fa-solid fa-house"></i>{{ __('العودة للرئيسية') }}</a>
         </div>
         <div class="institution-footer">
-            {{ __('منصة منارة التوجيهي - الثانوية العامة | إشراف المهندس أحمد شمالي') }}
+            {{ __('منصة Step by Step - الثانوية العامة | إشراف المهندس أحمد شمالي') }}
         </div>
     </div>
 </body>

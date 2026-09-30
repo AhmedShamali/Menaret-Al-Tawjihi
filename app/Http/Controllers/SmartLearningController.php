@@ -95,7 +95,7 @@ class SmartLearningController extends Controller
         }
 
         $student = $certificate->student ?? Auth::guard('student')->user() ?? Auth::user();
-        $siteName = Setting::get('site_name', 'منارة التوجيهي');
+        $siteName = Setting::get('site_name', 'Step by Step');
         $siteSlogan = Setting::get('site_slogan', 'المنصة التعليمية الأولى لطلبة الثانوية العامة في فلسطين');
         $verificationUrl = route('certificates.verify', $certificate->certificate_code);
 
@@ -108,7 +108,7 @@ class SmartLearningController extends Controller
     public function verifyCertificate($code)
     {
         $certificate = Certificate::with(['student', 'subject'])->where('certificate_code', $code)->first();
-        $siteName = Setting::get('site_name', 'منارة التوجيهي');
+        $siteName = Setting::get('site_name', 'Step by Step');
         $siteSlogan = Setting::get('site_slogan', 'المنصة التعليمية الأولى لطلبة الثانوية العامة في فلسطين');
 
         return view('public.certificate_verify', compact('certificate', 'code', 'siteName', 'siteSlogan'));

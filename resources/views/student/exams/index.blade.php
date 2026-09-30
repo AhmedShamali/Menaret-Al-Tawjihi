@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('قاعة الاختبارات والتقييم الأكاديمي') . ' | ' . __('منارة التوجيهي'))
+@section('title', __('قاعة الاختبارات والتقييم الأكاديمي') . ' | ' . __('Step by Step'))
 
 @section('content')
 <div class="ed-exams-container">

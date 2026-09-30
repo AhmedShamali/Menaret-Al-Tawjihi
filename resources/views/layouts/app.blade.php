@@ -21,12 +21,12 @@
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+    <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     @php
-        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
-        $siteDesc = \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
-        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, منارة التوجيهي, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
+        $siteName = \App\Models\Setting::get('site_name', 'Step by Step');
+        $siteDesc = \App\Models\Setting::get('seo_description', 'Step by Step - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
+        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, Step by Step, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
         $canonicalUrl = url()->current();
         $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
         $googleVerify = \App\Models\Setting::get('google_site_verification');
@@ -35,7 +35,7 @@
 
     <meta name="description" content="@yield('meta_description', $siteDesc)">
     <meta name="keywords" content="@yield('meta_keywords', $siteKeywords)">
-    <meta name="author" content="م. أحمد شمالي - منارة التوجيهي">
+    <meta name="author" content="م. أحمد شمالي - Step by Step">
     <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
     <link rel="canonical" href="@yield('canonical_url', $canonicalUrl)">
 
@@ -69,7 +69,7 @@
                     '@type' => 'EducationalOrganization',
                     '@id' => url('/') . '#organization',
                     'name' => $siteName,
-                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'منارة التوجيهي'],
+                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'Step by Step'],
                     'url' => url('/'),
                     'logo' => $siteLogo,
                     'description' => $siteDesc,
@@ -1814,9 +1814,9 @@
     <aside class="sidebar" id="sidebar">
         <div class="side-brand">
             <a href="/" class="brand-logo">
-                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Stepvoro - منارة التوجيهي')) }}" style="max-height: 40px; max-width: 44px; object-fit: contain; border-radius: 8px; background: #ffffff; padding: 1px;">
+                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="max-height: 40px; max-width: 44px; object-fit: contain; border-radius: 8px; background: #ffffff; padding: 1px;">
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
+                    <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
                     <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
                 </div>
             </a>

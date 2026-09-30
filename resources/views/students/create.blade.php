@@ -9,7 +9,7 @@
     @else
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
-    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+    <title>{{ __('إنشاء حساب طالب جديد') }} | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -377,11 +377,11 @@
         <div class="top-nav-inner">
             <a href="/" class="brand-link">
                 @if(\App\Models\Setting::get('site_logo'))
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}" style="max-height: 36px; max-width: 44px; object-fit: contain;">
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="max-height: 36px; max-width: 44px; object-fit: contain;">
                 @else
                     <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                 @endif
-                <span>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
+                <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
             </a>
 
             <div class="nav-actions-right">

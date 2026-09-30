@@ -325,7 +325,7 @@ class AdminSubscriptionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم حفظ القسط الشهري الافتراضي لمنصة منارة التوجيهي بنجاح: ' . number_format($request->default_monthly_fee, 0) . ' ₪',
+            'message' => 'تم حفظ القسط الشهري الافتراضي لمنصة Step by Step بنجاح: ' . number_format($request->default_monthly_fee, 0) . ' ₪',
             'fee'     => number_format($request->default_monthly_fee, 0),
         ]);
     }

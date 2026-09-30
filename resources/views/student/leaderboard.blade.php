@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('لوحة الشرف وتحدي الأوائل') . ' | ' . __('منارة التوجيهي'))
+@section('title', __('لوحة الشرف وتحدي الأوائل') . ' | ' . __('Step by Step'))
 
 @section('content')
 <div class="ed-leaderboard-container">

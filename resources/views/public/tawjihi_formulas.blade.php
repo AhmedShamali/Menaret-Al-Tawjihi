@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل القوانين والقواعد الذهبية للتوجيهي فلسطين | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
+    <title>دليل القوانين والقواعد الذهبية للتوجيهي فلسطين | {{ \App\Models\Setting::get('site_name', 'Step by Step') }}</title>
     <meta name="description" content="دليل القوانين والقواعد الذهبية لطلبة الثانوية العامة التوجيهي في فلسطين: الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية مع أمثلة وتطبيقات تفاعلية.">
-    <meta name="keywords" content="قوانين التوجيهي فلسطين, قواعد توجيهي, قوانين فيزياء توجيهي, متطابقات مثلثية توجيهي, قواعد انجليزي توجيهي فلسطين, منصة تعليمية, منصة ستيب, ملخصات توجيهي, منارة التوجيهي">
+    <meta name="keywords" content="قوانين التوجيهي فلسطين, قواعد توجيهي, قوانين فيزياء توجيهي, متطابقات مثلثية توجيهي, قواعد انجليزي توجيهي فلسطين, منصة تعليمية, منصة ستيب, ملخصات توجيهي, Step by Step">
     <link rel="canonical" href="{{ url()->current() }}">
     <meta name="robots" content="index, follow">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="article">
-    <meta property="og:site_name" content="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}">
+    <meta property="og:site_name" content="{{ \App\Models\Setting::get('site_name', 'Step by Step') }}">
     <meta property="og:title" content="دليل القوانين والقواعد الذهبية للتوجيهي فلسطين">
     <meta property="og:description" content="دليل القوانين والقواعد الذهبية لطلبة الثانوية العامة التوجيهي في فلسطين: الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية.">
     <meta property="og:url" content="{{ url()->current() }}">
@@ -321,7 +321,7 @@
     <nav>
         <a href="/" class="nav-logo">
             <div class="logo-badge"><i class="fa-solid fa-graduation-cap"></i></div>
-            <span>{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</span>
+            <span>{{ \App\Models\Setting::get('site_name', 'Step by Step') }}</span>
         </a>
 
         <div class="nav-actions">

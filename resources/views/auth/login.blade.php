@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+    <title>{{ __('تسجيل الدخول') }} | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -696,7 +696,7 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
                 <div class="brand-titles">
-                    <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h1>
+                    <h1>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h1>
                     <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</p>
                 </div>
             </a>
@@ -855,7 +855,7 @@
     <footer class="auth-page-footer">
         {{ __('جميع الحقوق محفوظة © :year - :site_name • العام الأكاديمي :academic م | إشراف المهندس أحمد شمالي', [
             'year' => date('Y'),
-            'site_name' => __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')),
+            'site_name' => __(\App\Models\Setting::get('site_name', 'Step by Step')),
             'academic' => \App\Models\Setting::academicYear()
         ]) }}
     </footer>

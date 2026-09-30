@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('إدارة ورفع الفيديوهات والشروحات') . ' | ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('إدارة ورفع الفيديوهات والشروحات') . ' | ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="ed-teacher-videos-container">

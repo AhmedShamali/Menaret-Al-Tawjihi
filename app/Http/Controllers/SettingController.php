@@ -11,7 +11,7 @@ class SettingController extends Controller
     {
         // تجهيز مصفوفة الإعدادات الحالية لعرضها في الفورم
         $settings = [
-            'site_name' => Setting::get('site_name', 'منارة التوجيهي'),
+            'site_name' => Setting::get('site_name', 'Step by Step'),
             'contact_email' => Setting::get('contact_email', 'info@jesr.ps'),
             'contact_whatsapp' => Setting::get('contact_whatsapp', '00970597694385'),
             'registration_status' => Setting::get('registration_status', 'open'),

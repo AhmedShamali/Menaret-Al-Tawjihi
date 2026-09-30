@@ -47,7 +47,7 @@
 <aside class="stepvoro-install-banner" id="stepvoroInstallBanner" style="display: none;">
     <div class="banner-content-wrap">
         <div class="banner-app-icon">
-            <img src="/icons/icon.svg" alt="Stepvoro App Icon" width="46" height="46">
+            <img src="/icons/icon.svg" alt="Step by Step App Icon" width="46" height="46">
             <span class="app-verified-badge"><i class="fa-solid fa-check"></i></span>
         </div>
         <div class="banner-text">
@@ -71,7 +71,7 @@
     <div class="stepvoro-ios-sheet" onclick="event.stopPropagation()">
         <div class="ios-sheet-handle"></div>
         <div class="ios-sheet-header">
-            <img src="/icons/icon.svg" alt="Stepvoro Icon" width="54" height="54" class="ios-app-icon">
+            <img src="/icons/icon.svg" alt="Step by Step Icon" width="54" height="54" class="ios-app-icon">
             <div>
                 <h3>{{ __('تثبيت تطبيق Step by Step على iPhone') }}</h3>
                 <p>{{ __('احصل على التطبيق مباشرة على شاشتك الرئيسية في خطوتين') }}</p>

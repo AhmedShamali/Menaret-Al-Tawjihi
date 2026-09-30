@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('مركز استفسارات ومراسلات الطلاب') . ' - ' . config('app.name', 'منارة التوجيهي'))
+@section('title', __('مركز استفسارات ومراسلات الطلاب') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="academic-inbox-wrapper">

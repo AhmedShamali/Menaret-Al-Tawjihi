@@ -313,7 +313,7 @@ class DashboardController extends Controller {
     public function visitorIndex()
     {
         $settings = (object) [
-            'site_name' => \App\Models\Setting::get('site_name', 'منارة التوجيهي'),
+            'site_name' => \App\Models\Setting::get('site_name', 'Step by Step'),
             'site_symbol' => 'م',
             'site_description' => \App\Models\Setting::get('site_description', 'المنصة التعليمية المتكاملة لطلبة الثانوية العامة في فلسطين (التوجيهي).')
         ];

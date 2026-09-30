@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'سجل اشتراكاتي الشهرية - منصة منارة التوجيهي')
+@section('title', 'سجل اشتراكاتي الشهرية - منصة Step by Step')
 
 @section('content')
 <div class="student-subs-container">
