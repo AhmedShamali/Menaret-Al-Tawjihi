@@ -954,6 +954,9 @@
         .ed-subjects-grid {
             grid-template-columns: 1fr;
         }
+        .academic-roster-table {
+            min-width: 650px;
+        }
     }
 </style>
 

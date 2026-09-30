@@ -1284,12 +1284,12 @@
     /* Responsive */
     @media (max-width: 900px) {
         .inbox-classic-wrapper {
-            padding: 8px;
+            padding: 4px;
         }
         .inbox-classic-card {
             grid-template-columns: 1fr;
-            height: calc(100vh - 90px);
-            max-height: calc(100vh - 90px);
+            height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px));
+            max-height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px));
             border-radius: 12px;
         }
         .inbox-classic-main {

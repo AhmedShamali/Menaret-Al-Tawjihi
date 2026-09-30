@@ -606,11 +606,37 @@ html[dir="ltr"] .arrow-icon {
 }
 
 @media (max-width: 860px) {
+    .ed-profile-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .ed-btn-home {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+    }
     .ed-profile-layout {
         grid-template-columns: 1fr;
     }
     .ed-form-grid {
         grid-template-columns: 1fr;
+    }
+    .ed-tools-grid {
+        grid-template-columns: 1fr;
+    }
+    .ed-support-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .ed-btn-support {
+        width: 100%;
+        justify-content: center;
+    }
+    .ed-btn-submit {
+        width: 100%;
+        justify-content: center;
     }
 }
 </style>

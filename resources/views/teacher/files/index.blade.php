@@ -793,6 +793,62 @@
 .btn-modal-submit-file:hover {
     background: #991b1b;
 }
+
+@media (max-width: 768px) {
+    .ed-teacher-header {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .header-actions {
+        width: 100%;
+    }
+    .ed-btn-upload-file {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+    }
+    .ed-stats-strip {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px;
+    }
+    .filter-pills {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .filter-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .ed-files-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-card {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        padding: 16px !important;
+        border-radius: 12px !important;
+    }
+    .modal-foot {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .btn-modal-submit-file,
+    .btn-modal-cancel {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .ed-stats-strip {
+        grid-template-columns: 1fr !important;
+    }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

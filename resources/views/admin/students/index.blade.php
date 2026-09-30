@@ -914,6 +914,45 @@
         color: #94a3b8;
         font-size: 0.86rem;
     }
+
+    @media (max-width: 768px) {
+        .page-header-clean {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .header-actions-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        .header-actions-group .btn-clean {
+            padding: 8px 6px;
+            font-size: 0.74rem;
+            justify-content: center;
+        }
+        .bulk-bar-clean {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .bulk-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .bulk-actions .btn-clean {
+            justify-content: center;
+        }
+        .data-table-clean {
+            min-width: 720px;
+        }
+    }
+    @media (max-width: 480px) {
+        .header-actions-group {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
 {{-- السكربتات التفاعلية --}}

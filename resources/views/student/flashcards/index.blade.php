@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', __('Flashcards & Laws') . ' | ' . config('app.name'))
+@section('title', 'بطاقات الاستذكار السريع وقوانين التوجيهي الوزارية | ' . \App\Models\Setting::get('site_name', 'منارة التوجيهي'))
+@section('meta_description', 'مراجعة وحفظ قوانين التوجيهي الوزارية، متطابقات الرياضيات، قوانين الفيزياء والكيمياء عبر بطاقات استذكار تفاعلية ذكية لتفوق الثانوية العامة في فلسطين.')
+@section('meta_keywords', 'بطاقات استذكار توجيهي, مراجعة سريعة توجيهي فلسطين, قوانين الفيزياء توجيهي, تلخيص توجيهي, منارة التوجيهي')
 
 @section('content')
 <div class="ed-fc-container">

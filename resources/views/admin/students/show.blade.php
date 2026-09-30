@@ -11,12 +11,12 @@
 <div style="width: 100%; max-width: 100%; margin: 0 auto; padding-bottom: 50px;">
 
     <!-- شريط التنقل العلوي وزر العودة -->
-    <div style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+    <div class="student-show-top-nav" style="margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
         <a href="{{ route('admin.students.index') }}" style="background: #ffffff; color: var(--ed-primary, #1d4ed8); border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
             <i class="fa-solid {{ app()->getLocale() === 'ar' ? 'fa-arrow-right' : 'fa-arrow-left' }}"></i> {{ __('عودة لسجل الطلاب') }}
         </a>
 
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        <div class="student-show-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button type="button" onclick="openDiscountModalDirect()" style="background: #ffffff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 10px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-tags"></i> {{ __('الخصم والمنحة') }} ({{ $student->discount_label }})
             </button>
@@ -30,10 +30,10 @@
     </div>
 
     <!-- البطاقة الرئيسية لمعلومات الطالب -->
-    <div style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); overflow: hidden; padding: 28px; text-align: start; margin-bottom: 24px; border-inline-start: 5px solid var(--ed-primary, #1d4ed8);">
+    <div class="student-show-main-card" style="background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04); overflow: hidden; padding: 28px; text-align: start; margin-bottom: 24px; border-inline-start: 5px solid var(--ed-primary, #1d4ed8);">
 
         <!-- الهيدر الشخصي -->
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
+        <div class="student-show-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 20px; flex-wrap: wrap; gap: 16px;">
             <div style="display: flex; align-items: center; gap: 16px;">
                 <div style="width: 72px; height: 72px; border-radius: 50%; background: #eff6ff; color: var(--ed-primary, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: 2px solid #bfdbfe; overflow: hidden;">
                     <img src="{{ $student->photo_url }}" 
@@ -1077,5 +1077,52 @@ function quickResetStudentPassShow(studentId, studentName) {
     }
 }
 </script>
+
+<style>
+@media (max-width: 768px) {
+    .student-show-top-nav {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+    .student-show-top-nav > a {
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    .student-show-actions {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+    .student-show-actions button,
+    .student-show-actions a {
+        justify-content: center !important;
+        width: 100% !important;
+        padding: 9px 12px !important;
+        font-size: 0.82rem !important;
+    }
+    .student-show-main-card {
+        padding: 16px 14px !important;
+        border-radius: 10px !important;
+    }
+    .student-show-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 12px !important;
+    }
+    .student-show-header > div:first-child {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+    }
+    .student-show-header > div:first-child > div:last-child {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+    }
+}
+</style>
 
 @endsection

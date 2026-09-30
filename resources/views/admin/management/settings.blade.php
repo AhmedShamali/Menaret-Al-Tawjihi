@@ -256,6 +256,76 @@
                     </div>
                 </div>
 
+                <!-- 4. بطاقة تحسين محركات البحث وأرشفة جوجل (SEO & Webmaster Tools) -->
+                <div class="settings-card">
+                    <div class="settings-card-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 18px 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fa-brands fa-google" style="color: #ea4335; font-size: 1.3rem;"></i>
+                            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تهيئة محركات البحث والأرشفة في جوجل (SEO & Google Search Console)') }}</h3>
+                        </div>
+                        <a href="{{ url('/sitemap.xml') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none;">
+                            <i class="fa-solid fa-sitemap"></i> {{ __('معاينة خريطة الموقع sitemap.xml') }}
+                        </a>
+                    </div>
+                    <div style="padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <label class="field-label">{{ __('رمز التحقق من ملكية موقعك في جوجل (Google Site Verification Tag)') }}</label>
+                            <input type="text" name="google_site_verification"
+                                   value="{{ \App\Models\Setting::get('google_site_verification', '') }}"
+                                   placeholder="مثال: AbCdEfGh12345xyz"
+                                   class="field-input" style="direction: ltr; font-family: monospace;">
+                            <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">{{ __('يُنسخ من Google Search Console لإثبات ملكية المنصة وتفعيل الفهرسة الفورية.') }}</small>
+                        </div>
+
+                        <div>
+                            <label class="field-label">{{ __('معرف إحصائيات جوجل (Google Analytics 4 Measurement ID)') }}</label>
+                            <input type="text" name="google_analytics_id"
+                                   value="{{ \App\Models\Setting::get('google_analytics_id', '') }}"
+                                   placeholder="مثال: G-XXXXXXXXXX"
+                                   class="field-input" style="direction: ltr; font-family: monospace;">
+                            <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">{{ __('لتتبع عدد الزوار والطلبة ومصادر البحث من محافظات فلسطين.') }}</small>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>{{ __('الكلمات الدلالية ومفردات البحث (SEO Meta Keywords)') }}</span>
+                                <span style="font-size: 0.75rem; color: #3b82f6; font-weight: normal;">{{ __('موصى بها لأرشفة جوجل وتصدر النتائج الأولى') }}</span>
+                            </label>
+                            <textarea id="seo_keywords_input" name="seo_keywords" rows="4" class="field-input" style="height: auto; line-height: 1.6; font-size: 0.85rem;">{{ \App\Models\Setting::get('seo_keywords', 'منارة التوجيهي, منصة ستيب, منصة ستيب التعليمية, ستيب, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي') }}</textarea>
+                            
+                            <!-- كبسولات الكلمات السريعة لإضافتها بنقرة واحدة -->
+                            <div style="margin-top: 8px;">
+                                <small style="color: #64748b; font-size: 0.76rem; display: block; margin-bottom: 6px;">
+                                    <i class="fas fa-tags" style="color: #3b82f6;"></i> {{ __('انقر على أي تصنيف لإضافة باقة كلمات مفتاحية فوراً إلى القائمة:') }}
+                                </small>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <button type="button" class="btn-tag" onclick="appendSeoKeyword('منصة ستيب, ستيب, منصة ستيب التعليمية, ستيب توجيهي')">
+                                        + كلمات ستيب والمنصات المشابهة
+                                    </button>
+                                    <button type="button" class="btn-tag" onclick="appendSeoKeyword('منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية اونلاين')">
+                                        + كلمات تعليمية وشروحات
+                                    </button>
+                                    <button type="button" class="btn-tag" onclick="appendSeoKeyword('توجيهي فلسطين 2026, المنهاج الفلسطيني, وزارة التربية والتعليم, امتحانات وزارية محلولة')">
+                                        + منهاج فلسطين وتوجيهي
+                                    </button>
+                                    <button type="button" class="btn-tag" onclick="appendSeoKeyword('حاسبة معدل التوجيهي, طريقة حساب معدل التوجيهي فلسطين, معدل الثانوية العامة')">
+                                        + حساب المعدل
+                                    </button>
+                                    <button type="button" class="btn-tag" onclick="appendSeoKeyword('دوسيات توجيهي, ملخصات توجيهي فلسطين, بنك أسئلة توجيهي, بطاقات استذكار')">
+                                        + دوسيات وملخصات
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="field-label">{{ __('الوصف الافتراضي للمنصة في نتائج بحث جوجل (SEO Meta Description)') }}</label>
+                            <textarea name="seo_description" rows="3" class="field-input" style="height: auto; line-height: 1.6;">{{ \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.') }}</textarea>
+                            <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">{{ __('النص الذي يظهر أسفل عنوان موقعك في صفحة نتائج بحث جوجل (يفضل أن يحتوي على الكلمات المستهدفة بدقة).') }}</small>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- الجانب الأيسر: المعاينة الذكية + زر الحفظ (فاتحة وأنيقة بالكامل) -->
@@ -536,6 +606,57 @@
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
 }
+
+.btn-tag {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.btn-tag:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .settings-page-wrapper {
+        padding: 0 0.5rem;
+        margin: 0.5rem auto 2rem;
+    }
+    .settings-header-card {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .settings-title {
+        font-size: 1.15rem;
+    }
+    .settings-card > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+        padding: 16px 14px !important;
+        gap: 16px !important;
+    }
+    .settings-card > div[style*="padding: 25px"] {
+        padding: 16px 14px !important;
+    }
+    .settings-card-header {
+        padding: 14px 16px !important;
+    }
+    div[style*="grid-column: span 2"] {
+        grid-column: span 1 !important;
+    }
+}
 </style>
 
 <script>
@@ -768,6 +889,29 @@
                     Swal.fire(settingsI18n.errorWord, err.response?.data?.message || settingsI18n.fullResetErrorDefault, 'error');
                 });
             }
+        });
+    function appendSeoKeyword(keywords) {
+        const textarea = document.getElementById('seo_keywords_input');
+        if (!textarea) return;
+        let current = textarea.value.trim();
+        if (!current) {
+            textarea.value = keywords;
+        } else {
+            const newWords = keywords.split(',').map(s => s.trim());
+            const currentWords = current.split(',').map(s => s.trim());
+            const uniqueToAdd = newWords.filter(w => !currentWords.includes(w));
+            if (uniqueToAdd.length > 0) {
+                textarea.value = current + ', ' + uniqueToAdd.join(', ');
+            }
+        }
+        textarea.focus();
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'تمت إضافة الكلمات بنجاح إلى القائمة',
+            showConfirmButton: false,
+            timer: 1600
         });
     }
 </script>

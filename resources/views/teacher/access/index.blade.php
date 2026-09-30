@@ -1042,6 +1042,73 @@
     font-size: 0.8rem;
     cursor: pointer;
 }
+
+@media (max-width: 768px) {
+    .access-hero-card {
+        padding: 14px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .hero-quick-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .btn-hero-action {
+        width: 100%;
+        justify-content: center;
+    }
+    .control-tabs-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .tab-btn {
+        width: 100%;
+        min-width: 100%;
+    }
+    .table-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .table-search-box {
+        width: 100%;
+    }
+    .access-data-table {
+        min-width: 650px !important;
+    }
+    .item-students-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .bulk-actions-lane {
+        width: 100%;
+    }
+    .btn-bulk {
+        flex: 1;
+        justify-content: center;
+    }
+    .students-checkbox-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-card-container {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        margin: auto;
+    }
+    .modal-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .btn-secondary,
+    .btn-primary-save {
+        width: 100%;
+        justify-content: center;
+    }
+}
 </style>
 
 <script>

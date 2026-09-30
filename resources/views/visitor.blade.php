@@ -7,6 +7,42 @@
 
     <title>بوابة الزوار | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
 
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $siteDesc = \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
+        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'منارة التوجيهي, منصة ستيب, منصة ستيب التعليمية, ستيب, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
+        $canonicalUrl = url('/students');
+        $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+
+    <meta name="description" content="{{ $siteDesc }}">
+    <meta name="keywords" content="{{ $siteKeywords }}">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:title" content="بوابة الزوار والطلبة | {{ $siteName }}">
+    <meta property="og:description" content="{{ $siteDesc }}">
+    <meta property="og:image" content="{{ $siteLogo }}">
+    <meta property="og:site_name" content="{{ $siteName }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="بوابة الزوار والطلبة | {{ $siteName }}">
+    <meta name="twitter:description" content="{{ $siteDesc }}">
+    <meta name="twitter:image" content="{{ $siteLogo }}">
+
+    @if($gaId)
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
+
     <!-- الخطوط والأيقونات -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -334,10 +370,24 @@
         }
 
         @media (max-width: 768px) {
-            header.visitor-header { padding: 15px 20px; }
-            h1.hero-title { font-size: 2.1rem; }
-            .cta-buttons-container { flex-direction: column; width: 100%; }
-            .btn-cta-primary, .btn-cta-secondary, .btn-cta-green { width: 100%; justify-content: center; }
+            header.visitor-header { padding: 12px 16px; flex-wrap: wrap; gap: 10px; }
+            .header-actions { gap: 8px; }
+            .btn-header-link { padding: 6px 10px; font-size: 0.8rem; }
+            .btn-register-header { padding: 7px 14px; font-size: 0.82rem; }
+            main.visitor-main { padding: 36px 16px 60px; }
+            h1.hero-title { font-size: 1.8rem; line-height: 1.35; }
+            .hero-desc { font-size: 0.9rem; }
+            .cta-buttons-container { flex-direction: column; width: 100%; gap: 10px; }
+            .btn-cta-primary, .btn-cta-secondary, .btn-cta-green { width: 100%; justify-content: center; text-align: center; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 520px) {
+            header.visitor-header .btn-header-link:not([href*="login"]) {
+                display: none;
+            }
+            .brand-logo { font-size: 1.05rem; gap: 8px; }
+            .logo-square { width: 34px; height: 34px; font-size: 1rem; border-radius: 8px; }
         }
     </style>
 </head>

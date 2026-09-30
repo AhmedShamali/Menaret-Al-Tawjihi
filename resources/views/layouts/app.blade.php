@@ -11,6 +11,100 @@
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $siteDesc = \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
+        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, منارة التوجيهي, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
+        $canonicalUrl = url()->current();
+        $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+        $googleVerify = \App\Models\Setting::get('google_site_verification');
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+
+    <meta name="description" content="@yield('meta_description', $siteDesc)">
+    <meta name="keywords" content="@yield('meta_keywords', $siteKeywords)">
+    <meta name="author" content="م. أحمد شمالي - منارة التوجيهي">
+    <meta name="robots" content="@yield('meta_robots', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1')">
+    <link rel="canonical" href="@yield('canonical_url', $canonicalUrl)">
+
+    {{-- Google Site Verification --}}
+    @if($googleVerify)
+        <meta name="google-site-verification" content="{{ $googleVerify }}">
+    @endif
+
+    {{-- Open Graph / Facebook / WhatsApp --}}
+    <meta property="og:type" content="@yield('og_type', 'website')">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:title" content="@yield('title', __('المنصة التعليمية')) | {{ $siteName }}">
+    <meta property="og:description" content="@yield('meta_description', $siteDesc)">
+    <meta property="og:image" content="@yield('og_image', $siteLogo)">
+    <meta property="og:site_name" content="{{ $siteName }}">
+    <meta property="og:locale" content="{{ app()->getLocale() === 'en' ? 'en_US' : 'ar_AR' }}">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ $canonicalUrl }}">
+    <meta name="twitter:title" content="@yield('title', __('المنصة التعليمية')) | {{ $siteName }}">
+    <meta name="twitter:description" content="@yield('meta_description', $siteDesc)">
+    <meta name="twitter:image" content="@yield('og_image', $siteLogo)">
+
+    {{-- JSON-LD Structured Data Schema (Google Rich Results) --}}
+    @php
+        $layoutSchema = [
+            chr(64) . 'context' => 'https://schema.org',
+            chr(64) . 'graph' => [
+                [
+                    '@type' => 'EducationalOrganization',
+                    '@id' => url('/') . '#organization',
+                    'name' => $siteName,
+                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'منارة التوجيهي'],
+                    'url' => url('/'),
+                    'logo' => $siteLogo,
+                    'description' => $siteDesc,
+                    'address' => [
+                        '@type' => 'PostalAddress',
+                        'addressCountry' => 'PS',
+                        'addressRegion' => 'Palestine'
+                    ],
+                    'founder' => [
+                        '@type' => 'Person',
+                        'name' => 'م. أحمد شمالي'
+                    ]
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => url('/') . '#website',
+                    'url' => url('/'),
+                    'name' => $siteName,
+                    'description' => $siteDesc,
+                    'publisher' => [
+                        '@id' => url('/') . '#organization'
+                    ],
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => url('/catalog') . '?search={search_term_string}',
+                        'query-input' => 'required name=search_term_string'
+                    ],
+                    'inLanguage' => app()->getLocale()
+                ]
+            ]
+        ];
+    @endphp
+    <script type="application/ld+json">
+    {!! json_encode($layoutSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
+    {{-- Google Analytics 4 (GA4) --}}
+    @if($gaId)
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
+
     <!-- Google Fonts: Alexandria & Tajawal & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -697,20 +791,23 @@
         }
 
         /* --- شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav) --- */
+        /* --- شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav) --- */
         .mobile-bottom-nav {
             display: none;
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 62px;
-            background: var(--ed-surface);
+            height: calc(60px + env(safe-area-inset-bottom, 0px));
+            background: #ffffff;
             border-top: 1px solid var(--ed-border);
-            z-index: 1000;
+            z-index: 1050;
             justify-content: space-around;
             align-items: center;
-            padding: 4px 8px;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+            padding: 4px 8px env(safe-area-inset-bottom, 0px);
+            box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.05);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
 
         .bottom-nav-item {
@@ -719,18 +816,21 @@
             align-items: center;
             justify-content: center;
             text-decoration: none;
-            color: var(--ed-text-muted);
+            color: #64748b;
             font-size: 0.72rem;
             font-weight: 600;
-            gap: 4px;
+            gap: 3px;
             position: relative;
             flex: 1;
             padding: 6px 0;
             transition: var(--transition-smooth);
+            min-height: 48px;
+            border-radius: 8px;
         }
 
         .bottom-nav-item i {
             font-size: 1.15rem;
+            transition: transform 0.15s ease;
         }
 
         .bottom-nav-item.active,
@@ -738,9 +838,13 @@
             color: var(--ed-primary);
         }
 
+        .bottom-nav-item.active i {
+            transform: translateY(-2px);
+        }
+
         .bottom-nav-badge {
             position: absolute;
-            top: 2px;
+            top: 3px;
             right: 22%;
             background: var(--ed-danger);
             color: #ffffff;
@@ -751,30 +855,37 @@
             border: 1.5px solid var(--ed-surface);
         }
 
-        /* --- التجاوب مع مختلف الشاشات (Responsive Breakpoints) --- */
+        /* ==========================================================================
+           النظام الشامل لتجاوب الشاشات والهواتف الذكية (Universal Responsive System)
+           ========================================================================== */
+
+        /* 1. الأجهزة اللوحية والشاشات المتوسطة (Tablets <= 1024px) */
         @media (max-width: 1024px) {
             aside.sidebar {
                 transform: translateX(105%);
-                box-shadow: -4px 0 25px rgba(15, 23, 42, 0.12);
+                box-shadow: -4px 0 25px rgba(15, 23, 42, 0.15);
                 z-index: 1100;
-                width: 290px;
+                width: 285px;
                 max-width: 86vw;
             }
             aside.sidebar.mobile-active {
                 transform: translateX(0);
             }
             .sidebar-overlay {
-                z-index: 1050;
+                z-index: 1080;
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
             }
             main.main-content {
-                margin-right: 0;
-                margin-left: 0;
-                width: 100%;
-                max-width: 100%;
-                min-width: 0;
+                margin-right: 0 !important;
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow-x: hidden;
             }
             .mobile-toggle {
-                display: flex;
+                display: flex !important;
             }
             .sidebar-overlay.active {
                 display: block;
@@ -783,38 +894,120 @@
                 padding: 0 16px;
             }
             .content-body {
-                padding: 18px 16px 80px;
+                padding: 16px 14px 80px;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
         }
 
+        /* 2. الهواتف الذكية والشاشات الصغيرة (Mobile Devices <= 768px) */
         @media (max-width: 768px) {
             .mobile-bottom-nav {
                 display: flex;
             }
             body:not(.no-sidebar) {
-                padding-bottom: 74px;
+                padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
             }
             .date-info {
                 display: none !important;
             }
             .top-bar {
-                padding: 0 12px;
+                padding: 0 10px;
                 height: 56px;
             }
+            .topbar-actions-group {
+                gap: 6px !important;
+            }
+            .topbar-user-card {
+                padding: 4px 6px !important;
+                gap: 0 !important;
+            }
+            .topbar-user-card .user-info-text {
+                display: none !important;
+            }
+            #notificationsMenu {
+                position: fixed !important;
+                top: 58px !important;
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                max-width: none !important;
+                border-radius: var(--ed-radius-md) !important;
+                box-shadow: 0 12px 36px rgba(15, 23, 42, 0.22) !important;
+                z-index: 1200 !important;
+            }
             .content-body {
-                padding: 12px 10px 80px;
+                padding: 12px 10px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             }
-            .ed-card-header {
-                padding: 12px 14px;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            .ed-card-body {
-                padding: 14px;
-            }
-            .toolbar-clean {
-                flex-direction: column;
+
+            /* العناوين وأشرطة الإجراءات في رأس الصفحات */
+            .page-header-clean,
+            .dash-header-bar {
+                flex-direction: column !important;
                 align-items: stretch !important;
+                gap: 12px !important;
+                margin-bottom: 16px !important;
+            }
+            .header-titles,
+            .dash-header-info {
+                width: 100% !important;
+            }
+            .page-title-text,
+            .dash-title {
+                font-size: 1.25rem !important;
+            }
+            .header-actions-group,
+            .dash-header-meta {
+                width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+            .header-actions-group .btn-clean {
+                flex: 1 1 auto !important;
+                min-width: 90px !important;
+                justify-content: center !important;
+                padding: 8px 10px !important;
+                font-size: 0.78rem !important;
+            }
+
+            /* بطاقات المؤشرات العامة (KPI Grid) - استجابة مرنة بعمودين للهواتف */
+            .stats-row-clean,
+            div[class*="stats-row"],
+            .dash-kpi-row,
+            .ed-header-stats-grid,
+            .kpi-row {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+                margin-bottom: 14px !important;
+            }
+            .stat-card-clean,
+            .kpi-box {
+                padding: 12px 10px !important;
+                border-radius: 8px !important;
+            }
+            .stat-card-clean .stat-number,
+            .kpi-value {
+                font-size: 1.3rem !important;
+            }
+            .stat-card-clean .stat-label,
+            .kpi-label {
+                font-size: 0.74rem !important;
+                margin-bottom: 4px !important;
+            }
+            .stat-card-clean .stat-icon,
+            .kpi-icon-wrap {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.95rem !important;
+            }
+
+            /* شريط البحث وتصفية الكبسولات */
+            .toolbar-clean {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 10px 12px !important;
                 gap: 10px !important;
             }
             .search-box-clean {
@@ -822,47 +1015,150 @@
                 max-width: 100% !important;
             }
             .filter-pills-clean {
-                overflow-x: auto;
+                display: flex !important;
                 flex-wrap: nowrap !important;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 4px;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding-bottom: 6px !important;
                 gap: 6px !important;
+                scrollbar-width: none;
+            }
+            .filter-pills-clean::-webkit-scrollbar {
+                display: none;
             }
             .filter-pill {
                 white-space: nowrap !important;
-                flex-shrink: 0;
+                flex-shrink: 0 !important;
+                padding: 5px 11px !important;
+                font-size: 0.75rem !important;
             }
-            .stats-row-clean {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
+
+            /* حاويات الجداول وحماية التمرير الأفقي الناعم */
+            .table-card-clean {
+                border-radius: 8px !important;
+                margin-bottom: 14px !important;
             }
-            .stat-card-clean {
-                padding: 12px !important;
+            .table-responsive,
+            .table-container-clean,
+            .table-responsive-box,
+            .table-responsive-wrapper,
+            .ed-table-responsive {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
+                display: block !important;
+                position: relative !important;
+                scrollbar-width: thin;
             }
-            .stat-card-clean .stat-number {
-                font-size: 1.35rem !important;
+            .data-table-clean,
+            .classic-table,
+            table.data-table,
+            table.table-custom,
+            table.payroll-table,
+            table.ed-custom-table,
+            table.payments-table,
+            table.clean-matrix-table,
+            table.academic-simple-table {
+                min-width: 600px !important;
             }
-            .stat-card-clean .stat-icon {
-                width: 36px !important;
-                height: 36px !important;
-                font-size: 1rem !important;
+            .data-table-clean th,
+            .classic-table th,
+            table.data-table th,
+            table.table-custom th {
+                padding: 10px !important;
+                font-size: 0.78rem !important;
+            }
+            .data-table-clean td,
+            .classic-table td,
+            table.data-table td,
+            table.table-custom td {
+                padding: 10px !important;
+                font-size: 0.8rem !important;
+            }
+
+            /* أزرار الإجراءات في الجداول */
+            .tbl-btn-icon {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.82rem !important;
+            }
+            .tbl-btn {
+                padding: 6px 12px !important;
+                font-size: 0.78rem !important;
+            }
+
+            /* منع الزوم التلقائي المزعج في متصفحات الجوال */
+            input, select, textarea,
+            .search-box-clean input,
+            .ed-input, .ed-select {
+                font-size: 16px !important;
+            }
+
+            /* النوافذ المنبثقة (Modals) */
+            .modal-overlay,
+            .swal2-container {
+                padding: 8px !important;
+            }
+            .modal-card-box {
+                width: 95vw !important;
+                max-width: 95vw !important;
+                padding: 18px 14px !important;
+                border-radius: 14px !important;
+                max-height: 88vh !important;
+            }
+            .swal2-popup {
+                width: 92vw !important;
+                max-width: 92vw !important;
+                padding: 16px 12px !important;
+                border-radius: 12px !important;
+            }
+
+            /* شاشات المحادثات (Chat & Inbox) */
+            .inbox-classic-card,
+            .chat-container,
+            .inbox-card,
+            .chat-wrapper,
+            .support-chat-container,
+            .admin-chat-card,
+            .tc-chat-box {
+                height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px)) !important;
+                max-height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px)) !important;
             }
         }
 
-        @media (max-width: 480px) {
-            .stats-row-clean {
-                grid-template-columns: 1fr 1fr !important;
-                gap: 6px !important;
+        /* 3. شاشات الجوال فائقة الصغر (Ultra-Compact Mobile <= 440px) */
+        @media (max-width: 440px) {
+            .stats-row-clean,
+            div[class*="stats-row"],
+            .dash-kpi-row,
+            .ed-header-stats-grid,
+            .kpi-row {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            .stat-card-clean .stat-value-wrap {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+            }
+            .stat-card-clean .stat-number {
+                font-size: 1.4rem !important;
             }
             .top-bar {
                 padding: 0 8px;
             }
             .content-body {
-                padding: 8px 6px 80px;
+                padding: 10px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             }
-            .ed-btn {
-                padding: 8px 14px;
-                font-size: 0.82rem;
+            .ed-btn, .btn-clean {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            .header-actions-group .btn-clean {
+                min-width: 80px !important;
+                font-size: 0.74rem !important;
+                padding: 7px 8px !important;
             }
         }
 
@@ -1909,7 +2205,7 @@
                 </div>
             </div>
 
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div class="topbar-actions-group" style="display:flex; align-items:center; gap:10px;">
                 <!-- زر تبديل اللغة (عربي / English) -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
@@ -2108,7 +2404,7 @@
                     $topUser = auth('student')->user() ?? auth()->user();
                     $topUserName = (app()->getLocale() === 'en' && !empty($topUser?->name_en)) ? $topUser->name_en : ($topUser?->name ?? $topUser?->name_ar ?? __('حسابي'));
                 @endphp
-                <div style="display:flex; align-items:center; gap:9px; background: var(--ed-surface); padding: 5px 12px; border-radius: 10px; border: 1px solid var(--ed-border);">
+                <div class="topbar-user-card" style="display:flex; align-items:center; gap:9px; background: var(--ed-surface); padding: 5px 12px; border-radius: 10px; border: 1px solid var(--ed-border);">
                     <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; font-size: 0.85rem; font-weight: 700;">
                         <i class="fa-solid fa-user"></i>
                     </div>

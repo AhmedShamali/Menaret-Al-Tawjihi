@@ -617,6 +617,12 @@
     }
 
     /* جدول السجلات الكلاسيكي (مثل جداول الجامعات) */
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .academic-simple-table {
         width: 100%;
         border-collapse: collapse;
@@ -642,6 +648,21 @@
 
     .academic-simple-table tbody tr:hover {
         background: #f8fafc;
+    }
+
+    @media (max-width: 768px) {
+        .academic-simple-table {
+            min-width: 580px;
+        }
+        .dash-header-bar {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+        .dash-header-meta {
+            width: 100% !important;
+            justify-content: flex-start !important;
+        }
     }
 
     .cell-entity {

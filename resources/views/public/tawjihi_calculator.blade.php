@@ -3,7 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق الجامعي') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+    <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
+
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $calcDesc = 'حاسبة معدل التوجيهي فلسطين 2026 الرسمية: احسب معدلك في الثانوية العامة بدقة لكافة الفروع (العلمي، الأدبي، الشرعي، الريادة والأعمال، الصناعي) واكتشف التخصصات ومعدلات القبول في الجامعات الفلسطينية.';
+        $calcKeywords = 'حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, معدل التوجيهي 2026, طريقة حساب معدل التوجيهي, منصة تعليمية, منصة ستيب, موقع تعليمي, شروحات تعليمية, معدلات القبول جامعة النجاح, معدلات القبول جامعة بيرزيت, القبول الموحد فلسطين, توجيهي فلسطين, منارة التوجيهي';
+        $canonicalUrl = route('tawjihi.calculator');
+        $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+
+    <meta name="description" content="{{ $calcDesc }}">
+    <meta name="keywords" content="{{ $calcKeywords }}">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:title" content="حاسبة معدل التوجيهي والقبول الجامعي في فلسطين 2026 | {{ $siteName }}">
+    <meta property="og:description" content="{{ $calcDesc }}">
+    <meta property="og:image" content="{{ $siteLogo }}">
+    <meta property="og:site_name" content="{{ $siteName }}">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="حاسبة معدل التوجيهي والقبول الجامعي في فلسطين 2026 | {{ $siteName }}">
+    <meta name="twitter:description" content="{{ $calcDesc }}">
+    <meta name="twitter:image" content="{{ $siteLogo }}">
+
+    @php
+        $calcSchema = [
+            chr(64) . 'context' => 'https://schema.org',
+            '@type' => 'WebApplication',
+            'name' => 'حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي الفلسطيني',
+            'url' => $canonicalUrl,
+            'applicationCategory' => 'EducationalApplication',
+            'operatingSystem' => 'All',
+            'offers' => [
+                '@type' => 'Offer',
+                'price' => '0',
+                'priceCurrency' => 'ILS'
+            ],
+            'description' => $calcDesc,
+            'publisher' => [
+                '@type' => 'EducationalOrganization',
+                'name' => $siteName,
+                'url' => url('/')
+            ]
+        ];
+    @endphp
+    <script type="application/ld+json">
+    {!! json_encode($calcSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
+    @if($gaId)
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
 
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">

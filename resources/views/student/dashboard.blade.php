@@ -42,7 +42,7 @@
 
         {{-- إحصائيات الطالب الحية الكلاسيكية --}}
         @php $currentStudent = Auth::guard('student')->user() ?? $student; @endphp
-        <div class="stats-row-clean" style="grid-template-columns: repeat(3, 1fr); margin-top: 18px;">
+        <div class="stats-row-clean ed-student-kpis" style="margin-top: 18px;">
             <div class="stat-card-clean" style="--card-accent: #d97706;">
                 <span class="stat-label">{{ __('الالتزام المتتالي') }}</span>
                 <div class="stat-value-wrap">
@@ -1116,13 +1116,27 @@
         .ed-main-grid-classic { grid-template-columns: 1fr; }
     }
 
+    @media (max-width: 768px) {
+        .academic-table tr { display: flex; flex-direction: column; border-bottom: 1px solid #e2e8f0; }
+        .academic-table td { width: 100% !important; padding: 12px 14px !important; border-bottom: 1px solid #f1f5f9; }
+        .academic-table td:last-child { border-bottom: none; }
+        .ed-welcome-actions { flex-direction: column; width: 100%; gap: 8px; }
+        .ed-welcome-actions .ed-btn-classic { width: 100%; justify-content: center; }
+        .ed-countdown-panel-classic { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px; }
+        .ed-cd-clock { justify-content: center; }
+        .ed-section-head { flex-direction: column; align-items: flex-start; gap: 6px; }
+        .ed-exam-item-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+        .ed-exam-item-row .tbl-btn { width: 100%; justify-content: center; }
+    }
+
     @media (max-width: 650px) {
-        .ed-dash-header-classic { padding: 20px 18px; }
+        .ed-dash-header-classic { padding: 18px 14px; }
         .ed-tools-grid-classic { grid-template-columns: 1fr; }
         .ed-header-stats-grid { grid-template-columns: 1fr; }
-        .ed-countdown-panel-classic { padding: 16px; }
-        .ed-clock-unit { min-width: 46px; padding: 6px 8px; }
+        .ed-countdown-panel-classic { padding: 14px; }
+        .ed-clock-unit { min-width: 44px; padding: 6px 6px; }
         .ed-clock-unit .num { font-size: 1.15rem; }
+        .ed-section-box { padding: 16px 14px; }
     }
 </style>
 

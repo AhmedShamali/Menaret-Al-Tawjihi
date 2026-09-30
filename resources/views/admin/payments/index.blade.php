@@ -386,6 +386,84 @@
         flex-wrap: wrap;
         gap: 10px;
     }
+
+    @media (max-width: 768px) {
+        .payments-header {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .payments-header h1 {
+            font-size: 1.2rem;
+        }
+        .payments-header > div:last-child {
+            width: 100%;
+        }
+        .payments-header > div:last-child .filter-tab {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+            display: inline-flex;
+        }
+        .stats-row-clean {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .filter-card {
+            padding: 12px 14px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .filter-tabs {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 4px;
+        }
+        .filter-tab {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .search-box {
+            width: 100%;
+        }
+        .search-box input {
+            width: 100%;
+        }
+        table.payments-tbl {
+            min-width: 820px;
+        }
+        .receipt-modal-content {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            max-height: 92vh !important;
+            margin: auto;
+        }
+        .receipt-viewer-box {
+            min-height: 200px;
+            max-height: 320px;
+        }
+        .receipt-modal-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .receipt-modal-footer form,
+        .receipt-modal-footer button,
+        .receipt-modal-footer a {
+            width: 100%;
+            text-align: center;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row-clean {
+            grid-template-columns: 1fr !important;
+        }
+    }
 </style>
 
 <div class="payments-header">

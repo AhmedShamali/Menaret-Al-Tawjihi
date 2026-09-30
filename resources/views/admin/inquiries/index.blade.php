@@ -800,5 +800,72 @@
         gap: 6px;
     }
     .btn-submit-modal:hover { background: #172554; }
+
+    @media (max-width: 768px) {
+        .inquiries-header-card {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .header-action-tools {
+            width: 100%;
+        }
+        .btn-classic-nav {
+            width: 100%;
+            justify-content: center;
+            display: inline-flex;
+            text-align: center;
+        }
+        .stats-row-clean {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px;
+        }
+        .filters-card-wrapper {
+            padding: 12px 14px;
+        }
+        .filters-action-form {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .search-input-wrap,
+        .select-field-wrap,
+        .filter-select-field,
+        .btn-filter-apply {
+            width: 100%;
+            min-width: 100%;
+        }
+        .btn-filter-apply {
+            justify-content: center;
+        }
+        .academic-table {
+            min-width: 780px !important;
+        }
+        .inquiry-modal-card {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            margin: auto;
+        }
+        .inquiry-modal-body {
+            padding: 14px 16px;
+        }
+        .modal-actions-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .btn-cancel-modal,
+        .btn-submit-modal {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row-clean {
+            grid-template-columns: 1fr !important;
+        }
+    }
 </style>
 @endsection

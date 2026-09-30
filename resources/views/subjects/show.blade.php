@@ -640,6 +640,44 @@
         font-weight: 700;
         cursor: pointer;
     }
+
+    @media (max-width: 768px) {
+        .subject-header-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .header-actions {
+            width: 100%;
+        }
+        .header-actions .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+        .teacher-hero-card {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px 14px;
+            gap: 14px;
+        }
+        .hero-stats {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .stat-box {
+            padding: 8px 12px;
+        }
+        .videos-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        .ai-chat-modal {
+            width: 95vw;
+            max-height: 85vh;
+        }
+    }
 </style>
 
 <!-- Scripts: مشغل فيديو المنصة الآمن كلياً -->

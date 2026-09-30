@@ -3,7 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليل القوانين والقواعد الذهبية للتوجيهي | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
+    <title>دليل القوانين والقواعد الذهبية للتوجيهي فلسطين | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
+    <meta name="description" content="دليل القوانين والقواعد الذهبية لطلبة الثانوية العامة التوجيهي في فلسطين: الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية مع أمثلة وتطبيقات تفاعلية.">
+    <meta name="keywords" content="قوانين التوجيهي فلسطين, قواعد توجيهي, قوانين فيزياء توجيهي, متطابقات مثلثية توجيهي, قواعد انجليزي توجيهي فلسطين, منصة تعليمية, منصة ستيب, ملخصات توجيهي, منارة التوجيهي">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="{{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}">
+    <meta property="og:title" content="دليل القوانين والقواعد الذهبية للتوجيهي فلسطين">
+    <meta property="og:description" content="دليل القوانين والقواعد الذهبية لطلبة الثانوية العامة التوجيهي في فلسطين: الرياضيات، الفيزياء، الكيمياء، وقواعد اللغة الإنجليزية.">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('storage/' . \App\Models\Setting::get('site_logo', 'assets/images/logo.png')) }}">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="دليل القوانين والقواعد الذهبية للتوجيهي فلسطين">
+    <meta name="twitter:description" content="دليل القوانين والقواعد الذهبية لطلبة الثانوية العامة التوجيهي في فلسطين.">
+
+    @php
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+    @if(!empty($gaId))
+        <!-- Google Analytics 4 (GA4) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
 
     <!-- Google Fonts: Alexandria -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

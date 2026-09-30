@@ -12,7 +12,100 @@
     @endif
 
     <title>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
-    <meta name="description" content="{{ __('المنظومة التعليمية الرائدة لطلبة الثانوية العامة في فلسطين: شروحات المنهاج المعتمد، تدريبات وبنك أسئلة تقييمية شاملة، ومتابعة دراسية بإشراف م.أحمد شمالي.') }}">
+
+    @php
+        $siteName = \App\Models\Setting::get('site_name', 'منارة التوجيهي');
+        $siteDesc = \App\Models\Setting::get('seo_description', 'منارة التوجيهي - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
+        $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, منارة التوجيهي, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
+        $canonicalUrl = url('/');
+        $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+        $googleVerify = \App\Models\Setting::get('google_site_verification');
+        $gaId = \App\Models\Setting::get('google_analytics_id');
+    @endphp
+
+    <meta name="description" content="{{ $siteDesc }}">
+    <meta name="keywords" content="{{ $siteKeywords }}">
+    <meta name="author" content="م. أحمد شمالي - منارة التوجيهي">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    {{-- Google Site Verification --}}
+    @if($googleVerify)
+        <meta name="google-site-verification" content="{{ $googleVerify }}">
+    @endif
+
+    {{-- Open Graph / Facebook / WhatsApp --}}
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ $canonicalUrl }}">
+    <meta property="og:title" content="{{ $siteName }} | بوابة ومنظومة الثانوية العامة لدولة فلسطين">
+    <meta property="og:description" content="{{ $siteDesc }}">
+    <meta property="og:image" content="{{ $siteLogo }}">
+    <meta property="og:site_name" content="{{ $siteName }} (Stepvoro)">
+    <meta property="og:locale" content="{{ app()->getLocale() === 'en' ? 'en_US' : 'ar_AR' }}">
+
+    {{-- Twitter Card --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ $canonicalUrl }}">
+    <meta name="twitter:title" content="{{ $siteName }} | بوابة ومنظومة الثانوية العامة لدولة فلسطين">
+    <meta name="twitter:description" content="{{ $siteDesc }}">
+    <meta name="twitter:image" content="{{ $siteLogo }}">
+
+    {{-- JSON-LD Structured Data Schema --}}
+    @php
+        $welcomeSchema = [
+            chr(64) . 'context' => 'https://schema.org',
+            chr(64) . 'graph' => [
+                [
+                    '@type' => 'EducationalOrganization',
+                    '@id' => url('/') . '#organization',
+                    'name' => $siteName,
+                    'alternateName' => ['Stepvoro', 'stepvoro.com', 'منصة ستيبفورو', 'منصة ستيب', 'منصة ستيب التعليمية', 'منارة التوجيهي'],
+                    'url' => url('/'),
+                    'logo' => $siteLogo,
+                    'description' => $siteDesc,
+                    'address' => [
+                        '@type' => 'PostalAddress',
+                        'addressCountry' => 'PS',
+                        'addressRegion' => 'Palestine'
+                    ],
+                    'founder' => [
+                        '@type' => 'Person',
+                        'name' => 'م. أحمد شمالي'
+                    ]
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => url('/') . '#website',
+                    'url' => url('/'),
+                    'name' => $siteName,
+                    'description' => $siteDesc,
+                    'publisher' => [
+                        '@id' => url('/') . '#organization'
+                    ],
+                    'potentialAction' => [
+                        '@type' => 'SearchAction',
+                        'target' => url('/catalog') . '?search={search_term_string}',
+                        'query-input' => 'required name=search_term_string'
+                    ],
+                    'inLanguage' => app()->getLocale()
+                ]
+            ]
+        ];
+    @endphp
+    <script type="application/ld+json">
+    {!! json_encode($welcomeSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
+    {{-- Google Analytics 4 (GA4) --}}
+    @if($gaId)
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{ $gaId }}');
+        </script>
+    @endif
 
     <!-- الخطوط الرسمية المعتمدة للمنظومة (Tajawal & Alexandria) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -868,6 +961,40 @@
             }
         }
 
+        @media (max-width: 600px) {
+            .top-info-bar {
+                display: none;
+            }
+            .page-container {
+                padding: 12px 10px 30px;
+            }
+            .welcome-hero-card {
+                padding: 14px 12px;
+            }
+            .header-inner {
+                padding: 10px 0;
+                gap: 8px;
+            }
+            .header-brand h1 {
+                font-size: 1.15rem;
+            }
+            .clock-grid {
+                gap: 6px;
+            }
+            .clock-box {
+                min-width: 48px;
+                padding: 6px 4px;
+            }
+            .clock-box .num {
+                font-size: 1.2rem;
+            }
+            .table-responsive {
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
         /* زر العودة إلى بداية الصفحة الكلاسيكي */
         .ed-scroll-top-btn {
             position: fixed;
@@ -1041,16 +1168,16 @@
                 <div class="welcome-hero-card">
                     <h2>
                         <i class="fa-solid fa-graduation-cap" style="color: var(--ed-primary);"></i>
-                        {{ __('مرحباً بكم في منصة منارة التوجيهي التعليمية') }}
+                        {{ __('منارة التوجيهي | المنصة التعليمية الرائدة لطلبة فلسطين') }}
                     </h2>
                     <p>
-                        {{ __('المنظومة الأكاديمية الفلسطينية المتخصصة في مرافقة طلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). تقدم المنصة شروحات منهجية مبسطة، تدريبات تفاعلية شاملة، ومتابعة دراسية دقيقة لمساعدة كل طالب على نيل أعلى المراتب والتفوق بإذن الله.') }}
+                        {{ __('المنظومة الأكاديمية التعليمية المتخصصة لطلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). نوفر لطلابنا بيئة تعليمية متكاملة تضاهي كبرى المنصات مثل ستيب التعليمية وأبواب، مع شروحات تعليمية لكافة الدروس، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص المناهج، وبطاقات الاستذكار السريع بإشراف م.أحمد شمالي.') }}
                     </p>
 
                     <div class="hero-features-strip">
-                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('منهاج وزارة التربية والتعليم المعتمد') }}</span>
-                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('بنك أسئلة وتدريبات تفاعلية شاملة') }}</span>
-                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('ملازم وتلاخيص PDF للتحميل') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('منهاج وزارة التربية والتعليم المعتمد 2026') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('شروحات تعليمية وبنك أسئلة تفاعلي') }}</span>
+                        <span><i class="fa-solid fa-check" style="color: var(--ed-success);"></i> {{ __('دوسيات وتلاخيص وحاسبة معدل التوجيهي الوزارية') }}</span>
                     </div>
                 </div>
 
@@ -1327,7 +1454,7 @@
             <div class="footer-brand">
                 <h3>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h3>
                 <p>
-                    {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). نسعى إلى تيسير وصول العلم والشروحات النموذجية المتوافقة مع تحديثات وزارة التربية والتعليم لكافة بيوت فلسطين.') }}
+                    {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). منصة تعليمية متكاملة تقدم شروحات تعليمية، دروس أونلاين، دوسيات، بنك أسئلة، وحاسبة معدل التوجيهي متوافقة مع منهاج وزارة التربية والتعليم الفلسطينية.') }}
                 </p>
                 <div style="margin-top: 8px; color: var(--ed-primary); font-weight: 700; font-size: 12.5px;">
                     {{ __('إشراف ومتابعة: المهندس أحمد شمالي') }}

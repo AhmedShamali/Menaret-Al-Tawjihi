@@ -62,8 +62,9 @@ class Question extends Model
             $candidates[] = '/storage/' . $cleanPath;
         }
 
-        // 3. بدائل سحابية في حال كان الملف مرفوعاً على Supabase أو Render
+        // 3. بدائل سحابية في حال كان الملف مرفوعاً على Supabase أو الاستضافة
         if ($filename) {
+            $candidates[] = "https://stepvoro.com/storage/questions/{$filename}";
             $candidates[] = "https://jdvcftdzwgydtztyszlg.supabase.co/storage/v1/object/public/educational-files/questions/{$filename}";
             $candidates[] = "https://menaret-al-tawjihi.onrender.com/storage/questions/{$filename}";
         }
@@ -108,6 +109,7 @@ class Question extends Model
 
         // 3. بدائل سحابية
         if ($filename) {
+            $candidates[] = "https://stepvoro.com/storage/question_options/{$filename}";
             $candidates[] = "https://jdvcftdzwgydtztyszlg.supabase.co/storage/v1/object/public/educational-files/question_options/{$filename}";
             $candidates[] = "https://menaret-al-tawjihi.onrender.com/storage/question_options/{$filename}";
         }

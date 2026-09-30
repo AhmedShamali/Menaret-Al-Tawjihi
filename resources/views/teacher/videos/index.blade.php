@@ -950,6 +950,54 @@
 .btn-modal-submit:hover {
     background: #0f172a;
 }
+
+@media (max-width: 768px) {
+    .ed-teacher-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+    .header-actions {
+        width: 100%;
+    }
+    .ed-btn-upload {
+        width: 100%;
+        justify-content: center;
+    }
+    .ed-stats-strip {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .ed-videos-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .ed-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    .filter-pills {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+    .filter-chip {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .modal-card {
+        width: 95vw;
+        max-width: 95vw;
+        padding: 18px 14px;
+        border-radius: 12px;
+    }
+    .f-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

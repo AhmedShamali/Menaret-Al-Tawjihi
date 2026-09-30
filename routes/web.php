@@ -25,6 +25,8 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 Route::get('/', [PublicController::class, 'index'])->name('home');
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap', [\App\Http\Controllers\SitemapController::class, 'index']);
 Route::get('/change-language/{locale}', [PublicController::class, 'switchLanguage'])->name('lang.switch');
 Route::get('/language/{locale}', [PublicController::class, 'switchLanguage']);
 Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage']);

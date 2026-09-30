@@ -233,6 +233,22 @@
         padding: 14px 20px;
         border-top: 1px solid #f1f5f9;
     }
+
+    @media (max-width: 768px) {
+        .academic-header-card {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 16px 14px;
+        }
+        .btn-classic-nav {
+            justify-content: center;
+            width: 100%;
+        }
+        .academic-modern-table {
+            min-width: 650px;
+        }
+    }
 </style>
 
 <script>

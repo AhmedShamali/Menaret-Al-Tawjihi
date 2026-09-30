@@ -1,2 +1,39 @@
+# ========================================================
+# robots.txt for Stepvoro / Menaret Al-Tawjihi Platform
+# https://stepvoro.com
+# ========================================================
+
 User-agent: *
-Disallow:
+Allow: /
+Allow: /catalog
+Allow: /tawjihi-calculator
+Allow: /tawjihi-formulas
+Allow: /public-flashcards
+Allow: /stages
+Allow: /subjects
+Allow: /subject/
+Allow: /login
+Allow: /register
+Allow: /faq
+Allow: /contact
+Allow: /terms
+Allow: /privacy
+Allow: /build/
+Allow: /css/
+Allow: /js/
+Allow: /images/
+Allow: /uploads/logos/
+Allow: /uploads/branding/
+
+# Disallow private user & administration portals
+Disallow: /admin/
+Disallow: /teacher/
+Disallow: /student/
+Disallow: /dashboard
+Disallow: /educational-contents/*/download
+Disallow: /checkout
+Disallow: /livewire/
+Disallow: /api/
+
+# Specify Sitemap Location for Googlebot, Bingbot & Search Crawlers
+Sitemap: https://stepvoro.com/sitemap.xml

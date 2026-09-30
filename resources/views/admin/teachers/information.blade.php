@@ -172,6 +172,55 @@
         border-color: #4f46e5;
         box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
     }
+
+    .table-responsive {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container {
+            padding: 12px 10px;
+        }
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .page-header > div:last-child {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
+            gap: 8px !important;
+            width: 100%;
+        }
+        .page-header > div:last-child button,
+        .page-header > div:last-child a {
+            justify-content: center !important;
+            width: 100% !important;
+            padding: 8px 10px !important;
+            font-size: 0.78rem !important;
+        }
+        .custom-table {
+            min-width: 720px;
+        }
+        .search-input {
+            width: 100%;
+        }
+        #teacherBulkBar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        #teacherBulkBar > div:last-child {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        #teacherBulkBar > div:last-child button {
+            justify-content: center !important;
+        }
+    }
 </style>
 
 <div class="dashboard-container">

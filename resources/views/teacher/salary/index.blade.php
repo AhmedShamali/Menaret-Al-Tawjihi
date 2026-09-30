@@ -1719,6 +1719,71 @@
         line-height: 1.4;
     }
 
+    @media (max-width: 768px) {
+        .salary-header-card {
+            padding: 14px 16px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .header-actions {
+            width: 100%;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .btn-claim-header,
+        .year-select-form,
+        .btn-print-page {
+            width: 100%;
+            justify-content: center;
+        }
+        .year-dropdown {
+            flex: 1;
+        }
+        .stats-row-clean {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px;
+        }
+        .salary-luxury-table {
+            min-width: 780px !important;
+        }
+        .payslip-modal-container {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            padding: 10px;
+            margin: auto;
+        }
+        .voucher-double-border {
+            padding: 12px !important;
+        }
+        .voucher-gov-header {
+            grid-template-columns: 1fr !important;
+            text-align: center;
+            gap: 8px;
+        }
+        .voucher-signatures-section {
+            flex-direction: column;
+            gap: 16px;
+        }
+        .claim-modal-container {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            padding: 14px;
+            margin: auto;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row-clean {
+            grid-template-columns: 1fr !important;
+        }
+        .header-main-info {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+
     @media print {
         @page {
             size: A4 portrait;

@@ -2552,6 +2552,187 @@
     }
 
     /* =========================================================
+       التجاوب الكامل مع شاشات الجوال والأجهزة اللوحية
+       ========================================================= */
+    @media (max-width: 1024px) {
+        .royal-header-frame {
+            grid-template-columns: 1fr auto 1fr;
+            gap: 12px;
+        }
+        .financial-kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+        }
+        .list-header-row {
+            display: none !important;
+        }
+        .student-matrix-row {
+            grid-template-columns: 1fr !important;
+            gap: 12px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .subs-matrix-wrapper {
+            gap: 14px;
+            padding-bottom: 24px;
+        }
+        .royal-academic-header-card {
+            padding: 14px 16px;
+            border-radius: 12px;
+        }
+        .royal-academic-header-card::before {
+            inset: 2px;
+        }
+        .royal-header-frame {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 12px;
+        }
+        .header-col-ar, .header-col-en {
+            text-align: center;
+        }
+        .state-title-ar {
+            font-size: 1.15rem;
+        }
+        .state-title-en {
+            font-size: 0.98rem;
+        }
+        .royal-toolbar-strip {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+        .toolbar-left-info {
+            width: 100%;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .toolbar-right-tools {
+            width: 100%;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .year-select-form {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .year-dropdown {
+            flex: 1;
+        }
+        .btn-royal-print-all {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+        .financial-kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px;
+        }
+        .kpi-card-royal {
+            padding: 12px 14px;
+        }
+        .kpi-amount {
+            font-size: 1.35rem;
+        }
+        .filter-box-card {
+            padding: 12px 14px;
+        }
+        .filters-wrap {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .search-cell {
+            min-width: 100%;
+        }
+        .filter-select, .btn-filter-submit {
+            width: 100%;
+        }
+        .student-matrix-row {
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .months-strip-grid {
+            grid-template-columns: repeat(6, 1fr) !important;
+            gap: 6px !important;
+        }
+        .student-actions-block {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .btn-statement-royal, .btn-student-profile-link {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+        .modal-card-box {
+            padding: 16px 14px !important;
+            width: 95vw !important;
+            max-width: 95vw !important;
+            border-radius: 14px !important;
+        }
+        .modal-statement-sheet-wrap {
+            width: 98vw !important;
+            max-width: 98vw !important;
+        }
+        .statement-printable-sheet {
+            padding: 16px 12px !important;
+            min-height: auto !important;
+        }
+        .sheet-header {
+            grid-template-columns: 1fr !important;
+            text-align: center !important;
+            gap: 8px !important;
+        }
+        .sheet-col-ar, .sheet-col-en {
+            text-align: center !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .financial-kpi-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .fin-pill-group {
+            gap: 4px;
+        }
+        .fin-pill {
+            padding: 3px 6px;
+        }
+        .fin-due strong, .fin-paid strong, .fin-remaining strong {
+            font-size: 0.78rem;
+        }
+        .months-strip-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 5px !important;
+        }
+        .month-micro-badge {
+            height: 40px;
+        }
+        .student-profile-block {
+            align-items: flex-start;
+        }
+        .student-sub-line {
+            gap: 4px;
+        }
+        .student-fee-badge-btn {
+            font-size: 0.68rem;
+        }
+        .modal-footer-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .btn-save-sub, .btn-cancel-sub {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* =========================================================
        أنماط الطباعة الرسمية المزدوجة (الكشف العام + سند الحساب الفردي)
        ========================================================= */
     @media print {

@@ -466,8 +466,31 @@
 
     /* Responsive */
     @media (max-width: 860px) {
+        .ed-pl-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 16px;
+        }
+        .ed-pl-badge {
+            width: 100%;
+            justify-content: center;
+        }
         .ed-pl-grid {
             grid-template-columns: 1fr;
+        }
+        .ed-pl-stats-row {
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+        .ed-schedule-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .ed-sch-meta {
+            width: 100%;
+            justify-content: space-between;
         }
     }
 </style>

@@ -627,10 +627,37 @@
     /* Responsive */
     @media (max-width: 768px) {
         .ed-exams-container {
-            padding: 18px 16px 60px;
+            padding: 14px 12px 60px;
+        }
+        .ed-exams-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            padding: 16px;
+        }
+        .ed-exams-header-meta {
+            width: 100%;
+            justify-content: space-between;
+        }
+        .ed-section-bar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
         }
         .ed-exams-grid {
             grid-template-columns: 1fr;
+        }
+        .ed-exam-card {
+            padding: 16px;
+        }
+        .ed-submitted-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .ed-submitted-actions a,
+        .ed-submitted-actions button {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
