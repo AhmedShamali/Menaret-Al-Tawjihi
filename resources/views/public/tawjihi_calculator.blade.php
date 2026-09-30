@@ -2,7 +2,13 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
     <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
     @php
@@ -1104,5 +1110,8 @@
     <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
+
+    <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
+    @include('partials.mobile_app_pwa')
 </body>
 </html>

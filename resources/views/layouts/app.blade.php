@@ -2,12 +2,24 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0284c7">
+    <meta name="theme-color" content="#1d4ed8">
+
+    <!-- Apple iOS Mobile App Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192.jpg">
+
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</title>
 
@@ -2720,5 +2732,9 @@
     <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
+
+    <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
+    @include('partials.mobile_app_pwa')
+
 </body>
 </html>

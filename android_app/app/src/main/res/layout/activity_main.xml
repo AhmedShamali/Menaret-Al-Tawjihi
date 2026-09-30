@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    tools:context=".MainActivity">
+
+    <!-- Loading ProgressBar at top -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:max="100"
+        android:progress="0"
+        android:progressTint="#1d4ed8"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Swipe to refresh wrapper -->
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/progressBar">
+
+        <WebView
+            android:id="@+id/webView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <!-- Offline layout state -->
+    <LinearLayout
+        android:id="@+id/offlineLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#0b1528"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="📡"
+            android:textSize="54sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="لا يوجد اتصال بالإنترنت"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="يرجى التحقق من اتصالك بشبكة الواي فاي أو بيانات الهاتف والمحاولة مجدداً."
+            android:textColor="#94a3b8"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnRetry"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:backgroundTint="#1d4ed8"
+            android:paddingHorizontal="32dp"
+            android:paddingVertical="12dp"
+            android:text="إعادة المحاولة"
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

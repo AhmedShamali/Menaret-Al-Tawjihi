@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أنت غير متصل بالإنترنت | Stepvoro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1d4ed8;
+            --primary-dark: #1e3a8a;
+            --accent-gold: #d97706;
+            --bg: #0b1528;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.12);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Alexandria', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, #091224 0%, #0f2444 50%, #1e3a8a 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .offline-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 28px;
+            padding: 40px 28px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .offline-icon-box {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 24px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(217, 119, 6, 0.2));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .offline-icon-box i {
+            font-size: 2.4rem;
+            color: #f87171;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            padding: 4px 14px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        h1 {
+            font-size: 1.45rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .btn-retry {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+            transition: all 0.25s ease;
+            margin-bottom: 20px;
+        }
+
+        .btn-retry:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px -5px rgba(37, 99, 235, 0.6);
+        }
+
+        .cached-tools-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--border);
+            border-radius: 18px;
+            padding: 16px;
+            text-align: right;
+        }
+
+        .cached-tools-box h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tool-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            transition: background 0.2s;
+        }
+
+        .tool-link:hover {
+            background: rgba(37, 99, 235, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .app-brand {
+            margin-top: 24px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="offline-card">
+        <div class="offline-icon-box">
+            <i class="fa-solid fa-wifi"></i>
+        </div>
+
+        <div class="status-pill">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>انقطع الاتصال بالشبكة</span>
+        </div>
+
+        <h1>أنت غير متصل بالإنترنت</h1>
+        <p>
+            يبدو أن هناك مشكلة في اتصالك بالإنترنت. يمكنك إعادة المحاولة عند عودة الشبكة، أو متابعة دراستك في الأدوات المحفوظة مسبقاً على هاتفك.
+        </p>
+
+        <button class="btn-retry" onclick="checkConnection()">
+            <i class="fa-solid fa-rotate-right" id="retryIcon"></i>
+            <span>إعادة المحاولة الآن</span>
+        </button>
+
+        <div class="cached-tools-box">
+            <h4><i class="fa-solid fa-bolt" style="color: var(--accent-gold);"></i> أدوات تعمل بدون إنترنت (Offline):</h4>
+            <a href="/tawjihi-calculator" class="tool-link">
+                <span><i class="fa-solid fa-calculator" style="margin-left: 8px; color: #60a5fa;"></i> حاسبة معدل التوجيهي الوزارية</span>
+                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
+            </a>
+            <a href="/tawjihi-formulas" class="tool-link">
+                <span><i class="fa-solid fa-book-bookmark" style="margin-left: 8px; color: #34d399;"></i> دليل القوانين والقواعد الذهبية</span>
+                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
+            </a>
+            <a href="/public-flashcards" class="tool-link">
+                <span><i class="fa-solid fa-clone" style="margin-left: 8px; color: #fbbf24;"></i> بطاقات الاستذكار السريع</span>
+                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
+            </a>
+        </div>
+
+        <div class="app-brand">
+            Stepvoro • منارة التوجيهي — المنصة التعليمية الفلسطينية
+        </div>
+    </div>
+
+    <script>
+        function checkConnection() {
+            const icon = document.getElementById('retryIcon');
+            icon.classList.add('fa-spin');
+            
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                setTimeout(() => {
+                    icon.classList.remove('fa-spin');
+                    alert('لا يزال هاتفك غير متصل بالإنترنت، يرجى التحقق من شبكة Wi-Fi أو بيانات الهاتف.');
+                }, 800);
+            }
+        }
+
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

@@ -1,19 +1,74 @@
 {
-  "name": "منصة فلسطين التعليمية - الثانوية العامة",
-  "short_name": "منصة التوجيهي",
-  "description": "المنصة التعليمية الشاملة لطلاب الثانوية العامة في فلسطين (علمي، أدبي، ريادي، شرعي، صناعي) مع ميزة المشاهدة بدون إنترنت",
-  "start_url": "/student/dashboard",
+  "name": "Stepvoro - منصة منارة التوجيهي",
+  "short_name": "Stepvoro",
+  "description": "المنصة التعليمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج، بنك الامتحانات، حاسبة المعدل وبطاقات الاستذكار",
+  "id": "/?source=pwa",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#0284c7",
-  "orientation": "any",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "window-controls-overlay"
+  ],
+  "background_color": "#ffffff",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "ar",
+  "categories": [
+    "education",
+    "productivity",
+    "books"
+  ],
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "حاسبة معدل التوجيهي",
+      "short_name": "حاسبة المعدل",
+      "description": "حساب معدل التوجيهي الوزاري المعتمد بدقة",
+      "url": "/tawjihi-calculator?source=shortcut",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "بطاقات الاستذكار السريع",
+      "short_name": "البطاقات الذكية",
+      "description": "مراجعة وحفظ مفاهيم وقوانين التوجيهي",
+      "url": "/public-flashcards?source=shortcut",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "دليل القوانين والقواعد الذهبية",
+      "short_name": "دليل القوانين",
+      "description": "قوانين الرياضيات والفيزياء والكيمياء واللغة الإنجليزية",
+      "url": "/tawjihi-formulas?source=shortcut",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+    },
+    {
+      "name": "كتالوج المساقات والدروس",
+      "short_name": "المساقات",
+      "description": "تصفح المواد والشروحات التعليمية الرسمية",
+      "url": "/catalog?source=shortcut",
+      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
     }
   ]
 }

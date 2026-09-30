@@ -2,8 +2,20 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
+
+    <!-- Apple iOS Mobile App Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192.jpg">
 
     @if(\App\Models\Setting::get('site_favicon'))
         <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
@@ -418,6 +430,27 @@
         .btn-lang-toggle:hover {
             background: var(--ed-surface-alt);
             border-color: var(--ed-border-hover);
+        }
+
+        .btn-nav-app-install {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: 1px solid #b45309;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+            transition: var(--transition);
+        }
+        .btn-nav-app-install:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.35);
         }
 
         .mobile-menu-btn {
@@ -1121,7 +1154,15 @@
                 <li class="nav-item"><a href="{{ route('public.contact') }}" class="nav-link"><i class="fa-solid fa-phone"></i> {{ __('تواصل مع الإدارة') }}</a></li>
             </ul>
 
-            <div class="nav-actions">
+                <!-- زر تثبيت تطبيق الجوال السريع -->
+                <button type="button" 
+                        class="btn-nav-app-install" 
+                        onclick="triggerPwaInstall()" 
+                        title="{{ __('تثبيت تطبيق Stepvoro على هاتفك') }}">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>{{ __('تطبيق الجوال') }}</span>
+                </button>
+
                 <!-- زر تبديل اللغة (AR / EN) خالي تماماً من الكلمات العربية في وضع الإنجليزية -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
@@ -1540,6 +1581,9 @@
     <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
+
+    <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
+    @include('partials.mobile_app_pwa')
 
 </body>
 </html>

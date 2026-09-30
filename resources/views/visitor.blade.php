@@ -2,7 +2,16 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <!-- إعدادات تطبيق الويب وتطبيقات الهواتف (PWA / Mobile App Support) -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1d4ed8">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Stepvoro">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>بوابة الزوار | {{ \App\Models\Setting::get('site_name', 'منارة التوجيهي') }}</title>
@@ -567,5 +576,6 @@
         <i class="fa-solid fa-chevron-up"></i>
     </button>
 
+    @include('partials.mobile_app_pwa')
 </body>
 </html>

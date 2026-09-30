@@ -1,0 +1,15 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.StepvoroApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="android:statusBarColor">@color/primary</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+
+    <style name="Theme.StepvoroApp.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>
