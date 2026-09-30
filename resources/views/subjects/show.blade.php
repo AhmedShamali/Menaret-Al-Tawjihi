@@ -131,9 +131,17 @@
 
                         <div class="video-card-body">
                             <h4 class="video-title">{{ $video->title }}</h4>
-                            <p class="video-channel">
-                                <span>🎓</span> {{ __('مشغل دراسي آمن') }}
-                            </p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; flex-wrap: wrap; gap: 6px;">
+                                <p class="video-channel" style="margin: 0;">
+                                    <span>🎓</span> {{ __('مشغل دراسي آمن') }}
+                                </p>
+                                @if(!$isYoutube && !empty($video->url_path))
+                                    <button type="button" class="btn-offline-download" id="btn_offline_{{ $video->id }}" onclick="StepvoroVideoDownloader.startDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->title ?? 'المنهاج') }}', '{{ route('video.stream', ['filename' => $video->url_path]) }}', this)" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 8px; cursor: pointer;">
+                                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                                        <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                    </button>
+                                @endif
+                            </div>
                         </div>
                     </div>
                 @empty
@@ -858,6 +866,14 @@
                 if (btn) btn.textContent = '▶';
             });
         });
+
+        // فحص الدروس المحفوظة أوفلاين لتشغيلها مباشرة من الذاكرة
+        if (window.StepvoroVideoDownloader) {
+            document.querySelectorAll('.custom-video-element').forEach(video => {
+                const vidId = video.id.replace('pub_vid_', '');
+                StepvoroVideoDownloader.checkAndInitLessonPlayer(vidId);
+            });
+        }
     });
 
     // منع النقر بالزر الأيمن على مشغل الفيديو نهائياً

@@ -2,8 +2,10 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أنت غير متصل بالإنترنت | Stepvoro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <title>وضع عدم الاتصال بالإنترنت | Stepvoro</title>
+    <link rel="icon" type="image/png" href="/images/logo.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -12,7 +14,7 @@
         :root {
             --primary: #1d4ed8;
             --primary-dark: #1e3a8a;
-            --accent-gold: #d97706;
+            --accent-green: #10b981;
             --bg: #0b1528;
             --card-bg: rgba(255, 255, 255, 0.05);
             --border: rgba(255, 255, 255, 0.12);
@@ -42,14 +44,14 @@
         .offline-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
             border-radius: 28px;
-            padding: 40px 28px;
-            max-width: 460px;
+            padding: 32px 24px;
+            max-width: 480px;
             width: 100%;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.4s ease-out;
         }
 
         @keyframes fadeIn {
@@ -57,28 +59,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .offline-icon-box {
-            width: 90px;
-            height: 90px;
-            margin: 0 auto 24px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(217, 119, 6, 0.2));
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+        .logo-wrap {
+            margin-bottom: 16px;
         }
 
-        .offline-icon-box i {
-            font-size: 2.4rem;
-            color: #f87171;
-            animation: pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.9; }
-            50% { transform: scale(1.08); opacity: 1; }
+        .app-logo-img {
+            width: 82px;
+            height: 82px;
+            border-radius: 22px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            background: #ffffff;
+            padding: 2px;
         }
 
         .status-pill {
@@ -92,154 +84,334 @@
             border-radius: 50px;
             font-size: 0.78rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 14px;
         }
 
         h1 {
-            font-size: 1.45rem;
+            font-size: 1.35rem;
             font-weight: 800;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #ffffff;
         }
 
         p {
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             color: var(--text-muted);
-            line-height: 1.7;
-            margin-bottom: 28px;
+            line-height: 1.6;
+            margin-bottom: 22px;
         }
 
         .btn-retry {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
             border: none;
-            padding: 14px 28px;
+            padding: 13px 24px;
             border-radius: 14px;
             font-weight: 700;
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             cursor: pointer;
             width: 100%;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
             transition: all 0.25s ease;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
-        .btn-retry:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 14px 28px -5px rgba(37, 99, 235, 0.6);
+        .btn-retry:active {
+            transform: scale(0.98);
         }
 
-        .cached-tools-box {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px dashed var(--border);
+        /* صندوق الفيديوهات المحفوظة أوفلاين */
+        .offline-section-box {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
             border-radius: 18px;
             padding: 16px;
             text-align: right;
+            margin-bottom: 14px;
         }
 
-        .cached-tools-box h4 {
-            font-size: 0.8rem;
-            font-weight: 700;
-            color: #cbd5e1;
-            margin-bottom: 10px;
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .section-header h4 {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #e2e8f0;
             display: flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .offline-videos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .offline-item-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            text-align: right;
+            transition: background 0.2s;
+        }
+
+        .offline-item-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        .offline-item-btn i.play-ico {
+            color: #10b981;
+            font-size: 1rem;
         }
 
         .tool-link {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 12px;
+            padding: 9px 12px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             color: #ffffff;
             text-decoration: none;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 600;
             margin-bottom: 6px;
             transition: background 0.2s;
         }
 
         .tool-link:hover {
-            background: rgba(37, 99, 235, 0.2);
+            background: rgba(37, 99, 235, 0.25);
             border-color: #3b82f6;
         }
 
-        .app-brand {
-            margin-top: 24px;
-            font-size: 0.75rem;
-            color: #64748b;
+        /* نافذة مشغل الفيديو أوفلاين */
+        .video-player-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .video-player-box {
+            background: #0f172a;
+            border-radius: 20px;
+            padding: 16px;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .video-player-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        .video-player-header h3 {
+            font-size: 0.92rem;
+            font-weight: 800;
+        }
+
+        .btn-close-vid {
+            background: #1e293b;
+            color: #ffffff;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .video-element-wrap {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
 
-    <div class="offline-card">
-        <div class="offline-icon-box">
-            <i class="fa-solid fa-wifi"></i>
+    <main class="offline-card">
+        <div class="logo-wrap">
+            <img src="/images/logo.png" alt="Stepvoro Logo" class="app-logo-img">
         </div>
 
         <div class="status-pill">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span>انقطع الاتصال بالشبكة</span>
+            <i class="fa-solid fa-cloud-arrow-down" style="color: #60a5fa;"></i>
+            <span>وضع عدم الاتصال الذكي</span>
         </div>
 
-        <h1>أنت غير متصل بالإنترنت</h1>
-        <p>
-            يبدو أن هناك مشكلة في اتصالك بالإنترنت. يمكنك إعادة المحاولة عند عودة الشبكة، أو متابعة دراستك في الأدوات المحفوظة مسبقاً على هاتفك.
-        </p>
+        <h1>أنت غير متصل بالإنترنت حالياً</h1>
+        <p>التطبيق يعمل بكامل سرعته من الذاكرة المحلية. يمكنك متابعة دراسة دروسك المحفوظة واستخدام الأدوات التعليمية دون انقطاع.</p>
 
-        <button class="btn-retry" onclick="checkConnection()">
+        <button type="button" class="btn-retry" onclick="attemptReconnect()">
             <i class="fa-solid fa-rotate-right" id="retryIcon"></i>
-            <span>إعادة المحاولة الآن</span>
+            <span>إعادة فحص الاتصال وتحديث المحتوى</span>
         </button>
 
-        <div class="cached-tools-box">
-            <h4><i class="fa-solid fa-bolt" style="color: var(--accent-gold);"></i> أدوات تعمل بدون إنترنت (Offline):</h4>
-            <a href="/tawjihi-calculator" class="tool-link">
-                <span><i class="fa-solid fa-calculator" style="margin-left: 8px; color: #60a5fa;"></i> حاسبة معدل التوجيهي الوزارية</span>
-                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
-            </a>
-            <a href="/tawjihi-formulas" class="tool-link">
-                <span><i class="fa-solid fa-book-bookmark" style="margin-left: 8px; color: #34d399;"></i> دليل القوانين والقواعد الذهبية</span>
-                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
-            </a>
-            <a href="/public-flashcards" class="tool-link">
-                <span><i class="fa-solid fa-clone" style="margin-left: 8px; color: #fbbf24;"></i> بطاقات الاستذكار السريع</span>
-                <i class="fa-solid fa-angle-left" style="color: #64748b;"></i>
-            </a>
+        <!-- قسم الدروس المحفوظة أوفلاين في التطبيق -->
+        <div class="offline-section-box" id="offlineVideosSection" style="display: none;">
+            <div class="section-header">
+                <h4><i class="fa-solid fa-circle-play" style="color: #10b981;"></i> الدروس المحفوظة أوفلاين</h4>
+                <span id="offlineCountLabel" style="font-size: 0.72rem; color: #10b981; font-weight: 800;"></span>
+            </div>
+            <div class="offline-videos-grid" id="offlineVideosContainer"></div>
         </div>
 
-        <div class="app-brand">
-            Stepvoro • منارة التوجيهي — المنصة التعليمية الفلسطينية
+        <!-- أدوات المنصة المخزنة أوفلاين -->
+        <div class="offline-section-box">
+            <div class="section-header">
+                <h4><i class="fa-solid fa-graduation-cap" style="color: #60a5fa;"></i> الأدوات المتاحة بدون إنترنت</h4>
+            </div>
+            <a href="/tawjihi-calculator" class="tool-link">
+                <span><i class="fa-solid fa-calculator" style="color: #38bdf8; margin-left: 6px;"></i> حاسبة معدل التوجيهي</span>
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; color: #64748b;"></i>
+            </a>
+            <a href="/tawjihi-formulas" class="tool-link">
+                <span><i class="fa-solid fa-book-bookmark" style="color: #f59e0b; margin-left: 6px;"></i> دليل القوانين الذهبية</span>
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; color: #64748b;"></i>
+            </a>
+            <a href="/public-flashcards" class="tool-link">
+                <span><i class="fa-solid fa-clone" style="color: #ec4899; margin-left: 6px;"></i> بطاقات الاستذكار الذكية</span>
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; color: #64748b;"></i>
+            </a>
+        </div>
+    </main>
+
+    <!-- مشغل الفيديو المنبثق للأوفلاين -->
+    <div class="video-player-modal" id="offlinePlayerModal" style="display: none;" onclick="closeModalPlayer(event)">
+        <div class="video-player-box" onclick="event.stopPropagation()">
+            <div class="video-player-header">
+                <h3 id="modalVideoTitle">تشغيل الدرس</h3>
+                <button type="button" class="btn-close-vid" onclick="closeModalPlayer()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="video-element-wrap">
+                <video id="offlineModalVideo" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain;"></video>
+            </div>
         </div>
     </div>
 
+    <!-- تضمين مشغل الذاكرة المحلية -->
+    <script src="/js/stepvoro-offline-videos.js"></script>
+
     <script>
-        function checkConnection() {
+        function attemptReconnect() {
             const icon = document.getElementById('retryIcon');
-            icon.classList.add('fa-spin');
-            
+            if (icon) icon.classList.add('fa-spin');
+
             if (navigator.onLine) {
                 window.location.reload();
             } else {
-                setTimeout(() => {
-                    icon.classList.remove('fa-spin');
-                    alert('لا يزال هاتفك غير متصل بالإنترنت، يرجى التحقق من شبكة Wi-Fi أو بيانات الهاتف.');
-                }, 800);
+                fetch('/', { method: 'HEAD', cache: 'no-store' })
+                    .then(() => {
+                        window.location.reload();
+                    })
+                    .catch(() => {
+                        setTimeout(() => {
+                            if (icon) icon.classList.remove('fa-spin');
+                            alert('ما زال هاتفك غير متصل بالإنترنت. يمكنك متابعة استخدام الدروس والأدوات المحفوظة.');
+                        }, 600);
+                    });
             }
         }
 
-        window.addEventListener('online', () => {
+        window.addEventListener('online', function() {
             window.location.reload();
         });
+
+        // فحص الدروس المحفوظة أوفلاين وعرضها
+        window.addEventListener('DOMContentLoaded', function() {
+            if (window.StepvoroOfflineDB) {
+                StepvoroOfflineDB.getAllVideos().then(function(videos) {
+                    if (videos && videos.length > 0) {
+                        const sec = document.getElementById('offlineVideosSection');
+                        const container = document.getElementById('offlineVideosContainer');
+                        const countLbl = document.getElementById('offlineCountLabel');
+                        if (sec && container) {
+                            sec.style.display = 'block';
+                            if (countLbl) countLbl.textContent = `${videos.length} دروس جاهزة`;
+
+                            let html = '';
+                            videos.forEach(function(v) {
+                                html += `
+                                    <button type="button" class="offline-item-btn" onclick="playLessonOffline('${v.id}')">
+                                        <div style="flex: 1; min-width: 0; text-align: right;">
+                                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${v.title}</div>
+                                            <small style="color: #94a3b8; font-weight: normal; font-size: 0.7rem;">${v.subject} • ${v.sizeFormatted || 'فيديو'}</small>
+                                        </div>
+                                        <i class="fa-solid fa-circle-play play-ico" style="margin-right: 10px;"></i>
+                                    </button>
+                                `;
+                            });
+                            container.innerHTML = html;
+                        }
+                    }
+                }).catch(function(e) {
+                    console.warn('Error loading offline videos:', e);
+                });
+            }
+        });
+
+        function playLessonOffline(id) {
+            StepvoroOfflineDB.getVideo(id).then(function(rec) {
+                if (rec && rec.blob) {
+                    const modal = document.getElementById('offlinePlayerModal');
+                    const video = document.getElementById('offlineModalVideo');
+                    const title = document.getElementById('modalVideoTitle');
+                    if (modal && video) {
+                        video.src = URL.createObjectURL(rec.blob);
+                        if (title) title.textContent = rec.title || 'مشاهدة الدرس أوفلاين';
+                        modal.style.display = 'flex';
+                        video.play().catch(function() {});
+                    }
+                }
+            });
+        }
+
+        function closeModalPlayer(e) {
+            if (e && e.target && e.target.closest('.video-player-box') && !e.target.closest('.btn-close-vid')) {
+                return;
+            }
+            const modal = document.getElementById('offlinePlayerModal');
+            const video = document.getElementById('offlineModalVideo');
+            if (video) {
+                video.pause();
+                video.removeAttribute('src');
+                video.load();
+            }
+            if (modal) modal.style.display = 'none';
+        }
     </script>
 </body>
 </html>

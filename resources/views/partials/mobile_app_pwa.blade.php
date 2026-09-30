@@ -2,7 +2,8 @@
      Stepvoro PWA Mobile Application Engine & Native Navigation UI
      - Supports Android (One-click Native Install via beforeinstallprompt)
      - Supports iOS Safari (Native Add-to-Home-Screen Step-by-Step Guide)
-     - Full offline Service Worker registration
+     - Full offline Service Worker registration (v3)
+     - In-App Offline Video Vault (Download & Play Videos without Internet)
      - Modern App Bottom Navigation Bar
      ========================================================================= --}}
 
@@ -20,10 +21,13 @@
         <div class="nav-tab-icon pulse-accent"><i class="fa-solid fa-calculator"></i></div>
         <span class="nav-tab-label">{{ __('الحاسبة') }}</span>
     </a>
-    <a href="{{ route('smart.learning.flashcards') }}" class="nav-tab {{ request()->is('public-flashcards*') ? 'active' : '' }}">
-        <div class="nav-tab-icon"><i class="fa-solid fa-clone"></i></div>
-        <span class="nav-tab-label">{{ __('البطاقات') }}</span>
-    </a>
+    <button type="button" class="nav-tab" onclick="openOfflineVault()" id="bottomNavOfflineBtn" title="{{ __('دروسي المحفوظة أوفلاين بدون نت') }}">
+        <div class="nav-tab-icon offline-vault-highlight">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+            <span class="badge-offline-count" id="bottomNavOfflineBadge" style="display: none;">0</span>
+        </div>
+        <span class="nav-tab-label">{{ __('أوفلاين ⚡') }}</span>
+    </button>
     @if(Auth::guard('student')->check() || Auth::check())
         <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') ? 'active' : '' }}">
             <div class="nav-tab-icon"><i class="fa-solid fa-user-circle"></i></div>
@@ -103,6 +107,52 @@
     </div>
 </div>
 
+<!-- 4. نافذة الفيديوهات والدروس المحفوظة أوفلاين (In-App Offline Videos Vault Modal) -->
+<div class="stepvoro-ios-modal-overlay" id="stepvoroOfflineVaultModal" onclick="closeOfflineVault(event)" style="display: none;">
+    <div class="stepvoro-ios-sheet offline-vault-sheet" onclick="event.stopPropagation()">
+        <div class="ios-sheet-handle"></div>
+        <div class="ios-sheet-header">
+            <div class="offline-vault-icon">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+            </div>
+            <div style="flex: 1; text-align: right;">
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #0f172a; margin: 0 0 2px;">{{ __('دروسي المحفوظة أوفلاين') }}</h3>
+                <p id="offlineVaultStorageSummary" style="font-size: 0.76rem; color: #64748b; margin: 0;">{{ __('جاري فحص الذاكرة المحلية للتطبيق...') }}</p>
+            </div>
+            <button type="button" class="btn-close-sheet" onclick="closeOfflineVault()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="offline-vault-body" id="offlineVaultList">
+            <div style="text-align: center; padding: 30px 10px; color: #94a3b8;">
+                <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.8rem; color: #2563eb;"></i>
+                <p style="margin-top: 10px; font-size: 0.85rem;">{{ __('جاري تحميل الدروس المحفوظة...') }}</p>
+            </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+            <button type="button" class="btn-ios-done" onclick="closeOfflineVault()">
+                <span>{{ __('إغلاق النافذة') }}</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 5. مشغل الفيديو المنبثق للدروس المحفوظة أوفلاين -->
+<div class="stepvoro-ios-modal-overlay" id="stepvoroOfflinePlayerModal" onclick="closeOfflinePlayer(event)" style="display: none;">
+    <div class="stepvoro-offline-player-card" onclick="event.stopPropagation()">
+        <div class="offline-player-header">
+            <h4 id="offlinePlayerTitle">{{ __('مشاهدة الدرس أوفلاين') }}</h4>
+            <button type="button" class="btn-close-sheet" onclick="closeOfflinePlayer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="offline-player-media-wrap">
+            <video id="offlineVaultVideoPlayer" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
+        </div>
+        <div class="offline-player-footer">
+            <span class="badge-offline-playing"><i class="fa-solid fa-bolt"></i> {{ __('مشاهدة بدون إنترنت مباشرة من ذاكرة التطبيق') }}</span>
+        </div>
+    </div>
+</div>
+
 <style>
 /* ==========================================================================
    تنسيقات شريط التنقل السفلي وشاشات التطبيق المتطورة
@@ -165,6 +215,7 @@
     align-items: center;
     justify-content: center;
     transition: transform 0.2s ease;
+    position: relative;
 }
 
 .nav-tab-label {
@@ -187,6 +238,28 @@
 
 .pulse-accent i {
     color: #0284c7;
+}
+
+.offline-vault-highlight i {
+    color: #10b981;
+}
+
+.badge-offline-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
 }
 
 .install-highlight {
@@ -323,7 +396,7 @@
     font-size: 0.85rem;
 }
 
-/* نافذة إرشاد هواتف آيفون (iOS Bottom Sheet) */
+/* نافذة إرشاد هواتف آيفون وقبو الأوفلاين */
 .stepvoro-ios-modal-overlay {
     position: fixed;
     top: 0;
@@ -354,6 +427,9 @@
     text-align: right;
     box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
     animation: slideUpSheet 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
 }
 
 @keyframes slideUpSheet {
@@ -367,13 +443,15 @@
     background: #cbd5e1;
     border-radius: 10px;
     margin: 0 auto 16px;
+    flex-shrink: 0;
 }
 
 .ios-sheet-header {
     display: flex;
     align-items: center;
     gap: 14px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .ios-app-icon {
@@ -381,21 +459,20 @@
     box-shadow: 0 4px 14px rgba(0,0,0,0.12);
 }
 
-.ios-sheet-header h3 {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0 0 4px;
-}
-
-.ios-sheet-header p {
-    font-size: 0.76rem;
-    color: #64748b;
-    margin: 0;
+.offline-vault-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #ecfdf5;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
 }
 
 .btn-close-sheet {
-    margin-right: auto;
     background: #f1f5f9;
     border: none;
     width: 32px;
@@ -408,49 +485,226 @@
     cursor: pointer;
 }
 
-.ios-steps-list {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    padding: 14px;
-    margin-bottom: 20px;
+.offline-vault-body {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
-.ios-step-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-}
-
-.step-num {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: var(--pwa-primary);
-    color: #ffffff;
-    font-size: 0.75rem;
-    font-weight: 800;
+.offline-lesson-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 14px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: transform 0.2s;
+}
+
+.offline-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.offline-card-info h4 {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.offline-card-meta {
+    font-size: 0.74rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.offline-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     flex-shrink: 0;
 }
 
-.step-text {
-    font-size: 0.82rem;
-    color: #1e293b;
-    line-height: 1.5;
+.btn-vault-play {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
-.ios-icon-hint {
-    display: block;
-    font-size: 0.74rem;
-    color: #2563eb;
-    margin-top: 3px;
+.btn-vault-delete {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.82rem;
+}
+
+/* مشغل الفيديو المنبثق */
+.stepvoro-offline-player-card {
+    background: #0f172a;
+    width: 100%;
+    max-width: 580px;
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    margin: auto 16px;
+}
+
+.offline-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
+.offline-player-header h4 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    margin: 0;
+}
+
+.offline-player-media-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.offline-player-footer {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.badge-offline-playing {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #6ee7b7;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
     font-weight: 700;
+}
+
+/* تنسيق زر التحميل أوفلاين بجانب الفيديو */
+.btn-offline-download {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1d4ed8 !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-offline-download.is-downloading {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0284c7 !important;
+    pointer-events: none;
+}
+
+.btn-offline-download.is-saved {
+    background: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+    color: #059669 !important;
+}
+
+.btn-remove-offline {
+    margin-right: 6px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: #fee2e2;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 0.72rem;
+}
+
+.offline-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #2563eb;
+    transition: width 0.2s ease;
+}
+
+.player-offline-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(16, 185, 129, 0.9);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    z-index: 10;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* شريط حالة الشبكة الذكي عند انقطاع الاتصال */
+.network-status-pill {
+    position: fixed;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99999;
+    padding: 7px 18px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    animation: fadeInDown 0.3s ease;
+}
+
+.network-status-pill.offline {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.network-status-pill.online {
+    background: #10b981;
+    color: #ffffff;
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translate(-50%, -15px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 .btn-ios-done {
@@ -488,6 +742,9 @@ body.in-standalone-app .pwa-only-browser {
 }
 </style>
 
+<!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
+<script src="/js/stepvoro-offline-videos.js"></script>
+
 <script>
     // =========================================================================
     // محرك تطبيق Stepvoro PWA للتحكم بالتثبيت والخدمة السحابية
@@ -500,7 +757,6 @@ body.in-standalone-app .pwa-only-browser {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('/sw.js').then(function(reg) {
-                // فحص التحديثات تلقائياً
                 reg.onupdatefound = function() {
                     const installingWorker = reg.installing;
                     installingWorker.onstatechange = function() {
@@ -520,7 +776,6 @@ body.in-standalone-app .pwa-only-browser {
         e.preventDefault();
         deferredPrompt = e;
         
-        // إذا لم يكن التطبيق مثبتاً ولم يغلق المستخدم البانر مؤخراً
         if (!isStandalone && !sessionStorage.getItem('stepvoro_pwa_dismissed')) {
             showPwaBanner();
         }
@@ -528,16 +783,12 @@ body.in-standalone-app .pwa-only-browser {
 
     function showPwaBanner() {
         const banner = document.getElementById('stepvoroInstallBanner');
-        if (banner) {
-            banner.style.display = 'block';
-        }
+        if (banner) banner.style.display = 'block';
     }
 
     function dismissPwaBanner() {
         const banner = document.getElementById('stepvoroInstallBanner');
-        if (banner) {
-            banner.style.display = 'none';
-        }
+        if (banner) banner.style.display = 'none';
         sessionStorage.setItem('stepvoro_pwa_dismissed', '1');
     }
 
@@ -559,20 +810,16 @@ body.in-standalone-app .pwa-only-browser {
         }
 
         if (deferredPrompt) {
-            // أجهزة أندرويد وكمبيوتر
             deferredPrompt.prompt();
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the Stepvoro app install');
                     dismissPwaBanner();
                 }
                 deferredPrompt = null;
             });
         } else if (isIos) {
-            // هواتف آيفون Safari
             openIosModal();
         } else {
-            // في حال فتح الرابط من داخل متصفح لا يدعم beforeinstallprompt مباشرة
             if (window.Swal) {
                 Swal.fire({
                     title: 'تثبيت تطبيق Stepvoro',
@@ -607,10 +854,149 @@ body.in-standalone-app .pwa-only-browser {
         if (modal) modal.style.display = 'none';
     }
 
+    // =========================================================================
+    // إدارة نافذة الفيديوهات المحفوظة أوفلاين (Offline Video Vault UI)
+    // =========================================================================
+    function openOfflineVault() {
+        const modal = document.getElementById('stepvoroOfflineVaultModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            renderOfflineVideosList();
+        }
+    }
+
+    function closeOfflineVault(e) {
+        if (e && e.target && e.target.closest('.offline-vault-sheet') && !e.target.closest('.btn-close-sheet') && !e.target.closest('.btn-ios-done')) {
+            return;
+        }
+        const modal = document.getElementById('stepvoroOfflineVaultModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function renderOfflineVideosList() {
+        const listContainer = document.getElementById('offlineVaultList');
+        const summaryText = document.getElementById('offlineVaultStorageSummary');
+        if (!listContainer || !window.StepvoroOfflineDB) return;
+
+        StepvoroOfflineDB.getAllVideos().then((videos) => {
+            updateOfflineBadgeCount(videos.length);
+
+            if (!videos || videos.length === 0) {
+                if (summaryText) summaryText.textContent = 'لا توجد دروس محفوظة حالياً (0 MB مستخدمة)';
+                listContainer.innerHTML = `
+                    <div style="text-align: center; padding: 36px 16px; color: #64748b;">
+                        <div style="width: 70px; height: 70px; background: #f1f5f9; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                            <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1.8rem; color: #94a3b8;"></i>
+                        </div>
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">لا توجد دروس محفوظة أوفلاين</h4>
+                        <p style="font-size: 0.78rem; line-height: 1.6; margin: 0 auto; max-width: 320px;">
+                            يمكنك حفظ أي درس للمشاهدة بدون إنترنت بالضغط على زر <strong>"تحميل أوفلاين"</strong> بجانب مشغل الفيديو أثناء تصفح المادة.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            StepvoroOfflineDB.calculateTotalSize().then((stats) => {
+                if (summaryText) {
+                    summaryText.textContent = `${videos.length} دروس محفوظة (${stats.mb} ميجابايت من ذاكرة الهاتف)`;
+                }
+            });
+
+            let html = '';
+            videos.forEach((v) => {
+                html += `
+                    <div class="offline-lesson-card" id="vault_card_${v.id}">
+                        <div class="offline-card-info">
+                            <h4>${v.title}</h4>
+                            <div class="offline-card-meta">
+                                <span><i class="fa-solid fa-book-open"></i> ${v.subject}</span>
+                                <span>•</span>
+                                <span><i class="fa-solid fa-hard-drive"></i> ${v.sizeFormatted || 'فيديو'}</span>
+                            </div>
+                        </div>
+                        <div class="offline-card-actions">
+                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
+                                <i class="fa-solid fa-play"></i> <span>تشغيل</span>
+                            </button>
+                            <button type="button" class="btn-vault-delete" onclick="deleteFromVault('${v.id}')" title="حذف لتحرير المساحة">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+        }).catch((err) => {
+            console.error('Failed to load offline videos list:', err);
+            listContainer.innerHTML = `<p style="color: #ef4444; font-size: 0.82rem; text-align: center;">تعذر فتح الذاكرة المحلية: ${err.message}</p>`;
+        });
+    }
+
+    function playOfflineVaultVideo(id) {
+        if (!window.StepvoroOfflineDB) return;
+        StepvoroOfflineDB.getVideo(id).then((record) => {
+            if (!record || !record.blob) {
+                alert('ملف الفيديو غير موجود في الذاكرة.');
+                return;
+            }
+
+            const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
+            const playerVideo = document.getElementById('offlineVaultVideoPlayer');
+            const playerTitle = document.getElementById('offlinePlayerTitle');
+
+            if (playerVideo && playerModal) {
+                playerVideo.src = URL.createObjectURL(record.blob);
+                if (playerTitle) playerTitle.textContent = record.title || 'مشاهدة الدرس بدون إنترنت';
+                playerModal.style.display = 'flex';
+                playerVideo.play().catch(() => {});
+            }
+        });
+    }
+
+    function closeOfflinePlayer(e) {
+        if (e && e.target && e.target.closest('.stepvoro-offline-player-card') && !e.target.closest('.btn-close-sheet')) {
+            return;
+        }
+        const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
+        const playerVideo = document.getElementById('offlineVaultVideoPlayer');
+        if (playerVideo) {
+            playerVideo.pause();
+            playerVideo.removeAttribute('src');
+            playerVideo.load();
+        }
+        if (playerModal) playerModal.style.display = 'none';
+    }
+
+    function deleteFromVault(id) {
+        if (!window.StepvoroVideoDownloader) return;
+        StepvoroVideoDownloader.removeOfflineVideo(id);
+    }
+
+    function updateOfflineBadgeCount(count) {
+        const badge = document.getElementById('bottomNavOfflineBadge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    // تحديث عدد الدروس المحفوظة فور تشغيل التطبيق
+    window.addEventListener('DOMContentLoaded', function() {
+        if (window.StepvoroOfflineDB) {
+            StepvoroOfflineDB.getAllVideos().then((list) => {
+                updateOfflineBadgeCount(list.length);
+            }).catch(() => {});
+        }
+    });
+
     // إخفاء خيارات التثبيت تلقائياً عند تشغيل التطبيق في وضع Standalone
     window.addEventListener('appinstalled', () => {
         dismissPwaBanner();
-        console.log('Stepvoro App was installed successfully');
     });
 
     if (isStandalone) {

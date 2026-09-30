@@ -1114,8 +1114,8 @@
     <header class="main-header">
         <div class="header-inner">
             <div class="header-brand">
-                <div class="header-logo-icon">
-                    <i class="fa-solid fa-graduation-cap"></i>
+                <div class="header-logo-icon" style="padding: 2px; overflow: hidden; background: #ffffff;">
+                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Stepvoro - منارة التوجيهي')) }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
                 </div>
                 <div class="header-titles">
                     <h1>{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</h1>

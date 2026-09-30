@@ -1814,11 +1814,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="side-brand">
             <a href="/" class="brand-logo">
-                @if(\App\Models\Setting::get('site_logo'))
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}" style="max-height: 38px; max-width: 44px; object-fit: contain; border-radius: 6px;">
-                @else
-                    <div class="logo-square"><i class="fa-solid fa-graduation-cap"></i></div>
-                @endif
+                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Stepvoro - منارة التوجيهي')) }}" style="max-height: 40px; max-width: 44px; object-fit: contain; border-radius: 8px; background: #ffffff; padding: 1px;">
                 <div style="display: flex; flex-direction: column;">
                     <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'منارة التوجيهي')) }}</span>
                     <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>

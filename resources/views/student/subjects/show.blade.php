@@ -1159,7 +1159,13 @@
                                         <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
                                     </div>
 
-                                    <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                        @if($isDirectVideo && $directVideoUrl)
+                                            <button type="button" class="btn-toggle-notes btn-offline-download" id="btn_offline_{{ $video->id }}" onclick="StepvoroVideoDownloader.startDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->title ?? 'المنهاج') }}', '{{ $directVideoUrl }}', this)" title="{{ __('تحميل للمشاهدة بدون إنترنت داخل التطبيق') }}">
+                                                <i class="fa-solid fa-cloud-arrow-down"></i>
+                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                            </button>
+                                        @endif
                                         <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                             <i class="fa-solid fa-expand"></i>
                                             <span>{{ __('ملء الشاشة') }}</span>
@@ -2008,6 +2014,13 @@ document.addEventListener('contextmenu', function(e) {
         return false;
     }
 }, true);
+
+// فحص حالة الفيديو في الذاكرة المحلية لتفعيل المشغل أوفلاين
+if (window.StepvoroVideoDownloader) {
+    @if(isset($video) && $video)
+        StepvoroVideoDownloader.checkAndInitLessonPlayer('{{ $video->id }}');
+    @endif
+}
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection
