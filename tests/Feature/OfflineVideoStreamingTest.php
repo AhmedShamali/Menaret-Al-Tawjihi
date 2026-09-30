@@ -44,4 +44,85 @@ class OfflineVideoStreamingTest extends TestCase
 
         $this->assertTrue(in_array($response->getStatusCode(), [302, 404]));
     }
+
+    public function test_public_views_do_not_expose_offline_download_or_vault_buttons(): void
+    {
+        $welcomeResponse = $this->get('/');
+        $welcomeResponse->assertStatus(200);
+        $welcomeResponse->assertDontSee('دروسي أوفلاين');
+
+        $stage = Stage::create([
+            'grade_level' => '12',
+            'label_ar' => 'العلمي',
+        ]);
+
+        $subject = Subject::create([
+            'subject_key' => 'math_test',
+            'name_ar' => 'الرياضيات للتجربة',
+            'stage_id' => $stage->id,
+            'color' => '#1e3a8a',
+            'price_ils' => 150,
+        ]);
+
+        $publicSubjectResponse = $this->get(route('subject.show', $subject->id));
+        $publicSubjectResponse->assertStatus(200);
+        $publicSubjectResponse->assertDontSee('id="btn_offline_', false);
+        $publicSubjectResponse->assertDontSee('data-video-id', false);
+    }
+
+    public function test_enrolled_student_sees_offline_download_button_in_subject_view(): void
+    {
+        $stage = Stage::create([
+            'grade_level' => '12',
+            'label_ar' => 'العلمي',
+        ]);
+
+        $subject = Subject::create([
+            'subject_key' => 'physics_sci',
+            'name_ar' => 'الفيزياء',
+            'stage_id' => $stage->id,
+            'color' => '#1e3a8a',
+            'price_ils' => 150,
+        ]);
+
+        $student = \App\Models\Student::create([
+            'name_ar' => 'أحمد العلمي',
+            'name_en' => 'Ahmed Sci',
+            'email' => 'ahmed.sci@tawjihi.ps',
+            'nid' => '900998877',
+            'phone' => '0599998877',
+            'password' => bcrypt('secret123'),
+            'age' => 18,
+            'gender' => 'male',
+            'stage_id' => $stage->id,
+            'status' => 'active',
+            'monthly_fee' => 100.00,
+        ]);
+
+        // تسجيل الطالب في المادة
+        \App\Models\Enrollment::create([
+            'student_id' => $student->id,
+            'subject_id' => $subject->id,
+            'status' => 'active',
+            'enrolled_at' => now(),
+        ]);
+
+        // إضافة درس فيديو مباشر للمادة
+        $video = EducationalContent::create([
+            'title' => 'شرح المتجهات والميكانيكا',
+            'content_type' => 'video',
+            'url_path' => 'educational/videos/vectors_lesson.mp4',
+            'subject_id' => $subject->id,
+            'order' => 1,
+            'is_published' => true,
+        ]);
+
+        $response = $this->actingAs($student, 'student')
+            ->get(route('student.subjects.show', $subject->id));
+
+        $response->assertStatus(200);
+        $response->assertSee('id="btn_offline_' . $video->id . '"', false);
+        $response->assertSee('data-video-id="' . $video->id . '"', false);
+        $response->assertSee('ed-btn-offline-card', false);
+    }
 }

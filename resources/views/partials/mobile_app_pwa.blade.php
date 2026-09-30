@@ -710,63 +710,141 @@
     font-weight: 700;
 }
 
-/* تنسيق زر التحميل أوفلاين بجانب الفيديو */
-.btn-offline-download {
-    background: #eff6ff !important;
-    border: 1px solid #bfdbfe !important;
-    color: #1d4ed8 !important;
-    position: relative;
-    overflow: hidden;
+/* ==========================================================================
+   تنسيقات زر التحميل أوفلاين الحديث وشارات التخزين داخل المنصة
+   ========================================================================== */
+.ed-offline-action-wrapper {
+    display: inline-flex;
+    align-items: center;
 }
 
-.btn-offline-download.is-downloading {
-    background: #f8fafc !important;
-    border-color: #cbd5e1 !important;
-    color: #0284c7 !important;
+.ed-btn-offline-card {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1.5px solid #93c5fd;
+    color: #1d4ed8;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.12);
+}
+
+.ed-btn-offline-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 16px rgba(37, 99, 235, 0.22);
+    border-color: #60a5fa;
+}
+
+.ed-btn-offline-card:active {
+    transform: scale(0.98);
+}
+
+/* وضع المتصفح العادي (Web Mode) */
+.ed-btn-offline-card.is-web-mode {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-color: #cbd5e1;
+    color: #475569;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ed-btn-offline-card.is-web-mode:hover {
+    border-color: #93c5fd;
+    color: #1d4ed8;
+    background: #f0f7ff;
+}
+
+/* حالة جاري التحميل */
+.ed-btn-offline-card.is-downloading {
+    background: #f0fdfa !important;
+    border-color: #5eead4 !important;
+    color: #0f766e !important;
+    cursor: wait;
     pointer-events: none;
 }
 
-.btn-offline-download.is-saved {
-    background: #ecfdf5 !important;
-    border-color: #a7f3d0 !important;
-    color: #059669 !important;
+/* حالة الحفظ والاكتمال */
+.ed-btn-offline-card.is-saved {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%) !important;
+    border-color: #6ee7b7 !important;
+    color: #065f46 !important;
+    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.18);
+}
+
+.ed-offline-btn-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 2;
+}
+
+.ed-offline-btn-icon {
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn-remove-offline {
     margin-right: 6px;
-    padding: 2px 6px;
-    border-radius: 6px;
+    padding: 3px 8px;
+    border-radius: 8px;
     background: #fee2e2;
     color: #ef4444;
     cursor: pointer;
-    font-size: 0.72rem;
+    font-size: 0.76rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.offline-progress-bar {
+.btn-remove-offline:hover {
+    background: #fecaca;
+    color: #dc2626;
+    transform: scale(1.08);
+}
+
+.ed-offline-progress-track {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 3px;
-    background: #2563eb;
-    transition: width 0.2s ease;
+    height: 4px;
+    background: rgba(15, 118, 110, 0.15);
+}
+
+.ed-offline-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+    transition: width 0.25s ease;
+    border-radius: 0 2px 2px 0;
 }
 
 .player-offline-badge {
     position: absolute;
-    top: 12px;
-    right: 12px;
-    background: rgba(16, 185, 129, 0.9);
+    top: 14px;
+    right: 14px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: #ffffff;
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 0.72rem;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 0.78rem;
     font-weight: 800;
-    z-index: 10;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    z-index: 25;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 7px;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(8px);
 }
 
 /* شريط حالة الشبكة الذكي عند انقطاع الاتصال */
@@ -1247,12 +1325,14 @@ body[class*="exam"] .stepvoro-bottom-nav,
         if (installBtn) installBtn.style.display = 'none';
     }
 
-    // تأثير اهتزاز لمسي خفيف عند النقر على عناصر شريط التطبيق (Haptic Feedback)
-    document.querySelectorAll('.stepvoro-bottom-nav .nav-tab').forEach(function(tab) {
-        tab.addEventListener('click', function() {
-            if ('vibrate' in navigator) {
-                try { navigator.vibrate(12); } catch (e) {}
-            }
-        });
-    });
+    // ربط الدوال الأساسية بنطاق النافذة العام لضمان استدعائها من أي مكان
+    window.triggerPwaInstall = triggerPwaInstall;
+    window.openInstallModal = openInstallModal;
+    window.closeInstallModal = closeInstallModal;
+    window.openOfflineVault = openOfflineVault;
+    window.closeOfflineVault = closeOfflineVault;
+    window.renderOfflineVideosList = renderOfflineVideosList;
+    window.playOfflineVaultVideo = playOfflineVaultVideo;
+    window.closeOfflinePlayer = closeOfflinePlayer;
+    window.showPwaToast = showPwaToast;
 </script>

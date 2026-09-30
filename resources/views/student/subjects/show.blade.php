@@ -1160,12 +1160,6 @@
                                     </div>
 
                                     <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                        @if($isDirectVideo && $directVideoUrl)
-                                            <button type="button" class="btn-toggle-notes btn-offline-download" id="btn_offline_{{ $video->id }}" onclick="StepvoroVideoDownloader.startDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->title ?? 'المنهاج') }}', '{{ $directVideoUrl }}', this)" title="{{ __('تحميل للمشاهدة بدون إنترنت داخل التطبيق') }}">
-                                                <i class="fa-solid fa-cloud-arrow-down"></i>
-                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
-                                            </button>
-                                        @endif
                                         <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                             <i class="fa-solid fa-expand"></i>
                                             <span>{{ __('ملء الشاشة') }}</span>
@@ -1192,25 +1186,48 @@
                                     </div>
                                 </div>
 
-                                {{-- بيانات المحاضرة والمرفقات الدراسية --}}
+                                {{-- بيانات المحاضرة والمرفقات الدراسية وزر التحميل أوفلاين الفاخر --}}
                                 <div class="ed-video-info-box">
                                     <div>
-                                        <span style="background: #eff6ff; color: #1e3a8a; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px; margin-bottom: 6px;">
-                                            <i class="fa-solid fa-circle-play" style="color: #2563eb;"></i>
-                                            <span>{{ __('الدرس') . ' #' . $video->order }}</span>
-                                        </span>
+                                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
+                                            <span style="background: #eff6ff; color: #1e3a8a; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;">
+                                                <i class="fa-solid fa-circle-play" style="color: #2563eb;"></i>
+                                                <span>{{ __('الدرس') . ' #' . $video->order }}</span>
+                                            </span>
+                                            <span class="ed-stream-tag">
+                                                <i class="fa-solid fa-circle-play"></i> {{ __('مشاهدة مباشرة فائقة الدقة') }}
+                                            </span>
+                                        </div>
                                         <h3 class="ed-vtitle">{{ $video->title }}</h3>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        @if($isDirectVideo && $directVideoUrl)
+                                            <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
+                                                <button type="button" 
+                                                        class="ed-btn-offline-card" 
+                                                        id="btn_offline_{{ $video->id }}" 
+                                                        data-video-id="{{ $video->id }}"
+                                                        data-video-title="{{ $video->title }}"
+                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                        data-video-url="{{ $directVideoUrl }}"
+                                                        onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
+                                                        title="{{ __('حفظ الدرس في ذاكرة التطبيق للمشاهدة بدون إنترنت') }}">
+                                                    <div class="ed-offline-btn-inner">
+                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                        <span class="offline-btn-label">{{ __('تحميل للمشاهدة بدون نت') }}</span>
+                                                    </div>
+                                                    <div class="ed-offline-progress-track">
+                                                        <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        @endif
                                         @if(!empty($video->pdf_path))
                                             <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
                                                 <i class="fa-solid fa-file-pdf"></i>
                                                 <span>{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}</span>
                                             </a>
                                         @endif
-                                        <span class="ed-stream-tag">
-                                            <i class="fa-solid fa-circle-play"></i> {{ __('مشاهدة مباشرة فائقة الدقة') }}
-                                        </span>
                                     </div>
                                 </div>
                             </article>
@@ -2015,11 +2032,14 @@ document.addEventListener('contextmenu', function(e) {
     }
 }, true);
 
-// فحص حالة الفيديو في الذاكرة المحلية لتفعيل المشغل أوفلاين
+// فحص حالة كافة الفيديوهات في الذاكرة المحلية لتفعيل المشغل أوفلاين
 if (window.StepvoroVideoDownloader) {
-    @if(isset($video) && $video)
-        StepvoroVideoDownloader.checkAndInitLessonPlayer('{{ $video->id }}');
-    @endif
+    document.querySelectorAll('[id^="btn_offline_"]').forEach(function(btn) {
+        var vidId = btn.getAttribute('data-video-id') || btn.id.replace('btn_offline_', '');
+        if (vidId) {
+            StepvoroVideoDownloader.checkAndInitLessonPlayer(vidId);
+        }
+    });
 }
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
