@@ -2352,6 +2352,13 @@
                     }
                 @endphp
 
+                <!-- زر الدروس المحفوظة أوفلاين بدون نت -->
+                <button type="button" onclick="openOfflineVault()" class="topbar-offline-vault-btn" title="{{ __('دروسي المحفوظة أوفلاين بدون إنترنت') }}" style="background: var(--ed-surface); border: 1px solid var(--ed-border); padding: 0 12px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 7px; color: #10b981; font-weight: 700; font-size: 0.82rem; transition: var(--transition-smooth);">
+                    <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1rem;"></i>
+                    <span style="font-size: 0.78rem;">{{ __('أوفلاين') }}</span>
+                    <span class="badge-offline-count" id="topbarOfflineBadge" style="display: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 0.65rem; padding: 1px 6px;">0</span>
+                </button>
+
                 <!-- قائمة الإشعارات والتنبيهات الشاملة -->
                 <div class="notifications-dropdown-container" style="position: relative;">
                     <button type="button" id="notificationsToggle" style="background: var(--ed-surface); border: 1px solid var(--ed-border); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; position: relative; display: grid; place-items: center; transition: var(--transition-smooth); color: var(--ed-text-body);">

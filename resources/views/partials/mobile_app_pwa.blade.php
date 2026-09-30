@@ -7,7 +7,6 @@
      - Modern App Bottom Navigation Bar
      ========================================================================= --}}
 
-@if(!View::hasSection('content'))
 <!-- 1. شريط التنقل السفلي للهواتف الذكية (Native Mobile Bottom Navigation Bar) -->
 <nav class="stepvoro-bottom-nav" id="stepvoroBottomNav" aria-label="Mobile Navigation">
     <a href="{{ route('home') }}" class="nav-tab {{ request()->is('/') ? 'active' : '' }}">
@@ -41,7 +40,6 @@
         </button>
     @endif
 </nav>
-@endif
 
 <!-- 2. بطاقة التثبيت السريعة العائمة للهواتف (Smart App Install Floating Banner) -->
 <aside class="stepvoro-install-banner" id="stepvoroInstallBanner" style="display: none;">
@@ -1214,15 +1212,17 @@ body[class*="exam"] .stepvoro-bottom-nav,
     }
 
     function updateOfflineBadgeCount(count) {
-        const badge = document.getElementById('bottomNavOfflineBadge');
-        if (badge) {
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'flex';
-            } else {
-                badge.style.display = 'none';
+        ['bottomNavOfflineBadge', 'topbarOfflineBadge'].forEach(id => {
+            const badge = document.getElementById(id);
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.style.display = id === 'topbarOfflineBadge' ? 'inline-block' : 'flex';
+                } else {
+                    badge.style.display = 'none';
+                }
             }
-        }
+        });
     }
 
     // تحديث عدد الدروس المحفوظة فور تشغيل التطبيق

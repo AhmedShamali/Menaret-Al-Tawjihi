@@ -1167,6 +1167,16 @@
                     <span>{{ __('تطبيق الجوال') }}</span>
                 </button>
 
+                <!-- زر الدروس المحفوظة أوفلاين -->
+                <button type="button" 
+                        class="btn-nav-app-install" 
+                        onclick="openOfflineVault()" 
+                        style="background: rgba(16, 185, 129, 0.12); color: #059669; border-color: rgba(16, 185, 129, 0.3);"
+                        title="{{ __('دروسي المحفوظة بدون إنترنت داخل التطبيق') }}">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                    <span>{{ __('دروسي أوفلاين') }}</span>
+                </button>
+
                 <!-- زر تبديل اللغة (AR / EN) خالي تماماً من الكلمات العربية في وضع الإنجليزية -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 

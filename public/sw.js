@@ -5,7 +5,7 @@
  * - استثناء طلبات بث الفيديو المباشرة ومسارات الـ API لتتولاها IndexedDB
  */
 
-const CACHE_NAME = 'step-by-step-pwa-v5';
+const CACHE_NAME = 'step-by-step-pwa-v6';
 
 // الأصول الأساسية التي يتم تخزينها فور تثبيت التطبيق
 const PRECACHE_ASSETS = [
@@ -65,11 +65,14 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const request = event.request;
 
-  // لا نتدخل في طلبات البوست أو بث الفيديو الجزئي (Video Range Requests) أو الـ API الحية
+  // لا نتدخل في طلبات البوست، بث الفيديو، ملفات الوسائط الكبيرة، أو مسارات تسجيل الخروج
+  const urlLower = request.url.toLowerCase();
   if (
     request.method !== 'GET' ||
-    request.url.includes('/video-stream/') ||
-    request.url.includes('/logout') ||
+    urlLower.includes('/video-stream/') ||
+    urlLower.includes('/logout') ||
+    urlLower.includes('educational/videos') ||
+    /\.(mp4|webm|ogg|mov|mkv|m4v|avi)(\?|$)/i.test(urlLower) ||
     request.headers.get('range')
   ) {
     return;

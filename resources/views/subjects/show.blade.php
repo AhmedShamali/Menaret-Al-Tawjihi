@@ -102,8 +102,11 @@
                                         style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
                                 </iframe>
                             @else
+                                @php
+                                    $directUrl = \App\Support\MediaHelper::url($video->url_path) ?: route('video.stream', ['filename' => $video->url_path]);
+                                @endphp
                                 <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
-                                    <source src="{{ route('video.stream', ['filename' => $video->url_path]) }}" type="video/mp4">
+                                    <source src="{{ $directUrl }}" type="video/mp4">
                                 </video>
                             @endif
 
@@ -136,7 +139,10 @@
                                     <span>🎓</span> {{ __('مشغل دراسي آمن') }}
                                 </p>
                                 @if(!$isYoutube && !empty($video->url_path))
-                                    <button type="button" class="btn-offline-download" id="btn_offline_{{ $video->id }}" onclick="StepvoroVideoDownloader.startDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->title ?? 'المنهاج') }}', '{{ route('video.stream', ['filename' => $video->url_path]) }}', this)" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 8px; cursor: pointer;">
+                                    @php
+                                        $downloadUrl = \App\Support\MediaHelper::url($video->url_path) ?: route('video.stream', ['filename' => $video->url_path]);
+                                    @endphp
+                                    <button type="button" class="btn-offline-download" id="btn_offline_{{ $video->id }}" onclick="StepvoroVideoDownloader.startDownload('{{ $video->id }}', '{{ addslashes($video->title) }}', '{{ addslashes($subject->title ?? 'المنهاج') }}', '{{ $downloadUrl }}', this)" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 8px; cursor: pointer;">
                                         <i class="fa-solid fa-cloud-arrow-down"></i>
                                         <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
                                     </button>

@@ -1074,9 +1074,9 @@
                                                 $ytEmbed = str_replace(['controls=1', 'fs=1'], ['controls=0', 'fs=0'], $ytEmbed);
                                             }
                                         }
-                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
+                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos') || (!empty($rawUrl) && !str_contains($rawUrl, 'youtube') && !str_contains($rawUrl, 'youtu.be'));
                                         $directVideoUrl = $isDirectVideo 
-                                            ? \App\Support\MediaHelper::url($rawUrl)
+                                            ? (\App\Support\MediaHelper::url($rawUrl) ?: route('video.stream', ['filename' => basename($rawUrl)]))
                                             : null;
                                     @endphp
 
