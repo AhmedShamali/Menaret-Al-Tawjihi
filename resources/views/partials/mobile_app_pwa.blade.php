@@ -1043,7 +1043,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=10', { updateViaCache: 'none' }).then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=11', { updateViaCache: 'none' }).then(function(reg) {
                 // تفعيل فوري لأي عامل خدمة في حالة انتظار
                 if (reg.waiting) {
                     try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}

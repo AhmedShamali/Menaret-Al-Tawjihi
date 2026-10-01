@@ -134,10 +134,48 @@
 
                         <div class="video-card-body">
                             <h4 class="video-title">{{ $video->title }}</h4>
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px; flex-wrap: wrap; gap: 6px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
                                 <p class="video-channel" style="margin: 0;">
                                     <span>🎓</span> {{ __('مشغل دراسي آمن') }}
                                 </p>
+
+                                @php
+                                    $rawVPath = trim($video->url_path ?? '');
+                                    $isYtVid = !empty($video->youtube_id) || str_contains($rawVPath, 'youtube.com') || str_contains($rawVPath, 'youtu.be');
+                                    $directVUrl = !$isYtVid ? (\App\Support\MediaHelper::url($rawVPath) ?: route('video.stream', ['filename' => basename($rawVPath)])) : null;
+                                @endphp
+
+                                <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
+                                    @if(!$isYtVid && $directVUrl)
+                                        <button type="button" 
+                                                class="ed-btn-offline-card" 
+                                                id="btn_offline_{{ $video->id }}" 
+                                                data-video-id="{{ $video->id }}"
+                                                data-video-title="{{ $video->title }}"
+                                                data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                data-video-url="{{ $directVUrl }}"
+                                                onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
+                                                title="{{ __('تحميل الدرس مباشرة للمشاهدة بدون إنترنت') }}">
+                                            <div class="ed-offline-btn-inner">
+                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                            </div>
+                                            <div class="ed-offline-progress-track">
+                                                <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
+                                            </div>
+                                        </button>
+                                    @else
+                                        <a href="{{ route('content.downloadVideo', $video->id) }}" 
+                                           target="_blank"
+                                           class="ed-btn-offline-card" 
+                                           title="{{ __('تحميل نسخة الفيديو للمشاهدة بدون إنترنت') }}">
+                                            <div class="ed-offline-btn-inner">
+                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                            </div>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </div>

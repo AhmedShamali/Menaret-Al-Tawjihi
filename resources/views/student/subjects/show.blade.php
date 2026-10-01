@@ -1214,12 +1214,24 @@
                                                         title="{{ __('تحميل الدرس مباشرة للمشاهدة بدون إنترنت') }}">
                                                     <div class="ed-offline-btn-inner">
                                                         <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('تحميل الدرس مباشرة') }}</span>
+                                                        <span class="offline-btn-label">{{ __('تحميل الدرس أوفلاين') }}</span>
                                                     </div>
                                                     <div class="ed-offline-progress-track">
                                                         <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
                                                     </div>
                                                 </button>
+                                            </div>
+                                        @else
+                                            <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
+                                                <a href="{{ route('content.downloadVideo', $video->id) }}" 
+                                                   target="_blank"
+                                                   class="ed-btn-offline-card" 
+                                                   title="{{ __('تحميل نسخة الفيديو للمشاهدة بدون إنترنت') }}">
+                                                    <div class="ed-offline-btn-inner">
+                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                        <span class="offline-btn-label">{{ __('تحميل الدرس أوفلاين') }}</span>
+                                                    </div>
+                                                </a>
                                             </div>
                                         @endif
                                         @if(!empty($video->pdf_path))

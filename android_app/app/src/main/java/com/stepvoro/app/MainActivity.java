@@ -69,7 +69,9 @@ public class MainActivity extends AppCompatActivity {
                 webView.setVisibility(View.VISIBLE);
                 webView.reload();
             } else {
-                Toast.makeText(MainActivity.this, "لا يزال هاتفك غير متصل بالإنترنت", Toast.LENGTH_SHORT).show();
+                offlineLayout.setVisibility(View.GONE);
+                webView.setVisibility(View.VISIBLE);
+                webView.loadUrl("https://stepvoro.com/offline.html");
             }
         });
 
@@ -174,8 +176,8 @@ public class MainActivity extends AppCompatActivity {
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 if (request.isForMainFrame() && !isNetworkAvailable()) {
-                    webView.setVisibility(View.GONE);
-                    offlineLayout.setVisibility(View.VISIBLE);
+                    // توجيه المتصفح الداخلي إلى واجهة الأوفلاين المحلية المخزنة بدلاً من حظر الطالب
+                    view.loadUrl("https://stepvoro.com/offline.html");
                 }
             }
         });

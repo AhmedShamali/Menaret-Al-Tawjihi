@@ -5,11 +5,12 @@
  * - استثناء طلبات بث الفيديو المباشرة لتتولاها ذاكرة الـ IndexedDB المعزولة
  */
 
-const CACHE_NAME = 'step-by-step-pwa-v10';
+const CACHE_NAME = 'step-by-step-pwa-v11';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [
   '/',
+  '/?source=pwa',
   '/manifest.json',
   '/offline.html',
   '/images/logo.png',
@@ -105,11 +106,16 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         })
         .catch(() => {
-          return caches.match(request).then((cachedResponse) => {
+          return caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
             if (cachedResponse) {
               return cachedResponse;
             }
-            return caches.match('/offline.html');
+            return caches.match('/', { ignoreSearch: true }).then((homeResponse) => {
+              if (homeResponse) {
+                return homeResponse;
+              }
+              return caches.match('/offline.html');
+            });
           });
         })
     );

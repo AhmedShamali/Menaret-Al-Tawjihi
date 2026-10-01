@@ -269,11 +269,13 @@
 
         <div class="status-pill">
             <i class="fa-solid fa-cloud-arrow-down" style="color: #60a5fa;"></i>
-            <span>وضع عدم الاتصال الذكي</span>
+            <span>وضع الدراسة أوفلاين (بدون إنترنت)</span>
         </div>
 
-        <h1>أنت غير متصل بالإنترنت حالياً</h1>
-        <p>التطبيق يعمل بكامل سرعته من الذاكرة المحلية. يمكنك متابعة دراسة دروسك المحفوظة واستخدام الأدوات التعليمية دون انقطاع.</p>
+        <h1 style="font-size: 1.35rem; font-weight: 900; margin-bottom: 8px;">مرحباً بك في منصة Step by Step 📚</h1>
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 18px;">
+            التطبيق يعمل بكامل طاقته من الذاكرة المحلية لهاتفك. يمكنك متابعة دراسة دروسك المحفوظة واستخدام أدوات التوجيهي الذكية دون الحاجة للاتصال بالإنترنت.
+        </p>
 
         <button type="button" class="btn-retry" onclick="attemptReconnect()">
             <i class="fa-solid fa-rotate-right" id="retryIcon"></i>
@@ -281,12 +283,18 @@
         </button>
 
         <!-- قسم الدروس المحفوظة أوفلاين في التطبيق -->
-        <div class="offline-section-box" id="offlineVideosSection" style="display: none;">
+        <div class="offline-section-box" id="offlineVideosSection">
             <div class="section-header">
                 <h4><i class="fa-solid fa-circle-play" style="color: #10b981;"></i> الدروس المحفوظة أوفلاين</h4>
                 <span id="offlineCountLabel" style="font-size: 0.72rem; color: #10b981; font-weight: 800;"></span>
             </div>
-            <div class="offline-videos-grid" id="offlineVideosContainer"></div>
+            <div class="offline-videos-grid" id="offlineVideosContainer">
+                <div id="noOfflineVideosMessage" style="padding: 16px 12px; text-align: center; color: var(--text-muted); font-size: 0.82rem; line-height: 1.6;">
+                    <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1.8rem; color: #38bdf8; margin-bottom: 8px; display: block;"></i>
+                    <strong>لا توجد دروس محفوظة حالياً في ذاكرة هاتفك.</strong><br>
+                    عند اتصالك بالإنترنت، اضغط على زر <strong>"تحميل أوفلاين"</strong> بجانب أي فيديو لحفظه وتشغيله هنا بدون إنترنت.
+                </div>
+            </div>
         </div>
 
         <!-- أدوات المنصة المخزنة أوفلاين -->
@@ -294,6 +302,10 @@
             <div class="section-header">
                 <h4><i class="fa-solid fa-graduation-cap" style="color: #60a5fa;"></i> الأدوات المتاحة بدون إنترنت</h4>
             </div>
+            <a href="/catalog" class="tool-link">
+                <span><i class="fa-solid fa-layer-group" style="color: #38bdf8; margin-left: 6px;"></i> دليل المواد والمقررات</span>
+                <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; color: #64748b;"></i>
+            </a>
             <a href="/tawjihi-calculator" class="tool-link">
                 <span><i class="fa-solid fa-calculator" style="color: #38bdf8; margin-left: 6px;"></i> حاسبة معدل التوجيهي</span>
                 <i class="fa-solid fa-chevron-left" style="font-size: 0.75rem; color: #64748b;"></i>
