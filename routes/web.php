@@ -205,6 +205,14 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
 
+    // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة لمنع أخطاء 404 في طلبات الحذف والتحديث
+    Route::get('/educational_contents', [EducationalContentController::class, 'index']);
+    Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create']);
+    Route::post('/educational_contents', [EducationalContentController::class, 'store']);
+    Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit']);
+    Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update']);
+    Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy']);
+
     // واجهتا الفيديوهات والملفات والدوسيات المستقلتان للإدارة
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
     Route::get('/files', [EducationalContentController::class, 'teacherFiles'])->name('files');
@@ -280,6 +288,14 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
+
+    // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة للمعلم لمنع أي تعارض 404
+    Route::get('/educational-contents', [EducationalContentController::class, 'index']);
+    Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create']);
+    Route::post('/educational-contents', [EducationalContentController::class, 'store']);
+    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit']);
+    Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update']);
+    Route::delete('/educational-contents/{id}', [EducationalContentController::class, 'destroy']);
 
     // الواجهات الثلاث المستقلة لإدارة المحتوى الأكاديمي
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
@@ -369,10 +385,14 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/subjects/{id}', [DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
+    Route::post('/notifications/{id}/read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.readDirect');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
     Route::delete('/notifications/{id}', [App\Http\Controllers\Student\NotificationController::class, 'destroy'])->name('notifications.destroy');
     Route::post('/redeem-code', [StudentController::class, 'redeemCode'])->name('redeemCode');
+
+    // مكتبة الفيديوهات المحملة أوفلاين للطالب بدون نت
+    Route::get('/offline-videos', [DashboardController::class, 'offlineVideos'])->name('offline_videos');
 
     // مشغل الفيديو الذكي وملاحظات التوقيت
     Route::get('/video-notes/{content_id}', [\App\Http\Controllers\VideoNoteController::class, 'fetchNotes'])->name('videoNotes.fetch');
@@ -408,10 +428,19 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
 
-// توافقية مسارات الإدارة القديمة والتسليم (محمية بصلاحيات الأدمن)
+// توافقية مسارات الإدارة والتسليم القديمة مع توجيه نظيف بدون -legacy
 Route::middleware(['auth', 'IsAdmin'])->group(function () {
-    Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
-    Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
-    Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
+    Route::get('/admin/students', [StudentController::class, 'index'])->name('students.index');
+    Route::get('/admin/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
+    Route::match(['put', 'post'], '/admin/students/{student}', [StudentController::class, 'update'])->name('students.update');
+    Route::match(['put', 'post'], '/students/{student}', [StudentController::class, 'update']);
+
+    // إعادة التوجيه للروابط القديمة إن وجدت
+    Route::redirect('/admin/students-legacy', '/admin/students');
+    Route::get('/admin/students/{student}/edit-legacy', function ($student) {
+        return redirect()->route('admin.students.edit', $student);
+    });
+    Route::match(['put', 'post'], '/admin/students/{student}/update-legacy', [StudentController::class, 'update']);
 });
-Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam'])->name('exams.submit');
+Route::post('/student/exams/{id}/submit', [ExamController::class, 'submitExam'])->name('exams.submit');
+Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam']);
