@@ -238,9 +238,12 @@
    تنسيقات شريط التنقل السفلي وشاشات التطبيق المتطورة
    ========================================================================== */
 :root {
-    --pwa-primary: #1d4ed8;
-    --pwa-primary-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    --pwa-gold: #d97706;
+    --pwa-primary: #0b3b6f;
+    --pwa-primary-gradient: linear-gradient(135deg, #0b3b6f 0%, #0284c7 100%);
+    --pwa-cyan: #0284c7;
+    --pwa-orange: #f27429;
+    --pwa-gold: #f27429;
+    --pwa-green: #10b981;
 }
 
 /* شريط التنقل السفلي للهواتف */
@@ -1018,21 +1021,60 @@ body[class*="exam"] .stepvoro-bottom-nav,
     const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent.toLowerCase());
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    // 1. تسجيل الـ ServiceWorker
+    // 1. تسجيل ومراقبة تحديثات الـ ServiceWorker التلقائية فوراً
     if ('serviceWorker' in navigator) {
+        let refreshing = false;
+
+        // إعادة تنشيط الواجهة بسلاسة فور استلام كود أحدث من السيرفر
+        navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
+        });
+
+        navigator.serviceWorker.addEventListener('message', function(event) {
+            if (event.data && event.data.type === 'PWA_UPDATED') {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            }
+        });
+
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('/sw.js').then(function(reg) {
+                // فحص فوري للتحديثات عند فتح التطبيق
+                try { reg.update(); } catch(e) {}
+
+                // فحص دوري للتحديثات كل 60 ثانية لضمان تطبيق أي تعديل يرفعه المشرف فوراً
+                setInterval(function() {
+                    try { reg.update(); } catch(e) {}
+                }, 60000);
+
                 reg.onupdatefound = function() {
                     const installingWorker = reg.installing;
-                    installingWorker.onstatechange = function() {
-                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('Stepvoro App: تحديث جديد متاح تم تنزيله في الخلفية.');
-                        }
-                    };
+                    if (installingWorker) {
+                        installingWorker.onstatechange = function() {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                // يوجد إصدار جديد مثبت في الخلفية، تفعيله فوراً
+                                installingWorker.postMessage({ action: 'skipWaiting' });
+                            }
+                        };
+                    }
                 };
             }).catch(function(err) {
-                console.warn('Stepvoro ServiceWorker Registration:', err);
+                console.warn('Step by Step ServiceWorker Registration Notice:', err);
             });
+        });
+
+        // عند عودة الطالب للنافذة أو فتح الهاتف، فحص التحديثات تلقائياً
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && navigator.serviceWorker.ready) {
+                navigator.serviceWorker.ready.then(function(reg) {
+                    try { reg.update(); } catch(e) {}
+                });
+            }
         });
     }
 
@@ -1206,7 +1248,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
                         </div>
                         <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">لا توجد دروس محفوظة أوفلاين</h4>
                         <p style="font-size: 0.78rem; line-height: 1.6; margin: 0 auto; max-width: 320px;">
-                            يمكنك حفظ أي درس للمشاهدة بدون إنترنت بالضغط على زر <strong>"تحميل أوفلاين"</strong> بجانب مشغل الفيديو أثناء تصفح المادة.
+                            يمكنك حفظ أي درس للمشاهدة بدون إنترنت بالضغط على زر <strong>"تحميل الدرس مباشرة"</strong> بجانب مشغل الفيديو أثناء تصفح المادة.
                         </p>
                     </div>
                 `;

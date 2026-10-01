@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1d4ed8">
+    <meta name="theme-color" content="#0b3b6f">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2639,12 +2639,6 @@
             document.body.classList.remove('dark-theme');
             document.documentElement.classList.remove('dark-theme');
         } catch(e) {}
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
-            });
-        }
 
         // تفعيل زر العودة إلى بداية الصفحة بسلاسة
         function scrollToPageTop() {

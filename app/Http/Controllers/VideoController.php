@@ -56,7 +56,11 @@ class VideoController extends Controller
         if (!$resolvedPath) {
             $cloudUrl = \App\Support\MediaHelper::url($filename);
             if ($cloudUrl && filter_var($cloudUrl, FILTER_VALIDATE_URL)) {
-                return redirect()->away($cloudUrl);
+                return redirect()->away($cloudUrl, 302, [
+                    'Access-Control-Allow-Origin' => '*',
+                    'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                    'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
+                ]);
             }
             abort(404, 'ملف الفيديو غير موجود.');
         }

@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1d4ed8">
+    <meta name="theme-color" content="#0b3b6f">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
