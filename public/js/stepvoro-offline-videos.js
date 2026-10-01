@@ -162,7 +162,7 @@ const StepvoroVideoDownloader = {
             || window.location.search.includes('mode=pwa');
     },
 
-    // معالجة الضغط على زر التحميل بذكاء وفق بيئة الطالب (تطبيق أم متصفح)
+    // معالجة الضغط على زر التحميل مباشرة دون أي نوافذ أو قيود
     handleAction: function(id, btnElement) {
         id = String(id);
         const btn = btnElement || document.getElementById('btn_offline_' + id);
@@ -174,7 +174,7 @@ const StepvoroVideoDownloader = {
                 if (rec && rec.blob) {
                     this.attachOfflineBlobToPlayer(id, rec.blob);
                     if (typeof window.showPwaToast === 'function') {
-                        window.showPwaToast('يتم الآن تشغيل الدرس مباشرة من ذاكرة التطبيق بدون إنترنت ⚡', 'success');
+                        window.showPwaToast('يتم الآن تشغيل الدرس مباشرة من الذاكرة بدون إنترنت ⚡', 'success');
                     }
                     const player = document.getElementById('player_' + id);
                     if (player) {
@@ -186,13 +186,7 @@ const StepvoroVideoDownloader = {
             return;
         }
 
-        // إذا كان التصفح من المتصفح العادي (Web) وليس من التطبيق:
-        if (!this.isAppMode()) {
-            this.showAppInstallPrompt();
-            return;
-        }
-
-        // داخل التطبيق: بدء التحميل الفعلي إلى الذاكرة المعزولة
+        // بدء التحميل المباشر فوراً دون أي قيود
         const title = btn.getAttribute('data-video-title') || 'درس تعليمي';
         const subject = btn.getAttribute('data-subject-title') || 'المنهاج';
         const url = btn.getAttribute('data-video-url');
@@ -207,61 +201,45 @@ const StepvoroVideoDownloader = {
         this.startDownload(id, title, subject, url, btn);
     },
 
-    // توجيه الطالب إلى تثبيت التطبيق عند محاولة التحميل من المتصفح العادي
-    showAppInstallPrompt: function() {
-        if (window.Swal) {
-            Swal.fire({
-                title: 'ميزة حصرية لتطبيق Step by Step! 📲',
-                html: `
-                    <div style="text-align: right; line-height: 1.7; font-size: 0.92rem; color: #334155; font-family: 'Alexandria', sans-serif;">
-                        <p style="margin-bottom: 12px;">
-                            ميزة <strong>تحميل الدروس والمشاهدة بدون إنترنت</strong> مخصصة حصرياً داخل <strong>تطبيق Step by Step</strong> لتمكينك من متابعة دراستك أينما كنت بدون استهلاك باقة الإنترنت.
-                        </p>
-                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; color: #1e40af;">
-                            <i class="fa-solid fa-bolt" style="color: #2563eb; margin-left: 6px;"></i>
-                            ثبّت التطبيق الآن بضغطة زر واحدة (تثبيت فوري بدون متجر وبلا مساحة إضافية) واستمتع بحفظ دروسك ومشاهدتها بدون نت!
-                        </div>
-                    </div>
-                `,
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: '<i class="fa-solid fa-mobile-screen-button"></i> تثبيت التطبيق الآن',
-                cancelButtonText: 'إلغاء',
-                confirmButtonColor: '#1d4ed8',
-                cancelButtonColor: '#94a3b8'
-            }).then((res) => {
-                if (res.isConfirmed) {
-                    if (typeof window.triggerPwaInstall === 'function') {
-                        window.triggerPwaInstall();
-                    } else if (typeof window.openInstallModal === 'function') {
-                        window.openInstallModal();
-                    }
-                }
-            });
-        } else {
-            if (typeof window.openInstallModal === 'function') {
-                window.openInstallModal();
+    // دالة مساعدة لتنزيل ملف الفيديو المباشر إلى الجهاز
+    triggerDirectFileDownload: function(blobOrUrl, title) {
+        try {
+            const a = document.createElement('a');
+            if (typeof blobOrUrl === 'string') {
+                a.href = blobOrUrl;
+            } else {
+                a.href = URL.createObjectURL(blobOrUrl);
             }
+            const safeName = (title ? title.replace(/[/\\?%*:|"<>]/g, '_') : 'lesson') + '.mp4';
+            a.download = safeName;
+            a.target = '_blank';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            if (typeof blobOrUrl !== 'string') {
+                setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+            }
+        } catch (err) {
+            console.warn('Direct file download fallback error:', err);
         }
     },
 
-    // بدء تنزيل الفيديو وتخزينه داخل التطبيق
+    // بدء تنزيل الفيديو وتخزينه وتشغيل التنزيل المباشر فوراً
     startDownload: function (id, title, subject, videoUrl, btnElement) {
         id = String(id);
         if (this.activeDownloads[id]) {
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'التحميل جاري بالفعل',
-                    text: 'يتم حالياً تحميل هذا الدرس في خلفية التطبيق.',
-                    confirmButtonColor: '#1d4ed8'
-                });
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('التحميل جاري بالفعل في الخلفية...', 'info');
             }
             return;
         }
 
         const self = this;
         self.updateButtonUI(id, 'downloading', 0, btnElement);
+
+        if (typeof window.showPwaToast === 'function') {
+            window.showPwaToast('بدأ تحميل الدرس مباشرة ⚡', 'info');
+        }
 
         const xhr = new XMLHttpRequest();
         xhr.open('GET', videoUrl, true);
@@ -270,20 +248,22 @@ const StepvoroVideoDownloader = {
         self.activeDownloads[id] = xhr;
 
         xhr.onprogress = function (e) {
-            if (e.lengthComputable) {
-                const percent = Math.round((e.loaded / e.total) * 100);
+            if (e.lengthComputable && e.total > 0) {
+                const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
                 self.updateButtonUI(id, 'downloading', percent, btnElement);
             }
         };
 
         xhr.onload = function () {
+            delete self.activeDownloads[id];
             if (xhr.status === 200 || xhr.status === 206) {
                 const blob = xhr.response;
                 if (!blob || blob.size < 1000 || (blob.type && blob.type.includes('text/html'))) {
-                    delete self.activeDownloads[id];
+                    // فشل استجابة الـ blob -> تشغيل التحميل المباشر للرابط كـ fallback فوري
                     self.updateButtonUI(id, 'ready', 0, btnElement);
+                    self.triggerDirectFileDownload(videoUrl, title);
                     if (typeof window.showPwaToast === 'function') {
-                        window.showPwaToast('تعذر تحميل ملف هذا الدرس أو أن الرابط غير متاح حالياً.', 'error');
+                        window.showPwaToast('جاري بدء التحميل المباشر للدرس عبر المتصفح...', 'info');
                     }
                     return;
                 }
@@ -308,42 +288,29 @@ const StepvoroVideoDownloader = {
                     })
                 };
 
+                // حفظ في IndexedDB للتشغيل بدون نت
                 StepvoroOfflineDB.saveVideo(record)
                     .then(() => {
-                        delete self.activeDownloads[id];
                         self.updateButtonUI(id, 'saved', 100, btnElement);
                         self.attachOfflineBlobToPlayer(id, blob);
+                        // أيضاً بدء تنزيل الملف المباشر للمتصفح حتى يحتفظ به الطالب في جهازه
+                        self.triggerDirectFileDownload(blob, title);
 
                         if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('تم حفظ الدرس بنجاح في ذاكرة التطبيق (' + sizeFormatted + ')! يمكنك مشاهدته بدون إنترنت في أي وقت.', 'success');
-                        } else if (window.Swal) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'تم التحميل بنجاح داخل التطبيق! 🎉',
-                                html: `
-                                    <div style="text-align: right; line-height: 1.6; font-size: 0.9rem;">
-                                        تم حفظ <strong>${title}</strong> في ذاكرة التطبيق بنجاح (${sizeFormatted}).<br>
-                                        يمكنك الآن مشاهدته كاملاً في أي وقت حتى عند انقطاع الإنترنت أو أثناء السفر.
-                                    </div>
-                                `,
-                                confirmButtonText: 'رائع، استمر',
-                                confirmButtonColor: '#1d4ed8'
-                            });
+                            window.showPwaToast('تم تحميل الدرس بنجاح (' + sizeFormatted + ')! ومتاح الآن بدون نت.', 'success');
                         }
                     })
                     .catch((err) => {
-                        delete self.activeDownloads[id];
-                        self.updateButtonUI(id, 'ready', 0, btnElement);
                         console.error('Error saving video to DB:', err);
-                        if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('حدث خطأ أثناء حفظ الفيديو في ذاكرة التطبيق: ' + err.message, 'error');
-                        }
+                        self.updateButtonUI(id, 'ready', 0, btnElement);
+                        self.triggerDirectFileDownload(blob || videoUrl, title);
                     });
             } else {
-                delete self.activeDownloads[id];
+                // فشل XHR -> تشغيل التحميل المباشر للرابط عبر المتصفح فوراً
                 self.updateButtonUI(id, 'ready', 0, btnElement);
+                self.triggerDirectFileDownload(videoUrl, title);
                 if (typeof window.showPwaToast === 'function') {
-                    window.showPwaToast('تعذر تنزيل الفيديو (رمز الخطأ: ' + xhr.status + '). يرجى التحقق من المصدر.', 'error');
+                    window.showPwaToast('جاري التحميل المباشر لملف الفيديو عبر المتصفح...', 'info');
                 }
             }
         };
@@ -351,17 +318,17 @@ const StepvoroVideoDownloader = {
         xhr.onerror = function () {
             delete self.activeDownloads[id];
             self.updateButtonUI(id, 'ready', 0, btnElement);
+            // تحميل مباشر فوري دون أي إزعاج أو توقف
+            self.triggerDirectFileDownload(videoUrl, title);
             if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('انقطع الاتصال أثناء تحميل الفيديو. يرجى المحاولة مرة أخرى.', 'error');
+                window.showPwaToast('جاري التحميل المباشر لملف الفيديو عبر المتصفح...', 'info');
             }
         };
 
         xhr.ontimeout = function () {
             delete self.activeDownloads[id];
             self.updateButtonUI(id, 'ready', 0, btnElement);
-            if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('استغرق تحميل الفيديو وقتاً طويلاً. يرجى إعادة المحاولة.', 'error');
-            }
+            self.triggerDirectFileDownload(videoUrl, title);
         };
 
         xhr.onabort = function () {
@@ -369,7 +336,13 @@ const StepvoroVideoDownloader = {
             self.updateButtonUI(id, 'ready', 0, btnElement);
         };
 
-        xhr.send();
+        try {
+            xhr.send();
+        } catch (e) {
+            delete self.activeDownloads[id];
+            self.updateButtonUI(id, 'ready', 0, btnElement);
+            self.triggerDirectFileDownload(videoUrl, title);
+        }
     },
 
     // حذف فيديو محفوظ لتحرير المساحة
@@ -421,12 +394,10 @@ const StepvoroVideoDownloader = {
         }
     },
 
-    // تحديث شكل ومحتوى زر التنزيل بشكل راقٍ وعصري
+    // تحديث شكل ومحتوى زر التنزيل بشكل راقٍ ومباشر
     updateButtonUI: function (id, state, percent, btnElement) {
         const btn = btnElement || document.getElementById('btn_offline_' + id);
         if (!btn) return;
-
-        const isApp = this.isAppMode();
 
         if (state === 'downloading') {
             btn.classList.add('is-downloading');
@@ -435,7 +406,7 @@ const StepvoroVideoDownloader = {
             btn.innerHTML = `
                 <div class="ed-offline-btn-inner">
                     <span class="ed-offline-btn-icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                    <span class="offline-btn-label">جاري الحفظ (${percent}%)</span>
+                    <span class="offline-btn-label">جاري التحميل (${percent}%)</span>
                 </div>
                 <div class="ed-offline-progress-track">
                     <div class="ed-offline-progress-fill" style="width: ${percent}%;"></div>
@@ -448,33 +419,22 @@ const StepvoroVideoDownloader = {
             btn.innerHTML = `
                 <div class="ed-offline-btn-inner">
                     <span class="ed-offline-btn-icon"><i class="fa-solid fa-circle-check" style="color: #10b981;"></i></span>
-                    <span class="offline-btn-label">متوفر أوفلاين بالتطبيق ✓</span>
-                    <span class="btn-remove-offline" onclick="event.stopPropagation(); StepvoroVideoDownloader.removeOfflineVideo('${id}', this.closest('button'))" title="حذف من ذاكرة الهاتف لتحرير المساحة">
+                    <span class="offline-btn-label">محفوظ أوفلاين ✓</span>
+                    <span class="btn-remove-offline" onclick="event.stopPropagation(); StepvoroVideoDownloader.removeOfflineVideo('${id}', this.closest('button'))" title="حذف من الذاكرة لتحرير المساحة">
                         <i class="fa-solid fa-trash-can"></i>
                     </span>
                 </div>
             `;
         } else {
-            // ready to download
-            btn.classList.remove('is-downloading', 'is-saved');
+            // جاهز للتحميل
+            btn.classList.remove('is-downloading', 'is-saved', 'is-web-mode');
             btn.disabled = false;
-            if (isApp) {
-                btn.classList.remove('is-web-mode');
-                btn.innerHTML = `
-                    <div class="ed-offline-btn-inner">
-                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                        <span class="offline-btn-label">تحميل للمشاهدة بدون نت</span>
-                    </div>
-                `;
-            } else {
-                btn.classList.add('is-web-mode');
-                btn.innerHTML = `
-                    <div class="ed-offline-btn-inner">
-                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-mobile-screen-button"></i></span>
-                        <span class="offline-btn-label">تحميل أوفلاين (متاح بالتطبيق)</span>
-                    </div>
-                `;
-            }
+            btn.innerHTML = `
+                <div class="ed-offline-btn-inner">
+                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                    <span class="offline-btn-label">تحميل الدرس مباشرة</span>
+                </div>
+            `;
         }
     },
 

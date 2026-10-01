@@ -259,16 +259,16 @@
             gap: 14px;
         }
         .header-logo-icon {
-            width: 52px;
-            height: 52px;
-            background: var(--ed-primary-soft);
-            color: var(--ed-primary);
-            border-radius: var(--radius-md);
+            width: 54px;
+            height: 54px;
+            background: #ffffff;
+            border-radius: 50%;
             display: grid;
             place-items: center;
-            font-size: 26px;
-            border: 1px solid var(--ed-primary-border);
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             flex-shrink: 0;
+            overflow: hidden;
         }
         .header-titles h1 {
             font-size: 20px;
@@ -1119,7 +1119,7 @@
         <div class="header-inner">
             <div class="header-brand">
                 <div class="header-logo-icon" style="padding: 2px; overflow: hidden; background: #ffffff;">
-                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: var(--radius-md);">
+                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
                 </div>
                 <div class="header-titles">
                     <h1>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h1>
@@ -1497,7 +1497,10 @@
     <footer class="main-footer">
         <div class="footer-inner">
             <div class="footer-brand">
-                <h3>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h3>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                    <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; border: 1.5px solid rgba(14,61,111,0.12); box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
+                    <h3 style="margin: 0;">{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h3>
+                </div>
                 <p>
                     {{ __('المنظومة الأكاديمية الفلسطينية المعتمدة لطلبة الثانوية العامة (التوجيهي). منصة تعليمية متكاملة تقدم شروحات تعليمية، دروس أونلاين، دوسيات، بنك أسئلة، وحاسبة معدل التوجيهي متوافقة مع منهاج وزارة التربية والتعليم الفلسطينية.') }}
                 </p>

@@ -1211,10 +1211,10 @@
                                                         data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
                                                         data-video-url="{{ $directVideoUrl }}"
                                                         onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('حفظ الدرس في ذاكرة التطبيق للمشاهدة بدون إنترنت') }}">
+                                                        title="{{ __('تحميل الدرس مباشرة للمشاهدة بدون إنترنت') }}">
                                                     <div class="ed-offline-btn-inner">
                                                         <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('تحميل للمشاهدة بدون نت') }}</span>
+                                                        <span class="offline-btn-label">{{ __('تحميل الدرس مباشرة') }}</span>
                                                     </div>
                                                     <div class="ed-offline-progress-track">
                                                         <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>

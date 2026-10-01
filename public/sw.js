@@ -5,7 +5,7 @@
  * - استثناء طلبات بث الفيديو المباشرة ومسارات الـ API لتتولاها IndexedDB
  */
 
-const CACHE_NAME = 'step-by-step-pwa-v6';
+const CACHE_NAME = 'step-by-step-pwa-v8';
 
 // الأصول الأساسية التي يتم تخزينها فور تثبيت التطبيق
 const PRECACHE_ASSETS = [

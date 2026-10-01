@@ -691,10 +691,11 @@
     <!-- 2. الترويسة الأكاديمية الكلاسيكية الفاتحة -->
     <header class="page-header">
         <div class="header-inner">
+            @php
+                $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+            @endphp
             <a href="{{ route('home') }}" class="brand-link">
-                <div class="brand-logo-square">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                </div>
+                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; border: 1.5px solid rgba(14,61,111,0.12); box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
                 <div class="brand-titles">
                     <h1>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</h1>
                     <p>{{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</p>

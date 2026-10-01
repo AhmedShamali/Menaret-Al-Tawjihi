@@ -376,11 +376,10 @@
     <header class="top-nav-bar">
         <div class="top-nav-inner">
             <a href="/" class="brand-link">
-                @if(\App\Models\Setting::get('site_logo'))
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="max-height: 36px; max-width: 44px; object-fit: contain;">
-                @else
-                    <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
-                @endif
+                @php
+                    $siteLogo = \App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png');
+                @endphp
+                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; border: 1.5px solid rgba(14,61,111,0.12); box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
                 <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
             </a>
 

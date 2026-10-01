@@ -411,7 +411,7 @@
     <!-- الهيدر -->
     <header class="visitor-header">
         <a href="/" class="brand-logo">
-            <div class="logo-square">{{ mb_substr(\App\Models\Setting::get('site_name', 'Step by Step'), 0, 1) }}</div>
+            <img src="{{ $siteLogo }}" alt="{{ \App\Models\Setting::get('site_name', 'Step by Step') }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; border: 1.5px solid rgba(14,61,111,0.12); box-shadow: 0 2px 6px rgba(0,0,0,0.08);">
             <span>{{ \App\Models\Setting::get('site_name', 'Step by Step') }}</span>
         </a>
 

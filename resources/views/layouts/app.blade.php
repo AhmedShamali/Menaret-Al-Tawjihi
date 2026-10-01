@@ -1814,7 +1814,7 @@
     <aside class="sidebar" id="sidebar">
         <div class="side-brand">
             <a href="/" class="brand-logo">
-                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="max-height: 40px; max-width: 44px; object-fit: contain; border-radius: 8px; background: #ffffff; padding: 1px;">
+                <img src="{{ $siteLogo }}" alt="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}" style="width: 42px; height: 42px; object-fit: contain; border-radius: 50%; background: #ffffff; padding: 1px; box-shadow: 0 2px 8px rgba(14,61,111,0.15); border: 1.5px solid rgba(14,61,111,0.1);">
                 <div style="display: flex; flex-direction: column;">
                     <span style="font-weight: 800; font-size: 0.98rem; color: #0f172a; line-height: 1.2;">{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
                     <small style="font-size: 0.68rem; color: #b45309; font-weight: 700;">{{ __('بوابة الثانوية العامة') }}</small>
