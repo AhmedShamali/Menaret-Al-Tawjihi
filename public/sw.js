@@ -1,11 +1,11 @@
 /**
- * Step by Step Progressive Web App Engine (v9)
+ * Step by Step Progressive Web App Engine (v10)
  * - تحديث تلقائي فوري للخادم والتطبيق دون الحاجة لإعادة التثبيت
  * - Network-First ذكي للأصول والواجهات مع العمل أوفلاين 100% فور انقطاع الإنترنت
  * - استثناء طلبات بث الفيديو المباشرة لتتولاها ذاكرة الـ IndexedDB المعزولة
  */
 
-const CACHE_NAME = 'step-by-step-pwa-v9';
+const CACHE_NAME = 'step-by-step-pwa-v10';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [

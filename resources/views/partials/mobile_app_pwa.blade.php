@@ -1043,7 +1043,12 @@ body[class*="exam"] .stepvoro-bottom-nav,
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js').then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=10', { updateViaCache: 'none' }).then(function(reg) {
+                // تفعيل فوري لأي عامل خدمة في حالة انتظار
+                if (reg.waiting) {
+                    try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}
+                }
+
                 // فحص فوري للتحديثات عند فتح التطبيق
                 try { reg.update(); } catch(e) {}
 
@@ -1056,8 +1061,8 @@ body[class*="exam"] .stepvoro-bottom-nav,
                     const installingWorker = reg.installing;
                     if (installingWorker) {
                         installingWorker.onstatechange = function() {
-                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                // يوجد إصدار جديد مثبت في الخلفية، تفعيله فوراً
+                            if (installingWorker.state === 'installed') {
+                                // تفعيل فوري فور اكتمال التثبيت
                                 installingWorker.postMessage({ action: 'skipWaiting' });
                             }
                         };
