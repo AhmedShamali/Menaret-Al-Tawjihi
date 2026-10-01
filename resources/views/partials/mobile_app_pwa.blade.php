@@ -21,13 +21,13 @@
         <div class="nav-tab-icon pulse-accent"><i class="fa-solid fa-calculator"></i></div>
         <span class="nav-tab-label">{{ __('الحاسبة') }}</span>
     </a>
-    <button type="button" class="nav-tab" onclick="openOfflineVault()" id="bottomNavOfflineBtn" title="{{ __('دروسي المحفوظة أوفلاين بدون نت') }}">
+    <a href="{{ route('offline.videos') }}" class="nav-tab {{ request()->is('*offline*') ? 'active' : '' }}" id="bottomNavOfflineBtn" title="{{ __('دروسي المحفوظة أوفلاين بدون نت') }}">
         <div class="nav-tab-icon offline-vault-highlight">
             <i class="fa-solid fa-cloud-arrow-down"></i>
             <span class="badge-offline-count" id="bottomNavOfflineBadge" style="display: none;">0</span>
         </div>
-        <span class="nav-tab-label">{{ __('أوفلاين ⚡') }}</span>
-    </button>
+        <span class="nav-tab-label">{{ __('المحملة ⚡') }}</span>
+    </a>
     @if(Auth::guard('student')->check() || Auth::check())
         <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') ? 'active' : '' }}">
             <div class="nav-tab-icon"><i class="fa-solid fa-user-circle"></i></div>
@@ -45,7 +45,7 @@
 <aside class="stepvoro-install-banner" id="stepvoroInstallBanner" style="display: none;">
     <div class="banner-content-wrap">
         <div class="banner-app-icon">
-            <img src="/icons/icon-192.jpg" alt="Step by Step App Icon" width="46" height="46" style="border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+            <img src="/icons/icon-192.png?v=20261001" alt="Step by Step App Icon" width="46" height="46" style="border-radius: 50%; object-fit: contain; background: #ffffff; padding: 1px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
             <span class="app-verified-badge"><i class="fa-solid fa-check"></i></span>
         </div>
         <div class="banner-text">
@@ -69,7 +69,7 @@
     <div class="stepvoro-ios-sheet" onclick="event.stopPropagation()">
         <div class="ios-sheet-handle"></div>
         <div class="ios-sheet-header">
-            <img src="/icons/icon-192.jpg" alt="Step by Step Icon" width="54" height="54" class="ios-app-icon" style="border-radius: 50%; box-shadow: 0 4px 14px rgba(14, 61, 111, 0.2); background: #ffffff; padding: 2px;">
+            <img src="/icons/icon-192.png?v=20261001" alt="Step by Step Icon" width="54" height="54" class="ios-app-icon" style="border-radius: 50%; box-shadow: 0 4px 14px rgba(14, 61, 111, 0.2); background: #ffffff; padding: 2px;">
             <div style="flex: 1; text-align: right; margin-right: 12px;">
                 <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a;">{{ __('تثبيت تطبيق Step by Step') }}</h3>
                 <p style="margin: 3px 0 0; font-size: 0.78rem; color: #64748b;">{{ __('يعمل بدون إنترنت • سريع وفوري • لجميع الأجهزة') }}</p>

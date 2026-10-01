@@ -337,4 +337,12 @@ class DashboardController extends Controller {
 
         return redirect()->back()->with('success', 'تم حذف المعلم بنجاح.');
     }
+
+    /**
+     * واجهة الفيديوهات والدروس المحملة داخل المنصة للعمل أوفلاين بدون نت
+     */
+    public function offlineVideos()
+    {
+        return view('student.offline_videos');
+    }
 }

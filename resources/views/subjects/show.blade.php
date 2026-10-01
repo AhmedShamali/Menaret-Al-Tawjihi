@@ -146,35 +146,24 @@
                                 @endphp
 
                                 <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                    @if(!$isYtVid && $directVUrl)
-                                        <button type="button" 
-                                                class="ed-btn-offline-card" 
-                                                id="btn_offline_{{ $video->id }}" 
-                                                data-video-id="{{ $video->id }}"
-                                                data-video-title="{{ $video->title }}"
-                                                data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                data-video-url="{{ $directVUrl }}"
-                                                onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
-                                                title="{{ __('تحميل الدرس مباشرة للمشاهدة بدون إنترنت') }}">
-                                            <div class="ed-offline-btn-inner">
-                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
-                                            </div>
-                                            <div class="ed-offline-progress-track">
-                                                <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
-                                            </div>
-                                        </button>
-                                    @else
-                                        <a href="{{ route('content.downloadVideo', $video->id) }}" 
-                                           target="_blank"
-                                           class="ed-btn-offline-card" 
-                                           title="{{ __('تحميل نسخة الفيديو للمشاهدة بدون إنترنت') }}">
-                                            <div class="ed-offline-btn-inner">
-                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
-                                            </div>
-                                        </a>
-                                    @endif
+                                    <button type="button" 
+                                            class="ed-btn-offline-card" 
+                                            id="btn_offline_{{ $video->id }}" 
+                                            data-video-id="{{ $video->id }}"
+                                            data-video-title="{{ $video->title }}"
+                                            data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                            data-video-url="{{ $directVUrl ?? '' }}"
+                                            data-is-direct="{{ (!$isYtVid && $directVUrl) ? '1' : '0' }}"
+                                            onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
+                                            title="{{ __('تحميل وحفظ الدرس داخل المنصة للمشاهدة بدون إنترنت') }}">
+                                        <div class="ed-offline-btn-inner">
+                                            <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                            <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                        </div>
+                                        <div class="ed-offline-progress-track">
+                                            <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
+                                        </div>
+                                    </button>
                                 </div>
                             </div>
                         </div>

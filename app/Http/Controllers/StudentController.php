@@ -855,25 +855,30 @@ class StudentController extends Controller
 
 
 
-    public function destroy($id) {
-        $student = Student::findOrFail($id);
-        
+    public function destroy($id)
+    {
+        $student = $id instanceof Student ? $id : Student::findOrFail($id);
+
         // حذف الصور عند حذف الطالب
-        if($student->photo) Storage::disk('public')->delete($student->photo);
-        if($student->id_photo) Storage::disk('public')->delete($student->id_photo);
+        if ($student->photo) {
+            Storage::disk('public')->delete($student->photo);
+        }
+        if ($student->id_photo) {
+            Storage::disk('public')->delete($student->id_photo);
+        }
 
         $studentId = $student->id;
 
         \DB::beginTransaction();
         try {
-            // 1. حذف التكليفات والامتحانات التابعة للتسجيلات
+            // 1. حذف التكليفات والامتحانات التابعة للتسجيلات (عبر enrollment_id لأن جدول exam_assignments لا يحوي student_id)
             if (\Illuminate\Support\Facades\Schema::hasTable('enrollments') && \Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
                 $enrIds = \DB::table('enrollments')->where('student_id', $studentId)->pluck('id')->toArray();
                 if (!empty($enrIds)) {
                     \DB::table('exam_assignments')->whereIn('enrollment_id', $enrIds)->delete();
                 }
             }
-            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments') && \Illuminate\Support\Facades\Schema::hasColumn('exam_assignments', 'student_id')) {
                 \DB::table('exam_assignments')->where('student_id', $studentId)->delete();
             }
 
@@ -905,7 +910,7 @@ class StudentController extends Controller
                 \DB::table('enrollments')->where('student_id', $studentId)->delete();
             }
 
-            // 7. حذف الجداول التابعة الأخرى
+            // 7. حذف الجداول التابعة الأخرى التي تحوي عمود student_id
             $simpleStudentTables = [
                 'certificates',
                 'recommendations',
@@ -919,23 +924,24 @@ class StudentController extends Controller
             ];
 
             foreach ($simpleStudentTables as $tbl) {
-                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl) && \Illuminate\Support\Facades\Schema::hasColumn($tbl, 'student_id')) {
                     \DB::table($tbl)->where('student_id', $studentId)->delete();
                 }
             }
 
-            // 8. حذف الرسائل
+            // 8. حذف الرسائل (جدول messages يحوي student_id فقط وليس sender_id)
             if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
-                \DB::table('messages')
-                    ->where('student_id', $studentId)
-                    ->orWhere(function($q) use ($studentId) {
+                $msgQuery = \DB::table('messages')->where('student_id', $studentId);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('messages', 'sender_id')) {
+                    $msgQuery->orWhere(function ($q) use ($studentId) {
                         $q->where('sender_type', 'student')->where('sender_id', $studentId);
-                    })
-                    ->delete();
+                    });
+                }
+                $msgQuery->delete();
             }
 
             // 9. تفريغ كوبونات الدخول إن استخدمت
-            if (\Illuminate\Support\Facades\Schema::hasTable('access_vouchers')) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('access_vouchers') && \Illuminate\Support\Facades\Schema::hasColumn('access_vouchers', 'used_by_student_id')) {
                 \DB::table('access_vouchers')->where('used_by_student_id', $studentId)->update([
                     'used_by_student_id' => null,
                     'is_used'            => false,
@@ -951,14 +957,29 @@ class StudentController extends Controller
                     ->delete();
             }
 
-            // 11. حذف سجل الطالب النهائي
+            // 11. حذف أي حساب مستخدم مرتبط بدور طالب إن وُجد بنفس البريد
+            if (\Illuminate\Support\Facades\Schema::hasTable('users') && !empty($student->email)) {
+                \DB::table('users')->where('email', $student->email)->where('role', 'student')->delete();
+            }
+
+            // 12. حذف سجل الطالب النهائي
             $student->delete();
             \DB::commit();
 
-            return response()->json(['success' => true, 'message' => 'تم حذف حساب الطالب وكافة سجلاته واشتراكاته بنجاح']);
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'تم حذف حساب الطالب وكافة سجلاته واشتراكاته بنجاح']);
+            }
+
+            return redirect()->route('admin.students.index')->with('success', 'تم حذف حساب الطالب بنجاح.');
         } catch (\Throwable $e) {
             \DB::rollBack();
-            return response()->json(['success' => false, 'message' => 'تعذر حذف الطالب: ' . $e->getMessage()], 500);
+            \Log::error('Student single delete error: ' . $e->getMessage());
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'تعذر حذف الطالب: ' . $e->getMessage()], 500);
+            }
+
+            return back()->with('error', 'تعذر حذف الطالب: ' . $e->getMessage());
         }
     }
 
@@ -1230,4 +1251,6 @@ class StudentController extends Controller
         return response()->json(['status' => 'success', 'message' => 'تم تحديث كلمة المرور بنجاح! 🔒']);
     }
 }
+
+
 

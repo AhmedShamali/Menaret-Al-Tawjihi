@@ -1201,39 +1201,26 @@
                                         <h3 class="ed-vtitle">{{ $video->title }}</h3>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        @if($isDirectVideo && $directVideoUrl)
-                                            <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                                <button type="button" 
-                                                        class="ed-btn-offline-card" 
-                                                        id="btn_offline_{{ $video->id }}" 
-                                                        data-video-id="{{ $video->id }}"
-                                                        data-video-title="{{ $video->title }}"
-                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                        data-video-url="{{ $directVideoUrl }}"
-                                                        onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('تحميل الدرس مباشرة للمشاهدة بدون إنترنت') }}">
-                                                    <div class="ed-offline-btn-inner">
-                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('تحميل الدرس أوفلاين') }}</span>
-                                                    </div>
-                                                    <div class="ed-offline-progress-track">
-                                                        <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
-                                                    </div>
-                                                </button>
-                                            </div>
-                                        @else
-                                            <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                                <a href="{{ route('content.downloadVideo', $video->id) }}" 
-                                                   target="_blank"
-                                                   class="ed-btn-offline-card" 
-                                                   title="{{ __('تحميل نسخة الفيديو للمشاهدة بدون إنترنت') }}">
-                                                    <div class="ed-offline-btn-inner">
-                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('تحميل الدرس أوفلاين') }}</span>
-                                                    </div>
-                                                </a>
-                                            </div>
-                                        @endif
+                                        <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
+                                            <button type="button" 
+                                                    class="ed-btn-offline-card" 
+                                                    id="btn_offline_{{ $video->id }}" 
+                                                    data-video-id="{{ $video->id }}"
+                                                    data-video-title="{{ $video->title }}"
+                                                    data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                    data-video-url="{{ $directVideoUrl ?? '' }}"
+                                                    data-is-direct="{{ ($isDirectVideo && $directVideoUrl) ? '1' : '0' }}"
+                                                    onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
+                                                    title="{{ __('تحميل وحفظ الدرس داخل المنصة للمشاهدة بدون إنترنت') }}">
+                                                <div class="ed-offline-btn-inner">
+                                                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                    <span class="offline-btn-label">{{ __('تحميل الدرس أوفلاين') }}</span>
+                                                </div>
+                                                <div class="ed-offline-progress-track">
+                                                    <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
+                                                </div>
+                                            </button>
+                                        </div>
                                         @if(!empty($video->pdf_path))
                                             <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
                                                 <i class="fa-solid fa-file-pdf"></i>

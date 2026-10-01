@@ -522,10 +522,9 @@ class EducationalContentController extends Controller
             }
         }
 
-        // إذا كان رابط يوتيوب يتم توجيهه مباشرة لمحرك التنزيل السريع بصيغة MP4
-        $ytId = $content->youtube_id;
-        if (!empty($ytId)) {
-            return redirect()->away("https://ssyoutube.com/watch?v={$ytId}");
+        // منع أي تحويل خارجي إلى مواقع تنزيل اليوتيوب لحفظ الخصوصية وبقاء التجربة داخل المنصة
+        if (!empty($content->youtube_id)) {
+            return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة والأوفلاين داخل المنصة فقط.');
         }
 
         // إذا كان هناك رابط متاح في url_path
@@ -533,7 +532,7 @@ class EducationalContentController extends Controller
             return redirect()->away($rawUrl);
         }
 
-        return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة.');
+        return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.');
     }
 
     public function downloadFile($id)

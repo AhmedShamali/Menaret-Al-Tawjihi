@@ -5,7 +5,7 @@
  * - استثناء طلبات بث الفيديو المباشرة لتتولاها ذاكرة الـ IndexedDB المعزولة
  */
 
-const CACHE_NAME = 'step-by-step-pwa-v11';
+const CACHE_NAME = 'step-by-step-pwa-v12';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [
@@ -13,10 +13,14 @@ const PRECACHE_ASSETS = [
   '/?source=pwa',
   '/manifest.json',
   '/offline.html',
+  '/offline-videos',
   '/images/logo.png',
+  '/images/app-icon.jpg',
   '/icons/icon.svg',
   '/icons/icon-192.jpg',
   '/icons/icon-512.jpg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
   '/apple-touch-icon.png',
   '/favicon.ico',
   '/favicon.png',

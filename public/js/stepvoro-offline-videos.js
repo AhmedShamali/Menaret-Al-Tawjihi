@@ -162,7 +162,7 @@ const StepvoroVideoDownloader = {
             || window.location.search.includes('mode=pwa');
     },
 
-    // معالجة الضغط على زر التحميل مباشرة دون أي نوافذ أو قيود
+    // معالجة الضغط على زر التحميل مباشرة وحفظه داخل المنصة فقط
     handleAction: function(id, btnElement) {
         id = String(id);
         const btn = btnElement || document.getElementById('btn_offline_' + id);
@@ -174,7 +174,7 @@ const StepvoroVideoDownloader = {
                 if (rec && rec.blob) {
                     this.attachOfflineBlobToPlayer(id, rec.blob);
                     if (typeof window.showPwaToast === 'function') {
-                        window.showPwaToast('يتم الآن تشغيل الدرس مباشرة من الذاكرة بدون إنترنت ⚡', 'success');
+                        window.showPwaToast('يتم الآن تشغيل الدرس مباشرة من ذاكرة المنصة بدون إنترنت ⚡', 'success');
                     }
                     const player = document.getElementById('player_' + id);
                     if (player) {
@@ -186,14 +186,23 @@ const StepvoroVideoDownloader = {
             return;
         }
 
-        // بدء التحميل المباشر فوراً دون أي قيود
+        const isDirect = btn.getAttribute('data-is-direct') === '1';
         const title = btn.getAttribute('data-video-title') || 'درس تعليمي';
         const subject = btn.getAttribute('data-subject-title') || 'المنهاج';
         const url = btn.getAttribute('data-video-url');
 
-        if (!url) {
-            if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('رابط الدرس غير متوفر للتحميل المباشر.', 'error');
+        // إذا كان الفيديو من يوتيوب ولا يحوي ملف فيديو مباشر
+        if (!isDirect || !url) {
+            if (typeof window.Swal !== 'undefined') {
+                window.Swal.fire({
+                    title: 'المشاهدة المباشرة للمنصة',
+                    text: 'هذا الشرح المرئي مهيأ للمشاهدة المباشرة داخل المنصة بأعلى دقة وتوفير للبيانات.',
+                    icon: 'info',
+                    confirmButtonText: 'حسناً، فهمت',
+                    confirmButtonColor: '#2563eb'
+                });
+            } else if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.', 'info');
             }
             return;
         }
@@ -201,35 +210,12 @@ const StepvoroVideoDownloader = {
         this.startDownload(id, title, subject, url, btn);
     },
 
-    // دالة مساعدة لتنزيل ملف الفيديو المباشر إلى الجهاز
-    triggerDirectFileDownload: function(blobOrUrl, title) {
-        try {
-            const a = document.createElement('a');
-            if (typeof blobOrUrl === 'string') {
-                a.href = blobOrUrl;
-            } else {
-                a.href = URL.createObjectURL(blobOrUrl);
-            }
-            const safeName = (title ? title.replace(/[/\\?%*:|"<>]/g, '_') : 'lesson') + '.mp4';
-            a.download = safeName;
-            a.target = '_blank';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            if (typeof blobOrUrl !== 'string') {
-                setTimeout(() => URL.revokeObjectURL(a.href), 30000);
-            }
-        } catch (err) {
-            console.warn('Direct file download fallback error:', err);
-        }
-    },
-
-    // بدء تنزيل الفيديو وتخزينه وتشغيل التنزيل المباشر فوراً
+    // بدء تنزيل الفيديو وتخزينه حصرياً داخل الذاكرة المحلية للتطبيق (IndexedDB)
     startDownload: function (id, title, subject, videoUrl, btnElement) {
         id = String(id);
         if (this.activeDownloads[id]) {
             if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('التحميل جاري بالفعل في الخلفية...', 'info');
+                window.showPwaToast('التحميل جاري بالفعل في الخلفية داخل المنصة...', 'info');
             }
             return;
         }
@@ -238,7 +224,7 @@ const StepvoroVideoDownloader = {
         self.updateButtonUI(id, 'downloading', 0, btnElement);
 
         if (typeof window.showPwaToast === 'function') {
-            window.showPwaToast('بدأ تحميل الدرس مباشرة ⚡', 'info');
+            window.showPwaToast('بدأ تحميل الدرس وحفظه في ذاكرة المنصة أوفلاين ⚡', 'info');
         }
 
         const xhr = new XMLHttpRequest();
@@ -259,11 +245,9 @@ const StepvoroVideoDownloader = {
             if (xhr.status === 200 || xhr.status === 206) {
                 const blob = xhr.response;
                 if (!blob || blob.size < 1000 || (blob.type && blob.type.includes('text/html'))) {
-                    // فشل استجابة الـ blob -> تشغيل التحميل المباشر للرابط كـ fallback فوري
                     self.updateButtonUI(id, 'ready', 0, btnElement);
-                    self.triggerDirectFileDownload(videoUrl, title);
                     if (typeof window.showPwaToast === 'function') {
-                        window.showPwaToast('جاري بدء التحميل المباشر للدرس عبر المتصفح...', 'info');
+                        window.showPwaToast('تعذر استلام ملف الفيديو للتخزين الأوفلاين.', 'error');
                     }
                     return;
                 }
@@ -288,29 +272,27 @@ const StepvoroVideoDownloader = {
                     })
                 };
 
-                // حفظ في IndexedDB للتشغيل بدون نت
+                // حفظ حصري داخل الذاكرة المحلية للتطبيق (IndexedDB)
                 StepvoroOfflineDB.saveVideo(record)
                     .then(() => {
                         self.updateButtonUI(id, 'saved', 100, btnElement);
                         self.attachOfflineBlobToPlayer(id, blob);
-                        // أيضاً بدء تنزيل الملف المباشر للمتصفح حتى يحتفظ به الطالب في جهازه
-                        self.triggerDirectFileDownload(blob, title);
 
                         if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('تم تحميل الدرس بنجاح (' + sizeFormatted + ')! ومتاح الآن بدون نت.', 'success');
+                            window.showPwaToast('تم حفظ الدرس بنجاح داخل المنصة (' + sizeFormatted + ')! ومتاح الآن في واجهة الفيديوهات المحملة بدون نت.', 'success');
                         }
                     })
                     .catch((err) => {
                         console.error('Error saving video to DB:', err);
                         self.updateButtonUI(id, 'ready', 0, btnElement);
-                        self.triggerDirectFileDownload(blob || videoUrl, title);
+                        if (typeof window.showPwaToast === 'function') {
+                            window.showPwaToast('حدث خطأ أثناء حفظ الفيديو في ذاكرة المنصة.', 'error');
+                        }
                     });
             } else {
-                // فشل XHR -> تشغيل التحميل المباشر للرابط عبر المتصفح فوراً
                 self.updateButtonUI(id, 'ready', 0, btnElement);
-                self.triggerDirectFileDownload(videoUrl, title);
                 if (typeof window.showPwaToast === 'function') {
-                    window.showPwaToast('جاري التحميل المباشر لملف الفيديو عبر المتصفح...', 'info');
+                    window.showPwaToast('فشل تحميل الفيديو. يرجى التحقق من اتصالك بالإنترنت.', 'error');
                 }
             }
         };
@@ -318,17 +300,17 @@ const StepvoroVideoDownloader = {
         xhr.onerror = function () {
             delete self.activeDownloads[id];
             self.updateButtonUI(id, 'ready', 0, btnElement);
-            // تحميل مباشر فوري دون أي إزعاج أو توقف
-            self.triggerDirectFileDownload(videoUrl, title);
             if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('جاري التحميل المباشر لملف الفيديو عبر المتصفح...', 'info');
+                window.showPwaToast('تعذر إتمام التحميل، يرجى المحاولة لاحقاً.', 'error');
             }
         };
 
         xhr.ontimeout = function () {
             delete self.activeDownloads[id];
             self.updateButtonUI(id, 'ready', 0, btnElement);
-            self.triggerDirectFileDownload(videoUrl, title);
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('انتهت مهلة التحميل، يرجى المحاولة مجدداً.', 'warning');
+            }
         };
 
         xhr.onabort = function () {
@@ -341,7 +323,6 @@ const StepvoroVideoDownloader = {
         } catch (e) {
             delete self.activeDownloads[id];
             self.updateButtonUI(id, 'ready', 0, btnElement);
-            self.triggerDirectFileDownload(videoUrl, title);
         }
     },
 

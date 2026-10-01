@@ -84,6 +84,10 @@ Route::match(['get', 'options'], '/video-stream/{filename}', [VideoController::c
     ->where('filename', '.*')
     ->name('video.stream');
 
+// واجهة الفيديوهات والدروس المحملة أوفلاين بدون نت للتطبيق والمتصفح
+Route::get('/offline-videos', [DashboardController::class, 'offlineVideos'])->name('offline.videos');
+
+
 Route::get('/placement', [PlacementController::class, 'index'])->name('placement.index');
 Route::post('/placement/save', [PlacementController::class, 'store'])->name('placement.store');
 

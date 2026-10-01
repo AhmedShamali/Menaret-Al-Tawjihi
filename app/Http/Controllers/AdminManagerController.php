@@ -825,7 +825,7 @@ class AdminManagerController extends Controller {
                     \DB::table('exam_assignments')->whereIn('enrollment_id', $enrIds)->delete();
                 }
             }
-            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments')) {
+            if (\Illuminate\Support\Facades\Schema::hasTable('exam_assignments') && \Illuminate\Support\Facades\Schema::hasColumn('exam_assignments', 'student_id')) {
                 \DB::table('exam_assignments')->whereIn('student_id', $ids)->delete();
             }
 
@@ -871,19 +871,20 @@ class AdminManagerController extends Controller {
             ];
 
             foreach ($simpleStudentTables as $tbl) {
-                if (\Illuminate\Support\Facades\Schema::hasTable($tbl)) {
+                if (\Illuminate\Support\Facades\Schema::hasTable($tbl) && \Illuminate\Support\Facades\Schema::hasColumn($tbl, 'student_id')) {
                     \DB::table($tbl)->whereIn('student_id', $ids)->delete();
                 }
             }
 
             // 8. حذف الرسائل
             if (\Illuminate\Support\Facades\Schema::hasTable('messages')) {
-                \DB::table('messages')
-                    ->whereIn('student_id', $ids)
-                    ->orWhere(function($q) use ($ids) {
+                $msgQuery = \DB::table('messages')->whereIn('student_id', $ids);
+                if (\Illuminate\Support\Facades\Schema::hasColumn('messages', 'sender_id')) {
+                    $msgQuery->orWhere(function($q) use ($ids) {
                         $q->where('sender_type', 'student')->whereIn('sender_id', $ids);
-                    })
-                    ->delete();
+                    });
+                }
+                $msgQuery->delete();
             }
 
             // 9. تفريغ كوبونات الدخول إن استخدمت
