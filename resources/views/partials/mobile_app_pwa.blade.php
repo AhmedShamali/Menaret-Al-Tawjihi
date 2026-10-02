@@ -1191,7 +1191,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
 </style>
 
 <!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
-<script src="/js/stepvoro-offline-videos.js?v=20261002-v31"></script>
+<script src="/js/stepvoro-offline-videos.js?v=20261002-v35"></script>
 
 <script>
     // دالة ترميز النصوص بأمان لمنع أي أخطاء برمجية
@@ -1235,7 +1235,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=20261002-v33', { updateViaCache: 'none' }).then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=20261002-v35', { updateViaCache: 'none' }).then(function(reg) {
                 // تفعيل فوري لأي عامل خدمة في حالة انتظار
                 if (reg.waiting) {
                     try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}

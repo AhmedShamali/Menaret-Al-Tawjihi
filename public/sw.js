@@ -35,6 +35,7 @@ const PRECACHE_ASSETS = [
   '/favicon.png?v=20261002-v33',
   '/js/stepvoro-offline-videos.js',
   '/js/stepvoro-offline-videos.js?v=20261002-v33',
+  '/js/stepvoro-offline-videos.js?v=20261002-v35',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2',

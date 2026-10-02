@@ -214,11 +214,11 @@
                                                 data-yt-embed="{{ $ytEmbed ?? '' }}"
                                                 data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
                                                 onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                title="{{ __('حفظ الدرس في مكتبة الأوفلاين للرجوع إليه بدون نت') }}"
+                                                title="{{ __('حفظ الدرس في مكتبتك (ملاحظة: تشغيل يوتيوب يتطلب اتصالاً، الفيديوهات المرفوعة بصيغة MP4 هي فقط التي تعمل أوفلاين)') }}"
                                                 style="background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;">
                                             <div class="ed-offline-btn-inner">
-                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                <span class="offline-btn-label">{{ __('حفظ الدرس أوفلاين (بدون نت ⚡)') }}</span>
+                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-bookmark"></i></span>
+                                                <span class="offline-btn-label">{{ __('حفظ في مكتبتي 📌') }}</span>
                                             </div>
                                         </button>
                                     @endif
