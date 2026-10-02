@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <!-- إعدادات تطبيق الويب وتطبيقات الهواتف (PWA / Mobile App Support) -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json?v=20261002-v33">
     <meta name="theme-color" content="#0b3b6f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v33">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 

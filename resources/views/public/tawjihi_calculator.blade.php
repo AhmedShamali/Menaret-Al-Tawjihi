@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <link rel="manifest" href="/manifest.json?v=20261002-v30">
+    <link rel="manifest" href="/manifest.json?v=20261002-v33">
     <meta name="theme-color" content="#0b3b6f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v30">
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v30">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v30">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v33">
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v33">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v33">
     <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     @php

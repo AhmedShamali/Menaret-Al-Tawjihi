@@ -5,13 +5,14 @@
  * - تنقل سلس بدون شبكة مع استرجاع واجهة الفيديوهات المحملة أوفلاين
  */
 
-const CACHE_NAME = 'step-by-step-v20261002-v32';
+const CACHE_NAME = 'step-by-step-v20261002-v33';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [
   '/',
   '/?source=pwa',
   '/manifest.json',
+  '/manifest.json?v=20261002-v33',
   '/offline.html',
   '/offline-videos',
   '/icons/step-by-step-icon-512.png',
@@ -20,14 +21,20 @@ const PRECACHE_ASSETS = [
   '/icons/icon-192.png',
   '/icons/icon-maskable-512.png',
   '/icons/icon-maskable-192.png',
+  '/icons/step-by-step-icon-512.png?v=20261002-v33',
+  '/icons/step-by-step-icon-192.png?v=20261002-v33',
+  '/icons/icon-maskable-512.png?v=20261002-v33',
+  '/icons/icon-maskable-192.png?v=20261002-v33',
   '/logo.png',
   '/images/logo.png',
   '/images/app-icon.jpg',
   '/apple-touch-icon.png',
+  '/apple-touch-icon.png?v=20261002-v33',
   '/favicon.ico',
   '/favicon.png',
+  '/favicon.png?v=20261002-v33',
   '/js/stepvoro-offline-videos.js',
-  '/js/stepvoro-offline-videos.js?v=20261002-v32',
+  '/js/stepvoro-offline-videos.js?v=20261002-v33',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2',

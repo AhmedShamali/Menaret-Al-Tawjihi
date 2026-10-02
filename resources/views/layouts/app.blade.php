@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="manifest" href="/manifest.json?v=20261002-v30">
+    <link rel="manifest" href="/manifest.json?v=20261002-v33">
     <meta name="theme-color" content="#0b3b6f">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v30">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v30">
-    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v33">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v33">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v33">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v33">
 
     @if(\App\Models\Setting::get('site_favicon'))
-        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v30">
+        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v33">
     @else
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v30">
-        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v30">
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v33">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v33">
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 

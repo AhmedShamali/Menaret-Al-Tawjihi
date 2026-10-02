@@ -23,37 +23,37 @@
   ],
   "icons": [
     {
-      "src": "/icons/step-by-step-icon-512.png?v=20261002-v30",
+      "src": "/icons/step-by-step-icon-512.png?v=20261002-v33",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-512.png?v=20261002-v30",
+      "src": "/icons/icon-maskable-512.png?v=20261002-v33",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/step-by-step-icon-192.png?v=20261002-v30",
+      "src": "/icons/step-by-step-icon-192.png?v=20261002-v33",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable-192.png?v=20261002-v30",
+      "src": "/icons/icon-maskable-192.png?v=20261002-v33",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/icons/icon-512.png?v=20261002-v30",
+      "src": "/icons/icon-512.png?v=20261002-v33",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192.png?v=20261002-v30",
+      "src": "/icons/icon-192.png?v=20261002-v33",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
@@ -65,28 +65,28 @@
       "short_name": "حاسبة المعدل",
       "description": "حساب معدل التوجيهي الوزاري المعتمد بدقة",
       "url": "/tawjihi-calculator?source=shortcut",
-      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192.png?v=20261002-v33", "sizes": "192x192" }]
     },
     {
       "name": "بطاقات الاستذكار السريع",
       "short_name": "البطاقات الذكية",
       "description": "مراجعة وحفظ مفاهيم وقوانين التوجيهي",
       "url": "/public-flashcards?source=shortcut",
-      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192.png?v=20261002-v33", "sizes": "192x192" }]
     },
     {
       "name": "دليل القوانين والقواعد الذهبية",
       "short_name": "دليل القوانين",
       "description": "قوانين الرياضيات والفيزياء والكيمياء واللغة الإنجليزية",
       "url": "/tawjihi-formulas?source=shortcut",
-      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192.png?v=20261002-v33", "sizes": "192x192" }]
     },
     {
       "name": "كتالوج المساقات والدروس",
       "short_name": "المساقات",
       "description": "تصفح المواد والشروحات التعليمية الرسمية",
       "url": "/catalog?source=shortcut",
-      "icons": [{ "src": "/icons/icon-192.jpg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icons/icon-192.png?v=20261002-v33", "sizes": "192x192" }]
     }
   ]
 }
