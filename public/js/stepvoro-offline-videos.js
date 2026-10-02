@@ -230,6 +230,8 @@ const StepvoroVideoDownloader = {
                             player.play().catch(() => {});
                             player.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         }
+                    } else if (typeof window.playOfflineVaultVideo === 'function') {
+                        window.playOfflineVaultVideo(id);
                     } else {
                         window.location.href = '/offline-videos';
                     }
@@ -335,8 +337,10 @@ const StepvoroVideoDownloader = {
             if (xhr.status === 200 || xhr.status === 206) {
                 const blob = xhr.response;
                 if (!blob || blob.size < 1000 || (blob.type && blob.type.includes('text/html'))) {
-                    // في حال كان الرابط محول أو غير مباشر، احفظ الدرس كدرس معتمد
-                    self.saveExternalLesson(id, title, subject, '', '', btnElement);
+                    self.updateButtonUI(id, 'ready', 0, btnElement);
+                    if (typeof window.showPwaToast === 'function') {
+                        window.showPwaToast('تعذر تنزيل ملف الفيديو، يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.', 'error');
+                    }
                     return;
                 }
 
@@ -379,13 +383,19 @@ const StepvoroVideoDownloader = {
                         }
                     });
             } else {
-                self.saveExternalLesson(id, title, subject, '', '', btnElement);
+                self.updateButtonUI(id, 'ready', 0, btnElement);
+                if (typeof window.showPwaToast === 'function') {
+                    window.showPwaToast('تعذر تحميل ملف الفيديو (كود: ' + xhr.status + ').', 'error');
+                }
             }
         };
 
         xhr.onerror = function () {
             delete self.activeDownloads[id];
-            self.saveExternalLesson(id, title, subject, '', '', btnElement);
+            self.updateButtonUI(id, 'ready', 0, btnElement);
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('حدث خطأ في الاتصال بالشبكة أثناء تحميل الفيديو.', 'error');
+            }
         };
 
         xhr.ontimeout = function () {
@@ -405,7 +415,10 @@ const StepvoroVideoDownloader = {
             xhr.send();
         } catch (e) {
             delete self.activeDownloads[id];
-            self.saveExternalLesson(id, title, subject, '', '', btnElement);
+            self.updateButtonUI(id, 'ready', 0, btnElement);
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('تعذر بدء تحميل الفيديو.', 'error');
+            }
         }
     },
 

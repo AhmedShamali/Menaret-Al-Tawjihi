@@ -59,13 +59,45 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="video-container" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                <video id="offlineActiveVideo" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
-                <iframe id="offlineActiveIframe" style="display: none; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
-                <div id="offlineFallbackContainer" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: #0f172a; color: #fff;">
-                    <i class="fa-solid fa-file-pdf" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 12px;"></i>
-                    <h4 style="font-size: 1.05rem; margin-bottom: 6px;">ملزمة الدرس متاحة للمطالعة</h4>
-                    <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">يمكنك قراءة ملزمة وأوراق عمل هذا الدرس بدون إنترنت.</p>
+            <div class="video-container" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;" oncontextmenu="event.preventDefault(); return false;">
+                <video id="offlineActiveVideo" controls playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
+                <iframe id="offlineActiveIframe" 
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+                        style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
+                        allowfullscreen></iframe>
+                
+                {{-- دروع حماية تمنع الدخول على يوتيوب نهائياً --}}
+                <div id="offlineActiveYtShield" style="display: none; position: absolute; inset: 0; z-index: 15; pointer-events: auto;">
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 80px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
+                    <div style="position: absolute; bottom: 0; right: 0; width: 150px; height: 70px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
+                    <div style="position: absolute; bottom: 0; left: 0; width: 150px; height: 70px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
+                    <div style="position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="toggleOfflineActiveYt()">
+                        <div id="offlineActiveYtCenterPlay" style="width: 58px; height: 58px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none;">
+                            <i class="fa-solid fa-play" style="margin-left: 2px;"></i>
+                        </div>
+                    </div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 30; background: linear-gradient(to top, rgba(15,23,42,0.95), transparent); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <button type="button" onclick="toggleOfflineActiveYt()" id="btnOfflineYtPlay" style="background: none; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 4px;" title="تشغيل / إيقاف مؤقت">
+                            <i class="fa-solid fa-play"></i>
+                        </button>
+                        <button type="button" onclick="seekOfflineActiveYt(-10)" style="background: none; border: none; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; padding: 4px;" title="تأخير 10 ثوانٍ">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                        <button type="button" onclick="seekOfflineActiveYt(10)" style="background: none; border: none; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; padding: 4px;" title="تقديم 10 ثوانٍ">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                        <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">مشغل المنصة المحمي</span>
+                        <button type="button" onclick="toggleOfflinePlayerFullscreen()" style="background: none; border: none; color: #cbd5e1; font-size: 0.95rem; cursor: pointer; padding: 4px;" title="ملء الشاشة">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="offlineFallbackContainer" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; background: #0f172a; color: #fff; text-align: center;">
+                    <i id="offlineFallbackIcon" class="fa-solid fa-file-pdf" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 12px;"></i>
+                    <h4 id="offlineFallbackTitle" style="font-size: 1.05rem; margin-bottom: 6px; font-weight: 800;">ملزمة الدرس متاحة للمطالعة</h4>
+                    <p id="offlineFallbackDesc" style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px; max-width: 440px; line-height: 1.5;">يمكنك قراءة ملزمة وأوراق عمل هذا الدرس بدون إنترنت.</p>
                     <button type="button" id="btnActiveOpenPdf" class="btn-play-offline" style="background: #2563eb; color: #fff; padding: 8px 20px;">
                         <i class="fa-solid fa-book-open"></i> <span>فتح ملزمة الدرس ⚡</span>
                     </button>
@@ -865,6 +897,20 @@ function updateStorageSummary() {
     }).catch(() => {});
 }
 
+function formatStepvoroActiveYtUrl(rawUrl) {
+    if (!rawUrl) return '';
+    let url = rawUrl;
+    const match = url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/);
+    if (match && match[1]) {
+        url = 'https://www.youtube-nocookie.com/embed/' + match[1];
+    } else {
+        url = url.replace('https://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/')
+                 .replace('http://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/');
+    }
+    const params = 'enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0&disablekb=1&playsinline=1&autoplay=1';
+    return url + (url.includes('?') ? '&' : '?') + params;
+}
+
 function playOfflineVideo(id) {
     if (!window.StepvoroOfflineDB) return;
     StepvoroOfflineDB.getVideo(id).then(function(record) {
@@ -882,11 +928,17 @@ function playOfflineVideo(id) {
         const titleEl = document.getElementById('currentPlayingTitle');
         const subjectEl = document.getElementById('currentPlayingSubject');
         const btnOpenPdf = document.getElementById('btnActiveOpenPdf');
+        const fbIcon = document.getElementById('offlineFallbackIcon');
+        const fbTitle = document.getElementById('offlineFallbackTitle');
+        const fbDesc = document.getElementById('offlineFallbackDesc');
 
         if (titleEl) titleEl.innerText = record.title || 'درس تعليمي';
         if (subjectEl) subjectEl.innerText = record.subject || 'المنهاج';
 
+        const ytShield = document.getElementById('offlineActiveYtShield');
+
         if (record.blob) {
+            if (ytShield) ytShield.style.display = 'none';
             if (iframeEl) { iframeEl.style.display = 'none'; iframeEl.src = 'about:blank'; }
             if (fallbackEl) fallbackEl.style.display = 'none';
             if (videoEl) {
@@ -907,18 +959,32 @@ function playOfflineVideo(id) {
             if (fallbackEl) fallbackEl.style.display = 'none';
             if (iframeEl) {
                 iframeEl.style.display = 'block';
-                iframeEl.src = record.ytEmbed + (record.ytEmbed.includes('?') ? '&autoplay=1' : '?autoplay=1');
+                iframeEl.src = formatStepvoroActiveYtUrl(record.ytEmbed);
             }
+            if (ytShield) ytShield.style.display = 'block';
+            isOfflineYtPlaying = true;
+            const playBtn = document.getElementById('btnOfflineYtPlay');
+            if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            const centerPlay = document.getElementById('offlineActiveYtCenterPlay');
+            if (centerPlay) centerPlay.style.display = 'none';
+
             if (section) {
                 section.style.display = 'block';
                 section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else if (record.pdfBlob || record.pdfUrl) {
+            if (ytShield) ytShield.style.display = 'none';
             if (videoEl) { videoEl.style.display = 'none'; videoEl.pause(); }
             if (iframeEl) { iframeEl.style.display = 'none'; iframeEl.src = 'about:blank'; }
             if (fallbackEl) {
                 fallbackEl.style.display = 'flex';
+                if (fbIcon) fbIcon.className = 'fa-solid fa-file-pdf';
+                if (fbTitle) fbTitle.textContent = 'ملزمة وأوراق عمل الدرس جاهزة أوفلاين ⚡';
+                if (fbDesc) fbDesc.textContent = record.ytEmbed 
+                    ? 'هذا الدرس مضاف كبث YouTube مباشر ويتطلب إنترنت لتشغيل الفيديو، ولكن ملزمته وأوراق عمله محفوظة بالكامل في جهازك ويمكنك دراستها أوفلاين.'
+                    : 'يمكنك قراءة ملزمة وأوراق عمل هذا الدرس المحفوظة في ذاكرة هاتفك بدون إنترنت.';
                 if (btnOpenPdf) {
+                    btnOpenPdf.style.display = 'inline-flex';
                     btnOpenPdf.onclick = function() {
                         if (record.pdfBlob) {
                             window.open(URL.createObjectURL(record.pdfBlob), '_blank');
@@ -933,12 +999,14 @@ function playOfflineVideo(id) {
                 section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else {
+            if (ytShield) ytShield.style.display = 'none';
             if (videoEl) { videoEl.style.display = 'none'; videoEl.pause(); }
-            if (iframeEl) { iframeEl.style.display = 'none'; }
+            if (iframeEl) { iframeEl.style.display = 'none'; iframeEl.src = 'about:blank'; }
             if (fallbackEl) {
                 fallbackEl.style.display = 'flex';
-                const h4 = fallbackEl.querySelector('h4');
-                if (h4) h4.textContent = 'يتطلب بث الفيديو الاتصال بالإنترنت';
+                if (fbIcon) fbIcon.className = 'fa-brands fa-youtube';
+                if (fbTitle) fbTitle.textContent = 'بث YouTube مباشر - يتطلب إنترنت 🌐';
+                if (fbDesc) fbDesc.textContent = 'هذا الدرس مدرج كبث فيديو من YouTube ويتطلب اتصالاً نشطاً بالإنترنت لمشاهدته. الدروس المرفوعة بصيغة MP4 هي فقط التي تعمل بدون نت 100% في وضع عدم الاتصال.';
                 if (btnOpenPdf) btnOpenPdf.style.display = 'none';
             }
             if (section) {
@@ -951,26 +1019,43 @@ function playOfflineVideo(id) {
     });
 }
 
-function openOfflinePdf(id) {
-    if (!window.StepvoroOfflineDB) return;
-    StepvoroOfflineDB.getVideo(id).then(function(record) {
-        if (record && record.pdfBlob) {
-            const blobUrl = URL.createObjectURL(record.pdfBlob);
-            window.open(blobUrl, '_blank');
-        } else if (record && record.pdfUrl) {
-            window.open(record.pdfUrl, '_blank');
-        } else {
-            if (typeof showPwaToast === 'function') {
-                showPwaToast('لا توجد ملزمة PDF مرفقة لهذا الدرس.', 'info');
-            }
-        }
-    });
+let isOfflineYtPlaying = true;
+function toggleOfflineActiveYt() {
+    const ifr = document.getElementById('offlineActiveIframe');
+    const playBtn = document.getElementById('btnOfflineYtPlay');
+    const centerPlay = document.getElementById('offlineActiveYtCenterPlay');
+    if (!ifr || !ifr.contentWindow) return;
+
+    if (isOfflineYtPlaying) {
+        ifr.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        isOfflineYtPlaying = false;
+        if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        if (centerPlay) centerPlay.style.display = 'flex';
+    } else {
+        ifr.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+        isOfflineYtPlaying = true;
+        if (playBtn) playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        if (centerPlay) centerPlay.style.display = 'none';
+    }
+}
+
+function seekOfflineActiveYt(seconds) {
+    const ifr = document.getElementById('offlineActiveIframe');
+    if (!ifr || !ifr.contentWindow) return;
+    ifr.contentWindow.postMessage(JSON.stringify({
+        event: 'command',
+        func: seconds > 0 ? 'fastForward' : 'rewind',
+        args: ''
+    }), '*');
 }
 
 function closeActiveOfflinePlayer() {
     const section = document.getElementById('offlinePlayerSection');
     const videoEl = document.getElementById('offlineActiveVideo');
     const iframeEl = document.getElementById('offlineActiveIframe');
+    const ytShield = document.getElementById('offlineActiveYtShield');
+    if (ytShield) ytShield.style.display = 'none';
+
     if (videoEl) {
         videoEl.pause();
         videoEl.src = '';

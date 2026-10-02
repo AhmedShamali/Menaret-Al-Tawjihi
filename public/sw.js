@@ -5,7 +5,7 @@
  * - تنقل سلس بدون شبكة مع استرجاع واجهة الفيديوهات المحملة أوفلاين
  */
 
-const CACHE_NAME = 'step-by-step-v20261002-v30';
+const CACHE_NAME = 'step-by-step-v20261002-v32';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [
@@ -27,6 +27,11 @@ const PRECACHE_ASSETS = [
   '/favicon.ico',
   '/favicon.png',
   '/js/stepvoro-offline-videos.js',
+  '/js/stepvoro-offline-videos.js?v=20261002-v32',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-solid-900.woff2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-brands-400.woff2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/webfonts/fa-regular-400.woff2',
   '/catalog',
   '/tawjihi-calculator'
 ];
@@ -95,7 +100,7 @@ self.addEventListener('fetch', (event) => {
   if (
     request.method !== 'GET' ||
     urlLower.includes('/video-stream/') ||
-    urlLower.includes('/educational-contents/') && urlLower.includes('/download-video') ||
+    (urlLower.includes('/educational-contents/') && urlLower.includes('/download-video')) ||
     urlLower.includes('/logout') ||
     urlLower.includes('educational/videos') ||
     /\.(mp4|webm|ogg|mov|mkv|m4v|avi)(\?|$)/i.test(urlLower) ||
@@ -110,7 +115,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);
@@ -123,17 +128,13 @@ self.addEventListener('fetch', (event) => {
           const directMatch = await caches.match(request, { ignoreSearch: true });
           if (directMatch) return directMatch;
 
-          // 2. فحص واجهة الفيديوهات الأوفلاين داخل التطبيق
-          const offlineVideosMatch = await caches.match('/offline-videos', { ignoreSearch: true });
-          if (offlineVideosMatch) return offlineVideosMatch;
+          // 2. فحص صفحة الأوفلاين المعتمدة بكل الصيغ الممكنة
+          const offlineHtmlMatch = (await caches.match('/offline.html', { ignoreSearch: true }))
+            || (await caches.match(new URL('/offline.html', self.location.origin).href, { ignoreSearch: true }))
+            || (await caches.match('/offline-videos', { ignoreSearch: true }))
+            || (await caches.match('/', { ignoreSearch: true }));
 
-          // 3. فحص صفحة الأوفلاين الاحتياطية
-          const offlineHtmlMatch = await caches.match('/offline.html', { ignoreSearch: true });
           if (offlineHtmlMatch) return offlineHtmlMatch;
-
-          // 4. فحص الصفحة الرئيسية
-          const homeMatch = await caches.match('/', { ignoreSearch: true });
-          if (homeMatch) return homeMatch;
 
           return new Response('وضع عدم الاتصال: يرجى التحقق من اتصالك بالإنترنت.', {
             headers: { 'Content-Type': 'text/html; charset=utf-8' }
@@ -159,7 +160,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);
@@ -179,7 +180,7 @@ self.addEventListener('fetch', (event) => {
     caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       const fetchPromise = fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && (networkResponse.status === 200 || networkResponse.type === 'opaque')) {
             const responseClone = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseClone);

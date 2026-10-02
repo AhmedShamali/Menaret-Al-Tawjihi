@@ -26,7 +26,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Alexandria', sans-serif;
+            font-family: 'Alexandria', system-ui, -apple-system, 'Segoe UI', Tahoma, Arial, sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -328,14 +328,22 @@
                 <h3 id="modalVideoTitle">تشغيل الدرس</h3>
                 <button type="button" class="btn-close-vid" onclick="closeModalPlayer()"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="video-element-wrap">
+            <div class="video-element-wrap" style="position: relative; display: flex; align-items: center; justify-content: center; min-height: 220px; background: #000; border-radius: 12px; overflow: hidden;">
                 <video id="offlineModalVideo" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain;"></video>
+                <div id="offlineModalFallback" style="display: none; padding: 24px 16px; text-align: center; color: #fff; flex-direction: column; align-items: center; justify-content: center;">
+                    <i id="offlineFallbackIcon" class="fa-solid fa-circle-info" style="font-size: 2.2rem; color: #38bdf8; margin-bottom: 10px;"></i>
+                    <h4 id="offlineFallbackTitle" style="font-size: 1rem; margin-bottom: 8px;">معاينة الدرس</h4>
+                    <p id="offlineFallbackText" style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin-bottom: 16px; max-width: 340px;"></p>
+                    <button type="button" id="btnOfflineModalPdf" class="btn-retry" style="display: none; width: auto; padding: 8px 18px; margin: 0 auto; font-size: 0.8rem;">
+                        <i class="fa-solid fa-file-pdf"></i> <span>فتح ملزمة الدرس المحفوظة (PDF)</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- تضمين مشغل الذاكرة المحلية -->
-    <script src="/js/stepvoro-offline-videos.js?v=20261002-v31"></script>
+    <script src="/js/stepvoro-offline-videos.js?v=20261002-v32"></script>
 
     <script>
         function attemptReconnect() {
@@ -378,24 +386,34 @@
                         sec.style.display = 'block';
                         if (countLbl) countLbl.textContent = `${videos.length} دروس جاهزة`;
 
-                            let html = '';
-                            videos.forEach(function(v) {
-                                html += `
-                                    <button type="button" class="offline-item-btn" onclick="playLessonOffline('${v.id}')">
-                                        <div style="flex: 1; min-width: 0; text-align: right;">
-                                            <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${v.title}</div>
-                                            <small style="color: #94a3b8; font-weight: normal; font-size: 0.7rem;">${v.subject} • ${v.sizeFormatted || 'فيديو'}</small>
+                        let html = '';
+                        videos.forEach(function(v) {
+                            const hasBlob = !!v.hasBlob || !!v.blob;
+                            const hasPdf = !!v.hasPdf || !!v.pdfBlob;
+                            const badge = hasBlob 
+                                ? '<span style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;">فيديو أوفلاين ⚡</span>'
+                                : (hasPdf ? '<span style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;">ملزمة أوفلاين 📄</span>'
+                                          : '<span style="background: rgba(56, 189, 248, 0.2); color: #7dd3fc; padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; font-weight: 700;">بث YouTube</span>');
+
+                            html += `
+                                <button type="button" class="offline-item-btn" onclick="playLessonOffline('${v.id}')">
+                                    <div style="flex: 1; min-width: 0; text-align: right;">
+                                        <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: #fff;">${v.title || 'درس تعليمي'}</div>
+                                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                                            <small style="color: #94a3b8; font-weight: normal; font-size: 0.7rem;">${v.subject || 'المنهاج'}</small>
+                                            ${badge}
                                         </div>
-                                        <i class="fa-solid fa-circle-play play-ico" style="margin-right: 10px;"></i>
-                                    </button>
-                                `;
-                            });
-                            container.innerHTML = html;
-                        }
+                                    </div>
+                                    <i class="fa-solid ${hasBlob ? 'fa-circle-play' : (hasPdf ? 'fa-file-pdf' : 'fa-play')} play-ico" style="margin-right: 10px; color: ${hasBlob ? '#10b981' : (hasPdf ? '#ef4444' : '#38bdf8')}; font-size: 1.3rem;"></i>
+                                </button>
+                            `;
+                        });
+                        container.innerHTML = html;
                     }
-                }).catch(function(e) {
-                    console.warn('Error loading offline videos:', e);
-                });
+                }
+            }).catch(function(e) {
+                console.warn('Error loading offline videos:', e);
+            });
         }
         window.addEventListener('DOMContentLoaded', function() {
             loadOfflineHtmlLessons();
@@ -403,17 +421,58 @@
 
         function playLessonOffline(id) {
             StepvoroOfflineDB.getVideo(id).then(function(rec) {
-                if (rec && rec.blob) {
-                    const modal = document.getElementById('offlinePlayerModal');
-                    const video = document.getElementById('offlineModalVideo');
-                    const title = document.getElementById('modalVideoTitle');
-                    if (modal && video) {
+                if (!rec) return;
+                const modal = document.getElementById('offlinePlayerModal');
+                const video = document.getElementById('offlineModalVideo');
+                const title = document.getElementById('modalVideoTitle');
+                const fallback = document.getElementById('offlineModalFallback');
+                const fbIcon = document.getElementById('offlineFallbackIcon');
+                const fbTitle = document.getElementById('offlineFallbackTitle');
+                const fbText = document.getElementById('offlineFallbackText');
+                const btnPdf = document.getElementById('btnOfflineModalPdf');
+
+                if (!modal) return;
+                if (title) title.textContent = rec.title || 'مشاهدة الدرس أوفلاين';
+
+                if (rec.blob) {
+                    if (fallback) fallback.style.display = 'none';
+                    if (video) {
+                        video.style.display = 'block';
                         video.src = URL.createObjectURL(rec.blob);
-                        if (title) title.textContent = rec.title || 'مشاهدة الدرس أوفلاين';
-                        modal.style.display = 'flex';
                         video.play().catch(function() {});
                     }
+                } else if (rec.pdfBlob) {
+                    if (video) { video.style.display = 'none'; video.pause(); }
+                    if (fallback) {
+                        fallback.style.display = 'flex';
+                        if (fbIcon) fbIcon.className = 'fa-solid fa-file-pdf';
+                        if (fbTitle) fbTitle.textContent = 'ملزمة الدرس أوفلاين';
+                        if (fbText) fbText.textContent = 'أوراق عمل وملزمة هذا الدرس محفوظة بالكامل في ذاكرة هاتفك.';
+                        if (btnPdf) {
+                            btnPdf.style.display = 'inline-flex';
+                            btnPdf.onclick = function() {
+                                window.open(URL.createObjectURL(rec.pdfBlob), '_blank');
+                            };
+                        }
+                    }
+                } else {
+                    if (video) { video.style.display = 'none'; video.pause(); }
+                    if (fallback) {
+                        fallback.style.display = 'flex';
+                        if (fbIcon) fbIcon.className = 'fa-brands fa-youtube';
+                        if (fbTitle) fbTitle.textContent = 'بث YouTube مباشر يتطلب إنترنت';
+                        if (fbText) fbText.textContent = 'هذا الدرس مدرج كبث يوتيوب مباشر من المعلم ويتطلب اتصالاً بالإنترنت لتشغيل الفيديو. لمشاهدة الدروس بدون إنترنت نهائياً، يرجى تشغيل الدروس المرفوعة كملف MP4.';
+                        if (btnPdf) {
+                            if (rec.pdfUrl) {
+                                btnPdf.style.display = 'inline-flex';
+                                btnPdf.onclick = function() { window.open(rec.pdfUrl, '_blank'); };
+                            } else {
+                                btnPdf.style.display = 'none';
+                            }
+                        }
+                    }
                 }
+                modal.style.display = 'flex';
             });
         }
 
