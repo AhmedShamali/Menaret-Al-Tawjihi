@@ -34,54 +34,72 @@
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Offline layout state -->
+    <!-- Offline layout state (Royal Academic Classic Light) -->
     <LinearLayout
         android:id="@+id/offlineLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#0b1528"
+        android:background="#f8fafc"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="32dp"
+        android:padding="28dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="📡"
-            android:textSize="54sp" />
+        <ImageView
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            android:src="@drawable/ic_launcher_round"
+            android:contentDescription="Step by Step" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="لا يوجد اتصال بالإنترنت"
-            android:textColor="#ffffff"
-            android:textSize="20sp"
+            android:layout_marginTop="20dp"
+            android:text="وضع عدم الاتصال بالإنترنت"
+            android:textColor="#0b3b6f"
+            android:textSize="21sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:gravity="center"
-            android:text="يرجى التحقق من اتصالك بشبكة الواي فاي أو بيانات الهاتف والمحاولة مجدداً."
-            android:textColor="#94a3b8"
+            android:lineSpacingExtra="4dp"
+            android:text="أنت غير متصل بالإنترنت حالياً. يمكنك متابعة دراسة دروسك المحفوظة أوفلاين في أي وقت بدون استهلاك للبيانات."
+            android:textColor="#64748b"
             android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/btnRetry"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="#1d4ed8"
-            android:paddingHorizontal="32dp"
-            android:paddingVertical="12dp"
-            android:text="إعادة المحاولة"
-            android:textColor="#ffffff"
-            android:textStyle="bold" />
+            android:layout_marginTop="28dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/btnRetry"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:backgroundTint="#0b3b6f"
+                android:text="إعادة فحص الاتصال 🔄"
+                android:textColor="#ffffff"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnOpenOfflineVault"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="12dp"
+                android:backgroundTint="#d97706"
+                android:text="فتح الدروس المحفوظة أوفلاين ⚡"
+                android:textColor="#ffffff"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

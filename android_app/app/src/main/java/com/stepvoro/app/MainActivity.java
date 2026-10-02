@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         offlineLayout = findViewById(R.id.offlineLayout);
         btnRetry = findViewById(R.id.btnRetry);
+        Button btnOpenOfflineVault = findViewById(R.id.btnOpenOfflineVault);
 
         setupWebViewSettings();
         setupWebViewClients();
@@ -69,11 +70,17 @@ public class MainActivity extends AppCompatActivity {
                 webView.setVisibility(View.VISIBLE);
                 webView.reload();
             } else {
-                offlineLayout.setVisibility(View.GONE);
-                webView.setVisibility(View.VISIBLE);
-                webView.loadUrl("https://stepvoro.com/offline.html");
+                Toast.makeText(MainActivity.this, "ما زال الهاتف غير متصل بالإنترنت", Toast.LENGTH_SHORT).show();
             }
         });
+
+        if (btnOpenOfflineVault != null) {
+            btnOpenOfflineVault.setOnClickListener(v -> {
+                offlineLayout.setVisibility(View.GONE);
+                webView.setVisibility(View.VISIBLE);
+                webView.loadUrl("https://stepvoro.com/offline-videos");
+            });
+        }
 
         // تشغيل الرابط
         if (savedInstanceState == null) {
@@ -176,8 +183,10 @@ public class MainActivity extends AppCompatActivity {
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 super.onReceivedError(view, request, error);
                 if (request.isForMainFrame() && !isNetworkAvailable()) {
-                    // توجيه المتصفح الداخلي إلى واجهة الأوفلاين المحلية المخزنة بدلاً من حظر الطالب
-                    view.loadUrl("https://stepvoro.com/offline.html");
+                    if (offlineLayout != null) {
+                        offlineLayout.setVisibility(View.VISIBLE);
+                        webView.setVisibility(View.GONE);
+                    }
                 }
             }
         });

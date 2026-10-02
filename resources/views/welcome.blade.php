@@ -136,33 +136,33 @@
            - بطاقات وسجلات أكاديمية أصيلة لكافة فروع الثانوية العامة وخدمات المنصة.
            ========================================================================== */
         :root {
-            --royal-navy-dark: #061329;
-            --royal-navy: #0c2340;
-            --royal-navy-hover: #13335b;
-            --royal-navy-soft: #edf2f9;
-            --royal-navy-border: #c8d7ea;
+            --royal-navy-dark: #072344;
+            --royal-navy: #0b3b6f;
+            --royal-navy-hover: #092c55;
+            --royal-navy-soft: #eff6ff;
+            --royal-navy-border: #bfdbfe;
 
-            --royal-gold: #c28e2b;
-            --royal-gold-hover: #a8781d;
-            --royal-gold-light: #e6be65;
-            --royal-gold-soft: #fcf8ee;
-            --royal-gold-border: #eddab1;
+            --royal-gold: #d97706;
+            --royal-gold-hover: #b45309;
+            --royal-gold-light: #fef3c7;
+            --royal-gold-soft: #fffbeb;
+            --royal-gold-border: #fde68a;
 
-            --royal-crimson: #8c1d1d;
-            --royal-emerald: #0b6644;
-            --royal-bronze: #9a550d;
-            --royal-sapphire: #1b4385;
+            --royal-crimson: #dc2626;
+            --royal-emerald: #059669;
+            --royal-bronze: #d97706;
+            --royal-sapphire: #0284c7;
 
-            --academic-bg: #f7f6f2;
+            --academic-bg: #f8fafc;
             --academic-surface: #ffffff;
-            --academic-surface-alt: #f1efe9;
-            --academic-border: #e4ded2;
-            --academic-border-subtle: #eeebe3;
-            --academic-border-dark: #cdbfab;
+            --academic-surface-alt: #f1f5f9;
+            --academic-border: #e2e8f0;
+            --academic-border-subtle: #f1f5f9;
+            --academic-border-dark: #cbd5e1;
 
-            --academic-text-title: #071529;
-            --academic-text-body: #2c3a4a;
-            --academic-text-muted: #647385;
+            --academic-text-title: #0f172a;
+            --academic-text-body: #334155;
+            --academic-text-muted: #64748b;
 
             /* التوافقية العكسية للمتغيرات القديمة */
             --ed-primary: var(--royal-navy);
@@ -185,15 +185,15 @@
             --ed-text-body: var(--academic-text-body);
             --ed-text-muted: var(--academic-text-muted);
 
-            --radius-xs: 4px;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 14px;
+            --radius-xs: 6px;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 18px;
 
-            --shadow-subtle: 0 1px 3px rgba(6, 19, 41, 0.04), 0 1px 2px rgba(6, 19, 41, 0.02);
-            --shadow-card: 0 4px 14px rgba(6, 19, 41, 0.06), 0 1px 3px rgba(6, 19, 41, 0.03);
-            --shadow-hover: 0 10px 25px rgba(6, 19, 41, 0.10), 0 3px 6px rgba(6, 19, 41, 0.04);
-            --shadow-gold: 0 4px 15px rgba(194, 142, 43, 0.28);
+            --shadow-subtle: 0 1px 3px rgba(11, 59, 111, 0.04), 0 1px 2px rgba(11, 59, 111, 0.02);
+            --shadow-card: 0 2px 10px rgba(11, 59, 111, 0.05), 0 1px 3px rgba(11, 59, 111, 0.03);
+            --shadow-hover: 0 10px 28px rgba(11, 59, 111, 0.09), 0 3px 8px rgba(11, 59, 111, 0.04);
+            --shadow-gold: 0 4px 15px rgba(217, 119, 6, 0.25);
 
             --transition: all 0.22s ease-in-out;
         }
@@ -211,7 +211,7 @@
             min-height: 100vh;
             background-color: var(--academic-bg);
             color: var(--academic-text-body);
-            font-size: 14px;
+            font-size: 14.5px;
             line-height: 1.65;
             overflow-x: hidden;
         }
@@ -231,11 +231,12 @@
         /* 1. الشريط السيادي العلوي الأكاديمي (Royal Sovereign Top Ribbon) */
         .royal-top-ribbon {
             width: 100%;
-            background: linear-gradient(90deg, #050f21 0%, #0a1b38 50%, #050f21 100%);
-            color: #d1dced;
+            background: linear-gradient(90deg, #0b3b6f 0%, #072344 50%, #0b3b6f 100%);
+            color: #ffffff;
             border-bottom: 2px solid var(--royal-gold);
             font-size: 12px;
-            padding: 6px 32px;
+            padding: 7px 32px;
+            box-shadow: 0 2px 8px rgba(11, 59, 111, 0.15);
         }
         .royal-ribbon-inner {
             width: 100%;
@@ -1243,7 +1244,7 @@
             color: var(--academic-text-muted);
         }
 
-        /* 12. ريسبنسيف التصميم الملكي الشامل */
+        /* 12. ريسبنسيف التصميم الملكي الشامل لكافة الشاشات */
         @media (max-width: 1080px) {
             .layout-grid { grid-template-columns: 1fr; }
             .sidebar-flow { order: 2; }
@@ -1267,16 +1268,18 @@
                 margin: 0 -16px;
             }
             .royal-navbar-inner {
-                height: 64px;
+                height: 66px;
                 position: relative;
             }
             .royal-mobile-toggle {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             .royal-nav-menu {
                 display: none;
                 position: absolute;
-                top: 64px;
+                top: 66px;
                 left: 0;
                 right: 0;
                 width: 100%;
@@ -1284,7 +1287,7 @@
                 flex-direction: column;
                 height: auto;
                 border-top: 1px solid var(--academic-border);
-                box-shadow: 0 12px 28px rgba(6, 19, 41, 0.12);
+                box-shadow: 0 12px 28px rgba(11, 59, 111, 0.12);
                 z-index: 1100;
                 padding: 10px 0;
             }
@@ -1297,8 +1300,9 @@
             }
             .royal-nav-link {
                 width: 100%;
-                padding: 10px 20px;
+                padding: 12px 20px;
                 border-radius: 0;
+                border-bottom: 1px solid var(--academic-border-subtle);
             }
             .btn-royal-login,
             .btn-royal-gold {
@@ -1315,27 +1319,41 @@
         }
 
         @media (max-width: 600px) {
-            .royal-ribbon-bismillah {
+            .royal-ribbon-bismillah,
+            .royal-ribbon-item {
                 display: none;
+            }
+            .royal-top-ribbon {
+                padding: 6px 14px;
+            }
+            .royal-ribbon-inner {
+                justify-content: center;
+                gap: 8px;
             }
             .royal-brand-meta p {
                 display: none;
             }
             .royal-brand-meta h1 {
-                font-size: 16px;
+                font-size: 15.5px;
             }
             .royal-crest-seal {
-                width: 44px;
-                height: 44px;
+                width: 42px;
+                height: 42px;
             }
             .page-container {
-                padding: 16px 12px 36px;
+                padding: 14px 12px 36px;
             }
             .royal-hero-arch {
                 padding: 16px 14px;
             }
+            .royal-hero-pillars {
+                grid-template-columns: 1fr;
+            }
             .royal-card-body {
                 padding: 14px;
+            }
+            .royal-nav-actions .btn-royal-login {
+                display: none;
             }
         }
 

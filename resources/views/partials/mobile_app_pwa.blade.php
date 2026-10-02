@@ -279,10 +279,134 @@
     </div>
 </div>
 
+<!-- 6. شريط تنبيه انقطاع الإنترنت الملكي الحي (Royal Live Offline Notice Bar) -->
+<div id="stepvoroOfflineNoticeBar" class="stepvoro-offline-notice-bar" style="display: none;">
+    <div class="offline-notice-inner">
+        <div class="offline-notice-left">
+            <div class="offline-notice-icon">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+            </div>
+            <div class="offline-notice-text">
+                <strong>{{ __('أنت في وضع عدم الاتصال حالياً (Offline Mode)') }}</strong>
+                <span>{{ __('التطبيق يعمل بكفاءة من الذاكرة المحلية لهاتفك. يمكنك متابعة دراسة دروسك وأدواتك المحفوظة.') }}</span>
+            </div>
+        </div>
+        <div class="offline-notice-actions">
+            <a href="{{ route('offline.videos') }}" class="btn-notice-vault">
+                <i class="fa-solid fa-bolt"></i>
+                <span>{{ __('دروسي المحفوظة') }}</span>
+            </a>
+            <button type="button" class="btn-notice-close" onclick="dismissOfflineNotice()" aria-label="إغلاق">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
 /* ==========================================================================
-   تنسيقات شريط التنقل السفلي وشاشات التطبيق المتطورة
+   تنسيقات شريط التنبيه الأوفلاين وشاشات التطبيق المتطورة
    ========================================================================== */
+.stepvoro-offline-notice-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999999;
+    background: #ffffff;
+    border-bottom: 2px solid #d97706;
+    box-shadow: 0 4px 20px rgba(11, 59, 111, 0.15);
+    padding: 10px 16px;
+    animation: slideDownNotice 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDownNotice {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+.offline-notice-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.offline-notice-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.offline-notice-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #fef3c7;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+}
+
+.offline-notice-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.offline-notice-text strong {
+    font-size: 0.88rem;
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.offline-notice-text span {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.offline-notice-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-notice-vault {
+    background: #0b3b6f;
+    color: #ffffff;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s;
+}
+
+.btn-notice-vault:hover {
+    background: #072344;
+}
+
+.btn-notice-close {
+    background: #f1f5f9;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
 :root {
     --pwa-primary: #0b3b6f;
     --pwa-primary-gradient: linear-gradient(135deg, #0b3b6f 0%, #0284c7 100%);
@@ -1292,7 +1416,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
         const modal = document.getElementById('stepvoroOfflineVaultModal');
         if (modal) {
             modal.style.display = 'flex';
-            renderOfflineVideosList();
+            renderModalOfflineVaultList();
         }
     }
 
@@ -1379,7 +1503,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
         }
     }
 
-    function renderOfflineVideosList(retryCount = 0) {
+    function renderModalOfflineVaultList(retryCount = 0) {
         const listContainer = document.getElementById('offlineVaultList');
         const summaryText = document.getElementById('offlineVaultStorageSummary');
         if (!listContainer) return;
@@ -1388,7 +1512,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
 
         if (!db) {
             if (retryCount < 8) {
-                setTimeout(() => renderOfflineVideosList(retryCount + 1), 120);
+                setTimeout(() => renderModalOfflineVaultList(retryCount + 1), 120);
                 return;
             }
             readVaultDirectlyFromIndexedDB(listContainer, summaryText);
@@ -1452,7 +1576,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
                 <div style="text-align: center; padding: 24px 16px; color: #ef4444;">
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; margin-bottom: 8px;"></i>
                     <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;">تعذر فتح الذاكرة المحلية للتطبيق</p>
-                    <button type="button" onclick="renderOfflineVideosList()" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
+                    <button type="button" onclick="renderModalOfflineVaultList()" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
                         <i class="fa-solid fa-rotate"></i> <span>إعادة المحاولة</span>
                     </button>
                 </div>
@@ -1652,7 +1776,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
 
         const finalizeDelete = () => {
             if (card) card.remove();
-            renderOfflineVideosList();
+            renderModalOfflineVaultList();
             if (typeof showPwaToast === 'function') {
                 showPwaToast('تم حذف الدرس من المحفوظات بنجاح', 'info');
             }
@@ -1709,13 +1833,41 @@ body[class*="exam"] .stepvoro-bottom-nav,
         if (installBtn) installBtn.style.display = 'none';
     }
 
+    function dismissOfflineNotice() {
+        const bar = document.getElementById('stepvoroOfflineNoticeBar');
+        if (bar) bar.style.display = 'none';
+    }
+
+    // الاستماع لحدث انقطاع وعودة الاتصال بالإنترنت بشكل حي ومباشر
+    window.addEventListener('offline', function() {
+        const bar = document.getElementById('stepvoroOfflineNoticeBar');
+        if (bar) bar.style.display = 'block';
+        if (typeof showPwaToast === 'function') {
+            showPwaToast('تم تفعيل وضع عدم الاتصال • التطبيق يعمل من الذاكرة المحلية ⚡', 'info');
+        }
+    });
+
+    window.addEventListener('online', function() {
+        const bar = document.getElementById('stepvoroOfflineNoticeBar');
+        if (bar) bar.style.display = 'none';
+        if (typeof showPwaToast === 'function') {
+            showPwaToast('تم استعادة الاتصال بالإنترنت بنجاح! 🎉', 'success');
+        }
+    });
+
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        const bar = document.getElementById('stepvoroOfflineNoticeBar');
+        if (bar) bar.style.display = 'block';
+    }
+
     // ربط الدوال الأساسية بنطاق النافذة العام لضمان استدعائها من أي مكان
+    window.dismissOfflineNotice = dismissOfflineNotice;
     window.triggerPwaInstall = triggerPwaInstall;
     window.openInstallModal = openInstallModal;
     window.closeInstallModal = closeInstallModal;
     window.openOfflineVault = openOfflineVault;
     window.closeOfflineVault = closeOfflineVault;
-    window.renderOfflineVideosList = renderOfflineVideosList;
+    window.renderModalOfflineVaultList = renderModalOfflineVaultList;
     window.playOfflineVaultVideo = playOfflineVaultVideo;
     window.closeOfflinePlayer = closeOfflinePlayer;
     window.showPwaToast = showPwaToast;
