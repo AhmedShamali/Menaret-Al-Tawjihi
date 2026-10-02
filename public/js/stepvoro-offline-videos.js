@@ -21,6 +21,14 @@ const StepvoroOfflineDB = (function () {
                 return reject(new Error('IndexedDB غير مدعوم في هذا المتصفح.'));
             }
 
+            let isSettled = false;
+            const timeoutId = setTimeout(() => {
+                if (!isSettled) {
+                    isSettled = true;
+                    reject(new Error('IndexedDB timeout'));
+                }
+            }, 500);
+
             try {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -38,14 +46,23 @@ const StepvoroOfflineDB = (function () {
                 };
 
                 request.onsuccess = function (e) {
+                    if (isSettled) return;
+                    isSettled = true;
+                    clearTimeout(timeoutId);
                     dbInstance = e.target.result;
                     resolve(dbInstance);
                 };
 
                 request.onerror = function (e) {
+                    if (isSettled) return;
+                    isSettled = true;
+                    clearTimeout(timeoutId);
                     reject(e.target.error || new Error('فشل فتح قاعدة البيانات المحلية'));
                 };
             } catch (err) {
+                if (isSettled) return;
+                isSettled = true;
+                clearTimeout(timeoutId);
                 reject(err);
             }
         });
@@ -257,34 +274,8 @@ const StepvoroVideoDownloader = {
             StepvoroOfflineDB.updateGlobalOfflineBadge();
             const hasPdf = !!record.pdfBlob;
 
-            if (typeof window.Swal !== 'undefined') {
-                window.Swal.fire({
-                    icon: 'success',
-                    title: hasPdf ? 'تم حفظ ملزمة وملاحظات الدرس أوفلاين 📚🎉' : 'تمت إضافة الدرس لمحفوظاتك 📌',
-                    html: `
-                        <div style="font-size: 0.9rem; color: #334155; line-height: 1.6; text-align: right;">
-                            <p>${hasPdf ? 'تم حفظ أوراق عمل وملزمة هذا الدرس في ذاكرة التطبيق لتتمكن من مراجعتها <strong>بدون إنترنت</strong> في أي وقت.' : 'تم حفظ بيانات وملاحظات هذا الدرس في قائمتك لتسهيل الرجوع إليه.'}</p>
-                            <div style="background: #f1f5f9; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.8rem; color: #475569;">
-                                <i class="fa-solid fa-circle-info" style="color: #0284c7;"></i>
-                                <span>ملاحظة: هذا الشرح معروض كبث YouTube مباشر ويتطلب اتصالاً بالإنترنت لمشاهدة الفيديو، في حين أن الشروحات المرفوعة بصيغة MP4 مباشرة تعمل بالكامل بدون نت.</span>
-                            </div>
-                        </div>
-                    `,
-                    confirmButtonText: 'فتح دروسي المحفوظة ⚡',
-                    showCancelButton: true,
-                    cancelButtonText: 'متابعة التصفح',
-                    confirmButtonColor: '#0b3b6f'
-                }).then((res) => {
-                    if (res.isConfirmed) {
-                        if (typeof window.openOfflineVault === 'function') {
-                            window.openOfflineVault();
-                        } else {
-                            window.location.href = '/offline-videos';
-                        }
-                    }
-                });
-            } else if (typeof window.showPwaToast === 'function') {
-                window.showPwaToast('تم حفظ الدرس في مكتبتك الأوفلاين!', 'success');
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast(hasPdf ? 'تم حفظ ملزمة وملاحظات الدرس أوفلاين بنجاح ⚡' : 'تم حفظ الدرس في مكتبتك الأوفلاين بنجاح ⚡', 'success');
             }
         };
 
@@ -369,22 +360,8 @@ const StepvoroVideoDownloader = {
                         self.attachOfflineBlobToPlayer(id, blob);
                         StepvoroOfflineDB.updateGlobalOfflineBadge();
 
-                        if (typeof window.Swal !== 'undefined') {
-                            window.Swal.fire({
-                                icon: 'success',
-                                title: 'تم التحميل أوفلاين بنجاح! 🎉',
-                                text: 'تم حفظ هذا الدرس في ذاكرة التطبيق (' + sizeFormatted + '). يمكنك الآن تشغيله بدون إنترنت من واجهة الفيديوهات المحملة.',
-                                confirmButtonText: 'فتح مكتبة الأوفلاين ⚡',
-                                showCancelButton: true,
-                                cancelButtonText: 'متابعة التصفح',
-                                confirmButtonColor: '#2563eb'
-                            }).then((res) => {
-                                if (res.isConfirmed) {
-                                    window.location.href = '/offline-videos';
-                                }
-                            });
-                        } else if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('تم حفظ الدرس بنجاح داخل المنصة (' + sizeFormatted + ')!', 'success');
+                        if (typeof window.showPwaToast === 'function') {
+                            window.showPwaToast('تم حفظ الدرس بنجاح في ذاكرة المنصة (' + sizeFormatted + ') ⚡', 'success');
                         }
                     })
                     .catch((err) => {

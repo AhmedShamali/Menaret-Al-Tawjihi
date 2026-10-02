@@ -4,23 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json?v=20261002-v30">
     <meta name="theme-color" content="#0b3b6f">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png?v=20261001">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v15">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v15">
-    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v15">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
 
     @if(\App\Models\Setting::get('site_favicon'))
-        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v15">
+        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v30">
     @else
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v15">
-        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v15">
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v30">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v30">
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
@@ -2244,16 +2244,6 @@
             </div>
 
             <div class="topbar-actions-group" style="display:flex; align-items:center; gap:10px;">
-                <!-- زر تحديث المنصة والتطبيق الفوري -->
-                <button type="button" 
-                        class="btn-topbar-update" 
-                        onclick="forceUpdateApp(this)" 
-                        title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
-                        id="btnTopbarUpdateApp"
-                        style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);">
-                    <i class="fa-solid fa-arrows-rotate" style="color: #059669; font-size: 0.9rem;"></i>
-                    <span>{{ __('تحديث المنصة') }}</span>
-                </button>
 
                 <!-- زر تبديل اللغة (عربي / English) -->
                 @php $currentLocale = app()->getLocale(); @endphp
@@ -2762,42 +2752,9 @@
                     }
 
                     // 3. لبقية الصور الشخصية والرمزية: نظهر رمزاً بديل بأحرف الاسم فوراً
-                    img.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(cleanAlt) + '&background=0284c7&color=fff&size=200&bold=true';
                 }
             }, true);
         })();
-
-        // دالة تحديث المنصة والتطبيق الشاملة
-        window.forceUpdateApp = async function(btn) {
-            if (btn) {
-                btn.disabled = true;
-                const icon = btn.querySelector('i');
-                if (icon) icon.classList.add('fa-spin');
-                const label = btn.querySelector('span');
-                if (label) label.textContent = '{{ __("جاري التحديث...") }}';
-            }
-
-            try {
-                if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of registrations) {
-                        await reg.update().catch(() => {});
-                        await reg.unregister().catch(() => {});
-                    }
-                }
-                if ('caches' in window) {
-                    const cacheKeys = await caches.keys();
-                    await Promise.all(cacheKeys.map(k => caches.delete(k)));
-                }
-                sessionStorage.clear();
-            } catch (e) {
-                console.warn('Update error:', e);
-            }
-
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('v_updated', Date.now());
-            window.location.href = currentUrl.toString();
-        };
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

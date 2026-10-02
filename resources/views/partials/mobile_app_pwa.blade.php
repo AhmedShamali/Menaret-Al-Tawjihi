@@ -28,10 +28,6 @@
         </div>
         <span class="nav-tab-label">{{ __('المحملة ⚡') }}</span>
     </a>
-    <button type="button" class="nav-tab" onclick="window.forceUpdateApp(this)" id="bottomNavUpdateBtn" title="{{ __('تحديث التطبيق فورياً لأحدث نسخة') }}">
-        <div class="nav-tab-icon" style="color: #0284c7;"><i class="fa-solid fa-rotate"></i></div>
-        <span class="nav-tab-label">{{ __('تحديث 🔄') }}</span>
-    </button>
     @if(Auth::guard('student')->check() || Auth::check())
         <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') ? 'active' : '' }}">
             <div class="nav-tab-icon"><i class="fa-solid fa-user-circle"></i></div>
@@ -225,14 +221,23 @@
 <div class="stepvoro-ios-modal-overlay" id="stepvoroOfflinePlayerModal" onclick="closeOfflinePlayer(event)" style="display: none;">
     <div class="stepvoro-offline-player-card" onclick="event.stopPropagation()">
         <div class="offline-player-header">
-            <h4 id="offlinePlayerTitle">{{ __('مشاهدة الدرس أوفلاين') }}</h4>
+            <h4 id="offlinePlayerTitle">{{ __('مشاهدة الدرس') }}</h4>
             <button type="button" class="btn-close-sheet" onclick="closeOfflinePlayer()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="offline-player-media-wrap">
+        <div class="offline-player-media-wrap" id="offlinePlayerMediaWrap" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
             <video id="offlineVaultVideoPlayer" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
+            <iframe id="offlineVaultIframePlayer" style="display: none; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+            <div id="offlineVaultFallbackWrap" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background: #0f172a; color: #fff;">
+                <i class="fa-solid fa-file-pdf" style="font-size: 2.2rem; color: #ef4444; margin-bottom: 8px;"></i>
+                <h4 style="font-size: 0.95rem; margin-bottom: 6px;">ملزمة الدرس متاحة للمراجعة</h4>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 12px;">يمكنك قراءة ملزمة وملاحظات الدرس بدون إنترنت.</p>
+                <button type="button" id="btnOpenVaultPdf" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
+                    <i class="fa-solid fa-book-open"></i> <span>فتح ملزمة الدرس ⚡</span>
+                </button>
+            </div>
         </div>
         <div class="offline-player-footer">
-            <span class="badge-offline-playing"><i class="fa-solid fa-bolt"></i> {{ __('مشاهدة بدون إنترنت مباشرة من ذاكرة التطبيق') }}</span>
+            <span class="badge-offline-playing" id="offlinePlayerFooterBadge"><i class="fa-solid fa-bolt"></i> {{ __('مشاهدة بدون إنترنت مباشرة من ذاكرة التطبيق') }}</span>
         </div>
     </div>
 </div>
@@ -1047,7 +1052,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=20261002-v15', { updateViaCache: 'none' }).then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=20261002-v30', { updateViaCache: 'none' }).then(function(reg) {
                 // تفعيل فوري لأي عامل خدمة في حالة انتظار
                 if (reg.waiting) {
                     try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}
@@ -1419,42 +1424,65 @@ body[class*="exam"] .stepvoro-bottom-nav,
                 return;
             }
 
-            if (record.blob) {
-                const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
-                const playerVideo = document.getElementById('offlineVaultVideoPlayer');
-                const playerTitle = document.getElementById('offlinePlayerTitle');
+            const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
+            const playerVideo = document.getElementById('offlineVaultVideoPlayer');
+            const playerIframe = document.getElementById('offlineVaultIframePlayer');
+            const fallbackWrap = document.getElementById('offlineVaultFallbackWrap');
+            const playerTitle = document.getElementById('offlinePlayerTitle');
+            const footerBadge = document.getElementById('offlinePlayerFooterBadge');
+            const btnOpenPdf = document.getElementById('btnOpenVaultPdf');
 
-                if (playerVideo && playerModal) {
+            if (!playerModal) return;
+
+            if (playerTitle) playerTitle.textContent = record.title || 'مشاهدة الدرس';
+
+            if (record.blob) {
+                if (playerIframe) { playerIframe.style.display = 'none'; playerIframe.src = 'about:blank'; }
+                if (fallbackWrap) fallbackWrap.style.display = 'none';
+                if (playerVideo) {
+                    playerVideo.style.display = 'block';
                     playerVideo.src = URL.createObjectURL(record.blob);
-                    if (playerTitle) playerTitle.textContent = record.title || 'مشاهدة الدرس بدون إنترنت';
                     playerModal.style.display = 'flex';
                     playerVideo.play().catch(() => {});
                 }
-            } else if (record.pdfBlob) {
-                const pdfUrl = URL.createObjectURL(record.pdfBlob);
-                window.open(pdfUrl, '_blank');
+                if (footerBadge) footerBadge.innerHTML = '<i class="fa-solid fa-bolt"></i> مشغل الفيديو من ذاكرة التطبيق بدون إنترنت';
             } else if (record.ytEmbed && navigator.onLine) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        title: record.title,
-                        html: `<div style="aspect-ratio: 16/9; width: 100%; border-radius: 12px; overflow: hidden;"><iframe src="${record.ytEmbed}" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe></div>`,
-                        showCloseButton: true,
-                        showConfirmButton: false,
-                        width: '800px'
-                    });
+                if (playerVideo) { playerVideo.style.display = 'none'; playerVideo.pause(); }
+                if (fallbackWrap) fallbackWrap.style.display = 'none';
+                if (playerIframe) {
+                    playerIframe.style.display = 'block';
+                    playerIframe.src = record.ytEmbed + (record.ytEmbed.includes('?') ? '&autoplay=1' : '?autoplay=1');
                 }
+                playerModal.style.display = 'flex';
+                if (footerBadge) footerBadge.innerHTML = '<i class="fa-solid fa-play"></i> مشغل الدرس المعتمد داخل التطبيق';
+            } else if (record.pdfBlob || record.pdfUrl) {
+                if (playerVideo) { playerVideo.style.display = 'none'; playerVideo.pause(); }
+                if (playerIframe) { playerIframe.style.display = 'none'; playerIframe.src = 'about:blank'; }
+                if (fallbackWrap) {
+                    fallbackWrap.style.display = 'flex';
+                    if (btnOpenPdf) {
+                        btnOpenPdf.onclick = function() {
+                            if (record.pdfBlob) {
+                                window.open(URL.createObjectURL(record.pdfBlob), '_blank');
+                            } else if (record.pdfUrl) {
+                                window.open(record.pdfUrl, '_blank');
+                            }
+                        };
+                    }
+                }
+                playerModal.style.display = 'flex';
+                if (footerBadge) footerBadge.innerHTML = '<i class="fa-solid fa-file-pdf"></i> ملزمة وأوراق عمل الدرس المحفوظة';
             } else {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'info',
-                        title: record.title || 'درس تعليمي',
-                        text: 'هذا الشرح معروض كبث يوتيوب مباشر ويتطلب اتصالاً بالإنترنت للمشاهدة، في حين أن الدروس المرفوعة بصيغة MP4 مباشرة تعمل بالكامل بدون إنترنت.',
-                        confirmButtonText: 'حسناً',
-                        confirmButtonColor: '#0b3b6f'
-                    });
-                } else if (typeof showPwaToast === 'function') {
-                    showPwaToast('يتطلب هذا الدرس اتصالاً بالإنترنت لبث الفيديو.', 'info');
+                if (playerVideo) { playerVideo.style.display = 'none'; playerVideo.pause(); }
+                if (playerIframe) { playerIframe.style.display = 'none'; }
+                if (fallbackWrap) {
+                    fallbackWrap.style.display = 'flex';
+                    const fallbackH4 = fallbackWrap.querySelector('h4');
+                    if (fallbackH4) fallbackH4.textContent = 'يتطلب بث الفيديو الاتصال بالإنترنت';
+                    if (btnOpenPdf) btnOpenPdf.style.display = 'none';
                 }
+                playerModal.style.display = 'flex';
+                if (footerBadge) footerBadge.innerHTML = '<i class="fa-solid fa-wifi"></i> بث مباشر يتطلب الاتصال بالشبكة';
             }
         }).catch((err) => {
             console.error('Error fetching video for playback:', err);
@@ -1467,10 +1495,14 @@ body[class*="exam"] .stepvoro-bottom-nav,
         }
         const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
         const playerVideo = document.getElementById('offlineVaultVideoPlayer');
+        const playerIframe = document.getElementById('offlineVaultIframePlayer');
         if (playerVideo) {
             playerVideo.pause();
             playerVideo.removeAttribute('src');
             playerVideo.load();
+        }
+        if (playerIframe) {
+            playerIframe.src = 'about:blank';
         }
         if (playerModal) playerModal.style.display = 'none';
     }

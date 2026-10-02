@@ -20,22 +20,24 @@
             </p>
         </div>
 
-        {{-- إحصائيات الذاكرة والتحكم --}}
+        {{-- إحصائيات الذاكرة والتحكم بتصميم كلاسيكي موحد --}}
         <div class="storage-stats-card">
-            <div class="stat-item">
-                <span class="stat-label">{{ __('الدروس المحفوظة') }}</span>
-                <span class="stat-value" id="offlineLessonsCount">0</span>
+            <div class="classic-stat-pod">
+                <div class="stat-icon-pod"><i class="fa-solid fa-book-bookmark"></i></div>
+                <div class="stat-item">
+                    <span class="stat-label">{{ __('الدروس المحفوظة') }}</span>
+                    <span class="stat-value" id="offlineLessonsCount">0</span>
+                </div>
             </div>
             <div class="stat-divider"></div>
-            <div class="stat-item">
-                <span class="stat-label">{{ __('المساحة المستهلكة') }}</span>
-                <span class="stat-value" id="offlineStorageSize">0 MB</span>
+            <div class="classic-stat-pod">
+                <div class="stat-icon-pod stat-icon-storage"><i class="fa-solid fa-hard-drive"></i></div>
+                <div class="stat-item">
+                    <span class="stat-label">{{ __('المساحة المستهلكة') }}</span>
+                    <span class="stat-value" id="offlineStorageSize">0 MB</span>
+                </div>
             </div>
-            <div class="stat-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <button type="button" class="btn-clear-vault" onclick="window.forceUpdateApp()" style="background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; font-weight: 800;" title="{{ __('فحص وتحديث التطبيق لأحدث نسخة فورياً') }}">
-                    <i class="fa-solid fa-rotate"></i>
-                    <span>{{ __('تحديث التطبيق 🔄') }}</span>
-                </button>
+            <div class="stat-actions" style="display: flex; gap: 8px;">
                 <button type="button" class="btn-clear-vault" onclick="confirmClearAllOfflineVideos()" id="btnClearAll" style="display: none;" title="{{ __('حذف كافة الفيديوهات لتحرير الذاكرة') }}">
                     <i class="fa-regular fa-trash-can"></i>
                     <span>{{ __('تحرير الذاكرة') }}</span>
@@ -57,8 +59,17 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="video-container">
+            <div class="video-container" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                 <video id="offlineActiveVideo" controls playsinline controlsList="nodownload noplaybackrate" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
+                <iframe id="offlineActiveIframe" style="display: none; width: 100%; height: 100%; border: none;" allowfullscreen allow="autoplay; encrypted-media"></iframe>
+                <div id="offlineFallbackContainer" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 24px; background: #0f172a; color: #fff;">
+                    <i class="fa-solid fa-file-pdf" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 12px;"></i>
+                    <h4 style="font-size: 1.05rem; margin-bottom: 6px;">ملزمة الدرس متاحة للمطالعة</h4>
+                    <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">يمكنك قراءة ملزمة وأوراق عمل هذا الدرس بدون إنترنت.</p>
+                    <button type="button" id="btnActiveOpenPdf" class="btn-play-offline" style="background: #2563eb; color: #fff; padding: 8px 20px;">
+                        <i class="fa-solid fa-book-open"></i> <span>فتح ملزمة الدرس ⚡</span>
+                    </button>
+                </div>
             </div>
             <div class="player-controls-bar">
                 <div class="speed-selector">
@@ -98,7 +109,7 @@
     {{-- حالة الذاكرة الفارغة (Empty State) --}}
     <div class="offline-empty-state" id="offlineEmptyState" style="display: none;">
         <div class="empty-icon-circle">
-            <i class="fa-solid fa-film"></i>
+            <i class="fa-solid fa-cloud-arrow-down"></i>
         </div>
         <h3>{{ __('لا توجد دروس محملة أوفلاين حتى الآن') }}</h3>
         <p>
@@ -195,7 +206,33 @@
     background: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    padding: 16px 20px;
+    padding: 14px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.classic-stat-pod {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-icon-pod {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    display: grid;
+    place-items: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.stat-icon-pod.stat-icon-storage {
+    background: #f0fdf4;
+    color: #15803d;
+    border-color: #bbf7d0;
 }
 
 .stat-item {
@@ -212,7 +249,7 @@
 .stat-value {
     font-size: 1.35rem;
     font-weight: 800;
-    color: #1d4ed8;
+    color: #0f172a;
 }
 
 .stat-divider {
@@ -661,19 +698,33 @@ function updateNetworkIndicator() {
 function loadOfflineVideos(retryCount = 0) {
     const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
     if (!db) {
-        if (retryCount < 8) {
-            setTimeout(() => loadOfflineVideos(retryCount + 1), 150);
+        if (retryCount < 2) {
+            setTimeout(() => loadOfflineVideos(retryCount + 1), 80);
             return;
         }
         readOfflineGridDirectly();
         return;
     }
 
+    let isFinished = false;
+    const safetyTimer = setTimeout(() => {
+        if (!isFinished) {
+            isFinished = true;
+            readOfflineGridDirectly();
+        }
+    }, 250);
+
     db.getAllVideos().then(function(videos) {
+        if (isFinished) return;
+        isFinished = true;
+        clearTimeout(safetyTimer);
         cachedOfflineVideos = videos || [];
         renderOfflineVideosList(cachedOfflineVideos);
         updateStorageSummary();
     }).catch(function(err) {
+        if (isFinished) return;
+        isFinished = true;
+        clearTimeout(safetyTimer);
         console.error('Error fetching offline videos:', err);
         readOfflineGridDirectly();
     });
@@ -684,29 +735,57 @@ function readOfflineGridDirectly() {
         renderOfflineVideosList([]);
         return;
     }
+    let directFinished = false;
+    const timeoutId = setTimeout(() => {
+        if (!directFinished) {
+            directFinished = true;
+            renderOfflineVideosList([]);
+        }
+    }, 200);
+
     try {
         const req = indexedDB.open('StepvoroOfflineStore', 2);
+        req.onblocked = function() {
+            if (directFinished) return;
+            directFinished = true;
+            clearTimeout(timeoutId);
+            renderOfflineVideosList([]);
+        };
         req.onsuccess = function(e) {
+            if (directFinished) return;
+            directFinished = true;
+            clearTimeout(timeoutId);
             const db = e.target.result;
             if (!db.objectStoreNames.contains('offline_videos')) {
                 renderOfflineVideosList([]);
                 return;
             }
-            const tx = db.transaction(['offline_videos'], 'readonly');
-            const store = tx.objectStore('offline_videos');
-            const getReq = store.getAll();
-            getReq.onsuccess = function() {
-                cachedOfflineVideos = getReq.result || [];
-                renderOfflineVideosList(cachedOfflineVideos);
-            };
-            getReq.onerror = function() {
+            try {
+                const tx = db.transaction(['offline_videos'], 'readonly');
+                const store = tx.objectStore('offline_videos');
+                const getReq = store.getAll();
+                getReq.onsuccess = function() {
+                    cachedOfflineVideos = getReq.result || [];
+                    renderOfflineVideosList(cachedOfflineVideos);
+                    updateStorageSummary();
+                };
+                getReq.onerror = function() {
+                    renderOfflineVideosList([]);
+                };
+            } catch(txErr) {
                 renderOfflineVideosList([]);
-            };
+            }
         };
         req.onerror = function() {
+            if (directFinished) return;
+            directFinished = true;
+            clearTimeout(timeoutId);
             renderOfflineVideosList([]);
         };
     } catch(e) {
+        if (directFinished) return;
+        directFinished = true;
+        clearTimeout(timeoutId);
         renderOfflineVideosList([]);
     }
 }
@@ -721,6 +800,7 @@ function renderOfflineVideosList(videos) {
 
     if (!videos || videos.length === 0) {
         grid.style.display = 'none';
+        grid.innerHTML = '';
         if (searchBar) searchBar.style.display = 'none';
         if (emptyState) emptyState.style.display = 'block';
         if (btnClearAll) btnClearAll.style.display = 'none';
@@ -776,64 +856,103 @@ function renderOfflineVideosList(videos) {
 }
 
 function updateStorageSummary() {
+    if (!window.StepvoroOfflineDB) return;
     StepvoroOfflineDB.calculateTotalSize().then(function(res) {
         const countSpan = document.getElementById('offlineLessonsCount');
         const sizeSpan = document.getElementById('offlineStorageSize');
         if (countSpan) countSpan.innerText = res.count;
         if (sizeSpan) sizeSpan.innerText = res.mb + ' MB';
-    });
+    }).catch(() => {});
 }
 
 function playOfflineVideo(id) {
+    if (!window.StepvoroOfflineDB) return;
     StepvoroOfflineDB.getVideo(id).then(function(record) {
         if (!record) {
-            Swal.fire('خطأ', 'تعذر استرجاع ملف الفيديو من ذاكرة التخزين.', 'error');
+            if (typeof showPwaToast === 'function') {
+                showPwaToast('تعذر العثور على الدرس في ذاكرة التطبيق.', 'error');
+            }
             return;
         }
 
         const section = document.getElementById('offlinePlayerSection');
         const videoEl = document.getElementById('offlineActiveVideo');
+        const iframeEl = document.getElementById('offlineActiveIframe');
+        const fallbackEl = document.getElementById('offlineFallbackContainer');
         const titleEl = document.getElementById('currentPlayingTitle');
         const subjectEl = document.getElementById('currentPlayingSubject');
+        const btnOpenPdf = document.getElementById('btnActiveOpenPdf');
 
         if (titleEl) titleEl.innerText = record.title || 'درس تعليمي';
         if (subjectEl) subjectEl.innerText = record.subject || 'المنهاج';
 
         if (record.blob) {
-            if (activeVideoObjectURL) {
-                URL.revokeObjectURL(activeVideoObjectURL);
+            if (iframeEl) { iframeEl.style.display = 'none'; iframeEl.src = 'about:blank'; }
+            if (fallbackEl) fallbackEl.style.display = 'none';
+            if (videoEl) {
+                videoEl.style.display = 'block';
+                if (activeVideoObjectURL) {
+                    URL.revokeObjectURL(activeVideoObjectURL);
+                }
+                activeVideoObjectURL = URL.createObjectURL(record.blob);
+                videoEl.src = activeVideoObjectURL;
+                videoEl.play().catch(() => {});
             }
-            activeVideoObjectURL = URL.createObjectURL(record.blob);
-            videoEl.src = activeVideoObjectURL;
-            section.style.display = 'block';
-            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            videoEl.play().catch(function(e) {
-                console.log('Autoplay handled:', e);
-            });
-        } else if (record.pdfBlob) {
-            const pdfUrl = URL.createObjectURL(record.pdfBlob);
-            window.open(pdfUrl, '_blank');
+            if (section) {
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         } else if (record.ytEmbed && navigator.onLine) {
-            Swal.fire({
-                title: record.title,
-                html: `<div style="aspect-ratio: 16/9; width: 100%; border-radius: 12px; overflow: hidden;"><iframe src="${record.ytEmbed}" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe></div>`,
-                showCloseButton: true,
-                showConfirmButton: false,
-                width: '800px'
-            });
+            if (videoEl) { videoEl.style.display = 'none'; videoEl.pause(); }
+            if (fallbackEl) fallbackEl.style.display = 'none';
+            if (iframeEl) {
+                iframeEl.style.display = 'block';
+                iframeEl.src = record.ytEmbed + (record.ytEmbed.includes('?') ? '&autoplay=1' : '?autoplay=1');
+            }
+            if (section) {
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        } else if (record.pdfBlob || record.pdfUrl) {
+            if (videoEl) { videoEl.style.display = 'none'; videoEl.pause(); }
+            if (iframeEl) { iframeEl.style.display = 'none'; iframeEl.src = 'about:blank'; }
+            if (fallbackEl) {
+                fallbackEl.style.display = 'flex';
+                if (btnOpenPdf) {
+                    btnOpenPdf.onclick = function() {
+                        if (record.pdfBlob) {
+                            window.open(URL.createObjectURL(record.pdfBlob), '_blank');
+                        } else if (record.pdfUrl) {
+                            window.open(record.pdfUrl, '_blank');
+                        }
+                    };
+                }
+            }
+            if (section) {
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         } else {
-            Swal.fire({
-                icon: 'info',
-                title: record.title,
-                text: 'الدرس محفوظ في ذاكرة التطبيق. لتشغيل الفيديو بدون نت يرجى الاتصال بالإنترنت أولاً أو مراجعة ملزمة الدرس المرفقة.',
-                confirmButtonText: 'حسناً',
-                confirmButtonColor: '#2563eb'
-            });
+            if (videoEl) { videoEl.style.display = 'none'; videoEl.pause(); }
+            if (iframeEl) { iframeEl.style.display = 'none'; }
+            if (fallbackEl) {
+                fallbackEl.style.display = 'flex';
+                const h4 = fallbackEl.querySelector('h4');
+                if (h4) h4.textContent = 'يتطلب بث الفيديو الاتصال بالإنترنت';
+                if (btnOpenPdf) btnOpenPdf.style.display = 'none';
+            }
+            if (section) {
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
+    }).catch(function(err) {
+        console.error('Error playing offline video:', err);
     });
 }
 
 function openOfflinePdf(id) {
+    if (!window.StepvoroOfflineDB) return;
     StepvoroOfflineDB.getVideo(id).then(function(record) {
         if (record && record.pdfBlob) {
             const blobUrl = URL.createObjectURL(record.pdfBlob);
@@ -841,7 +960,9 @@ function openOfflinePdf(id) {
         } else if (record && record.pdfUrl) {
             window.open(record.pdfUrl, '_blank');
         } else {
-            Swal.fire('تنبيه', 'لا توجد ملزمة PDF مرفقة لهذا الدرس.', 'info');
+            if (typeof showPwaToast === 'function') {
+                showPwaToast('لا توجد ملزمة PDF مرفقة لهذا الدرس.', 'info');
+            }
         }
     });
 }
@@ -849,9 +970,13 @@ function openOfflinePdf(id) {
 function closeActiveOfflinePlayer() {
     const section = document.getElementById('offlinePlayerSection');
     const videoEl = document.getElementById('offlineActiveVideo');
+    const iframeEl = document.getElementById('offlineActiveIframe');
     if (videoEl) {
         videoEl.pause();
         videoEl.src = '';
+    }
+    if (iframeEl) {
+        iframeEl.src = 'about:blank';
     }
     if (activeVideoObjectURL) {
         URL.revokeObjectURL(activeVideoObjectURL);

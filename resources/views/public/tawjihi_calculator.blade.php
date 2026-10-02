@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json?v=20261002-v30">
     <meta name="theme-color" content="#0b3b6f">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v30">
+    <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v30">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v30">
     <title>{{ __('حاسبة معدل التوجيهي ودليل التنسيق والقبول الجامعي 2026') }} | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
     @php
@@ -194,20 +196,6 @@
             background: var(--bg-page);
             color: var(--primary);
             border-color: #cbd5e1;
-        }
-
-        #btnCalcUpdateApp:hover {
-            background-color: #f0fdf4 !important;
-            border-color: #86efac !important;
-            color: #166534 !important;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
-        }
-        #btnCalcUpdateApp:hover i {
-            transform: rotate(60deg);
-        }
-        #btnCalcUpdateApp i {
-            transition: transform 0.3s ease;
         }
 
         .nav-link-btn.primary {
@@ -727,16 +715,6 @@
                 <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
             </a>
             <div class="nav-links">
-                <!-- زر تحديث المنصة والتطبيق الفوري -->
-                <button type="button" 
-                        class="nav-link-btn" 
-                        onclick="forceUpdateApp(this)" 
-                        title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
-                        id="btnCalcUpdateApp"
-                        style="cursor: pointer; background: var(--surface); border: 1px solid var(--border-color); color: var(--text-dark); font-weight: 700; display: inline-flex; align-items: center; gap: 7px; transition: var(--transition);">
-                    <i class="fa-solid fa-arrows-rotate" style="color: #059669;"></i>
-                    <span>{{ __('تحديث المنصة') }}</span>
-                </button>
 
                 <!-- زر تبديل اللغة خالي من أي كلمة عربية في وضع الإنجليزية -->
                 @php $currentLocale = app()->getLocale(); @endphp
@@ -1129,38 +1107,6 @@
                 }
             }
         }, { passive: true });
-
-        // دالة تحديث المنصة والتطبيق الفوري
-        window.forceUpdateApp = async function(btn) {
-            if (btn) {
-                btn.disabled = true;
-                const icon = btn.querySelector('i');
-                if (icon) icon.classList.add('fa-spin');
-                const label = btn.querySelector('span');
-                if (label) label.textContent = '{{ __("جاري التحديث...") }}';
-            }
-
-            try {
-                if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of registrations) {
-                        await reg.update().catch(() => {});
-                        await reg.unregister().catch(() => {});
-                    }
-                }
-                if ('caches' in window) {
-                    const cacheKeys = await caches.keys();
-                    await Promise.all(cacheKeys.map(k => caches.delete(k)));
-                }
-                sessionStorage.clear();
-            } catch (e) {
-                console.warn('Update error:', e);
-            }
-
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('v_updated', Date.now());
-            window.location.href = currentUrl.toString();
-        };
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

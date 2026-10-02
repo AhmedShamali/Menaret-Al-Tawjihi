@@ -5,22 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="/manifest.json?v=20261002-v30">
     <meta name="theme-color" content="#0b3b6f">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
-    <link rel="apple-touch-icon" href="/icons/icon-192.jpg">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192.jpg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.jpg">
-    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192.jpg">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v30">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v30">
 
     @if(\App\Models\Setting::get('site_favicon'))
-        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}">
+        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v30">
     @else
-        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v30">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v30">
     @endif
 
     <title>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }} | {{ __('بوابة ومنظومة الثانوية العامة لدولة فلسطين | المنهاج الوزاري المعتمد') }}</title>
@@ -432,41 +433,32 @@
             border-color: var(--ed-border-hover);
         }
 
-        .btn-nav-app-update {
-            background-color: #ffffff;
-            border: 1px solid var(--ed-border);
-            color: var(--ed-text-main);
-            padding: 6px 13px;
-            border-radius: var(--radius-sm);
-            font-size: 12.5px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-            transition: var(--transition);
+        .classic-stat-pod-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--ed-primary-soft);
+            color: var(--ed-primary);
+            border: 1px solid var(--ed-primary-border);
+            display: inline-grid;
+            place-items: center;
+            font-size: 12px;
+            flex-shrink: 0;
         }
-        .btn-nav-app-update i {
-            color: #059669;
-            font-size: 13px;
-            transition: transform 0.3s ease;
+        .classic-stat-pod-sm.pod-green {
+            background: var(--ed-success-soft);
+            color: var(--ed-success);
+            border-color: var(--ed-success-border);
         }
-        .btn-nav-app-update:hover {
-            background-color: #f0fdf4;
-            border-color: #86efac;
-            color: #166534;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+        .classic-stat-pod-sm.pod-gold {
+            background: var(--ed-accent-gold-soft);
+            color: var(--ed-accent-gold);
+            border-color: var(--ed-accent-gold-border);
         }
-        .btn-nav-app-update:hover i {
-            transform: rotate(60deg);
-        }
-        .btn-nav-app-update:active {
-            transform: translateY(0);
-        }
-        .btn-nav-app-update i.fa-spin {
-            animation: fa-spin 0.7s linear infinite;
+        .classic-stat-pod-sm.pod-red {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
         }
 
         .btn-nav-app-install {
@@ -1208,15 +1200,6 @@
                 <li class="nav-item"><a href="{{ route('public.contact') }}" class="nav-link"><i class="fa-solid fa-phone"></i> {{ __('تواصل مع الإدارة') }}</a></li>
             </ul>
 
-                <!-- زر تحديث المنصة والتطبيق الفوري -->
-                <button type="button" 
-                        class="btn-nav-app-update" 
-                        onclick="forceUpdateApp(this)" 
-                        title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
-                        id="btnNavUpdateApp">
-                    <i class="fa-solid fa-arrows-rotate"></i>
-                    <span>{{ __('تحديث المنصة') }}</span>
-                </button>
 
                 <!-- زر تثبيت تطبيق الجوال السريع -->
                 <button type="button" 
@@ -1482,19 +1465,39 @@
                         <table class="stats-table">
                             <tbody>
                                 <tr>
-                                    <td><i class="fa-solid fa-users" style="color: var(--ed-primary); margin-inline-end: 6px;"></i> {{ __('الطلبة المسجلين') }}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="classic-stat-pod-sm"><i class="fa-solid fa-users"></i></span>
+                                            <span>{{ __('الطلبة المسجلين') }}</span>
+                                        </div>
+                                    </td>
                                     <td class="stat-val">{{ number_format($stats['students'] ?? 1200) }} {{ __('طالب') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-book-bookmark" style="color: var(--ed-success); margin-inline-end: 6px;"></i> {{ __('المساقات المعتمدة') }}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="classic-stat-pod-sm pod-green"><i class="fa-solid fa-book-bookmark"></i></span>
+                                            <span>{{ __('المساقات المعتمدة') }}</span>
+                                        </div>
+                                    </td>
                                     <td class="stat-val" style="color: var(--ed-success);">{{ number_format($stats['subjects'] ?? 18) }} {{ __('مساق') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-video" style="color: var(--ed-accent-gold); margin-inline-end: 6px;"></i> {{ __('الدروس والشروحات') }}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="classic-stat-pod-sm pod-gold"><i class="fa-solid fa-video"></i></span>
+                                            <span>{{ __('الدروس والشروحات') }}</span>
+                                        </div>
+                                    </td>
                                     <td class="stat-val" style="color: var(--ed-accent-gold);">{{ number_format($stats['lessons'] ?? 350) }} {{ __('شرح') }}</td>
                                 </tr>
                                 <tr>
-                                    <td><i class="fa-solid fa-file-signature" style="color: #dc2626; margin-inline-end: 6px;"></i> {{ __('النماذج والاختبارات') }}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span class="classic-stat-pod-sm pod-red"><i class="fa-solid fa-file-signature"></i></span>
+                                            <span>{{ __('النماذج والاختبارات') }}</span>
+                                        </div>
+                                    </td>
                                     <td class="stat-val" style="color: #dc2626;">{{ number_format($stats['exams'] ?? 150) }} {{ __('اختبار') }}</td>
                                 </tr>
                             </tbody>
@@ -1642,38 +1645,6 @@
                 }
             }
         }, { passive: true });
-
-        // دالة تحديث التطبيق والمنصة الفوري وإعادة سحب الكاش
-        window.forceUpdateApp = async function(btn) {
-            if (btn) {
-                btn.disabled = true;
-                const icon = btn.querySelector('i');
-                if (icon) icon.classList.add('fa-spin');
-                const label = btn.querySelector('span');
-                if (label) label.textContent = '{{ __("جاري التحديث...") }}';
-            }
-
-            try {
-                if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (const reg of registrations) {
-                        await reg.update().catch(() => {});
-                        await reg.unregister().catch(() => {});
-                    }
-                }
-                if ('caches' in window) {
-                    const cacheKeys = await caches.keys();
-                    await Promise.all(cacheKeys.map(k => caches.delete(k)));
-                }
-                sessionStorage.clear();
-            } catch (e) {
-                console.warn('Update error:', e);
-            }
-
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('v_updated', Date.now());
-            window.location.href = currentUrl.toString();
-        };
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->
