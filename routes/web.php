@@ -428,19 +428,10 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
 
-// توافقية مسارات الإدارة والتسليم القديمة مع توجيه نظيف بدون -legacy
+// توافقية مسارات الإدارة القديمة والتسليم (محمية بصلاحيات الأدمن)
 Route::middleware(['auth', 'IsAdmin'])->group(function () {
-    Route::get('/admin/students', [StudentController::class, 'index'])->name('students.index');
-    Route::get('/admin/students/{student}/edit', [StudentController::class, 'edit'])->name('students.edit');
-    Route::match(['put', 'post'], '/admin/students/{student}', [StudentController::class, 'update'])->name('students.update');
-    Route::match(['put', 'post'], '/students/{student}', [StudentController::class, 'update']);
-
-    // إعادة التوجيه للروابط القديمة إن وجدت
-    Route::redirect('/admin/students-legacy', '/admin/students');
-    Route::get('/admin/students/{student}/edit-legacy', function ($student) {
-        return redirect()->route('admin.students.edit', $student);
-    });
-    Route::match(['put', 'post'], '/admin/students/{student}/update-legacy', [StudentController::class, 'update']);
+    Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
+    Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
+    Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
 });
-Route::post('/student/exams/{id}/submit', [ExamController::class, 'submitExam'])->name('exams.submit');
-Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam']);
+Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam'])->name('exams.submit');
