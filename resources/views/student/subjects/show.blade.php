@@ -1202,26 +1202,52 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                         <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                            <button type="button" 
-                                                    class="ed-btn-offline-card" 
-                                                    id="btn_offline_{{ $video->id }}" 
-                                                    data-video-id="{{ $video->id }}"
-                                                    data-video-title="{{ $video->title }}"
-                                                    data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                    data-video-url="{{ $directVideoUrl ?: (!empty($video->url_path) ? route('content.downloadVideo', $video->id) : '') }}"
-                                                    data-is-direct="{{ ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) ? '1' : '0' }}"
-                                                    data-yt-embed="{{ $ytEmbed ?? '' }}"
-                                                    data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
-                                                    onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                    title="{{ $isDirectVideo ? __('تحميل وتشغيل الدرس بدون إنترنت بالكامل') : __('حفظ ملزمة وملاحظات الدرس للمراجعة بدون إنترنت') }}">
-                                                <div class="ed-offline-btn-inner">
-                                                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                    <span class="offline-btn-label">{{ $isDirectVideo ? __('تحميل وتشغيل أوفلاين (بدون نت ⚡)') : __('حفظ أوفلاين للمراجعة') }}</span>
+                                            @if($isDirectVideo && ($directVideoUrl || !empty($video->url_path)))
+                                                <button type="button" 
+                                                        class="ed-btn-offline-card" 
+                                                        id="btn_offline_{{ $video->id }}" 
+                                                        data-video-id="{{ $video->id }}"
+                                                        data-video-title="{{ $video->title }}"
+                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                        data-video-url="{{ $directVideoUrl ?: route('content.downloadVideo', $video->id) }}"
+                                                        data-is-direct="1"
+                                                        data-yt-embed="{{ $ytEmbed ?? '' }}"
+                                                        data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
+                                                        onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
+                                                        title="{{ __('تحميل وتشغيل الدرس بدون إنترنت بالكامل') }}">
+                                                    <div class="ed-offline-btn-inner">
+                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                        <span class="offline-btn-label">{{ __('تحميل وتشغيل أوفلاين (بدون نت ⚡)') }}</span>
+                                                    </div>
+                                                    <div class="ed-offline-progress-track">
+                                                        <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
+                                                    </div>
+                                                </button>
+                                            @elseif(!empty($video->pdf_path))
+                                                <button type="button" 
+                                                        class="ed-btn-offline-card" 
+                                                        id="btn_offline_{{ $video->id }}" 
+                                                        data-video-id="{{ $video->id }}"
+                                                        data-video-title="{{ $video->title }}"
+                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                        data-video-url=""
+                                                        data-is-direct="0"
+                                                        data-yt-embed="{{ $ytEmbed ?? '' }}"
+                                                        data-pdf-url="{{ route('content.download', $video->id) }}"
+                                                        onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
+                                                        title="{{ __('حفظ ملزمة وأوراق عمل الدرس بدون إنترنت') }}"
+                                                        style="background: #fef2f2; border-color: #fecaca; color: #b91c1c;">
+                                                    <div class="ed-offline-btn-inner">
+                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-file-pdf"></i></span>
+                                                        <span class="offline-btn-label">{{ __('حفظ ملزمة الدرس أوفلاين (PDF ⚡)') }}</span>
+                                                    </div>
+                                                </button>
+                                            @else
+                                                <div style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.78rem; font-weight: 700; color: #475569;">
+                                                    <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 0.95rem;"></i>
+                                                    <span>{{ __('بث YouTube مباشر') }}</span>
                                                 </div>
-                                                <div class="ed-offline-progress-track">
-                                                    <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
-                                                </div>
-                                            </button>
+                                            @endif
                                         </div>
                                         @if(!empty($video->pdf_path))
                                             <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">

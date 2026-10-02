@@ -287,7 +287,9 @@
                         <span>{{ __('رابط فيديو YouTube *') }}</span>
                     </label>
                     <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
-                    <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts). محمي بمشغل المنصة الآمن.') }}</small>
+                    <small class="f-hint" style="color: #b45309; font-weight: 600; display: block; margin-top: 6px;">
+                        <i class="fa-solid fa-circle-info"></i> {{ __('تنبيه: روابط YouTube تعمل كبث مباشر وتتطلب إنترنت للمشاهدة. إذا أردت أن يحمل طلابك الدرس ويشاهدوها بدون نت في أي وقت، اختر خيار "رفع ملف MP4 (أوفلاين ⚡)".') }}
+                    </small>
                 </div>
 
                 <!-- معاينة فورية للفيديو -->
