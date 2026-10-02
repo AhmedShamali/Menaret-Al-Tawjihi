@@ -142,9 +142,25 @@
                                 @php
                                     $rawVPath = trim($video->url_path ?? '');
                                     $isYtVid = !empty($video->youtube_id) || str_contains($rawVPath, 'youtube.com') || str_contains($rawVPath, 'youtu.be');
-                                    $directVUrl = !$isYtVid ? (\App\Support\MediaHelper::url($rawVPath) ?: route('video.stream', ['filename' => basename($rawVPath)])) : null;
+                                    $directVUrl = null;
+                                    $ytEmbed = null;
+                                    if ($isYtVid) {
+                                        $ytId = $video->youtube_id;
+                                        if (!$ytId) {
+                                            preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $rawVPath, $m);
+                                            $ytId = $m[1] ?? null;
+                                        }
+                                        $ytEmbed = $ytId ? "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1" : null;
+                                    } elseif (!empty($rawVPath)) {
+                                        if (str_starts_with($rawVPath, 'http://') || str_starts_with($rawVPath, 'https://')) {
+                                            $directVUrl = $rawVPath;
+                                        } else {
+                                            $directVUrl = route('video.stream', ['filename' => ltrim($rawVPath, '/')]);
+                                        }
+                                    }
                                 @endphp
 
+                                @if(auth('student')->check())
                                 <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
                                     <button type="button" 
                                             class="ed-btn-offline-card" 
@@ -152,19 +168,22 @@
                                             data-video-id="{{ $video->id }}"
                                             data-video-title="{{ $video->title }}"
                                             data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                            data-video-url="{{ $directVUrl ?? '' }}"
-                                            data-is-direct="{{ (!$isYtVid && $directVUrl) ? '1' : '0' }}"
-                                            onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
-                                            title="{{ __('تحميل وحفظ الدرس داخل المنصة للمشاهدة بدون إنترنت') }}">
+                                            data-video-url="{{ $directVUrl ?: (!empty($video->url_path) ? route('content.downloadVideo', $video->id) : '') }}"
+                                            data-is-direct="{{ (!$isYtVid && ($directVUrl || !empty($video->url_path))) ? '1' : '0' }}"
+                                            data-yt-embed="{{ $ytEmbed ?? '' }}"
+                                            data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
+                                            onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
+                                            title="{{ !$isYtVid ? __('تحميل وتشغيل الدرس بدون إنترنت بالكامل') : __('حفظ ملزمة وملاحظات الدرس للمراجعة بدون إنترنت') }}">
                                         <div class="ed-offline-btn-inner">
                                             <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                            <span class="offline-btn-label">{{ __('تحميل أوفلاين') }}</span>
+                                            <span class="offline-btn-label">{{ !$isYtVid ? __('تحميل وتشغيل أوفلاين (بدون نت ⚡)') : __('حفظ أوفلاين للمراجعة') }}</span>
                                         </div>
                                         <div class="ed-offline-progress-track">
                                             <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
                                         </div>
                                     </button>
                                 </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -900,6 +919,24 @@
             return false;
         }
     }, true);
+
+    @if(auth('student')->check())
+    // فحص وتفعيل الدروس المحفوظة أوفلاين في هذه الصفحة
+    function initSubjectOfflineCheck(attempt = 0) {
+        const downloader = window.StepvoroVideoDownloader || (typeof StepvoroVideoDownloader !== 'undefined' ? StepvoroVideoDownloader : null);
+        if (!downloader) {
+            if (attempt < 10) setTimeout(() => initSubjectOfflineCheck(attempt + 1), 150);
+            return;
+        }
+        document.querySelectorAll('[id^="btn_offline_"]').forEach(function(btn) {
+            var vidId = btn.dataset.videoId || btn.id.replace('btn_offline_', '');
+            if (vidId) {
+                downloader.checkAndInitLessonPlayer(vidId);
+            }
+        });
+    }
+    initSubjectOfflineCheck();
+    @endif
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection

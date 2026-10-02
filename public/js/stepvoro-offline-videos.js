@@ -351,6 +351,7 @@ const StepvoroVideoDownloader = {
                     subject: subject || 'المنهاج الوزاري',
                     url: videoUrl,
                     blob: blob,
+                    hasBlob: true,
                     sizeBytes: sizeBytes,
                     sizeFormatted: sizeFormatted,
                     savedAt: new Date().toLocaleDateString('ar-EG', {
@@ -523,7 +524,7 @@ const StepvoroVideoDownloader = {
 
         // إذا كان المشغل الأصلي iframe يوتيوب، ننشئ مشغل فيديو أصلي MP4 أوفلاين فوق الشيلد
         if (!player) {
-            const frame = document.getElementById('shield_wrap_' + id) || document.getElementById('player_frame_' + id);
+            const frame = document.getElementById('shield_wrap_' + id) || document.getElementById('player_frame_' + id) || document.getElementById('custom_wrap_' + id);
             if (frame) {
                 const ifr = frame.querySelector('iframe');
                 if (ifr) ifr.style.display = 'none';

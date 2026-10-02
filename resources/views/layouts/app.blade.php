@@ -126,7 +126,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/js/stepvoro-offline-videos.js?v=20261002-v25"></script>
+    <script src="/js/stepvoro-offline-videos.js?v=20261002-v26"></script>
     <script>
         if (window.axios) {
             window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -186,6 +186,34 @@
             --sidebar-width: 250px;
             --topbar-height: 56px;
             --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-topbar-update {
+            transition: var(--transition-smooth);
+        }
+        .btn-topbar-update:hover {
+            background-color: #f0fdf4 !important;
+            border-color: #86efac !important;
+            color: #166534 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+        }
+        .btn-topbar-update:hover i {
+            transform: rotate(60deg);
+        }
+        .btn-topbar-update i {
+            transition: transform 0.3s ease;
+        }
+
+        .topbar-offline-vault-btn {
+            transition: var(--transition-smooth);
+        }
+        .topbar-offline-vault-btn:hover {
+            background-color: #f0fdf4 !important;
+            border-color: #86efac !important;
+            color: #059669 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
         }
 
         .swal2-container {
@@ -2222,8 +2250,8 @@
                         onclick="forceUpdateApp(this)" 
                         title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
                         id="btnTopbarUpdateApp"
-                        style="background: linear-gradient(135deg, #059669 0%, #047857 100%); border: 1px solid #065f46; color: #ffffff; height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: var(--transition-smooth); box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
-                    <i class="fa-solid fa-arrows-rotate"></i>
+                        style="background: var(--ed-surface); border: 1px solid var(--ed-border); color: var(--ed-text-main); height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: var(--transition-smooth);">
+                    <i class="fa-solid fa-arrows-rotate" style="color: #059669; font-size: 0.9rem;"></i>
                     <span>{{ __('تحديث المنصة') }}</span>
                 </button>
 

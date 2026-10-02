@@ -196,6 +196,20 @@
             border-color: #cbd5e1;
         }
 
+        #btnCalcUpdateApp:hover {
+            background-color: #f0fdf4 !important;
+            border-color: #86efac !important;
+            color: #166534 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+        }
+        #btnCalcUpdateApp:hover i {
+            transform: rotate(60deg);
+        }
+        #btnCalcUpdateApp i {
+            transition: transform 0.3s ease;
+        }
+
         .nav-link-btn.primary {
             background: var(--primary);
             color: #ffffff;
@@ -719,8 +733,8 @@
                         onclick="forceUpdateApp(this)" 
                         title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
                         id="btnCalcUpdateApp"
-                        style="cursor: pointer; background: #ecfdf5; border-color: #a7f3d0; color: #047857; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-                    <i class="fa-solid fa-arrows-rotate"></i>
+                        style="cursor: pointer; background: var(--surface); border: 1px solid var(--border-color); color: var(--text-dark); font-weight: 700; display: inline-flex; align-items: center; gap: 7px; transition: var(--transition);">
+                    <i class="fa-solid fa-arrows-rotate" style="color: #059669;"></i>
                     <span>{{ __('تحديث المنصة') }}</span>
                 </button>
 

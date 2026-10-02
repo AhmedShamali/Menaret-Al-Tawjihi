@@ -5,7 +5,7 @@
  * - تنقل سلس بدون شبكة مع استرجاع واجهة الفيديوهات المحملة أوفلاين
  */
 
-const CACHE_NAME = 'step-by-step-v20261002-v25';
+const CACHE_NAME = 'step-by-step-v20261002-v26';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [

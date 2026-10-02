@@ -433,24 +433,34 @@
         }
 
         .btn-nav-app-update {
-            background: linear-gradient(135deg, #059669 0%, #047857 100%);
-            border: 1px solid #065f46;
-            color: #ffffff;
-            padding: 5px 12px;
+            background-color: #ffffff;
+            border: 1px solid var(--ed-border);
+            color: var(--ed-text-main);
+            padding: 6px 13px;
             border-radius: var(--radius-sm);
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
             transition: var(--transition);
         }
+        .btn-nav-app-update i {
+            color: #059669;
+            font-size: 13px;
+            transition: transform 0.3s ease;
+        }
         .btn-nav-app-update:hover {
-            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            background-color: #f0fdf4;
+            border-color: #86efac;
+            color: #166534;
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.35);
+            box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
+        }
+        .btn-nav-app-update:hover i {
+            transform: rotate(60deg);
         }
         .btn-nav-app-update:active {
             transform: translateY(0);
@@ -460,24 +470,37 @@
         }
 
         .btn-nav-app-install {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border: 1px solid #b45309;
-            color: #ffffff;
-            padding: 5px 12px;
+            background-color: #ffffff;
+            border: 1px solid var(--ed-border);
+            color: var(--ed-text-main);
+            padding: 6px 13px;
             border-radius: var(--radius-sm);
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 700;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             cursor: pointer;
-            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
             transition: var(--transition);
         }
+        .btn-nav-app-install i {
+            color: #0284c7;
+            font-size: 13px;
+            transition: transform 0.2s ease;
+        }
         .btn-nav-app-install:hover {
-            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            background-color: #eff6ff;
+            border-color: #93c5fd;
+            color: #1e40af;
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(217, 119, 6, 0.35);
+            box-shadow: 0 3px 8px rgba(2, 132, 199, 0.12);
+        }
+        .btn-nav-app-install:hover i {
+            transform: scale(1.1);
+        }
+        .btn-nav-app-install:active {
+            transform: translateY(0);
         }
 
         .mobile-menu-btn {

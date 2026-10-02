@@ -658,23 +658,57 @@ function updateNetworkIndicator() {
     }
 }
 
-function loadOfflineVideos() {
-    if (typeof StepvoroOfflineDB === 'undefined') {
-        setTimeout(loadOfflineVideos, 300);
+function loadOfflineVideos(retryCount = 0) {
+    const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
+    if (!db) {
+        if (retryCount < 8) {
+            setTimeout(() => loadOfflineVideos(retryCount + 1), 150);
+            return;
+        }
+        readOfflineGridDirectly();
         return;
     }
 
-    StepvoroOfflineDB.getAllVideos().then(function(videos) {
+    db.getAllVideos().then(function(videos) {
         cachedOfflineVideos = videos || [];
         renderOfflineVideosList(cachedOfflineVideos);
         updateStorageSummary();
     }).catch(function(err) {
         console.error('Error fetching offline videos:', err);
-        const grid = document.getElementById('offlineVideosGrid');
-        if (grid) {
-            grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 30px;">فشل الوصول إلى ذاكرة التخزين المحلية.</div>';
-        }
+        readOfflineGridDirectly();
     });
+}
+
+function readOfflineGridDirectly() {
+    if (!('indexedDB' in window)) {
+        renderOfflineVideosList([]);
+        return;
+    }
+    try {
+        const req = indexedDB.open('StepvoroOfflineStore', 2);
+        req.onsuccess = function(e) {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains('offline_videos')) {
+                renderOfflineVideosList([]);
+                return;
+            }
+            const tx = db.transaction(['offline_videos'], 'readonly');
+            const store = tx.objectStore('offline_videos');
+            const getReq = store.getAll();
+            getReq.onsuccess = function() {
+                cachedOfflineVideos = getReq.result || [];
+                renderOfflineVideosList(cachedOfflineVideos);
+            };
+            getReq.onerror = function() {
+                renderOfflineVideosList([]);
+            };
+        };
+        req.onerror = function() {
+            renderOfflineVideosList([]);
+        };
+    } catch(e) {
+        renderOfflineVideosList([]);
+    }
 }
 
 function renderOfflineVideosList(videos) {
@@ -700,6 +734,8 @@ function renderOfflineVideosList(videos) {
 
     let html = '';
     videos.forEach(function(v) {
+        const hasBlob = !!v.hasBlob || !!v.blob;
+        const hasPdf = !!v.hasPdf || !!v.pdfBlob;
         html += `
         <article class="offline-video-card" id="offline_card_${v.id}">
             <div>
@@ -719,10 +755,10 @@ function renderOfflineVideosList(videos) {
 
             <div class="card-actions-row">
                 <button type="button" class="btn-play-offline" onclick="playOfflineVideo('${v.id}')">
-                    <i class="fa-solid ${v.hasBlob ? 'fa-play' : 'fa-book-open-reader'}"></i>
-                    <span>${v.hasBlob ? 'تشغيل أوفلاين' : 'فتح الدرس'}</span>
+                    <i class="fa-solid ${hasBlob ? 'fa-play' : 'fa-book-open-reader'}"></i>
+                    <span>${hasBlob ? 'تشغيل أوفلاين' : 'فتح الدرس'}</span>
                 </button>
-                ${v.hasPdf ? `
+                ${hasPdf ? `
                 <button type="button" class="btn-play-offline" style="background: #dc2626;" onclick="openOfflinePdf('${v.id}')" title="فتح ملزمة الدرس المحفوظة">
                     <i class="fa-solid fa-file-pdf"></i>
                     <span>الملزمة</span>

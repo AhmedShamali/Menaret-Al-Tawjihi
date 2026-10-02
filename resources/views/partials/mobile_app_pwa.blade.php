@@ -1015,7 +1015,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
 </style>
 
 <!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
-<script src="/js/stepvoro-offline-videos.js?v=20261002-v25"></script>
+<script src="/js/stepvoro-offline-videos.js?v=20261002-v26"></script>
 
 <script>
     // =========================================================================
@@ -1284,8 +1284,8 @@ body[class*="exam"] .stepvoro-bottom-nav,
 
             let html = '';
             videos.forEach((v) => {
-                const hasBlob = !!v.hasBlob;
-                const hasPdf = !!v.hasPdf;
+                const hasBlob = !!v.hasBlob || !!v.blob;
+                const hasPdf = !!v.hasPdf || !!v.pdfBlob;
                 html += `
                     <div class="offline-lesson-card" id="vault_card_${v.id}">
                         <div class="offline-card-info">
@@ -1370,6 +1370,8 @@ body[class*="exam"] .stepvoro-bottom-nav,
                     }
                     let html = '';
                     videos.forEach((v) => {
+                        const hasBlob = !!v.hasBlob || !!v.blob;
+                        const hasPdf = !!v.hasPdf || !!v.pdfBlob;
                         html += `
                             <div class="offline-lesson-card" id="vault_card_${v.id}">
                                 <div class="offline-card-info">
@@ -1399,9 +1401,15 @@ body[class*="exam"] .stepvoro-bottom-nav,
         }
     }
 
-    function playOfflineVaultVideo(id) {
+    function playOfflineVaultVideo(id, retryCount = 0) {
         const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
-        if (!db) return;
+        if (!db) {
+            if (retryCount < 6) {
+                setTimeout(() => playOfflineVaultVideo(id, retryCount + 1), 120);
+                return;
+            }
+            return;
+        }
 
         db.getVideo(id).then((record) => {
             if (!record) {
