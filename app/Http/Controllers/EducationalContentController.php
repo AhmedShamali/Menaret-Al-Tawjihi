@@ -11,16 +11,65 @@ use Illuminate\Support\Str;
 
 class EducationalContentController extends Controller
 {
+    /**
+     * استخراج كافة معرفات المواد المسندة للمعلم بدقة من كافة العلاقات المعتمدة
+     */
+    protected function getTeacherSubjectIds($user = null): array
+    {
+        $user = $user ?? auth()->user();
+        if (!$user) {
+            return [];
+        }
+        if ($user->role === 'admin') {
+            return Subject::pluck('id')->toArray();
+        }
+        $ids = [];
+        if (!empty($user->subject_id)) {
+            $ids[] = (int) $user->subject_id;
+        }
+        $fromUser = Subject::where('user_id', $user->id)->pluck('id')->toArray();
+        $fromTeacher = Subject::where('teacher_id', $user->id)->pluck('id')->toArray();
+        return array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
+    }
+
     public function index()
     {
-        $contents = EducationalContent::with('subject.stage')->latest()->get();
+        $user = auth()->user();
+        $query = EducationalContent::with('subject.stage')->latest();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (empty($teacherSubjectIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                $query->whereIn('subject_id', $teacherSubjectIds);
+            }
+        }
+        $contents = $query->get();
         return view('educational_contents.index', compact('contents'));
     }
 
     public function create($subject_id = null)
     {
-        $mySubject = $subject_id ? Subject::find($subject_id) : (auth()->user()->subject ?? null);
-        $stages = Stage::with('subjects')->get();
+        $user = auth()->user();
+        $isTeacher = ($user && $user->role === 'teacher');
+        $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
+
+        if ($isTeacher) {
+            if ($subject_id && !in_array((int)$subject_id, $teacherSubjectIds)) {
+                $subject_id = $teacherSubjectIds[0] ?? null;
+            } elseif (!$subject_id && !empty($teacherSubjectIds)) {
+                $subject_id = $teacherSubjectIds[0];
+            }
+            $mySubject = $subject_id ? Subject::find($subject_id) : null;
+            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            }])->get();
+        } else {
+            $mySubject = $subject_id ? Subject::find($subject_id) : ($user->subject ?? null);
+            $stages = Stage::with('subjects')->get();
+        }
 
         return view('educational_contents.create', compact('mySubject', 'stages'));
     }
@@ -174,6 +223,17 @@ class EducationalContentController extends Controller
             ], 400);
         }
 
+        $user = auth()->user();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!in_array((int)$request->subject_id, $teacherSubjectIds)) {
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'غير مصرح لك بنشر محتوى لهذه المادة الدراسية.'
+                ], 403);
+            }
+        }
+
         $content = new EducationalContent();
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
@@ -317,7 +377,20 @@ class EducationalContentController extends Controller
     public function edit($id)
     {
         $content = EducationalContent::findOrFail($id);
-        $stages = Stage::with('subjects')->get();
+        $user = auth()->user();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!in_array((int)$content->subject_id, $teacherSubjectIds)) {
+                abort(403, 'غير مصرح لك بتعديل هذا المحتوى');
+            }
+            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            }])->get();
+        } else {
+            $stages = Stage::with('subjects')->get();
+        }
         return view('educational_contents.edit', compact('content', 'stages'));
     }
 
@@ -350,6 +423,16 @@ class EducationalContentController extends Controller
         }
 
         $content = EducationalContent::findOrFail($id);
+        $user = auth()->user();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!in_array((int)$content->subject_id, $teacherSubjectIds) || !in_array((int)$request->subject_id, $teacherSubjectIds)) {
+                return response()->json([
+                    'icon'  => 'error',
+                    'title' => 'غير مصرح لك بتعديل هذا المحتوى أو نقله لمادة أخرى.'
+                ], 403);
+            }
+        }
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
         $content->type         = $request->type ?? $content->type;
@@ -448,8 +531,9 @@ class EducationalContentController extends Controller
 
         if ($content) {
             $user = auth()->user();
-            if ($user && $user->role !== 'admin' && !empty($user->subject_id)) {
-                if ((int)$content->subject_id !== (int)$user->subject_id) {
+            if ($user && $user->role === 'teacher') {
+                $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+                if (!in_array((int)$content->subject_id, $teacherSubjectIds)) {
                     return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
                 }
             }
@@ -646,8 +730,16 @@ class EducationalContentController extends Controller
     public function teacherVideos(Request $request)
     {
         $user = auth()->user();
-        $subjectId = $user->subject_id;
-        $subjects = Subject::orderBy('name_ar')->get();
+        $isTeacher = ($user && $user->role === 'teacher');
+        $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
+
+        if ($isTeacher) {
+            $subjects = !empty($teacherSubjectIds)
+                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                : collect();
+        } else {
+            $subjects = Subject::orderBy('name_ar')->get();
+        }
 
         $query = EducationalContent::with('subject.stage')
             ->where(function($q) {
@@ -655,8 +747,16 @@ class EducationalContentController extends Controller
                   ->orWhereIn('type', ['video', 'both']);
             });
 
-        if ($user->role === 'teacher' && $subjectId) {
-            $query->where('subject_id', $subjectId);
+        if ($isTeacher) {
+            if (empty($teacherSubjectIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
+                    $query->where('subject_id', (int)$request->subject_id);
+                } else {
+                    $query->whereIn('subject_id', $teacherSubjectIds);
+                }
+            }
         } elseif ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
         }
@@ -668,6 +768,7 @@ class EducationalContentController extends Controller
         ];
 
         $videos = $query->orderBy('order')->latest()->paginate(20);
+        $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats'));
     }
@@ -678,8 +779,16 @@ class EducationalContentController extends Controller
     public function teacherFiles(Request $request)
     {
         $user = auth()->user();
-        $subjectId = $user->subject_id;
-        $subjects = Subject::orderBy('name_ar')->get();
+        $isTeacher = ($user && $user->role === 'teacher');
+        $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
+
+        if ($isTeacher) {
+            $subjects = !empty($teacherSubjectIds)
+                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                : collect();
+        } else {
+            $subjects = Subject::orderBy('name_ar')->get();
+        }
 
         $query = EducationalContent::with('subject.stage')
             ->where(function($q) {
@@ -687,8 +796,16 @@ class EducationalContentController extends Controller
                   ->orWhereIn('type', ['file', 'pdf', 'both']);
             });
 
-        if ($user->role === 'teacher' && $subjectId) {
-            $query->where('subject_id', $subjectId);
+        if ($isTeacher) {
+            if (empty($teacherSubjectIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
+                    $query->where('subject_id', (int)$request->subject_id);
+                } else {
+                    $query->whereIn('subject_id', $teacherSubjectIds);
+                }
+            }
         } elseif ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
         }
@@ -700,6 +817,7 @@ class EducationalContentController extends Controller
         ];
 
         $files = $query->orderBy('order')->latest()->paginate(20);
+        $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.files.index', compact('files', 'subjects', 'subjectId', 'stats'));
     }
@@ -710,18 +828,35 @@ class EducationalContentController extends Controller
     public function teacherVisibility(Request $request)
     {
         $user = auth()->user();
-        $subjectId = $user->subject_id;
-        $subjects = Subject::orderBy('name_ar')->get();
+        $isTeacher = ($user && $user->role === 'teacher');
+        $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
+
+        if ($isTeacher) {
+            $subjects = !empty($teacherSubjectIds)
+                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                : collect();
+        } else {
+            $subjects = Subject::orderBy('name_ar')->get();
+        }
 
         $query = EducationalContent::with('subject.stage');
 
-        if ($user->role === 'teacher' && $subjectId) {
-            $query->where('subject_id', $subjectId);
+        if ($isTeacher) {
+            if (empty($teacherSubjectIds)) {
+                $query->whereRaw('1 = 0');
+            } else {
+                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
+                    $query->where('subject_id', (int)$request->subject_id);
+                } else {
+                    $query->whereIn('subject_id', $teacherSubjectIds);
+                }
+            }
         } elseif ($request->filled('subject_id')) {
             $query->where('subject_id', $request->subject_id);
         }
 
         $contents = $query->orderBy('order')->latest()->paginate(25);
+        $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.visibility.index', compact('contents', 'subjects', 'subjectId'));
     }
@@ -733,8 +868,11 @@ class EducationalContentController extends Controller
     {
         $content = EducationalContent::findOrFail($id);
         $user = auth()->user();
-        if ($user->role === 'teacher' && $user->subject_id && $content->subject_id != $user->subject_id) {
-            return response()->json(['success' => false, 'error' => 'غير مصرح لك بتعديل هذا المحتوى'], 403);
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!in_array((int)$content->subject_id, $teacherSubjectIds)) {
+                return response()->json(['success' => false, 'error' => 'غير مصرح لك بتعديل هذا المحتوى'], 403);
+            }
         }
 
         $newVisible = $content->is_visible ? 0 : 1;

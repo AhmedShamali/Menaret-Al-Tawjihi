@@ -32,7 +32,7 @@ class StudentAccessController extends Controller
             })
             ->get();
 
-        if ($subjects->isEmpty()) {
+        if ($subjects->isEmpty() && $teacher->role === 'admin') {
             $subjects = Subject::all();
         }
 
@@ -40,7 +40,7 @@ class StudentAccessController extends Controller
         $selectedSubject = $subjects->firstWhere('id', $selectedSubjectId) ?? $subjects->first();
 
         // جلب الاشتراكات الحالية في هذه المادة
-        $enrollments = collect();
+        $enrollments = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 20);
         $contents = collect();
         $exams = collect();
 

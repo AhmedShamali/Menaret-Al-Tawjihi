@@ -69,10 +69,10 @@
             <div class="table-header-row">
                 <div>
                     <h3 style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 4px;">
-                        {{ __('الطلاب المشتركون في') }} ({{ (app()->getLocale() === 'en' && !empty($selectedSubject->name_en)) ? $selectedSubject->name_en : __($selectedSubject->name_ar ?? $selectedSubject->name ?? 'المادة') }})
+                        {{ __('الطلاب المشتركون في') }} ({{ (app()->getLocale() === 'en' && !empty($selectedSubject?->name_en)) ? $selectedSubject->name_en : __($selectedSubject?->name_ar ?? $selectedSubject?->name ?? 'المادة') }})
                     </h3>
                     <p style="font-size: 0.82rem; color: #64748b; margin: 0;">
-                        {{ __('إجمالي الطلاب:') }} <strong>{{ $enrollments->total() }}</strong> • {{ __('إجمالي الدروس:') }} <strong>{{ $totalContentsCount }}</strong> • {{ __('إجمالي الاختبارات:') }} <strong>{{ $totalExamsCount }}</strong>
+                        {{ __('إجمالي الطلاب:') }} <strong>{{ method_exists($enrollments, 'total') ? $enrollments->total() : $enrollments->count() }}</strong> • {{ __('إجمالي الدروس:') }} <strong>{{ $totalContentsCount }}</strong> • {{ __('إجمالي الاختبارات:') }} <strong>{{ $totalExamsCount }}</strong>
                     </p>
                 </div>
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -160,7 +160,7 @@
                 </table>
             </div>
 
-            @if($enrollments->hasPages())
+            @if(method_exists($enrollments, 'hasPages') && $enrollments->hasPages())
                 <div class="table-pagination-footer">
                     {{ $enrollments->links() }}
                 </div>
@@ -304,8 +304,8 @@
         <div class="modal-card-body" style="padding: 20px 24px;">
             <div style="margin-bottom: 15px;">
                 <label class="select-label">{{ __('المادة المراد تفعيلها:') }}</label>
-                <input type="text" value="{{ (app()->getLocale() === 'en' && !empty($selectedSubject->name_en)) ? $selectedSubject->name_en : __($selectedSubject->name_ar ?? $selectedSubject->name) }}" class="form-select-modern" disabled>
-                <input type="hidden" id="quickSubjectId" value="{{ $selectedSubject->id }}">
+                <input type="text" value="{{ (app()->getLocale() === 'en' && !empty($selectedSubject?->name_en)) ? $selectedSubject->name_en : __($selectedSubject?->name_ar ?? $selectedSubject?->name ?? __('لا توجد مادة محددة')) }}" class="form-select-modern" disabled>
+                <input type="hidden" id="quickSubjectId" value="{{ $selectedSubject?->id ?? '' }}">
             </div>
             <div style="margin-bottom: 15px;">
                 <label class="select-label">{{ __('رقم الهوية الفلسطينية (9 أرقام) أو البريد الإلكتروني أو الهاتف:') }}</label>

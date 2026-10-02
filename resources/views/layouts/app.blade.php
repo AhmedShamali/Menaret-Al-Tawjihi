@@ -12,15 +12,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Step by Step">
     <link rel="apple-touch-icon" href="/icons/icon-192.png?v=20261001">
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-192.png?v=20261001">
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261001">
-    <link rel="apple-touch-icon" sizes="167x167" href="/icons/icon-192.png?v=20261001">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/step-by-step-icon-192.png?v=20261002-v15">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261002-v15">
+    <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v15">
 
     @if(\App\Models\Setting::get('site_favicon'))
-        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261001">
+        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v15">
     @else
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261001">
-        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261001">
+        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v15">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v15">
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
 
@@ -29,7 +29,7 @@
         $siteDesc = \App\Models\Setting::get('seo_description', 'Step by Step - المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) في فلسطين: شروحات المنهاج الوزاري، حاسبة معدل التوجيهي الدقيقة، بنك الامتحانات الوزارية، دوسيات وملخصات وبطاقات استذكار ذكية لجميع الفروع بإشراف م.أحمد شمالي.');
         $siteKeywords = \App\Models\Setting::get('seo_keywords', 'stepvoro, stepvoro.com, منصة stepvoro, ستيبفورو, منصة ستيبفورو, ستيب, منصة ستيب, منصة ستيب التعليمية, ستيب توجيهي, Step by Step, منصة تعليمية, منصات تعليمية فلسطين, موقع تعليمي, تعليمي, شروحات تعليمية, دروس تعليمية, دورات أونلاين فلسطين, توجيهي فلسطين, توجيهي 2026, توجيهي 2025, الثانوية العامة فلسطين, المنهاج الفلسطيني, وزارة التربية والتعليم فلسطين, إنجاز توجيهي, حاسبة معدل التوجيهي, حساب معدل التوجيهي فلسطين, طريقة حساب معدل التوجيهي, امتحانات توجيهي وزارية, اسئلة سنوات سابقة توجيهي, امتحانات تجريبية توجيهي فلسطين, اجابات امتحانات التوجيهي, حلول اسئلة الكتب المدرسية فلسطين, دوسيات توجيهي, ملخصات توجيهي فلسطين, مكثفات توجيهي, بطاقات استذكار توجيهي, دليل القوانين الذهبية توجيهي, توجيهي علمي, توجيهي ادبي, توجيهي صناعي, توجيهي تجاري ريادة وأعمال, توجيهي شرعي, رياضيات توجيهي علمي, فيزياء توجيهي فلسطين, كيمياء توجيهي, احياء توجيهي, عربي توجيهي, لغة انجليزية توجيهي, تاريخ توجيهي, جغرافيا توجيهي, تكنولوجيا توجيهي, منصة ابواب, جو اكاديمي, منصة الاوائل فلسطين, روافد التعليمية, منصة درسك, اساس التعليمية, م. أحمد شمالي');
         $canonicalUrl = url()->current();
-        $siteLogo = (\App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png')) . '?v=20261001';
+        $siteLogo = (\App\Models\Setting::get('site_logo') ? asset(\App\Models\Setting::get('site_logo')) : asset('images/logo.png')) . '?v=20261002-v15';
         $googleVerify = \App\Models\Setting::get('google_site_verification');
         $gaId = \App\Models\Setting::get('google_analytics_id');
     @endphp

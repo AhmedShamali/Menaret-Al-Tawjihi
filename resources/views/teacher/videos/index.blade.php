@@ -66,7 +66,7 @@
     </div>
 
     <!-- شريط التصفية حسب المادة -->
-    @if(auth()->user()->role === 'admin' || !auth()->user()->subject_id)
+    @if(auth()->user()->role === 'admin' || count($subjects) > 1)
         <div class="ed-filter-bar">
             <div class="filter-label">
                 <i class="fa-solid fa-filter"></i>
@@ -74,7 +74,7 @@
             </div>
             <div class="filter-pills">
                 <a href="{{ auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos') }}" class="filter-chip {{ empty(request('subject_id')) ? 'active' : '' }}">
-                    {{ __('جميع المواد') }}
+                    {{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}
                 </a>
                 @foreach($subjects as $sub)
                     <a href="{{ (auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos')) . '?subject_id=' . $sub->id }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">

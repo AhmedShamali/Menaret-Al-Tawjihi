@@ -31,7 +31,11 @@
                 <span class="stat-label">{{ __('المساحة المستهلكة') }}</span>
                 <span class="stat-value" id="offlineStorageSize">0 MB</span>
             </div>
-            <div class="stat-actions">
+            <div class="stat-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-clear-vault" onclick="window.forceUpdateApp()" style="background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; font-weight: 800;" title="{{ __('فحص وتحديث التطبيق لأحدث نسخة فورياً') }}">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>{{ __('تحديث التطبيق 🔄') }}</span>
+                </button>
                 <button type="button" class="btn-clear-vault" onclick="confirmClearAllOfflineVideos()" id="btnClearAll" style="display: none;" title="{{ __('حذف كافة الفيديوهات لتحرير الذاكرة') }}">
                     <i class="fa-regular fa-trash-can"></i>
                     <span>{{ __('تحرير الذاكرة') }}</span>
@@ -704,7 +708,7 @@ function renderOfflineVideosList(videos) {
                         <i class="fa-solid fa-book-bookmark"></i>
                         <span>${escapeHtml(v.subject || 'المنهاج الوزاري')}</span>
                     </span>
-                    <span class="card-size-badge">${v.sizeFormatted || 'فيديو'}</span>
+                    <span class="card-size-badge" style="${v.isExternalVideo ? 'background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;' : ''}">${v.sizeFormatted || 'فيديو أوفلاين'}</span>
                 </div>
                 <h3 class="card-title" style="margin-top: 10px;">${escapeHtml(v.title || 'درس تعليمي')}</h3>
                 <div class="card-saved-time" style="margin-top: 8px;">
@@ -715,9 +719,15 @@ function renderOfflineVideosList(videos) {
 
             <div class="card-actions-row">
                 <button type="button" class="btn-play-offline" onclick="playOfflineVideo('${v.id}')">
-                    <i class="fa-solid fa-play"></i>
-                    <span>تشغيل أوفلاين</span>
+                    <i class="fa-solid ${v.hasBlob ? 'fa-play' : 'fa-book-open-reader'}"></i>
+                    <span>${v.hasBlob ? 'تشغيل أوفلاين' : 'فتح الدرس'}</span>
                 </button>
+                ${v.hasPdf ? `
+                <button type="button" class="btn-play-offline" style="background: #dc2626;" onclick="openOfflinePdf('${v.id}')" title="فتح ملزمة الدرس المحفوظة">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span>الملزمة</span>
+                </button>
+                ` : ''}
                 <button type="button" class="btn-delete-offline" onclick="confirmDeleteOfflineVideo('${v.id}')" title="حذف من الذاكرة">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
@@ -740,7 +750,7 @@ function updateStorageSummary() {
 
 function playOfflineVideo(id) {
     StepvoroOfflineDB.getVideo(id).then(function(record) {
-        if (!record || !record.blob) {
+        if (!record) {
             Swal.fire('خطأ', 'تعذر استرجاع ملف الفيديو من ذاكرة التخزين.', 'error');
             return;
         }
@@ -750,22 +760,53 @@ function playOfflineVideo(id) {
         const titleEl = document.getElementById('currentPlayingTitle');
         const subjectEl = document.getElementById('currentPlayingSubject');
 
-        if (activeVideoObjectURL) {
-            URL.revokeObjectURL(activeVideoObjectURL);
-        }
-
-        activeVideoObjectURL = URL.createObjectURL(record.blob);
-        videoEl.src = activeVideoObjectURL;
-
         if (titleEl) titleEl.innerText = record.title || 'درس تعليمي';
         if (subjectEl) subjectEl.innerText = record.subject || 'المنهاج';
 
-        section.style.display = 'block';
-        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (record.blob) {
+            if (activeVideoObjectURL) {
+                URL.revokeObjectURL(activeVideoObjectURL);
+            }
+            activeVideoObjectURL = URL.createObjectURL(record.blob);
+            videoEl.src = activeVideoObjectURL;
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            videoEl.play().catch(function(e) {
+                console.log('Autoplay handled:', e);
+            });
+        } else if (record.pdfBlob) {
+            const pdfUrl = URL.createObjectURL(record.pdfBlob);
+            window.open(pdfUrl, '_blank');
+        } else if (record.ytEmbed && navigator.onLine) {
+            Swal.fire({
+                title: record.title,
+                html: `<div style="aspect-ratio: 16/9; width: 100%; border-radius: 12px; overflow: hidden;"><iframe src="${record.ytEmbed}" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe></div>`,
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: '800px'
+            });
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: record.title,
+                text: 'الدرس محفوظ في ذاكرة التطبيق. لتشغيل الفيديو بدون نت يرجى الاتصال بالإنترنت أولاً أو مراجعة ملزمة الدرس المرفقة.',
+                confirmButtonText: 'حسناً',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+    });
+}
 
-        videoEl.play().catch(function(e) {
-            console.log('Autoplay handled:', e);
-        });
+function openOfflinePdf(id) {
+    StepvoroOfflineDB.getVideo(id).then(function(record) {
+        if (record && record.pdfBlob) {
+            const blobUrl = URL.createObjectURL(record.pdfBlob);
+            window.open(blobUrl, '_blank');
+        } else if (record && record.pdfUrl) {
+            window.open(record.pdfUrl, '_blank');
+        } else {
+            Swal.fire('تنبيه', 'لا توجد ملزمة PDF مرفقة لهذا الدرس.', 'info');
+        }
     });
 }
 

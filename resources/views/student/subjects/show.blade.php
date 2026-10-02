@@ -1208,8 +1208,10 @@
                                                     data-video-id="{{ $video->id }}"
                                                     data-video-title="{{ $video->title }}"
                                                     data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                    data-video-url="{{ $directVideoUrl ?? '' }}"
-                                                    data-is-direct="{{ ($isDirectVideo && $directVideoUrl) ? '1' : '0' }}"
+                                                    data-video-url="{{ $directVideoUrl ?: (!empty($video->url_path) ? route('content.downloadVideo', $video->id) : '') }}"
+                                                    data-is-direct="{{ ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) ? '1' : '0' }}"
+                                                    data-yt-embed="{{ $ytEmbed ?? '' }}"
+                                                    data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
                                                     onclick="StepvoroVideoDownloader.handleAction('{{ $video->id }}', this)" 
                                                     title="{{ __('تحميل وحفظ الدرس داخل المنصة للمشاهدة بدون إنترنت') }}">
                                                 <div class="ed-offline-btn-inner">
