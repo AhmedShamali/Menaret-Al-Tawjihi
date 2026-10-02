@@ -223,13 +223,13 @@
     <div class="modal-card">
         <div class="modal-head">
             <h3>
-                <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
-                <span>{{ __('إضافة درس أو شرح فيديو جديد (YouTube)') }}</span>
+                <i class="fa-solid fa-film" style="color: #2563eb;"></i>
+                <span>{{ __('إضافة درس أو شرح مرئي جديد') }}</span>
             </h3>
             <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
         </div>
 
-        <form id="uploadVideoForm" onsubmit="submitVideoForm(event)">
+        <form id="uploadVideoForm" onsubmit="submitVideoForm(event)" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="type" value="video">
 
@@ -253,13 +253,40 @@
                     <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
                 </div>
 
+                <!-- تبديل نوع مصدر الفيديو -->
+                <div class="f-group">
+                    <label class="f-label">{{ __('طريقة تقديم الفيديو *') }}</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+                        <button type="button" id="tabSourceFile" onclick="switchVideoSourceType('file')" class="source-tab-btn" style="padding: 10px 14px; border: 2px solid #2563eb; border-radius: 10px; background: #eff6ff; color: #1e40af; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                            <span>{{ __('رفع ملف MP4 (أوفلاين ⚡)') }}</span>
+                        </button>
+                        <button type="button" id="tabSourceYoutube" onclick="switchVideoSourceType('youtube')" class="source-tab-btn" style="padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; background: #ffffff; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
+                            <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
+                            <span>{{ __('رابط YouTube (بث)') }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- حقل رفع ملف فيديو MP4 مباشر -->
+                <div class="f-group" id="groupVideoFile" style="display: block;">
+                    <label class="f-label">
+                        <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
+                        <span>{{ __('ملف الفيديو (MP4 / WebM) *') }}</span>
+                    </label>
+                    <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="f-control" style="padding: 8px;">
+                    <small class="f-hint" style="color: #166534; font-weight: 600; display: block; margin-top: 6px;">
+                        <i class="fa-solid fa-circle-check"></i> {{ __('الميزة الذهبية: يتيح هذا الخيار لطلابك تحميل الشرح وتشغيله بالكامل بدون إنترنت داخل تطبيق المنصة!') }}
+                    </small>
+                </div>
+
                 <!-- حقل رابط YouTube -->
-                <div class="f-group" id="groupVideoUrl">
+                <div class="f-group" id="groupVideoUrl" style="display: none;">
                     <label class="f-label">
                         <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
                         <span>{{ __('رابط فيديو YouTube *') }}</span>
                     </label>
-                    <input type="url" name="video_url" id="videoUrlInput" required placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
+                    <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
                     <small class="f-hint">{{ __('يدعم كافة صيغ روابط YouTube (الروابط الكاملة، الروابط المختصرة youtu.be، ومقاطع Shorts). محمي بمشغل المنصة الآمن.') }}</small>
                 </div>
 
@@ -1033,33 +1060,98 @@ function previewYoutube(url) {
     }
 }
 
+let currentVideoSourceType = 'file';
+
+function switchVideoSourceType(type) {
+    currentVideoSourceType = type;
+    const tabFile = document.getElementById('tabSourceFile');
+    const tabYt = document.getElementById('tabSourceYoutube');
+    const groupFile = document.getElementById('groupVideoFile');
+    const groupYt = document.getElementById('groupVideoUrl');
+    const ytPreview = document.getElementById('ytPreviewContainer');
+
+    if (type === 'file') {
+        if (tabFile) {
+            tabFile.style.borderColor = '#2563eb';
+            tabFile.style.background = '#eff6ff';
+            tabFile.style.color = '#1e40af';
+        }
+        if (tabYt) {
+            tabYt.style.borderColor = '#e2e8f0';
+            tabYt.style.background = '#ffffff';
+            tabYt.style.color = '#64748b';
+        }
+        if (groupFile) groupFile.style.display = 'block';
+        if (groupYt) groupYt.style.display = 'none';
+        if (ytPreview) ytPreview.style.display = 'none';
+    } else {
+        if (tabFile) {
+            tabFile.style.borderColor = '#e2e8f0';
+            tabFile.style.background = '#ffffff';
+            tabFile.style.color = '#64748b';
+        }
+        if (tabYt) {
+            tabYt.style.borderColor = '#ef4444';
+            tabYt.style.background = '#fef2f2';
+            tabYt.style.color = '#b91c1c';
+        }
+        if (groupFile) groupFile.style.display = 'none';
+        if (groupYt) groupYt.style.display = 'block';
+        const fileInput = document.getElementById('videoFileInput');
+        if (fileInput) fileInput.value = '';
+    }
+}
+
 async function submitVideoForm(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
     const originalText = btn.innerHTML;
     const form = document.getElementById('uploadVideoForm');
     const urlInput = document.getElementById('videoUrlInput');
+    const fileInput = document.getElementById('videoFileInput');
 
-    if (!urlInput.value || !parseYouTubeId(urlInput.value.trim())) {
-        Swal.fire({
-            icon: 'warning',
-            title: '{{ __("رابط غير صحيح") }}',
-            text: '{{ __("يرجى إدخال رابط فيديو YouTube صحيح (يدعم الروابط العادية ومقاطع Shorts).") }}',
-            confirmButtonText: '{{ __("حسناً") }}',
-            confirmButtonColor: '#1e3a8a'
-        });
-        return;
+    if (currentVideoSourceType === 'youtube') {
+        if (!urlInput.value || !parseYouTubeId(urlInput.value.trim())) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("رابط غير صحيح") }}',
+                text: '{{ __("يرجى إدخال رابط فيديو YouTube صحيح (يدعم الروابط العادية ومقاطع Shorts).") }}',
+                confirmButtonText: '{{ __("حسناً") }}',
+                confirmButtonColor: '#1e3a8a'
+            });
+            return;
+        }
+    } else {
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("يرجى اختيار ملف الفيديو") }}',
+                text: '{{ __("يرجى اختيار ملف الفيديو (MP4 / WebM) لرفعه، أو التبديل لخيار رابط YouTube.") }}',
+                confirmButtonText: '{{ __("حسناً") }}',
+                confirmButtonColor: '#1e3a8a'
+            });
+            return;
+        }
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ الدرس...") }}';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ ونشر الدرس...") }}';
 
     const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
     const mainFormData = new FormData(form);
 
     try {
         const res = await axios.post(storeUrl, mainFormData, {
-            headers: { 'Accept': 'application/json' }
+            headers: { 
+                'Accept': 'application/json',
+                'Content-Type': 'multipart/form-data'
+            },
+            onUploadProgress: (progressEvent) => {
+                if (progressEvent.total && currentVideoSourceType === 'file') {
+                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري رفع الفيديو...") }} (${percent}%)`;
+                }
+            }
         });
         Swal.fire({
             icon: 'success',

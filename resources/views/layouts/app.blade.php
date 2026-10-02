@@ -126,6 +126,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/stepvoro-offline-videos.js?v=20261002-v25"></script>
     <script>
         if (window.axios) {
             window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

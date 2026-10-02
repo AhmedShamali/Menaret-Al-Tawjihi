@@ -21,25 +21,33 @@ const StepvoroOfflineDB = (function () {
                 return reject(new Error('IndexedDB غير مدعوم في هذا المتصفح.'));
             }
 
-            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            try {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-            request.onupgradeneeded = function (e) {
-                const db = e.target.result;
-                if (!db.objectStoreNames.contains(STORE_NAME)) {
-                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                    store.createIndex('subject', 'subject', { unique: false });
-                    store.createIndex('savedAt', 'savedAt', { unique: false });
-                }
-            };
+                request.onupgradeneeded = function (e) {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        store.createIndex('subject', 'subject', { unique: false });
+                        store.createIndex('savedAt', 'savedAt', { unique: false });
+                    }
+                };
 
-            request.onsuccess = function (e) {
-                dbInstance = e.target.result;
-                resolve(dbInstance);
-            };
+                request.onblocked = function () {
+                    console.warn('StepvoroOfflineDB: ترقية قاعدة البيانات محجوزة بواسطة نافذة أخرى.');
+                };
 
-            request.onerror = function (e) {
-                reject(e.target.error);
-            };
+                request.onsuccess = function (e) {
+                    dbInstance = e.target.result;
+                    resolve(dbInstance);
+                };
+
+                request.onerror = function (e) {
+                    reject(e.target.error || new Error('فشل فتح قاعدة البيانات المحلية'));
+                };
+            } catch (err) {
+                reject(err);
+            }
         });
     }
 
@@ -163,6 +171,9 @@ const StepvoroOfflineDB = (function () {
     };
 })();
 
+// تصدير مباشر إلى كائن window لضمان الوصول من كافة مكونات المنصة
+window.StepvoroOfflineDB = StepvoroOfflineDB;
+
 // ============================================================================
 // مشغل التنزيل الحي وتحديث واجهة المستخدم
 // ============================================================================
@@ -244,18 +255,32 @@ const StepvoroVideoDownloader = {
         const onSaved = () => {
             self.updateButtonUI(id, 'saved', 100, btnElement);
             StepvoroOfflineDB.updateGlobalOfflineBadge();
+            const hasPdf = !!record.pdfBlob;
+
             if (typeof window.Swal !== 'undefined') {
                 window.Swal.fire({
                     icon: 'success',
-                    title: 'تم حفظ الدرس في مكتبتك الأوفلاين 📚🎉',
-                    text: 'تم حفظ هذا الدرس في واجهة الفيديوهات المحملة بالتطبيق لتتمكن من مراجعته في أي وقت بدون إنترنت.',
-                    confirmButtonText: 'فتح مكتبة الأوفلاين ⚡',
+                    title: hasPdf ? 'تم حفظ ملزمة وملاحظات الدرس أوفلاين 📚🎉' : 'تمت إضافة الدرس لمحفوظاتك 📌',
+                    html: `
+                        <div style="font-size: 0.9rem; color: #334155; line-height: 1.6; text-align: right;">
+                            <p>${hasPdf ? 'تم حفظ أوراق عمل وملزمة هذا الدرس في ذاكرة التطبيق لتتمكن من مراجعتها <strong>بدون إنترنت</strong> في أي وقت.' : 'تم حفظ بيانات وملاحظات هذا الدرس في قائمتك لتسهيل الرجوع إليه.'}</p>
+                            <div style="background: #f1f5f9; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.8rem; color: #475569;">
+                                <i class="fa-solid fa-circle-info" style="color: #0284c7;"></i>
+                                <span>ملاحظة: هذا الشرح معروض كبث YouTube مباشر ويتطلب اتصالاً بالإنترنت لمشاهدة الفيديو، في حين أن الشروحات المرفوعة بصيغة MP4 مباشرة تعمل بالكامل بدون نت.</span>
+                            </div>
+                        </div>
+                    `,
+                    confirmButtonText: 'فتح دروسي المحفوظة ⚡',
                     showCancelButton: true,
-                    cancelButtonText: 'إغلاق',
-                    confirmButtonColor: '#2563eb'
+                    cancelButtonText: 'متابعة التصفح',
+                    confirmButtonColor: '#0b3b6f'
                 }).then((res) => {
                     if (res.isConfirmed) {
-                        window.location.href = '/offline-videos';
+                        if (typeof window.openOfflineVault === 'function') {
+                            window.openOfflineVault();
+                        } else {
+                            window.location.href = '/offline-videos';
+                        }
                     }
                 });
             } else if (typeof window.showPwaToast === 'function') {
@@ -493,7 +518,28 @@ const StepvoroVideoDownloader = {
 
     // ربط الـ Blob بمشغل الفيديو حتى يشتغل أوفلاين 100%
     attachOfflineBlobToPlayer: function (id, blob) {
-        const player = document.getElementById('player_' + id) || document.getElementById('pub_vid_' + id) || document.getElementById('vid_direct_' + id);
+        id = String(id);
+        let player = document.getElementById('player_' + id) || document.getElementById('pub_vid_' + id) || document.getElementById('vid_direct_' + id);
+
+        // إذا كان المشغل الأصلي iframe يوتيوب، ننشئ مشغل فيديو أصلي MP4 أوفلاين فوق الشيلد
+        if (!player) {
+            const frame = document.getElementById('shield_wrap_' + id) || document.getElementById('player_frame_' + id);
+            if (frame) {
+                const ifr = frame.querySelector('iframe');
+                if (ifr) ifr.style.display = 'none';
+
+                const newVid = document.createElement('video');
+                newVid.id = 'player_' + id;
+                newVid.controls = true;
+                newVid.playsInline = true;
+                newVid.setAttribute('controlsList', 'nodownload noplaybackrate');
+                newVid.setAttribute('oncontextmenu', 'return false;');
+                newVid.style.cssText = 'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 40;';
+                frame.appendChild(newVid);
+                player = newVid;
+            }
+        }
+
         if (!player) return;
 
         const blobUrl = URL.createObjectURL(blob);
@@ -509,7 +555,7 @@ const StepvoroVideoDownloader = {
             badge = document.createElement('div');
             badge.id = 'offline_badge_' + id;
             badge.className = 'player-offline-badge';
-            badge.innerHTML = `<i class="fa-solid fa-bolt"></i> يعمل من ذاكرة التطبيق (بدون إنترنت)`;
+            badge.innerHTML = `<i class="fa-solid fa-bolt"></i> تشغيل أوفلاين من ذاكرة التطبيق (بدون إنترنت)`;
             if (player.parentElement) {
                 player.parentElement.appendChild(badge);
             }
@@ -533,6 +579,9 @@ const StepvoroVideoDownloader = {
         });
     }
 };
+
+// تصدير كائن مشغل التنزيل إلى نطاق window
+window.StepvoroVideoDownloader = StepvoroVideoDownloader;
 
 // الدالة العامة لتحديث التطبيق فورياً وتفريغ الكاش
 window.forceUpdateApp = async function(btn) {
@@ -615,3 +664,10 @@ window.addEventListener('DOMContentLoaded', function () {
         });
     }, 150);
 });
+
+// ضمان الإتاحة العالمية على المتصفح
+if (typeof window !== 'undefined') {
+    window.StepvoroOfflineDB = window.StepvoroOfflineDB || StepvoroOfflineDB;
+    window.StepvoroVideoDownloader = window.StepvoroVideoDownloader || StepvoroVideoDownloader;
+}
+

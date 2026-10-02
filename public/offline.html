@@ -335,7 +335,7 @@
     </div>
 
     <!-- تضمين مشغل الذاكرة المحلية -->
-    <script src="/js/stepvoro-offline-videos.js"></script>
+    <script src="/js/stepvoro-offline-videos.js?v=20261002-v25"></script>
 
     <script>
         function attemptReconnect() {
@@ -363,16 +363,20 @@
         });
 
         // فحص الدروس المحفوظة أوفلاين وعرضها
-        window.addEventListener('DOMContentLoaded', function() {
-            if (window.StepvoroOfflineDB) {
-                StepvoroOfflineDB.getAllVideos().then(function(videos) {
-                    if (videos && videos.length > 0) {
-                        const sec = document.getElementById('offlineVideosSection');
-                        const container = document.getElementById('offlineVideosContainer');
-                        const countLbl = document.getElementById('offlineCountLabel');
-                        if (sec && container) {
-                            sec.style.display = 'block';
-                            if (countLbl) countLbl.textContent = `${videos.length} دروس جاهزة`;
+        function loadOfflineHtmlLessons(attempt = 0) {
+            const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
+            if (!db) {
+                if (attempt < 10) setTimeout(() => loadOfflineHtmlLessons(attempt + 1), 150);
+                return;
+            }
+            db.getAllVideos().then(function(videos) {
+                if (videos && videos.length > 0) {
+                    const sec = document.getElementById('offlineVideosSection');
+                    const container = document.getElementById('offlineVideosContainer');
+                    const countLbl = document.getElementById('offlineCountLabel');
+                    if (sec && container) {
+                        sec.style.display = 'block';
+                        if (countLbl) countLbl.textContent = `${videos.length} دروس جاهزة`;
 
                             let html = '';
                             videos.forEach(function(v) {
@@ -392,7 +396,9 @@
                 }).catch(function(e) {
                     console.warn('Error loading offline videos:', e);
                 });
-            }
+        }
+        window.addEventListener('DOMContentLoaded', function() {
+            loadOfflineHtmlLessons();
         });
 
         function playLessonOffline(id) {

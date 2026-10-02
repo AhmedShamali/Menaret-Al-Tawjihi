@@ -37,6 +37,10 @@ class VideoController extends Controller
         $candidates = [
             Storage::disk('public')->path($filename),
             storage_path('app/public/' . $filename),
+            Storage::disk('public')->path('educational/videos/' . $filename),
+            storage_path('app/public/educational/videos/' . $filename),
+            Storage::disk('public')->path('educational/videos/' . basename($filename)),
+            storage_path('app/public/educational/videos/' . basename($filename)),
             storage_path('app/' . $filename),
             public_path('storage/' . $filename),
         ];
@@ -54,7 +58,8 @@ class VideoController extends Controller
         }
 
         if (!$resolvedPath) {
-            $cloudUrl = \App\Support\MediaHelper::url($filename);
+            $cloudUrl = \App\Support\MediaHelper::url($filename) 
+                ?: \App\Support\MediaHelper::url('educational/videos/' . basename($filename));
             if ($cloudUrl && filter_var($cloudUrl, FILTER_VALIDATE_URL)) {
                 return redirect()->away($cloudUrl, 302, [
                     'Access-Control-Allow-Origin' => '*',

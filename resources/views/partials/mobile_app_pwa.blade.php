@@ -1015,7 +1015,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
 </style>
 
 <!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
-<script src="/js/stepvoro-offline-videos.js"></script>
+<script src="/js/stepvoro-offline-videos.js?v=20261002-v25"></script>
 
 <script>
     // =========================================================================
@@ -1240,13 +1240,25 @@ body[class*="exam"] .stepvoro-bottom-nav,
         if (modal) modal.style.display = 'none';
     }
 
-    function renderOfflineVideosList() {
+    function renderOfflineVideosList(retryCount = 0) {
         const listContainer = document.getElementById('offlineVaultList');
         const summaryText = document.getElementById('offlineVaultStorageSummary');
-        if (!listContainer || !window.StepvoroOfflineDB) return;
+        if (!listContainer) return;
 
-        StepvoroOfflineDB.getAllVideos().then((videos) => {
-            updateOfflineBadgeCount(videos.length);
+        const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
+
+        if (!db) {
+            if (retryCount < 8) {
+                setTimeout(() => renderOfflineVideosList(retryCount + 1), 150);
+                return;
+            }
+            // استرداد احتياطي مباشر من IndexedDB في حال تأخر تحميل الكائن العام
+            readVaultDirectlyFromIndexedDB(listContainer, summaryText);
+            return;
+        }
+
+        db.getAllVideos().then((videos) => {
+            updateOfflineBadgeCount(videos ? videos.length : 0);
 
             if (!videos || videos.length === 0) {
                 if (summaryText) summaryText.textContent = 'لا توجد دروس محفوظة حالياً (0 MB مستخدمة)';
@@ -1257,35 +1269,47 @@ body[class*="exam"] .stepvoro-bottom-nav,
                         </div>
                         <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">لا توجد دروس محفوظة أوفلاين</h4>
                         <p style="font-size: 0.78rem; line-height: 1.6; margin: 0 auto; max-width: 320px;">
-                            يمكنك حفظ أي درس للمشاهدة بدون إنترنت بالضغط على زر <strong>"تحميل الدرس مباشرة"</strong> بجانب مشغل الفيديو أثناء تصفح المادة.
+                            يمكنك حفظ أي درس للمشاهدة بدون إنترنت بالضغط على زر <strong>"تحميل الدرس أوفلاين"</strong> بجانب مشغل الفيديو أثناء تصفح المادة.
                         </p>
                     </div>
                 `;
                 return;
             }
 
-            StepvoroOfflineDB.calculateTotalSize().then((stats) => {
+            db.calculateTotalSize().then((stats) => {
                 if (summaryText) {
                     summaryText.textContent = `${videos.length} دروس محفوظة (${stats.mb} ميجابايت من ذاكرة الهاتف)`;
                 }
-            });
+            }).catch(() => {});
 
             let html = '';
             videos.forEach((v) => {
+                const hasBlob = !!v.hasBlob;
+                const hasPdf = !!v.hasPdf;
                 html += `
                     <div class="offline-lesson-card" id="vault_card_${v.id}">
                         <div class="offline-card-info">
-                            <h4>${v.title}</h4>
+                            <h4>${escapeHtml(v.title || 'درس تعليمي')}</h4>
                             <div class="offline-card-meta">
-                                <span><i class="fa-solid fa-book-open"></i> ${v.subject}</span>
+                                <span><i class="fa-solid fa-book-open"></i> ${escapeHtml(v.subject || 'المنهاج')}</span>
                                 <span>•</span>
-                                <span><i class="fa-solid fa-hard-drive"></i> ${v.sizeFormatted || 'فيديو'}</span>
+                                <span><i class="fa-solid fa-hard-drive"></i> ${v.sizeFormatted || (hasBlob ? 'فيديو أوفلاين' : 'ملزمة')}</span>
                             </div>
                         </div>
                         <div class="offline-card-actions">
-                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
-                                <i class="fa-solid fa-play"></i> <span>تشغيل</span>
+                            ${hasBlob ? `
+                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')" title="تشغيل أوفلاين بدون إنترنت ⚡">
+                                <i class="fa-solid fa-play"></i> <span>تشغيل أوفلاين</span>
                             </button>
+                            ` : hasPdf ? `
+                            <button type="button" class="btn-vault-play" style="background: #dc2626;" onclick="playOfflineVaultVideo('${v.id}')" title="فتح ملزمة الدرس المحفوظة بدون إنترنت">
+                                <i class="fa-solid fa-file-pdf"></i> <span>الملزمة</span>
+                            </button>
+                            ` : `
+                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
+                                <i class="fa-solid fa-book-open-reader"></i> <span>عرض الدرس</span>
+                            </button>
+                            `}
                             <button type="button" class="btn-vault-delete" onclick="deleteFromVault('${v.id}')" title="حذف لتحرير المساحة">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
@@ -1296,28 +1320,136 @@ body[class*="exam"] .stepvoro-bottom-nav,
             listContainer.innerHTML = html;
         }).catch((err) => {
             console.error('Failed to load offline videos list:', err);
-            listContainer.innerHTML = `<p style="color: #ef4444; font-size: 0.82rem; text-align: center;">تعذر فتح الذاكرة المحلية: ${err.message}</p>`;
+            if (summaryText) summaryText.textContent = 'تعذر فتح الذاكرة المحلية';
+            listContainer.innerHTML = `
+                <div style="text-align: center; padding: 24px 16px; color: #ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; margin-bottom: 8px;"></i>
+                    <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;">تعذر فتح الذاكرة المحلية للتطبيق</p>
+                    <button type="button" onclick="renderOfflineVideosList()" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
+                        <i class="fa-solid fa-rotate"></i> <span>إعادة المحاولة</span>
+                    </button>
+                </div>
+            `;
         });
     }
 
+    function readVaultDirectlyFromIndexedDB(listContainer, summaryText) {
+        if (!('indexedDB' in window)) {
+            if (summaryText) summaryText.textContent = 'الذاكرة المحلية غير مدعومة';
+            listContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 24px;">الذاكرة المحلية غير مدعومة في هذا المتصفح.</p>';
+            return;
+        }
+
+        try {
+            const req = indexedDB.open('StepvoroOfflineStore', 2);
+            req.onsuccess = function(e) {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('offline_videos')) {
+                    if (summaryText) summaryText.textContent = 'لا توجد دروس محفوظة حالياً (0 MB)';
+                    listContainer.innerHTML = `
+                        <div style="text-align: center; padding: 36px 16px; color: #64748b;">
+                            <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">لا توجد دروس محفوظة أوفلاين</h4>
+                        </div>
+                    `;
+                    return;
+                }
+                const tx = db.transaction(['offline_videos'], 'readonly');
+                const store = tx.objectStore('offline_videos');
+                const getReq = store.getAll();
+                getReq.onsuccess = function() {
+                    const videos = getReq.result || [];
+                    updateOfflineBadgeCount(videos.length);
+                    if (summaryText) summaryText.textContent = `${videos.length} دروس محفوظة`;
+                    if (videos.length === 0) {
+                        listContainer.innerHTML = `
+                            <div style="text-align: center; padding: 36px 16px; color: #64748b;">
+                                <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">لا توجد دروس محفوظة أوفلاين</h4>
+                            </div>
+                        `;
+                        return;
+                    }
+                    let html = '';
+                    videos.forEach((v) => {
+                        html += `
+                            <div class="offline-lesson-card" id="vault_card_${v.id}">
+                                <div class="offline-card-info">
+                                    <h4>${escapeHtml(v.title || 'درس تعليمي')}</h4>
+                                    <div class="offline-card-meta">
+                                        <span><i class="fa-solid fa-book-open"></i> ${escapeHtml(v.subject || 'المنهاج')}</span>
+                                    </div>
+                                </div>
+                                <div class="offline-card-actions">
+                                    <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
+                                        <i class="fa-solid fa-play"></i> <span>تشغيل أوفلاين</span>
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listContainer.innerHTML = html;
+                };
+            };
+            req.onerror = function() {
+                if (summaryText) summaryText.textContent = 'تعذر فتح الذاكرة المحلية';
+                listContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">تعذر فتح الذاكرة المحلية للتطبيق.</p>';
+            };
+        } catch (e) {
+            if (summaryText) summaryText.textContent = 'تعذر الوصول للذاكرة';
+            listContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">تعذر الوصول للذاكرة المحلية.</p>';
+        }
+    }
+
     function playOfflineVaultVideo(id) {
-        if (!window.StepvoroOfflineDB) return;
-        StepvoroOfflineDB.getVideo(id).then((record) => {
-            if (!record || !record.blob) {
-                showPwaToast('ملف الفيديو غير متوفر في الذاكرة المحلية.', 'error');
+        const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
+        if (!db) return;
+
+        db.getVideo(id).then((record) => {
+            if (!record) {
+                if (typeof showPwaToast === 'function') {
+                    showPwaToast('تعذر العثور على الدرس في الذاكرة المحلية.', 'error');
+                }
                 return;
             }
 
-            const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
-            const playerVideo = document.getElementById('offlineVaultVideoPlayer');
-            const playerTitle = document.getElementById('offlinePlayerTitle');
+            if (record.blob) {
+                const playerModal = document.getElementById('stepvoroOfflinePlayerModal');
+                const playerVideo = document.getElementById('offlineVaultVideoPlayer');
+                const playerTitle = document.getElementById('offlinePlayerTitle');
 
-            if (playerVideo && playerModal) {
-                playerVideo.src = URL.createObjectURL(record.blob);
-                if (playerTitle) playerTitle.textContent = record.title || 'مشاهدة الدرس بدون إنترنت';
-                playerModal.style.display = 'flex';
-                playerVideo.play().catch(() => {});
+                if (playerVideo && playerModal) {
+                    playerVideo.src = URL.createObjectURL(record.blob);
+                    if (playerTitle) playerTitle.textContent = record.title || 'مشاهدة الدرس بدون إنترنت';
+                    playerModal.style.display = 'flex';
+                    playerVideo.play().catch(() => {});
+                }
+            } else if (record.pdfBlob) {
+                const pdfUrl = URL.createObjectURL(record.pdfBlob);
+                window.open(pdfUrl, '_blank');
+            } else if (record.ytEmbed && navigator.onLine) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: record.title,
+                        html: `<div style="aspect-ratio: 16/9; width: 100%; border-radius: 12px; overflow: hidden;"><iframe src="${record.ytEmbed}" style="width: 100%; height: 100%; border: none;" allowfullscreen></iframe></div>`,
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        width: '800px'
+                    });
+                }
+            } else {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'info',
+                        title: record.title || 'درس تعليمي',
+                        text: 'هذا الشرح معروض كبث يوتيوب مباشر ويتطلب اتصالاً بالإنترنت للمشاهدة، في حين أن الدروس المرفوعة بصيغة MP4 مباشرة تعمل بالكامل بدون إنترنت.',
+                        confirmButtonText: 'حسناً',
+                        confirmButtonColor: '#0b3b6f'
+                    });
+                } else if (typeof showPwaToast === 'function') {
+                    showPwaToast('يتطلب هذا الدرس اتصالاً بالإنترنت لبث الفيديو.', 'info');
+                }
             }
+        }).catch((err) => {
+            console.error('Error fetching video for playback:', err);
         });
     }
 
