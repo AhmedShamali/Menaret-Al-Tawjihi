@@ -5,11 +5,18 @@
  * ============================================================================
  */
 
-const StepvoroOfflineDB = (function () {
-    const DB_NAME = 'StepvoroOfflineStore';
-    const DB_VERSION = 2;
-    const STORE_NAME = 'offline_videos';
-    let dbInstance = null;
+(function () {
+    'use strict';
+
+    if (window.StepvoroOfflineDB && window.StepvoroVideoDownloader) {
+        return;
+    }
+
+    const StepvoroOfflineDB = (function () {
+        const DB_NAME = 'StepvoroOfflineStore';
+        const DB_VERSION = 2;
+        const STORE_NAME = 'offline_videos';
+        let dbInstance = null;
 
     // تهيئة قاعدة بيانات الذاكرة المحلية (IndexedDB)
     function openDB() {
@@ -27,7 +34,7 @@ const StepvoroOfflineDB = (function () {
                     isSettled = true;
                     reject(new Error('IndexedDB timeout'));
                 }
-            }, 500);
+            }, 4000);
 
             try {
                 const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -648,4 +655,5 @@ if (typeof window !== 'undefined') {
     window.StepvoroOfflineDB = window.StepvoroOfflineDB || StepvoroOfflineDB;
     window.StepvoroVideoDownloader = window.StepvoroVideoDownloader || StepvoroVideoDownloader;
 }
+})();
 

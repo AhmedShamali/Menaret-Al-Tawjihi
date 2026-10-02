@@ -218,7 +218,7 @@
 </div>
 
 <!-- 5. مشغل الفيديو المنبثق للدروس المحفوظة أوفلاين -->
-<div class="stepvoro-ios-modal-overlay" id="stepvoroOfflinePlayerModal" onclick="closeOfflinePlayer(event)" style="display: none;">
+<div class="stepvoro-ios-modal-overlay" id="stepvoroOfflinePlayerModal" onclick="closeOfflinePlayer(event)" style="display: none; z-index: 10001; align-items: center;">
     <div class="stepvoro-offline-player-card" onclick="event.stopPropagation()">
         <div class="offline-player-header">
             <h4 id="offlinePlayerTitle">{{ __('مشاهدة الدرس') }}</h4>
@@ -644,23 +644,28 @@
 }
 
 .btn-vault-play {
-    background: #10b981;
+    background: #1d4ed8;
     color: #ffffff;
     border: none;
-    padding: 7px 12px;
+    padding: 7px 14px;
     border-radius: 10px;
     font-size: 0.78rem;
-    font-weight: 800;
+    font-weight: 700;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-vault-play:hover {
+    background: #1e40af;
 }
 
 .btn-vault-delete {
     background: #fee2e2;
-    color: #ef4444;
-    border: none;
+    color: #dc2626;
+    border: 1px solid #fecaca;
     width: 32px;
     height: 32px;
     border-radius: 10px;
@@ -669,6 +674,11 @@
     justify-content: center;
     cursor: pointer;
     font-size: 0.82rem;
+    transition: all 0.2s ease;
+}
+
+.btn-vault-delete:hover {
+    background: #fca5a5;
 }
 
 /* مشغل الفيديو المنبثق */
@@ -1020,9 +1030,21 @@ body[class*="exam"] .stepvoro-bottom-nav,
 </style>
 
 <!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
-<script src="/js/stepvoro-offline-videos.js?v=20261002-v26"></script>
+<script src="/js/stepvoro-offline-videos.js?v=20261002-v31"></script>
 
 <script>
+    // دالة ترميز النصوص بأمان لمنع أي أخطاء برمجية
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+    window.escapeHtml = escapeHtml;
+
     // =========================================================================
     // محرك تطبيق Stepvoro PWA للتحكم بالتثبيت والخدمة السحابية
     // =========================================================================
@@ -1245,24 +1267,8 @@ body[class*="exam"] .stepvoro-bottom-nav,
         if (modal) modal.style.display = 'none';
     }
 
-    function renderOfflineVideosList(retryCount = 0) {
-        const listContainer = document.getElementById('offlineVaultList');
-        const summaryText = document.getElementById('offlineVaultStorageSummary');
-        if (!listContainer) return;
-
-        const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
-
-        if (!db) {
-            if (retryCount < 8) {
-                setTimeout(() => renderOfflineVideosList(retryCount + 1), 150);
-                return;
-            }
-            // استرداد احتياطي مباشر من IndexedDB في حال تأخر تحميل الكائن العام
-            readVaultDirectlyFromIndexedDB(listContainer, summaryText);
-            return;
-        }
-
-        db.getAllVideos().then((videos) => {
+    function renderVaultCards(videos, listContainer, summaryText) {
+        try {
             updateOfflineBadgeCount(videos ? videos.length : 0);
 
             if (!videos || videos.length === 0) {
@@ -1281,41 +1287,49 @@ body[class*="exam"] .stepvoro-bottom-nav,
                 return;
             }
 
-            db.calculateTotalSize().then((stats) => {
-                if (summaryText) {
-                    summaryText.textContent = `${videos.length} دروس محفوظة (${stats.mb} ميجابايت من ذاكرة الهاتف)`;
-                }
-            }).catch(() => {});
+            if (summaryText) {
+                summaryText.textContent = `${videos.length} دروس محفوظة في ذاكرة الهاتف`;
+            }
+
+            const safeEscape = (typeof escapeHtml === 'function') 
+                ? escapeHtml 
+                : (str) => String(str || '').replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
 
             let html = '';
             videos.forEach((v) => {
+                if (!v) return;
+                const vid = String(v.id || '').replace(/'/g, "\\'");
+                const title = safeEscape(v.title || 'درس تعليمي');
+                const subject = safeEscape(v.subject || 'المنهاج الوزاري');
                 const hasBlob = !!v.hasBlob || !!v.blob;
                 const hasPdf = !!v.hasPdf || !!v.pdfBlob;
+                const sizeLabel = safeEscape(v.sizeFormatted || (hasBlob ? 'فيديو أوفلاين' : 'ملزمة'));
+
                 html += `
-                    <div class="offline-lesson-card" id="vault_card_${v.id}">
+                    <div class="offline-lesson-card" id="vault_card_${vid}">
                         <div class="offline-card-info">
-                            <h4>${escapeHtml(v.title || 'درس تعليمي')}</h4>
+                            <h4>${title}</h4>
                             <div class="offline-card-meta">
-                                <span><i class="fa-solid fa-book-open"></i> ${escapeHtml(v.subject || 'المنهاج')}</span>
+                                <span><i class="fa-solid fa-book-open"></i> ${subject}</span>
                                 <span>•</span>
-                                <span><i class="fa-solid fa-hard-drive"></i> ${v.sizeFormatted || (hasBlob ? 'فيديو أوفلاين' : 'ملزمة')}</span>
+                                <span><i class="fa-solid fa-hard-drive"></i> ${sizeLabel}</span>
                             </div>
                         </div>
                         <div class="offline-card-actions">
                             ${hasBlob ? `
-                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')" title="تشغيل أوفلاين بدون إنترنت ⚡">
+                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${vid}')" title="تشغيل أوفلاين بدون إنترنت ⚡">
                                 <i class="fa-solid fa-play"></i> <span>تشغيل أوفلاين</span>
                             </button>
                             ` : hasPdf ? `
-                            <button type="button" class="btn-vault-play" style="background: #dc2626;" onclick="playOfflineVaultVideo('${v.id}')" title="فتح ملزمة الدرس المحفوظة بدون إنترنت">
+                            <button type="button" class="btn-vault-play" style="background: #dc2626;" onclick="playOfflineVaultVideo('${vid}')" title="فتح ملزمة الدرس المحفوظة بدون إنترنت">
                                 <i class="fa-solid fa-file-pdf"></i> <span>الملزمة</span>
                             </button>
                             ` : `
-                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
+                            <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${vid}')">
                                 <i class="fa-solid fa-book-open-reader"></i> <span>عرض الدرس</span>
                             </button>
                             `}
-                            <button type="button" class="btn-vault-delete" onclick="deleteFromVault('${v.id}')" title="حذف لتحرير المساحة">
+                            <button type="button" class="btn-vault-delete" onclick="deleteFromVault('${vid}')" title="حذف لتحرير المساحة">
                                 <i class="fa-solid fa-trash-can"></i>
                             </button>
                         </div>
@@ -1323,18 +1337,40 @@ body[class*="exam"] .stepvoro-bottom-nav,
                 `;
             });
             listContainer.innerHTML = html;
+        } catch (renderErr) {
+            console.error('Error rendering vault cards:', renderErr);
+        }
+    }
+
+    function renderOfflineVideosList(retryCount = 0) {
+        const listContainer = document.getElementById('offlineVaultList');
+        const summaryText = document.getElementById('offlineVaultStorageSummary');
+        if (!listContainer) return;
+
+        const db = window.StepvoroOfflineDB || (typeof StepvoroOfflineDB !== 'undefined' ? StepvoroOfflineDB : null);
+
+        if (!db) {
+            if (retryCount < 8) {
+                setTimeout(() => renderOfflineVideosList(retryCount + 1), 120);
+                return;
+            }
+            readVaultDirectlyFromIndexedDB(listContainer, summaryText);
+            return;
+        }
+
+        db.getAllVideos().then((videos) => {
+            renderVaultCards(videos, listContainer, summaryText);
+
+            if (videos && videos.length > 0) {
+                db.calculateTotalSize().then((stats) => {
+                    if (summaryText && stats) {
+                        summaryText.textContent = `${videos.length} دروس محفوظة (${stats.mb} ميجابايت من ذاكرة الهاتف)`;
+                    }
+                }).catch(() => {});
+            }
         }).catch((err) => {
-            console.error('Failed to load offline videos list:', err);
-            if (summaryText) summaryText.textContent = 'تعذر فتح الذاكرة المحلية';
-            listContainer.innerHTML = `
-                <div style="text-align: center; padding: 24px 16px; color: #ef4444;">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; margin-bottom: 8px;"></i>
-                    <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;">تعذر فتح الذاكرة المحلية للتطبيق</p>
-                    <button type="button" onclick="renderOfflineVideosList()" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
-                        <i class="fa-solid fa-rotate"></i> <span>إعادة المحاولة</span>
-                    </button>
-                </div>
-            `;
+            console.warn('StepvoroOfflineDB.getAllVideos fallback to raw IndexedDB:', err);
+            readVaultDirectlyFromIndexedDB(listContainer, summaryText);
         });
     }
 
@@ -1350,12 +1386,7 @@ body[class*="exam"] .stepvoro-bottom-nav,
             req.onsuccess = function(e) {
                 const db = e.target.result;
                 if (!db.objectStoreNames.contains('offline_videos')) {
-                    if (summaryText) summaryText.textContent = 'لا توجد دروس محفوظة حالياً (0 MB)';
-                    listContainer.innerHTML = `
-                        <div style="text-align: center; padding: 36px 16px; color: #64748b;">
-                            <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">لا توجد دروس محفوظة أوفلاين</h4>
-                        </div>
-                    `;
+                    renderVaultCards([], listContainer, summaryText);
                     return;
                 }
                 const tx = db.transaction(['offline_videos'], 'readonly');
@@ -1363,46 +1394,32 @@ body[class*="exam"] .stepvoro-bottom-nav,
                 const getReq = store.getAll();
                 getReq.onsuccess = function() {
                     const videos = getReq.result || [];
-                    updateOfflineBadgeCount(videos.length);
-                    if (summaryText) summaryText.textContent = `${videos.length} دروس محفوظة`;
-                    if (videos.length === 0) {
-                        listContainer.innerHTML = `
-                            <div style="text-align: center; padding: 36px 16px; color: #64748b;">
-                                <h4 style="font-size: 0.95rem; font-weight: 800; color: #1e293b;">لا توجد دروس محفوظة أوفلاين</h4>
-                            </div>
-                        `;
-                        return;
-                    }
-                    let html = '';
-                    videos.forEach((v) => {
-                        const hasBlob = !!v.hasBlob || !!v.blob;
-                        const hasPdf = !!v.hasPdf || !!v.pdfBlob;
-                        html += `
-                            <div class="offline-lesson-card" id="vault_card_${v.id}">
-                                <div class="offline-card-info">
-                                    <h4>${escapeHtml(v.title || 'درس تعليمي')}</h4>
-                                    <div class="offline-card-meta">
-                                        <span><i class="fa-solid fa-book-open"></i> ${escapeHtml(v.subject || 'المنهاج')}</span>
-                                    </div>
-                                </div>
-                                <div class="offline-card-actions">
-                                    <button type="button" class="btn-vault-play" onclick="playOfflineVaultVideo('${v.id}')">
-                                        <i class="fa-solid fa-play"></i> <span>تشغيل أوفلاين</span>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    listContainer.innerHTML = html;
+                    renderVaultCards(videos, listContainer, summaryText);
+                };
+                getReq.onerror = function() {
+                    showVaultErrorUI(listContainer, summaryText);
                 };
             };
             req.onerror = function() {
-                if (summaryText) summaryText.textContent = 'تعذر فتح الذاكرة المحلية';
-                listContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">تعذر فتح الذاكرة المحلية للتطبيق.</p>';
+                showVaultErrorUI(listContainer, summaryText);
             };
         } catch (e) {
-            if (summaryText) summaryText.textContent = 'تعذر الوصول للذاكرة';
-            listContainer.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 20px;">تعذر الوصول للذاكرة المحلية.</p>';
+            showVaultErrorUI(listContainer, summaryText);
+        }
+    }
+
+    function showVaultErrorUI(listContainer, summaryText) {
+        if (summaryText) summaryText.textContent = 'تعذر فتح الذاكرة المحلية';
+        if (listContainer) {
+            listContainer.innerHTML = `
+                <div style="text-align: center; padding: 24px 16px; color: #ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; margin-bottom: 8px;"></i>
+                    <p style="font-size: 0.85rem; font-weight: 700; margin-bottom: 12px;">تعذر فتح الذاكرة المحلية للتطبيق</p>
+                    <button type="button" onclick="renderOfflineVideosList()" class="btn-direct-pwa-install" style="font-size: 0.8rem; padding: 6px 16px; margin: 0 auto; display: inline-flex;">
+                        <i class="fa-solid fa-rotate"></i> <span>إعادة المحاولة</span>
+                    </button>
+                </div>
+            `;
         }
     }
 
@@ -1508,8 +1525,33 @@ body[class*="exam"] .stepvoro-bottom-nav,
     }
 
     function deleteFromVault(id) {
-        if (!window.StepvoroVideoDownloader) return;
-        StepvoroVideoDownloader.removeOfflineVideo(id);
+        const card = document.getElementById('vault_card_' + id);
+        if (card) {
+            card.style.opacity = '0.5';
+            card.style.pointerEvents = 'none';
+        }
+
+        const finalizeDelete = () => {
+            if (card) card.remove();
+            renderOfflineVideosList();
+            if (typeof showPwaToast === 'function') {
+                showPwaToast('تم حذف الدرس من المحفوظات بنجاح', 'info');
+            }
+        };
+
+        if (window.StepvoroOfflineDB) {
+            StepvoroOfflineDB.deleteVideo(id).then(finalizeDelete).catch(() => {
+                if (window.StepvoroVideoDownloader && typeof StepvoroVideoDownloader.removeOfflineVideo === 'function') {
+                    StepvoroVideoDownloader.removeOfflineVideo(id);
+                }
+                finalizeDelete();
+            });
+        } else if (window.StepvoroVideoDownloader && typeof StepvoroVideoDownloader.removeOfflineVideo === 'function') {
+            StepvoroVideoDownloader.removeOfflineVideo(id);
+            finalizeDelete();
+        } else {
+            finalizeDelete();
+        }
     }
 
     function updateOfflineBadgeCount(count) {
