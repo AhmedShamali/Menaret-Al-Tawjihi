@@ -138,6 +138,13 @@ jobs:
             # Ensure storage and bootstrap directories have correct permissions
             chmod -R 775 storage bootstrap/cache
 
+            # Remove stale bootstrap cache files BEFORE booting Laravel
+            rm -f bootstrap/cache/*.php
+
+            # Clear old caches and discover fresh production packages
+            php artisan optimize:clear || true
+            php artisan package:discover --ansi || true
+
             # Put site into maintenance mode during migrations and cache rebuild
             php artisan down --render="errors::503" || true
 
@@ -148,7 +155,7 @@ jobs:
             # Create storage symlink if not already created
             php artisan storage:link || true
 
-            # Clear old caches and generate optimized production caches
+            # Generate optimized production caches
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
