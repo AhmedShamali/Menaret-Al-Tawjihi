@@ -203,12 +203,45 @@
                                             </div>
                                         </button>
                                     @else
-                                        <div style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 0.78rem; font-weight: 700; color: #475569;">
-                                            <i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 0.95rem;"></i>
-                                            <span>{{ __('بث YouTube مباشر') }}</span>
-                                        </div>
+                                        <button type="button" 
+                                                class="ed-btn-offline-card" 
+                                                id="btn_offline_{{ $video->id }}" 
+                                                data-video-id="{{ $video->id }}"
+                                                data-video-title="{{ $video->title }}"
+                                                data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
+                                                data-video-url=""
+                                                data-is-direct="0"
+                                                data-yt-embed="{{ $ytEmbed ?? '' }}"
+                                                data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
+                                                onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
+                                                title="{{ __('حفظ الدرس في مكتبة الأوفلاين للرجوع إليه بدون نت') }}"
+                                                style="background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;">
+                                            <div class="ed-offline-btn-inner">
+                                                <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                                                <span class="offline-btn-label">{{ __('حفظ الدرس أوفلاين (بدون نت ⚡)') }}</span>
+                                            </div>
+                                        </button>
                                     @endif
                                 </div>
+
+                                {{-- زر تحميل ملف الفيديو بجانب الفيديو --}}
+                                @if(!$isYtVid && ($directVUrl || !empty($video->url_path)))
+                                    <div style="margin-top: 8px;">
+                                        <a href="{{ route('content.downloadVideo', $video->id) }}" class="ed-btn-lecture-video-download" title="{{ __('تحميل ملف الفيديو (MP4) مباشرة على هاتفك أو جهازك') }}">
+                                            <i class="fa-solid fa-circle-down"></i>
+                                            <span>{{ __('تحميل الفيديو (MP4)') }}</span>
+                                        </a>
+                                    </div>
+                                @endif
+
+                                @if(!empty($video->pdf_path))
+                                    <div style="margin-top: 8px;">
+                                        <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
+                                            <i class="fa-solid fa-file-pdf"></i>
+                                            <span>{{ __('تحميل الملزمة (PDF)') }}</span>
+                                        </a>
+                                    </div>
+                                @endif
                                 @endif
                             </div>
                         </div>
@@ -754,6 +787,46 @@
             width: 95vw;
             max-height: 85vh;
         }
+    .ed-btn-lecture-video-download {
+        color: #15803d;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #f0fdf4;
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 1px solid #bbf7d0;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(22, 101, 52, 0.08);
+    }
+    .ed-btn-lecture-video-download:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+        color: #166534;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(22, 101, 52, 0.15);
+    }
+    .ed-btn-lecture-pdf {
+        color: #b91c1c;
+        font-size: 0.82rem;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fef2f2;
+        padding: 7px 16px;
+        border-radius: 8px;
+        border: 1px solid #fecaca;
+        transition: all 0.2s ease;
+    }
+    .ed-btn-lecture-pdf:hover {
+        background: #fee2e2;
+        border-color: #fca5a5;
+        color: #991b1b;
     }
 </style>
 

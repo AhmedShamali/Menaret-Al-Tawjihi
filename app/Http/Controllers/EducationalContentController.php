@@ -597,8 +597,22 @@ class EducationalContentController extends Controller
             $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
             $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
 
-            if ($relativePath && Storage::disk('public')->exists($relativePath)) {
-                return Storage::disk('public')->download($relativePath, $fileName);
+            if ($relativePath) {
+                if (Storage::disk('public')->exists($relativePath)) {
+                    return Storage::disk('public')->download($relativePath, $fileName);
+                }
+                $pubStorage = public_path('storage/' . $relativePath);
+                if (file_exists($pubStorage)) {
+                    return response()->download($pubStorage, $fileName);
+                }
+                $pubDirect = public_path($relativePath);
+                if (file_exists($pubDirect)) {
+                    return response()->download($pubDirect, $fileName);
+                }
+                $appStorage = storage_path('app/public/' . $relativePath);
+                if (file_exists($appStorage)) {
+                    return response()->download($appStorage, $fileName);
+                }
             }
 
             if (filter_var($rawUrl, FILTER_VALIDATE_URL)) {
