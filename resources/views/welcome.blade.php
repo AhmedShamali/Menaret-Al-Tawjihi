@@ -432,6 +432,33 @@
             border-color: var(--ed-border-hover);
         }
 
+        .btn-nav-app-update {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            border: 1px solid #065f46;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+            transition: var(--transition);
+        }
+        .btn-nav-app-update:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(5, 150, 105, 0.35);
+        }
+        .btn-nav-app-update:active {
+            transform: translateY(0);
+        }
+        .btn-nav-app-update i.fa-spin {
+            animation: fa-spin 0.7s linear infinite;
+        }
+
         .btn-nav-app-install {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
             border: 1px solid #b45309;
@@ -1158,6 +1185,16 @@
                 <li class="nav-item"><a href="{{ route('public.contact') }}" class="nav-link"><i class="fa-solid fa-phone"></i> {{ __('تواصل مع الإدارة') }}</a></li>
             </ul>
 
+                <!-- زر تحديث المنصة والتطبيق الفوري -->
+                <button type="button" 
+                        class="btn-nav-app-update" 
+                        onclick="forceUpdateApp(this)" 
+                        title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
+                        id="btnNavUpdateApp">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>{{ __('تحديث المنصة') }}</span>
+                </button>
+
                 <!-- زر تثبيت تطبيق الجوال السريع -->
                 <button type="button" 
                         class="btn-nav-app-install" 
@@ -1582,6 +1619,38 @@
                 }
             }
         }, { passive: true });
+
+        // دالة تحديث التطبيق والمنصة الفوري وإعادة سحب الكاش
+        window.forceUpdateApp = async function(btn) {
+            if (btn) {
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+                if (icon) icon.classList.add('fa-spin');
+                const label = btn.querySelector('span');
+                if (label) label.textContent = '{{ __("جاري التحديث...") }}';
+            }
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of registrations) {
+                        await reg.update().catch(() => {});
+                        await reg.unregister().catch(() => {});
+                    }
+                }
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(cacheKeys.map(k => caches.delete(k)));
+                }
+                sessionStorage.clear();
+            } catch (e) {
+                console.warn('Update error:', e);
+            }
+
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('v_updated', Date.now());
+            window.location.href = currentUrl.toString();
+        };
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

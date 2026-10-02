@@ -713,6 +713,17 @@
                 <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
             </a>
             <div class="nav-links">
+                <!-- زر تحديث المنصة والتطبيق الفوري -->
+                <button type="button" 
+                        class="nav-link-btn" 
+                        onclick="forceUpdateApp(this)" 
+                        title="{{ __('تحديث المنصة والتطبيق وسحب آخر التعديلات فوراً') }}"
+                        id="btnCalcUpdateApp"
+                        style="cursor: pointer; background: #ecfdf5; border-color: #a7f3d0; color: #047857; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                    <span>{{ __('تحديث المنصة') }}</span>
+                </button>
+
                 <!-- زر تبديل اللغة خالي من أي كلمة عربية في وضع الإنجليزية -->
                 @php $currentLocale = app()->getLocale(); @endphp
                 <a href="{{ route('lang.switch', $currentLocale === 'ar' ? 'en' : 'ar') }}" 
@@ -1104,6 +1115,38 @@
                 }
             }
         }, { passive: true });
+
+        // دالة تحديث المنصة والتطبيق الفوري
+        window.forceUpdateApp = async function(btn) {
+            if (btn) {
+                btn.disabled = true;
+                const icon = btn.querySelector('i');
+                if (icon) icon.classList.add('fa-spin');
+                const label = btn.querySelector('span');
+                if (label) label.textContent = '{{ __("جاري التحديث...") }}';
+            }
+
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const reg of registrations) {
+                        await reg.update().catch(() => {});
+                        await reg.unregister().catch(() => {});
+                    }
+                }
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(cacheKeys.map(k => caches.delete(k)));
+                }
+                sessionStorage.clear();
+            } catch (e) {
+                console.warn('Update error:', e);
+            }
+
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('v_updated', Date.now());
+            window.location.href = currentUrl.toString();
+        };
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

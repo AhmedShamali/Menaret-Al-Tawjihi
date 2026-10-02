@@ -28,7 +28,7 @@
         </div>
         <span class="nav-tab-label">{{ __('المحملة ⚡') }}</span>
     </a>
-    <button type="button" class="nav-tab" onclick="window.forceUpdateApp()" id="bottomNavUpdateBtn" title="{{ __('تحديث التطبيق فورياً لأحدث نسخة') }}">
+    <button type="button" class="nav-tab" onclick="window.forceUpdateApp(this)" id="bottomNavUpdateBtn" title="{{ __('تحديث التطبيق فورياً لأحدث نسخة') }}">
         <div class="nav-tab-icon" style="color: #0284c7;"><i class="fa-solid fa-rotate"></i></div>
         <span class="nav-tab-label">{{ __('تحديث 🔄') }}</span>
     </button>

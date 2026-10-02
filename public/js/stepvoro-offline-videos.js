@@ -535,10 +535,18 @@ const StepvoroVideoDownloader = {
 };
 
 // الدالة العامة لتحديث التطبيق فورياً وتفريغ الكاش
-window.forceUpdateApp = async function() {
+window.forceUpdateApp = async function(btn) {
+    if (btn) {
+        btn.disabled = true;
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.add('fa-spin');
+        const label = btn.querySelector('span');
+        if (label) label.textContent = 'جاري التحديث...';
+    }
+
     if (typeof Swal !== 'undefined') {
         Swal.fire({
-            title: 'جاري تحديث التطبيق 🔄',
+            title: 'جاري تحديث المنصة والتطبيق 🔄',
             text: 'يتم الآن فحص أحدث التحديثات والشعارات وتفريغ الذاكرة المؤقتة...',
             allowOutsideClick: false,
             showConfirmButton: false,
@@ -552,10 +560,11 @@ window.forceUpdateApp = async function() {
         if ('serviceWorker' in navigator) {
             const regs = await navigator.serviceWorker.getRegistrations();
             for (let reg of regs) {
-                await reg.update();
+                await reg.update().catch(() => {});
                 if (reg.waiting) {
                     reg.waiting.postMessage({ action: 'skipWaiting' });
                 }
+                await reg.unregister().catch(() => {});
             }
         }
         if ('caches' in window) {
@@ -564,24 +573,31 @@ window.forceUpdateApp = async function() {
                 await caches.delete(k);
             }
         }
+        sessionStorage.clear();
+
         setTimeout(() => {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('v_updated', Date.now());
+
             if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'success',
-                    title: 'تم تحديث التطبيق بنجاح 🎉',
+                    title: 'تم تحديث المنصة والتطبيق بنجاح 🎉',
                     text: 'تم تثبيت أحدث نسخة من المنصة والشعار، جاري إعادة التحميل...',
-                    timer: 1500,
+                    timer: 1200,
                     showConfirmButton: false
                 }).then(() => {
-                    window.location.reload(true);
+                    window.location.href = currentUrl.toString();
                 });
             } else {
-                window.location.reload(true);
+                window.location.href = currentUrl.toString();
             }
-        }, 1200);
+        }, 800);
     } catch (e) {
         console.error('Update app error:', e);
-        window.location.reload(true);
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('v_updated', Date.now());
+        window.location.href = currentUrl.toString();
     }
 };
 
