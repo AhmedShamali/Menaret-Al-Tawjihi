@@ -220,8 +220,8 @@
                 const cleanName = encodeURIComponent(file.name).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
                 const fileId = 'vid_' + cleanName + '_' + file.size;
 
-                const chunkUrl = "{{ route('educational_contents.upload_chunk') }}";
-                const checkStatusUrl = "{{ route('educational_contents.check_chunk_status') }}";
+                const chunkUrl = "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}";
+                const checkStatusUrl = "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}";
 
                 // فحص الأجزاء السابقة للاستئناف
                 let alreadyUploaded = new Set();

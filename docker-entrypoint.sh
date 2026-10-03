@@ -22,6 +22,8 @@ php artisan db:seed --force || true
 # 5. تنظيف وتحسين الكاش لبيئة الإنتاج
 if [ "$APP_ENV" = "production" ]; then
     echo "==> Optimizing configuration and routes for production..."
+    php artisan route:clear || true
+    php artisan view:clear || true
     php artisan config:cache || true
     php artisan route:cache || true
     php artisan view:cache || true

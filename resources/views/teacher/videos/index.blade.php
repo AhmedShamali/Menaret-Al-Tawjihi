@@ -1238,8 +1238,8 @@ async function submitVideoForm(e) {
     let formattedSize = null;
 
     try {
-        const chunkUploadUrl = "{{ route('educational_contents.upload_chunk') }}";
-        const checkStatusUrl = "{{ route('educational_contents.check_chunk_status') }}";
+        const chunkUploadUrl = "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}";
+        const checkStatusUrl = "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}";
 
         // فحص الأجزاء التي تم رفعها مسبقاً لاستئناف الرفع فوراً (Resumable Upload)
         let alreadyUploaded = new Set();

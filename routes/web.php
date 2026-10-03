@@ -37,8 +37,14 @@ Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->n
 Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'questionOptionImage'])->name('question.option_image');
 
 Route::middleware('auth')->group(function () {
-    Route::post('/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');
-    Route::post('/educational-contents/check-chunk-status', [EducationalContentController::class, 'checkChunkStatus'])->name('educational_contents.check_chunk_status');
+    Route::match(['get', 'post'], '/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');
+    Route::match(['get', 'post'], '/educational-contents/check-chunk-status', [EducationalContentController::class, 'checkChunkStatus'])->name('educational_contents.check_chunk_status');
+
+    // مسارات وأسماء بديلة لمنع أي خطأ route not defined أو كاش قديم
+    Route::match(['get', 'post'], '/educational_contents/upload_chunk', [EducationalContentController::class, 'uploadChunk'])->name('admin.educational_contents.upload_chunk');
+    Route::match(['get', 'post'], '/educational_contents/check_chunk_status', [EducationalContentController::class, 'checkChunkStatus'])->name('admin.educational_contents.check_chunk_status');
+    Route::match(['get', 'post'], '/teacher/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('teacher.educational_contents.upload_chunk');
+    Route::match(['get', 'post'], '/teacher/educational-contents/check-chunk-status', [EducationalContentController::class, 'checkChunkStatus'])->name('teacher.educational_contents.check_chunk_status');
 });
 
 Route::middleware('guest')->group(function () {
