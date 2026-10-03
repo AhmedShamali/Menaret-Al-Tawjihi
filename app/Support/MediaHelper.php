@@ -29,31 +29,64 @@ class MediaHelper
             return $path;
         }
 
-        // تنظيف البوادئ المكررة مثل storage/ أو public/
+        // تنظيف البوادئ المكررة مثل storage/ أو public/ أو مسارات سوبابيز الجزئية
         $cleanPath = ltrim(preg_replace('/^(storage\/|public\/|app\/public\/)/', '', $path), '/');
+        $cleanPath = ltrim(preg_replace('/^storage\/v1\/object\/public\/[^\/]+\//', '', $cleanPath), '/');
 
-        // رابط Supabase المعتمد
+        // رابط Supabase المعتمد بنظافة تامة بدون أي تكرار
         $supabaseBucket = config('filesystems.disks.supabase.bucket') ?? env('SUPABASE_BUCKET', 'educational-files');
-        $supabaseUrl = config('filesystems.disks.supabase.url');
-        if (empty($supabaseUrl)) {
-            $baseEndpoint = rtrim(env('SUPABASE_URL', 'https://jdvcftdzwgydtztyszlg.supabase.co'), '/');
-            $supabaseUrl = "{$baseEndpoint}/storage/v1/object/public/{$supabaseBucket}";
+        $supabaseBase = config('filesystems.disks.supabase.url');
+        if (empty($supabaseBase)) {
+            $endpoint = rtrim(env('SUPABASE_URL', 'https://jdvcftdzwgydtztyszlg.supabase.co'), '/');
+            $supabaseBase = str_contains($endpoint, '/storage/v1/object/public')
+                ? $endpoint
+                : "{$endpoint}/storage/v1/object/public/{$supabaseBucket}";
+        } else {
+            $supabaseBase = rtrim($supabaseBase, '/');
+            if (!str_contains($supabaseBase, '/storage/v1/object/public')) {
+                $supabaseBase .= "/storage/v1/object/public/{$supabaseBucket}";
+            }
         }
-        $supabaseFileUrl = rtrim($supabaseUrl, '/') . '/' . $cleanPath;
+        $supabaseFileUrl = rtrim($supabaseBase, '/') . '/' . $cleanPath;
 
-        // 2. إذا كان الملف متوفراً محلياً في مسار التخزين (سواء محلياً أو على قرص السيرفر الدائم)
+        // 2. إذا كان الملف متوفراً محلياً في مسار التخزين
         if (file_exists(public_path('storage/' . $cleanPath)) || file_exists(storage_path('app/public/' . $cleanPath))) {
             return asset('storage/' . $cleanPath);
         }
 
         // 3. إذا كنا في بيئة الإنتاج السحابية أو كان القرص الافتراضي supabase ولم يتوفر محلياً
-        $isCloud = (config('filesystems.default') === 'supabase' || app()->environment('production') || !empty(env('RENDER')));
-        if ($isCloud) {
-            return $supabaseFileUrl;
+        return $supabaseFileUrl;
+    }
+
+    /**
+     * الحصول على رابط بث الفيديو المتدفق المخصص للمنصة الداعم لتقسيم البايتات (Byte-Ranges / HTTP 206)
+     */
+    public static function videoStreamUrl(?string $path, ?string $fallback = null): ?string
+    {
+        if (empty($path)) {
+            return $fallback;
         }
 
-        // 4. البديل الافتراضي
-        return $supabaseFileUrl;
+        $path = trim($path);
+
+        // إذا كان رابط خارجي مباشر مثل يوتيوب
+        if (str_contains($path, 'youtube.com') || str_contains($path, 'youtu.be')) {
+            return $path;
+        }
+
+        // تنظيف المسار
+        $cleanPath = ltrim(preg_replace('/^(storage\/|public\/|app\/public\/)/', '', $path), '/');
+        $cleanPath = ltrim(preg_replace('/^storage\/v1\/object\/public\/[^\/]+\//', '', $cleanPath), '/');
+
+        if (filter_var($cleanPath, FILTER_VALIDATE_URL)) {
+            return $cleanPath;
+        }
+
+        try {
+            return route('video.stream', ['filename' => $cleanPath]);
+        } catch (\Throwable $e) {
+            return self::url($cleanPath, $fallback);
+        }
     }
 
     /**

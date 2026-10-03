@@ -8,7 +8,7 @@
     <!-- رأس الصفحة مع مسار التنقل -->
     <div style="margin-bottom: 35px;">
         <nav style="display: flex; gap: 10px; font-size: 0.85rem; color: var(--text-light); margin-bottom: 10px;">
-            <a href="{{ route('students.index') }}" style="color: inherit; text-decoration: none;">{{ __('إدارة الطلاب') }}</a> /
+            <a href="{{ route('admin.students.index') }}" style="color: inherit; text-decoration: none;">{{ __('إدارة الطلاب') }}</a> /
             <span style="color: var(--accent); font-weight: 600;">{{ __('تعديل البيانات') }}</span>
         </nav>
         <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">✏️ تحديث بيانات الطالب</h1>
@@ -172,7 +172,7 @@
                 showConfirmButton: false,
                 timer: 2000
             }).then(() => {
-                window.location.href = "{{ route('students.index') }}";
+                window.location.href = "{{ route('admin.students.index') }}";
             });
         })
         .catch(function (error) {

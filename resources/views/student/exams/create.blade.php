@@ -132,9 +132,9 @@
         @if(isset($student)) formData.append('_method', 'PUT'); @endif
 
         btn.disabled = true;
-        axios.post("{{ isset($student) ? route('students.update', $student->id) : route('students.store') }}", formData)
+        axios.post("{{ isset($student) ? route('admin.students.update', $student->id) : route('students.store') }}", formData)
         .then(res => {
-            Swal.fire({ icon: 'success', title: res.data.title }).then(() => location.href = "{{ route('students.index') }}");
+            Swal.fire({ icon: 'success', title: res.data.title }).then(() => location.href = "{{ route('admin.students.index') }}");
         })
         .catch(err => {
             Swal.fire({ icon: 'error', title: err.response.data.title });

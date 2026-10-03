@@ -26,6 +26,8 @@ class Subject extends Model
         'description'
     ];
 
+    protected $appends = ['clean_name'];
+
     /**
      * الاسم الأساسي المنظف للمادة بدون الفروع والأقواس
      */

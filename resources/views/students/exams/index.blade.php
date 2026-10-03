@@ -27,7 +27,7 @@
                     <td style="padding: 20px; font-weight: 600;">{{ $s->stage->label_ar }}</td>
                     <td style="padding: 20px;"><span class="chip {{ $s->status == 'active' ? 'active' : '' }}">{{ $s->status == 'active' ? 'مفعل' : 'معلق' }}</span></td>
                     <td style="padding: 20px; display: flex; justify-content: center; gap: 8px;">
-                        <a href="{{ route('students.edit', $s->id) }}" class="act-btn">✏️</a>
+                        <a href="{{ route('admin.students.edit', $s->id) }}" class="act-btn">✏️</a>
                         <button onclick="deleteStudent({{ $s->id }})" class="act-btn delete">🗑️</button>
                     </td>
                 </tr>

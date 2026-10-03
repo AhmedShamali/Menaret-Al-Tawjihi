@@ -135,8 +135,11 @@
     <div class="ed-videos-grid">
         @forelse($videos as $vid)
             @php
-                $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $vid->url_path ?? '') || str_contains($vid->url_path ?? '', 'educational/videos');
-                $directVidUrl = $isDirectVid ? \App\Support\MediaHelper::url($vid->url_path) : null;
+                $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $vid->url_path ?? '') 
+                    || str_contains($vid->url_path ?? '', 'educational/videos')
+                    || ($vid->type === 'video' && !empty($vid->url_path) && !str_contains($vid->url_path ?? '', 'youtube') && !str_contains($vid->url_path ?? '', 'youtu.be'));
+                $directVidUrl = $isDirectVid ? \App\Support\MediaHelper::videoStreamUrl($vid->url_path) : null;
+                $directVidFallback = $isDirectVid ? \App\Support\MediaHelper::url($vid->url_path) : null;
                 $embedUrl = $vid->youtube_embed_url ?? ($directVidUrl ?? \App\Support\MediaHelper::url($vid->url_path));
             @endphp
             <div class="ed-video-card">
@@ -144,7 +147,11 @@
                     <div class="video-frame-wrap" id="wrap_vid_{{ $vid->id }}" oncontextmenu="event.preventDefault(); return false;">
                         @if($isDirectVid && $directVidUrl)
                             <video id="vid_direct_{{ $vid->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
-                                <source src="{{ $directVidUrl }}" type="video/mp4">
+                                <source src="{{ $directVidUrl }}">
+                                @if($directVidFallback && $directVidFallback !== $directVidUrl)
+                                    <source src="{{ $directVidFallback }}">
+                                @endif
+                                {{ __('متصفحك لا يدعم مشغل هذا الفيديو المباشر.') }}
                             </video>
                         @else
                             @php
@@ -290,33 +297,41 @@
 
             <div class="modal-form-body">
                 @if(auth()->user()->role === 'admin' && isset($stages) && count($stages) > 0)
-                    <!-- خانات اختيار الفروع والمادة المشتركة للمدير العام -->
-                    <div class="f-group" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                            <label class="f-label" style="margin: 0; font-weight: 800; color: #1e3a8a; font-size: 0.92rem;">
-                                <i class="fa-solid fa-code-branch"></i> {{ __('الفروع المستهدفة (يمكنك اختيار أكثر من فرع بنقرة واحدة) *') }}
+                    <!-- خانات اختيار الفروع والمادة المشتركة للمدير العام بتصميم أكاديمي ملكي منظم -->
+                    <div class="branch-selector-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <label class="f-label" style="margin: 0; font-weight: 800; color: #1e3a8a; font-size: 0.9rem;">
+                                <i class="fa-solid fa-layer-group" style="color: #2563eb;"></i> {{ __('الفروع الأكاديمية المستهدفة:') }}
                             </label>
                             <div style="display: flex; gap: 6px;">
-                                <button type="button" onclick="selectAllModalBranches('video', true)" style="background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #1e293b; cursor: pointer;">{{ __('تحديد كافة الفروع') }}</button>
-                                <button type="button" onclick="selectAllModalBranches('video', false)" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #64748b; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
+                                <button type="button" onclick="selectAllModalBranches('video', true)" class="btn-branch-util">{{ __('تحديد الكل') }}</button>
+                                <button type="button" onclick="selectAllModalBranches('video', false)" class="btn-branch-util btn-branch-util-clear">{{ __('إلغاء التحديد') }}</button>
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+                        <div class="branch-cards-grid">
                             @foreach($stages as $stage)
-                                <label id="v_stage_lbl_{{ $stage->id }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                    <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="video-modal-stage-check" onchange="onVideoModalSelectionChange()" checked style="width: 17px; height: 17px; accent-color: #1e40af; cursor: pointer;">
-                                    <span style="font-weight: 700; color: #1e293b; font-size: 0.84rem;">{{ $stage->label_ar }}</span>
+                                @php
+                                    $shortName = $stage->short_label ?? $stage->label_ar;
+                                    $icon = $stage->icon ?? '🎓';
+                                @endphp
+                                <label class="branch-select-card" id="v_stage_card_{{ $stage->id }}">
+                                    <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="video-modal-stage-check" onchange="onVideoModalSelectionChange()" checked>
+                                    <div class="branch-card-content">
+                                        <span class="branch-icon">{{ $icon }}</span>
+                                        <span class="branch-name">{{ $shortName }}</span>
+                                        <i class="fa-solid fa-circle-check branch-check-icon"></i>
+                                    </div>
                                 </label>
                             @endforeach
                         </div>
 
                         <!-- المادة المشتركة المختارة -->
-                        <div style="margin-top: 12px;">
-                            <label class="f-label" style="font-weight: 700; color: #1e3a8a; font-size: 0.88rem; margin-bottom: 4px;">
-                                {{ __('المادة الدراسية المشتركة / المبحث *') }}
+                        <div style="margin-top: 14px;">
+                            <label class="f-label" style="font-weight: 700; color: #1e3a8a; font-size: 0.88rem; margin-bottom: 6px;">
+                                <i class="fa-solid fa-book-open" style="color: #2563eb;"></i> {{ __('المادة الدراسية المشتركة / المبحث:') }}
                             </label>
-                            <select id="video_admin_subject_select" class="f-control" required onchange="onVideoModalSelectionChange()">
+                            <select id="video_admin_subject_select" class="f-control" required onchange="onVideoModalSelectionChange()" style="min-height: 48px; line-height: 1.6;">
                                 <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
                                 @php
                                     $uniqueSubjects = collect($subjects)->unique('clean_name');
@@ -326,21 +341,25 @@
                                         {{ $uSub->clean_name }}
                                     </option>
                                 @endforeach
-                                <option disabled>────────── مواد تفصيلية ──────────</option>
+                                <option disabled>────────── فروع المواد التفصيلية ──────────</option>
                                 @foreach($subjects as $sub)
+                                    @php
+                                        $subStageName = $sub->stage ? ($sub->stage->short_label ?? $sub->stage->label_ar) : 'عام';
+                                    @endphp
                                     <option value="{{ $sub->id }}" data-clean-name="{{ $sub->clean_name }}" data-key="{{ $sub->subject_key }}">
-                                        {{ $sub->name_ar ?? $sub->name }} ({{ optional($sub->stage)->label_ar ?? 'عام' }})
+                                        {{ $sub->clean_name }} — {{ $subStageName }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
-                        <!-- تنبيه الفروع والمواد المستهدفة بالتوازي -->
-                        <div id="videoPublishTargetAlert" style="display: none; margin-top: 10px; padding: 10px 12px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px;">
-                            <strong style="display: block; color: #065f46; font-size: 0.82rem; margin-bottom: 5px;">
-                                <i class="fa-solid fa-circle-check"></i> {{ __('سيتم نشر هذا الفيديو وتوفيره للمدرسين والطلبة بالتوازي في:') }}
-                            </strong>
-                            <div id="videoSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        <!-- تنبيه الفروع والمواد المستهدفة بالتوازي بتصميم نقي -->
+                        <div id="videoPublishTargetAlert" style="display: none; margin-top: 12px; padding: 12px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px;">
+                            <div style="color: #166534; font-size: 0.84rem; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-check-double" style="color: #15803d;"></i>
+                                <span>{{ __('سيتم نشر هذا الدرس وتوفيره للمدرسين والطلبة بالتوازي في:') }}</span>
+                            </div>
+                            <div id="videoSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                         </div>
                         <div id="videoHiddenSubjectIdsWrap"></div>
                     </div>
@@ -990,70 +1009,61 @@
     margin-bottom: 20px;
 }
 
-/* Modal */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
-    z-index: 99999;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
 /* ==========================================================
-   CLASSIC ROYAL ACADEMIC UPLOAD MODAL & DROPZONE
+   CLASSIC ROYAL ACADEMIC UPLOAD MODAL & DROPZONE (OPTIMIZED)
    ========================================================== */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 99999;
     display: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
-    padding: 20px;
+    overflow-y: auto;
+    padding: 24px 16px;
+    box-sizing: border-box;
 }
 
 .modal-card {
     background: #ffffff;
     border-radius: 18px;
-    max-width: 620px;
+    max-width: 720px;
     width: 100%;
-    padding: 28px 30px;
-    box-shadow: 0 24px 60px rgba(11, 59, 111, 0.22);
-    border: 1px solid #e2e8f0;
-    border-top: 4px solid #0b3b6f;
+    margin: 16px auto;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(226, 232, 240, 0.8);
+    border: 1px solid #cbd5e1;
+    border-top: 4px solid #1e40af;
     animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 50px);
+    overflow: hidden;
 }
 
 @keyframes modalScale {
-    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    from { opacity: 0; transform: scale(0.96) translateY(6px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-head {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1.5px solid #f1f5f9;
-    padding-bottom: 16px;
-    margin-bottom: 20px;
+    padding: 18px 24px;
+    background: #f8fafc;
+    border-bottom: 1.5px solid #e2e8f0;
 }
 
 .modal-head h3 {
     margin: 0;
-    font-size: 1.25rem;
+    font-size: 1.18rem;
     font-weight: 800;
-    color: #0b3b6f;
+    color: #1e3a8a;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1065,7 +1075,7 @@
     height: 40px;
     border-radius: 10px;
     background: #eff6ff;
-    color: #0b3b6f;
+    color: #1e40af;
     border: 1px solid #bfdbfe;
     display: grid;
     place-items: center;
@@ -1096,9 +1106,27 @@
 }
 
 .modal-form-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 22px 24px;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    max-height: 100%;
+}
+
+.modal-form-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-form-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.modal-form-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.modal-form-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .f-group {
@@ -1108,9 +1136,9 @@
 }
 
 .f-label {
-    font-size: 0.85rem;
+    font-size: 0.86rem;
     font-weight: 700;
-    color: #0f172a;
+    color: #1e293b;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1118,22 +1146,120 @@
 
 .f-control {
     width: 100%;
-    padding: 11px 14px;
+    min-height: 48px;
+    padding: 10px 14px;
     border: 1.5px solid #cbd5e1;
     border-radius: 10px;
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
     outline: none;
     background: #ffffff;
-    color: #0f172a;
+    color: #1e293b;
     box-sizing: border-box;
     transition: all 0.2s ease;
+}
+
+select.f-control {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 16px;
+    padding-left: 38px;
 }
 
 .f-control:focus {
     border-color: #1d4ed8;
     box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
     background: #ffffff;
+}
+
+/* بطاقات اختيار الفروع الأكاديمية الأنيقة */
+.branch-selector-box {
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.btn-branch-util {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-branch-util:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+.btn-branch-util-clear {
+    background: #ffffff;
+    color: #64748b;
+}
+.btn-branch-util-clear:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.branch-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.branch-select-card {
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+    display: block;
+}
+.branch-select-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.branch-card-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    transition: all 0.2s ease;
+}
+.branch-select-card:hover .branch-card-content {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+.branch-select-card input:checked ~ .branch-card-content {
+    border-color: #1e40af;
+    background: #eff6ff;
+    color: #1e3a8a;
+    box-shadow: 0 1px 3px rgba(30, 64, 175, 0.12);
+}
+.branch-check-icon {
+    margin-right: auto;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    transition: all 0.2s;
+}
+.branch-select-card input:checked ~ .branch-card-content .branch-check-icon {
+    color: #1e40af;
 }
 
 .f-row {
@@ -1377,11 +1503,14 @@ function onVideoModalSelectionChange() {
 
     matched.forEach(sub => {
         hiddenWrap.innerHTML += `<input type="hidden" name="subject_ids[]" value="${sub.id}">`;
-        const stgName = (sub.stage ? sub.stage.label_ar : 'فرع');
+        const branchLabel = (sub.stage && sub.stage.short_label) ? sub.stage.short_label : (sub.stage ? sub.stage.label_ar : 'الفرع الأكاديمي');
+        const subjectClean = (sub.clean_name || sub.name_ar || '').replace(/\(.*?\)/g, '').trim();
+
         listDiv.innerHTML += `
-            <span style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; border: 1px solid #86efac; border-radius: 6px; padding: 3px 8px; font-size: 0.78rem; font-weight: 700; color: #166534; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                <i class="fa-solid fa-circle-check text-success"></i> ${sub.name_ar} (${stgName})
-            </span>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #86efac; border-radius: 8px; padding: 5px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                <span style="background: #15803d; color: #ffffff; font-size: 0.74rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">${branchLabel}</span>
+                <span style="color: #1e293b; font-weight: 700; font-size: 0.86rem;">${subjectClean}</span>
+            </div>
         `;
     });
 
@@ -1390,7 +1519,19 @@ function onVideoModalSelectionChange() {
 }
 
 function openUploadVideoModal() {
-    document.getElementById('uploadVideoModal').style.display = 'flex';
+    const m = document.getElementById('uploadVideoModal');
+    if (m) {
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeUploadVideoModal() {
+    const m = document.getElementById('uploadVideoModal');
+    if (m) {
+        m.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
 function updateVideoRegionSelect(radio) {

@@ -883,11 +883,12 @@ class EducationalContentController extends Controller
             return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube ومتاح للمشاهدة المباشرة والأوفلاين داخل المنصة.');
         }
 
-        // 3. الروابط الخارجية المباشرة
+        // 3. فحص التخزين السحابي أو الروابط المباشرة
         $rawUrl = $content->url_path;
-        if (!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL)) {
-            if ($isStaff) {
-                return redirect()->away($rawUrl);
+        $resolvedUrl = (filter_var($rawUrl, FILTER_VALIDATE_URL)) ? $rawUrl : \App\Support\MediaHelper::url($rawUrl);
+        if (!empty($resolvedUrl) && filter_var($resolvedUrl, FILTER_VALIDATE_URL)) {
+            if ($isStaff || $isInternalXhr) {
+                return redirect()->away($resolvedUrl);
             }
             return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة وحفظه أوفلاين داخل المنصة.');
         }

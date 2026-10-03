@@ -1308,9 +1308,12 @@
                                                 $ytEmbed = str_replace(['controls=1', 'fs=1'], ['controls=0', 'fs=0'], $ytEmbed);
                                             }
                                         }
-                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos') || (!empty($rawUrl) && !str_contains($rawUrl, 'youtube') && !str_contains($rawUrl, 'youtu.be'));
+                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos') || (!empty($rawUrl) && !str_contains($rawUrl, 'youtube') && !str_contains($rawUrl, 'youtu.be'));
                                         $directVideoUrl = $isDirectVideo 
-                                            ? (\App\Support\MediaHelper::url($rawUrl) ?: route('video.stream', ['filename' => ltrim($rawUrl, '/')]))
+                                            ? \App\Support\MediaHelper::videoStreamUrl($rawUrl)
+                                            : null;
+                                        $directVideoFallback = $isDirectVideo
+                                            ? \App\Support\MediaHelper::url($rawUrl)
                                             : null;
                                     @endphp
 
@@ -1359,7 +1362,11 @@
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
-                                            <source src="{{ $directVideoUrl }}" type="video/mp4">{{ __('متصفحك لا يدعم مشغل الفيديو.') }}
+                                            <source src="{{ $directVideoUrl }}">
+                                            @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
+                                                <source src="{{ $directVideoFallback }}">
+                                            @endif
+                                            {{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;"></iframe>

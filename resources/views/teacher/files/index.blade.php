@@ -251,33 +251,41 @@
 
             <div class="modal-form-body">
                 @if(auth()->user()->role === 'admin' && isset($stages) && count($stages) > 0)
-                    <!-- خانات اختيار الفروع والمادة المشتركة للمدير العام -->
-                    <div class="f-group" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-                            <label class="f-label" style="margin: 0; font-weight: 800; color: #991b1b; font-size: 0.92rem;">
-                                <i class="fa-solid fa-code-branch"></i> {{ __('الفروع المستهدفة (يمكنك اختيار أكثر من فرع بنقرة واحدة) *') }}
+                    <!-- خانات اختيار الفروع والمادة المشتركة للمدير العام بتصميم كلاسيكي أكاديمي منظم -->
+                    <div class="branch-selector-box" style="border-top: 3px solid #dc2626;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                            <label class="f-label" style="margin: 0; font-weight: 800; color: #991b1b; font-size: 0.9rem;">
+                                <i class="fa-solid fa-layer-group" style="color: #dc2626;"></i> {{ __('الفروع الأكاديمية المستهدفة:') }}
                             </label>
                             <div style="display: flex; gap: 6px;">
-                                <button type="button" onclick="selectAllModalBranches('file', true)" style="background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #1e293b; cursor: pointer;">{{ __('تحديد كافة الفروع') }}</button>
-                                <button type="button" onclick="selectAllModalBranches('file', false)" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #64748b; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
+                                <button type="button" onclick="selectAllModalBranches('file', true)" class="btn-branch-util">{{ __('تحديد الكل') }}</button>
+                                <button type="button" onclick="selectAllModalBranches('file', false)" class="btn-branch-util btn-branch-util-clear">{{ __('إلغاء التحديد') }}</button>
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+                        <div class="branch-cards-grid">
                             @foreach($stages as $stage)
-                                <label id="f_stage_lbl_{{ $stage->id }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
-                                    <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="file-modal-stage-check" onchange="onFileModalSelectionChange()" checked style="width: 17px; height: 17px; accent-color: #dc2626; cursor: pointer;">
-                                    <span style="font-weight: 700; color: #1e293b; font-size: 0.84rem;">{{ $stage->label_ar }}</span>
+                                @php
+                                    $shortName = $stage->short_label ?? $stage->label_ar;
+                                    $icon = $stage->icon ?? '📖';
+                                @endphp
+                                <label class="branch-select-card" id="f_stage_card_{{ $stage->id }}">
+                                    <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="file-modal-stage-check" onchange="onFileModalSelectionChange()" checked>
+                                    <div class="branch-card-content">
+                                        <span class="branch-icon">{{ $icon }}</span>
+                                        <span class="branch-name">{{ $shortName }}</span>
+                                        <i class="fa-solid fa-circle-check branch-check-icon" style="color: #dc2626;"></i>
+                                    </div>
                                 </label>
                             @endforeach
                         </div>
 
                         <!-- المادة المشتركة المختارة -->
-                        <div style="margin-top: 12px;">
-                            <label class="f-label" style="font-weight: 700; color: #991b1b; font-size: 0.88rem; margin-bottom: 4px;">
-                                {{ __('المادة الدراسية المشتركة / المبحث *') }}
+                        <div style="margin-top: 14px;">
+                            <label class="f-label" style="font-weight: 700; color: #991b1b; font-size: 0.88rem; margin-bottom: 6px;">
+                                <i class="fa-solid fa-book-bookmark" style="color: #dc2626;"></i> {{ __('المادة الدراسية المشتركة / المبحث:') }}
                             </label>
-                            <select id="file_admin_subject_select" class="f-control" required onchange="onFileModalSelectionChange()">
+                            <select id="file_admin_subject_select" class="f-control" required onchange="onFileModalSelectionChange()" style="min-height: 48px; line-height: 1.6;">
                                 <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
                                 @php
                                     $uniqueSubjects = collect($subjects)->unique('clean_name');
@@ -287,21 +295,25 @@
                                         {{ $uSub->clean_name }}
                                     </option>
                                 @endforeach
-                                <option disabled>────────── مواد تفصيلية ──────────</option>
+                                <option disabled>────────── فروع المواد التفصيلية ──────────</option>
                                 @foreach($subjects as $sub)
+                                    @php
+                                        $subStageName = $sub->stage ? ($sub->stage->short_label ?? $sub->stage->label_ar) : 'عام';
+                                    @endphp
                                     <option value="{{ $sub->id }}" data-clean-name="{{ $sub->clean_name }}" data-key="{{ $sub->subject_key }}">
-                                        {{ $sub->name_ar ?? $sub->name }} ({{ optional($sub->stage)->label_ar ?? 'عام' }})
+                                        {{ $sub->clean_name }} — {{ $subStageName }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
 
                         <!-- تنبيه الفروع والمواد المستهدفة بالتوازي -->
-                        <div id="filePublishTargetAlert" style="display: none; margin-top: 10px; padding: 10px 12px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 8px;">
-                            <strong style="display: block; color: #991b1b; font-size: 0.82rem; margin-bottom: 5px;">
-                                <i class="fa-solid fa-circle-check"></i> {{ __('سيتم نشر هذه الملزمة وتوفيرها للمدرسين والطلبة بالتوازي في:') }}
-                            </strong>
-                            <div id="fileSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        <div id="filePublishTargetAlert" style="display: none; margin-top: 12px; padding: 12px 14px; background: #fef2f2; border: 1.5px solid #fecaca; border-radius: 10px;">
+                            <div style="color: #991b1b; font-size: 0.84rem; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-check-double" style="color: #dc2626;"></i>
+                                <span>{{ __('سيتم نشر هذه الملزمة وتوفيرها للمدرسين والطلبة بالتوازي في:') }}</span>
+                            </div>
+                            <div id="fileSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                         </div>
                         <div id="fileHiddenSubjectIdsWrap"></div>
                     </div>
@@ -805,69 +817,110 @@
     margin-bottom: 20px;
 }
 
-/* Modal */
+/* ==========================================================
+   CLASSIC ROYAL ACADEMIC UPLOAD MODAL (FILES & DOSSIERS)
+   ========================================================== */
 .modal-overlay {
-    display: none;
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 99999;
-    align-items: center;
+    display: none;
+    align-items: flex-start;
     justify-content: center;
-    padding: 20px;
+    overflow-y: auto;
+    padding: 24px 16px;
+    box-sizing: border-box;
 }
 
 .modal-card {
     background: #ffffff;
     border-radius: 18px;
-    max-width: 620px;
+    max-width: 720px;
     width: 100%;
-    padding: 28px 30px;
-    box-shadow: 0 24px 60px rgba(11, 59, 111, 0.22);
-    border: 1px solid #e2e8f0;
-    border-top: 4px solid #0b3b6f;
+    margin: 16px auto;
+    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(226, 232, 240, 0.8);
+    border: 1px solid #cbd5e1;
+    border-top: 4px solid #dc2626;
     animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 50px);
+    overflow: hidden;
 }
 
 @keyframes modalScale {
-    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    from { opacity: 0; transform: scale(0.96) translateY(6px); }
     to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-head {
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 14px;
-    margin-bottom: 18px;
+    padding: 18px 24px;
+    background: #f8fafc;
+    border-bottom: 1.5px solid #e2e8f0;
 }
 
 .modal-head h3 {
     margin: 0;
     font-size: 1.18rem;
     font-weight: 800;
-    color: #0f172a;
+    color: #991b1b;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
 }
 
 .btn-close-modal {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    color: #64748b;
     cursor: pointer;
     line-height: 1;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+    transform: rotate(90deg);
 }
 
 .modal-form-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 22px 24px;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
+    max-height: 100%;
+}
+
+.modal-form-body::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-form-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.modal-form-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+.modal-form-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .f-group {
@@ -877,7 +930,7 @@
 }
 
 .f-label {
-    font-size: 0.82rem;
+    font-size: 0.86rem;
     font-weight: 700;
     color: #1e293b;
     display: flex;
@@ -887,20 +940,120 @@
 
 .f-control {
     width: 100%;
+    min-height: 48px;
     padding: 10px 14px;
     border: 1.5px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 10px;
     font-family: inherit;
-    font-size: 0.88rem;
+    font-size: 0.92rem;
+    line-height: 1.6;
     outline: none;
     background: #ffffff;
-    color: #0f172a;
+    color: #1e293b;
     box-sizing: border-box;
-    transition: border-color 0.15s;
+    transition: all 0.2s ease;
+}
+
+select.f-control {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 16px;
+    padding-left: 38px;
 }
 
 .f-control:focus {
     border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+    background: #ffffff;
+}
+
+/* بطاقات اختيار الفروع الأكاديمية الأنيقة */
+.branch-selector-box {
+    background: #f8fafc;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.btn-branch-util {
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-branch-util:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+.btn-branch-util-clear {
+    background: #ffffff;
+    color: #64748b;
+}
+.btn-branch-util-clear:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.branch-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.branch-select-card {
+    position: relative;
+    cursor: pointer;
+    margin: 0;
+    user-select: none;
+    display: block;
+}
+.branch-select-card input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.branch-card-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #334155;
+    transition: all 0.2s ease;
+}
+.branch-select-card:hover .branch-card-content {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+.branch-select-card input:checked ~ .branch-card-content {
+    border-color: #dc2626;
+    background: #fef2f2;
+    color: #991b1b;
+    box-shadow: 0 1px 3px rgba(220, 38, 38, 0.12);
+}
+.branch-check-icon {
+    margin-right: auto;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    transition: all 0.2s;
+}
+.branch-select-card input:checked ~ .branch-card-content .branch-check-icon {
+    color: #dc2626;
 }
 
 .f-hint {
@@ -1071,11 +1224,14 @@ function onFileModalSelectionChange() {
 
     matched.forEach(sub => {
         hiddenWrap.innerHTML += `<input type="hidden" name="subject_ids[]" value="${sub.id}">`;
-        const stgName = (sub.stage ? sub.stage.label_ar : 'فرع');
+        const branchLabel = (sub.stage && sub.stage.short_label) ? sub.stage.short_label : (sub.stage ? sub.stage.label_ar : 'الفرع الأكاديمي');
+        const subjectClean = (sub.clean_name || sub.name_ar || '').replace(/\(.*?\)/g, '').trim();
+
         listDiv.innerHTML += `
-            <span style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; border: 1px solid #fca5a5; border-radius: 6px; padding: 3px 8px; font-size: 0.78rem; font-weight: 700; color: #991b1b; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
-                <i class="fa-solid fa-circle-check" style="color: #dc2626;"></i> ${sub.name_ar} (${stgName})
-            </span>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: #ffffff; border: 1.5px solid #fca5a5; border-radius: 8px; padding: 5px 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+                <span style="background: #dc2626; color: #ffffff; font-size: 0.74rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">${branchLabel}</span>
+                <span style="color: #1e293b; font-weight: 700; font-size: 0.86rem;">${subjectClean}</span>
+            </div>
         `;
     });
 
@@ -1084,7 +1240,19 @@ function onFileModalSelectionChange() {
 }
 
 function openUploadFileModal() {
-    document.getElementById('uploadFileModal').style.display = 'flex';
+    const m = document.getElementById('uploadFileModal');
+    if (m) {
+        m.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeUploadFileModal() {
+    const m = document.getElementById('uploadFileModal');
+    if (m) {
+        m.style.display = 'none';
+        document.body.style.overflow = '';
+    }
 }
 
 function updateDocRegionSelect(radio) {

@@ -66,8 +66,19 @@ return [
             'key' => env('SUPABASE_ACCESS_KEY_ID'),
             'secret' => env('SUPABASE_SECRET_ACCESS_KEY'),
             'region' => env('SUPABASE_DEFAULT_REGION', 'ap-south-1'), // ضعنا القيمة افتراضياً هنا
-            'bucket' => env('SUPABASE_BUCKET'),
-            'url' => env('SUPABASE_PUBLIC_URL', rtrim(env('SUPABASE_URL', 'https://jdvcftdzwgydtztyszlg.supabase.co'), '/') . '/storage/v1/object/public/' . env('SUPABASE_BUCKET', 'educational-files')),
+            'bucket' => env('SUPABASE_BUCKET', 'educational-files'),
+            'url' => (function() {
+                $custom = env('SUPABASE_PUBLIC_URL');
+                if (!empty($custom)) {
+                    return rtrim($custom, '/');
+                }
+                $base = env('SUPABASE_URL', 'https://jdvcftdzwgydtztyszlg.supabase.co');
+                $bucket = env('SUPABASE_BUCKET', 'educational-files');
+                if (str_contains($base, '/storage/v1/object/public')) {
+                    return rtrim($base, '/');
+                }
+                return rtrim($base, '/') . '/storage/v1/object/public/' . $bucket;
+            })(),
             'endpoint' => env('SUPABASE_ENDPOINT'),
             'use_path_style_endpoint' => true,
             'throw' => false,

@@ -443,11 +443,3 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     // تذاكر الدعم الفني
     Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
-
-// توافقية مسارات الإدارة القديمة والتسليم (محمية بصلاحيات الأدمن)
-Route::middleware(['auth', 'IsAdmin'])->group(function () {
-    Route::get('/admin/students-legacy', [StudentController::class, 'index'])->name('students.index');
-    Route::get('/admin/students/{student}/edit-legacy', [StudentController::class, 'edit'])->name('students.edit');
-    Route::put('/admin/students/{student}/update-legacy', [StudentController::class, 'update'])->name('students.update');
-});
-Route::post('/student/exams/{id}/submit-legacy', [ExamController::class, 'submitExam'])->name('exams.submit');

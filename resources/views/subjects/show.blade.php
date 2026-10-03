@@ -103,10 +103,14 @@
                                 </iframe>
                             @else
                                 @php
-                                    $directUrl = \App\Support\MediaHelper::url($video->url_path) ?: route('video.stream', ['filename' => $video->url_path]);
+                                    $directUrl = \App\Support\MediaHelper::videoStreamUrl($video->url_path);
+                                    $directFallback = \App\Support\MediaHelper::url($video->url_path);
                                 @endphp
                                 <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
-                                    <source src="{{ $directUrl }}" type="video/mp4">
+                                    <source src="{{ $directUrl }}">
+                                    @if($directFallback && $directFallback !== $directUrl)
+                                        <source src="{{ $directFallback }}">
+                                    @endif
                                 </video>
                             @endif
 

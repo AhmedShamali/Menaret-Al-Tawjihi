@@ -15,6 +15,21 @@ class Stage extends Model
         'icon'
     ];
 
+    protected $appends = ['short_label'];
+
+    /**
+     * اسم الفرع المختصر والأنيق بدون حشو
+     */
+    public function getShortLabelAttribute(): string
+    {
+        $label = $this->label_ar ?? '';
+        $clean = preg_replace('/\s*\(.*?\)\s*/u', '', $label);
+        $clean = preg_replace('/الثانوية\s+العامة\s*[-–—]?\s*/u', '', $clean);
+        $clean = preg_replace('/[-–—]?\s*الثانوية\s+العامة/u', '', $clean);
+        $clean = trim($clean, " -–—\t\n\r\0\x0B");
+        return !empty($clean) ? $clean : $label;
+    }
+
     public function getNameArAttribute(): string
     {
         return $this->label_ar ?? '';
