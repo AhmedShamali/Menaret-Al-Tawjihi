@@ -34,10 +34,10 @@
             <span class="nav-tab-label">{{ __('حسابي') }}</span>
         </a>
     @else
-        <button type="button" class="nav-tab" onclick="triggerPwaInstall()" id="bottomNavInstallBtn">
-            <div class="nav-tab-icon install-highlight"><i class="fa-solid fa-mobile-screen-button"></i></div>
-            <span class="nav-tab-label">{{ __('التطبيق') }}</span>
-        </button>
+        <a href="{{ route('login') }}" class="nav-tab nav-tab-login-btn {{ request()->is('login*') ? 'active' : '' }}" title="{{ __('تسجيل الدخول إلى حسابك') }}">
+            <div class="nav-tab-icon login-highlight"><i class="fa-solid fa-arrow-right-to-bracket"></i></div>
+            <span class="nav-tab-label">{{ __('دخول') }}</span>
+        </a>
     @endif
 </nav>
 
@@ -523,6 +523,33 @@
 @keyframes bounceIcon {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-3px); }
+}
+
+.nav-tab-login-btn {
+    position: relative;
+}
+.nav-tab-login-btn .login-highlight i {
+    color: #1e40af;
+}
+.nav-tab-login-btn .nav-tab-icon {
+    background: #eff6ff;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    transition: all 0.2s ease;
+}
+.nav-tab-login-btn:hover .nav-tab-icon,
+.nav-tab-login-btn.active .nav-tab-icon {
+    background: #1e40af;
+    color: #ffffff;
+    border-color: #1e40af;
+    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+}
+.nav-tab-login-btn .nav-tab-label {
+    color: #1e40af;
+    font-weight: 800;
 }
 
 /* بطاقة التثبيت العائمة الذكية */

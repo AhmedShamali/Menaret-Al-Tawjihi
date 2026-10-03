@@ -518,13 +518,13 @@
             cursor: pointer;
         }
 
-        /* 3. شريط التعاميم الأكاديمية (Academic Gazette Ticker - فواتح أنيقة) */
+        /* 3. شريط التعاميم الأكاديمية (Sleek Academic Capsule Ticker) */
         .royal-ticker-bar {
             width: 100%;
-            background-color: #fffdf5;
-            border-bottom: 1.5px solid #fef3c7;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-bottom: 1px solid #fde68a;
             color: #78350f;
-            padding: 8px 32px;
+            padding: 8px 24px;
         }
         .royal-ticker-inner {
             width: 100%;
@@ -532,27 +532,42 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             font-size: 13px;
         }
         .royal-ticker-tag {
-            background: #fef3c7;
-            color: #92400e;
-            font-size: 11.5px;
+            background: #b45309;
+            color: #ffffff;
+            font-size: 11px;
             font-weight: 800;
-            padding: 3px 10px;
-            border-radius: var(--radius-xs);
-            border: 1.5px solid #f59e0b;
+            padding: 3px 11px;
+            border-radius: 999px;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(180, 83, 9, 0.25);
+        }
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.4);
+            animation: pulseDotAnim 1.6s infinite ease-in-out;
+        }
+        @keyframes pulseDotAnim {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35); opacity: 0.6; }
         }
         .royal-ticker-content {
-            font-weight: 600;
+            font-weight: 700;
             flex: 1;
-            color: #451a03;
+            color: #78350f;
             line-height: 1.5;
+            font-size: 12.5px;
         }
 
         /* 4. الحاوية والتخطيط العام */
@@ -634,15 +649,17 @@
             padding: 20px;
         }
 
-        /* 6. صرح الترحيب الأكاديمي (Grand Academic Hero Arch) */
+        /* 6. صرح الترحيب الأكاديمي وبوابات الوصول الذكية (Luminous Hub & Gateways Grid) */
         .royal-hero-arch {
             background: #ffffff;
             border: 1px solid var(--academic-border);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-card);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
             position: relative;
             overflow: hidden;
-            padding: 24px 26px;
+            padding: 28px 28px 22px;
+            background-image: radial-gradient(circle at 100% 0%, rgba(219, 234, 254, 0.4) 0%, transparent 45%),
+                              radial-gradient(circle at 0% 100%, rgba(254, 243, 199, 0.3) 0%, transparent 40%);
         }
         .royal-hero-arch::before {
             content: '';
@@ -651,14 +668,14 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--royal-navy) 0%, var(--royal-gold) 50%, var(--royal-navy) 100%);
+            background: linear-gradient(90deg, #1e40af 0%, #d97706 50%, #059669 100%);
         }
         .royal-hero-top {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             flex-wrap: wrap;
         }
         .royal-hero-title-wrap {
@@ -667,30 +684,31 @@
             gap: 12px;
         }
         .royal-hero-crest-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--royal-navy-soft);
-            color: var(--royal-navy);
-            border: 1.5px solid var(--royal-navy-border);
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1.5px solid #bfdbfe;
             display: grid;
             place-items: center;
-            font-size: 18px;
+            font-size: 20px;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.12);
         }
         .royal-hero-title-wrap h2 {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 900;
-            color: var(--academic-text-title);
+            color: #0f172a;
             margin: 0;
-            line-height: 1.3;
+            line-height: 1.35;
         }
         .royal-hero-badge-tag {
-            background: var(--royal-gold-soft);
-            color: #7c570b;
-            border: 1px solid var(--royal-gold-border);
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
             padding: 4px 12px;
-            border-radius: var(--radius-sm);
+            border-radius: 999px;
             font-size: 12px;
             font-weight: 800;
             display: inline-flex;
@@ -699,56 +717,185 @@
         }
         .royal-hero-desc {
             font-size: 13.5px;
-            color: var(--academic-text-body);
-            line-height: 1.75;
-            margin-bottom: 20px;
+            color: #475569;
+            line-height: 1.7;
+            margin-bottom: 22px;
+            max-width: 950px;
         }
-        .royal-hero-pillars {
+
+        /* شبكة بوابات الدخول السريعة الذكية (4 Interactive Gateways) */
+        .royal-hero-gateways-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 14px;
-            padding-top: 18px;
-            border-top: 1px solid var(--academic-border-subtle);
+            margin-bottom: 18px;
         }
-        .royal-pillar-box {
-            background: var(--academic-bg);
-            border: 1px solid var(--academic-border);
-            border-radius: var(--radius-sm);
-            padding: 12px 14px;
+        .royal-gateway-card {
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px 18px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+        }
+        .royal-gateway-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+        }
+        .gateway-card-student {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            border-color: #bfdbfe;
+        }
+        .gateway-card-student:hover {
+            border-color: #2563eb;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.16);
+        }
+        .gateway-card-register {
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            border-color: #fde68a;
+        }
+        .gateway-card-register:hover {
+            border-color: #d97706;
+            box-shadow: 0 10px 24px rgba(217, 119, 6, 0.18);
+        }
+        .gateway-card-calc {
+            background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+            border-color: #a7f3d0;
+        }
+        .gateway-card-calc:hover {
+            border-color: #059669;
+            box-shadow: 0 10px 24px rgba(5, 150, 105, 0.16);
+        }
+        .gateway-card-offline {
+            background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%);
+            border-color: #e9d5ff;
+        }
+        .gateway-card-offline:hover {
+            border-color: #7c3aed;
+            box-shadow: 0 10px 24px rgba(124, 58, 237, 0.16);
+        }
+
+        .gateway-card-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            transition: var(--transition);
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-        .royal-pillar-box:hover {
-            background: #ffffff;
-            border-color: var(--royal-gold);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-subtle);
-        }
-        .royal-pillar-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: #ffffff;
-            border: 1px solid var(--academic-border);
-            color: var(--royal-navy);
+        .gateway-icon-pod {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
             display: grid;
             place-items: center;
-            font-size: 15px;
+            font-size: 19px;
             flex-shrink: 0;
+            transition: transform 0.2s ease;
         }
-        .royal-pillar-text h4 {
-            font-size: 12.5px;
+        .royal-gateway-card:hover .gateway-icon-pod {
+            transform: scale(1.08);
+        }
+        .gateway-card-student .gateway-icon-pod {
+            background: #1e40af;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+        .gateway-card-register .gateway-icon-pod {
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+        }
+        .gateway-card-calc .gateway-icon-pod {
+            background: #059669;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
+        }
+        .gateway-card-offline .gateway-icon-pod {
+            background: #7c3aed;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+
+        .gateway-pill {
+            font-size: 11px;
             font-weight: 800;
-            color: var(--academic-text-title);
-            margin: 0 0 2px 0;
+            padding: 3px 8px;
+            border-radius: 6px;
         }
-        .royal-pillar-text p {
-            font-size: 11.5px;
-            color: var(--academic-text-muted);
-            margin: 0;
-            line-height: 1.4;
+        .gateway-card-student .gateway-pill {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        .gateway-card-register .gateway-pill {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .gateway-card-calc .gateway-pill {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .gateway-card-offline .gateway-pill {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .gateway-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 4px;
+        }
+        .gateway-desc {
+            font-size: 12px;
+            color: #64748b;
+            margin: 0 0 12px;
+            line-height: 1.5;
+        }
+        .gateway-cta-btn {
+            font-size: 12px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: auto;
+            transition: gap 0.2s ease;
+        }
+        .royal-gateway-card:hover .gateway-cta-btn {
+            gap: 9px;
+        }
+        .btn-primary-pulse { color: #1e40af; }
+        .btn-gold-pulse { color: #d97706; }
+        .btn-emerald-pulse { color: #059669; }
+        .btn-sapphire-pulse { color: #7c3aed; }
+
+        /* أشرطة المؤشرات الأكاديمية السريعة أسفل البوابات */
+        .royal-hero-quick-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-top: 14px;
+            border-top: 1px dashed #e2e8f0;
+        }
+        .quick-badge-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .quick-badge-item i {
+            color: #1e40af;
         }
 
         /* 7. شبكة فروع التوجيهي الملكية (Royal Branches Ledger Grid) */
@@ -1369,7 +1516,15 @@
                 padding: 14px 12px 36px;
             }
             .royal-hero-arch {
-                padding: 16px 14px;
+                padding: 18px 14px;
+                border-radius: 16px;
+            }
+            .royal-hero-title-wrap h2 {
+                font-size: 17px;
+            }
+            .royal-hero-gateways-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
             }
             .royal-hero-pillars {
                 grid-template-columns: 1fr;
@@ -1377,17 +1532,123 @@
             .royal-card-body {
                 padding: 14px;
             }
-            .royal-nav-actions .btn-royal-login {
-                display: none;
+            .royal-branches-grid {
+                grid-template-columns: 1fr;
+            }
+            .royal-nav-actions {
+                display: flex !important;
+                align-items: center;
+                gap: 6px;
+            }
+            .btn-royal-login {
+                display: inline-flex !important;
+                background: #1e40af !important;
+                color: #ffffff !important;
+                border: 1px solid #1d4ed8 !important;
+                padding: 6px 11px !important;
+                font-size: 11.5px !important;
+                font-weight: 800 !important;
+                border-radius: 8px !important;
+                box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25) !important;
+                white-space: nowrap;
+            }
+            .btn-royal-login:hover {
+                background: #1e3a8a !important;
+                color: #ffffff !important;
+            }
+            .btn-royal-gold {
+                display: inline-flex !important;
+                background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+                color: #ffffff !important;
+                border: none !important;
+                padding: 6px 11px !important;
+                font-size: 11.5px !important;
+                font-weight: 800 !important;
+                border-radius: 8px !important;
+                box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25) !important;
+                white-space: nowrap;
+            }
+            .btn-royal-gold:hover {
+                color: #ffffff !important;
             }
         }
 
-        @media (max-width: 420px) {
+        .mobile-auth-drawer-item {
+            display: none;
+        }
+
+        @media (max-width: 992px) {
+            .mobile-auth-drawer-item {
+                display: block;
+                padding: 12px 16px;
+                background: #f8fafc;
+                border-bottom: 1.5px solid #e2e8f0;
+            }
+            .drawer-auth-buttons {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .drawer-btn-login {
+                background: #1e40af;
+                color: #ffffff !important;
+                padding: 10px 12px;
+                border-radius: 8px;
+                font-weight: 800;
+                font-size: 13px;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25);
+            }
+            .drawer-btn-reg {
+                background: linear-gradient(135deg, #d97706, #f59e0b);
+                color: #ffffff !important;
+                padding: 10px 12px;
+                border-radius: 8px;
+                font-weight: 800;
+                font-size: 13px;
+                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+            }
+            .drawer-user-pill {
+                background: #eff6ff;
+                border: 1px solid #bfdbfe;
+                color: #1e40af !important;
+                padding: 10px 14px;
+                border-radius: 8px;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 440px) {
+            .btn-royal-login .label-full,
+            .btn-royal-gold .label-full {
+                display: none !important;
+            }
+            .btn-royal-login .label-short,
+            .btn-royal-gold .label-short {
+                display: inline !important;
+            }
             .royal-ribbon-badge span {
                 max-width: 140px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+            }
+            .btn-royal-login,
+            .btn-royal-gold {
+                padding: 5px 9px !important;
+                font-size: 11px !important;
             }
         }
 
@@ -1521,6 +1782,24 @@
             </a>
 
             <ul class="royal-nav-menu" id="mainNavMenu">
+                <li class="royal-nav-item mobile-auth-drawer-item">
+                    @if(Auth::guard('student')->check() || Auth::check())
+                        <a href="{{ route('dashboard') }}" class="drawer-user-pill">
+                            <i class="fa-solid fa-user-circle"></i>
+                            <span>{{ __('الانتقال إلى لوحة تحكم حسابي') }}</span>
+                            <i class="fa-solid fa-arrow-left" style="margin-right: auto;"></i>
+                        </a>
+                    @else
+                        <div class="drawer-auth-buttons">
+                            <a href="{{ route('login') }}" class="drawer-btn-login">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> {{ __('تسجيل الدخول') }}
+                            </a>
+                            <a href="{{ route('students.create') }}" class="drawer-btn-reg">
+                                <i class="fa-solid fa-user-plus"></i> {{ __('حساب جديد') }}
+                            </a>
+                        </div>
+                    @endif
+                </li>
                 <li class="royal-nav-item"><a href="{{ route('home') }}" class="royal-nav-link active"><i class="fa-solid fa-house-chimney"></i> {{ __('الرئيسية') }}</a></li>
                 <li class="royal-nav-item"><a href="#branches" class="royal-nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
                 <li class="royal-nav-item"><a href="#features" class="royal-nav-link"><i class="fa-solid fa-award"></i> {{ __('خدمات المنصة') }}</a></li>
@@ -1534,27 +1813,36 @@
 
             <div class="royal-nav-actions">
                 @if(Auth::guard('student')->check() || Auth::check())
-                    <a href="{{ route('dashboard') }}" class="btn-royal-gold">
-                        <i class="fa-solid fa-gauge-high"></i> {{ __('لوحة التحكم') }}
+                    <a href="{{ route('dashboard') }}" class="btn-royal-gold" title="{{ __('لوحة التحكم') }}">
+                        <i class="fa-solid fa-gauge-high"></i>
+                        <span class="label-full">{{ __('لوحة التحكم') }}</span>
+                        <span class="label-short" style="display: none;">{{ __('لوحتي') }}</span>
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="btn-royal-login">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> {{ __('تسجيل الدخول') }}
+                    <a href="{{ route('login') }}" class="btn-royal-login" title="{{ __('تسجيل الدخول إلى حسابك') }}">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        <span class="label-full">{{ __('تسجيل الدخول') }}</span>
+                        <span class="label-short" style="display: none;">{{ __('دخول') }}</span>
                     </a>
-                    <a href="{{ route('students.create') }}" class="btn-royal-gold">
-                        <i class="fa-solid fa-graduation-cap"></i> {{ __('تسجيل طالب جديد') }}
+                    <a href="{{ route('students.create') }}" class="btn-royal-gold" title="{{ __('تسجيل طالب جديد') }}">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span class="label-full">{{ __('تسجيل طالب جديد') }}</span>
+                        <span class="label-short" style="display: none;">{{ __('حساب جديد') }}</span>
                     </a>
                 @endif
             </div>
         </div>
     </nav>
 
-    <!-- 3. شريط التعاميم والأنباء الأكاديمية (Academic Gazette Ticker) -->
+    <!-- 3. شريط التعاميم والأنباء الأكاديمية (Sleek Academic Capsule Ticker) -->
     <div class="royal-ticker-bar">
         <div class="royal-ticker-inner">
-            <span class="royal-ticker-tag"><i class="fa-solid fa-scroll"></i> {{ __('تعميم أكاديمي') }}</span>
+            <span class="royal-ticker-tag">
+                <span class="pulse-dot"></span>
+                <span>{{ __('إعلان توجيهي 2026') }}</span>
+            </span>
             <span class="royal-ticker-content">
-                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين (القدس، الضفة الغربية، وقطاع غزة). نعلن عن فتح باب التسجيل وتفعيل الشروحات والتدريبات التفاعلية المعتمدة لعام 2026 بإشراف نخبة من المعلمين المعتمدين.') }}
+                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين (القدس، الضفة الغربية، وقطاع غزة). المنظومة مفتوحة للتسجيل وتفعيل الشروحات والتدريبات التفاعلية المعتمدة لعام 2026.') }}
             </span>
         </div>
     </div>
@@ -1566,55 +1854,126 @@
             <!-- العمود الرئيسي للمحتوى الأكاديمي -->
             <main class="main-content-flow">
 
-                <!-- صرح الترحيب الأكاديمي الملكي -->
+                <!-- صرح الترحيب الأكاديمي وبوابات الوصول الذكية -->
                 <div class="royal-hero-arch">
                     <div class="royal-hero-top">
                         <div class="royal-hero-title-wrap">
                             <div class="royal-hero-crest-icon">
-                                <i class="fa-solid fa-landmark"></i>
+                                <i class="fa-solid fa-graduation-cap"></i>
                             </div>
                             <div>
-                                <h2>{{ __('Step by Step | المنظومة الأكاديمية الفلسطينية المعتمدة') }}</h2>
+                                <h2>{{ __('منظومة Step by Step | المنهاج الفلسطيني المعتمد') }}</h2>
                             </div>
                         </div>
                         <span class="royal-hero-badge-tag">
                             <i class="fa-solid fa-award"></i>
-                            {{ __('العام الأكاديمي 2026 م') }}
+                            {{ __('الثانوية العامة (التوجيهي) 2026 م') }}
                         </span>
                     </div>
 
                     <p class="royal-hero-desc">
-                        {{ __('المنظومة الأكاديمية التعليمية المتخصصة لطلبة الثانوية العامة (التوجيهي) في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). نوفر لطلابنا بيئة تعليمية متكاملة تضاهي كبرى المنصات مثل ستيب التعليمية وأبواب، مع شروحات تعليمية شاملة لكافة الدروس، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص المناهج، وبطاقات الاستذكار السريع بإشراف م.أحمد شمالي.') }}
+                        {{ __('بوابتك المتخصصة للتفوق والدرجات العالية في الثانوية العامة في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). شروحات مصورة نموذجية، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص PDF، وحاسبة المعدل الوزارية بإشراف م.أحمد شمالي.') }}
                     </p>
 
-                    <div class="royal-hero-pillars">
-                        <div class="royal-pillar-box">
-                            <div class="royal-pillar-icon"><i class="fa-solid fa-book-bookmark"></i></div>
-                            <div class="royal-pillar-text">
-                                <h4>{{ __('المنهاج الفلسطيني المعتمد') }}</h4>
-                                <p>{{ __('تغطية لكافة الوحدات والكتب 2026') }}</p>
+                    <!-- بوابات الدخول السريعة الذكية (4 Interactive Gateways) -->
+                    <div class="royal-hero-gateways-grid">
+
+                        <!-- 1. بوابة تسجيل الدخول / حسابي -->
+                        @if(Auth::guard('student')->check() || Auth::check())
+                            <a href="{{ route('dashboard') }}" class="royal-gateway-card gateway-card-student">
+                                <div class="gateway-card-header">
+                                    <div class="gateway-icon-pod">
+                                        <i class="fa-solid fa-gauge-high"></i>
+                                    </div>
+                                    <span class="gateway-pill">{{ __('متصل الآن 🟢') }}</span>
+                                </div>
+                                <h3 class="gateway-title">{{ __('لوحة تحكم حسابي') }}</h3>
+                                <p class="gateway-desc">{{ __('متابعة تقدمك الدراسي، الدروس المتبقية، والتقييمات الذاتية.') }}</p>
+                                <span class="gateway-cta-btn btn-primary-pulse">
+                                    <span>{{ __('الدخول للوحة التحكم') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </span>
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="royal-gateway-card gateway-card-student">
+                                <div class="gateway-card-header">
+                                    <div class="gateway-icon-pod">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                    <span class="gateway-pill">{{ __('دخول فوري ⚡') }}</span>
+                                </div>
+                                <h3 class="gateway-title">{{ __('بوابة تسجيل الدخول') }}</h3>
+                                <p class="gateway-desc">{{ __('ادخل إلى حسابك لمتابعة حصصك، اختباراتك، والمواد المسجلة.') }}</p>
+                                <span class="gateway-cta-btn btn-primary-pulse">
+                                    <span>{{ __('تسجيل الدخول لحسابك') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </span>
+                            </a>
+                        @endif
+
+                        <!-- 2. إنشاء حساب طالب جديد -->
+                        <a href="{{ route('students.create') }}" class="royal-gateway-card gateway-card-register">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('مجاناً ✨') }}</span>
                             </div>
+                            <h3 class="gateway-title">{{ __('تسجيل طالب جديد') }}</h3>
+                            <p class="gateway-desc">{{ __('انضم لآلاف طلبة التوجيهي واستفد من الشروحات والملخصات المعتمدة.') }}</p>
+                            <span class="gateway-cta-btn btn-gold-pulse">
+                                <span>{{ __('فتح حساب طالب جديد') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                        <!-- 3. حاسبة معدل التوجيهي الوزارية -->
+                        <a href="{{ route('tawjihi.calculator') }}" class="royal-gateway-card gateway-card-calc">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-calculator"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('نظام 2026 🎯') }}</span>
+                            </div>
+                            <h3 class="gateway-title">{{ __('حاسبة المعدل الوزارية') }}</h3>
+                            <p class="gateway-desc">{{ __('احتساب دقيق ومعتمد لمعدلك وفق معايير وزارة التربية والتعليم لكافة الفروع.') }}</p>
+                            <span class="gateway-cta-btn btn-emerald-pulse">
+                                <span>{{ __('احسب معدلك الآن') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                        <!-- 4. المكتبة الأوفلاين والدروس المحفوظة بدون إنترنت -->
+                        <a href="{{ route('offline.videos') }}" class="royal-gateway-card gateway-card-offline">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('بدون نت 🚀') }}</span>
+                            </div>
+                            <h3 class="gateway-title">{{ __('دروسي المحفوظة أوفلاين') }}</h3>
+                            <p class="gateway-desc">{{ __('شاهد الحصص والشروحات المحملة على هاتفك حتى عند انقطاع الإنترنت.') }}</p>
+                            <span class="gateway-cta-btn btn-sapphire-pulse">
+                                <span>{{ __('عرض الحصص المحملة') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                    </div>
+
+                    <!-- أشرطة المؤشرات الأكاديمية السريعة أسفل البوابات -->
+                    <div class="royal-hero-quick-badges">
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span>{{ __('المنهاج الفلسطيني المعتمد (القدس، الضفة، غزة)') }}</span>
                         </div>
-                        <div class="royal-pillar-box">
-                            <div class="royal-pillar-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
-                            <div class="royal-pillar-text">
-                                <h4>{{ __('نخبة الكوادر التعليمية') }}</h4>
-                                <p>{{ __('شروحات نموذجية وحلول وزارية') }}</p>
-                            </div>
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                            <span>{{ __('إشراف وتدريس نخبة معلمين متميزين') }}</span>
                         </div>
-                        <div class="royal-pillar-box">
-                            <div class="royal-pillar-icon"><i class="fa-solid fa-file-pdf"></i></div>
-                            <div class="royal-pillar-text">
-                                <h4>{{ __('دوسيات وملازم PDF') }}</h4>
-                                <p>{{ __('جاهزة للطباعة والمراجعة السريعة') }}</p>
-                            </div>
-                        </div>
-                        <div class="royal-pillar-box">
-                            <div class="royal-pillar-icon"><i class="fa-solid fa-calculator"></i></div>
-                            <div class="royal-pillar-text">
-                                <h4>{{ __('حاسبة المعدل الوزارية') }}</h4>
-                                <p>{{ __('احتساب رسمي وفق ضوابط الوزارة') }}</p>
-                            </div>
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>{{ __('دوسيات وامتحانات وزارية محلولة 100%') }}</span>
                         </div>
                     </div>
                 </div>
