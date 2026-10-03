@@ -105,7 +105,7 @@
                                     <i class="fas fa-shield-alt"></i> {{ __('خاص بالإدارة') }}
                                 </span>
                             </div>
-                            <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 @if(!empty($student->plain_password))
                                     <span class="font-mono" style="font-size: 0.95rem; font-weight: 700; color: #1e293b; background: #ffffff; padding: 6px 12px; border: 1px solid #e2e8f0; border-radius: 6px; flex: 1; display: flex; justify-content: space-between; align-items: center;" dir="ltr">
                                         <span id="studentEditPassPlain" style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; border: 1px solid #fde68a;">{{ $student->plain_password }}</span>

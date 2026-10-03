@@ -59,16 +59,18 @@
                                 @endif
                             </select>
                         </div>
+                    </div>
+
                     <!-- توجيه المحتوى حسب المنطقة التعليمية (غزة / الضفة) -->
                     @php
                         $curRegion = $content->target_region ?? 'all';
                     @endphp
                     <div class="field-group" style="margin-top: 14px;">
-                        <label class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="field-label" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
                             <span>{{ __('الجمهور والمنهاج المستهدف') }} <span class="req-star">*</span></span>
                             <small style="color: #64748b; font-weight: normal;">{{ __('تحديد من يرى هذا المحتوى من الطلبة المسجلين') }}</small>
                         </label>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                        <div class="region-select-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
                             <label style="cursor: pointer; margin: 0;">
                                 <input type="radio" name="target_region" value="gaza" {{ $curRegion === 'gaza' ? 'checked' : '' }} style="display: none;" onchange="updateEditRegionUI(this)">
                                 <div id="edit_card_gaza" style="border: 2px solid {{ $curRegion === 'gaza' ? '#059669' : '#cbd5e1' }}; border-radius: 10px; padding: 10px 8px; text-align: center; background: {{ $curRegion === 'gaza' ? '#ecfdf5' : '#fff' }}; transition: all 0.2s;">
@@ -561,6 +563,10 @@
     @media (max-width: 900px) {
         .editor-grid { grid-template-columns: 1fr; }
         .flex-row { flex-direction: column; gap: 0; }
+    }
+    @media (max-width: 600px) {
+        .region-select-grid { grid-template-columns: 1fr !important; }
+        .academic-header-card { flex-direction: column; align-items: stretch; }
     }
 </style>
 @endsection
