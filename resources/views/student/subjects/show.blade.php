@@ -1243,15 +1243,25 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                         <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                            @if($isDirectVideo && ($directVideoUrl || !empty($video->url_path)))
+                                            @php
+                                                $hasOfflineMp4 = \App\Services\OfflineVideoManager::hasLocalMp4($video);
+                                                $isYt = !empty($video->youtube_id);
+                                                $canDownloadOffline = ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) || $isYt || $hasOfflineMp4;
+                                            @endphp
+
+                                            @if($canDownloadOffline)
                                                 <button type="button" 
                                                         class="ed-btn-offline-card" 
                                                         id="btn_offline_{{ $video->id }}" 
                                                         data-video-id="{{ $video->id }}"
                                                         data-video-title="{{ $video->title }}"
                                                         data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                        data-video-url="{{ $directVideoUrl ?: route('content.downloadVideo', $video->id) }}"
+                                                        data-video-url="{{ route('content.downloadVideo', $video->id) }}"
                                                         data-is-direct="1"
+                                                        @if($isYt && !$hasOfflineMp4)
+                                                            data-is-youtube="1"
+                                                            data-prepare-url="{{ route('content.prepareOfflineVideo', $video->id) }}"
+                                                        @endif
                                                         data-yt-embed="{{ $ytEmbed ?? '' }}"
                                                         data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
                                                         onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
@@ -1281,25 +1291,6 @@
                                                     <div class="ed-offline-btn-inner">
                                                         <span class="ed-offline-btn-icon"><i class="fa-solid fa-file-pdf"></i></span>
                                                         <span class="offline-btn-label">{{ __('حفظ ملزمة الدرس أوفلاين (PDF ⚡)') }}</span>
-                                                    </div>
-                                                </button>
-                                            @else
-                                                <button type="button" 
-                                                        class="ed-btn-offline-card" 
-                                                        id="btn_offline_{{ $video->id }}" 
-                                                        data-video-id="{{ $video->id }}"
-                                                        data-video-title="{{ $video->title }}"
-                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                        data-video-url=""
-                                                        data-is-direct="0"
-                                                        data-yt-embed="{{ $ytEmbed ?? '' }}"
-                                                        data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
-                                                        onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('حفظ الدرس في مكتبتك (ملاحظة: تشغيل يوتيوب يتطلب اتصالاً، الفيديوهات المرفوعة بصيغة MP4 هي فقط التي تعمل أوفلاين)') }}"
-                                                        style="background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;">
-                                                    <div class="ed-offline-btn-inner">
-                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-bookmark"></i></span>
-                                                        <span class="offline-btn-label">{{ __('حفظ في مكتبتي 📌') }}</span>
                                                     </div>
                                                 </button>
                                             @endif

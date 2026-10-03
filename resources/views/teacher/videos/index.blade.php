@@ -20,7 +20,7 @@
                 {{ __('إدارة ورفع الفيديوهات والشروحات المرئية') }}
             </h1>
             <p>
-                {{ __('رفع وإدارة حصص وشروحات المنهاج الفلسطيني عبر روابط YouTube السريعة، مع تنظيم ترتيب الدروس والتحكم بظهورها للطلبة فورياً.') }}
+                {{ __('رفع وإدارة حصص وشروحات المنهاج الفلسطيني عبر رفع ملفات الفيديو المباشرة عالية الدقة، مع تنظيم ترتيب الدروس والتحكم بظهورها ودعم المشاهدة الأوفلاين للطلبة.') }}
             </p>
         </div>
 
@@ -253,56 +253,53 @@
                     <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
                 </div>
 
-                <!-- تبديل نوع مصدر الفيديو -->
-                <div class="f-group">
-                    <label class="f-label">{{ __('طريقة تقديم الفيديو *') }}</label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
-                        <button type="button" id="tabSourceFile" onclick="switchVideoSourceType('file')" class="source-tab-btn" style="padding: 10px 14px; border: 2px solid #2563eb; border-radius: 10px; background: #eff6ff; color: #1e40af; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>{{ __('رفع ملف MP4 (أوفلاين ⚡)') }}</span>
-                        </button>
-                        <button type="button" id="tabSourceYoutube" onclick="switchVideoSourceType('youtube')" class="source-tab-btn" style="padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; background: #ffffff; color: #64748b; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease;">
-                            <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
-                            <span>{{ __('رابط YouTube (بث)') }}</span>
-                        </button>
+                <!-- رفع ملف الفيديو محلياً بنظام الأجزاء السريع والآمن -->
+                <div class="f-group" id="groupVideoFile">
+                    <label class="f-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>
+                            <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i>
+                            {{ __('ملف الفيديو للدرس (MP4 / WebM) *') }}
+                        </span>
+                        <span style="font-size: 0.78rem; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px;">
+                            ⚡ {{ __('رفع محلي سريع + يدعم الأوفلاين للطلبة') }}
+                        </span>
+                    </label>
+
+                    <div class="ed-video-dropzone" id="videoDropzone" onclick="document.getElementById('videoFileInput').click()">
+                        <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" style="display: none;" onchange="handleVideoFileSelection(this)">
+                        <div class="dropzone-inner" id="dropzoneContent">
+                            <div class="dropzone-icon">
+                                <i class="fa-solid fa-film"></i>
+                            </div>
+                            <div class="dropzone-text">
+                                <strong id="dropzoneTitle">{{ __('اسحب ملف الفيديو وأفلته هنا، أو اضغط للاختيار') }}</strong>
+                                <span id="dropzoneSubtitle">{{ __('يدعم ملفات MP4 و WebM بأي حجم حتى 2GB+ بنظام التجزئة فائق السرعة.') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- شريط تقدم الرفع المباشر بالأجزاء -->
+                    <div id="chunkProgressWrap" style="display: none; margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="chunkProgressStatus" style="font-size: 0.85rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-spinner fa-spin"></i>
+                                <span>{{ __('جاري بدء تجهيز ورفع أجزاء الفيديو...') }}</span>
+                            </span>
+                            <span id="chunkProgressPct" style="font-size: 0.85rem; font-weight: 900; color: #1e3a8a; font-family: monospace;">0%</span>
+                        </div>
+                        <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; position: relative;">
+                            <div id="chunkProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6, #059669); transition: width 0.2s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.76rem; color: #64748b;">
+                            <span id="chunkFileMeta">-- / --</span>
+                            <span id="chunkPartMeta">--</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- حقل رفع ملف فيديو MP4 مباشر -->
-                <div class="f-group" id="groupVideoFile" style="display: block;">
-                    <label class="f-label">
-                        <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
-                        <span>{{ __('ملف الفيديو (MP4 / WebM) *') }}</span>
-                    </label>
-                    <input type="file" name="video_file" id="videoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="f-control" style="padding: 8px;">
-                    <small class="f-hint" style="color: #166534; font-weight: 600; display: block; margin-top: 6px;">
-                        <i class="fa-solid fa-circle-check"></i> {{ __('الميزة الذهبية: يتيح هذا الخيار لطلابك تحميل الشرح وتشغيله بالكامل بدون إنترنت داخل تطبيق المنصة!') }}
-                    </small>
-                </div>
-
-                <!-- حقل رابط YouTube -->
-                <div class="f-group" id="groupVideoUrl" style="display: none;">
-                    <label class="f-label">
-                        <i class="fa-brands fa-youtube" style="color: #ef4444;"></i>
-                        <span>{{ __('رابط فيديو YouTube *') }}</span>
-                    </label>
-                    <input type="url" name="video_url" id="videoUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewYoutube(this.value)" class="f-control font-mono text-ltr">
-                    <small class="f-hint" style="color: #b45309; font-weight: 600; display: block; margin-top: 6px;">
-                        <i class="fa-solid fa-circle-info"></i> {{ __('تنبيه: روابط YouTube تعمل كبث مباشر وتتطلب إنترنت للمشاهدة. إذا أردت أن يحمل طلابك الدرس ويشاهدوها بدون نت في أي وقت، اختر خيار "رفع ملف MP4 (أوفلاين ⚡)".') }}
-                    </small>
-                </div>
-
-                <!-- معاينة فورية للفيديو -->
-                <div id="ytPreviewContainer" style="display: none; margin-top: 6px;">
-                    <label class="f-label" style="color: #64748b;">{{ __('معاينة مشغل الفيديو:') }}</label>
-                    <div style="position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; background: #000;" oncontextmenu="event.preventDefault(); return false;">
-                        <iframe id="ytPreviewFrame" src="" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
-                    </div>
-                </div>
-
-                <div class="f-row">
+                <div class="f-row" style="margin-top: 14px;">
                     <div class="f-group" style="flex: 1;">
-                        <label class="f-label">{{ __('اسم القناة / المصدر الأكاديمي') }}</label>
+                        <label class="f-label">{{ __('اسم المعلم / مقدم الشرح') }}</label>
                         <input type="text" name="channel_name" value="{{ auth()->user()->name_ar ?? auth()->user()->name }}" placeholder="{{ __('مثال: م.أحمد شمالي') }}" class="f-control">
                     </div>
 
@@ -314,10 +311,10 @@
             </div>
 
             <div class="modal-foot">
-                <button type="button" onclick="closeUploadVideoModal()" class="btn-modal-cancel">{{ __('إلغاء') }}</button>
+                <button type="button" onclick="closeUploadVideoModal()" class="btn-modal-cancel" id="btnCancelUpload">{{ __('إلغاء') }}</button>
                 <button type="submit" id="btnSubmitVideo" class="btn-modal-submit">
-                    <i class="fa-solid fa-check"></i>
-                    <span>{{ __('حفظ ونشر الفيديو للطلبة') }}</span>
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>{{ __('بدء رفع ونشر الفيديو') }}</span>
                 </button>
             </div>
         </form>
@@ -1026,6 +1023,47 @@
         flex-direction: column;
         gap: 8px;
     }
+.ed-video-dropzone {
+    border: 2px dashed #93c5fd;
+    background: #f0f7ff;
+    border-radius: 12px;
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.ed-video-dropzone:hover, .ed-video-dropzone.dragover {
+    border-color: #2563eb;
+    background: #e0f2fe;
+    transform: translateY(-1px);
+}
+.dropzone-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.dropzone-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    color: #2563eb;
+    display: grid;
+    place-items: center;
+    font-size: 1.45rem;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+}
+.dropzone-text strong {
+    display: block;
+    color: #1e3a8a;
+    font-size: 0.92rem;
+    margin-bottom: 3px;
+}
+.dropzone-text span {
+    font-size: 0.78rem;
+    color: #64748b;
 }
 </style>
 
@@ -1038,146 +1076,223 @@ function openUploadVideoModal() {
 }
 
 function closeUploadVideoModal() {
+    const chunkWrap = document.getElementById('chunkProgressWrap');
+    if (chunkWrap && chunkWrap.style.display !== 'none' && !chunkWrap.dataset.completed) {
+        if (!confirm('{{ __("هناك عملية رفع فيديو جارية حالياً، هل أنت متأكد من الإلغاء؟") }}')) {
+            return;
+        }
+    }
     document.getElementById('uploadVideoModal').style.display = 'none';
 }
 
-function parseYouTubeId(url) {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return (match && match[2].length === 11) ? match[2] : null;
+function formatBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
-function previewYoutube(url) {
-    const videoId = parseYouTubeId(url.trim());
-    const container = document.getElementById('ytPreviewContainer');
-    const frame = document.getElementById('ytPreviewFrame');
-    if (videoId) {
-        frame.style.display = 'block';
-        frame.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1`;
-        container.style.display = 'block';
-    } else {
-        frame.src = '';
-        frame.style.display = 'none';
-        container.style.display = 'none';
+function handleVideoFileSelection(input) {
+    if (!input.files || input.files.length === 0) return;
+    const file = input.files[0];
+    const allowed = ['mp4', 'webm', 'ogg', 'mov', 'm4v'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    
+    if (!allowed.includes(ext)) {
+        Swal.fire({
+            icon: 'error',
+            title: '{{ __("صيغة غير مدعومة") }}',
+            text: '{{ __("يرجى اختيار ملف فيديو بصيغة MP4 أو WebM أو MOV.") }}',
+            confirmButtonText: '{{ __("حسناً") }}'
+        });
+        input.value = '';
+        return;
+    }
+
+    const titleEl = document.getElementById('dropzoneTitle');
+    const subEl = document.getElementById('dropzoneSubtitle');
+    const iconEl = document.querySelector('#videoDropzone .dropzone-icon');
+
+    if (titleEl) {
+        titleEl.textContent = file.name;
+        titleEl.style.color = '#15803d';
+    }
+    if (subEl) {
+        subEl.textContent = `✅ {{ __("الملف جاهز للرفع:") }} ${formatBytes(file.size)} (${ext.toUpperCase()})`;
+        subEl.style.color = '#166534';
+        subEl.style.fontWeight = '700';
+    }
+    if (iconEl) {
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i>';
+        iconEl.style.borderColor = '#86efac';
+        iconEl.style.background = '#f0fdf4';
     }
 }
 
-let currentVideoSourceType = 'file';
-
-function switchVideoSourceType(type) {
-    currentVideoSourceType = type;
-    const tabFile = document.getElementById('tabSourceFile');
-    const tabYt = document.getElementById('tabSourceYoutube');
-    const groupFile = document.getElementById('groupVideoFile');
-    const groupYt = document.getElementById('groupVideoUrl');
-    const ytPreview = document.getElementById('ytPreviewContainer');
-
-    if (type === 'file') {
-        if (tabFile) {
-            tabFile.style.borderColor = '#2563eb';
-            tabFile.style.background = '#eff6ff';
-            tabFile.style.color = '#1e40af';
+// دعم السحب والإفلات
+const dropArea = document.getElementById('videoDropzone');
+if (dropArea) {
+    ['dragenter', 'dragover'].forEach(name => {
+        dropArea.addEventListener(name, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropArea.classList.add('dragover');
+        }, false);
+    });
+    ['dragleave', 'drop'].forEach(name => {
+        dropArea.addEventListener(name, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropArea.classList.remove('dragover');
+        }, false);
+    });
+    dropArea.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (files && files.length > 0) {
+            const fileInput = document.getElementById('videoFileInput');
+            fileInput.files = files;
+            handleVideoFileSelection(fileInput);
         }
-        if (tabYt) {
-            tabYt.style.borderColor = '#e2e8f0';
-            tabYt.style.background = '#ffffff';
-            tabYt.style.color = '#64748b';
-        }
-        if (groupFile) groupFile.style.display = 'block';
-        if (groupYt) groupYt.style.display = 'none';
-        if (ytPreview) ytPreview.style.display = 'none';
-    } else {
-        if (tabFile) {
-            tabFile.style.borderColor = '#e2e8f0';
-            tabFile.style.background = '#ffffff';
-            tabFile.style.color = '#64748b';
-        }
-        if (tabYt) {
-            tabYt.style.borderColor = '#ef4444';
-            tabYt.style.background = '#fef2f2';
-            tabYt.style.color = '#b91c1c';
-        }
-        if (groupFile) groupFile.style.display = 'none';
-        if (groupYt) groupYt.style.display = 'block';
-        const fileInput = document.getElementById('videoFileInput');
-        if (fileInput) fileInput.value = '';
-    }
+    }, false);
 }
 
+// نظام الرفع فائق السرعة والموثوقية بنظام الأجزاء (Chunked Upload)
 async function submitVideoForm(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
+    const btnCancel = document.getElementById('btnCancelUpload');
     const originalText = btn.innerHTML;
     const form = document.getElementById('uploadVideoForm');
-    const urlInput = document.getElementById('videoUrlInput');
     const fileInput = document.getElementById('videoFileInput');
 
-    if (currentVideoSourceType === 'youtube') {
-        if (!urlInput.value || !parseYouTubeId(urlInput.value.trim())) {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __("رابط غير صحيح") }}',
-                text: '{{ __("يرجى إدخال رابط فيديو YouTube صحيح (يدعم الروابط العادية ومقاطع Shorts).") }}',
-                confirmButtonText: '{{ __("حسناً") }}',
-                confirmButtonColor: '#1e3a8a'
-            });
-            return;
-        }
-    } else {
-        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __("يرجى اختيار ملف الفيديو") }}',
-                text: '{{ __("يرجى اختيار ملف الفيديو (MP4 / WebM) لرفعه، أو التبديل لخيار رابط YouTube.") }}',
-                confirmButtonText: '{{ __("حسناً") }}',
-                confirmButtonColor: '#1e3a8a'
-            });
-            return;
-        }
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: '{{ __("يرجى اختيار ملف الفيديو") }}',
+            text: '{{ __("قم باختيار ملف الفيديو (MP4 / WebM) لرفعه للطلبة.") }}',
+            confirmButtonText: '{{ __("حسناً") }}',
+            confirmButtonColor: '#1e3a8a'
+        });
+        return;
     }
 
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري حفظ ونشر الدرس...") }}';
+    const file = fileInput.files[0];
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2 ميغابايت لكل جزء لتخطي أي قيود للخادم كلياً
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 
-    const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
-    const mainFormData = new FormData(form);
+    // واجهة التقدم
+    const progressWrap = document.getElementById('chunkProgressWrap');
+    const progressBar = document.getElementById('chunkProgressBar');
+    const progressPct = document.getElementById('chunkProgressPct');
+    const progressStatus = document.getElementById('chunkProgressStatus');
+    const fileMeta = document.getElementById('chunkFileMeta');
+    const partMeta = document.getElementById('chunkPartMeta');
+
+    progressWrap.style.display = 'block';
+    progressWrap.dataset.completed = '';
+    btn.disabled = true;
+    if (btnCancel) btnCancel.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري رفع الفيديو بالأجزاء...") }}';
+
+    let uploadedPath = null;
+    let formattedSize = null;
 
     try {
-        const res = await axios.post(storeUrl, mainFormData, {
-            headers: { 
+        const chunkUploadUrl = "{{ route('educational_contents.upload_chunk') }}";
+
+        for (let i = 0; i < totalChunks; i++) {
+            const start = i * CHUNK_SIZE;
+            const end = Math.min(file.size, start + CHUNK_SIZE);
+            const chunkBlob = file.slice(start, end);
+
+            const chunkFormData = new FormData();
+            chunkFormData.append('file_id', fileId);
+            chunkFormData.append('chunk_index', i);
+            chunkFormData.append('total_chunks', totalChunks);
+            chunkFormData.append('file_name', file.name);
+            chunkFormData.append('chunk', chunkBlob, 'part_' + i);
+            chunkFormData.append('_token', '{{ csrf_token() }}');
+
+            const chunkRes = await axios.post(chunkUploadUrl, chunkFormData, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const currentPct = Math.round(((i + 1) / totalChunks) * 100);
+            progressBar.style.width = currentPct + '%';
+            progressPct.textContent = currentPct + '%';
+            progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> {{ __("جاري رفع ومعالجة الفيديو:") }} ${currentPct}%`;
+            fileMeta.textContent = `${formatBytes(end)} / ${formatBytes(file.size)}`;
+            partMeta.textContent = `{{ __("الجزء") }} ${i + 1} {{ __("من") }} ${totalChunks}`;
+
+            if (chunkRes.data && chunkRes.data.done) {
+                uploadedPath = chunkRes.data.uploaded_video_path;
+                formattedSize = chunkRes.data.formatted_size;
+            }
+        }
+
+        if (!uploadedPath) {
+            throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');
+        }
+
+        // إرسال بيانات الدرس النهائية وحفظه بالمنصة
+        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل الرفع بنجاح! جاري نشر وتثبيت الدرس للطلبة...") }}';
+
+        const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+        const contentFormData = new FormData(form);
+        // استبدال حقل الملف المباشر بالمسار المرفوع لتفادي إعادة إرساله
+        contentFormData.delete('video_file');
+        contentFormData.append('uploaded_video_path', uploadedPath);
+        if (formattedSize) {
+            contentFormData.append('formatted_size', formattedSize);
+        }
+
+        const saveRes = await axios.post(storeUrl, contentFormData, {
+            headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'multipart/form-data'
-            },
-            onUploadProgress: (progressEvent) => {
-                if (progressEvent.total && currentVideoSourceType === 'file') {
-                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري رفع الفيديو...") }} (${percent}%)`;
-                }
             }
         });
+
+        progressWrap.dataset.completed = '1';
         Swal.fire({
             icon: 'success',
-            title: res.data.title || '{{ __("تم حفظ ونشر درس الفيديو بنجاح 🎉") }}',
+            title: saveRes.data.title || '{{ __("تم رفع ونشر درس الفيديو بنجاح 🎉") }}',
+            text: '{{ __("أصبح الفيديو متاحاً لجميع الطلبة ومفعلاً للتحميل والمشاهدة أوفلاين بدون نت!") }}',
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#1e3a8a'
         }).then(() => location.reload());
+
     } catch (err) {
         btn.disabled = false;
+        if (btnCancel) btnCancel.disabled = false;
         btn.innerHTML = originalText;
+        progressWrap.style.display = 'none';
 
-        let msg = '{{ __("حدث خطأ أثناء حفظ الفيديو") }}';
+        let msg = '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
         if (err.response && err.response.data) {
             if (err.response.data.title) {
                 msg = err.response.data.title;
             } else if (err.response.data.message) {
                 msg = err.response.data.message;
+            } else if (err.response.data.error) {
+                msg = err.response.data.error;
             } else if (err.response.data.errors) {
                 msg = Object.values(err.response.data.errors).flat().join('<br>');
             }
+        } else if (err.message) {
+            msg = err.message;
         }
+
         Swal.fire({
             icon: 'error',
-            title: '{{ __("خطأ في حفظ الدرس") }}',
+            title: '{{ __("خطأ في رفع الفيديو") }}',
             html: msg,
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#ef4444'

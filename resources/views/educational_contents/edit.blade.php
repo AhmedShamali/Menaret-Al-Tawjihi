@@ -72,23 +72,26 @@
                     <!-- قسم الفيديو -->
                     <div class="upload-section">
                         <div class="upload-header">
-                            <span class="field-label" style="margin:0">
-                                <i class="fa-brands fa-youtube text-danger"></i> {{ __('فيديو الدرس (YouTube)') }}
+                            <span class="field-label" style="margin:0; color: #1e40af;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i> {{ __('ملف فيديو الدرس (MP4 / WebM)') }}
                             </span>
                             @if($content->url_path)
                                 <span class="badge-present">
-                                    {{ __('رابط YouTube موجود ✅') }}
+                                    {{ __('يوجد فيديو مسجل للدرس ✅') }}
                                 </span>
                             @endif
                         </div>
 
-                        <div id="edit_box_yt">
-                            <input type="url" name="video_url" id="editVideoUrl" value="{{ $content->url_path }}" class="input-style font-mono text-ltr" placeholder="https://www.youtube.com/watch?v=..." oninput="previewEditYt(this.value)">
-                            <small class="upload-hint">{{ __('يدعم كافة روابط YouTube (الروابط الكاملة، المختصرة، ومقاطع Shorts). محمي بمشغل المنصة.') }}</small>
-                            
-                            <div id="editYtPreview" oncontextmenu="event.preventDefault(); return false;" style="{{ ($content->youtube_id || !empty($content->url_path)) ? 'display:block;' : 'display:none;' }} margin-top:12px; position:relative; padding-top:56.25%; background:#000; border-radius:10px; overflow:hidden;">
-                                <iframe id="editYtFrame" src="{{ $content->youtube_embed_url ?? '' }}" style="position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none !important;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
-                            </div>
+                        <div id="edit_box_video">
+                            <input type="file" name="video_file" id="editVideoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="input-style" style="padding: 10px; background: #ffffff;">
+                            <small class="upload-hint" style="color: #166534; font-weight: 600; margin-top: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('رفع محلي مباشر بنظام الأجزاء السريع. يدعم الأوفلاين للطلبة بدون إنترنت.') }}
+                            </small>
+                            @if($content->url_path)
+                                <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">
+                                    <i class="fa-solid fa-link"></i> {{ __('المسار الحالي:') }} <code style="direction: ltr; display: inline-block;">{{ Str::limit($content->url_path, 60) }}</code>
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -172,56 +175,103 @@
         }
     });
 
-    function handleUpdate() {
+    async function handleUpdate() {
         const btn = document.getElementById('submitBtn');
+        const originalText = btn.innerHTML;
         const form = document.getElementById('editForm');
         const progressBox = document.getElementById('progress_box');
         const barFill = document.getElementById('bar_fill');
         const percentText = document.getElementById('percent_text');
-
-        const formData = new FormData(form);
+        const videoInput = document.getElementById('editVideoFileInput');
 
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('يرجى الانتظار...') }}';
         progressBox.style.display = 'block';
 
-        axios.post("{{ route('educational_contents.update', $content->id) }}", formData, {
-            onUploadProgress: (p) => {
-                if (p.total) {
-                    let percent = Math.round((p.loaded * 100) / p.total);
-                    barFill.style.width = percent + '%';
-                    percentText.innerText = percent + '%';
+        let uploadedVideoPath = null;
+        let formattedVideoSize = null;
+
+        try {
+            // إذا اختار المعلم ملف فيديو جديد للتعديل، يتم رفعه بنظام الأجزاء
+            if (videoInput && videoInput.files && videoInput.files.length > 0) {
+                const file = videoInput.files[0];
+                const CHUNK_SIZE = 2 * 1024 * 1024;
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                const chunkUrl = "{{ route('educational_contents.upload_chunk') }}";
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(file.size, start + CHUNK_SIZE);
+                    const chunkBlob = file.slice(start, end);
+
+                    const chunkData = new FormData();
+                    chunkData.append('file_id', fileId);
+                    chunkData.append('chunk_index', i);
+                    chunkData.append('total_chunks', totalChunks);
+                    chunkData.append('file_name', file.name);
+                    chunkData.append('chunk', chunkBlob, 'part_' + i);
+                    chunkData.append('_token', '{{ csrf_token() }}');
+
+                    const chunkRes = await axios.post(chunkUrl, chunkData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'multipart/form-data',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const pct = Math.round(((i + 1) / totalChunks) * 85);
+                    barFill.style.width = pct + '%';
+                    percentText.innerText = pct + '%';
+
+                    if (chunkRes.data && chunkRes.data.done) {
+                        uploadedVideoPath = chunkRes.data.uploaded_video_path;
+                        formattedVideoSize = chunkRes.data.formatted_size;
+                    }
                 }
             }
-        })
-        .then(res => {
-            Swal.fire({ icon: 'success', title: '{{ __('تم التحديث بنجاح!') }}', showConfirmButton: false, timer: 1500 })
-            .then(() => window.location.href = "{{ route('educational_contents.index') }}");
-        })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> {{ __('حفظ التغييرات') }}';
-            progressBox.style.display = 'none';
-            Swal.fire({ icon: 'error', title: '{{ __('خطأ في الرفع') }}', text: err.response?.data?.message || '{{ __('تأكد من الحقول وحجم الملفات') }}' });
-        });
-    }
 
-    function previewEditYt(url) {
-        if (!url) {
-            document.getElementById('editYtPreview').style.display = 'none';
-            return;
-        }
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        const id = (match && match[2].length === 11) ? match[2] : null;
-        const preview = document.getElementById('editYtPreview');
-        const frame = document.getElementById('editYtFrame');
-        if (id) {
-            frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?controls=0&showinfo=0&fs=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1';
-            preview.style.display = 'block';
-        } else {
-            frame.src = '';
-            preview.style.display = 'none';
+            const formData = new FormData(form);
+            formData.delete('video_file');
+
+            if (uploadedVideoPath) {
+                formData.append('uploaded_video_path', uploadedVideoPath);
+                if (formattedVideoSize) {
+                    formData.append('formatted_size', formattedVideoSize);
+                }
+            }
+
+            const updateUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.update', $content->id) : route('teacher.educational_contents.update', $content->id) }}";
+            const res = await axios.post(updateUrl, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            barFill.style.width = '100%';
+            percentText.innerText = '100%';
+
+            Swal.fire({
+                icon: res.data.icon || 'success',
+                title: res.data.title || '{{ __('تم التحديث بنجاح!') }}',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.index') : route('teacher.educational_contents.index') }}";
+            });
+
+        } catch (err) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            progressBox.style.display = 'none';
+
+            let msg = '{{ __('حدث خطأ أثناء حفظ التعديلات') }}';
+            if (err.response && err.response.data) {
+                msg = err.response.data.title || err.response.data.message || err.response.data.error || msg;
+            } else if (err.message) {
+                msg = err.message;
+            }
+
+            Swal.fire({ icon: 'error', title: '{{ __('خطأ') }}', text: msg });
         }
     }
 </script>

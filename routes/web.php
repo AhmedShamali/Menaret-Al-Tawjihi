@@ -32,6 +32,7 @@ Route::get('/language/{locale}', [PublicController::class, 'switchLanguage']);
 Route::get('/lang/{locale}', [PublicController::class, 'switchLanguage']);
 Route::get('/educational-contents/{id}/download', [EducationalContentController::class, 'downloadFile'])->name('content.download');
 Route::get('/educational-contents/{id}/download-video', [EducationalContentController::class, 'downloadVideo'])->name('content.downloadVideo');
+Route::match(['get', 'post'], '/educational-contents/{id}/prepare-offline', [EducationalContentController::class, 'prepareOfflineVideo'])->name('content.prepareOfflineVideo');
 Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->name('question.image');
 Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'questionOptionImage'])->name('question.option_image');
 

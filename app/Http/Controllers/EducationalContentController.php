@@ -8,6 +8,7 @@ use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\OfflineVideoManager;
 
 class EducationalContentController extends Controller
 {
@@ -297,7 +298,7 @@ class EducationalContentController extends Controller
         if (empty($content->url_path) && empty($content->pdf_path)) {
             return response()->json([
                 'icon'  => 'error',
-                'title' => 'يرجى إدخال رابط فيديو YouTube أو إرفاق ملف دراسي واحد على الأقل!'
+                'title' => 'يرجى رفع ملف الفيديو أو إرفاق ملف دراسي واحد على الأقل!'
             ], 422);
         }
 
@@ -406,13 +407,15 @@ class EducationalContentController extends Controller
         ];
 
         $validator = validator($request->all(), [
-            'subject_id'      => 'required',
-            'title'           => 'required|string|min:3',
-            'order'           => 'required|numeric',
-            'video_url'       => 'nullable|url',
-            'video_file'      => 'nullable|file|mimes:mp4,webm,ogg,mov,m4v,mkv|max:512000',
-            'file_upload_pdf' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
-            'pdf_url'         => 'nullable|url',
+            'subject_id'          => 'required',
+            'title'               => 'required|string|min:3',
+            'order'               => 'required|numeric',
+            'video_url'           => 'nullable',
+            'video_file'          => 'nullable|file|max:2097152',
+            'uploaded_video_path' => 'nullable|string',
+            'formatted_size'      => 'nullable|string',
+            'file_upload_pdf'     => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
+            'pdf_url'             => 'nullable|url',
         ], [], $attributes);
 
         if ($validator->fails()) {
@@ -439,7 +442,12 @@ class EducationalContentController extends Controller
         $content->channel_name = $request->channel_name ?? $content->channel_name;
         $content->order        = $request->order;
 
-        if ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
+        if ($request->filled('uploaded_video_path')) {
+            $content->url_path = $request->uploaded_video_path;
+            if ($request->filled('formatted_size')) {
+                $content->file_size = $request->formatted_size;
+            }
+        } elseif ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
             $uploadedVideo = $request->file('video_file');
             $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
             $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
@@ -573,64 +581,106 @@ class EducationalContentController extends Controller
     }
 
     /**
-     * تنزيل ملف الفيديو المرفوع على المنصة مباشرة
+     * تنزيل أو بث ملف الفيديو للدرس (يدعم الفيديوهات المرفوعة وفيديوهات يوتيوب المحولة للأوفلاين)
      */
     public function downloadVideo($id)
     {
         $content = EducationalContent::with('subject')->findOrFail($id);
 
-        if (empty($content->url_path)) {
-            return back()->with('error', 'لا يوجد ملف فيديو مخصص لهذا الدرس.');
+        $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
+        $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
+
+        // 1. فحص توفر ملف MP4 محلي على الخادم (سواء كان مرفوعاً أو تم تحويله وتخزينه مسبقاً من يوتيوب)
+        $localPath = OfflineVideoManager::resolveLocalMp4Path($content);
+        if ($localPath && file_exists($localPath)) {
+            return response()->download($localPath, $fileName, [
+                'Content-Type' => 'video/mp4',
+                'Accept-Ranges' => 'bytes',
+                'Access-Control-Allow-Origin' => '*',
+            ]);
         }
 
-        $rawUrl = $content->url_path;
-        $isDirect = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
-
-        if ($isDirect) {
-            $relativePath = null;
-            if (preg_match('~educational/videos/[^\s?#]+~', $rawUrl, $m)) {
-                $relativePath = $m[0];
-            } elseif (!filter_var($rawUrl, FILTER_VALIDATE_URL)) {
-                $relativePath = ltrim($rawUrl, '/');
-            }
-
-            $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
-            $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
-
-            if ($relativePath) {
-                if (Storage::disk('public')->exists($relativePath)) {
-                    return Storage::disk('public')->download($relativePath, $fileName);
-                }
-                $pubStorage = public_path('storage/' . $relativePath);
-                if (file_exists($pubStorage)) {
-                    return response()->download($pubStorage, $fileName);
-                }
-                $pubDirect = public_path($relativePath);
-                if (file_exists($pubDirect)) {
-                    return response()->download($pubDirect, $fileName);
-                }
-                $appStorage = storage_path('app/public/' . $relativePath);
-                if (file_exists($appStorage)) {
-                    return response()->download($appStorage, $fileName);
-                }
-            }
-
-            if (filter_var($rawUrl, FILTER_VALIDATE_URL)) {
-                return redirect()->away($rawUrl);
-            }
-        }
-
-        // منع أي تحويل خارجي إلى مواقع تنزيل اليوتيوب لحفظ الخصوصية وبقاء التجربة داخل المنصة
+        // 2. إذا كان الفيديو رابط يوتيوب: محاولة التنزيل والتحويل التلقائي أوفلاين
         if (!empty($content->youtube_id)) {
-            return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة والأوفلاين داخل المنصة فقط.');
+            if (OfflineVideoManager::isEngineAvailable()) {
+                $conversion = OfflineVideoManager::downloadAndCacheYouTube($content);
+                if ($conversion['success'] && !empty($conversion['path']) && file_exists($conversion['path'])) {
+                    return response()->download($conversion['path'], $fileName, [
+                        'Content-Type' => 'video/mp4',
+                        'Accept-Ranges' => 'bytes',
+                        'Access-Control-Allow-Origin' => '*',
+                    ]);
+                }
+            }
+
+            if (request()->expectsJson() || request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'is_youtube' => true,
+                    'message' => 'جاري تجهيز نسخة الأوفلاين لفيديو اليوتيوب...',
+                ], 422);
+            }
+
+            return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube. عند توفر محرك التنزيل على الخادم أو رفعه كملف MP4 سيكون متاحاً للتحميل المباشر.');
         }
 
-        // إذا كان هناك رابط متاح في url_path
+        // 3. الروابط الخارجية المباشرة
+        $rawUrl = $content->url_path;
         if (!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL)) {
             return redirect()->away($rawUrl);
         }
 
         return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.');
+    }
+
+    /**
+     * معالجة وتجهيز فيديو اليوتيوب للأوفلاين عبر طلب غير متزامن (AJAX)
+     */
+    public function prepareOfflineVideo($id)
+    {
+        $content = EducationalContent::with('subject')->findOrFail($id);
+
+        if (OfflineVideoManager::hasLocalMp4($content)) {
+            return response()->json([
+                'success' => true,
+                'ready'   => true,
+                'download_url' => route('content.downloadVideo', $content->id),
+                'message' => 'الفيديو جاهز للتحميل أوفلاين فوراً ⚡',
+            ]);
+        }
+
+        if (empty($content->youtube_id)) {
+            return response()->json([
+                'success' => false,
+                'ready'   => false,
+                'message' => 'هذا الدرس لا يحتوي على فيديو يوتيوب أو ملف MP4 صالح.',
+            ], 400);
+        }
+
+        if (!OfflineVideoManager::isEngineAvailable()) {
+            return response()->json([
+                'success' => false,
+                'ready'   => false,
+                'engine_pending' => true,
+                'message' => 'محرك تحميل اليوتيوب قيد التجهيز على الخادم. يمكنك أيضاً رفع ملف الفيديو بصيغة MP4 مباشرة في لوحة التحكم.',
+            ], 503);
+        }
+
+        $result = OfflineVideoManager::downloadAndCacheYouTube($content);
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'ready'   => true,
+                'download_url' => route('content.downloadVideo', $content->id),
+                'message' => 'تم تجهيز وتنزيل الفيديو بنجاح! يبدأ الحفظ أوفلاين الآن ⚡',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'ready'   => false,
+            'message' => $result['message'],
+        ], 500);
     }
 
     public function downloadFile($id)

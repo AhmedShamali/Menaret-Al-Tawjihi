@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="manifest" href="/manifest.json?v=20261002-v33">
-    <meta name="theme-color" content="#0b3b6f">
+    <meta name="theme-color" content="#ffffff">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -228,15 +228,17 @@
             color: var(--royal-gold);
         }
 
-        /* 1. الشريط السيادي العلوي الأكاديمي (Royal Sovereign Top Ribbon) */
+        /* 1. الشريط السيادي العلوي الأكاديمي (Luminous Academic Top Ribbon - فواتح كلاسيكية فاخرة) */
         .royal-top-ribbon {
             width: 100%;
-            background: linear-gradient(90deg, #0b3b6f 0%, #072344 50%, #0b3b6f 100%);
-            color: #ffffff;
-            border-bottom: 2px solid var(--royal-gold);
-            font-size: 12px;
-            padding: 7px 32px;
-            box-shadow: 0 2px 8px rgba(11, 59, 111, 0.15);
+            background: #ffffff;
+            color: #1e293b;
+            border-bottom: 2px solid #d97706;
+            font-size: 12.5px;
+            padding: 8px 32px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+            position: relative;
+            z-index: 1001;
         }
         .royal-ribbon-inner {
             width: 100%;
@@ -251,28 +253,29 @@
         .royal-ribbon-right {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             flex-wrap: wrap;
         }
         .royal-ribbon-badge {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: 0.2px;
+            font-weight: 800;
+            color: #0b3b6f;
+            letter-spacing: -0.1px;
+            font-size: 12.5px;
         }
         .royal-ribbon-bismillah {
-            color: var(--royal-gold-light);
-            font-weight: 700;
+            color: #b45309;
+            font-weight: 800;
             font-size: 12.5px;
-            padding: 0 8px;
-            border-inline-start: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 0 10px;
+            border-inline-start: 1.5px solid #e2e8f0;
         }
         .royal-ribbon-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
         .royal-ribbon-item {
@@ -280,31 +283,36 @@
             align-items: center;
             gap: 6px;
             font-size: 12px;
-            color: #cbd5e1;
+            font-weight: 700;
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 3px 9px;
+            border-radius: var(--radius-sm);
         }
         .royal-supervisor-ribbon-badge {
-            background: rgba(194, 142, 43, 0.18);
-            border: 1px solid rgba(194, 142, 43, 0.45);
-            color: #fff;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
             padding: 3px 10px;
             border-radius: var(--radius-sm);
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
         }
         .royal-supervisor-ribbon-badge i {
-            color: var(--royal-gold-light);
+            color: #d97706;
         }
         .royal-ribbon-app-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #ffffff;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1d4ed8;
             padding: 3px 10px;
             border-radius: var(--radius-sm);
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             display: inline-flex;
             align-items: center;
             gap: 5px;
@@ -312,17 +320,18 @@
             transition: var(--transition);
         }
         .royal-ribbon-app-btn:hover {
-            background: var(--royal-gold);
-            color: #061329;
-            border-color: var(--royal-gold);
+            background: #1d4ed8;
+            color: #ffffff;
+            border-color: #1d4ed8;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
         }
         .royal-ribbon-lang-btn {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #ffffff;
-            padding: 2px 8px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 3px 9px;
             border-radius: var(--radius-sm);
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
@@ -330,8 +339,9 @@
             transition: var(--transition);
         }
         .royal-ribbon-lang-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: var(--royal-gold-light);
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
         }
 
         /* 2. شريط القوائم الأكاديمي الملكي (Grand Academic Navbar) */
@@ -508,12 +518,12 @@
             cursor: pointer;
         }
 
-        /* 3. شريط التعاميم الأكاديمية (Academic Gazette Ticker) */
+        /* 3. شريط التعاميم الأكاديمية (Academic Gazette Ticker - فواتح أنيقة) */
         .royal-ticker-bar {
             width: 100%;
-            background-color: var(--royal-gold-soft);
-            border-bottom: 1px solid var(--royal-gold-border);
-            color: #634305;
+            background-color: #fffdf5;
+            border-bottom: 1.5px solid #fef3c7;
+            color: #78350f;
             padding: 8px 32px;
         }
         .royal-ticker-inner {
@@ -526,13 +536,13 @@
             font-size: 13px;
         }
         .royal-ticker-tag {
-            background: var(--royal-navy);
-            color: var(--royal-gold-light);
+            background: #fef3c7;
+            color: #92400e;
             font-size: 11.5px;
             font-weight: 800;
             padding: 3px 10px;
             border-radius: var(--radius-xs);
-            border: 1px solid var(--royal-gold);
+            border: 1.5px solid #f59e0b;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
@@ -541,7 +551,7 @@
         .royal-ticker-content {
             font-weight: 600;
             flex: 1;
-            color: #452e04;
+            color: #451a03;
             line-height: 1.5;
         }
 
@@ -1324,11 +1334,26 @@
                 display: none;
             }
             .royal-top-ribbon {
-                padding: 6px 14px;
+                padding: 6px 12px;
             }
             .royal-ribbon-inner {
-                justify-content: center;
-                gap: 8px;
+                justify-content: space-between;
+                gap: 6px;
+            }
+            .royal-ribbon-badge {
+                font-size: 11.5px;
+            }
+            .royal-supervisor-ribbon-badge {
+                font-size: 11px;
+                padding: 2px 7px;
+            }
+            .royal-ribbon-app-btn {
+                font-size: 11px;
+                padding: 2px 7px;
+            }
+            .royal-ribbon-lang-btn {
+                font-size: 10.5px;
+                padding: 2px 6px;
             }
             .royal-brand-meta p {
                 display: none;
@@ -1357,7 +1382,16 @@
             }
         }
 
-        /* زر العودة إلى بداية الصفحة الكلاسيكي */
+        @media (max-width: 420px) {
+            .royal-ribbon-badge span {
+                max-width: 140px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+
+        /* زر العودة إلى بداية الصفحة الكلاسيكي الفاتح */
         .ed-scroll-top-btn {
             position: fixed;
             bottom: 24px;
@@ -1365,10 +1399,10 @@
             width: 42px;
             height: 42px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #0f243d 0%, #1e3a8a 100%);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
+            background: #ffffff;
+            color: #1e3a8a;
+            border: 1.5px solid #bfdbfe;
+            box-shadow: 0 4px 14px rgba(30, 58, 138, 0.12);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1383,7 +1417,8 @@
                         transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
                         visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1),
                         background 0.2s ease,
-                        box-shadow 0.2s ease;
+                        box-shadow 0.2s ease,
+                        color 0.2s ease;
         }
 
         .ed-scroll-top-btn.visible {
@@ -1394,10 +1429,11 @@
         }
 
         .ed-scroll-top-btn:hover {
-            background: linear-gradient(135deg, #173252 0%, #2563eb 100%);
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35);
-            transform: translateY(-3px) scale(1.05);
+            background: #1e3a8a;
             color: #ffffff;
+            border-color: #1e3a8a;
+            box-shadow: 0 6px 20px rgba(30, 58, 138, 0.28);
+            transform: translateY(-3px) scale(1.05);
         }
 
         .ed-scroll-top-btn:active {

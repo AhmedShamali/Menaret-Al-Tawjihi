@@ -241,11 +241,51 @@ const StepvoroVideoDownloader = {
         }
 
         const isDirect = btn.getAttribute('data-is-direct') === '1';
+        const isYouTube = btn.getAttribute('data-is-youtube') === '1';
+        const prepareUrl = btn.getAttribute('data-prepare-url');
         const title = btn.getAttribute('data-video-title') || 'درس تعليمي';
         const subject = btn.getAttribute('data-subject-title') || 'المنهاج';
         const url = btn.getAttribute('data-video-url');
         const ytEmbed = btn.getAttribute('data-yt-embed');
         const pdfUrl = btn.getAttribute('data-pdf-url');
+
+        // إذا كان فيديو يوتيوب ويحتاج تجهيز أوفلاين على الخادم
+        if (isYouTube && prepareUrl) {
+            const self = this;
+            self.updateButtonUI(id, 'downloading', 15, btn);
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('جاري تجهيز فيديو YouTube للتحميل والمشاهدة بدون إنترنت ⏳...', 'info');
+            }
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            fetch(prepareUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.ready && data.download_url) {
+                    if (typeof window.showPwaToast === 'function') {
+                        window.showPwaToast('تم تجهيز الفيديو بنجاح! يبدأ حفظه في هاتفك الآن ⚡', 'success');
+                    }
+                    self.startDownload(id, title, subject, data.download_url, btn);
+                } else {
+                    if (typeof window.showPwaToast === 'function') {
+                        window.showPwaToast(data.message || 'جاري استكمال محرك التحميل. تم حفظ بيانات وملاحظات الدرس أوفلاين.', 'info');
+                    }
+                    self.saveExternalLesson(id, title, subject, ytEmbed, pdfUrl, btn);
+                }
+            })
+            .catch(err => {
+                console.warn('Prepare offline failed, falling back to external save:', err);
+                self.saveExternalLesson(id, title, subject, ytEmbed, pdfUrl, btn);
+            });
+            return;
+        }
 
         if (isDirect && url) {
             this.startDownload(id, title, subject, url, btn);

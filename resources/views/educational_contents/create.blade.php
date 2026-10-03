@@ -22,7 +22,7 @@
                 </div>
                 <div>
                     <strong style="display: block; color: #1e3a8a; font-size: 0.95rem; margin-bottom: 2px;">{{ __('واجهة مخصصة للفيديوهات فقط') }}</strong>
-                    <span style="color: #3b82f6; font-size: 0.8rem;">{{ __('رفع وتنظيم حصص وشروحات YouTube مع معاينة فورية') }}</span>
+                    <span style="color: #3b82f6; font-size: 0.8rem;">{{ __('رفع وتنظيم دروس الفيديو عالية الدقة مع دعم المشاهدة الأوفلاين') }}</span>
                 </div>
             </div>
             <a href="{{ auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos') }}" style="background: #1e40af; color: #fff; text-decoration: none; padding: 9px 15px; border-radius: 10px; font-weight: 700; font-size: 0.82rem; white-space: nowrap;">
@@ -90,8 +90,8 @@
                             <div class="selector-content">
                                 <span class="icon">🎥</span>
                                 <div>
-                                    <strong>{{ __('فيديو تعليمي') }}</strong>
-                                    <small>{{ __('رابط فيديو YouTube محمي') }}</small>
+                                    <strong>{{ __('فيديو تعليمي (MP4)') }}</strong>
+                                    <small>{{ __('رفع محلي مباشر (يدعم الأوفلاين ⚡)') }}</small>
                                 </div>
                             </div>
                         </label>
@@ -109,15 +109,18 @@
                     </div>
 
                     <div id="video_section" class="attachment-box" style="display: none;">
-                        <h4 class="box-title"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> {{ __('رابط فيديو الدرس (YouTube)') }}</h4>
+                        <h4 class="box-title">
+                            <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i> 
+                            {{ __('رفع ملف الفيديو محلياً (MP4 / WebM)') }}
+                            <span style="font-size: 0.75rem; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 6px; margin-inline-start: 8px;">⚡ جاهز للأوفلاين</span>
+                        </h4>
                         
                         <div class="form-group">
-                            <label class="f-label">{{ __('رابط فيديو YouTube المعتمد') }} *</label>
-                            <input type="url" name="video_url" id="input_video_url" class="f-input font-mono text-ltr" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." oninput="previewCreateYt(this.value)">
-                            <small style="color: var(--ed-text-muted, #64748b);">{{ __('يدعم جميع صيغ روابط YouTube (العادية والمختصرة و Shorts). محمي بمشغل المنصة.') }}</small>
-                            <div id="createYtPreview" oncontextmenu="event.preventDefault(); return false;" style="display:none; margin-top:10px; position:relative; padding-top:56.25%; background:#000; border-radius:12px; overflow:hidden;">
-                                <iframe id="createYtFrame" src="" style="position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none !important;" sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
-                            </div>
+                            <label class="f-label">{{ __('ملف الفيديو المعتمد') }} *</label>
+                            <input type="file" name="video_file" id="input_video_file" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="f-input" style="padding: 10px; background: #ffffff;">
+                            <small style="color: #166534; font-weight: 600; display: block; margin-top: 6px;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('يتم رفع الملف بنظام التجزئة السريع ودعمه تلقائياً للتحميل والمشاهدة بدون إنترنت للطلبة داخل تطبيق المنصة.') }}
+                            </small>
                         </div>
                     </div>
 
@@ -203,89 +206,141 @@
         document.getElementById('card_pdf').classList.toggle('selected', pdfChecked);
     }
 
-    function submitContent() {
+    async function submitContent() {
         const videoChecked = document.getElementById('check_video').checked;
         const pdfChecked = document.getElementById('check_pdf').checked;
+        const videoFileInput = document.getElementById('input_video_file');
 
         if (!videoChecked && !pdfChecked) {
             Swal.fire({
                 icon: 'warning',
                 title: 'تنبيه',
-                text: 'يرجى اختيار مرفق واحد على الأقل (فيديو أو ملف PDF) قبل الحفظ!',
+                text: 'يرجى اختيار مرفق واحد على الأقل (فيديو أو ملف) قبل الحفظ!',
+            });
+            return;
+        }
+
+        if (videoChecked && (!videoFileInput || !videoFileInput.files || videoFileInput.files.length === 0)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ملف الفيديو مطلوب',
+                text: 'يرجى اختيار ملف الفيديو (MP4 / WebM) لرفعه للطلبة.',
             });
             return;
         }
 
         const btn = document.getElementById('saveBtn');
+        const originalText = btn.innerHTML;
         const form = document.getElementById('createForm');
-        const formData = new FormData(form);
-
-        let contentType = 'video';
-        if (pdfChecked && !videoChecked) {
-            contentType = 'file';
-        } else if (videoChecked && pdfChecked) {
-            contentType = 'both';
-        }
-        formData.append('type', contentType);
 
         btn.disabled = true;
-        btn.textContent = 'جاري الرفع...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تجهيز الرفع...';
 
         const progressContainer = document.getElementById('upload_progress_container');
         const progressBarFill = document.getElementById('progress_bar_fill');
         const progressPercentText = document.getElementById('progress_percent_text');
+        const progressStatusText = document.getElementById('progress_status_text');
 
         progressContainer.style.display = 'block';
 
-        axios.post("{{ route('teacher.educational_contents.store') }}", formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-            onUploadProgress: function(progressEvent) {
-                if (progressEvent.lengthComputable) {
-                    const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-                    progressBarFill.style.width = percent + '%';
-                    progressPercentText.textContent = percent + '%';
+        let uploadedVideoPath = null;
+        let formattedVideoSize = null;
+
+        try {
+            // رفع الفيديو بنظام التجزئة (Chunking) إن كان محدداً
+            if (videoChecked && videoFileInput.files.length > 0) {
+                const file = videoFileInput.files[0];
+                const CHUNK_SIZE = 2 * 1024 * 1024;
+                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+                const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+                const chunkUrl = "{{ route('educational_contents.upload_chunk') }}";
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const start = i * CHUNK_SIZE;
+                    const end = Math.min(file.size, start + CHUNK_SIZE);
+                    const chunkBlob = file.slice(start, end);
+
+                    const chunkData = new FormData();
+                    chunkData.append('file_id', fileId);
+                    chunkData.append('chunk_index', i);
+                    chunkData.append('total_chunks', totalChunks);
+                    chunkData.append('file_name', file.name);
+                    chunkData.append('chunk', chunkBlob, 'part_' + i);
+                    chunkData.append('_token', '{{ csrf_token() }}');
+
+                    const chunkRes = await axios.post(chunkUrl, chunkData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'multipart/form-data',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    const pct = Math.round(((i + 1) / totalChunks) * 85);
+                    progressBarFill.style.width = pct + '%';
+                    progressPercentText.textContent = pct + '%';
+                    progressStatusText.textContent = `جاري رفع أجزاء الفيديو: ${pct}% (${i + 1}/${totalChunks})`;
+
+                    if (chunkRes.data && chunkRes.data.done) {
+                        uploadedVideoPath = chunkRes.data.uploaded_video_path;
+                        formattedVideoSize = chunkRes.data.formatted_size;
+                    }
                 }
             }
-        })
-        .then(function (response) {
+
+            // إرسال النموذج وحفظ المحتوى
+            progressStatusText.textContent = 'جاري تثبيت الدرس والمرفقات بالمنصة... 🚀';
+            progressBarFill.style.width = '95%';
+            progressPercentText.textContent = '95%';
+
+            const formData = new FormData(form);
+            formData.delete('video_file');
+
+            let contentType = 'video';
+            if (pdfChecked && !videoChecked) {
+                contentType = 'file';
+            } else if (videoChecked && pdfChecked) {
+                contentType = 'both';
+            }
+            formData.append('type', contentType);
+
+            if (uploadedVideoPath) {
+                formData.append('uploaded_video_path', uploadedVideoPath);
+                if (formattedVideoSize) {
+                    formData.append('formatted_size', formattedVideoSize);
+                }
+            }
+
+            const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+            const response = await axios.post(storeUrl, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            progressBarFill.style.width = '100%';
+            progressPercentText.textContent = '100%';
+
             Swal.fire({
                 icon: response.data.icon || 'success',
-                title: response.data.title || 'تم الإضافة بنجاح! 🎉',
+                title: response.data.title || 'تم حفظ ونشر المحتوى بنجاح! 🎉',
+                text: 'أصبح المحتوى متاحاً للطلبة ويدعم الأوفلاين.',
                 showConfirmButton: false,
                 timer: 2000
             }).then(() => {
-                window.location.href = "{{ route('teacher.educational_contents.index') }}";
+                window.location.href = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.index') : route('teacher.educational_contents.index') }}";
             });
-        })
-        .catch(function (error) {
+
+        } catch (error) {
             let errorMsg = 'حدث خطأ أثناء حفظ المحتوى';
             if (error.response && error.response.data) {
-                errorMsg = error.response.data.title || error.response.data.message || errorMsg;
+                errorMsg = error.response.data.title || error.response.data.message || error.response.data.error || errorMsg;
+            } else if (error.message) {
+                errorMsg = error.message;
             }
 
             Swal.fire({ icon: 'error', title: 'خطأ', text: errorMsg });
             progressContainer.style.display = 'none';
             btn.disabled = false;
-            btn.textContent = 'حفظ ونشر المحتوى 🚀';
-        });
-    }
-
-    function previewCreateYt(url) {
-        if (!url) {
-            document.getElementById('createYtPreview').style.display = 'none';
-            return;
-        }
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|shorts\/)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        const id = (match && match[2].length === 11) ? match[2] : null;
-        const preview = document.getElementById('createYtPreview');
-        const frame = document.getElementById('createYtFrame');
-        if (id) {
-            frame.src = 'https://www.youtube-nocookie.com/embed/' + id + '?controls=0&showinfo=0&fs=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1';
-            preview.style.display = 'block';
-        } else {
-            frame.src = '';
-            preview.style.display = 'none';
+            btn.innerHTML = originalText;
         }
     }
 </script>

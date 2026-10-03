@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json?v=20261002-v33">
-    <meta name="theme-color" content="#0b3b6f">
+    <meta name="theme-color" content="#ffffff">
 
     <!-- Apple iOS Mobile App Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
