@@ -532,24 +532,22 @@
     color: #1e40af;
 }
 .nav-tab-login-btn .nav-tab-icon {
-    background: #eff6ff;
-    width: 32px;
-    height: 32px;
-    border-radius: 9px;
-    border: 1px solid #bfdbfe;
+    font-size: 1.15rem;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #1e40af;
-    transition: all 0.2s ease;
+    transition: transform 0.2s ease;
 }
 .nav-tab-login-btn:hover .nav-tab-icon,
 .nav-tab-login-btn.active .nav-tab-icon {
-    background: #1e40af;
-    color: #ffffff;
-    border-color: #1e40af;
-    box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+    transform: translateY(-2px);
+    color: #1e40af;
 }
 .nav-tab-login-btn .nav-tab-label {
     color: #1e40af;
-    font-weight: 800;
+    font-weight: 700;
 }
 
 /* بطاقة التثبيت العائمة الذكية */

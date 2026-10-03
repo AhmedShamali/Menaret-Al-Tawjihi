@@ -1475,101 +1475,316 @@
             }
         }
 
-        @media (max-width: 600px) {
-            .royal-ribbon-bismillah,
-            .royal-ribbon-item {
-                display: none;
-            }
+        /* ==========================================================
+           ROYAL ACADEMIC MOBILE OPTIMIZATIONS (100% UNIFIED & CLEAN)
+           تنسيقات الجوال النظيفة والأنيقة لمنع التكدس والتداخل البصري
+           ========================================================== */
+        @media (max-width: 768px) {
+            /* 1. الشريط العلوي الملكي: سطر واحد مدمج وأنيق */
             .royal-top-ribbon {
-                padding: 6px 12px;
+                padding: 4px 12px !important;
+                min-height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
             }
             .royal-ribbon-inner {
-                justify-content: space-between;
-                gap: 6px;
+                flex-direction: row !important;
+                flex-wrap: nowrap !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+            .royal-ribbon-right {
+                flex: 1 !important;
+                min-width: 0 !important;
+                gap: 6px !important;
             }
             .royal-ribbon-badge {
-                font-size: 11.5px;
+                font-size: 11px !important;
+                font-weight: 800 !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 5px !important;
+                color: #0b3b6f !important;
             }
-            .royal-supervisor-ribbon-badge {
-                font-size: 11px;
-                padding: 2px 7px;
-            }
+            .royal-ribbon-bismillah,
+            .royal-ribbon-item,
+            .royal-supervisor-ribbon-badge,
             .royal-ribbon-app-btn {
-                font-size: 11px;
-                padding: 2px 7px;
+                display: none !important;
+            }
+            .royal-ribbon-left {
+                flex-shrink: 0 !important;
+                gap: 6px !important;
             }
             .royal-ribbon-lang-btn {
-                font-size: 10.5px;
-                padding: 2px 6px;
+                font-size: 10.5px !important;
+                padding: 2px 7px !important;
+                border-radius: 6px !important;
+                font-weight: 800 !important;
             }
-            .royal-brand-meta p {
-                display: none;
+
+            /* 2. شريط القوائم الرئيسي: مساحة مريحة وزر واحد أنيق بدون مزاحمة */
+            .royal-main-navbar {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 1000 !important;
+                box-shadow: 0 2px 10px rgba(6, 19, 41, 0.06) !important;
             }
-            .royal-brand-meta h1 {
-                font-size: 15.5px;
+            .royal-navbar-inner {
+                padding: 0 12px !important;
+                height: 56px !important;
+                gap: 8px !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+            }
+            .royal-mobile-toggle {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 8px !important;
+                font-size: 15px !important;
+                flex-shrink: 0 !important;
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0b3b6f !important;
+            }
+            .royal-brand-group {
+                gap: 8px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+                align-items: center !important;
+                text-decoration: none !important;
             }
             .royal-crest-seal {
-                width: 42px;
-                height: 42px;
+                width: 36px !important;
+                height: 36px !important;
+                border-width: 1.5px !important;
+                padding: 1.5px !important;
+                flex-shrink: 0 !important;
             }
-            .page-container {
-                padding: 14px 12px 36px;
+            .royal-brand-meta {
+                min-width: 0 !important;
             }
-            .royal-hero-arch {
-                padding: 18px 14px;
-                border-radius: 16px;
+            .royal-brand-meta h1 {
+                font-size: 15px !important;
+                font-weight: 800 !important;
+                color: #0b3b6f !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                margin: 0 !important;
+                line-height: 1.2 !important;
             }
-            .royal-hero-title-wrap h2 {
-                font-size: 17px;
-            }
-            .royal-hero-gateways-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-            .royal-hero-pillars {
-                grid-template-columns: 1fr;
-            }
-            .royal-card-body {
-                padding: 14px;
-            }
-            .royal-branches-grid {
-                grid-template-columns: 1fr;
+            .royal-brand-meta p {
+                display: none !important;
             }
             .royal-nav-actions {
                 display: flex !important;
-                align-items: center;
-                gap: 6px;
+                align-items: center !important;
+                gap: 6px !important;
+                flex-shrink: 0 !important;
             }
-            .btn-royal-login {
+            /* إخفاء زر حساب جديد من الشريط العلوي على الجوال لمنع التكدس مع إتاحته في القائمة والهيرو */
+            .royal-nav-actions .btn-royal-gold:not([href*="dashboard"]) {
+                display: none !important;
+            }
+            .royal-nav-actions .btn-royal-login,
+            .royal-nav-actions .btn-royal-gold[href*="dashboard"] {
                 display: inline-flex !important;
-                background: #1e40af !important;
-                color: #ffffff !important;
-                border: 1px solid #1d4ed8 !important;
-                padding: 6px 11px !important;
-                font-size: 11.5px !important;
+                height: 34px !important;
+                padding: 0 12px !important;
+                font-size: 12px !important;
                 font-weight: 800 !important;
                 border-radius: 8px !important;
-                box-shadow: 0 2px 6px rgba(30, 64, 175, 0.25) !important;
-                white-space: nowrap;
-            }
-            .btn-royal-login:hover {
-                background: #1e3a8a !important;
+                background: #0b3b6f !important;
                 color: #ffffff !important;
+                border: 1px solid #0b3b6f !important;
+                box-shadow: 0 2px 6px rgba(11, 59, 111, 0.2) !important;
+                white-space: nowrap !important;
+                gap: 5px !important;
+                align-items: center !important;
+                text-decoration: none !important;
             }
-            .btn-royal-gold {
-                display: inline-flex !important;
-                background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important;
+            .btn-royal-login .label-full,
+            .btn-royal-gold .label-full {
+                display: none !important;
+            }
+            .btn-royal-login .label-short,
+            .btn-royal-gold .label-short {
+                display: inline !important;
+            }
+
+            /* 3. شريط الإعلانات والتعاميم: مدمج ومنظم على سطرين */
+            .royal-ticker-bar {
+                padding: 8px 12px !important;
+                background: #fffbeb !important;
+                border-bottom: 1px solid #fde68a !important;
+            }
+            .royal-ticker-inner {
+                flex-direction: row !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+            .royal-ticker-tag {
+                font-size: 10.5px !important;
+                padding: 2px 8px !important;
+                border-radius: 6px !important;
+                flex-shrink: 0 !important;
+                background: #b45309 !important;
                 color: #ffffff !important;
-                border: none !important;
-                padding: 6px 11px !important;
+                box-shadow: none !important;
+            }
+            .royal-ticker-content {
                 font-size: 11.5px !important;
-                font-weight: 800 !important;
-                border-radius: 8px !important;
-                box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25) !important;
-                white-space: nowrap;
+                line-height: 1.45 !important;
+                color: #92400e !important;
+                font-weight: 700 !important;
+                display: -webkit-box !important;
+                -webkit-line-clamp: 2 !important;
+                -webkit-box-orient: vertical !important;
+                overflow: hidden !important;
             }
-            .btn-royal-gold:hover {
-                color: #ffffff !important;
+
+            /* 4. الحاوية العامة والصرح الترحيبي */
+            .page-container {
+                padding: 12px 10px 30px !important;
+            }
+            .layout-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            .royal-hero-arch {
+                padding: 16px 14px !important;
+                border-radius: 16px !important;
+            }
+            .royal-hero-top {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 6px !important;
+                margin-bottom: 8px !important;
+            }
+            .royal-hero-title-wrap {
+                gap: 8px !important;
+                width: 100% !important;
+                align-items: center !important;
+            }
+            .royal-hero-crest-icon {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 15px !important;
+                border-radius: 10px !important;
+                flex-shrink: 0 !important;
+            }
+            .royal-hero-title-wrap h2 {
+                font-size: 15.5px !important;
+                line-height: 1.35 !important;
+                font-weight: 900 !important;
+                color: #0f172a !important;
+            }
+            .royal-hero-badge-tag {
+                font-size: 10.5px !important;
+                padding: 2px 9px !important;
+                border-radius: 6px !important;
+                margin-top: 2px !important;
+            }
+            .royal-hero-desc {
+                font-size: 12.5px !important;
+                line-height: 1.6 !important;
+                margin-bottom: 14px !important;
+                color: #475569 !important;
+            }
+
+            /* 5. بوابات الوصول السريعة: شبكة 2x2 أنيقة كالتطبيقات الذكية */
+            .royal-hero-gateways-grid {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 8px !important;
+                margin-bottom: 12px !important;
+            }
+            .royal-gateway-card {
+                padding: 10px 9px !important;
+                border-radius: 12px !important;
+                min-height: 82px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: space-between !important;
+            }
+            .gateway-card-header {
+                margin-bottom: 4px !important;
+                gap: 4px !important;
+            }
+            .gateway-icon-pod {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 14px !important;
+                border-radius: 8px !important;
+            }
+            .gateway-pill {
+                font-size: 9.5px !important;
+                padding: 1px 5px !important;
+                border-radius: 4px !important;
+                letter-spacing: -0.2px !important;
+            }
+            .gateway-title {
+                font-size: 12px !important;
+                font-weight: 800 !important;
+                margin-bottom: 2px !important;
+                line-height: 1.3 !important;
+            }
+            .gateway-desc {
+                display: none !important;
+            }
+            .gateway-cta-btn {
+                margin-top: 4px !important;
+                padding: 2px 0 !important;
+                font-size: 10.5px !important;
+                gap: 4px !important;
+                font-weight: 800 !important;
+            }
+            .gateway-cta-btn i {
+                font-size: 9px !important;
+            }
+
+            .royal-hero-quick-badges {
+                flex-direction: column !important;
+                gap: 5px !important;
+                padding-top: 10px !important;
+                margin-top: 8px !important;
+                border-top: 1px solid #f1f5f9 !important;
+            }
+            .quick-badge-item {
+                font-size: 11px !important;
+                gap: 6px !important;
+            }
+
+            /* بطاقات الفروع الأكاديمية */
+            .royal-branches-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+            .royal-card-body {
+                padding: 12px !important;
+            }
+            .royal-branch-card {
+                padding: 14px 12px !important;
+                border-radius: 12px !important;
+            }
+            .royal-branch-desc {
+                font-size: 12px !important;
+                margin-bottom: 10px !important;
+            }
+            .royal-branch-pills-list {
+                gap: 5px !important;
+                margin-bottom: 10px !important;
+            }
+            .royal-branch-pill {
+                font-size: 10.5px !important;
+                padding: 2px 7px !important;
             }
         }
 
@@ -1627,28 +1842,6 @@
                 display: flex;
                 align-items: center;
                 gap: 10px;
-            }
-        }
-
-        @media (max-width: 440px) {
-            .btn-royal-login .label-full,
-            .btn-royal-gold .label-full {
-                display: none !important;
-            }
-            .btn-royal-login .label-short,
-            .btn-royal-gold .label-short {
-                display: inline !important;
-            }
-            .royal-ribbon-badge span {
-                max-width: 140px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .btn-royal-login,
-            .btn-royal-gold {
-                padding: 5px 9px !important;
-                font-size: 11px !important;
             }
         }
 
