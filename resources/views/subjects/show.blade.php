@@ -224,15 +224,6 @@
                                     @endif
                                 </div>
 
-                                {{-- زر تحميل ملف الفيديو بجانب الفيديو --}}
-                                @if(!$isYtVid && ($directVUrl || !empty($video->url_path)))
-                                    <div style="margin-top: 8px;">
-                                        <a href="{{ route('content.downloadVideo', $video->id) }}" class="ed-btn-lecture-video-download" title="{{ __('تحميل ملف الفيديو (MP4) مباشرة على هاتفك أو جهازك') }}">
-                                            <i class="fa-solid fa-circle-down"></i>
-                                            <span>{{ __('تحميل الفيديو (MP4)') }}</span>
-                                        </a>
-                                    </div>
-                                @endif
 
                                 @if(!empty($video->pdf_path))
                                     <div style="margin-top: 8px;">

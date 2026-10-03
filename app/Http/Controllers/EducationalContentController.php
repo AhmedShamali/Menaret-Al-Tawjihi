@@ -644,11 +644,27 @@ class EducationalContentController extends Controller
     }
 
     /**
-     * تنزيل أو بث ملف الفيديو للدرس (يدعم الفيديوهات المرفوعة وفيديوهات يوتيوب المحولة للأوفلاين)
+     * تنزيل أو بث ملف الفيديو للدرس (حصرياً لحفظه وتشغيله داخل المنصة أوفلاين، وممنوع التنزيل كملف خارجي للطلبة)
      */
     public function downloadVideo($id)
     {
         $content = EducationalContent::with('subject')->findOrFail($id);
+
+        $user = auth()->user() ?? auth('student')->user();
+        $isStaff = $user && in_array($user->role, ['admin', 'super_admin', 'teacher']);
+        $isInternalXhr = request()->ajax() 
+            || request()->wantsJson() 
+            || request()->header('X-Requested-With') === 'XMLHttpRequest'
+            || request()->header('Sec-Fetch-Dest') === 'empty';
+
+        // منع تنزيل الفيديو كملف خارجي للطلبة أو عبر كتابة الرابط مباشرة بالمتصفح
+        if (!$isInternalXhr && !$isStaff) {
+            $redirectRoute = \Illuminate\Support\Facades\Route::has('student.subject.show') 
+                ? route('student.subject.show', $content->subject_id) 
+                : url('/subjects/' . $content->subject_id);
+            return redirect($redirectRoute)
+                ->with('info', 'حمايةً للمحتوى الأكاديمي، يتم حفظ الفيديوهات للمشاهدة بدون إنترنت حصرياً من داخل المنصة عبر زر "تحميل أوفلاين".');
+        }
 
         $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
         $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
@@ -656,7 +672,16 @@ class EducationalContentController extends Controller
         // 1. فحص توفر ملف MP4 محلي على الخادم (سواء كان مرفوعاً أو تم تحويله وتخزينه مسبقاً من يوتيوب)
         $localPath = OfflineVideoManager::resolveLocalMp4Path($content);
         if ($localPath && file_exists($localPath)) {
-            return response()->download($localPath, $fileName, [
+            // المعلم أو الإدارة فقط يمكنهم تنزيل الملف الأصلي خارج المنصة إذا طلبوا ذلك
+            if ($isStaff && (!$isInternalXhr || request()->query('force_download') === '1')) {
+                return response()->download($localPath, $fileName, [
+                    'Content-Type' => 'video/mp4',
+                    'Accept-Ranges' => 'bytes',
+                ]);
+            }
+
+            // بث المحتوى كـ Stream للـ XHR لتخزينه في الذاكرة المحلية (IndexedDB) بدون حفظه كملف في المتصفح
+            return response()->file($localPath, [
                 'Content-Type' => 'video/mp4',
                 'Accept-Ranges' => 'bytes',
                 'Access-Control-Allow-Origin' => '*',
@@ -668,7 +693,13 @@ class EducationalContentController extends Controller
             if (OfflineVideoManager::isEngineAvailable()) {
                 $conversion = OfflineVideoManager::downloadAndCacheYouTube($content);
                 if ($conversion['success'] && !empty($conversion['path']) && file_exists($conversion['path'])) {
-                    return response()->download($conversion['path'], $fileName, [
+                    if ($isStaff && (!$isInternalXhr || request()->query('force_download') === '1')) {
+                        return response()->download($conversion['path'], $fileName, [
+                            'Content-Type' => 'video/mp4',
+                            'Accept-Ranges' => 'bytes',
+                        ]);
+                    }
+                    return response()->file($conversion['path'], [
                         'Content-Type' => 'video/mp4',
                         'Accept-Ranges' => 'bytes',
                         'Access-Control-Allow-Origin' => '*',
@@ -684,13 +715,16 @@ class EducationalContentController extends Controller
                 ], 422);
             }
 
-            return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube. عند توفر محرك التنزيل على الخادم أو رفعه كملف MP4 سيكون متاحاً للتحميل المباشر.');
+            return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube ومتاح للمشاهدة المباشرة والأوفلاين داخل المنصة.');
         }
 
         // 3. الروابط الخارجية المباشرة
         $rawUrl = $content->url_path;
         if (!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL)) {
-            return redirect()->away($rawUrl);
+            if ($isStaff) {
+                return redirect()->away($rawUrl);
+            }
+            return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة وحفظه أوفلاين داخل المنصة.');
         }
 
         return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.');

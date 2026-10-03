@@ -215,7 +215,7 @@
                             </div>
                         </td>
                     </tr>
-                    <tr>
+                    <tr style="border-bottom: 1px solid #e2e8f0;">
                         <td style="padding: 12px 18px;">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -242,6 +242,36 @@
                                     </div>
                                 </div>
                                 <a href="{{ route('student.teachers.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle amber" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-cloud-arrow-down"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الفيديوهات المحملة أوفلاين') }}</strong>
+                                        <small style="color: #64748b;">{{ __('مشاهدة دروسك بدون إنترنت ⚡') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('offline.videos') }}" class="tbl-btn" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;">{{ __('فتح الخزنة') }} <i class="fas fa-bolt"></i></a>
+                            </div>
+                        </td>
+                        <td style="padding: 12px 18px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="tool-icon-circle green" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </div>
+                                    <div>
+                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('المكتبة ودليل المقررات') }}</strong>
+                                        <small style="color: #64748b;">{{ __('الفهرس والمناهج والكتب الوزارية') }}</small>
+                                    </div>
+                                </div>
+                                <a href="{{ route('courses.catalog') }}" class="tbl-btn">{{ __('تصفح') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
                             </div>
                         </td>
                     </tr>

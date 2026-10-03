@@ -117,15 +117,16 @@
                                 <a href="{{ $videoUrl }}" class="btn btn-primary rounded-3">
                                     <i class="fas fa-play-circle ms-1"></i> {{ __('مشاهدة في مشغل المنصة الآمن') }}
                                 </a>
-                                @if(!$isYtLink && !empty($video->url_path))
-                                    <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn btn-success rounded-3" title="{{ __('تحميل ملف الفيديو على جهازك (MP4)') }}">
-                                        <i class="fas fa-cloud-arrow-down ms-1"></i> {{ __('تحميل الفيديو (MP4)') }}
-                                    </a>
-                                @elseif($isYtLink)
-                                    <a href="{{ route('student.subjects.show', $video->subject_id) }}" class="btn btn-outline-primary btn-sm rounded-3">
-                                        <i class="fas fa-bolt ms-1"></i> {{ __('تشغيل وحفظ أوفلاين في التطبيق') }}
-                                    </a>
+                                @if(Auth::check() && in_array(Auth::user()->role, ['admin', 'super_admin', 'teacher']))
+                                    @if(!$isYtLink && !empty($video->url_path))
+                                        <a href="{{ route('content.downloadVideo', ['id' => $video->id, 'force_download' => 1]) }}" class="btn btn-outline-secondary rounded-3" title="{{ __('تحميل الملف الأصلي (للإدارة والمعلمين فقط)') }}">
+                                            <i class="fas fa-download ms-1"></i> {{ __('تحميل الأصل (إدارة/معلم)') }}
+                                        </a>
+                                    @endif
                                 @endif
+                                <a href="{{ route('student.subjects.show', $video->subject_id) }}" class="btn btn-outline-primary btn-sm rounded-3">
+                                    <i class="fas fa-bolt ms-1"></i> {{ __('تشغيل وحفظ أوفلاين في التطبيق') }}
+                                </a>
                                 @if($video->pdf_path)
                                     @php
                                         $videoPdfUrl = $video->pdf_url ?? \App\Support\MediaHelper::url($video->pdf_path);

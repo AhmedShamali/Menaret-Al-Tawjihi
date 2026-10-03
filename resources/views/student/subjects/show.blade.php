@@ -1181,7 +1181,13 @@
                                     @endif
                                 </div>
 
-                                {{-- شريط التحكم بالسرعة والملاحظات --}}
+                                @php
+                                    $hasOfflineMp4 = \App\Services\OfflineVideoManager::hasLocalMp4($video);
+                                    $isYt = !empty($video->youtube_id);
+                                    $canDownloadOffline = ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) || $isYt || $hasOfflineMp4;
+                                @endphp
+
+                                {{-- شريط التحكم بالسرعة والملاحظات والحفظ أوفلاين --}}
                                 <div class="ed-smart-player-bar">
                                     <div class="speed-buttons-group">
                                         <span style="font-size: 0.78rem; font-weight: 800; color: #64748b; margin-left: 4px;">
@@ -1195,11 +1201,15 @@
                                     </div>
 
                                     <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                                        @if($isDirectVideo && ($directVideoUrl || !empty($video->url_path)))
-                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="btn-toggle-notes btn-download-quick" title="{{ __('تحميل ملف الفيديو (MP4) على جهازك') }}">
+                                        @if($canDownloadOffline)
+                                            <button type="button" 
+                                                    class="btn-toggle-notes btn-download-quick btn-offline-quick-save" 
+                                                    id="quick_offline_btn_{{ $video->id }}"
+                                                    onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}')" 
+                                                    title="{{ __('حفظ الدرس في ذاكرة المنصة لمشاهدته بدون إنترنت') }}">
                                                 <i class="fa-solid fa-cloud-arrow-down"></i>
-                                                <span>{{ __('تحميل الفيديو') }}</span>
-                                            </a>
+                                                <span id="quick_offline_lbl_{{ $video->id }}">{{ __('حفظ أوفلاين ⚡') }}</span>
+                                            </button>
                                         @endif
                                         <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                             <i class="fa-solid fa-expand"></i>
@@ -1227,7 +1237,7 @@
                                     </div>
                                 </div>
 
-                                {{-- بيانات المحاضرة والمرفقات الدراسية وزر التحميل أوفلاين الفاخر --}}
+                                {{-- بيانات المحاضرة والمرفقات الدراسية وزر التحميل أوفلاين الفاخر داخل المنصة --}}
                                 <div class="ed-video-info-box">
                                     <div>
                                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
@@ -1243,12 +1253,6 @@
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                         <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                            @php
-                                                $hasOfflineMp4 = \App\Services\OfflineVideoManager::hasLocalMp4($video);
-                                                $isYt = !empty($video->youtube_id);
-                                                $canDownloadOffline = ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) || $isYt || $hasOfflineMp4;
-                                            @endphp
-
                                             @if($canDownloadOffline)
                                                 <button type="button" 
                                                         class="ed-btn-offline-card" 
@@ -1265,10 +1269,10 @@
                                                         data-yt-embed="{{ $ytEmbed ?? '' }}"
                                                         data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
                                                         onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('تحميل وتشغيل الدرس بدون إنترنت بالكامل') }}">
+                                                        title="{{ __('حفظ وتشغيل الدرس بدون إنترنت داخل المنصة') }}">
                                                     <div class="ed-offline-btn-inner">
                                                         <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('تحميل وتشغيل أوفلاين (بدون نت ⚡)') }}</span>
+                                                        <span class="offline-btn-label">{{ __('حفظ وتشغيل أوفلاين (داخل المنصة ⚡)') }}</span>
                                                     </div>
                                                     <div class="ed-offline-progress-track">
                                                         <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
@@ -1296,18 +1300,11 @@
                                             @endif
                                         </div>
 
-                                        {{-- زر تحميل الفيديو المباشر بجانب الفيديو --}}
-                                        @if($isDirectVideo && ($directVideoUrl || !empty($video->url_path)))
-                                            <a href="{{ route('content.downloadVideo', $video->id) }}" class="ed-btn-lecture-video-download" title="{{ __('تحميل ملف الفيديو (MP4) مباشرة على هاتفك أو جهازك') }}">
-                                                <i class="fa-solid fa-circle-down"></i>
-                                                <span>{{ __('تحميل الفيديو (MP4)') }}</span>
-                                            </a>
-                                        @endif
-
+                                        {{-- ملزمة وملازم الدرس PDF المعتمدة للدراسة والطباعة --}}
                                         @if(!empty($video->pdf_path))
-                                            <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
+                                            <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf" title="{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}">
                                                 <i class="fa-solid fa-file-pdf"></i>
-                                                <span>{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}</span>
+                                                <span>{{ __('تحميل ملزمة المحاضرة (PDF)') }}</span>
                                             </a>
                                         @endif
                                     </div>

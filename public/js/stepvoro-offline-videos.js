@@ -362,6 +362,9 @@ const StepvoroVideoDownloader = {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', videoUrl, true);
         xhr.responseType = 'blob';
+        try {
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        } catch(e) {}
 
         self.activeDownloads[id] = xhr;
 
@@ -514,43 +517,62 @@ const StepvoroVideoDownloader = {
     // تحديث شكل ومحتوى زر التنزيل بشكل راقٍ ومباشر
     updateButtonUI: function (id, state, percent, btnElement) {
         const btn = btnElement || document.getElementById('btn_offline_' + id);
-        if (!btn) return;
+        const quickLbl = document.getElementById('quick_offline_lbl_' + id);
+        const quickBtn = document.getElementById('quick_offline_btn_' + id);
 
         if (state === 'downloading') {
-            btn.classList.add('is-downloading');
-            btn.classList.remove('is-saved');
-            btn.disabled = true;
-            btn.innerHTML = `
-                <div class="ed-offline-btn-inner">
-                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                    <span class="offline-btn-label">جاري التحميل (${percent}%)</span>
-                </div>
-                <div class="ed-offline-progress-track">
-                    <div class="ed-offline-progress-fill" style="width: ${percent}%;"></div>
-                </div>
-            `;
+            if (btn) {
+                btn.classList.add('is-downloading');
+                btn.classList.remove('is-saved');
+                btn.disabled = true;
+                btn.innerHTML = `
+                    <div class="ed-offline-btn-inner">
+                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                        <span class="offline-btn-label">جاري الحفظ داخل المنصة (${percent}%)</span>
+                    </div>
+                    <div class="ed-offline-progress-track">
+                        <div class="ed-offline-progress-fill" style="width: ${percent}%;"></div>
+                    </div>
+                `;
+            }
+            if (quickLbl) quickLbl.innerText = `حفظ (${percent}%)`;
         } else if (state === 'saved') {
-            btn.classList.remove('is-downloading');
-            btn.classList.add('is-saved');
-            btn.disabled = false;
-            btn.innerHTML = `
-                <div class="ed-offline-btn-inner">
-                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-circle-check" style="color: #10b981;"></i></span>
-                    <span class="offline-btn-label">محفوظ أوفلاين ✓</span>
-                    <span class="btn-remove-offline" onclick="event.stopPropagation(); StepvoroVideoDownloader.removeOfflineVideo('${id}', this.closest('button'))" title="حذف من الذاكرة لتحرير المساحة">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </span>
-                </div>
-            `;
+            if (btn) {
+                btn.classList.remove('is-downloading');
+                btn.classList.add('is-saved');
+                btn.disabled = false;
+                btn.title = 'تشغيل الدرس أوفلاين مباشرة من ذاكرة المنصة';
+                btn.innerHTML = `
+                    <div class="ed-offline-btn-inner">
+                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-circle-check" style="color: #10b981;"></i></span>
+                        <span class="offline-btn-label">تشغيل أوفلاين (محفوظ داخل المنصة ⚡)</span>
+                        <span class="btn-remove-offline" onclick="event.stopPropagation(); StepvoroVideoDownloader.removeOfflineVideo('${id}', this.closest('button'))" title="حذف من الذاكرة لتحرير المساحة">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </span>
+                    </div>
+                `;
+            }
+            if (quickLbl) quickLbl.innerText = 'محفوظ أوفلاين ✓';
+            if (quickBtn) {
+                quickBtn.classList.add('is-saved');
+                quickBtn.style.color = '#10b981';
+            }
         } else {
-            btn.classList.remove('is-downloading', 'is-saved');
-            btn.disabled = false;
-            btn.innerHTML = `
-                <div class="ed-offline-btn-inner">
-                    <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                    <span class="offline-btn-label">تحميل الدرس أوفلاين</span>
-                </div>
-            `;
+            if (btn) {
+                btn.classList.remove('is-downloading', 'is-saved');
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <div class="ed-offline-btn-inner">
+                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                        <span class="offline-btn-label">حفظ وتشغيل أوفلاين (داخل المنصة ⚡)</span>
+                    </div>
+                `;
+            }
+            if (quickLbl) quickLbl.innerText = 'حفظ أوفلاين ⚡';
+            if (quickBtn) {
+                quickBtn.classList.remove('is-saved');
+                quickBtn.style.color = '';
+            }
         }
     },
 
