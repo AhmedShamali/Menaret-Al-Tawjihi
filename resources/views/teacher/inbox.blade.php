@@ -73,7 +73,7 @@
         </aside>
 
         {{-- 2. ساحة المحادثة الرئيسية (Main Chat Pane) --}}
-        <main class="chat-viewport-pane" id="chat_main">
+        <main class="chat-viewport-pane mobile-hidden" id="chat_main">
 
             {{-- هيدر المحادثة النشطة --}}
             <header id="chat_header" class="active-chat-header" style="display: none;">
@@ -669,16 +669,31 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-    .academic-inbox-grid {
-        grid-template-columns: 1fr;
-        height: calc(100vh - 80px);
-        border-radius: 0;
-        border: none;
+    .academic-inbox-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
-    .chat-sidebar-pane.mobile-hidden { display: none; }
-    .chat-viewport-pane.mobile-hidden { display: none; }
-    .mobile-return-btn { display: block; }
-    .bubble-item { max-width: 88%; }
+    .academic-inbox-grid {
+        grid-template-columns: 1fr !important;
+        height: calc(100dvh - 130px) !important;
+        min-height: calc(100dvh - 130px) !important;
+        max-height: calc(100dvh - 130px) !important;
+        border-radius: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    .chat-sidebar-pane.mobile-hidden { display: none !important; }
+    .chat-viewport-pane.mobile-hidden { display: none !important; }
+    .mobile-return-btn { display: block !important; }
+    .bubble-item { max-width: 88% !important; }
+    .chat-sidebar-pane, .chat-viewport-pane {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100% !important;
+    }
 }
 </style>
 

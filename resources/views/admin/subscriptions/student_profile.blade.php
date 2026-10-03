@@ -603,6 +603,7 @@
             </div>
 
             {{-- جدول الشهور الـ 12 المعتمد --}}
+            <div class="table-responsive" style="overflow-x: auto; width: 100%; max-width: 100%;">
             <table class="doc-table">
                 <thead>
                     <tr>
@@ -666,6 +667,7 @@
                     </tr>
                 </tfoot>
             </table>
+            </div>
 
             {{-- إقرار براءة الذمة وتوقيع الإدارة --}}
             <div class="doc-footer-clearance">

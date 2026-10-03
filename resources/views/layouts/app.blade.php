@@ -657,6 +657,60 @@
             overflow-x: hidden;
         }
 
+        /* --- قواعد الاحتواء التلقائي والحماية من خروج العناصر عن الشاشة --- */
+        .content-body,
+        main.main-content,
+        .card,
+        .ed-card,
+        .table-card-clean,
+        .glass-card,
+        .dashboard-container,
+        .admin-payroll-wrapper,
+        .academic-inbox-wrapper,
+        .gradebook-page-wrap,
+        .pricing-table-card {
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* حاويات الجداول الشاملة لضمان التمرير الأفقي السلس على كافة الشاشات دون كسر العرض */
+        .table-responsive,
+        .table-container-clean,
+        .table-responsive-box,
+        .table-responsive-wrapper,
+        .ed-table-responsive,
+        .pricing-table-container,
+        .payroll-table-wrap {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            display: block !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+            scrollbar-width: thin;
+        }
+
+        .table-responsive::-webkit-scrollbar,
+        .table-container-clean::-webkit-scrollbar,
+        .table-responsive-box::-webkit-scrollbar,
+        .table-responsive-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb,
+        .table-container-clean::-webkit-scrollbar-thumb,
+        .table-responsive-box::-webkit-scrollbar-thumb,
+        .table-responsive-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        /* منع تجاوز الوسائط لعرض الشاشة */
+        img, video, iframe, embed, object {
+            max-width: 100%;
+            height: auto;
+        }
+
         /* زر الجوال */
         .mobile-toggle {
             display: none;
@@ -1183,6 +1237,18 @@
             table.clean-matrix-table,
             table.academic-simple-table {
                 min-width: 600px !important;
+            }
+
+            /* حماية تلقائية لأي جدول غير مغلف لمنع كسر عرض الشاشة */
+            .content-body > table,
+            .card > table,
+            .glass-card > table,
+            .ed-card > table {
+                display: block !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                -webkit-overflow-scrolling: touch !important;
             }
             .data-table-clean th,
             .classic-table th,

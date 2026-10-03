@@ -574,23 +574,25 @@
             </div>
 
             {{-- جدول الشهور الـ 12 للطباعة --}}
-            <table class="sheet-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>{{ __('الشهر الدراسي') }}</th>
-                        <th>{{ __('المبلغ المستحق (₪)') }}</th>
-                        <th>{{ __('المبلغ المسدد (₪)') }}</th>
-                        <th>{{ __('الرصيد المتبقي (₪)') }}</th>
-                        <th>{{ __('حالة الدفعة') }}</th>
-                        <th>{{ __('تاريخ السداد') }}</th>
-                        <th>{{ __('ملاحظات وبيان الدفعة') }}</th>
-                    </tr>
-                </thead>
-                <tbody id="stmtTableBody">
-                    <!-- تُملأ ديناميكياً بواسطة JavaScript -->
-                </tbody>
-            </table>
+            <div class="table-responsive" style="overflow-x: auto; width: 100%; max-width: 100%;">
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>{{ __('الشهر الدراسي') }}</th>
+                            <th>{{ __('المبلغ المستحق (₪)') }}</th>
+                            <th>{{ __('المبلغ المسدد (₪)') }}</th>
+                            <th>{{ __('الرصيد المتبقي (₪)') }}</th>
+                            <th>{{ __('حالة الدفعة') }}</th>
+                            <th>{{ __('تاريخ السداد') }}</th>
+                            <th>{{ __('ملاحظات وبيان الدفعة') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stmtTableBody">
+                        <!-- تُملأ ديناميكياً بواسطة JavaScript -->
+                    </tbody>
+                </table>
+            </div>
 
             {{-- التواقيع والأختام الرسمية المعتمدة --}}
             <div class="sheet-footer-stamps">
