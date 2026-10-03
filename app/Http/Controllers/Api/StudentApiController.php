@@ -125,12 +125,20 @@ class StudentApiController extends Controller
             ], 422);
         }
 
+        $city = $request->input('city', 'رام الله والبيرة');
+        $region = $request->input('region');
+        if (!in_array($region, ['gaza', 'west_bank'])) {
+            $region = Student::inferRegionFromCity($city);
+        }
+
         $student = Student::create([
             'name_ar'  => $request->name_ar,
             'name_en'  => $request->name_en ?? $request->name_ar,
             'email'    => $request->email,
             'nid'      => $request->nid,
             'phone'    => $request->phone,
+            'city'     => $city,
+            'region'   => $region,
             'stage_id' => $request->stage_id,
             'gender'   => $request->gender ?? 'male',
             'password' => Hash::make($request->password),
@@ -269,7 +277,14 @@ class StudentApiController extends Controller
                 ->toArray();
         }
 
+        $studentRegion = $student->resolved_region ?? 'west_bank';
+
         $contents = EducationalContent::where('subject_id', $id)
+            ->where(function ($q) use ($studentRegion) {
+                $q->where('target_region', 'all')
+                  ->orWhereNull('target_region')
+                  ->orWhere('target_region', $studentRegion);
+            })
             ->orderBy('order', 'asc')
             ->get()
             ->map(function ($item) use ($isFullAccess, $allowedIds) {

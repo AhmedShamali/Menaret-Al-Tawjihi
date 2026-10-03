@@ -11,7 +11,7 @@ class Student extends Authenticatable
 
     protected $fillable = [
         'name_ar', 'name_en', 'nid', 'email', 'password', 'plain_password', 'age', 'gender', 'phone', 'whatsapp', 'photo', 'id_photo', 'stage_id', 'monthly_fee', 'status', 'approved_at', 'freeze_reason',
-        'city', 'school_name', 'guardian_phone',
+        'city', 'region', 'school_name', 'guardian_phone',
         'streak_count', 'last_activity_date', 'total_points',
         'custom_discount_percent', 'custom_discount_fixed', 'discount_notes',
         'google_id', 'provider', 'provider_id', 'avatar_url'
@@ -100,6 +100,82 @@ class Student extends Authenticatable
     {
         return $this->name_ar ?: ($this->name_en ?: 'طالب التوجيهي');
     }
+
+    /**
+     * استنتاج المنطقة التعليمية (غزة / الضفة) بدقة من حقل المدينة
+     */
+    public static function inferRegionFromCity(?string $city = null): string
+    {
+        $city = trim($city ?? '');
+        if (empty($city)) {
+            return 'west_bank'; // الافتراضي
+        }
+
+        $gazaKeywords = ['غزة', 'شمال غزة', 'خان يونس', 'رفح', 'دير البلح', 'الوسطى', 'جباليا', 'بيت لاهيا', 'بيت حانون'];
+        foreach ($gazaKeywords as $kw) {
+            if (mb_strpos($city, $kw) !== false) {
+                return 'gaza';
+            }
+        }
+
+        return 'west_bank';
+    }
+
+    /**
+     * المنطقة التعليمية المحسومة للطالب (إما المسجلة مباشرة أو المستنتجة من المدينة)
+     */
+    public function getResolvedRegionAttribute(): string
+    {
+        $reg = trim($this->region ?? '');
+        if (!empty($reg) && in_array($reg, ['gaza', 'west_bank'])) {
+            return $reg;
+        }
+
+        return self::inferRegionFromCity($this->city);
+    }
+
+    /**
+     * نص المنطقة التعليمية للطالب بالعربية
+     */
+    public function getRegionLabelAttribute(): string
+    {
+        return $this->resolved_region === 'gaza' ? 'قطاع غزة 🌿' : 'الضفة الغربية والقدس 🏛️';
+    }
+
+    /**
+     * بيانات تصميم وشارة المنطقة التعليمية للطالب
+     */
+    public function getRegionBadgeAttribute(): array
+    {
+        if ($this->resolved_region === 'gaza') {
+            return [
+                'label' => 'غزة العزة 🌿',
+                'bg'    => '#ecfdf5',
+                'color' => '#065f46',
+                'border'=> '#a7f3d0',
+                'icon'  => 'fa-solid fa-seedling',
+            ];
+        }
+
+        return [
+            'label' => 'الضفة والقدس 🏛️',
+            'bg'    => '#eff6ff',
+            'color' => '#1e40af',
+            'border'=> '#bfdbfe',
+            'icon'  => 'fa-solid fa-landmark',
+        ];
+    }
+
+    public function isGaza(): bool
+    {
+        return $this->resolved_region === 'gaza';
+    }
+
+    public function isWestBank(): bool
+    {
+        return $this->resolved_region === 'west_bank';
+    }
+
 
     /**
      * هل يمتلك الطالب خصماً خاصاً معتمداً من الإدارة؟

@@ -99,6 +99,12 @@
             <button type="button" class="filter-pill" data-filter="bus" onclick="setFilterTab('bus')">
                 {{ __('ريادة وأعمال') }}
             </button>
+            <button type="button" class="filter-pill" data-filter="gaza" onclick="setFilterTab('gaza')">
+                🌿 {{ __('غزة') }} ({{ $students->filter(fn($s) => $s->resolved_region === 'gaza')->count() }})
+            </button>
+            <button type="button" class="filter-pill" data-filter="west_bank" onclick="setFilterTab('west_bank')">
+                🏛️ {{ __('الضفة') }} ({{ $students->filter(fn($s) => $s->resolved_region === 'west_bank')->count() }})
+            </button>
         </div>
     </div>
 
@@ -158,7 +164,8 @@
                         data-email="{{ strtolower($student->email) }}"
                         data-nid="{{ $student->nid }}"
                         data-status="{{ $student->status }}"
-                        data-branch="{{ $stageLabel }}">
+                        data-branch="{{ $stageLabel }}"
+                        data-region="{{ $student->resolved_region }}">
                         
                         {{-- تحديد --}}
                         <td style="text-align: center;">
@@ -200,9 +207,20 @@
                             </div>
                         </td>
 
-                        {{-- الفرع --}}
+                        {{-- الفرع والمنطقة --}}
                         <td>
-                            <span class="branch-tag-clean">{{ __($branchShort) }}</span>
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                <span class="branch-tag-clean">{{ __($branchShort) }}</span>
+                                @if($student->resolved_region === 'gaza')
+                                    <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; font-weight: 700; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1px 6px; border-radius: 4px;" title="{{ __('منهاج قطاع غزة') }}">
+                                        🌿 {{ __('غزة') }}
+                                    </span>
+                                @else
+                                    <span style="display: inline-flex; align-items: center; gap: 3px; font-size: 0.68rem; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1px solid #bfdbfe; padding: 1px 6px; border-radius: 4px;" title="{{ __('منهاج الضفة الغربية') }}">
+                                        🏛️ {{ __('الضفة') }}
+                                    </span>
+                                @endif
+                            </div>
                         </td>
 
                         {{-- الهوية الوطنية --}}
@@ -991,6 +1009,7 @@
             const nid = (row.getAttribute('data-nid') || '').toLowerCase();
             const status = row.getAttribute('data-status') || '';
             const branch = (row.getAttribute('data-branch') || '').toLowerCase();
+            const region = (row.getAttribute('data-region') || '').toLowerCase();
 
             const matchQuery = !query || name.includes(query) || email.includes(query) || nid.includes(query);
             let matchFilter = true;
@@ -1005,6 +1024,10 @@
                 matchFilter = branch.includes('أدبي');
             } else if (currentFilter === 'bus') {
                 matchFilter = branch.includes('ريادة') || branch.includes('أعمال') || branch.includes('تجاري');
+            } else if (currentFilter === 'gaza') {
+                matchFilter = (region === 'gaza');
+            } else if (currentFilter === 'west_bank') {
+                matchFilter = (region === 'west_bank');
             }
 
             if (matchQuery && matchFilter) {

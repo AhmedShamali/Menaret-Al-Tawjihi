@@ -450,6 +450,11 @@ class AdminManagerController extends Controller {
         $schoolName = $request->input('school_name');
         $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
 
+        $region = $request->input('region');
+        if (!in_array($region, ['gaza', 'west_bank'])) {
+            $region = Student::inferRegionFromCity($city);
+        }
+
         $studentData = [
             'name_ar'            => $request->name_ar,
             'name_en'            => $nameEn,
@@ -460,6 +465,7 @@ class AdminManagerController extends Controller {
             'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
             'guardian_phone'     => $guardianPhone,
             'city'               => $city,
+            'region'             => $region,
             'school_name'        => $schoolName,
             'password'           => Hash::make($request->password),
             'plain_password'     => $request->password,
@@ -476,7 +482,7 @@ class AdminManagerController extends Controller {
         try {
             $student = Student::create($studentData);
         } catch (\Illuminate\Database\QueryException $e) {
-            unset($studentData['city'], $studentData['school_name'], $studentData['guardian_phone'], $studentData['plain_password']);
+            unset($studentData['city'], $studentData['region'], $studentData['school_name'], $studentData['guardian_phone'], $studentData['plain_password']);
             $student = Student::create($studentData);
         }
 

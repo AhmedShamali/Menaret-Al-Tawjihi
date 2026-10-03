@@ -35,6 +35,14 @@ Route::get('/educational-contents/{id}/download-video', [EducationalContentContr
 Route::match(['get', 'post'], '/educational-contents/{id}/prepare-offline', [EducationalContentController::class, 'prepareOfflineVideo'])->name('content.prepareOfflineVideo');
 Route::get('/question-images/{id}', [ExamController::class, 'questionImage'])->name('question.image');
 Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'questionOptionImage'])->name('question.option_image');
+Route::get('/ping', function() {
+    return response()->json([
+        'status' => 'ok',
+        'pong'   => true,
+        'csrf'   => csrf_token(),
+        'time'   => time(),
+    ]);
+})->name('system.ping');
 
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');

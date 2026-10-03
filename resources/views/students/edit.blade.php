@@ -51,8 +51,15 @@
                             <input type="number" name="age" value="{{ $student->age }}" class="f-input" required placeholder="{{ __('مثال: 18') }}">
                         </div>
                         <div class="f-group">
+                            <label class="f-label">{{ __('المنطقة الأكاديمية (المنهاج المستهدف)') }}<span class="req">*</span></label>
+                            <select name="region" id="edit_student_region" class="f-input" required onchange="syncEditCityList(this.value)">
+                                <option value="gaza" {{ ($student->resolved_region ?? 'gaza') === 'gaza' ? 'selected' : '' }}>{{ __('قطاع غزة 🌿 (منهاج غزة)') }}</option>
+                                <option value="west_bank" {{ ($student->resolved_region ?? '') === 'west_bank' ? 'selected' : '' }}>{{ __('الضفة الغربية 🏛️ (منهاج الضفة)') }}</option>
+                            </select>
+                        </div>
+                        <div class="f-group">
                             <label class="f-label">المحافظة / المدينة</label>
-                            <select name="city" class="f-input">
+                            <select name="city" id="edit_student_city" class="f-input" onchange="autoSyncRegionFromEditCity(this.value)">
                                 @php
                                     $cities = ['القدس', 'رام الله والبيرة', 'غزة', 'نابلس', 'الخليل', 'جنين', 'طولكرم', 'قلقيلية', 'بيت لحم', 'سلفيت', 'أريحا', 'طوباس', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح', 'أخرى'];
                                 @endphp
@@ -627,6 +634,29 @@
             });
         } else {
             alert('{{ __("تم نسخ كلمة المرور بنجاح") }}');
+        }
+    }
+
+    function syncEditCityList(region) {
+        const citySelect = document.getElementById('edit_student_city');
+        if (!citySelect) return;
+        const gazaCities = ['غزة', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح'];
+        const currentVal = citySelect.value;
+        if (region === 'gaza' && !gazaCities.includes(currentVal)) {
+            citySelect.value = 'غزة';
+        } else if (region === 'west_bank' && gazaCities.includes(currentVal)) {
+            citySelect.value = 'رام الله والبيرة';
+        }
+    }
+
+    function autoSyncRegionFromEditCity(city) {
+        const regionSelect = document.getElementById('edit_student_region');
+        if (!regionSelect) return;
+        const gazaCities = ['غزة', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح'];
+        if (gazaCities.includes(city)) {
+            regionSelect.value = 'gaza';
+        } else if (city !== 'أخرى') {
+            regionSelect.value = 'west_bank';
         }
     }
 </script>

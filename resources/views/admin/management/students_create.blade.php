@@ -98,8 +98,15 @@
                             <input type="number" name="age" min="5" max="100" class="modern-input" placeholder="{{ __('18') }}" value="18">
                         </div>
                         <div>
-                            <label class="form-label">المحافظة / المدينة</label>
-                            <select name="city" class="modern-input">
+                            <label class="form-label">{{ __('المنطقة الأكاديمية (المنهاج المستهدف)') }}<span>*</span></label>
+                            <select name="region" id="admin_student_region" class="modern-input" required onchange="syncAdminCityList(this.value)">
+                                <option value="gaza">{{ __('قطاع غزة 🌿 (منهاج غزة)') }}</option>
+                                <option value="west_bank" selected>{{ __('الضفة الغربية 🏛️ (منهاج الضفة)') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">{{ __('المحافظة / المدينة') }}<span>*</span></label>
+                            <select name="city" id="admin_student_city" class="modern-input" onchange="autoSyncRegionFromAdminCity(this.value)">
                                 <option value="القدس">القدس الشريف 🕌</option>
                                 <option value="رام الله والبيرة" selected>{{ __('رام الله والبيرة') }}</option>
                                 <option value="غزة">غزة العزة 🌿</option>
@@ -116,7 +123,7 @@
                                 <option value="رفح">{{ __('رفح') }}</option>
                                 <option value="شمال غزة">{{ __('شمال غزة (جباليا)') }}</option>
                                 <option value="دير البلح">{{ __('دير البلح والوسطى') }}</option>
-                                <option value="أخرى">خارج فلسطين / أخرى</option>
+                                <option value="أخرى">{{ __('خارج فلسطين / أخرى') }}</option>
                             </select>
                         </div>
                         <div>
@@ -392,6 +399,29 @@
             }
 
             Swal.fire({ icon: 'error', title: 'فشل الحفظ', text: message, confirmButtonText: 'حسناً' });
+        }
+    }
+
+    function syncAdminCityList(region) {
+        const citySelect = document.getElementById('admin_student_city');
+        if (!citySelect) return;
+        const gazaCities = ['غزة', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح'];
+        const currentVal = citySelect.value;
+        if (region === 'gaza' && !gazaCities.includes(currentVal)) {
+            citySelect.value = 'غزة';
+        } else if (region === 'west_bank' && gazaCities.includes(currentVal)) {
+            citySelect.value = 'رام الله والبيرة';
+        }
+    }
+
+    function autoSyncRegionFromAdminCity(city) {
+        const regionSelect = document.getElementById('admin_student_region');
+        if (!regionSelect) return;
+        const gazaCities = ['غزة', 'خان يونس', 'رفح', 'شمال غزة', 'دير البلح'];
+        if (gazaCities.includes(city)) {
+            regionSelect.value = 'gaza';
+        } else if (city !== 'أخرى') {
+            regionSelect.value = 'west_bank';
         }
     }
 </script>

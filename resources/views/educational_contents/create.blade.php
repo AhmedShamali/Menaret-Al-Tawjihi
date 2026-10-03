@@ -78,6 +78,40 @@
                             </select>
                         </div>
                     </div>
+
+                    <!-- توجيه المحتوى حسب المنطقة التعليمية (غزة / الضفة) -->
+                    <div class="form-group" style="margin-top: 8px;">
+                        <label class="f-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>{{ __('الجمهور والمنهاج المستهدف') }} <span class="required">*</span></span>
+                            <small style="color: #64748b; font-weight: normal;">{{ __('يحدد من يظهر له هذا الدرس من الطلبة المسجلين') }}</small>
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="gaza" style="display: none;" onchange="updateCreateRegionUI(this)">
+                                <div id="cre_card_gaza" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; background: #fff; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🌿</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #065f46;">{{ __('قطاع غزة') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #64748b;">{{ __('لطلبة غزة فقط') }}</small>
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="west_bank" style="display: none;" onchange="updateCreateRegionUI(this)">
+                                <div id="cre_card_west_bank" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; background: #fff; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🏛️</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #1e40af;">{{ __('الضفة والقدس') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #64748b;">{{ __('لطلبة الضفة فقط') }}</small>
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="all" checked style="display: none;" onchange="updateCreateRegionUI(this)">
+                                <div id="cre_card_all" style="border: 2px solid #2563eb; border-radius: 12px; padding: 10px 8px; text-align: center; background: #eff6ff; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🌐</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #1e3a8a;">{{ __('منهاج مشترك') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #3b82f6;">{{ __('لكافة طلبة الوطن') }}</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- المرفقات -->
@@ -186,6 +220,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/resumable-uploader.js') }}"></script>
 
 <script>
     const stages = @json($stages);
@@ -204,6 +239,26 @@
         }
     });
 
+    function updateCreateRegionUI(radio) {
+        ['cre_card_gaza', 'cre_card_west_bank', 'cre_card_all'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.borderColor = '#e2e8f0';
+                el.style.background = '#ffffff';
+            }
+        });
+        if (radio.value === 'gaza') {
+            const c = document.getElementById('cre_card_gaza');
+            if (c) { c.style.borderColor = '#059669'; c.style.background = '#ecfdf5'; }
+        } else if (radio.value === 'west_bank') {
+            const c = document.getElementById('cre_card_west_bank');
+            if (c) { c.style.borderColor = '#1e40af'; c.style.background = '#eff6ff'; }
+        } else {
+            const c = document.getElementById('cre_card_all');
+            if (c) { c.style.borderColor = '#2563eb'; c.style.background = '#eff6ff'; }
+        }
+    }
+
     function toggleAttachmentSections() {
         const videoChecked = document.getElementById('check_video').checked;
         const pdfChecked = document.getElementById('check_pdf').checked;
@@ -214,6 +269,8 @@
         document.getElementById('pdf_section').style.display = pdfChecked ? 'block' : 'none';
         document.getElementById('card_pdf').classList.toggle('selected', pdfChecked);
     }
+
+    let activeUploader = null;
 
     async function submitContent() {
         const videoChecked = document.getElementById('check_video').checked;
@@ -258,7 +315,7 @@
 
         const preventTabClose = (ev) => {
             ev.preventDefault();
-            ev.returnValue = 'جاري رفع فيديو ضخم بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟';
+            ev.returnValue = 'جاري رفع فيديو بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟';
         };
         window.addEventListener('beforeunload', preventTabClose);
 
@@ -266,108 +323,53 @@
         let formattedVideoSize = null;
 
         try {
-            // رفع الفيديو بنظام التجزئة والاستئناف للجيجابايت (Gigabyte Chunking & Resumable)
+            // رفع الفيديو بنظام التجزئة والاستئناف التلقائي فائق الاستقرار عند انقطاع الإنترنت
             if (videoChecked && videoFileInput.files.length > 0) {
                 const file = videoFileInput.files[0];
-                const CHUNK_SIZE = file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024);
-                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-                const cleanName = encodeURIComponent(file.name).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
-                const fileId = 'vid_' + cleanName + '_' + file.size;
-
-                const chunkUrl = "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}";
-                const checkStatusUrl = "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}";
-
-                // فحص الأجزاء السابقة للاستئناف الفوري
-                let alreadyUploaded = new Set();
-                try {
-                    const statusRes = await axios.post(checkStatusUrl, {
-                        file_id: fileId,
-                        total_chunks: totalChunks,
-                        _token: '{{ csrf_token() }}'
-                    });
-                    if (statusRes.data && statusRes.data.uploaded_chunks && statusRes.data.uploaded_chunks.length > 0) {
-                        alreadyUploaded = new Set(statusRes.data.uploaded_chunks);
-                        if (alreadyUploaded.size > 0 && alreadyUploaded.size < totalChunks) {
-                            progressStatusText.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> تم العثور على (${alreadyUploaded.size}) جزء مرفوع مسبقاً! جاري الاستئناف التلقائي 🚀`;
+                
+                activeUploader = new ResumableUploader({
+                    chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
+                    pingUrl: "{{ route('system.ping') }}",
+                    csrfToken: '{{ csrf_token() }}',
+                    onProgress: (pct) => {
+                        const scaledPct = Math.round(pct * 0.90);
+                        progressBarFill.style.width = scaledPct + '%';
+                        progressPercentText.textContent = scaledPct + '%';
+                    },
+                    onStatus: (status) => {
+                        progressStatusText.innerHTML = status.html;
+                    },
+                    onSpeed: (speed) => {
+                        if (progressSpeedMeta) progressSpeedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
+                    },
+                    onEta: (eta) => {
+                        if (progressEtaMeta) progressEtaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
+                    },
+                    onMeta: (meta) => {
+                        if (progressFileMeta) progressFileMeta.textContent = meta;
+                    },
+                    onPart: (part) => {
+                        if (progressPartMeta) progressPartMeta.textContent = part;
+                    },
+                    onNetworkStateChange: (isOnline, pct) => {
+                        if (!isOnline) {
+                            progressBarFill.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
+                            btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> الرفع معلّق (بانتظار الإنترنت)...';
+                        } else {
+                            progressBarFill.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
+                            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري استئناف الرفع...';
                         }
                     }
-                } catch (e) {
-                    console.warn('Check chunk status skipped:', e);
-                }
+                });
 
-                const startTime = Date.now();
-                let bytesUploadedThisSession = 0;
-
-                async function sendChunkWithRetry(formData, chunkIdx, maxRetries = 5) {
-                    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                        try {
-                            return await axios.post(chunkUrl, formData, {
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'multipart/form-data',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                timeout: 120000
-                            });
-                        } catch (err) {
-                            if (attempt === maxRetries) throw err;
-                            const delay = attempt * 2000;
-                            progressStatusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> تذبذب في الشبكة بالجزء ${chunkIdx + 1}. إعادة المحاولة تلقائياً (${attempt}/${maxRetries})...`;
-                            await new Promise(r => setTimeout(r, delay));
-                        }
-                    }
-                }
-
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * CHUNK_SIZE;
-                    const end = Math.min(file.size, start + CHUNK_SIZE);
-                    const chunkLength = end - start;
-
-                    if (alreadyUploaded.has(i) && (i < totalChunks - 1)) {
-                        const pct = Math.round(((i + 1) / totalChunks) * 88);
-                        progressBarFill.style.width = pct + '%';
-                        progressPercentText.textContent = pct + '%';
-                        if (progressFileMeta) progressFileMeta.textContent = `${(end / (1024*1024)).toFixed(1)}MB / ${(file.size / (1024*1024)).toFixed(1)}MB`;
-                        if (progressPartMeta) progressPartMeta.textContent = `الجزء ${i + 1}/${totalChunks} (مستأنف)`;
-                        continue;
-                    }
-
-                    const chunkBlob = file.slice(start, end);
-                    const chunkData = new FormData();
-                    chunkData.append('file_id', fileId);
-                    chunkData.append('chunk_index', i);
-                    chunkData.append('total_chunks', totalChunks);
-                    chunkData.append('file_name', file.name);
-                    chunkData.append('chunk', chunkBlob, 'part_' + i);
-                    chunkData.append('_token', '{{ csrf_token() }}');
-
-                    const chunkRes = await sendChunkWithRetry(chunkData, i);
-                    bytesUploadedThisSession += chunkLength;
-
-                    const elapsedSec = (Date.now() - startTime) / 1000;
-                    const speedBps = elapsedSec > 0 ? (bytesUploadedThisSession / elapsedSec) : 0;
-                    const remainingBytes = file.size - end;
-                    const etaSec = speedBps > 0 ? Math.round(remainingBytes / speedBps) : 0;
-
-                    const pct = Math.round(((i + 1) / totalChunks) * 88);
-                    progressBarFill.style.width = pct + '%';
-                    progressPercentText.textContent = pct + '%';
-                    progressStatusText.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> جاري رفع ومعالجة الفيديو الضخم: ${pct}%`;
-                    
-                    if (progressFileMeta) progressFileMeta.textContent = `${(end / (1024*1024)).toFixed(1)}MB / ${(file.size / (1024*1024)).toFixed(1)}MB`;
-                    if (progressSpeedMeta) progressSpeedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${(speedBps / (1024*1024)).toFixed(1)} MB/s`;
-                    if (progressEtaMeta) progressEtaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ${etaSec > 60 ? Math.ceil(etaSec/60) + ' د' : etaSec + ' ث'}`;
-                    if (progressPartMeta) progressPartMeta.textContent = `الجزء ${i + 1}/${totalChunks}`;
-
-                    if (chunkRes.data && chunkRes.data.done) {
-                        uploadedVideoPath = chunkRes.data.uploaded_video_path;
-                        formattedVideoSize = chunkRes.data.formatted_size;
-                    }
-                }
+                const uploadRes = await activeUploader.upload(file);
+                uploadedVideoPath = uploadRes.uploaded_video_path;
+                formattedVideoSize = uploadRes.formatted_size;
             }
 
             // إرسال النموذج وحفظ المحتوى
-            progressStatusText.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> اكتمل رفع وحفظ الفيديو بالجيجاوات! جاري تثبيت الدرس... 🚀';
+            progressStatusText.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> اكتمل رفع وحفظ الفيديو بنجاح! جاري تثبيت الدرس... 🚀';
             progressBarFill.style.width = '95%';
             progressPercentText.textContent = '95%';
 

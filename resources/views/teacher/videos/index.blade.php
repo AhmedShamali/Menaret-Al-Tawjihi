@@ -77,13 +77,39 @@
                     {{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}
                 </a>
                 @foreach($subjects as $sub)
-                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos')) . '?subject_id=' . $sub->id }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
+                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos')) . '?subject_id=' . $sub->id . (request('target_region') ? '&target_region=' . request('target_region') : '') }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
                         {{ $sub->name_ar ?? $sub->name }}
                     </a>
                 @endforeach
             </div>
         </div>
     @endif
+
+    <!-- شريط تصفية الجمهور والمنطقة (غزة / الضفة) -->
+    <div class="ed-filter-bar" style="margin-top: {{ (auth()->user()->role === 'admin' || count($subjects) > 1) ? '10px' : '0' }};">
+        <div class="filter-label">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>{{ __('الجمهور المستهدف:') }}</span>
+        </div>
+        <div class="filter-pills">
+            @php
+                $baseRoute = auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos');
+                $subQuery = request('subject_id') ? '&subject_id=' . request('subject_id') : '';
+            @endphp
+            <a href="{{ $baseRoute . '?' . ltrim($subQuery, '&') }}" class="filter-chip {{ empty(request('target_region')) ? 'active' : '' }}">
+                {{ __('كافة الشروحات 🌐') }}
+            </a>
+            <a href="{{ $baseRoute . '?target_region=gaza' . $subQuery }}" class="filter-chip {{ request('target_region') === 'gaza' ? 'active' : '' }}" style="{{ request('target_region') === 'gaza' ? 'background: #059669; border-color: #059669; color: #fff;' : '' }}">
+                🌿 {{ __('قطاع غزة') }}
+            </a>
+            <a href="{{ $baseRoute . '?target_region=west_bank' . $subQuery }}" class="filter-chip {{ request('target_region') === 'west_bank' ? 'active' : '' }}" style="{{ request('target_region') === 'west_bank' ? 'background: #1e40af; border-color: #1e40af; color: #fff;' : '' }}">
+                🏛️ {{ __('الضفة والقدس') }}
+            </a>
+            <a href="{{ $baseRoute . '?target_region=all' . $subQuery }}" class="filter-chip {{ request('target_region') === 'all' ? 'active' : '' }}">
+                🌐 {{ __('منهاج مشترك') }}
+            </a>
+        </div>
+    </div>
 
     <!-- شبكة بطاقات الفيديوهات -->
     <div class="ed-videos-grid">
@@ -155,6 +181,13 @@
                             <span class="order-badge">
                                 <i class="fa-solid fa-arrow-down-1-9"></i>
                                 {{ __('ترتيب الدرس:') }} #{{ $vid->order }}
+                            </span>
+                            @php
+                                $rBadge = $vid->target_region_badge;
+                            @endphp
+                            <span style="background: {{ $rBadge['bg'] }}; color: {{ $rBadge['color'] }}; border: 1px solid {{ $rBadge['border'] }}; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="{{ $rBadge['icon'] }}"></i>
+                                <span>{{ $rBadge['label'] }}</span>
                             </span>
                         </div>
                         <h3 class="video-title">{{ $vid->title }}</h3>
@@ -253,6 +286,47 @@
                 <div class="f-group">
                     <label class="f-label">{{ __('عنوان الدرس / الشرح المرئي *') }}</label>
                     <input type="text" name="title" required placeholder="{{ __('مثال: شرح الوحدة الأولى - الدرس الأول: القوانين الأساسية') }}" class="f-control">
+                </div>
+
+                <!-- خيار توجيه الفيديو (غزة / الضفة / كلاهما) -->
+                <div class="f-group">
+                    <label class="f-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>
+                            <i class="fa-solid fa-map-location-dot" style="color: #0284c7;"></i>
+                            {{ __('الفئة المستهدفة من الطلبة *') }}
+                        </span>
+                        <span style="font-size: 0.76rem; color: #64748b;">
+                            {{ __('يحدد من يشاهد هذا الفيديو في حسابه') }}
+                        </span>
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px;">
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="gaza" style="display: none;" onchange="updateVideoRegionSelect(this)">
+                            <div class="region-pill-box" id="v_card_gaza" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #ffffff;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🌿</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #065f46;">{{ __('قطاع غزة') }}</strong>
+                                <span style="font-size: 0.7rem; color: #64748b;">{{ __('لطلبة غزة فقط') }}</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="west_bank" style="display: none;" onchange="updateVideoRegionSelect(this)">
+                            <div class="region-pill-box" id="v_card_west_bank" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #ffffff;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🏛️</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #1e40af;">{{ __('الضفة والقدس') }}</strong>
+                                <span style="font-size: 0.7rem; color: #64748b;">{{ __('لطلبة الضفة فقط') }}</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="all" checked style="display: none;" onchange="updateVideoRegionSelect(this)">
+                            <div class="region-pill-box active" id="v_card_all" style="border: 2px solid #2563eb; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #eff6ff;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🌐</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #1e3a8a;">{{ __('منهاج مشترك') }}</strong>
+                                <span style="font-size: 0.7rem; color: #3b82f6;">{{ __('لكافة طلبة الوطن') }}</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- رفع ملف الفيديو محلياً بنظام الأجزاء السريع والآمن -->
@@ -1170,10 +1244,31 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="{{ asset('js/resumable-uploader.js') }}"></script>
 
 <script>
 function openUploadVideoModal() {
     document.getElementById('uploadVideoModal').style.display = 'flex';
+}
+
+function updateVideoRegionSelect(radio) {
+    ['v_card_gaza', 'v_card_west_bank', 'v_card_all'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.borderColor = '#e2e8f0';
+            el.style.background = '#ffffff';
+        }
+    });
+    if (radio.value === 'gaza') {
+        const c = document.getElementById('v_card_gaza');
+        if (c) { c.style.borderColor = '#059669'; c.style.background = '#ecfdf5'; }
+    } else if (radio.value === 'west_bank') {
+        const c = document.getElementById('v_card_west_bank');
+        if (c) { c.style.borderColor = '#1e40af'; c.style.background = '#eff6ff'; }
+    } else {
+        const c = document.getElementById('v_card_all');
+        if (c) { c.style.borderColor = '#2563eb'; c.style.background = '#eff6ff'; }
+    }
 }
 
 function closeUploadVideoModal() {
@@ -1302,13 +1397,6 @@ async function submitVideoForm(e) {
     }
 
     const file = fileInput.files[0];
-    // ضبط حجم القطعة: 5 ميغابايت للملفات الضخمة أكبر من 1GB لتقليل عدد الطلبات وتسريع الرفع، و4 ميغابايت لغيرها
-    const CHUNK_SIZE = file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024);
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    
-    // بصمة ثابتة وفريدة للملف تتيح الاستئناف التلقائي في حال انقطاع الاتصال أو إعادة الرفع
-    const cleanName = encodeURIComponent(file.name).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
-    const fileId = 'vid_' + cleanName + '_' + file.size;
 
     // عناصر واجهة التقدم
     const progressWrap = document.getElementById('chunkProgressWrap');
@@ -1329,7 +1417,7 @@ async function submitVideoForm(e) {
     // حماية من إغلاق الصفحة بالخطأ أثناء رفع ملفات الجيجابايت
     const preventTabClose = (ev) => {
         ev.preventDefault();
-        ev.returnValue = '{{ __("جاري رفع فيديو ضخم بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟") }}';
+        ev.returnValue = '{{ __("جاري رفع فيديو بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟") }}';
     };
     window.addEventListener('beforeunload', preventTabClose);
 
@@ -1337,99 +1425,44 @@ async function submitVideoForm(e) {
     let formattedSize = null;
 
     try {
-        const chunkUploadUrl = "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}";
-        const checkStatusUrl = "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}";
-
-        // فحص الأجزاء التي تم رفعها مسبقاً لاستئناف الرفع فوراً (Resumable Upload)
-        let alreadyUploaded = new Set();
-        try {
-            const statusRes = await axios.post(checkStatusUrl, {
-                file_id: fileId,
-                total_chunks: totalChunks,
-                _token: '{{ csrf_token() }}'
-            });
-            if (statusRes.data && statusRes.data.uploaded_chunks && statusRes.data.uploaded_chunks.length > 0) {
-                alreadyUploaded = new Set(statusRes.data.uploaded_chunks);
-                if (alreadyUploaded.size > 0 && alreadyUploaded.size < totalChunks) {
-                    progressStatus.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> {{ __('تم العثور على أجزاء مرفوعة سابقاً') }} (${alreadyUploaded.size} {{ __('جزء') }})! {{ __('جاري استئناف الرفع فوراً ⚡') }}`;
+        const uploader = new ResumableUploader({
+            chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
+            checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
+            pingUrl: "{{ route('system.ping') }}",
+            csrfToken: '{{ csrf_token() }}',
+            onProgress: (pct) => {
+                progressBar.style.width = pct + '%';
+                progressPct.textContent = pct + '%';
+            },
+            onStatus: (status) => {
+                progressStatus.innerHTML = status.html;
+            },
+            onSpeed: (speed) => {
+                if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
+            },
+            onEta: (eta) => {
+                if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
+            },
+            onMeta: (meta) => {
+                if (fileMeta) fileMeta.textContent = meta;
+            },
+            onPart: (part) => {
+                if (partMeta) partMeta.textContent = part;
+            },
+            onNetworkStateChange: (isOnline, pct) => {
+                if (!isOnline) {
+                    progressBar.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
+                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> {{ __("الرفع معلّق (بانتظار النت)...") }}';
+                } else {
+                    progressBar.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
+                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري استئناف الرفع...") }}';
                 }
             }
-        } catch (e) {
-            console.warn('Check chunk status skipped:', e);
-        }
+        });
 
-        // متغيرات تتبع السرعة ومعدل النقل والوقت المتبقي
-        const startTime = Date.now();
-        let bytesUploadedThisSession = 0;
-
-        // دالة الرفع المرنة مع 5 محاولات تلقائية عند انقطاع الإنترنت أو تذبذب الشبكة
-        async function uploadChunkWithRetry(formData, chunkIdx, maxRetries = 5) {
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                try {
-                    return await axios.post(chunkUploadUrl, formData, {
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'multipart/form-data',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        timeout: 120000 // مهلة دقيقتين لكل جزء
-                    });
-                } catch (err) {
-                    if (attempt === maxRetries) throw err;
-                    const delay = attempt * 2000;
-                    progressStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> {{ __("تذبذب في الشبكة بالجزء") }} ${chunkIdx + 1}. {{ __("إعادة المحاولة تلقائياً") }} (${attempt}/${maxRetries})...`;
-                    await new Promise(r => setTimeout(r, delay));
-                }
-            }
-        }
-
-        for (let i = 0; i < totalChunks; i++) {
-            const start = i * CHUNK_SIZE;
-            const end = Math.min(file.size, start + CHUNK_SIZE);
-            const chunkLength = end - start;
-
-            // إذا كان هذا الجزء مرفوعاً مسبقاً على السيرفر، نتخطاه فوراً لتوفير الوقت والبيانات
-            if (alreadyUploaded.has(i) && (i < totalChunks - 1)) {
-                const currentPct = Math.round(((i + 1) / totalChunks) * 100);
-                progressBar.style.width = currentPct + '%';
-                progressPct.textContent = currentPct + '%';
-                fileMeta.textContent = `${formatBytes(end)} / ${formatBytes(file.size)}`;
-                partMeta.textContent = `{{ __("الجزء") }} ${i + 1} {{ __("من") }} ${totalChunks} ({{ __("مستأنف") }})`;
-                continue;
-            }
-
-            const chunkBlob = file.slice(start, end);
-            const chunkFormData = new FormData();
-            chunkFormData.append('file_id', fileId);
-            chunkFormData.append('chunk_index', i);
-            chunkFormData.append('total_chunks', totalChunks);
-            chunkFormData.append('file_name', file.name);
-            chunkFormData.append('chunk', chunkBlob, 'part_' + i);
-            chunkFormData.append('_token', '{{ csrf_token() }}');
-
-            const chunkRes = await uploadChunkWithRetry(chunkFormData, i);
-            bytesUploadedThisSession += chunkLength;
-
-            // حساب السرعة والوقت المتبقي بدقة
-            const elapsedSec = (Date.now() - startTime) / 1000;
-            const speedBps = elapsedSec > 0 ? (bytesUploadedThisSession / elapsedSec) : 0;
-            const remainingBytes = file.size - end;
-            const etaSec = speedBps > 0 ? Math.round(remainingBytes / speedBps) : 0;
-
-            const currentPct = Math.round(((i + 1) / totalChunks) * 100);
-            progressBar.style.width = currentPct + '%';
-            progressPct.textContent = currentPct + '%';
-            progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> {{ __("جاري رفع ومعالجة الفيديو الضخم:") }} ${currentPct}%`;
-            fileMeta.textContent = `${formatBytes(end)} / ${formatBytes(file.size)}`;
-            if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${formatUploadSpeed(speedBps)}`;
-            if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ${formatEtaTime(etaSec)}`;
-            partMeta.textContent = `{{ __("الجزء") }} ${i + 1} {{ __("من") }} ${totalChunks}`;
-
-            if (chunkRes.data && chunkRes.data.done) {
-                uploadedPath = chunkRes.data.uploaded_video_path;
-                formattedSize = chunkRes.data.formatted_size;
-            }
-        }
+        const uploadRes = await uploader.upload(file);
+        uploadedPath = uploadRes.uploaded_video_path;
+        formattedSize = uploadRes.formatted_size;
 
         if (!uploadedPath) {
             throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');

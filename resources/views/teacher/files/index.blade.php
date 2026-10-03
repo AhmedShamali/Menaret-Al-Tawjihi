@@ -77,13 +77,39 @@
                     {{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}
                 </a>
                 @foreach($subjects as $sub)
-                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files')) . '?subject_id=' . $sub->id }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
+                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files')) . '?subject_id=' . $sub->id . (request('target_region') ? '&target_region=' . request('target_region') : '') }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
                         {{ $sub->name_ar ?? $sub->name }}
                     </a>
                 @endforeach
             </div>
         </div>
     @endif
+
+    <!-- شريط تصفية الجمهور والمنطقة (غزة / الضفة) للملفات -->
+    <div class="ed-filter-bar" style="margin-top: {{ (auth()->user()->role === 'admin' || count($subjects) > 1) ? '10px' : '0' }};">
+        <div class="filter-label">
+            <i class="fa-solid fa-map-location-dot"></i>
+            <span>{{ __('الجمهور المستهدف:') }}</span>
+        </div>
+        <div class="filter-pills">
+            @php
+                $baseRouteFiles = auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files');
+                $subFileQuery = request('subject_id') ? '&subject_id=' . request('subject_id') : '';
+            @endphp
+            <a href="{{ $baseRouteFiles . '?' . ltrim($subFileQuery, '&') }}" class="filter-chip {{ empty(request('target_region')) ? 'active' : '' }}">
+                {{ __('كافة الملازم والدوسيات 🌐') }}
+            </a>
+            <a href="{{ $baseRouteFiles . '?target_region=gaza' . $subFileQuery }}" class="filter-chip {{ request('target_region') === 'gaza' ? 'active' : '' }}" style="{{ request('target_region') === 'gaza' ? 'background: #059669; border-color: #059669; color: #fff;' : '' }}">
+                🌿 {{ __('قطاع غزة') }}
+            </a>
+            <a href="{{ $baseRouteFiles . '?target_region=west_bank' . $subFileQuery }}" class="filter-chip {{ request('target_region') === 'west_bank' ? 'active' : '' }}" style="{{ request('target_region') === 'west_bank' ? 'background: #1e40af; border-color: #1e40af; color: #fff;' : '' }}">
+                🏛️ {{ __('الضفة والقدس') }}
+            </a>
+            <a href="{{ $baseRouteFiles . '?target_region=all' . $subFileQuery }}" class="filter-chip {{ request('target_region') === 'all' ? 'active' : '' }}">
+                🌐 {{ __('منهاج مشترك') }}
+            </a>
+        </div>
+    </div>
 
     <!-- شبكة بطاقات الملفات والدوسيات -->
     <div class="ed-files-grid">
@@ -103,9 +129,18 @@
                             <i class="{{ $meta['icon'] }}"></i>
                         </div>
                         <div style="overflow: hidden; flex: 1;">
-                            <span class="file-tag">
-                                {{ $file->subject?->name_ar ?? __('عام') }} • {{ $meta['label'] }}
-                            </span>
+                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
+                                <span class="file-tag">
+                                    {{ $file->subject?->name_ar ?? __('عام') }} • {{ $meta['label'] }}
+                                </span>
+                                @php
+                                    $frBadge = $file->target_region_badge;
+                                @endphp
+                                <span style="background: {{ $frBadge['bg'] }}; color: {{ $frBadge['color'] }}; border: 1px solid {{ $frBadge['border'] }}; padding: 2px 7px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="{{ $frBadge['icon'] }}"></i>
+                                    <span>{{ $frBadge['label'] }}</span>
+                                </span>
+                            </div>
                             <h3 class="file-title" title="{{ $file->title }}">
                                 {{ $file->title }}
                             </h3>
@@ -212,6 +247,47 @@
                 <div class="f-group">
                     <label class="f-label">{{ __('عنوان الدوسية / الملزمة التعليمية *') }}</label>
                     <input type="text" name="title" required placeholder="{{ __('مثال: دوسية الشامل في الرياضيات - الوحدة الأولى (الأسئلة الوزارية)') }}" class="f-control">
+                </div>
+
+                <!-- خيار توجيه الملف (غزة / الضفة / كلاهما) -->
+                <div class="f-group">
+                    <label class="f-label" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>
+                            <i class="fa-solid fa-map-location-dot" style="color: #dc2626;"></i>
+                            {{ __('الفئة المستهدفة من الطلبة *') }}
+                        </span>
+                        <span style="font-size: 0.76rem; color: #64748b;">
+                            {{ __('يحدد من تظهر له هذه الدوسية في حسابه') }}
+                        </span>
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px;">
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="gaza" style="display: none;" onchange="updateDocRegionSelect(this)">
+                            <div class="doc-region-box" id="doc_card_gaza" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #ffffff;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🌿</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #065f46;">{{ __('قطاع غزة') }}</strong>
+                                <span style="font-size: 0.7rem; color: #64748b;">{{ __('لطلبة غزة فقط') }}</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="west_bank" style="display: none;" onchange="updateDocRegionSelect(this)">
+                            <div class="doc-region-box" id="doc_card_west_bank" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #ffffff;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🏛️</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #1e40af;">{{ __('الضفة والقدس') }}</strong>
+                                <span style="font-size: 0.7rem; color: #64748b;">{{ __('لطلبة الضفة فقط') }}</span>
+                            </div>
+                        </label>
+
+                        <label style="cursor: pointer; margin: 0;">
+                            <input type="radio" name="target_region" value="all" checked style="display: none;" onchange="updateDocRegionSelect(this)">
+                            <div class="doc-region-box active" id="doc_card_all" style="border: 2px solid #dc2626; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #fef2f2;">
+                                <div style="font-size: 1.25rem; margin-bottom: 2px;">🌐</div>
+                                <strong style="display: block; font-size: 0.85rem; color: #991b1b;">{{ __('منهاج مشترك') }}</strong>
+                                <span style="font-size: 0.7rem; color: #ef4444;">{{ __('لكافة طلبة الوطن') }}</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- تصنيف الملف -->
@@ -868,6 +944,26 @@
 <script>
 function openUploadFileModal() {
     document.getElementById('uploadFileModal').style.display = 'flex';
+}
+
+function updateDocRegionSelect(radio) {
+    ['doc_card_gaza', 'doc_card_west_bank', 'doc_card_all'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.borderColor = '#e2e8f0';
+            el.style.background = '#ffffff';
+        }
+    });
+    if (radio.value === 'gaza') {
+        const c = document.getElementById('doc_card_gaza');
+        if (c) { c.style.borderColor = '#059669'; c.style.background = '#ecfdf5'; }
+    } else if (radio.value === 'west_bank') {
+        const c = document.getElementById('doc_card_west_bank');
+        if (c) { c.style.borderColor = '#1e40af'; c.style.background = '#eff6ff'; }
+    } else {
+        const c = document.getElementById('doc_card_all');
+        if (c) { c.style.borderColor = '#dc2626'; c.style.background = '#fef2f2'; }
+    }
 }
 
 function closeUploadFileModal() {

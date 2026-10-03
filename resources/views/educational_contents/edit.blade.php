@@ -59,6 +59,41 @@
                                 @endif
                             </select>
                         </div>
+                    <!-- توجيه المحتوى حسب المنطقة التعليمية (غزة / الضفة) -->
+                    @php
+                        $curRegion = $content->target_region ?? 'all';
+                    @endphp
+                    <div class="field-group" style="margin-top: 14px;">
+                        <label class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>{{ __('الجمهور والمنهاج المستهدف') }} <span class="req-star">*</span></span>
+                            <small style="color: #64748b; font-weight: normal;">{{ __('تحديد من يرى هذا المحتوى من الطلبة المسجلين') }}</small>
+                        </label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="gaza" {{ $curRegion === 'gaza' ? 'checked' : '' }} style="display: none;" onchange="updateEditRegionUI(this)">
+                                <div id="edit_card_gaza" style="border: 2px solid {{ $curRegion === 'gaza' ? '#059669' : '#cbd5e1' }}; border-radius: 10px; padding: 10px 8px; text-align: center; background: {{ $curRegion === 'gaza' ? '#ecfdf5' : '#fff' }}; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🌿</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #065f46;">{{ __('قطاع غزة') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #64748b;">{{ __('لطلبة غزة فقط') }}</small>
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="west_bank" {{ $curRegion === 'west_bank' ? 'checked' : '' }} style="display: none;" onchange="updateEditRegionUI(this)">
+                                <div id="edit_card_west_bank" style="border: 2px solid {{ $curRegion === 'west_bank' ? '#1e40af' : '#cbd5e1' }}; border-radius: 10px; padding: 10px 8px; text-align: center; background: {{ $curRegion === 'west_bank' ? '#eff6ff' : '#fff' }}; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🏛️</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #1e40af;">{{ __('الضفة والقدس') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #64748b;">{{ __('لطلبة الضفة فقط') }}</small>
+                                </div>
+                            </label>
+                            <label style="cursor: pointer; margin: 0;">
+                                <input type="radio" name="target_region" value="all" {{ ($curRegion === 'all' || empty($curRegion)) ? 'checked' : '' }} style="display: none;" onchange="updateEditRegionUI(this)">
+                                <div id="edit_card_all" style="border: 2px solid {{ ($curRegion === 'all' || empty($curRegion)) ? '#2563eb' : '#cbd5e1' }}; border-radius: 10px; padding: 10px 8px; text-align: center; background: {{ ($curRegion === 'all' || empty($curRegion)) ? '#eff6ff' : '#fff' }}; transition: all 0.2s;">
+                                    <div style="font-size: 1.25rem; margin-bottom: 2px;">🌐</div>
+                                    <strong style="display: block; font-size: 0.85rem; color: #1e3a8a;">{{ __('منهاج مشترك') }}</strong>
+                                    <small style="font-size: 0.72rem; color: #3b82f6;">{{ __('لكافة طلبة الوطن') }}</small>
+                                </div>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -171,7 +206,28 @@
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{{ asset('js/resumable-uploader.js') }}"></script>
 <script>
+    function updateEditRegionUI(radio) {
+        ['edit_card_gaza', 'edit_card_west_bank', 'edit_card_all'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.borderColor = '#cbd5e1';
+                el.style.background = '#ffffff';
+            }
+        });
+        if (radio.value === 'gaza') {
+            const c = document.getElementById('edit_card_gaza');
+            if (c) { c.style.borderColor = '#059669'; c.style.background = '#ecfdf5'; }
+        } else if (radio.value === 'west_bank') {
+            const c = document.getElementById('edit_card_west_bank');
+            if (c) { c.style.borderColor = '#1e40af'; c.style.background = '#eff6ff'; }
+        } else {
+            const c = document.getElementById('edit_card_all');
+            if (c) { c.style.borderColor = '#2563eb'; c.style.background = '#eff6ff'; }
+        }
+    }
+
     const stageData = @json($stages);
     document.getElementById('stage_select').addEventListener('change', function() {
         const subSel = document.getElementById('subject_select');
@@ -215,104 +271,45 @@
             // إذا اختار المعلم ملف فيديو جديد للتعديل، يتم رفعه بنظام الأجزاء والاستئناف
             if (videoInput && videoInput.files && videoInput.files.length > 0) {
                 const file = videoInput.files[0];
-                const CHUNK_SIZE = file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024);
-                const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-                const cleanName = encodeURIComponent(file.name).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
-                const fileId = 'vid_' + cleanName + '_' + file.size;
-
-                const chunkUrl = "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}";
-                const checkStatusUrl = "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}";
-
-                // فحص الأجزاء السابقة للاستئناف
-                let alreadyUploaded = new Set();
-                try {
-                    const statusRes = await axios.post(checkStatusUrl, {
-                        file_id: fileId,
-                        total_chunks: totalChunks,
-                        _token: '{{ csrf_token() }}'
-                    });
-                    if (statusRes.data && statusRes.data.uploaded_chunks && statusRes.data.uploaded_chunks.length > 0) {
-                        alreadyUploaded = new Set(statusRes.data.uploaded_chunks);
-                        if (alreadyUploaded.size > 0 && alreadyUploaded.size < totalChunks && progressStatusText) {
-                            progressStatusText.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> {{ __('تم العثور على أجزاء مرفوعة مسبقاً! جاري الاستئناف 🚀') }}`;
+                const uploader = new ResumableUploader({
+                    chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
+                    pingUrl: "{{ route('system.ping') }}",
+                    csrfToken: '{{ csrf_token() }}',
+                    onProgress: (pct) => {
+                        const scaledPct = Math.round(pct * 0.90);
+                        barFill.style.width = scaledPct + '%';
+                        percentText.innerText = scaledPct + '%';
+                    },
+                    onStatus: (status) => {
+                        if (progressStatusText) progressStatusText.innerHTML = status.html;
+                    },
+                    onSpeed: (speed) => {
+                        if (editSpeedMeta) editSpeedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
+                    },
+                    onEta: (eta) => {
+                        if (editEtaMeta) editEtaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
+                    },
+                    onMeta: (meta) => {
+                        if (editFileMeta) editFileMeta.textContent = meta;
+                    },
+                    onPart: (part) => {
+                        if (editPartMeta) editPartMeta.textContent = part;
+                    },
+                    onNetworkStateChange: (isOnline, pct) => {
+                        if (!isOnline) {
+                            barFill.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
+                            btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> {{ __("الرفع معلّق (بانتظار النت)...") }}';
+                        } else {
+                            barFill.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
+                            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري استئناف الرفع...") }}';
                         }
                     }
-                } catch (e) {
-                    console.warn('Check chunk status skipped:', e);
-                }
+                });
 
-                const startTime = Date.now();
-                let bytesUploadedThisSession = 0;
-
-                async function sendChunkWithRetry(formData, chunkIdx, maxRetries = 5) {
-                    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-                        try {
-                            return await axios.post(chunkUrl, formData, {
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'multipart/form-data',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                timeout: 120000
-                            });
-                        } catch (err) {
-                            if (attempt === maxRetries) throw err;
-                            const delay = attempt * 2000;
-                            if (progressStatusText) {
-                                progressStatusText.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> {{ __('تذبذب شبكة بالجزء') }} ${chunkIdx + 1} (${attempt}/${maxRetries})...`;
-                            }
-                            await new Promise(r => setTimeout(r, delay));
-                        }
-                    }
-                }
-
-                for (let i = 0; i < totalChunks; i++) {
-                    const start = i * CHUNK_SIZE;
-                    const end = Math.min(file.size, start + CHUNK_SIZE);
-                    const chunkLength = end - start;
-
-                    if (alreadyUploaded.has(i) && (i < totalChunks - 1)) {
-                        const pct = Math.round(((i + 1) / totalChunks) * 88);
-                        barFill.style.width = pct + '%';
-                        percentText.innerText = pct + '%';
-                        if (editFileMeta) editFileMeta.textContent = `${(end / (1024*1024)).toFixed(1)}MB / ${(file.size / (1024*1024)).toFixed(1)}MB`;
-                        if (editPartMeta) editPartMeta.textContent = `{{ __('الجزء') }} ${i + 1}/${totalChunks} ({{ __('مستأنف') }})`;
-                        continue;
-                    }
-
-                    const chunkBlob = file.slice(start, end);
-                    const chunkData = new FormData();
-                    chunkData.append('file_id', fileId);
-                    chunkData.append('chunk_index', i);
-                    chunkData.append('total_chunks', totalChunks);
-                    chunkData.append('file_name', file.name);
-                    chunkData.append('chunk', chunkBlob, 'part_' + i);
-                    chunkData.append('_token', '{{ csrf_token() }}');
-
-                    const chunkRes = await sendChunkWithRetry(chunkData, i);
-                    bytesUploadedThisSession += chunkLength;
-
-                    const elapsedSec = (Date.now() - startTime) / 1000;
-                    const speedBps = elapsedSec > 0 ? (bytesUploadedThisSession / elapsedSec) : 0;
-                    const remainingBytes = file.size - end;
-                    const etaSec = speedBps > 0 ? Math.round(remainingBytes / speedBps) : 0;
-
-                    const pct = Math.round(((i + 1) / totalChunks) * 88);
-                    barFill.style.width = pct + '%';
-                    percentText.innerText = pct + '%';
-                    if (progressStatusText) {
-                        progressStatusText.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> {{ __('جاري رفع ومعالجة الفيديو الضخم:') }} ${pct}%`;
-                    }
-                    if (editFileMeta) editFileMeta.textContent = `${(end / (1024*1024)).toFixed(1)}MB / ${(file.size / (1024*1024)).toFixed(1)}MB`;
-                    if (editSpeedMeta) editSpeedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${(speedBps / (1024*1024)).toFixed(1)} MB/s`;
-                    if (editEtaMeta) editEtaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ${etaSec > 60 ? Math.ceil(etaSec/60) + ' د' : etaSec + ' ث'}`;
-                    if (editPartMeta) editPartMeta.textContent = `{{ __('الجزء') }} ${i + 1}/${totalChunks}`;
-
-                    if (chunkRes.data && chunkRes.data.done) {
-                        uploadedVideoPath = chunkRes.data.uploaded_video_path;
-                        formattedVideoSize = chunkRes.data.formatted_size;
-                    }
-                }
+                const uploadRes = await uploader.upload(file);
+                uploadedVideoPath = uploadRes.uploaded_video_path;
+                formattedVideoSize = uploadRes.formatted_size;
             }
 
             const formData = new FormData(form);

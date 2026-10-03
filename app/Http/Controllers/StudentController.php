@@ -69,13 +69,27 @@ class StudentController extends Controller
     {
         $subject = \App\Models\Subject::with(['stage', 'teacher', 'contents'])->findOrFail($id);
 
+        $student = \App\Support\CurrentActor::student() ?? \Illuminate\Support\Facades\Auth::guard('student')->user() ?? auth()->user();
+        if ($student instanceof \App\Models\User && $student->role === 'student') {
+            $student = $student->student ?? \App\Models\Student::where('id', $student->id)->orWhere('email', $student->email)->first();
+        }
+        $studentRegion = $student?->resolved_region;
+
+        $contents = $subject->contents;
+        if ($studentRegion) {
+            $contents = $contents->filter(function($item) use ($studentRegion) {
+                $target = $item->target_region ?? 'all';
+                return $target === 'all' || empty($target) || $target === $studentRegion;
+            });
+        }
+
         // جلب الفيديوهات
-        $videos = $subject->contents->filter(function ($item) {
+        $videos = $contents->filter(function ($item) {
             return !empty($item->url_path);
         })->sortBy('order');
 
         // جلب الملفات
-        $files = $subject->contents->filter(function ($item) {
+        $files = $contents->filter(function ($item) {
             return !empty($item->pdf_path);
         })->sortBy('order');
 
@@ -103,6 +117,7 @@ class StudentController extends Controller
             'whatsapp'      => 'nullable|string|max:20',
             'guardian_phone'=> 'nullable|string|max:20',
             'city'          => 'nullable|string|max:100',
+            'region'        => 'nullable|string|in:gaza,west_bank',
             'school_name'   => 'nullable|string|max:255',
             'photo'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'id_photo'      => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
@@ -160,6 +175,11 @@ class StudentController extends Controller
         $age = $request->age ? (int)$request->age : 18;
         $nameEn = $request->name_en ?: $request->name_ar;
         $city = $request->input('city', 'رام الله والبيرة');
+        $region = $request->input('region');
+        if (empty($region) || !in_array($region, ['gaza', 'west_bank'])) {
+            $dummyStd = new Student(['city' => $city]);
+            $region = $dummyStd->inferRegionFromCity();
+        }
         $schoolName = $request->input('school_name');
         $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
 
@@ -177,6 +197,7 @@ class StudentController extends Controller
             'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
             'guardian_phone'     => $guardianPhone,
             'city'               => $city,
+            'region'             => $region,
             'school_name'        => $schoolName,
             'password'           => Hash::make($request->password),
             'plain_password'     => $request->password,
@@ -199,7 +220,7 @@ class StudentController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             // استبعاد الأعمدة الإضافية في حال عدم اكتمال هجرة قاعدة البيانات الخارجية
             unset(
-                $studentData['city'], $studentData['school_name'], $studentData['guardian_phone'],
+                $studentData['city'], $studentData['region'], $studentData['school_name'], $studentData['guardian_phone'],
                 $studentData['google_id'], $studentData['provider'], $studentData['avatar_url']
             );
             try {
@@ -697,6 +718,12 @@ class StudentController extends Controller
 
         // استبعاد الصور وكلمة المرور من التحديث التلقائي لمعالجتها يدوياً
         $data = $request->except(['password', 'photo', 'id_photo', 'manage_subjects', 'subject_ids']);
+
+        if ($request->filled('region') && in_array($request->region, ['gaza', 'west_bank'])) {
+            $data['region'] = $request->region;
+        } elseif ($request->filled('city') && empty($student->region)) {
+            $data['region'] = (new Student(['city' => $request->city]))->inferRegionFromCity();
+        }
 
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);

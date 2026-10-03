@@ -532,40 +532,55 @@
                     </div>
                 </div>
 
-                <!-- المحافظة والعمر -->
-                <div class="grid-2-cols">
+                <!-- المنطقة التعليمية والمحافظة -->
+                <div class="grid-2-cols" style="margin-bottom: 14px;">
                     <div class="input-group">
-                        <label for="city"><span>{{ __('المحافظة / المدينة') }} <span class="req">*</span></span></label>
+                        <label for="student_region"><span>{{ __('المنطقة والفرع الجغرافي') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
-                            <i class="fas fa-map-marker-alt lead-icon"></i>
-                            <select name="city" id="city" class="form-input has-icon">
-                                <option value="القدس">{{ __('القدس الشريف 🕌') }}</option>
-                                <option value="رام الله والبيرة" selected>{{ __('رام الله والبيرة') }}</option>
-                                <option value="غزة">{{ __('غزة العزة 🌿') }}</option>
-                                <option value="نابلس">{{ __('نابلس (جبل النار)') }}</option>
-                                <option value="الخليل">{{ __('الخليل') }}</option>
-                                <option value="جنين">{{ __('جنين القسام') }}</option>
-                                <option value="طولكرم">{{ __('طولكرم') }}</option>
-                                <option value="قلقيلية">{{ __('قلقيلية') }}</option>
-                                <option value="بيت لحم">{{ __('بيت لحم') }}</option>
-                                <option value="سلفيت">{{ __('سلفيت') }}</option>
-                                <option value="أريحا">{{ __('أريحا والأغوار') }}</option>
-                                <option value="طوباس">{{ __('طوباس') }}</option>
-                                <option value="خان يونس">{{ __('خان يونس') }}</option>
-                                <option value="رفح">{{ __('رفح') }}</option>
-                                <option value="شمال غزة">{{ __('شمال غزة (جباليا)') }}</option>
-                                <option value="دير البلح">{{ __('دير البلح والوسطى') }}</option>
-                                <option value="أخرى">{{ __('خارج فلسطين / أخرى') }}</option>
+                            <i class="fas fa-map-location-dot lead-icon" style="color: var(--ed-primary);"></i>
+                            <select name="region" id="student_region" class="form-input has-icon" onchange="syncStudentCityList(this.value)">
+                                <option value="gaza">{{ __('قطاع غزة 🌿') }}</option>
+                                <option value="west_bank" selected>{{ __('الضفة الغربية والقدس 🏛️') }}</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="age">{{ __('العمر') }}</label>
+                        <label for="city"><span>{{ __('المحافظة / المدينة') }} <span class="req">*</span></span></label>
                         <div class="input-control-wrap">
-                            <i class="fas fa-calendar-check lead-icon"></i>
-                            <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input has-icon">
+                            <i class="fas fa-map-marker-alt lead-icon"></i>
+                            <select name="city" id="city" class="form-input has-icon" onchange="autoSyncRegionFromCity(this.value)">
+                                <optgroup id="group_west_bank" label="{{ __('محافظات الضفة الغربية والقدس') }}">
+                                    <option value="القدس">{{ __('القدس الشريف 🕌') }}</option>
+                                    <option value="رام الله والبيرة" selected>{{ __('رام الله والبيرة') }}</option>
+                                    <option value="نابلس">{{ __('نابلس (جبل النار)') }}</option>
+                                    <option value="الخليل">{{ __('الخليل') }}</option>
+                                    <option value="جنين">{{ __('جنين القسام') }}</option>
+                                    <option value="طولكرم">{{ __('طولكرم') }}</option>
+                                    <option value="قلقيلية">{{ __('قلقيلية') }}</option>
+                                    <option value="بيت لحم">{{ __('بيت لحم') }}</option>
+                                    <option value="سلفيت">{{ __('سلفيت') }}</option>
+                                    <option value="أريحا">{{ __('أريحا والأغوار') }}</option>
+                                    <option value="طوباس">{{ __('طوباس') }}</option>
+                                </optgroup>
+                                <optgroup id="group_gaza" label="{{ __('محافظات قطاع غزة') }}">
+                                    <option value="غزة">{{ __('غزة العزة 🌿') }}</option>
+                                    <option value="شمال غزة">{{ __('شمال غزة (جباليا)') }}</option>
+                                    <option value="دير البلح">{{ __('دير البلح والوسطى') }}</option>
+                                    <option value="خان يونس">{{ __('خان يونس') }}</option>
+                                    <option value="رفح">{{ __('رفح') }}</option>
+                                </optgroup>
+                                <option value="أخرى">{{ __('خارج فلسطين / أخرى') }}</option>
+                            </select>
                         </div>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 14px;">
+                    <label for="age">{{ __('العمر') }}</label>
+                    <div class="input-control-wrap">
+                        <i class="fas fa-calendar-check lead-icon"></i>
+                        <input type="number" name="age" id="age" value="18" min="15" max="25" class="form-input has-icon">
                     </div>
                 </div>
 
@@ -858,6 +873,27 @@
                     confirmButtonColor: '#ef4444'
                 });
             });
+    }
+
+    function syncStudentCityList(reg) {
+        const citySelect = document.getElementById('city');
+        if (!citySelect) return;
+        if (reg === 'gaza') {
+            citySelect.value = 'غزة';
+        } else {
+            citySelect.value = 'رام الله والبيرة';
+        }
+    }
+
+    function autoSyncRegionFromCity(cityVal) {
+        const regSelect = document.getElementById('student_region');
+        if (!regSelect) return;
+        const gazaKeywords = ['غزة', 'شمال غزة', 'خان يونس', 'رفح', 'دير البلح'];
+        if (gazaKeywords.some(kw => cityVal.includes(kw))) {
+            regSelect.value = 'gaza';
+        } else if (cityVal !== 'أخرى') {
+            regSelect.value = 'west_bank';
+        }
     }
 </script>
 

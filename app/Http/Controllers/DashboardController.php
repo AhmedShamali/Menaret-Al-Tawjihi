@@ -66,11 +66,23 @@ class DashboardController extends Controller {
         // الاعتماد على المحتوى المتاح في المادة
         $allContents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
 
-        // للطلاب: إظهار المحتوى المعتمد والمرئي فقط (حيث is_visible != 0)
+        // للطلاب: إظهار المحتوى المعتمد والمرئي فقط وتصفيته بدقة حسب منطقة الطالب (غزة / الضفة)
         // أما المعلم أو المدير فيمكنهما رؤية كافة المحتويات عند المعاينة
         $contents = $isAdminOrTeacher 
             ? $allContents 
-            : $allContents->filter(fn($item) => $item->is_visible !== false && $item->is_visible !== 0 && $item->is_visible !== '0');
+            : $allContents->filter(function($item) use ($student) {
+                if ($item->is_visible === false || $item->is_visible === 0 || $item->is_visible === '0') {
+                    return false;
+                }
+                if ($student) {
+                    $studentRegion = $student->resolved_region ?? 'west_bank';
+                    $target = $item->target_region ?? 'all';
+                    if ($target !== 'all' && !empty($target) && $target !== $studentRegion) {
+                        return false;
+                    }
+                }
+                return true;
+            });
 
         // فحص صلاحيات الوصول لدروس المادة
         $isFullAccess = $isAdminOrTeacher || (bool) $subject->is_free || ($subject->effective_price <= 0);
