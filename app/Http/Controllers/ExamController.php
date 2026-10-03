@@ -93,8 +93,14 @@ class ExamController extends Controller
             $targetRegion = 'all';
         }
 
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('exams') && !\Illuminate\Support\Facades\Schema::hasColumn('exams', 'target_region')) {
+                \Illuminate\Support\Facades\DB::statement("ALTER TABLE exams ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
+            }
+        } catch (\Throwable $th) {}
+
         DB::transaction(function () use ($request, $validated, $showResultImmediately, $effectiveStageId, $targetRegion) {
-            $exam = Exam::create([
+            $examData = [
                 'teacher_id' => auth()->id(),
                 'title' => $validated['title'],
                 'target_region' => $targetRegion,
@@ -104,7 +110,18 @@ class ExamController extends Controller
                 'starts_at' => !empty($validated['starts_at']) ? \Carbon\Carbon::parse($validated['starts_at']) : null,
                 'ends_at' => !empty($validated['ends_at']) ? \Carbon\Carbon::parse($validated['ends_at']) : null,
                 'show_result_immediately' => $showResultImmediately,
-            ]);
+            ];
+
+            try {
+                $exam = Exam::create($examData);
+            } catch (\Illuminate\Database\QueryException $e) {
+                if (str_contains(strtolower($e->getMessage()), 'target_region')) {
+                    unset($examData['target_region']);
+                    $exam = Exam::create($examData);
+                } else {
+                    throw $e;
+                }
+            }
 
             foreach ($request->questions as $index => $q) {
                 $imagePath = null;

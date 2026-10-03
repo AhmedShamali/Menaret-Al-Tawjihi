@@ -335,11 +335,21 @@ class EducationalContentController extends Controller
         $content = new EducationalContent();
         $content->subject_id    = $request->subject_id;
         $content->title         = $request->title;
-        $content->target_region = $targetRegion;
         $content->channel_name  = $request->channel_name ?? 'Step by Step';
         $content->file_size     = $request->file_size ?? 'غير محدد';
         $content->order         = $request->order;
         $content->is_visible    = true;
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('educational_contents')) {
+                if (!\Illuminate\Support\Facades\Schema::hasColumn('educational_contents', 'target_region')) {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE educational_contents ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
+                }
+                $content->target_region = $targetRegion;
+            }
+        } catch (\Throwable $th) {
+            $content->target_region = $targetRegion;
+        }
 
         // معالجة ملف الفيديو المرفوع مسبقاً بنظام الأجزاء (Chunked Upload)
         if ($request->filled('uploaded_video_path')) {
@@ -421,31 +431,61 @@ class EducationalContentController extends Controller
             }
         }
 
-        // حفظ المحتوى مع حماية تلقائية وشاملة ضد قيود قواعد البيانات القديمة
+        // حفظ المحتوى مع حماية تلقائية وشاملة ضد قيود وتوافقية قواعد البيانات القديمة
         try {
             $content->save();
         } catch (\Illuminate\Database\QueryException $e) {
             $err = strtolower($e->getMessage());
+
+            // 1. معالجة غياب عمود target_region في قواعد البيانات التي لم تكتمل فيها الهجرة بعد
+            if (str_contains($err, 'target_region') || (str_contains($err, 'undefined column') && str_contains($err, 'target_region'))) {
+                try {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE educational_contents ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
+                    $content->target_region = $targetRegion;
+                    $content->save();
+                    goto contentSavedSuccessfully;
+                } catch (\Throwable $th) {
+                    unset($content->target_region);
+                    $content->save();
+                    goto contentSavedSuccessfully;
+                }
+            }
+
+            // 2. معالجة قيد not-null القديم على url_path
             if (str_contains($err, 'url_path') && (str_contains($err, 'not null') || str_contains($err, 'violates not-null'))) {
                 $content->url_path = '';
                 $content->save();
-            } elseif (str_contains($err, 'check constraint') || $e->getCode() == '23514') {
+                goto contentSavedSuccessfully;
+            }
+
+            // 3. معالجة قيود check constraint القديمة
+            if (str_contains($err, 'check constraint') || $e->getCode() == '23514') {
                 $content->type = !empty($content->url_path) ? 'video' : 'file';
                 $content->save();
-            } else {
+                goto contentSavedSuccessfully;
+            }
+
+            // 4. محاولة إنقاذ أخيرة وحفظ أساسي لضمان عدم ضياع الفيديو المرفوع
+            try {
+                unset($content->target_region);
+                $content->save();
+                goto contentSavedSuccessfully;
+            } catch (\Throwable $thFinal) {
                 \Log::error('EducationalContent save query exception: ' . $e->getMessage());
                 return response()->json([
                     'icon'  => 'error',
-                    'title' => 'تعذر حفظ المحتوى التعليمي، يرجى التحقق من صحة البيانات والمحاولة مجدداً.'
+                    'title' => 'تعذر حفظ المحتوى التعليمي: ' . $e->getMessage()
                 ], 500);
             }
         } catch (\Throwable $e) {
             \Log::error('EducationalContent save exception: ' . $e->getMessage());
             return response()->json([
                 'icon'  => 'error',
-                'title' => 'حدث خطأ أثناء معالجة المحتوى التعليمي.'
+                'title' => 'حدث خطأ أثناء معالجة المحتوى التعليمي: ' . $e->getMessage()
             ], 500);
         }
+
+        contentSavedSuccessfully:
 
         try {
             $subject = \App\Models\Subject::find($content->subject_id);

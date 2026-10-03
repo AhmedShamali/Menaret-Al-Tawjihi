@@ -1421,11 +1421,14 @@ async function submitVideoForm(e) {
     };
     window.addEventListener('beforeunload', preventTabClose);
 
-    let uploadedPath = null;
-    let formattedSize = null;
+    // التحقق من وجود مسار مرفوع مسبقاً لنفس الملف لتجنب إعادة رفع الجيجابايت عند أي خطأ في الحفظ
+    const fileKey = file.name + '_' + file.size;
+    let uploadedPath = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.path : null;
+    let formattedSize = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.size : null;
 
     try {
-        const uploader = new ResumableUploader({
+        if (!uploadedPath) {
+            const uploader = new ResumableUploader({
             chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
             checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
             pingUrl: "{{ route('system.ping') }}",
@@ -1460,12 +1463,20 @@ async function submitVideoForm(e) {
             }
         });
 
-        const uploadRes = await uploader.upload(file);
-        uploadedPath = uploadRes.uploaded_video_path;
-        formattedSize = uploadRes.formatted_size;
+            const uploadRes = await uploader.upload(file);
+            uploadedPath = uploadRes.uploaded_video_path;
+            formattedSize = uploadRes.formatted_size;
 
-        if (!uploadedPath) {
-            throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');
+            if (!uploadedPath) {
+                throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');
+            }
+
+            window._cachedUpload = { key: fileKey, path: uploadedPath, size: formattedSize };
+        } else {
+            progressBar.style.width = '100%';
+            progressPct.textContent = '100%';
+            progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("تم العثور على الفيديو المرفوع مسبقاً! جاري إتمام الحفظ والنشر...") }}';
+            if (etaMeta) etaMeta.innerHTML = '<i class="fa-solid fa-check"></i> {{ __("مكتمل") }}';
         }
 
         // إرسال بيانات الدرس النهائية وحفظه بالمنصة
@@ -1490,6 +1501,7 @@ async function submitVideoForm(e) {
 
         window.removeEventListener('beforeunload', preventTabClose);
         progressWrap.dataset.completed = '1';
+        window._cachedUpload = null;
         Swal.fire({
             icon: 'success',
             title: saveRes.data.title || '{{ __("تم رفع ونشر درس الفيديو بنجاح 🎉") }}',
@@ -1502,7 +1514,7 @@ async function submitVideoForm(e) {
         window.removeEventListener('beforeunload', preventTabClose);
         btn.disabled = false;
         if (btnCancel) btnCancel.disabled = false;
-        btn.innerHTML = originalText;
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';
 
         let msg = '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
         if (err.response && err.response.data) {
