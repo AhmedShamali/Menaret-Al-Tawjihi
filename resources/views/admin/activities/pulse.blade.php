@@ -32,7 +32,7 @@
                         <div class="user-block">
                             <div class="user-avatar">👤</div>
                             <div class="user-info-text">
-                                <strong class="u-name">{{ $act->student->name_ar ?? 'النظام' }}</strong>
+                                <strong class="u-name">{{ $act->student?->name_ar ?? 'النظام' }}</strong>
                                 <span class="ip-mobile-only">{{ $act->ip_address }}</span>
                             </div>
                         </div>

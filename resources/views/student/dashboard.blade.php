@@ -262,7 +262,7 @@
             <div class="ed-panel-body">
                 @forelse($available_exams as $ex)
                     @php
-                        $subjectName = (app()->getLocale() === 'en' && !empty($ex->subject->name_en)) ? $ex->subject->name_en : ($ex->subject->name_ar ?? __('مبحث دراسي'));
+                        $subjectName = (app()->getLocale() === 'en' && !empty($ex->subject?->name_en)) ? $ex->subject?->name_en : ($ex->subject?->name_ar ?? $ex->subject?->name ?? __('مبحث دراسي'));
                         $tb = $ex->timing_badge_data;
                     @endphp
                     <div class="ed-exam-item-row">
@@ -349,7 +349,7 @@
                     @forelse($completed_exams ?? [] as $done_exam)
                         <div class="ed-completed-row">
                             <div>
-                                <strong class="title">{{ $done_exam->exam->title ?? $done_exam->title }}</strong>
+                                <strong class="title">{{ $done_exam->exam?->title ?? $done_exam->title ?? __('اختبار') }}</strong>
                                 <span class="date font-mono">{{ $done_exam->created_at ? $done_exam->created_at->format('Y/m/d') : __('مؤخراً') }}</span>
                             </div>
                             <div>

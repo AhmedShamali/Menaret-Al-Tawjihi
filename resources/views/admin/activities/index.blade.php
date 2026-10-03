@@ -35,7 +35,7 @@
                         <div class="user-info">
                             <div class="user-avatar">👤</div>
                             <div class="user-details">
-                                <span class="user-name">{{ $act->student->name_ar ?? 'مدير النظام' }}</span>
+                                <span class="user-name">{{ $act->student?->name_ar ?? 'مدير النظام' }}</span>
                                 <span class="user-ip">{{ $act->ip_address }}</span>
                             </div>
                         </div>

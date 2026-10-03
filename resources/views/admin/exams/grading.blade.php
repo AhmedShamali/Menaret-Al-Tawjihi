@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'رصد درجات الطالب | ' . ($submission->student->name_ar ?? $submission->student->name ?? 'طالب'))
+@section('title', 'رصد درجات الطالب | ' . ($submission->student?->name_ar ?? $submission->student?->name ?? 'طالب'))
 
 @section('content')
 <div style="max-width: 1040px; margin: 0 auto; animation: fadeIn 0.5s ease; padding-bottom: 70px;">
@@ -17,20 +17,20 @@
                 مراجعة الحلول الأكاديمية 🖋️
             </h1>
             <p style="margin-top: 5px; color: #64748b; font-size: 0.92rem;">
-                رصد درجات الطالب: <strong style="color: #1e40af;">{{ $submission->student->name_ar ?? $submission->student->name }}</strong>
+                رصد درجات الطالب: <strong style="color: #1e40af;">{{ $submission->student?->name_ar ?? $submission->student?->name ?? __('طالب') }}</strong>
                 @if($submission->student && $submission->student->stage)
                     <span style="background: #f1f5f9; color: #334155; padding: 2px 8px; border-radius: 6px; font-size: 0.8rem; margin-inline-start: 8px;">
-                        {{ $submission->student->stage->name_ar }}
+                        {{ $submission->student?->stage?->name_ar ?? $submission->student?->stage?->label_ar }}
                     </span>
                 @endif
-                • الاختبار: <strong>{{ $submission->exam->title }}</strong>
+                • الاختبار: <strong>{{ $submission->exam?->title ?? __('اختبار') }}</strong>
             </p>
         </div>
         <div style="text-align: center; background: #fff; padding: 12px 25px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
             <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; margin-bottom: 2px;">الدرجة الكلية للاختبار</div>
             <div style="font-size: 1.8rem; font-weight: 900; color: #1e40af; font-family: monospace;">
                 <span id="header_current_score">{{ $submission->total_earned_grade ?? 0 }}</span>
-                <span style="font-size: 1rem; color: #94a3b8; font-weight: 600;">/ {{ $submission->exam->total_grade ?? $submission->exam->questions->sum('points') }}</span>
+                <span style="font-size: 1rem; color: #94a3b8; font-weight: 600;">/ {{ $submission->exam?->total_grade ?? $submission->exam?->questions?->sum('points') ?? 100 }}</span>
             </div>
         </div>
     </div>

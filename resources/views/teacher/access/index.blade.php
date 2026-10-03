@@ -42,7 +42,7 @@
                     <a href="{{ route('teacher.access.index', ['subject_id' => $sub->id]) }}" 
                        class="sub-pill {{ $selectedSubject && $selectedSubject->id == $sub->id ? 'active' : '' }}">
                         <span>{{ (app()->getLocale() === 'en' && !empty($sub->name_en)) ? $sub->name_en : __($sub->name_ar ?? $sub->name) }}</span>
-                        <span class="sub-stage-tag">{{ (app()->getLocale() === 'en' && !empty($sub->stage->name_en)) ? $sub->stage->name_en : ($sub->stage->name_ar ?? __('توجيهي')) }}</span>
+                        <span class="sub-stage-tag">{{ (app()->getLocale() === 'en' && !empty($sub->stage?->name_en)) ? $sub->stage?->name_en : ($sub->stage?->name_ar ?? $sub->stage?->label_ar ?? __('توجيهي')) }}</span>
                     </a>
                 @endforeach
             </div>
@@ -101,12 +101,12 @@
                     <tbody>
                         @forelse($enrollments as $enr)
                             @php
-                                $stName = (app()->getLocale() === 'en' && !empty($enr->student->name_en)) ? $enr->student->name_en : ($enr->student->name_ar ?? $enr->student->name ?? __('طالب توجيهي'));
+                                $stName = (app()->getLocale() === 'en' && !empty($enr->student?->name_en)) ? $enr->student?->name_en : ($enr->student?->name_ar ?? $enr->student?->name ?? __('طالب توجيهي'));
                                 $isAll = ($enr->access_mode === 'all');
                                 $customContentsCount = $enr->contentAssignments->where('is_visible', true)->count();
                                 $customExamsCount = $enr->examAssignments->where('is_visible', true)->count();
                             @endphp
-                            <tr class="student-row" data-search="{{ mb_strtolower($stName . ' ' . ($enr->student->email ?? '')) }}">
+                            <tr class="student-row" data-search="{{ mb_strtolower($stName . ' ' . ($enr->student?->email ?? '')) }}">
                                 <td>
                                     <div class="student-cell">
                                         <div class="student-avatar-letter">
@@ -114,12 +114,12 @@
                                         </div>
                                         <div>
                                             <strong class="st-name">{{ $stName }}</strong>
-                                            <div class="st-email">{{ $enr->student->email ?? '-' }}</div>
+                                            <div class="st-email">{{ $enr->student?->email ?? '-' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="stage-tag-badge">{{ (app()->getLocale() === 'en' && !empty($enr->student->stage->name_en)) ? $enr->student->stage->name_en : ($enr->student->stage->name_ar ?? __('توجيهي')) }}</span>
+                                    <span class="stage-tag-badge">{{ (app()->getLocale() === 'en' && !empty($enr->student?->stage?->name_en)) ? $enr->student?->stage?->name_en : ($enr->student?->stage?->name_ar ?? $enr->student?->stage?->label_ar ?? __('توجيهي')) }}</span>
                                 </td>
                                 <td>
                                     @if($isAll)

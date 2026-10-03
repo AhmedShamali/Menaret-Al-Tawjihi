@@ -15,7 +15,7 @@
                 </div>
                 <div class="ed-crest-titles">
                     <span class="ed-crest-gov">{{ __('دولة فلسطين • وزارة التربية والتعليم') }}</span>
-                    <span class="ed-crest-sub">{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</span>
+                    <span class="ed-crest-sub">{{ $exam->subject?->name_ar ?? $exam->subject?->name ?? __('مادة دراسية') }}</span>
                 </div>
             </div>
 
@@ -107,7 +107,7 @@
             <div class="ed-topbar-meta">
                 <div class="ed-subject-tag">
                     <i class="fa-solid fa-book-bookmark"></i>
-                    <span>{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</span>
+                    <span>{{ $exam->subject?->name_ar ?? $exam->subject?->name ?? __('مادة دراسية') }}</span>
                 </div>
                 <h1 class="ed-topbar-title">{{ $exam->title }}</h1>
             </div>
@@ -186,11 +186,11 @@
                         <div class="ed-sheet-meta-side">
                             <div class="ed-meta-item">
                                 <span class="lbl">{{ __('المبحث:') }}</span>
-                                <strong class="val">{{ $exam->subject->name_ar ?? $exam->subject->name ?? __('مادة دراسية') }}</strong>
+                                <strong class="val">{{ $exam->subject?->name_ar ?? $exam->subject?->name ?? __('مادة دراسية') }}</strong>
                             </div>
                             <div class="ed-meta-item">
                                 <span class="lbl">{{ __('المرحلة / الصف:') }}</span>
-                                <strong class="val">{{ $exam->stage->name_ar ?? $exam->stage->name ?? __('المرحلة الثانوية العامة') }}</strong>
+                                <strong class="val">{{ $exam->stage?->name_ar ?? $exam->stage?->name ?? __('المرحلة الثانوية العامة') }}</strong>
                             </div>
                             <div class="ed-meta-item">
                                 <span class="lbl">{{ __('زمن الإجابة:') }}</span>

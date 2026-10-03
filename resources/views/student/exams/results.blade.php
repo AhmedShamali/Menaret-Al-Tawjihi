@@ -20,10 +20,10 @@
             <i class="fa-solid fa-graduation-cap"></i>
             <span>{{ __('الثانوية العامة - فلسطين') }}</span>
             <span class="dot">•</span>
-            <span>{{ optional($submission->exam->subject)->name_ar ?? optional($submission->exam->subject)->name ?? __('مادة دراسية') }}</span>
+            <span>{{ optional($submission->exam?->subject)->name_ar ?? optional($submission->exam?->subject)->name ?? __('مادة دراسية') }}</span>
         </div>
 
-        <h1 class="ed-pending-title">{{ $submission->exam->title }}</h1>
+        <h1 class="ed-pending-title">{{ $submission->exam?->title ?? __('اختبار إلكتروني') }}</h1>
         <div class="ed-pending-badge">
             <i class="fa-solid fa-circle-check"></i>
             <span>{{ __('تم استلام وتوثيق إجاباتك بنجاح') }}</span>
@@ -81,16 +81,16 @@
                     <i class="fa-solid fa-graduation-cap"></i>
                     <span>{{ __('الثانوية العامة - فلسطين') }}</span>
                     <span class="dot">•</span>
-                    <span>{{ optional($submission->exam->subject)->name_ar ?? optional($submission->exam->subject)->name ?? __('مادة دراسية') }}</span>
+                    <span>{{ optional($submission->exam?->subject)->name_ar ?? optional($submission->exam?->subject)->name ?? __('مادة دراسية') }}</span>
                 </div>
-                <h1 class="ed-report-title">{{ $submission->exam->title }}</h1>
+                <h1 class="ed-report-title">{{ $submission->exam?->title ?? __('اختبار') }}</h1>
                 <p class="ed-report-subtitle">
                     {{ __('مراجعة الإجابات المفصلة') }} — {{ optional($submission->student)->name_ar ?? auth('student')->user()?->name_ar ?? auth()->user()?->name ?? __('طالب') }}
                 </p>
             </div>
 
             @php
-                $totalMax = (float) $submission->exam->questions->sum('points');
+                $totalMax = (float) ($submission->exam?->questions?->sum('points') ?? $submission->exam?->total_grade ?? 100);
                 $earned = (float) $submission->total_earned_grade;
                 $pct = $totalMax > 0 ? round(($earned / $totalMax) * 100, 1) : 0;
             @endphp

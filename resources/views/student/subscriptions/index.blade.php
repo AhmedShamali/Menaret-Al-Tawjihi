@@ -170,7 +170,7 @@
             </div>
             <div class="academic-branch-pill">
                 <i class="fa-solid fa-book-bookmark"></i>
-                <span>{{ $student->stage->label_ar ?? ($student->stage->name_ar ?? __('Academic Stage')) }}</span>
+                <span>{{ $student?->stage?->label_ar ?? ($student?->stage?->name_ar ?? __('Academic Stage')) }}</span>
             </div>
         </div>
 

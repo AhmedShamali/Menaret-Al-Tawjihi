@@ -8,10 +8,10 @@
         $studentNameAr = $studentObj->name_ar ?? $studentObj->name ?? 'طالب التوجيهي المتميز';
         $studentNameEn = $studentObj->name_en ?? $studentObj->name_ar ?? 'Distinguished Student';
         $studentNid = $studentObj->nid ?? null;
-        $stageNameAr = $studentObj->stage->name_ar ?? $studentObj->stage->label_ar ?? optional($certificate->subject->stage)->name_ar ?? 'الثانوية العامة (التوجيهي)';
+        $stageNameAr = $studentObj?->stage?->name_ar ?? $studentObj?->stage?->label_ar ?? $certificate?->subject?->stage?->name_ar ?? 'الثانوية العامة (التوجيهي)';
         $stageNameEn = 'General Secondary Education (Tawjihi)';
-        $subjectNameAr = $certificate->subject->name_ar ?? $certificate->subject->name ?? 'شهادة إتمام وتفوق عامة';
-        $subjectNameEn = $certificate->subject->name ?? $certificate->subject->name_ar ?? 'General Academic Excellence';
+        $subjectNameAr = $certificate?->subject?->name_ar ?? $certificate?->subject?->name ?? 'شهادة إتمام وتفوق عامة';
+        $subjectNameEn = $certificate?->subject?->name ?? $certificate?->subject?->name_ar ?? 'General Academic Excellence';
         $issueDate = $certificate->created_at ? $certificate->created_at->format('Y/m/d') : date('Y/m/d');
         $issueDateEn = $certificate->created_at ? $certificate->created_at->format('F d, Y') : date('F d, Y');
         $finalGrade = (float) ($certificate->final_grade ?? 90);

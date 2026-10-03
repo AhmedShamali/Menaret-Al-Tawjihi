@@ -222,8 +222,8 @@
                 <tbody>
                     @forelse($students as $index => $st)
                         @php
-                            $latestCert = $st->certificates->first();
-                            $stDispName = (app()->getLocale() === 'en' && !empty($st->name_en)) ? $st->name_en : $st->name_ar;
+                            $latestCert = $st->certificates?->first();
+                            $stDispName = (app()->getLocale() === 'en' && !empty($st->name_en)) ? $st->name_en : ($st->name_ar ?? $st->name ?? __('طالب'));
                             $rowNum = ($students->currentPage() - 1) * $students->perPage() + $index + 1;
                             $stageLabel = $st->stage?->label_ar ? __($st->stage->label_ar) : __('توجيهي عام');
                             $certStatusWord = $latestCert ? 'معتمد' : 'بانتظار';

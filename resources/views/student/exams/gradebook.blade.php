@@ -34,14 +34,14 @@
                 @forelse($submissions as $s)
                 <tr style="border-bottom: 1px solid #f1f5f9; transition: 0.3s;" onmouseover="this.style.background='#fcfcfd'">
                     <td style="padding: 20px 35px;">
-                        <span class="chip" style="background: {{ $s->exam->subject->color }}15; color: {{ $s->exam->subject->color }}; font-weight: 800; padding: 8px 15px; border-radius: 10px;">
-                            {{ $s->exam->subject->name_ar }}
+                        <span class="chip" style="background: {{ $s->exam?->subject?->color ?? '#1e40af' }}15; color: {{ $s->exam?->subject?->color ?? '#1e40af' }}; font-weight: 800; padding: 8px 15px; border-radius: 10px;">
+                            {{ $s->exam?->subject?->name_ar ?? $s->exam?->subject?->name ?? __('مادة دراسية') }}
                         </span>
                     </td>
-                    <td style="padding: 20px; font-weight: 700; color: var(--primary);">{{ $s->exam->title }}</td>
+                    <td style="padding: 20px; font-weight: 700; color: var(--primary);">{{ $s->exam?->title ?? __('اختبار') }}</td>
                     <td style="padding: 20px;">
                         <div style="font-size: 1.2rem; font-weight: 900; color: #2563eb;">
-                            {{ $s->total_earned_grade }} <span style="font-size: 0.8rem; color: #cbd5e1;">/ {{ $s->exam->questions->sum('points') }}</span>
+                            {{ $s->total_earned_grade }} <span style="font-size: 0.8rem; color: #cbd5e1;">/ {{ $s->exam?->questions?->sum('points') ?? $s->exam?->total_grade ?? 100 }}</span>
                         </div>
                     </td>
                     <td style="padding: 20px;">

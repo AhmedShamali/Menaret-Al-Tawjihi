@@ -24,7 +24,7 @@
                             <div><div style="font-weight: 700;">{{ $s->name_ar }}</div><div style="font-size: 0.7rem; color: #94a3b8;">{{ $s->email }}</div></div>
                         </div>
                     </td>
-                    <td style="padding: 20px; font-weight: 600;">{{ $s->stage->label_ar }}</td>
+                    <td style="padding: 20px; font-weight: 600;">{{ $s->stage?->label_ar ?? __('توجيهي عام') }}</td>
                     <td style="padding: 20px;"><span class="chip {{ $s->status == 'active' ? 'active' : '' }}">{{ $s->status == 'active' ? 'مفعل' : 'معلق' }}</span></td>
                     <td style="padding: 20px; display: flex; justify-content: center; gap: 8px;">
                         <a href="{{ route('admin.students.edit', $s->id) }}" class="act-btn">✏️</a>

@@ -5,9 +5,9 @@
     $studentDispName = (app()->getLocale() === 'en' && !empty($student->name_en)) 
         ? $student->name_en 
         : ($student->name_ar ?? $student->name ?? __('طالبنا العزيز'));
-    $stageDispName = (app()->getLocale() === 'en' && !empty($student->stage->name_en))
-        ? $student->stage->name_en
-        : (optional($student->stage)->label_ar ?? optional($student->stage)->name_ar ?? __('الثانوية العامة (التوجيهي)'));
+    $stageDispName = (app()->getLocale() === 'en' && !empty($student?->stage?->name_en))
+        ? $student?->stage?->name_en
+        : ($student?->stage?->label_ar ?? $student?->stage?->name_ar ?? __('الثانوية العامة (التوجيهي)'));
 @endphp
 
 @section('title', $isFrozen ? __('الحساب مجمد مؤقتاً | Step by Step') : __('بانتظار موافقة الإدارة وتفعيل الاشتراك | Step by Step'))

@@ -10,7 +10,7 @@
         <div class="header-titles">
             <nav class="breadcrumb-nav">
                 <a>{{ __('المراحل') }}</a> /
-                <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage->label_ar ?? 'المرحلة' }}</a> /
+                <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage?->label_ar ?? 'المرحلة' }}</a> /
                 <span class="active">{{ $subject->name_ar }}</span>
             </nav>
             <h1 class="subject-title">
@@ -38,7 +38,7 @@
                 <div class="teacher-info">
                     <span class="badge-teacher">{{ __('معلّم المادة المعتمد') }}</span>
                     <h3 class="teacher-name">{{ $subject->teacher_display_name }}</h3>
-                    <p class="teacher-desc">مدرس مساق {{ $subject->name_ar }} - {{ $subject->stage->label_ar ?? 'الصف الثاني عشر' }}</p>
+                    <p class="teacher-desc">مدرس مساق {{ $subject->name_ar }} - {{ $subject->stage?->label_ar ?? 'الصف الثاني عشر' }}</p>
                 </div>
             @else
                 <div class="teacher-avatar" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">

@@ -83,8 +83,8 @@
                             </div>
 
                             <div class="cert-icon-center">🎓</div>
-                            <h4 class="cert-subject-name">{{ (app()->getLocale() === 'en' && !empty($cert->subject->name_en)) ? $cert->subject->name_en : ($cert->subject->name_ar ?? $cert->subject->name ?? __('شهادة إتمام وتفوق عامة')) }}</h4>
-                            <p class="cert-issued-to">{{ __('صادرة للطالبـ/ـة:') }} <strong>{{ (app()->getLocale() === 'en' && !empty($cert->student->name_en)) ? $cert->student->name_en : ($cert->student->name_ar ?? $cert->student->name ?? ($student->name_ar ?? $student->name)) }}</strong></p>
+                            <h4 class="cert-subject-name">{{ (app()->getLocale() === 'en' && !empty($cert->subject?->name_en)) ? $cert->subject?->name_en : ($cert->subject?->name_ar ?? $cert->subject?->name ?? __('شهادة إتمام وتفوق عامة')) }}</h4>
+                            <p class="cert-issued-to">{{ __('صادرة للطالبـ/ـة:') }} <strong>{{ (app()->getLocale() === 'en' && !empty($cert->student?->name_en)) ? $cert->student?->name_en : ($cert->student?->name_ar ?? $cert->student?->name ?? ($student->name_ar ?? $student->name)) }}</strong></p>
 
                             <div class="cert-grade-box">
                                 {{ __('المعدل المعتمد:') }} <strong>{{ $cert->final_grade }}%</strong>

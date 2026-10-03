@@ -215,11 +215,11 @@
                 <div class="info-grid">
                     <div class="info-row">
                         <span class="info-label">اسم الطالب / الطالبة:</span>
-                        <span class="info-value" style="color: #007a3d; font-size: 1.05rem; font-weight: 800;">{{ $certificate->student->name_ar ?? $certificate->student->name ?? 'طالب التوجيهي المتميز' }}</span>
+                        <span class="info-value" style="color: #007a3d; font-size: 1.05rem; font-weight: 800;">{{ $certificate->student?->name_ar ?? $certificate->student?->name ?? 'طالب التوجيهي المتميز' }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">{{ __('المادة الأكاديمية:') }}</span>
-                        <span class="info-value">{{ $certificate->subject->name_ar ?? $certificate->subject->name }}</span>
+                        <span class="info-value">{{ $certificate->subject?->name_ar ?? $certificate->subject?->name ?? __('مادة دراسية') }}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">{{ __('معدل الاجتياز والتفوق:') }}</span>

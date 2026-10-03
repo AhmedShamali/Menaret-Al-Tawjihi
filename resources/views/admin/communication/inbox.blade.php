@@ -37,7 +37,7 @@
                         <div class="user-cell">
                             <div class="avatar-box">👤</div>
                             <div class="user-data">
-                                <span class="name">{{ $act->student->name_ar ?? 'مدير النظام' }}</span>
+                                <span class="name">{{ $act->student?->name_ar ?? 'مدير النظام' }}</span>
                                 <span class="ip">{{ $act->ip_address }}</span>
                             </div>
                         </div>

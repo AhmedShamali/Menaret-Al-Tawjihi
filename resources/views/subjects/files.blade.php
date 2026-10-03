@@ -9,7 +9,7 @@
     <div class="files-header-card">
         <nav class="breadcrumb-nav">
             <a href="/stages">{{ __('المراحل التعليمية') }}</a> /
-            <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage->label_ar ?? 'المرحلة' }}</a> /
+            <a href="/stages/{{ $subject->stage_id }}">{{ $subject->stage?->label_ar ?? 'المرحلة' }}</a> /
             <a href="{{ route('subject.show', $subject->id) }}">{{ $subject->name_ar ?? $subject->title }}</a> /
             <span class="active">{{ __('الملفات والملخصات') }}</span>
         </nav>
