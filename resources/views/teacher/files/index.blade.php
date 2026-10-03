@@ -667,17 +667,20 @@
 
 .modal-card {
     background: #ffffff;
-    border-radius: 16px;
-    max-width: 580px;
+    border-radius: 18px;
+    max-width: 620px;
     width: 100%;
-    padding: 26px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    animation: modalScale 0.2s ease-out;
+    padding: 28px 30px;
+    box-shadow: 0 24px 60px rgba(11, 59, 111, 0.22);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #0b3b6f;
+    animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
 }
 
 @keyframes modalScale {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-head {

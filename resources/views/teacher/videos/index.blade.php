@@ -223,10 +223,12 @@
     <div class="modal-card">
         <div class="modal-head">
             <h3>
-                <i class="fa-solid fa-film" style="color: #2563eb;"></i>
+                <div class="modal-head-icon">
+                    <i class="fa-solid fa-film"></i>
+                </div>
                 <span>{{ __('إضافة درس أو شرح مرئي جديد') }}</span>
             </h3>
-            <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal">&times;</button>
+            <button type="button" onclick="closeUploadVideoModal()" class="btn-close-modal" title="{{ __('إغلاق النافذة') }}">&times;</button>
         </div>
 
         <form id="uploadVideoForm" onsubmit="submitVideoForm(event)" enctype="multipart/form-data">
@@ -850,53 +852,102 @@
     padding: 20px;
 }
 
+/* ==========================================================
+   CLASSIC ROYAL ACADEMIC UPLOAD MODAL & DROPZONE
+   ========================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
 .modal-card {
     background: #ffffff;
-    border-radius: 16px;
-    max-width: 580px;
+    border-radius: 18px;
+    max-width: 620px;
     width: 100%;
-    padding: 26px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    animation: modalScale 0.2s ease-out;
+    padding: 28px 30px;
+    box-shadow: 0 24px 60px rgba(11, 59, 111, 0.22);
+    border: 1px solid #e2e8f0;
+    border-top: 4px solid #0b3b6f;
+    animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-sizing: border-box;
 }
 
 @keyframes modalScale {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale(0.95) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modal-head {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 14px;
-    margin-bottom: 18px;
+    border-bottom: 1.5px solid #f1f5f9;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .modal-head h3 {
     margin: 0;
-    font-size: 1.18rem;
+    font-size: 1.25rem;
     font-weight: 800;
-    color: #0f172a;
+    color: #0b3b6f;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+    letter-spacing: -0.01em;
+}
+
+.modal-head-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #0b3b6f;
+    border: 1px solid #bfdbfe;
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
 }
 
 .btn-close-modal {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #94a3b8;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    color: #64748b;
     cursor: pointer;
     line-height: 1;
+    display: grid;
+    place-items: center;
+    transition: all 0.2s ease;
+}
+
+.btn-close-modal:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fecaca;
+    transform: rotate(90deg);
 }
 
 .modal-form-body {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
 .f-group {
@@ -906,9 +957,9 @@
 }
 
 .f-label {
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: #1e293b;
+    color: #0f172a;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -916,67 +967,139 @@
 
 .f-control {
     width: 100%;
-    padding: 10px 14px;
+    padding: 11px 14px;
     border: 1.5px solid #cbd5e1;
-    border-radius: 8px;
+    border-radius: 10px;
     font-family: inherit;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     outline: none;
     background: #ffffff;
     color: #0f172a;
     box-sizing: border-box;
-    transition: border-color 0.15s;
+    transition: all 0.2s ease;
 }
 
 .f-control:focus {
-    border-color: #1e3a8a;
-}
-
-.f-hint {
-    color: #64748b;
-    font-size: 0.74rem;
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+    background: #ffffff;
 }
 
 .f-row {
     display: flex;
-    gap: 12px;
+    gap: 14px;
+}
+
+/* صندوق سحب وإفلات الفيديو الملكي الكلاسيكي الفاخر */
+.ed-video-dropzone {
+    border: 2px dashed #93c5fd;
+    background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+    border-radius: 14px;
+    padding: 26px 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.ed-video-dropzone:hover, .ed-video-dropzone.dragover {
+    border-color: #0b3b6f;
+    background: #e0f2fe;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(11, 59, 111, 0.1);
+}
+
+.dropzone-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.dropzone-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1.5px solid #bfdbfe;
+    color: #0b3b6f;
+    display: grid;
+    place-items: center;
+    font-size: 1.55rem;
+    box-shadow: 0 4px 14px rgba(11, 59, 111, 0.08);
+    transition: all 0.2s ease;
+}
+
+.ed-video-dropzone:hover .dropzone-icon {
+    transform: scale(1.08);
+    color: #1e40af;
+    border-color: #93c5fd;
+}
+
+.dropzone-text strong {
+    display: block;
+    color: #0b3b6f;
+    font-size: 0.96rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.dropzone-text span {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.5;
+    max-width: 480px;
+    display: block;
+    margin: 0 auto;
 }
 
 .modal-foot {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-    padding-top: 16px;
+    gap: 12px;
+    margin-top: 22px;
+    padding-top: 18px;
     border-top: 1px solid #f1f5f9;
 }
 
 .btn-modal-cancel {
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: 11px 22px;
+    border-radius: 10px;
     background: #f1f5f9;
-    color: #64748b;
-    border: none;
+    color: #475569;
+    border: 1px solid #e2e8f0;
     font-weight: 700;
+    font-size: 0.88rem;
     cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-modal-cancel:hover {
+    background: #e2e8f0;
+    color: #0f172a;
 }
 
 .btn-modal-submit {
-    padding: 10px 24px;
-    border-radius: 8px;
-    background: #1e3a8a;
-    color: white;
-    border: none;
+    padding: 11px 28px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #0b3b6f 0%, #1e40af 100%);
+    color: #ffffff;
+    border: 1px solid #1e40af;
     font-weight: 800;
+    font-size: 0.92rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    transition: 0.15s;
+    box-shadow: 0 4px 14px rgba(11, 59, 111, 0.25);
+    transition: all 0.2s ease;
 }
 
 .btn-modal-submit:hover {
-    background: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(11, 59, 111, 0.35);
+    background: linear-gradient(135deg, #072547 0%, #0b3b6f 100%);
 }
 
 @media (max-width: 768px) {
@@ -1018,54 +1141,13 @@
     .modal-card {
         width: 95vw;
         max-width: 95vw;
-        padding: 18px 14px;
-        border-radius: 12px;
+        padding: 20px 16px;
+        border-radius: 14px;
     }
     .f-row {
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
     }
-.ed-video-dropzone {
-    border: 2px dashed #93c5fd;
-    background: #f0f7ff;
-    border-radius: 12px;
-    padding: 24px 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-.ed-video-dropzone:hover, .ed-video-dropzone.dragover {
-    border-color: #2563eb;
-    background: #e0f2fe;
-    transform: translateY(-1px);
-}
-.dropzone-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-.dropzone-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-    background: #ffffff;
-    border: 1px solid #bfdbfe;
-    color: #2563eb;
-    display: grid;
-    place-items: center;
-    font-size: 1.45rem;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
-}
-.dropzone-text strong {
-    display: block;
-    color: #1e3a8a;
-    font-size: 0.92rem;
-    margin-bottom: 3px;
-}
-.dropzone-text span {
-    font-size: 0.78rem;
-    color: #64748b;
 }
 </style>
 
