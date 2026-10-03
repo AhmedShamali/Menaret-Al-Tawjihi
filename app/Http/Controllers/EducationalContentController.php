@@ -76,8 +76,8 @@ class EducationalContentController extends Controller
     }
 
     /**
-     * رفع ملفات الفيديو الكبيرة بنظام الأجزاء المتعددة (Chunked Upload)
-     * لتجاوز كافة قيود السيرفر (PHP Limit / Cloudflare / HTTP 413) ودعم أي حجم حتى 2GB+
+     * رفع ملفات الفيديو الكبيرة والضخمة بالجيجابايت بنظام الأجزاء المتعددة (Chunked Upload)
+     * لتجاوز كافة قيود السيرفر (PHP Limit / Cloudflare / HTTP 413) ودعم أي حجم حتى 10GB+ باستقرار وسرعة فائقة
      */
     public function uploadChunk(Request $request)
     {
@@ -120,6 +120,14 @@ class EducationalContentController extends Controller
         }
 
         if ($allPresent) {
+            // رفع القيود الزمنية واستهلاك الذاكرة لدمج ملفات الجيجابايت بسرعة فائقة
+            @ini_set('max_execution_time', '0');
+            @set_time_limit(0);
+            @ini_set('memory_limit', '1024M');
+            if (function_exists('ignore_user_abort')) {
+                @ignore_user_abort(true);
+            }
+
             $finalFilename = 'video_' . time() . '_' . Str::random(12) . '.' . $ext;
             $relativeDir = 'educational/videos';
             $targetDir = storage_path('app/public/' . $relativeDir);
@@ -129,31 +137,47 @@ class EducationalContentController extends Controller
             $finalPath = $targetDir . '/' . $finalFilename;
 
             $output = fopen($finalPath, 'wb');
+            if (!$output) {
+                return response()->json(['success' => false, 'message' => 'تعذر فتح مسار دمج الفيديو على السيرفر.'], 500);
+            }
+
+            // الدمج المباشر عبر تدفقات النظام (stream_copy_to_stream) لكفاءة خارقة في ملفات الجيجابايت
             for ($i = 0; $i < $totalChunks; $i++) {
                 $partPath = $chunksFolder . '/part_' . $i;
-                $input = fopen($partPath, 'rb');
-                while (!feof($input)) {
-                    $buffer = fread($input, 65536);
-                    fwrite($output, $buffer);
+                if (file_exists($partPath)) {
+                    $input = fopen($partPath, 'rb');
+                    if ($input) {
+                        stream_copy_to_stream($input, $output);
+                        fclose($input);
+                    }
+                    @unlink($partPath);
                 }
-                fclose($input);
-                @unlink($partPath);
             }
+            fflush($output);
             fclose($output);
             @rmdir($chunksFolder);
 
-            $relativeStoragePath = $relativeDir . '/' . $finalFilename;
             $fileSizeBytes = file_exists($finalPath) ? filesize($finalPath) : 0;
-            $sizeMb = round($fileSizeBytes / (1024 * 1024), 1);
-            $formattedSize = $sizeMb > 0 ? $sizeMb . ' MB' : round($fileSizeBytes / 1024) . ' KB';
+            if ($fileSizeBytes >= 1073741824) {
+                $formattedSize = round($fileSizeBytes / 1073741824, 2) . ' GB';
+            } elseif ($fileSizeBytes >= 1048576) {
+                $formattedSize = round($fileSizeBytes / 1048576, 1) . ' MB';
+            } else {
+                $formattedSize = round($fileSizeBytes / 1024) . ' KB';
+            }
 
-            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+            $relativeStoragePath = $relativeDir . '/' . $finalFilename;
+
+            // بالنسبة للتخزين السحابي: لا نرفع الملفات الضخمة بالجيجابايت في نفس الطلب لتفادي مهلة HTTP أو سعة سوبابيز المجانية (50MB)
+            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key')) && $fileSizeBytes < 45 * 1024 * 1024) {
                 try {
                     $supabasePath = Storage::disk('supabase')->putFileAs($relativeDir, new \Illuminate\Http\File($finalPath), $finalFilename);
                     if ($supabasePath) {
                         $relativeStoragePath = Storage::disk('supabase')->url($supabasePath);
                     }
-                } catch (\Throwable $e) {}
+                } catch (\Throwable $e) {
+                    \Log::warning('Supabase sync skipped for video: ' . $e->getMessage());
+                }
             }
 
             return response()->json([
@@ -168,6 +192,45 @@ class EducationalContentController extends Controller
             'done'        => false,
             'chunk_index' => $chunkIndex,
             'percent'     => round((($chunkIndex + 1) / $totalChunks) * 100),
+        ]);
+    }
+
+    /**
+     * فحص أجزاء الفيديو المرفوعة مسبقاً لدعم استئناف الرفع (Resumable Upload)
+     * للملفات الضخمة بالجيجابايت في حال انقطاع النت أو إعادة فتح الصفحة
+     */
+    public function checkChunkStatus(Request $request)
+    {
+        $request->validate([
+            'file_id'      => 'required|string',
+            'total_chunks' => 'required|integer|min:1',
+        ]);
+
+        $fileId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->file_id);
+        $totalChunks = (int) $request->total_chunks;
+        $chunksFolder = storage_path('app/chunks/' . $fileId);
+
+        if (!file_exists($chunksFolder)) {
+            return response()->json([
+                'exists'          => false,
+                'uploaded_chunks' => [],
+                'uploaded_count'  => 0,
+                'total_chunks'    => $totalChunks,
+            ]);
+        }
+
+        $uploadedChunks = [];
+        for ($i = 0; $i < $totalChunks; $i++) {
+            if (file_exists($chunksFolder . '/part_' . $i)) {
+                $uploadedChunks[] = $i;
+            }
+        }
+
+        return response()->json([
+            'exists'          => count($uploadedChunks) > 0,
+            'uploaded_chunks' => $uploadedChunks,
+            'uploaded_count'  => count($uploadedChunks),
+            'total_chunks'    => $totalChunks,
         ]);
     }
 
@@ -206,7 +269,7 @@ class EducationalContentController extends Controller
             'title'               => 'required|string|min:3',
             'order'               => 'required|numeric',
             'video_url'           => 'nullable|url',
-            'video_file'          => 'nullable|file|max:2097152', // حتى 2 جيجابايت
+            'video_file'          => 'nullable|file|max:10485760', // حتى 10 جيجابايت
             'uploaded_video_path' => 'nullable|string',
             'formatted_size'      => 'nullable|string',
             'file_upload_pdf'     => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',
@@ -214,7 +277,7 @@ class EducationalContentController extends Controller
         ], [
             'title.required'      => 'يرجى إدخال عنوان الدرس أو المحتوى التعليمي.',
             'subject_id.required' => 'يرجى تحديد المادة الدراسية.',
-            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 2000 ميغابايت (2 جيجابايت).',
+            'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 10 جيجابايت.',
         ]);
 
         if ($validator->fails()) {
@@ -411,7 +474,7 @@ class EducationalContentController extends Controller
             'title'               => 'required|string|min:3',
             'order'               => 'required|numeric',
             'video_url'           => 'nullable',
-            'video_file'          => 'nullable|file|max:2097152',
+            'video_file'          => 'nullable|file|max:10485760',
             'uploaded_video_path' => 'nullable|string',
             'formatted_size'      => 'nullable|string',
             'file_upload_pdf'     => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,png,jpg,jpeg,webp,zip,rar,txt|max:102400',

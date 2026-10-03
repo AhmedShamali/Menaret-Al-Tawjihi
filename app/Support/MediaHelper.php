@@ -41,19 +41,18 @@ class MediaHelper
         }
         $supabaseFileUrl = rtrim($supabaseUrl, '/') . '/' . $cleanPath;
 
-        // 2. إذا كنا في بيئة الإنتاج السحابية (Render) أو كان القرص الافتراضي supabase
-        $isCloud = (config('filesystems.default') === 'supabase' || app()->environment('production') || !empty(env('RENDER')));
-
-        if ($isCloud) {
-            return $supabaseFileUrl;
-        }
-
-        // 3. في البيئة المحلية: إذا كان الملف متوفراً محلياً في storage
+        // 2. إذا كان الملف متوفراً محلياً في مسار التخزين (سواء محلياً أو على قرص السيرفر الدائم)
         if (file_exists(public_path('storage/' . $cleanPath)) || file_exists(storage_path('app/public/' . $cleanPath))) {
             return asset('storage/' . $cleanPath);
         }
 
-        // 4. إذا لم يكن متوفراً محلياً، نستخدم رابط السحابة Supabase مباشرة
+        // 3. إذا كنا في بيئة الإنتاج السحابية أو كان القرص الافتراضي supabase ولم يتوفر محلياً
+        $isCloud = (config('filesystems.default') === 'supabase' || app()->environment('production') || !empty(env('RENDER')));
+        if ($isCloud) {
+            return $supabaseFileUrl;
+        }
+
+        // 4. البديل الافتراضي
         return $supabaseFileUrl;
     }
 

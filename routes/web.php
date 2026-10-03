@@ -38,6 +38,7 @@ Route::get('/question-images/{id}/options/{option}', [ExamController::class, 'qu
 
 Route::middleware('auth')->group(function () {
     Route::post('/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');
+    Route::post('/educational-contents/check-chunk-status', [EducationalContentController::class, 'checkChunkStatus'])->name('educational_contents.check_chunk_status');
 });
 
 Route::middleware('guest')->group(function () {

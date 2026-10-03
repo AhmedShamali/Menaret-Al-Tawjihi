@@ -273,26 +273,28 @@
                             </div>
                             <div class="dropzone-text">
                                 <strong id="dropzoneTitle">{{ __('اسحب ملف الفيديو وأفلته هنا، أو اضغط للاختيار') }}</strong>
-                                <span id="dropzoneSubtitle">{{ __('يدعم ملفات MP4 و WebM بأي حجم حتى 2GB+ بنظام التجزئة فائق السرعة.') }}</span>
+                                <span id="dropzoneSubtitle">{{ __('يدعم ملفات الفيديو بأي حجم مهما كانت ضخمة بالجيجاوات (1GB, 5GB, 10GB+) مع التجزئة والاستئناف التلقائي.') }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- شريط تقدم الرفع المباشر بالأجزاء -->
-                    <div id="chunkProgressWrap" style="display: none; margin-top: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+                    <!-- شريط تقدم الرفع المباشر بالأجزاء للملفات الضخمة بالجيجابايت -->
+                    <div id="chunkProgressWrap" style="display: none; margin-top: 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span id="chunkProgressStatus" style="font-size: 0.85rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-spinner fa-spin"></i>
                                 <span>{{ __('جاري بدء تجهيز ورفع أجزاء الفيديو...') }}</span>
                             </span>
-                            <span id="chunkProgressPct" style="font-size: 0.85rem; font-weight: 900; color: #1e3a8a; font-family: monospace;">0%</span>
+                            <span id="chunkProgressPct" style="font-size: 0.95rem; font-weight: 900; color: #1e3a8a; font-family: monospace;">0%</span>
                         </div>
                         <div style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden; position: relative;">
                             <div id="chunkProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6, #059669); transition: width 0.2s ease;"></div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.76rem; color: #64748b;">
-                            <span id="chunkFileMeta">-- / --</span>
-                            <span id="chunkPartMeta">--</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 0.76rem; color: #64748b; flex-wrap: wrap; gap: 6px;">
+                            <span id="chunkFileMeta" style="font-weight: 700; color: #334155;">-- / --</span>
+                            <span id="chunkSpeedMeta" style="font-weight: 700; color: #059669;"><i class="fa-solid fa-gauge-high"></i> --</span>
+                            <span id="chunkEtaMeta" style="font-weight: 700; color: #d97706;"><i class="fa-solid fa-clock"></i> --</span>
+                            <span id="chunkPartMeta" style="font-weight: 700; color: #64748b;">--</span>
                         </div>
                     </div>
                 </div>
@@ -1158,7 +1160,29 @@ if (dropArea) {
     }, false);
 }
 
-// نظام الرفع فائق السرعة والموثوقية بنظام الأجزاء (Chunked Upload)
+// دالة تنسيق السرعة ومعدل النقل
+function formatUploadSpeed(bytesPerSec) {
+    if (bytesPerSec <= 0) return '-- MB/s';
+    const mbps = bytesPerSec / (1024 * 1024);
+    if (mbps >= 1) return mbps.toFixed(1) + ' MB/s';
+    return (bytesPerSec / 1024).toFixed(0) + ' KB/s';
+}
+
+// دالة حساب وتنسيق الوقت المتبقي
+function formatEtaTime(seconds) {
+    if (!seconds || seconds <= 0 || !isFinite(seconds)) return '--';
+    if (seconds < 60) return seconds + ' {{ __("ثانية") }}';
+    const minutes = Math.floor(seconds / 60);
+    const remSec = seconds % 60;
+    if (minutes < 60) {
+        return `${minutes} {{ __("د") }} ${remSec > 0 ? remSec + ' {{ __("ث") }}' : ''}`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const remMin = minutes % 60;
+    return `${hours} {{ __("ساعة") }} ${remMin > 0 ? remMin + ' {{ __("د") }}' : ''}`;
+}
+
+// نظام الرفع فائق السرعة والموثوقية للملفات الضخمة بالجيجابايت (Gigabyte Chunked & Resumable Upload)
 async function submitVideoForm(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
@@ -1179,35 +1203,103 @@ async function submitVideoForm(e) {
     }
 
     const file = fileInput.files[0];
-    const CHUNK_SIZE = 2 * 1024 * 1024; // 2 ميغابايت لكل جزء لتخطي أي قيود للخادم كلياً
+    // ضبط حجم القطعة: 5 ميغابايت للملفات الضخمة أكبر من 1GB لتقليل عدد الطلبات وتسريع الرفع، و4 ميغابايت لغيرها
+    const CHUNK_SIZE = file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024);
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+    
+    // بصمة ثابتة وفريدة للملف تتيح الاستئناف التلقائي في حال انقطاع الاتصال أو إعادة الرفع
+    const cleanName = encodeURIComponent(file.name).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+    const fileId = 'vid_' + cleanName + '_' + file.size;
 
-    // واجهة التقدم
+    // عناصر واجهة التقدم
     const progressWrap = document.getElementById('chunkProgressWrap');
     const progressBar = document.getElementById('chunkProgressBar');
     const progressPct = document.getElementById('chunkProgressPct');
     const progressStatus = document.getElementById('chunkProgressStatus');
     const fileMeta = document.getElementById('chunkFileMeta');
+    const speedMeta = document.getElementById('chunkSpeedMeta');
+    const etaMeta = document.getElementById('chunkEtaMeta');
     const partMeta = document.getElementById('chunkPartMeta');
 
     progressWrap.style.display = 'block';
     progressWrap.dataset.completed = '';
     btn.disabled = true;
     if (btnCancel) btnCancel.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري رفع الفيديو بالأجزاء...") }}';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري فحص وتجهيز الرفع بالجيجاوات...") }}';
+
+    // حماية من إغلاق الصفحة بالخطأ أثناء رفع ملفات الجيجابايت
+    const preventTabClose = (ev) => {
+        ev.preventDefault();
+        ev.returnValue = '{{ __("جاري رفع فيديو ضخم بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟") }}';
+    };
+    window.addEventListener('beforeunload', preventTabClose);
 
     let uploadedPath = null;
     let formattedSize = null;
 
     try {
         const chunkUploadUrl = "{{ route('educational_contents.upload_chunk') }}";
+        const checkStatusUrl = "{{ route('educational_contents.check_chunk_status') }}";
+
+        // فحص الأجزاء التي تم رفعها مسبقاً لاستئناف الرفع فوراً (Resumable Upload)
+        let alreadyUploaded = new Set();
+        try {
+            const statusRes = await axios.post(checkStatusUrl, {
+                file_id: fileId,
+                total_chunks: totalChunks,
+                _token: '{{ csrf_token() }}'
+            });
+            if (statusRes.data && statusRes.data.uploaded_chunks && statusRes.data.uploaded_chunks.length > 0) {
+                alreadyUploaded = new Set(statusRes.data.uploaded_chunks);
+                if (alreadyUploaded.size > 0 && alreadyUploaded.size < totalChunks) {
+                    progressStatus.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> {{ __("تم العثور على أجزاء مرفوعة سابقاً (${alreadyUploaded.size} جزء)! جاري استئناف الرفع فوراً ⚡") }}`;
+                }
+            }
+        } catch (e) {
+            console.warn('Check chunk status skipped:', e);
+        }
+
+        // متغيرات تتبع السرعة ومعدل النقل والوقت المتبقي
+        const startTime = Date.now();
+        let bytesUploadedThisSession = 0;
+
+        // دالة الرفع المرنة مع 5 محاولات تلقائية عند انقطاع الإنترنت أو تذبذب الشبكة
+        async function uploadChunkWithRetry(formData, chunkIdx, maxRetries = 5) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    return await axios.post(chunkUploadUrl, formData, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'multipart/form-data',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        timeout: 120000 // مهلة دقيقتين لكل جزء
+                    });
+                } catch (err) {
+                    if (attempt === maxRetries) throw err;
+                    const delay = attempt * 2000;
+                    progressStatus.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> {{ __("تذبذب في الشبكة بالجزء") }} ${chunkIdx + 1}. {{ __("إعادة المحاولة تلقائياً") }} (${attempt}/${maxRetries})...`;
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
+        }
 
         for (let i = 0; i < totalChunks; i++) {
             const start = i * CHUNK_SIZE;
             const end = Math.min(file.size, start + CHUNK_SIZE);
-            const chunkBlob = file.slice(start, end);
+            const chunkLength = end - start;
 
+            // إذا كان هذا الجزء مرفوعاً مسبقاً على السيرفر، نتخطاه فوراً لتوفير الوقت والبيانات
+            if (alreadyUploaded.has(i) && (i < totalChunks - 1)) {
+                const currentPct = Math.round(((i + 1) / totalChunks) * 100);
+                progressBar.style.width = currentPct + '%';
+                progressPct.textContent = currentPct + '%';
+                fileMeta.textContent = `${formatBytes(end)} / ${formatBytes(file.size)}`;
+                partMeta.textContent = `{{ __("الجزء") }} ${i + 1} {{ __("من") }} ${totalChunks} ({{ __("مستأنف") }})`;
+                continue;
+            }
+
+            const chunkBlob = file.slice(start, end);
             const chunkFormData = new FormData();
             chunkFormData.append('file_id', fileId);
             chunkFormData.append('chunk_index', i);
@@ -1216,19 +1308,22 @@ async function submitVideoForm(e) {
             chunkFormData.append('chunk', chunkBlob, 'part_' + i);
             chunkFormData.append('_token', '{{ csrf_token() }}');
 
-            const chunkRes = await axios.post(chunkUploadUrl, chunkFormData, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'multipart/form-data',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            });
+            const chunkRes = await uploadChunkWithRetry(chunkFormData, i);
+            bytesUploadedThisSession += chunkLength;
+
+            // حساب السرعة والوقت المتبقي بدقة
+            const elapsedSec = (Date.now() - startTime) / 1000;
+            const speedBps = elapsedSec > 0 ? (bytesUploadedThisSession / elapsedSec) : 0;
+            const remainingBytes = file.size - end;
+            const etaSec = speedBps > 0 ? Math.round(remainingBytes / speedBps) : 0;
 
             const currentPct = Math.round(((i + 1) / totalChunks) * 100);
             progressBar.style.width = currentPct + '%';
             progressPct.textContent = currentPct + '%';
-            progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> {{ __("جاري رفع ومعالجة الفيديو:") }} ${currentPct}%`;
+            progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> {{ __("جاري رفع ومعالجة الفيديو الضخم:") }} ${currentPct}%`;
             fileMeta.textContent = `${formatBytes(end)} / ${formatBytes(file.size)}`;
+            if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${formatUploadSpeed(speedBps)}`;
+            if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ${formatEtaTime(etaSec)}`;
             partMeta.textContent = `{{ __("الجزء") }} ${i + 1} {{ __("من") }} ${totalChunks}`;
 
             if (chunkRes.data && chunkRes.data.done) {
@@ -1242,7 +1337,8 @@ async function submitVideoForm(e) {
         }
 
         // إرسال بيانات الدرس النهائية وحفظه بالمنصة
-        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل الرفع بنجاح! جاري نشر وتثبيت الدرس للطلبة...") }}';
+        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل دمج وحفظ الفيديو بالجيجاوات بنجاح! جاري النشر...") }}';
+        if (etaMeta) etaMeta.innerHTML = '<i class="fa-solid fa-check"></i> {{ __("مكتمل") }}';
 
         const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
         const contentFormData = new FormData(form);
@@ -1260,20 +1356,21 @@ async function submitVideoForm(e) {
             }
         });
 
+        window.removeEventListener('beforeunload', preventTabClose);
         progressWrap.dataset.completed = '1';
         Swal.fire({
             icon: 'success',
             title: saveRes.data.title || '{{ __("تم رفع ونشر درس الفيديو بنجاح 🎉") }}',
-            text: '{{ __("أصبح الفيديو متاحاً لجميع الطلبة ومفعلاً للتحميل والمشاهدة أوفلاين بدون نت!") }}',
+            text: '{{ __("أصبح الفيديو متاحاً لجميع الطلبة ومفعلاً للبث والمشاهدة والتحميل أوفلاين!") }}',
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#1e3a8a'
         }).then(() => location.reload());
 
     } catch (err) {
+        window.removeEventListener('beforeunload', preventTabClose);
         btn.disabled = false;
         if (btnCancel) btnCancel.disabled = false;
         btn.innerHTML = originalText;
-        progressWrap.style.display = 'none';
 
         let msg = '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
         if (err.response && err.response.data) {
@@ -1290,10 +1387,11 @@ async function submitVideoForm(e) {
             msg = err.message;
         }
 
+        progressStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> ${msg}`;
         Swal.fire({
             icon: 'error',
             title: '{{ __("خطأ في رفع الفيديو") }}',
-            html: msg,
+            html: msg + '<br><small style="color: #64748b; display: block; margin-top: 8px;">{{ __("ملاحظة: يمكنك إعادة الضغط على زر الرفع وسيتم استئناف الأجزاء المتبقية تلقائياً دون إعادة رفع الأجزاء السابقة.") }}</small>',
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#ef4444'
         });
