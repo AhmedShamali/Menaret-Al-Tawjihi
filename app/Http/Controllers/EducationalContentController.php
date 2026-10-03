@@ -76,6 +76,35 @@ class EducationalContentController extends Controller
         return view('educational_contents.index', compact('contents'));
     }
 
+    /**
+     * مطابقة معرفات المواد في الفروع المحددة بناءً على المادة الأساسية المختارة
+     */
+    public static function resolveMatchingSubjectIds(array $stageIds, int $primarySubjectId): array
+    {
+        $primarySubject = Subject::find($primarySubjectId);
+        if (!$primarySubject || empty($stageIds)) {
+            return $primarySubject ? [$primarySubject->id] : [];
+        }
+
+        $cleanName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $primarySubject->name_ar ?? $primarySubject->name ?? ''));
+        $baseKey = !empty($primarySubject->subject_key) ? explode('_', $primarySubject->subject_key)[0] : '';
+
+        $matchingIds = Subject::whereIn('stage_id', $stageIds)
+            ->where(function($q) use ($cleanName, $baseKey, $primarySubject) {
+                if (!empty($cleanName)) {
+                    $q->where('name_ar', 'like', "%{$cleanName}%");
+                }
+                if (!empty($baseKey)) {
+                    $q->orWhere('subject_key', 'like', "{$baseKey}_%");
+                }
+                $q->orWhere('id', $primarySubject->id);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        return array_values(array_unique(array_merge([$primarySubject->id], $matchingIds)));
+    }
+
     public function create($subject_id = null)
     {
         $user = auth()->user();
@@ -94,12 +123,16 @@ class EducationalContentController extends Controller
             })->with(['subjects' => function($q) use ($teacherSubjectIds) {
                 $q->whereIn('id', $teacherSubjectIds);
             }])->get();
+            $subjects = !empty($teacherSubjectIds)
+                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                : collect();
         } else {
             $mySubject = $subject_id ? Subject::find($subject_id) : ($user->subject ?? null);
-            $stages = Stage::with('subjects')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
+            $subjects = Subject::with('stage')->orderBy('name_ar')->get();
         }
 
-        return view('educational_contents.create', compact('mySubject', 'stages'));
+        return view('educational_contents.create', compact('mySubject', 'stages', 'subjects'));
     }
 
     /**
@@ -293,7 +326,9 @@ class EducationalContentController extends Controller
         }
 
         $validator = validator($request->all(), [
-            'subject_id'          => 'required',
+            'subject_id'          => 'nullable',
+            'subject_ids'         => 'nullable',
+            'stage_ids'           => 'nullable',
             'title'               => 'required|string|min:3',
             'order'               => 'required|numeric',
             'video_url'           => 'nullable|url',
@@ -305,7 +340,6 @@ class EducationalContentController extends Controller
             'target_region'       => 'nullable|string|in:all,gaza,west_bank',
         ], [
             'title.required'      => 'يرجى إدخال عنوان الدرس أو المحتوى التعليمي.',
-            'subject_id.required' => 'يرجى تحديد المادة الدراسية.',
             'video_file.max'      => 'الحد الأقصى لحجم الفيديو هو 10 جيجابايت.',
         ]);
 
@@ -317,12 +351,49 @@ class EducationalContentController extends Controller
         }
 
         $user = auth()->user();
-        if ($user && $user->role === 'teacher') {
-            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-            if (!in_array((int)$request->subject_id, $teacherSubjectIds)) {
+        $isTeacher = ($user && $user->role === 'teacher');
+        $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
+
+        // استخراج معرفات المواد المستهدفة (دعم تعدد الفروع والمواد في وقت واحد)
+        $targetSubjectIds = [];
+
+        // 1. إذا تم إرسال مصفوفة مواد محددة
+        if ($request->filled('subject_ids')) {
+            $raw = $request->input('subject_ids');
+            if (is_array($raw)) {
+                $targetSubjectIds = array_map('intval', array_filter($raw));
+            } elseif (is_string($raw)) {
+                $targetSubjectIds = array_map('intval', array_filter(explode(',', $raw)));
+            }
+        }
+
+        // 2. إذا تم تحديد فروع ومادة أساسية، نقوم بمطابقة المادة في كافة الفروع المختارة تلقائياً
+        if ($request->filled('stage_ids') && $request->filled('subject_id')) {
+            $stgIds = array_map('intval', array_filter((array)$request->input('stage_ids')));
+            if (!empty($stgIds)) {
+                $matched = self::resolveMatchingSubjectIds($stgIds, (int)$request->subject_id);
+                $targetSubjectIds = array_values(array_unique(array_merge($targetSubjectIds, $matched)));
+            }
+        }
+
+        // 3. الحالة الافتراضية التقليدية: مادة واحدة
+        if (empty($targetSubjectIds) && $request->filled('subject_id')) {
+            $targetSubjectIds = [(int)$request->subject_id];
+        }
+
+        if (empty($targetSubjectIds)) {
+            return response()->json([
+                'icon'  => 'error',
+                'title' => 'يرجى تحديد المادة الدراسية أو الفروع المستهدفة لنشر المحتوى.'
+            ], 422);
+        }
+
+        if ($isTeacher) {
+            $targetSubjectIds = array_values(array_intersect($targetSubjectIds, $teacherSubjectIds));
+            if (empty($targetSubjectIds)) {
                 return response()->json([
                     'icon'  => 'error',
-                    'title' => 'غير مصرح لك بنشر محتوى لهذه المادة الدراسية.'
+                    'title' => 'غير مصرح لك بنشر محتوى لهذه المادة الدراسية أو الفروع المختارة.'
                 ], 403);
             }
         }
@@ -332,78 +403,60 @@ class EducationalContentController extends Controller
             $targetRegion = 'all';
         }
 
-        $content = new EducationalContent();
-        $content->subject_id    = $request->subject_id;
-        $content->title         = $request->title;
-        $content->channel_name  = $request->channel_name ?? 'Step by Step';
-        $content->file_size     = $request->file_size ?? 'غير محدد';
-        $content->order         = $request->order;
-        $content->is_visible    = true;
-
-        try {
-            if (\Illuminate\Support\Facades\Schema::hasTable('educational_contents')) {
-                if (!\Illuminate\Support\Facades\Schema::hasColumn('educational_contents', 'target_region')) {
-                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE educational_contents ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
-                }
-                $content->target_region = $targetRegion;
-            }
-        } catch (\Throwable $th) {
-            $content->target_region = $targetRegion;
-        }
+        $urlPath = null;
+        $pdfPath = null;
+        $fileSize = $request->file_size ?? 'غير محدد';
 
         // معالجة ملف الفيديو المرفوع مسبقاً بنظام الأجزاء (Chunked Upload)
         if ($request->filled('uploaded_video_path')) {
-            $content->url_path = $request->uploaded_video_path;
+            $urlPath = $request->uploaded_video_path;
             if ($request->filled('formatted_size')) {
-                $content->file_size = $request->formatted_size;
+                $fileSize = $request->formatted_size;
             }
         }
         // معالجة ملف الفيديو المباشر المرفوع على المنصة بالصيغة التقليدية
         elseif ($request->hasFile('video_file') && $request->file('video_file')->isValid()) {
             $uploadedVideo = $request->file('video_file');
             $sizeMb = round($uploadedVideo->getSize() / (1024 * 1024), 1);
-            $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
+            $fileSize = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
             
             if (app()->environment('testing') || empty(config('filesystems.disks.supabase.key'))) {
-                $path = $uploadedVideo->store('educational/videos', 'public');
-                $content->url_path = $path;
+                $urlPath = $uploadedVideo->store('educational/videos', 'public');
             } else {
                 try {
                     $path = $uploadedVideo->store('educational/videos', 'supabase');
-                    $content->url_path = Storage::disk('supabase')->url($path);
+                    $urlPath = Storage::disk('supabase')->url($path);
                 } catch (\Throwable $e) {
-                    $path = $uploadedVideo->store('educational/videos', 'public');
-                    $content->url_path = $path;
+                    $urlPath = $uploadedVideo->store('educational/videos', 'public');
                 }
             }
         } elseif ($request->filled('video_url')) {
-            $dummy = new EducationalContent(['url_path' => $request->video_url]);
-            $content->url_path = $request->video_url;
+            $urlPath = $request->video_url;
         }
 
         // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي والتوافقية مع بيئة الاختبار ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $uploaded = $request->file('file_upload_pdf');
             $sizeKb = round($uploaded->getSize() / 1024);
-            $content->file_size = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
+            $fileSize = $sizeKb > 1024 ? round($sizeKb / 1024, 1) . ' MB' : $sizeKb . ' KB';
 
             if (app()->environment('testing') || empty(config('filesystems.disks.supabase.key'))) {
                 $path = $uploaded->store('educational/files', 'public');
-                $content->pdf_path = asset('storage/' . $path);
+                $pdfPath = asset('storage/' . $path);
             } else {
                 try {
                     $path = $uploaded->store('educational/files', 'supabase');
-                    $content->pdf_path = Storage::disk('supabase')->url($path);
+                    $pdfPath = Storage::disk('supabase')->url($path);
                 } catch (\Throwable $e) {
                     $path = $uploaded->store('educational/files', 'public');
-                    $content->pdf_path = asset('storage/' . $path);
+                    $pdfPath = asset('storage/' . $path);
                 }
             }
         } elseif ($request->filled('pdf_url')) {
-            $content->pdf_path = $request->pdf_url;
+            $pdfPath = $request->pdf_url;
         }
 
-        if (empty($content->url_path) && empty($content->pdf_path)) {
+        if (empty($urlPath) && empty($pdfPath)) {
             return response()->json([
                 'icon'  => 'error',
                 'title' => 'يرجى رفع ملف الفيديو أو إرفاق ملف دراسي واحد على الأقل!'
@@ -412,98 +465,109 @@ class EducationalContentController extends Controller
 
         // تحديد نوع المحتوى تلقائياً وبدقة
         if ($request->filled('type')) {
-            $content->type = $request->type;
+            $contentType = $request->type;
         } else {
-            if (!empty($content->url_path) && !empty($content->pdf_path)) {
-                $content->type = 'both';
-            } elseif (!empty($content->pdf_path)) {
-                $content->type = 'file';
+            if (!empty($urlPath) && !empty($pdfPath)) {
+                $contentType = 'both';
+            } elseif (!empty($pdfPath)) {
+                $contentType = 'file';
             } else {
-                $content->type = 'video';
+                $contentType = 'video';
             }
         }
 
-        if (auth()->check()) {
-            $subject = Subject::find($request->subject_id);
-            if ($subject && is_null($subject->user_id)) {
+        $savedContents = [];
+
+        foreach ($targetSubjectIds as $subId) {
+            $subject = Subject::find($subId);
+            if (!$subject) continue;
+
+            if (auth()->check() && is_null($subject->user_id)) {
                 $subject->user_id = auth()->id();
                 $subject->save();
             }
+
+            $content = new EducationalContent();
+            $content->subject_id   = $subId;
+            $content->title        = $request->title;
+            $content->type         = $contentType;
+            $content->file_size    = $fileSize;
+            $content->order        = $request->order ?? 1;
+            $content->is_visible   = true;
+            $content->target_region = $targetRegion;
+            $content->url_path     = $urlPath;
+            $content->pdf_path     = $pdfPath;
+
+            // تحديد اسم مقدم الشرح أو القناة تلقائياً
+            if ($request->filled('channel_name')) {
+                $content->channel_name = $request->channel_name;
+            } elseif (!empty($subject->teacher_name)) {
+                $content->channel_name = $subject->teacher_name;
+            } elseif ($subject->teacher && !empty($subject->teacher->name)) {
+                $content->channel_name = $subject->teacher->name_ar ?? $subject->teacher->name;
+            } else {
+                $content->channel_name = $user ? ($user->name_ar ?? $user->name) : 'إدارة المنصة';
+            }
+
+            // حفظ المحتوى مع حماية التوافقية
+            try {
+                $content->save();
+                $savedContents[] = $content;
+            } catch (\Illuminate\Database\QueryException $e) {
+                $err = strtolower($e->getMessage());
+                if (str_contains($err, 'target_region')) {
+                    try {
+                        \Illuminate\Support\Facades\DB::statement("ALTER TABLE educational_contents ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
+                        $content->target_region = $targetRegion;
+                        $content->save();
+                        $savedContents[] = $content;
+                    } catch (\Throwable $th) {
+                        unset($content->target_region);
+                        $content->save();
+                        $savedContents[] = $content;
+                    }
+                } elseif (str_contains($err, 'url_path') && (str_contains($err, 'not null') || str_contains($err, 'violates not-null'))) {
+                    $content->url_path = '';
+                    $content->save();
+                    $savedContents[] = $content;
+                } else {
+                    \Log::error("EducationalContent multi-save query error: " . $e->getMessage());
+                }
+            } catch (\Throwable $e) {
+                \Log::error("EducationalContent multi-save error: " . $e->getMessage());
+            }
+
+            // إرسال إشعارات لطلبة المرحلة
+            if ($subject->stage_id) {
+                try {
+                    \App\Services\NotificationService::notifyStageStudents(
+                        $subject->stage_id,
+                        'درس ومصدر تعليمي جديد 📚',
+                        "أُضيف درس جديد: \"{$content->title}\" في مبحث {$subject->name_ar}.",
+                        'content',
+                        route('student.subjects.show', $subject->id),
+                        'fa-video'
+                    );
+                } catch (\Throwable $e) {}
+            }
         }
 
-        // حفظ المحتوى مع حماية تلقائية وشاملة ضد قيود وتوافقية قواعد البيانات القديمة
-        try {
-            $content->save();
-        } catch (\Illuminate\Database\QueryException $e) {
-            $err = strtolower($e->getMessage());
-
-            // 1. معالجة غياب عمود target_region في قواعد البيانات التي لم تكتمل فيها الهجرة بعد
-            if (str_contains($err, 'target_region') || (str_contains($err, 'undefined column') && str_contains($err, 'target_region'))) {
-                try {
-                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE educational_contents ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
-                    $content->target_region = $targetRegion;
-                    $content->save();
-                    goto contentSavedSuccessfully;
-                } catch (\Throwable $th) {
-                    unset($content->target_region);
-                    $content->save();
-                    goto contentSavedSuccessfully;
-                }
-            }
-
-            // 2. معالجة قيد not-null القديم على url_path
-            if (str_contains($err, 'url_path') && (str_contains($err, 'not null') || str_contains($err, 'violates not-null'))) {
-                $content->url_path = '';
-                $content->save();
-                goto contentSavedSuccessfully;
-            }
-
-            // 3. معالجة قيود check constraint القديمة
-            if (str_contains($err, 'check constraint') || $e->getCode() == '23514') {
-                $content->type = !empty($content->url_path) ? 'video' : 'file';
-                $content->save();
-                goto contentSavedSuccessfully;
-            }
-
-            // 4. محاولة إنقاذ أخيرة وحفظ أساسي لضمان عدم ضياع الفيديو المرفوع
-            try {
-                unset($content->target_region);
-                $content->save();
-                goto contentSavedSuccessfully;
-            } catch (\Throwable $thFinal) {
-                \Log::error('EducationalContent save query exception: ' . $e->getMessage());
-                return response()->json([
-                    'icon'  => 'error',
-                    'title' => 'تعذر حفظ المحتوى التعليمي: ' . $e->getMessage()
-                ], 500);
-            }
-        } catch (\Throwable $e) {
-            \Log::error('EducationalContent save exception: ' . $e->getMessage());
+        if (empty($savedContents)) {
             return response()->json([
                 'icon'  => 'error',
-                'title' => 'حدث خطأ أثناء معالجة المحتوى التعليمي: ' . $e->getMessage()
+                'title' => 'تعذر حفظ المحتوى التعليمي، يرجى المحاولة مرة أخرى.'
             ], 500);
         }
 
-        contentSavedSuccessfully:
-
-        try {
-            $subject = \App\Models\Subject::find($content->subject_id);
-            if ($subject && $subject->stage_id) {
-                \App\Services\NotificationService::notifyStageStudents(
-                    $subject->stage_id,
-                    'درس ومصدر تعليمي جديد 📚',
-                    "أُضيف درس جديد: \"{$content->title}\" في مبحث {$subject->name_ar}.",
-                    'content',
-                    route('student.subjects.show', $subject->id),
-                    'fa-video'
-                );
-            }
-        } catch (\Throwable $e) {}
+        $count = count($savedContents);
+        $successMsg = $count > 1 
+            ? "تم حفظ ونشر المحتوى بنجاح في {$count} فروع ومواد بالتوازي 🎉"
+            : 'تم حفظ ونشر المحتوى بنجاح 🎉';
 
         return response()->json([
             'icon'  => 'success',
-            'title' => 'تم حفظ الدرس والمرفقات بنجاح 🎉'
+            'title' => $successMsg,
+            'count' => $count
         ], 200);
     }
 
@@ -692,31 +756,43 @@ class EducationalContentController extends Controller
                 }
             }
             if ($content->pdf_path) {
-                try {
-                    if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {
-                        $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
-                        if (Storage::disk('supabase')->exists($parsedPath)) {
-                            Storage::disk('supabase')->delete($parsedPath);
-                        }
-                    }
-                } catch (\Throwable $e) {}
+                $otherPdfUses = EducationalContent::where('id', '!=', $content->id)
+                    ->where('pdf_path', $content->pdf_path)
+                    ->exists();
 
-                if (str_contains($content->pdf_path, 'storage/educational/files/')) {
-                    $localRel = 'educational/files/' . basename($content->pdf_path);
+                if (!$otherPdfUses) {
                     try {
-                        if (Storage::disk('public')->exists($localRel)) {
-                            Storage::disk('public')->delete($localRel);
+                        if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {
+                            $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                            if (Storage::disk('supabase')->exists($parsedPath)) {
+                                Storage::disk('supabase')->delete($parsedPath);
+                            }
                         }
                     } catch (\Throwable $e) {}
+
+                    if (str_contains($content->pdf_path, 'storage/educational/files/')) {
+                        $localRel = 'educational/files/' . basename($content->pdf_path);
+                        try {
+                            if (Storage::disk('public')->exists($localRel)) {
+                                Storage::disk('public')->delete($localRel);
+                            }
+                        } catch (\Throwable $e) {}
+                    }
                 }
             }
 
             if ($content->url_path && str_starts_with($content->url_path, 'educational/videos/')) {
-                try {
-                    if (Storage::disk('public')->exists($content->url_path)) {
-                        Storage::disk('public')->delete($content->url_path);
-                    }
-                } catch (\Throwable $e) {}
+                $otherVideoUses = EducationalContent::where('id', '!=', $content->id)
+                    ->where('url_path', $content->url_path)
+                    ->exists();
+
+                if (!$otherVideoUses) {
+                    try {
+                        if (Storage::disk('public')->exists($content->url_path)) {
+                            Storage::disk('public')->delete($content->url_path);
+                        }
+                    } catch (\Throwable $e) {}
+                }
             }
 
             $deleted = $content->delete();
@@ -989,6 +1065,9 @@ class EducationalContentController extends Controller
     /**
      * واجهة رفع وإدارة الفيديوهات للمعلم
      */
+    /**
+     * واجهة رفع وإدارة الفيديوهات للمعلم والمدير
+     */
     public function teacherVideos(Request $request)
     {
         $user = auth()->user();
@@ -997,10 +1076,16 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
-                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
                 : collect();
+            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            }])->orderBy('grade_level')->get();
         } else {
-            $subjects = Subject::orderBy('name_ar')->get();
+            $subjects = Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         }
 
         $query = EducationalContent::with('subject.stage')
@@ -1023,6 +1108,12 @@ class EducationalContentController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        if ($request->filled('stage_id')) {
+            $query->whereHas('subject', function($q) use ($request) {
+                $q->where('stage_id', (int)$request->stage_id);
+            });
+        }
+
         if ($request->filled('target_region') && in_array($request->target_region, ['all', 'gaza', 'west_bank'])) {
             $query->where('target_region', $request->target_region);
         }
@@ -1036,11 +1127,11 @@ class EducationalContentController extends Controller
         $videos = $query->orderBy('order')->latest()->paginate(20);
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
-        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats'));
+        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats', 'stages'));
     }
 
     /**
-     * واجهة رفع وإدارة الملفات والملازم للمعلم
+     * واجهة رفع وإدارة الملفات والملازم للمعلم والمدير
      */
     public function teacherFiles(Request $request)
     {
@@ -1050,10 +1141,16 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
-                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
                 : collect();
+            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            }])->orderBy('grade_level')->get();
         } else {
-            $subjects = Subject::orderBy('name_ar')->get();
+            $subjects = Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         }
 
         $query = EducationalContent::with('subject.stage')
@@ -1076,6 +1173,12 @@ class EducationalContentController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        if ($request->filled('stage_id')) {
+            $query->whereHas('subject', function($q) use ($request) {
+                $q->where('stage_id', (int)$request->stage_id);
+            });
+        }
+
         if ($request->filled('target_region') && in_array($request->target_region, ['all', 'gaza', 'west_bank'])) {
             $query->where('target_region', $request->target_region);
         }
@@ -1089,7 +1192,7 @@ class EducationalContentController extends Controller
         $files = $query->orderBy('order')->latest()->paginate(20);
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
-        return view('teacher.files.index', compact('files', 'subjects', 'subjectId', 'stats'));
+        return view('teacher.files.index', compact('files', 'subjects', 'subjectId', 'stats', 'stages'));
     }
 
     /**
@@ -1103,10 +1206,16 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
-                ? Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+                ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
                 : collect();
+            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            }])->orderBy('grade_level')->get();
         } else {
-            $subjects = Subject::orderBy('name_ar')->get();
+            $subjects = Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         }
 
         $query = EducationalContent::with('subject.stage');
@@ -1125,10 +1234,16 @@ class EducationalContentController extends Controller
             $query->where('subject_id', $request->subject_id);
         }
 
+        if ($request->filled('stage_id')) {
+            $query->whereHas('subject', function($q) use ($request) {
+                $q->where('stage_id', (int)$request->stage_id);
+            });
+        }
+
         $contents = $query->orderBy('order')->latest()->paginate(25);
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
-        return view('teacher.visibility.index', compact('contents', 'subjects', 'subjectId'));
+        return view('teacher.visibility.index', compact('contents', 'subjects', 'subjectId', 'stages'));
     }
 
     /**

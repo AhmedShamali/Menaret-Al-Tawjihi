@@ -9,7 +9,11 @@
     <header class="ed-teacher-header">
         <div>
             <div class="ed-teacher-breadcrumbs">
-                <a href="{{ route('teacher.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('Teacher Portal') }}</a>
+                @if(auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('لوحة الإدارة') }}</a>
+                @else
+                    <a href="{{ route('teacher.dashboard') }}" style="color: inherit; text-decoration: none;">{{ __('Teacher Portal') }}</a>
+                @endif
                 <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}" style="font-size: 0.7rem;"></i>
                 <span class="active">{{ __('Content Visibility') }}</span>
             </div>
@@ -26,6 +30,49 @@
             <span>{{ __('Live instant update without page refresh') }}</span>
         </div>
     </header>
+
+    <!-- شريط تصفية الفروع والمواد الكلاسيكي الأنيق -->
+    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <form method="GET" action="{{ auth()->user()->role === 'admin' ? route('admin.visibility') : route('teacher.visibility') }}" style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;">
+            @if(isset($stages) && $stages->count() > 0)
+                <div style="flex: 1; min-width: 220px;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                        <i class="fa-solid fa-code-branch" style="color: #64748b;"></i> {{ __('الفرع الأكاديمي:') }}
+                    </label>
+                    <select name="stage_id" onchange="this.form.submit()" style="width: 100%; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; color: #1e293b; background: #f8fafc;">
+                        <option value="">-- {{ __('كافة الفروع والمراحل') }} --</option>
+                        @foreach($stages as $stg)
+                            <option value="{{ $stg->id }}" {{ request('stage_id') == $stg->id ? 'selected' : '' }}>
+                                {{ $stg->label_ar }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
+            <div style="flex: 1; min-width: 220px;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
+                    <i class="fa-solid fa-book" style="color: #64748b;"></i> {{ __('المادة الدراسية:') }}
+                </label>
+                <select name="subject_id" onchange="this.form.submit()" style="width: 100%; padding: 9px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; color: #1e293b; background: #f8fafc;">
+                    <option value="">-- {{ __('كافة المواد الدراسية') }} --</option>
+                    @foreach($subjects as $sub)
+                        <option value="{{ $sub->id }}" {{ (request('subject_id') == $sub->id || (empty(request('subject_id')) && $subjectId == $sub->id && count($subjects) == 1)) ? 'selected' : '' }}>
+                            {{ $sub->name_ar }} {{ $sub->stage ? '(' . $sub->stage->label_ar . ')' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            @if(request()->filled('stage_id') || request()->filled('subject_id'))
+                <div>
+                    <a href="{{ auth()->user()->role === 'admin' ? route('admin.visibility') : route('teacher.visibility') }}" style="display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border: 1px solid #e2e8f0; background: #f1f5f9; color: #475569; border-radius: 8px; text-decoration: none; font-size: 0.88rem; font-weight: 700;">
+                        <i class="fa-solid fa-xmark"></i> {{ __('إلغاء الفلترة') }}
+                    </a>
+                </div>
+            @endif
+        </form>
+    </div>
 
     <!-- جدول المحتويات وحالة الظهور -->
     <div class="ed-card-table-wrap">
@@ -328,7 +375,8 @@ async function toggleVisibilityAjax(id, btn) {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
     try {
-        const res = await axios.post(`{{ url('teacher/visibility/toggle') }}/${id}`, {
+        const toggleBaseUrl = "{{ auth()->user()->role === 'admin' ? url('admin/visibility/toggle') : url('teacher/visibility/toggle') }}";
+        const res = await axios.post(`${toggleBaseUrl}/${id}`, {
             _token: '{{ csrf_token() }}'
         });
 

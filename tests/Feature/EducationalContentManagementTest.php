@@ -192,6 +192,24 @@ class EducationalContentManagementTest extends TestCase
         $this->assertEquals(1, $content->fresh()->is_visible);
     }
 
+    public function test_admin_can_toggle_content_visibility()
+    {
+        $content = EducationalContent::create([
+            'subject_id' => $this->subject->id,
+            'title'      => 'درس محجوب أو متاح من الأدمن',
+            'type'       => 'video',
+            'url_path'   => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'order'      => 1,
+            'is_visible' => 1,
+        ]);
+
+        $response = $this->actingAs($this->admin)->postJson(route('admin.visibility.toggle', $content->id));
+
+        $response->assertStatus(200);
+        $response->assertJson(['success' => true, 'is_visible' => 0]);
+        $this->assertEquals(0, $content->fresh()->is_visible);
+    }
+
     public function test_download_file_returns_correct_response_for_stored_pdf()
     {
         Storage::fake('public');
@@ -321,20 +339,158 @@ class EducationalContentManagementTest extends TestCase
         $response->assertDontSee('درس محجوب سري جدا');
     }
 
-    public function test_admin_sidebar_does_not_contain_teacher_content_links()
+    public function test_admin_sidebar_contains_educational_content_management_links()
     {
         $response = $this->actingAs($this->admin, 'web')->get(route('admin.dashboard'));
         $response->assertStatus(200);
 
-        // Teacher specific curriculum links removed from admin sidebar
+        // Admin now has direct control over educational content as requested
+        $response->assertSee(route('admin.videos'));
+        $response->assertSee(route('admin.files'));
+        $response->assertSee(route('admin.visibility'));
+
+        // Teacher specific exams links are not shown to admin
         $response->assertDontSee(route('admin.exams.index'));
         $response->assertDontSee(route('admin.submissions.index'));
-        $response->assertDontSee(route('admin.educational_contents.index'));
-        $response->assertDontSee(route('admin.videos'));
-        $response->assertDontSee(route('admin.files'));
 
         // Subject pricing belongs under subscriptions
         $response->assertSee(route('admin.subjects.pricing'));
+    }
+
+    public function test_admin_can_upload_content_to_multiple_branches_simultaneously()
+    {
+        // 1. Setup two branches (e.g. Scientific and Literary) with matching subject (e.g. Arabic)
+        $stageScientific = $this->stage; // Scientific
+        $stageLiterary = Stage::create([
+            'grade_level' => 121,
+            'label_ar'    => 'الثانوية العامة - الفرع الأدبي',
+            'icon'        => '📖',
+        ]);
+
+        $subjectScientificArabic = Subject::create([
+            'stage_id'    => $stageScientific->id,
+            'name_ar'     => 'اللغة العربية (علمي)',
+            'subject_key' => 'arabic_sci',
+            'price_ils'   => 100,
+        ]);
+
+        $subjectLiteraryArabic = Subject::create([
+            'stage_id'    => $stageLiterary->id,
+            'name_ar'     => 'اللغة العربية (أدبي)',
+            'subject_key' => 'arabic_lit',
+            'price_ils'   => 100,
+        ]);
+
+        $teacherScientific = User::create([
+            'name'        => 'أستاذ عربي علمي',
+            'email'       => 'teacher_sci@platform.ps',
+            'password'    => bcrypt('password123'),
+            'role'        => 'teacher',
+            'subject_id'  => $subjectScientificArabic->id,
+            'is_approved' => 1,
+        ]);
+
+        $teacherLiterary = User::create([
+            'name'        => 'أستاذ عربي أدبي',
+            'email'       => 'teacher_lit@platform.ps',
+            'password'    => bcrypt('password123'),
+            'role'        => 'teacher',
+            'subject_id'  => $subjectLiteraryArabic->id,
+            'is_approved' => 1,
+        ]);
+
+        $studentSci = \App\Models\Student::create([
+            'name_ar'  => 'طالب علمي تجريبي',
+            'name_en'  => 'Sci Student',
+            'nid'      => '400000001',
+            'email'    => 'sci_student@platform.ps',
+            'password' => bcrypt('password123'),
+            'phone'    => '0599000001',
+            'age'      => 17,
+            'gender'   => 'male',
+            'stage_id' => $stageScientific->id,
+            'status'   => 'active',
+        ]);
+
+        \App\Models\Enrollment::create([
+            'student_id'  => $studentSci->id,
+            'subject_id'  => $subjectScientificArabic->id,
+            'status'      => 'active',
+            'access_mode' => 'all',
+        ]);
+
+        $studentLit = \App\Models\Student::create([
+            'name_ar'  => 'طالب أدبي تجريبي',
+            'name_en'  => 'Lit Student',
+            'nid'      => '400000002',
+            'email'    => 'lit_student@platform.ps',
+            'password' => bcrypt('password123'),
+            'phone'    => '0599000002',
+            'age'      => 17,
+            'gender'   => 'female',
+            'stage_id' => $stageLiterary->id,
+            'status'   => 'active',
+        ]);
+
+        \App\Models\Enrollment::create([
+            'student_id'  => $studentLit->id,
+            'subject_id'  => $subjectLiteraryArabic->id,
+            'status'      => 'active',
+            'access_mode' => 'all',
+        ]);
+
+        // 2. Admin uploads a video selecting both branches
+        $response = $this->actingAs($this->admin)->postJson(route('admin.educational_contents.store'), [
+            'subject_id'   => $subjectScientificArabic->id,
+            'stage_ids'    => [$stageScientific->id, $stageLiterary->id],
+            'title'        => 'قواعد النحو: إعراب المبتدأ والخبر المشترك',
+            'type'         => 'video',
+            'video_url'    => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            'channel_name' => 'إدارة المنصة التعليمية',
+            'order'        => 1,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson(['icon' => 'success']);
+
+        // Assert database has records for both subjects with identical title and url
+        $this->assertDatabaseHas('educational_contents', [
+            'subject_id' => $subjectScientificArabic->id,
+            'title'      => 'قواعد النحو: إعراب المبتدأ والخبر المشترك',
+        ]);
+
+        $this->assertDatabaseHas('educational_contents', [
+            'subject_id' => $subjectLiteraryArabic->id,
+            'title'      => 'قواعد النحو: إعراب المبتدأ والخبر المشترك',
+        ]);
+
+        // 3. Assert Scientific Teacher sees the video in their panel
+        $teacherSciRes = $this->actingAs($teacherScientific)->get(route('teacher.videos'));
+        $teacherSciRes->assertStatus(200);
+        $teacherSciRes->assertSee('قواعد النحو: إعراب المبتدأ والخبر المشترك');
+
+        // 4. Assert Literary Teacher ALSO sees the video in their panel (in parallel)
+        $teacherLitRes = $this->actingAs($teacherLiterary)->get(route('teacher.videos'));
+        $teacherLitRes->assertStatus(200);
+        $teacherLitRes->assertSee('قواعد النحو: إعراب المبتدأ والخبر المشترك');
+
+        // 5. Assert both Scientific & Literary students can see the lecture
+        $studentSciRes = $this->actingAs($studentSci, 'student')->get(route('student.subjects.show', $subjectScientificArabic->id));
+        $studentSciRes->assertStatus(200);
+        $studentSciRes->assertSee('قواعد النحو: إعراب المبتدأ والخبر المشترك');
+
+        $studentLitRes = $this->actingAs($studentLit, 'student')->get(route('student.subjects.show', $subjectLiteraryArabic->id));
+        $studentLitRes->assertStatus(200);
+        $studentLitRes->assertSee('قواعد النحو: إعراب المبتدأ والخبر المشترك');
+
+        // 6. Assert deleting one branch's record does NOT delete the other branch's record
+        $litContent = EducationalContent::where('subject_id', $subjectLiteraryArabic->id)->first();
+        $delRes = $this->actingAs($this->admin)->delete(route('admin.educational_contents.destroy', $litContent->id));
+        $this->assertDatabaseMissing('educational_contents', ['id' => $litContent->id]);
+        $this->assertDatabaseHas('educational_contents', ['subject_id' => $subjectScientificArabic->id]);
+
+        $teacherSciRes2 = $this->actingAs($teacherScientific)->get(route('teacher.videos'));
+        $teacherSciRes2->assertSee('قواعد النحو: إعراب المبتدأ والخبر المشترك');
     }
 
     public function test_teacher_can_upload_direct_video_file()

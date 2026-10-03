@@ -2044,6 +2044,32 @@
                     </div>
                 </a>
 
+                <span class="group-label"><i class="fa-solid fa-photo-film"></i> {{ __('المحتوى الأكاديمي والمحاضرات') }}</span>
+                <a href="{{ route('admin.videos') }}" class="nav-item {{ Request::is('admin/videos*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-video"></i></span>
+                            <span>{{ __('رفع وإدارة الفيديوهات') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('admin.files') }}" class="nav-item {{ Request::is('admin/files*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-rose"><i class="fa-solid fa-file-pdf"></i></span>
+                            <span>{{ __('الملازم والملفات التعليمية') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('admin.visibility') }}" class="nav-item {{ Request::is('admin/visibility*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-amber"><i class="fa-solid fa-sliders"></i></span>
+                            <span>{{ __('التحكم بظهور المحتوى') }}</span>
+                        </div>
+                    </div>
+                </a>
+
                 <span class="group-label"><i class="fa-solid fa-sack-dollar"></i> {{ __('الاشتراكات والمالية') }}</span>
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
                     <div class="nav-link">

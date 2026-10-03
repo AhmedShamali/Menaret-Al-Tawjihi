@@ -27,6 +27,15 @@ class Subject extends Model
     ];
 
     /**
+     * الاسم الأساسي المنظف للمادة بدون الفروع والأقواس
+     */
+    public function getCleanNameAttribute(): string
+    {
+        $name = $this->name_ar ?? $this->name ?? '';
+        return trim(preg_replace('/\s*\(.*?\)\s*/u', '', $name));
+    }
+
+    /**
      * هل يوجد خصم ترويجي ساري للمادة؟
      */
     public function getHasDiscountAttribute(): bool

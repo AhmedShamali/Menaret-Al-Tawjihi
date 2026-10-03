@@ -61,23 +61,80 @@
                         <input type="text" name="title" class="f-input" placeholder="{{ __('مثال: الدرس الثالث - الفيزياء') }}" required>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="f-label">{{ __('المرحلة الدراسية') }}<span class="required">*</span></label>
-                            <select id="stage_select" class="f-input">
-                                <option value="">{{ __('اختر المرحلة...') }}</option>
+                    @if(auth()->user()->role === 'admin')
+                        <!-- خيار تحديد الفروع المتعددة للمدير العام -->
+                        <div class="form-group classic-branch-selector-wrap" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                                <label class="f-label" style="margin: 0; font-weight: 800; color: #1e3a8a; font-size: 0.95rem;">
+                                    <i class="fa-solid fa-code-branch"></i> {{ __('الفروع المستهدفة (يمكنك اختيار أكثر من فرع بنقرة واحدة) *') }}
+                                </label>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" onclick="selectAllCreateBranches(true)" class="btn-classic-util" style="background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; color: #1e293b; cursor: pointer;">{{ __('تحديد كافة الفروع') }}</button>
+                                    <button type="button" onclick="selectAllCreateBranches(false)" class="btn-classic-util" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 700; color: #64748b; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
+                                </div>
+                            </div>
+                            
+                            <div class="classic-branch-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
                                 @foreach($stages as $stage)
-                                    <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
+                                    <label class="classic-branch-label" id="cre_stage_lbl_{{ $stage->id }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; transition: all 0.2s;">
+                                        <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="create-stage-checkbox" onchange="onAdminBranchOrSubjectChange()" checked style="width: 18px; height: 18px; accent-color: #1e40af; cursor: pointer;">
+                                        <span style="font-weight: 700; color: #1e293b; font-size: 0.88rem;">{{ $stage->label_ar }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
+                            </div>
+
+                            <div class="form-group" style="margin-top: 14px; margin-bottom: 0;">
+                                <label class="f-label" style="font-weight: 700; color: #1e3a8a;">
+                                    {{ __('المادة الدراسية المشتركة / المبحث المستهدف *') }}
+                                </label>
+                                <select id="admin_subject_select" class="f-input" required onchange="onAdminBranchOrSubjectChange()">
+                                    <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
+                                    @php
+                                        $uniqueSubjects = collect($subjects)->unique('clean_name');
+                                    @endphp
+                                    @foreach($uniqueSubjects as $uSub)
+                                        <option value="{{ $uSub->id }}" data-clean-name="{{ $uSub->clean_name }}" data-key="{{ $uSub->subject_key }}">
+                                            {{ $uSub->clean_name }}
+                                        </option>
+                                    @endforeach
+                                    <option disabled>────────── مواد تفصيلية ──────────</option>
+                                    @foreach($subjects as $sub)
+                                        <option value="{{ $sub->id }}" data-clean-name="{{ $sub->clean_name }}" data-key="{{ $sub->subject_key }}">
+                                            {{ $sub->name_ar }} ({{ optional($sub->stage)->label_ar ?? 'عام' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- وعاء بطاقات المواد المستهدفة الفعالة بالتوازي -->
+                            <div id="adminPublishedAlert" style="display: none; margin-top: 12px; padding: 12px 14px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 10px;">
+                                <strong style="display: block; color: #065f46; font-size: 0.86rem; margin-bottom: 6px;">
+                                    <i class="fa-solid fa-circle-check"></i> {{ __('سيتم نشر هذا الدرس وتوفيره بالتوازي في الفروع التالية:') }}
+                                </strong>
+                                <div id="adminSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                            </div>
+                            <div id="adminHiddenSubjectIdsWrap"></div>
                         </div>
-                        <div class="form-group">
-                            <label class="f-label">{{ __('المادة الدراسية') }}<span class="required">*</span></label>
-                            <select name="subject_id" id="subject_select" class="f-input" required disabled>
-                                <option value="">{{ __('اختر المرحلة أولاً...') }}</option>
-                            </select>
+                    @else
+                        <!-- للمعلم العادي: اختياره المعتمد لمواده وفروعه -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="f-label">{{ __('المرحلة الدراسية') }}<span class="required">*</span></label>
+                                <select id="stage_select" class="f-input">
+                                    <option value="">{{ __('اختر المرحلة...') }}</option>
+                                    @foreach($stages as $stage)
+                                        <option value="{{ $stage->id }}">{{ $stage->label_ar }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="f-label">{{ __('المادة الدراسية') }}<span class="required">*</span></label>
+                                <select name="subject_id" id="subject_select" class="f-input" required disabled>
+                                    <option value="">{{ __('اختر المرحلة أولاً...') }}</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     <!-- توجيه المحتوى حسب المنطقة التعليمية (غزة / الضفة) -->
                     <div class="form-group" style="margin-top: 8px;">
@@ -224,20 +281,97 @@
 
 <script>
     const stages = @json($stages);
+    const allSubjects = @json($subjects ?? []);
+    const isAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
 
-    document.getElementById('stage_select').addEventListener('change', function() {
-        const subSel = document.getElementById('subject_select');
-        subSel.innerHTML = '<option value="">{{ __('اختر المادة...') }}</option>';
-        const stage = stages.find(s => s.id == this.value);
-        if (stage && stage.subjects && stage.subjects.length > 0) {
-            subSel.disabled = false;
-            stage.subjects.forEach(sub => {
-                subSel.innerHTML += `<option value="${sub.id}">${sub.name_ar}</option>`;
-            });
-        } else {
-            subSel.disabled = true;
+    function selectAllCreateBranches(checked) {
+        document.querySelectorAll('.create-stage-checkbox').forEach(cb => {
+            cb.checked = checked;
+            const lbl = document.getElementById('cre_stage_lbl_' + cb.value);
+            if (lbl) {
+                lbl.style.borderColor = checked ? '#1e40af' : '#cbd5e1';
+                lbl.style.background = checked ? '#eff6ff' : '#ffffff';
+            }
+        });
+        onAdminBranchOrSubjectChange();
+    }
+
+    function onAdminBranchOrSubjectChange() {
+        if (!isAdmin) return;
+        const sel = document.getElementById('admin_subject_select');
+        if (!sel) return;
+        const selectedOpt = sel.options[sel.selectedIndex];
+        const hiddenWrap = document.getElementById('adminHiddenSubjectIdsWrap');
+        const alertBox = document.getElementById('adminPublishedAlert');
+        const listDiv = document.getElementById('adminSelectedSubjectsList');
+
+        hiddenWrap.innerHTML = '';
+        listDiv.innerHTML = '';
+
+        if (!selectedOpt || !selectedOpt.value) {
+            alertBox.style.display = 'none';
+            return;
         }
-    });
+
+        const checkedStages = Array.from(document.querySelectorAll('.create-stage-checkbox:checked')).map(cb => parseInt(cb.value));
+        const cleanName = (selectedOpt.getAttribute('data-clean-name') || '').trim();
+        const primaryId = parseInt(selectedOpt.value);
+
+        // البحث عن المواد المطابقة في كافة الفروع المحددة
+        const matched = allSubjects.filter(sub => {
+            if (!checkedStages.includes(parseInt(sub.stage_id))) return false;
+            if (sub.id === primaryId) return true;
+            if (cleanName && sub.name_ar && sub.name_ar.includes(cleanName)) return true;
+            return false;
+        });
+
+        if (matched.length === 0) {
+            const pSub = allSubjects.find(s => s.id === primaryId);
+            if (pSub) matched.push(pSub);
+        }
+
+        matched.forEach(sub => {
+            hiddenWrap.innerHTML += `<input type="hidden" name="subject_ids[]" value="${sub.id}">`;
+            const stgName = (sub.stage ? sub.stage.label_ar : 'فرع');
+            listDiv.innerHTML += `
+                <span style="display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid #86efac; border-radius: 6px; padding: 4px 10px; font-size: 0.82rem; font-weight: 700; color: #166534; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <i class="fa-solid fa-circle-check text-success"></i> ${sub.name_ar} (${stgName})
+                </span>
+            `;
+        });
+
+        hiddenWrap.innerHTML += `<input type="hidden" name="subject_id" value="${matched[0].id}">`;
+        alertBox.style.display = 'block';
+    }
+
+    const stageSelectEl = document.getElementById('stage_select');
+    if (stageSelectEl) {
+        stageSelectEl.addEventListener('change', function() {
+            const subSel = document.getElementById('subject_select');
+            subSel.innerHTML = '<option value="">{{ __('اختر المادة...') }}</option>';
+            const stage = stages.find(s => s.id == this.value);
+            if (stage && stage.subjects && stage.subjects.length > 0) {
+                subSel.disabled = false;
+                stage.subjects.forEach(sub => {
+                    subSel.innerHTML += `<option value="${sub.id}">${sub.name_ar}</option>`;
+                });
+            } else {
+                subSel.disabled = true;
+            }
+        });
+    }
+
+    if (isAdmin) {
+        document.querySelectorAll('.create-stage-checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const lbl = document.getElementById('cre_stage_lbl_' + this.value);
+                if (lbl) {
+                    lbl.style.borderColor = this.checked ? '#1e40af' : '#cbd5e1';
+                    lbl.style.background = this.checked ? '#eff6ff' : '#ffffff';
+                }
+            });
+        });
+    }
 
     function updateCreateRegionUI(radio) {
         ['cre_card_gaza', 'cre_card_west_bank', 'cre_card_all'].forEach(id => {

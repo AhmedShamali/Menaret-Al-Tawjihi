@@ -65,6 +65,26 @@
         </div>
     </div>
 
+    <!-- شريط تصفية الفروع للمدير العام -->
+    @if(auth()->user()->role === 'admin' && isset($stages) && count($stages) > 1)
+        <div class="ed-filter-bar" style="margin-bottom: 8px;">
+            <div class="filter-label">
+                <i class="fa-solid fa-code-branch"></i>
+                <span>{{ __('تصفية حسب الفرع الدراسي:') }}</span>
+            </div>
+            <div class="filter-pills">
+                <a href="{{ route('admin.videos', request()->except(['stage_id', 'page'])) }}" class="filter-chip {{ empty(request('stage_id')) ? 'active' : '' }}">
+                    {{ __('كافة الفروع 🏫') }}
+                </a>
+                @foreach($stages as $stg)
+                    <a href="{{ route('admin.videos', array_merge(request()->except(['stage_id', 'page']), ['stage_id' => $stg->id])) }}" class="filter-chip {{ request('stage_id') == $stg->id ? 'active' : '' }}">
+                        {{ $stg->label_ar }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
     <!-- شريط التصفية حسب المادة -->
     @if(auth()->user()->role === 'admin' || count($subjects) > 1)
         <div class="ed-filter-bar">
@@ -269,18 +289,75 @@
             <input type="hidden" name="type" value="video">
 
             <div class="modal-form-body">
-                <!-- المادة الدراسية -->
-                <div class="f-group">
-                    <label class="f-label">{{ __('المادة الدراسية والمرحلة *') }}</label>
-                    <select name="subject_id" required class="f-control">
-                        <option value="">{{ __('اختر المادة الدراسية...') }}</option>
-                        @foreach($subjects as $sub)
-                            <option value="{{ $sub->id }}" {{ (isset($subjectId) && $subjectId == $sub->id) ? 'selected' : '' }}>
-                                {{ $sub->name_ar ?? $sub->name }} {{ optional($sub->stage)->label_ar ? ' - (' . optional($sub->stage)->label_ar . ')' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                @if(auth()->user()->role === 'admin' && isset($stages) && count($stages) > 0)
+                    <!-- خانات اختيار الفروع والمادة المشتركة للمدير العام -->
+                    <div class="f-group" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+                            <label class="f-label" style="margin: 0; font-weight: 800; color: #1e3a8a; font-size: 0.92rem;">
+                                <i class="fa-solid fa-code-branch"></i> {{ __('الفروع المستهدفة (يمكنك اختيار أكثر من فرع بنقرة واحدة) *') }}
+                            </label>
+                            <div style="display: flex; gap: 6px;">
+                                <button type="button" onclick="selectAllModalBranches('video', true)" style="background: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #1e293b; cursor: pointer;">{{ __('تحديد كافة الفروع') }}</button>
+                                <button type="button" onclick="selectAllModalBranches('video', false)" style="background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px; font-size: 0.74rem; font-weight: 700; color: #64748b; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+                            @foreach($stages as $stage)
+                                <label id="v_stage_lbl_{{ $stage->id }}" style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                                    <input type="checkbox" name="stage_ids[]" value="{{ $stage->id }}" class="video-modal-stage-check" onchange="onVideoModalSelectionChange()" checked style="width: 17px; height: 17px; accent-color: #1e40af; cursor: pointer;">
+                                    <span style="font-weight: 700; color: #1e293b; font-size: 0.84rem;">{{ $stage->label_ar }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+
+                        <!-- المادة المشتركة المختارة -->
+                        <div style="margin-top: 12px;">
+                            <label class="f-label" style="font-weight: 700; color: #1e3a8a; font-size: 0.88rem; margin-bottom: 4px;">
+                                {{ __('المادة الدراسية المشتركة / المبحث *') }}
+                            </label>
+                            <select id="video_admin_subject_select" class="f-control" required onchange="onVideoModalSelectionChange()">
+                                <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
+                                @php
+                                    $uniqueSubjects = collect($subjects)->unique('clean_name');
+                                @endphp
+                                @foreach($uniqueSubjects as $uSub)
+                                    <option value="{{ $uSub->id }}" data-clean-name="{{ $uSub->clean_name }}" data-key="{{ $uSub->subject_key }}">
+                                        {{ $uSub->clean_name }}
+                                    </option>
+                                @endforeach
+                                <option disabled>────────── مواد تفصيلية ──────────</option>
+                                @foreach($subjects as $sub)
+                                    <option value="{{ $sub->id }}" data-clean-name="{{ $sub->clean_name }}" data-key="{{ $sub->subject_key }}">
+                                        {{ $sub->name_ar ?? $sub->name }} ({{ optional($sub->stage)->label_ar ?? 'عام' }})
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- تنبيه الفروع والمواد المستهدفة بالتوازي -->
+                        <div id="videoPublishTargetAlert" style="display: none; margin-top: 10px; padding: 10px 12px; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px;">
+                            <strong style="display: block; color: #065f46; font-size: 0.82rem; margin-bottom: 5px;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('سيتم نشر هذا الفيديو وتوفيره للمدرسين والطلبة بالتوازي في:') }}
+                            </strong>
+                            <div id="videoSelectedSubjectsList" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                        </div>
+                        <div id="videoHiddenSubjectIdsWrap"></div>
+                    </div>
+                @else
+                    <!-- المادة الدراسية للمعلم -->
+                    <div class="f-group">
+                        <label class="f-label">{{ __('المادة الدراسية والمرحلة *') }}</label>
+                        <select name="subject_id" required class="f-control">
+                            <option value="">{{ __('اختر المادة الدراسية...') }}</option>
+                            @foreach($subjects as $sub)
+                                <option value="{{ $sub->id }}" {{ (isset($subjectId) && $subjectId == $sub->id) ? 'selected' : '' }}>
+                                    {{ $sub->name_ar ?? $sub->name }} {{ optional($sub->stage)->label_ar ? ' - (' . optional($sub->stage)->label_ar . ')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
 
                 <!-- عنوان الفيديو -->
                 <div class="f-group">
@@ -1247,6 +1324,71 @@
 <script src="{{ asset('js/resumable-uploader.js') }}"></script>
 
 <script>
+const allModalSubjects = @json($subjects ?? []);
+const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+
+function selectAllModalBranches(prefix, checked) {
+    document.querySelectorAll('.' + prefix + '-modal-stage-check').forEach(cb => {
+        cb.checked = checked;
+        const lbl = document.getElementById(prefix === 'video' ? 'v_stage_lbl_' + cb.value : 'f_stage_lbl_' + cb.value);
+        if (lbl) {
+            lbl.style.borderColor = checked ? '#1e40af' : '#cbd5e1';
+            lbl.style.background = checked ? '#eff6ff' : '#ffffff';
+        }
+    });
+    if (prefix === 'video') onVideoModalSelectionChange();
+    else if (typeof onFileModalSelectionChange === 'function') onFileModalSelectionChange();
+}
+
+function onVideoModalSelectionChange() {
+    if (!isModalAdmin) return;
+    const sel = document.getElementById('video_admin_subject_select');
+    if (!sel) return;
+    const selectedOpt = sel.options[sel.selectedIndex];
+    const hiddenWrap = document.getElementById('videoHiddenSubjectIdsWrap');
+    const alertBox = document.getElementById('videoPublishTargetAlert');
+    const listDiv = document.getElementById('videoSelectedSubjectsList');
+
+    if (!hiddenWrap || !alertBox || !listDiv) return;
+
+    hiddenWrap.innerHTML = '';
+    listDiv.innerHTML = '';
+
+    if (!selectedOpt || !selectedOpt.value) {
+        alertBox.style.display = 'none';
+        return;
+    }
+
+    const checkedStages = Array.from(document.querySelectorAll('.video-modal-stage-check:checked')).map(cb => parseInt(cb.value));
+    const cleanName = (selectedOpt.getAttribute('data-clean-name') || '').trim();
+    const primaryId = parseInt(selectedOpt.value);
+
+    const matched = allModalSubjects.filter(sub => {
+        if (!checkedStages.includes(parseInt(sub.stage_id))) return false;
+        if (sub.id === primaryId) return true;
+        if (cleanName && sub.name_ar && sub.name_ar.includes(cleanName)) return true;
+        return false;
+    });
+
+    if (matched.length === 0) {
+        const pSub = allModalSubjects.find(s => s.id === primaryId);
+        if (pSub) matched.push(pSub);
+    }
+
+    matched.forEach(sub => {
+        hiddenWrap.innerHTML += `<input type="hidden" name="subject_ids[]" value="${sub.id}">`;
+        const stgName = (sub.stage ? sub.stage.label_ar : 'فرع');
+        listDiv.innerHTML += `
+            <span style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; border: 1px solid #86efac; border-radius: 6px; padding: 3px 8px; font-size: 0.78rem; font-weight: 700; color: #166534; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                <i class="fa-solid fa-circle-check text-success"></i> ${sub.name_ar} (${stgName})
+            </span>
+        `;
+    });
+
+    hiddenWrap.innerHTML += `<input type="hidden" name="subject_id" value="${matched[0].id}">`;
+    alertBox.style.display = 'block';
+}
+
 function openUploadVideoModal() {
     document.getElementById('uploadVideoModal').style.display = 'flex';
 }
