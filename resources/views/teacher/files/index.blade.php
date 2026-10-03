@@ -829,11 +829,19 @@
     .ed-files-grid {
         grid-template-columns: 1fr !important;
     }
+    .modal-overlay {
+        padding: 10px !important;
+        align-items: flex-start !important;
+    }
     .modal-card {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        padding: 16px !important;
-        border-radius: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 24px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 18px 14px !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
     }
     .modal-foot {
         flex-direction: column;

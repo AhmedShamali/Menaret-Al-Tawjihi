@@ -493,6 +493,22 @@
             justify-content: space-between;
         }
     }
+    @media (max-width: 480px) {
+        .ed-card {
+            padding: 16px 14px;
+        }
+        .ed-pl-sub-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .ed-pl-select {
+            width: 100%;
+        }
+        .ed-pl-title-box h1 {
+            font-size: 1.3rem;
+        }
+    }
 </style>
 
 <script>

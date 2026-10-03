@@ -1138,15 +1138,32 @@
         white-space: nowrap;
         flex-shrink: 0;
     }
+    .modal-overlay {
+        padding: 10px !important;
+        align-items: flex-start !important;
+    }
     .modal-card {
-        width: 95vw;
-        max-width: 95vw;
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 24px) !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
         padding: 20px 16px;
         border-radius: 14px;
+        box-sizing: border-box;
     }
     .f-row {
         flex-direction: column;
         gap: 10px;
+    }
+    .modal-foot {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .btn-modal-cancel, .btn-modal-submit {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
     }
 }
 </style>

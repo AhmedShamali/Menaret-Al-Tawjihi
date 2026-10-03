@@ -3,24 +3,24 @@
 @section('title', 'إدارة الطلاب')
 
 @section('content')
-<div style="display: flex; flex-direction: column; gap: 35px; animation: fadeIn 0.6s ease;">
+<div class="ed-legacy-students-page">
 
     {{-- رأس الصفحة --}}
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="page-header-wrap">
         <div>
-            <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--primary);">سجل الطلاب والطلبات 👥</h1>
-            <p style="color: var(--text-light);">{{ __('إدارة وتفعيل حسابات طلاب منصة Step by Step والمراجعة الأكاديمية.') }}</p>
+            <h1 class="page-title">سجل الطلاب والطلبات 👥</h1>
+            <p class="page-desc">{{ __('إدارة وتفعيل حسابات طلاب منصة Step by Step والمراجعة الأكاديمية.') }}</p>
         </div>
-        <a href="{{ route('students.create') }}" class="btn btn-primary" style="border-radius: 15px; padding: 15px 30px;">
+        <a href="{{ route('students.create') }}" class="btn-add-student">
             ➕ إضافة طالب جديد
         </a>
     </div>
 
     {{-- جدول الطلاب المصمم بأسلوب الجامعات --}}
-    <div class="glass-card" style="padding: 0; overflow: hidden; border: none; border-radius: 30px; box-shadow: 0 10px 40px rgba(0,0,0,0.03);">
-        <table style="width: 100%; border-collapse: collapse; text-align: right;">
+    <div class="table-responsive" style="background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow-x: auto;">
+        <table style="width: 100%; min-width: 680px; border-collapse: collapse; text-align: right;">
             <thead>
-                <tr style="background: var(--primary); color: white;">
+                <tr style="background: #1e3a8a; color: white;">
                     <th style="padding: 25px;">{{ __('الطالب') }}</th>
                     <th style="padding: 25px;">{{ __('المرحلة الدراسية') }}</th>
                     <th style="padding: 25px;">{{ __('رقم الهوية') }}</th>
@@ -85,6 +85,51 @@
 </div>
 
 <style>
+    .ed-legacy-students-page {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        animation: fadeIn 0.6s ease;
+    }
+    .page-header-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--primary, #1e3a8a);
+        margin: 0 0 6px 0;
+    }
+    .page-desc {
+        color: var(--text-light, #64748b);
+        margin: 0;
+        font-size: 0.95rem;
+    }
+    .btn-add-student {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: #0284c7;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        padding: 12px 24px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25);
+    }
+    .btn-add-student:hover {
+        background: #0369a1;
+        transform: translateY(-2px);
+        color: #fff;
+    }
+
     /* التنسيقات الفخمة للحالات */
     .status-chip { padding: 6px 15px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; }
     .status-chip.active { background: #ecfdf5; color: #059669; }
@@ -107,6 +152,22 @@
 
     .student-row:hover { background: #fcfcfd; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+        .page-header-wrap {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .btn-add-student {
+            width: 100%;
+            text-align: center;
+            padding: 12px 18px;
+        }
+        .page-title {
+            font-size: 1.4rem;
+        }
+    }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

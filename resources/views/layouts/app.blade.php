@@ -946,30 +946,106 @@
         @media (max-width: 768px) {
             .mobile-bottom-nav {
                 display: flex;
+                height: calc(58px + env(safe-area-inset-bottom, 0px));
+                padding: 3px 4px env(safe-area-inset-bottom, 0px);
+                background: rgba(255, 255, 255, 0.98);
+                border-top: 1px solid #cbd5e1;
+                box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                z-index: 1050;
+            }
+            .bottom-nav-item {
+                flex: 1 1 0px;
+                min-width: 0;
+                padding: 4px 1px;
+                font-size: 0.68rem;
+                font-weight: 700;
+                gap: 2px;
+                min-height: 44px;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .bottom-nav-item i {
+                font-size: 1.1rem;
+            }
+            .bottom-nav-item span {
+                font-size: 0.67rem;
+                line-height: 1.1;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 100%;
+                display: block;
+            }
+            .bottom-nav-item.active {
+                color: #1d4ed8 !important;
+                font-weight: 800;
+            }
+            .bottom-nav-item.active::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                width: 24px;
+                height: 3px;
+                background: #1d4ed8;
+                border-radius: 0 0 3px 3px;
             }
             body:not(.no-sidebar) {
-                padding-bottom: calc(74px + env(safe-area-inset-bottom, 0px)) !important;
+                padding-bottom: 0 !important;
             }
             .date-info {
                 display: none !important;
             }
             .top-bar {
                 padding: 0 10px;
-                height: 56px;
+                height: 54px;
+            }
+            .mobile-toggle {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 8px !important;
+                font-size: 1rem !important;
             }
             .topbar-actions-group {
                 gap: 6px !important;
             }
+            .topbar-actions-group > a[href*="lang/switch"] {
+                height: 36px !important;
+                padding: 0 9px !important;
+                font-size: 0.78rem !important;
+                border-radius: 8px !important;
+                gap: 4px !important;
+            }
+            .topbar-offline-vault-btn {
+                height: 36px !important;
+                padding: 0 10px !important;
+                font-size: 0.78rem !important;
+                border-radius: 8px !important;
+                gap: 5px !important;
+            }
+            #notificationsToggle {
+                width: 36px !important;
+                height: 36px !important;
+                border-radius: 8px !important;
+            }
             .topbar-user-card {
-                padding: 4px 6px !important;
+                height: 36px !important;
+                padding: 3px 6px !important;
                 gap: 0 !important;
+                border-radius: 8px !important;
             }
             .topbar-user-card .user-info-text {
                 display: none !important;
             }
+            .topbar-user-card > div:first-child {
+                width: 24px !important;
+                height: 24px !important;
+                font-size: 0.75rem !important;
+            }
             #notificationsMenu {
                 position: fixed !important;
-                top: 58px !important;
+                top: 56px !important;
                 left: 10px !important;
                 right: 10px !important;
                 width: auto !important;
@@ -979,7 +1055,11 @@
                 z-index: 1200 !important;
             }
             .content-body {
-                padding: 12px 10px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+                padding: 14px 12px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                overflow-x: hidden !important;
             }
 
             /* العناوين وأشرطة الإجراءات في رأس الصفحات */
@@ -1091,6 +1171,7 @@
                 display: block !important;
                 position: relative !important;
                 scrollbar-width: thin;
+                margin-bottom: 12px !important;
             }
             .data-table-clean,
             .classic-table,
@@ -1134,25 +1215,56 @@
             .search-box-clean input,
             .ed-input, .ed-select {
                 font-size: 16px !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
             }
 
-            /* النوافذ المنبثقة (Modals) */
+            /* النوافذ المنبثقة (Modals) الشاملة للجوال بدون اقتصاص */
             .modal-overlay,
             .swal2-container {
-                padding: 8px !important;
+                padding: 10px !important;
+                align-items: flex-start !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
             }
-            .modal-card-box {
-                width: 95vw !important;
-                max-width: 95vw !important;
+            .modal-card-box,
+            .modal-card,
+            .modal-dialog {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: auto !important;
+                max-height: calc(100dvh - 24px) !important;
+                overflow-y: auto !important;
+                -webkit-overflow-scrolling: touch !important;
                 padding: 18px 14px !important;
                 border-radius: 14px !important;
-                max-height: 88vh !important;
+                box-sizing: border-box !important;
             }
             .swal2-popup {
-                width: 92vw !important;
-                max-width: 92vw !important;
+                width: 94vw !important;
+                max-width: 94vw !important;
                 padding: 16px 12px !important;
                 border-radius: 12px !important;
+            }
+            .modal-foot,
+            .modal-footer {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+            .btn-modal-cancel,
+            .btn-modal-submit,
+            .btn-modal-submit-file {
+                width: 100% !important;
+                justify-content: center !important;
+                box-sizing: border-box !important;
+            }
+
+            /* حقول النماذج داخل النوافذ المنبثقة */
+            .f-row, .form-row, .ed-form-grid {
+                grid-template-columns: 1fr !important;
+                flex-direction: column !important;
+                gap: 10px !important;
             }
 
             /* شاشات المحادثات (Chat & Inbox) */
@@ -1163,8 +1275,8 @@
             .support-chat-container,
             .admin-chat-card,
             .tc-chat-box {
-                height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px)) !important;
-                max-height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px)) !important;
+                height: calc(100dvh - 145px - env(safe-area-inset-bottom, 0px)) !important;
+                max-height: calc(100dvh - 145px - env(safe-area-inset-bottom, 0px)) !important;
             }
         }
 
@@ -1187,10 +1299,24 @@
                 font-size: 1.4rem !important;
             }
             .top-bar {
-                padding: 0 8px;
+                padding: 0 8px !important;
+            }
+            .topbar-actions-group {
+                gap: 5px !important;
+            }
+            .topbar-offline-vault-btn span:not(.badge-offline-count) {
+                display: none !important;
+            }
+            .topbar-offline-vault-btn {
+                width: 36px !important;
+                padding: 0 !important;
+                justify-content: center !important;
+            }
+            .bottom-nav-item span {
+                font-size: 0.63rem !important;
             }
             .content-body {
-                padding: 10px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+                padding: 10px 8px calc(76px + env(safe-area-inset-bottom, 0px)) !important;
             }
             .ed-btn, .btn-clean {
                 padding: 8px 12px;

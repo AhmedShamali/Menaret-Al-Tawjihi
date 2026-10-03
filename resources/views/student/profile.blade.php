@@ -638,6 +638,13 @@ html[dir="ltr"] .arrow-icon {
         width: 100%;
         justify-content: center;
     }
+    .ed-detail-row {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .detail-value {
+        word-break: break-word;
+    }
 }
 </style>
 

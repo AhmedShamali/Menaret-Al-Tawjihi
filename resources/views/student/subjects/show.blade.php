@@ -953,6 +953,205 @@
     backdrop-filter: blur(4px);
     z-index: 9999;
 }
+
+/* ==========================================================
+   STUDENT SUBJECT VIEW - COMPREHENSIVE MOBILE RESPONSIVENESS
+   ========================================================== */
+@media (max-width: 768px) {
+    .ed-sub-wrap {
+        padding-bottom: 30px;
+    }
+    .ed-top-nav-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    .ed-back-btn {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    .ed-academic-tag {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    .ed-subject-hero {
+        padding: 18px 14px;
+        border-radius: 14px;
+        margin-bottom: 16px;
+    }
+    .ed-hero-main {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+    .ed-hero-info {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        width: 100%;
+    }
+    .ed-sub-icon-box {
+        width: 58px;
+        height: 58px;
+        font-size: 1.8rem;
+        border-radius: 14px;
+    }
+    .ed-hero-title-area h1 {
+        font-size: 1.35rem;
+    }
+    .ed-hero-desc {
+        font-size: 0.85rem;
+        margin-bottom: 12px;
+    }
+    .ed-hero-badges-row {
+        justify-content: center;
+        gap: 6px;
+    }
+    .ed-hero-stats-panel {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: space-around;
+        padding: 10px;
+    }
+    .ed-hstat-box {
+        padding: 0 4px;
+    }
+    .ed-hstat-num {
+        font-size: 1.15rem;
+    }
+    .ed-hstat-lbl {
+        font-size: 0.7rem;
+    }
+    .ed-hero-actions-bar {
+        margin-top: 14px;
+        padding-top: 14px;
+        flex-direction: column;
+    }
+    .ed-btn-royal {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    /* التبويبات الكلاسيكية للهواتف */
+    .ed-classic-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding: 4px;
+        gap: 4px;
+        scrollbar-width: none;
+        margin-bottom: 16px;
+    }
+    .ed-classic-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .ed-tab-btn {
+        flex: 0 0 auto;
+        padding: 8px 14px;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    /* مشغل الفيديو وشريط التحكم */
+    .ed-smart-player-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px;
+    }
+    .speed-buttons-group {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 2px;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+    }
+    .speed-btn {
+        padding: 4px 8px;
+        font-size: 0.74rem;
+        flex-shrink: 0;
+    }
+    .btn-toggle-notes {
+        padding: 5px 10px;
+        font-size: 0.75rem;
+    }
+
+    /* معلومات الدرس وزر أوفلاين والملزمة */
+    .ed-video-info-box {
+        padding: 14px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .ed-vtitle {
+        font-size: 1.05rem;
+    }
+    .ed-video-info-box > div:last-child {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+    .ed-offline-action-wrapper {
+        width: 100%;
+    }
+    .ed-btn-offline-card {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 14px;
+        box-sizing: border-box;
+    }
+    .ed-btn-lecture-pdf {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 14px;
+        box-sizing: border-box;
+    }
+    .ed-btn-lecture-video-download {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+
+    /* بطاقات الاختبارات */
+    .ed-exam-card {
+        padding: 14px 12px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    .ed-exam-card > div:first-child {
+        width: 100%;
+    }
+    .ed-exam-card .ed-btn-royal {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* حالة الفراغ */
+    .ed-classic-empty-state {
+        padding: 32px 16px;
+    }
+    .ed-empty-title {
+        font-size: 1.15rem;
+    }
+    .ed-empty-desc {
+        font-size: 0.82rem;
+    }
+    .ed-empty-cta {
+        flex-direction: column;
+        width: 100%;
+    }
+    .ed-empty-cta .ed-btn-royal {
+        width: 100%;
+        justify-content: center;
+    }
+}
 </style>
 
 <div class="ed-sub-wrap">

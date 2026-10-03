@@ -152,131 +152,94 @@
             <span class="ed-sh-hint">{{ __('وصول مباشر لأقسامك المفضلة') }}</span>
         </div>
 
-        <div class="table-responsive" style="background: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <table class="academic-table" style="width: 100%; border-collapse: collapse; margin: 0;">
-                <tbody>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 12px 18px; width: 50%;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle blue" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-book-open"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('مناهجي ومقرراتي') }}</strong>
-                                        <small style="color: #64748b;">{{ __('الدروس والشروحات المعتمدة') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.subjects.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                        <td style="padding: 12px 18px; width: 50%;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle green" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-file-signature"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('قاعة الاختبارات') }}</strong>
-                                        <small style="color: #64748b;">{{ __('اختبارات وتقييمات المناهج الدراسية') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.exams.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle sky" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-calendar-check"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('جدول المراجعة الذكي') }}</strong>
-                                        <small style="color: #64748b;">{{ __('خطة دراسية للأيام المتبقية') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.planner.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle gold" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-award"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الشهادات وسجل الإنجاز') }}</strong>
-                                        <small style="color: #64748b;">{{ __('الوثائق المعتمدة وسجل الدرجات') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.achievements') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr style="border-bottom: 1px solid #e2e8f0;">
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle rose" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-calculator"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('حاسبة المعدل') }}</strong>
-                                        <small style="color: #64748b;">{{ __('دليل التنسيق والقبول الجامعي') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="tbl-btn">{{ __('فتح') }} <i class="fas fa-arrow-up-right-from-square"></i></a>
-                            </div>
-                        </td>
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle violet" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-chalkboard-teacher"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('معلمو مرحلتي') }}</strong>
-                                        <small style="color: #64748b;">{{ __('مراسلة وإرشاد أكاديمي مباشر') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('student.teachers.index') }}" class="tbl-btn">{{ __('دخول') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle amber" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-cloud-arrow-down"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('الفيديوهات المحملة أوفلاين') }}</strong>
-                                        <small style="color: #64748b;">{{ __('مشاهدة دروسك بدون إنترنت ⚡') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('offline.videos') }}" class="tbl-btn" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe;">{{ __('فتح الخزنة') }} <i class="fas fa-bolt"></i></a>
-                            </div>
-                        </td>
-                        <td style="padding: 12px 18px;">
-                            <div style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 12px;">
-                                    <div class="tool-icon-circle green" style="width: 38px; height: 38px; border-radius: 8px; display: grid; place-items: center; font-size: 1rem;">
-                                        <i class="fas fa-graduation-cap"></i>
-                                    </div>
-                                    <div>
-                                        <strong style="font-size: 0.92rem; color: #0f172a; display: block;">{{ __('المكتبة ودليل المقررات') }}</strong>
-                                        <small style="color: #64748b;">{{ __('الفهرس والمناهج والكتب الوزارية') }}</small>
-                                    </div>
-                                </div>
-                                <a href="{{ route('courses.catalog') }}" class="tbl-btn">{{ __('تصفح') }} <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i></a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="ed-tools-grid-classic">
+            <a href="{{ route('student.subjects.index') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle blue">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('مناهجي ومقرراتي') }}</h4>
+                    <p>{{ __('الدروس والشروحات المعتمدة') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('student.exams.index') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle green">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('قاعة الاختبارات') }}</h4>
+                    <p>{{ __('اختبارات وتقييمات المناهج الدراسية') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('student.planner.index') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle sky">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('جدول المراجعة الذكي') }}</h4>
+                    <p>{{ __('خطة دراسية للأيام المتبقية') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('student.achievements') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle gold">
+                    <i class="fas fa-award"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('الشهادات وسجل الإنجاز') }}</h4>
+                    <p>{{ __('الوثائق المعتمدة وسجل الدرجات') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="ed-tool-card-classic">
+                <div class="tool-icon-circle rose">
+                    <i class="fas fa-calculator"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('حاسبة المعدل') }}</h4>
+                    <p>{{ __('دليل التنسيق والقبول الجامعي') }}</p>
+                </div>
+                <i class="fas fa-arrow-up-right-from-square tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('student.teachers.index') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle violet">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('معلمو مرحلتي') }}</h4>
+                    <p>{{ __('مراسلة وإرشاد أكاديمي مباشر') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
+
+            <a href="{{ route('offline.videos') }}" class="ed-tool-card-classic" style="background: #f0fdf4; border-color: #bbf7d0;">
+                <div class="tool-icon-circle amber">
+                    <i class="fas fa-cloud-arrow-down" style="color: #059669;"></i>
+                </div>
+                <div class="tool-info">
+                    <h4 style="color: #065f46;">{{ __('الفيديوهات المحملة أوفلاين') }}</h4>
+                    <p style="color: #059669;">{{ __('مشاهدة دروسك بدون إنترنت ⚡') }}</p>
+                </div>
+                <i class="fas fa-bolt tool-arrow" style="color: #059669;"></i>
+            </a>
+
+            <a href="{{ route('courses.catalog') }}" class="ed-tool-card-classic">
+                <div class="tool-icon-circle green">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="tool-info">
+                    <h4>{{ __('المكتبة ودليل المقررات') }}</h4>
+                    <p>{{ __('الفهرس والمناهج والكتب الوزارية') }}</p>
+                </div>
+                <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }} tool-arrow"></i>
+            </a>
         </div>
     </div>
 
@@ -1147,9 +1110,6 @@
     }
 
     @media (max-width: 768px) {
-        .academic-table tr { display: flex; flex-direction: column; border-bottom: 1px solid #e2e8f0; }
-        .academic-table td { width: 100% !important; padding: 12px 14px !important; border-bottom: 1px solid #f1f5f9; }
-        .academic-table td:last-child { border-bottom: none; }
         .ed-welcome-actions { flex-direction: column; width: 100%; gap: 8px; }
         .ed-welcome-actions .ed-btn-classic { width: 100%; justify-content: center; }
         .ed-countdown-panel-classic { flex-direction: column; align-items: stretch; gap: 14px; padding: 16px; }
@@ -1167,6 +1127,14 @@
         .ed-clock-unit { min-width: 44px; padding: 6px 6px; }
         .ed-clock-unit .num { font-size: 1.15rem; }
         .ed-section-box { padding: 16px 14px; }
+    }
+
+    @media (max-width: 440px) {
+        .ed-clock-unit { min-width: 38px !important; padding: 5px 3px !important; }
+        .ed-clock-unit .num { font-size: 1.05rem !important; }
+        .ed-clock-unit .txt { font-size: 0.65rem !important; }
+        .ed-clock-sep { font-size: 0.95rem !important; }
+        .ed-cd-clock { gap: 3px !important; }
     }
 </style>
 
