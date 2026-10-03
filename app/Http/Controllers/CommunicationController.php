@@ -395,19 +395,27 @@ class CommunicationController extends Controller
     {
         $teacher = Auth::user();
         $subjectId = $teacher->subject_id ?? null;
-        $students = collect();
 
-        if ($subjectId) {
-            $subject = DB::table('subjects')->where('id', $subjectId)->first();
-            if ($subject && !empty($subject->stage_id)) {
-                $students = DB::table('students')
-                    ->where('stage_id', $subject->stage_id)
-                    ->get();
-            }
-        }
+        // جلب المواد التابعة للمعلم لتحديد المراحل الدراسية
+        $subjectIds = Subject::where('user_id', $teacher->id)
+            ->orWhere('teacher_id', $teacher->id)
+            ->when($subjectId, function($q) use ($subjectId) {
+                $q->orWhere('id', $subjectId);
+            })
+            ->pluck('id')
+            ->toArray();
 
-        if ($students->isEmpty()) {
-            $students = DB::table('students')->get();
+        $stageIds = Subject::whereIn('id', $subjectIds)->whereNotNull('stage_id')->pluck('stage_id')->unique()->toArray();
+
+        if (!empty($stageIds)) {
+            $students = Student::with('stage')
+                ->whereIn('stage_id', $stageIds)
+                ->orderBy('name_ar')
+                ->get();
+        } else {
+            $students = Student::with('stage')
+                ->orderBy('name_ar')
+                ->get();
         }
 
         return view('teacher.inbox', compact('students'));

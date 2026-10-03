@@ -109,6 +109,21 @@ class PlatformAuditTest extends TestCase
             'role' => 'teacher',
         ]);
 
+        $stage = Stage::first();
+        Student::create([
+            'name_ar' => 'أحمد جمال',
+            'name_en' => 'Ahmed Jamal',
+            'email' => 'ahmed_inbox_test@tawjihi.ps',
+            'phone' => '0599123456',
+            'nid' => '401234567',
+            'age' => 18,
+            'gender' => 'male',
+            'password' => bcrypt('password123'),
+            'plain_password' => 'password123',
+            'stage_id' => $stage?->id,
+            'status' => 'active',
+        ]);
+
         $this->actingAs($teacher);
 
         $teacherRoutes = [
@@ -129,6 +144,27 @@ class PlatformAuditTest extends TestCase
             $response = $this->get($route);
             $this->assertContains($response->getStatusCode(), [200, 302], "Teacher route {$route} returned {$response->getStatusCode()}");
         }
+    }
+
+    public function test_teacher_inbox_blade_handles_stdclass_students_without_stage_property(): void
+    {
+        $teacher = User::create([
+            'name' => 'Inbox Test Teacher',
+            'email' => 'inbox_teacher@test.ps',
+            'password' => bcrypt('secret123'),
+            'role' => 'teacher',
+        ]);
+        $this->actingAs($teacher);
+
+        $rawStudent = (object) [
+            'id' => 999,
+            'name_ar' => 'طالب كائن تجريبي',
+            'email' => 'raw_student@test.ps',
+        ];
+
+        $rendered = view('teacher.inbox', ['students' => collect([$rawStudent])])->render();
+        $this->assertStringContainsString('طالب كائن تجريبي', $rendered);
+        $this->assertStringContainsString('توجيهي فلسطين', $rendered);
     }
 
     public function test_student_pages_with_authenticated_student(): void

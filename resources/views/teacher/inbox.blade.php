@@ -32,7 +32,11 @@
                     @php
                         $studentName = $student->name_ar ?? $student->name ?? trim(($student->first_name ?? '') . ' ' . ($student->last_name ?? '')) ?: __('طالب');
                         $firstLetter = mb_substr($studentName, 0, 1);
-                        $stageName = $student->stage->name_ar ?? (optional($student->stage)->label_ar ?? __('توجيهي فلسطين'));
+                        $stageName = ($student instanceof \App\Models\Student && $student->stage)
+                            ? ($student->stage->label_ar ?? $student->stage->name_ar ?? __('توجيهي فلسطين'))
+                            : ((isset($student->stage) && is_object($student->stage))
+                                ? ($student->stage->label_ar ?? $student->stage->name_ar ?? __('توجيهي فلسطين'))
+                                : (__('توجيهي فلسطين')));
                     @endphp
                     <div onclick="loadTeacherChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}')"
                          class="student-thread-card"
