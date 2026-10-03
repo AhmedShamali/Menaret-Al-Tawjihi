@@ -699,4 +699,63 @@ class ExamProctoringAndGradingPolicyTest extends TestCase
         $takeResponse->assertSee('ساعات وموعد فتح الاختبار الأكاديمي');
         $takeResponse->assertSee($openExam->formatted_timing_text);
     }
+
+    /**
+     * اختبار صلاحية المعلم لحذف وتعديل اختبارات مادته حتى لو تم إنشاؤها عبر الإدارة أو بمُعرف آخر
+     */
+    public function test_teacher_can_delete_exam_of_assigned_subject_even_if_not_creator()
+    {
+        // اختبار تم إنشاؤه بدون teacher_id أو بواسطة المدير لنفس مادة المعلم
+        $adminExam = Exam::create([
+            'teacher_id'       => null,
+            'subject_id'       => $this->subject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار مساق اللغة العربية من الإدارة',
+            'duration_minutes' => 45,
+        ]);
+
+        Question::create([
+            'exam_id'       => $adminExam->id,
+            'type'          => 'mcq',
+            'question_text' => 'سؤال اختبار الإدارة',
+            'points'        => 5,
+        ]);
+
+        // المعلم يحذف الاختبار بنجاح لأن المادة مسندة له
+        $deleteResp = $this->actingAs($this->teacher)->delete(route('teacher.exams.destroy', $adminExam->id));
+        $deleteResp->assertSessionHas('success');
+        $this->assertDatabaseMissing('exams', ['id' => $adminExam->id]);
+        $this->assertDatabaseMissing('questions', ['exam_id' => $adminExam->id]);
+
+        // اختبار لمادة أخرى مختلفة تماماً ليست للمعلم
+        $otherTeacher = User::create([
+            'name'        => 'معلم آخر',
+            'email'       => 'other_teacher_' . uniqid() . '@platform.ps',
+            'password'    => bcrypt('password123'),
+            'role'        => 'teacher',
+            'is_approved' => 1,
+        ]);
+
+        $otherSubject = Subject::create([
+            'stage_id'    => $this->stage->id,
+            'name_ar'     => 'مادة أخرى غريبة',
+            'subject_key' => 'other_alien_sub',
+            'price_ils'   => 100,
+            'teacher_id'  => $otherTeacher->id,
+        ]);
+
+        $otherExam = Exam::create([
+            'teacher_id'       => $otherTeacher->id,
+            'subject_id'       => $otherSubject->id,
+            'stage_id'         => $this->stage->id,
+            'title'            => 'اختبار مادة غير مصرحة',
+            'duration_minutes' => 30,
+        ]);
+
+        // المعلم يحاول حذف اختبار مادة لا تخصه -> يمنعه النظام برسالة غير مصرح
+        $forbiddenResp = $this->actingAs($this->teacher)->delete(route('teacher.exams.destroy', $otherExam->id));
+        $forbiddenResp->assertSessionHas('error', 'غير مصرح لك بحذف هذا الاختبار');
+        $this->assertDatabaseHas('exams', ['id' => $otherExam->id]);
+    }
 }
+

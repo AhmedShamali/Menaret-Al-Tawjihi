@@ -16,16 +16,55 @@ use Illuminate\Support\Facades\Schema;
 
 class ExamController extends Controller
 {
+    /**
+     * جلب معرفات كافة المواد المسندة للمعلم الحالي
+     */
+    protected function getTeacherSubjectIds($user = null): array
+    {
+        $user = $user ?? auth()->user();
+        if (!$user) {
+            return [];
+        }
+        if ($user->role === 'admin') {
+            return Subject::pluck('id')->toArray();
+        }
+        $ids = [];
+        if (!empty($user->subject_id)) {
+            $ids[] = (int) $user->subject_id;
+        }
+        $fromUser = Subject::where('user_id', $user->id)->pluck('id')->toArray();
+        $fromTeacher = Subject::where('teacher_id', $user->id)->pluck('id')->toArray();
+        return array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
+    }
+
+    /**
+     * جلب المعرف الفعلي لمعلم الاختبار (سواء المباشر أو معلم المادة)
+     */
+    protected function getExamTeacherId(Exam $exam): ?int
+    {
+        if (!empty($exam->teacher_id)) {
+            return (int) $exam->teacher_id;
+        }
+        if (!empty($exam->subject?->teacher_id)) {
+            return (int) $exam->subject->teacher_id;
+        }
+        if (!empty($exam->subject?->user_id)) {
+            return (int) $exam->subject->user_id;
+        }
+        return \App\Models\User::where('role', 'teacher')->where('subject_id', $exam->subject_id)->value('id');
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
         $query = Exam::with(['subject', 'stage'])->withCount(['questions', 'submissions']);
 
         if ($user->role !== 'admin') {
-            $query->where(function ($q) use ($user) {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            $query->where(function ($q) use ($user, $teacherSubjectIds) {
                 $q->where('teacher_id', $user->id);
-                if (!empty($user->subject_id)) {
-                    $q->orWhere('subject_id', $user->subject_id);
+                if (!empty($teacherSubjectIds)) {
+                    $q->orWhereIn('subject_id', $teacherSubjectIds);
                 }
             });
         }
@@ -51,8 +90,25 @@ class ExamController extends Controller
 
     public function create()
     {
-        $subjects = Subject::orderBy('name_ar')->get();
-        $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
+        $user = auth()->user();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!empty($teacherSubjectIds)) {
+                $subjects = Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get();
+                $stages = Stage::with('subjects')->whereHas('subjects', function ($q) use ($teacherSubjectIds) {
+                    $q->whereIn('id', $teacherSubjectIds);
+                })->orderBy('grade_level', 'asc')->get();
+                if ($stages->isEmpty()) {
+                    $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
+                }
+            } else {
+                $subjects = Subject::orderBy('name_ar')->get();
+                $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
+            }
+        } else {
+            $subjects = Subject::orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
+        }
         return view('admin.exams.create', compact('subjects', 'stages'));
     }
 
@@ -217,8 +273,27 @@ class ExamController extends Controller
             return true;
         }
         if ($user->role === 'teacher') {
-            $examTeacherId = $exam->teacher_id ?? $exam->subject?->user_id;
-            return ((int) $examTeacherId === (int) $user->id);
+            // 1. إذا كان المعلم هو من أنشأ الاختبار
+            if (!empty($exam->teacher_id) && (int) $exam->teacher_id === (int) $user->id) {
+                return true;
+            }
+
+            // 2. إذا كان الاختبار يتبع لأحد المواد المخصصة أو المسندة لهذا المعلم
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            if (!empty($exam->subject_id) && in_array((int) $exam->subject_id, $teacherSubjectIds, true)) {
+                return true;
+            }
+
+            // 3. التحقق المباشر من مادة الاختبار
+            $subject = $exam->subject;
+            if ($subject) {
+                if (!empty($subject->user_id) && (int) $subject->user_id === (int) $user->id) {
+                    return true;
+                }
+                if (!empty($subject->teacher_id) && (int) $subject->teacher_id === (int) $user->id) {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -251,8 +326,19 @@ class ExamController extends Controller
             abort(403, 'غير مصرح لك بتعديل هذا الاختبار');
         }
 
-        $stages = Stage::with('subjects')->get();
-        $subjects = Subject::orderBy('name_ar')->get();
+        if ($user && $user->role === 'teacher') {
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            $subjects = Subject::whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->whereHas('subjects', function ($q) use ($teacherSubjectIds) {
+                $q->whereIn('id', $teacherSubjectIds);
+            })->orderBy('grade_level', 'asc')->get();
+            if ($stages->isEmpty()) {
+                $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
+            }
+        } else {
+            $stages = Stage::with('subjects')->get();
+            $subjects = Subject::orderBy('name_ar')->get();
+        }
         return view('admin.exams.edit', compact('exam', 'stages', 'subjects'));
     }
 
@@ -409,22 +495,43 @@ class ExamController extends Controller
     }
 
     // دالة حذف الاختبار المضافة حديثاً
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $user = auth()->user();
-        $exam = Exam::with('subject')->findOrFail($id);
+        $exam = Exam::with(['subject', 'submissions.answers', 'questions'])->findOrFail($id);
 
         if (!$this->isUserAuthorizedForExam($user, $exam)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا الاختبار'], 403);
+            }
             return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا الاختبار');
         }
 
         try {
-            $exam->questions()->delete();
-            $exam->delete();
+            DB::transaction(function () use ($exam) {
+                // حذف إجابات وتسليمات الطلاب المرتبطة بالاختبار بأمان
+                foreach ($exam->submissions as $submission) {
+                    $submission->answers()->delete();
+                    $submission->delete();
+                }
+                $exam->questions()->delete();
+                $exam->delete();
+            });
 
-            $redirectRoute = ($user->role === 'admin') ? 'admin.exams.index' : 'teacher.exams.index';
-            return redirect()->route($redirectRoute)->with('success', 'تم حذف الاختبار بنجاح!');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => 'تم حذف الاختبار بنجاح!']);
+            }
+
+            $redirectUrl = url()->previous();
+            if (empty($redirectUrl) || $redirectUrl === url()->current()) {
+                $redirectUrl = ($user->role === 'admin') ? route('admin.exams.index') : route('teacher.dashboard');
+            }
+
+            return redirect()->to($redirectUrl)->with('success', 'تم حذف الاختبار بنجاح!');
         } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()], 500);
+            }
             return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
         }
     }
@@ -452,8 +559,14 @@ class ExamController extends Controller
         $query = ExamSubmission::with(['student', 'exam.subject']);
 
         if ($user->role !== 'admin') {
-            $query->whereHas('exam', function ($q) use ($user) {
-                $q->where('teacher_id', $user->id);
+            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+            $query->whereHas('exam', function ($q) use ($user, $teacherSubjectIds) {
+                $q->where(function ($subQ) use ($user, $teacherSubjectIds) {
+                    $subQ->where('teacher_id', $user->id);
+                    if (!empty($teacherSubjectIds)) {
+                        $subQ->orWhereIn('subject_id', $teacherSubjectIds);
+                    }
+                });
             });
         }
 
@@ -908,7 +1021,7 @@ class ExamController extends Controller
 
                 // إشعار المعلم وإدارة المنصة بتسليم الاختبار
                 try {
-                    $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+                    $teacherId = $this->getExamTeacherId($exam);
                     $studentName = $student->name_ar ?? $student->name ?? 'طالب';
 
                     if ($hasCheatingRisk && $teacherId) {
@@ -1037,7 +1150,7 @@ class ExamController extends Controller
         }
 
         try {
-            $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+            $teacherId = $this->getExamTeacherId($exam);
             $studentName = $student->name_ar ?? $student->name ?? 'طالب';
             $actionText = $type === 'screenshot' ? 'محاولة أخذ لقطة شاشة (Screenshot)' : 'مغادرة نافذة/تبويب الاختبار';
 
@@ -1133,7 +1246,7 @@ class ExamController extends Controller
 
         try {
             $exam = $submission->exam;
-            $teacherId = $exam->teacher_id ?? $exam->subject?->user_id;
+            $teacherId = $this->getExamTeacherId($exam);
             $studentName = $student->name_ar ?? $student->name ?? 'طالب';
 
             if ($teacherId) {
