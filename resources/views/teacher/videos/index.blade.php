@@ -1252,7 +1252,7 @@ async function submitVideoForm(e) {
             if (statusRes.data && statusRes.data.uploaded_chunks && statusRes.data.uploaded_chunks.length > 0) {
                 alreadyUploaded = new Set(statusRes.data.uploaded_chunks);
                 if (alreadyUploaded.size > 0 && alreadyUploaded.size < totalChunks) {
-                    progressStatus.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> {{ __("تم العثور على أجزاء مرفوعة سابقاً (${alreadyUploaded.size} جزء)! جاري استئناف الرفع فوراً ⚡") }}`;
+                    progressStatus.innerHTML = `<i class="fa-solid fa-bolt" style="color: #d97706;"></i> {{ __('تم العثور على أجزاء مرفوعة سابقاً') }} (${alreadyUploaded.size} {{ __('جزء') }})! {{ __('جاري استئناف الرفع فوراً ⚡') }}`;
                 }
             }
         } catch (e) {
