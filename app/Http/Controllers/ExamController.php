@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Schema;
 
 class ExamController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
         $query = Exam::with(['subject', 'stage'])->withCount(['questions', 'submissions']);
@@ -28,6 +28,10 @@ class ExamController extends Controller
                     $q->orWhere('subject_id', $user->subject_id);
                 }
             });
+        }
+
+        if ($request->filled('target_region') && in_array($request->target_region, ['all', 'gaza', 'west_bank'])) {
+            $query->where('target_region', $request->target_region);
         }
 
         $exams = $query->latest()->get();
@@ -62,6 +66,7 @@ class ExamController extends Controller
             'starts_at' => ['nullable', 'date'],
             'ends_at' => ['nullable', 'date'],
             'show_result_immediately' => ['nullable'],
+            'target_region' => ['nullable', 'string', 'in:all,gaza,west_bank'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.type' => ['required', 'in:mcq,essay,text'],
             'questions.*.question_text' => ['required', 'string'],
@@ -83,11 +88,16 @@ class ExamController extends Controller
         $showResultImmediately = filter_var($request->input('show_result_immediately', false), FILTER_VALIDATE_BOOLEAN);
         $sub = Subject::find($validated['subject_id']);
         $effectiveStageId = $validated['stage_id'] ?? $sub?->stage_id;
+        $targetRegion = $request->input('target_region', 'all');
+        if (!in_array($targetRegion, ['all', 'gaza', 'west_bank'])) {
+            $targetRegion = 'all';
+        }
 
-        DB::transaction(function () use ($request, $validated, $showResultImmediately, $effectiveStageId) {
+        DB::transaction(function () use ($request, $validated, $showResultImmediately, $effectiveStageId, $targetRegion) {
             $exam = Exam::create([
                 'teacher_id' => auth()->id(),
                 'title' => $validated['title'],
+                'target_region' => $targetRegion,
                 'subject_id' => $validated['subject_id'],
                 'stage_id' => $effectiveStageId,
                 'duration_minutes' => $validated['duration_minutes'],
@@ -246,6 +256,7 @@ class ExamController extends Controller
             'ends_at'          => 'nullable|date',
             'is_active'        => 'nullable|boolean',
             'show_result_immediately' => 'nullable',
+            'target_region'    => 'nullable|string|in:all,gaza,west_bank',
             'subject_id'       => 'nullable|exists:subjects,id',
             'stage_id'         => 'nullable|exists:stages,id',
         ]);
@@ -263,6 +274,13 @@ class ExamController extends Controller
             'subject_id'       => $request->filled('subject_id') ? $request->subject_id : $exam->subject_id,
             'stage_id'         => $request->filled('stage_id') ? $request->stage_id : $exam->stage_id,
         ];
+
+        if ($request->filled('target_region')) {
+            $targetRegion = $request->input('target_region');
+            if (in_array($targetRegion, ['all', 'gaza', 'west_bank'])) {
+                $updateData['target_region'] = $targetRegion;
+            }
+        }
 
         if (\Illuminate\Support\Facades\Schema::hasColumn('exams', 'is_active')) {
             if ($request->has('is_active')) {
@@ -557,6 +575,17 @@ class ExamController extends Controller
             });
         }
 
+        // عزل الاختبارات بدقة بحسب منطقة الطالب (غزة / الضفة)
+        if ($student) {
+            $studentRegion = $student->resolved_region ?? 'west_bank';
+            $allExamsQuery->where(function ($q) use ($studentRegion) {
+                $q->where('target_region', 'all')
+                  ->orWhereNull('target_region')
+                  ->orWhere('target_region', '')
+                  ->orWhere('target_region', $studentRegion);
+            });
+        }
+
         $allExams = $allExamsQuery->latest()->get();
 
         // تصفية الاختبارات بناءً على صلاحيات الوصول وخانات الاختيار [✓] التي حددها المعلم
@@ -607,6 +636,13 @@ class ExamController extends Controller
         $examStageId = $exam->stage_id ?? $exam->subject?->stage_id;
         if ($student->stage_id && $examStageId && (int)$examStageId !== (int)$student->stage_id) {
             return redirect()->route('student.exams.index')->with('error', 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي ولا يمكن تقديمه.');
+        }
+
+        // 2. التحقق الصارم: هل الاختبار مخصص لمنطقة الطالب (غزة / الضفة) أم مشترك؟
+        $studentRegion = $student->resolved_region ?? 'west_bank';
+        $examRegion = $exam->target_region ?? 'all';
+        if ($examRegion !== 'all' && !empty($examRegion) && $examRegion !== $studentRegion) {
+            return redirect()->route('student.exams.index')->with('error', 'عذراً، هذا الاختبار مخصص لطلبة منطقة تعليمية أخرى وغير متاح في خطتك الدراسية.');
         }
 
         // 2. التحقق الصارم: هل الطالب مسجل ومشترك في مادة هذا الاختبار باشتراك نشط؟
@@ -676,6 +712,17 @@ class ExamController extends Controller
                         'success' => false,
                         'message' => 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي!',
                         'error'   => 'عذراً، هذا الاختبار لا ينتمي إلى فرعك الدراسي الأصلي!'
+                    ], 403);
+                }
+
+                // 2. التحقق الصارم من المنطقة التعليمية (غزة / الضفة) عند الإرسال
+                $studentRegion = $student->resolved_region ?? 'west_bank';
+                $examRegion = $exam->target_region ?? 'all';
+                if ($examRegion !== 'all' && !empty($examRegion) && $examRegion !== $studentRegion) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'عذراً، هذا الاختبار مخصص لطلبة منطقة تعليمية أخرى!',
+                        'error'   => 'عذراً، هذا الاختبار مخصص لطلبة منطقة تعليمية أخرى!'
                     ], 403);
                 }
 

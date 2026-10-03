@@ -706,9 +706,11 @@ class EducationalContentController extends Controller
 
         // منع تنزيل الفيديو كملف خارجي للطلبة أو عبر كتابة الرابط مباشرة بالمتصفح
         if (!$isInternalXhr && !$isStaff && !app()->runningUnitTests()) {
-            $redirectRoute = \Illuminate\Support\Facades\Route::has('student.subject.show') 
-                ? route('student.subject.show', $content->subject_id) 
-                : url('/subjects/' . $content->subject_id);
+            $redirectRoute = \Illuminate\Support\Facades\Route::has('student.subjects.show') 
+                ? route('student.subjects.show', $content->subject_id) 
+                : (\Illuminate\Support\Facades\Route::has('subject.show')
+                    ? route('subject.show', $content->subject_id)
+                    : url('/subjects/' . $content->subject_id));
             return redirect($redirectRoute)
                 ->with('info', 'حمايةً للمحتوى الأكاديمي، يتم حفظ الفيديوهات للمشاهدة بدون إنترنت حصرياً من داخل المنصة عبر زر "تحميل أوفلاين".');
         }

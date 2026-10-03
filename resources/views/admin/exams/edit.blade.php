@@ -98,6 +98,50 @@
                             </div>
                         </div>
 
+                        {{-- الفئة والمحافظة المستهدفة للاختبار --}}
+                        <div class="f-group mb-20" style="padding-top: 14px; border-top: 1px solid var(--border-color);">
+                            <label class="f-label" style="display: flex; align-items: center; justify-content: space-between; font-weight: 800; color: #1e40af;">
+                                <span><i class="fa-solid fa-map-location-dot"></i> {{ __('المنطقة المستهدفة (منهاج الامتحان)') }}<span class="req">*</span></span>
+                                <span style="font-size: 0.7rem; background: #eff6ff; color: #1e40af; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ __('تخصيص الطلاب') }}</span>
+                            </label>
+                            <p style="font-size: 0.72rem; color: #64748b; margin: 4px 0 10px 0;">{{ __('حدد هل هذا الاختبار مخصص لطلبة غزة أم الضفة أم مشترك') }}</p>
+
+                            @php
+                                $currentRegion = $exam->target_region ?? 'all';
+                            @endphp
+                            <div class="exam-region-selector-grid">
+                                <label class="exam-region-card {{ $currentRegion === 'all' ? 'active' : '' }}" id="exam_card_all" onclick="selectExamRegion('all')">
+                                    <input type="radio" name="target_region" id="exam_reg_all" value="all" {{ $currentRegion === 'all' ? 'checked' : '' }} style="display: none;">
+                                    <div class="exam-reg-icon">🌐</div>
+                                    <div class="exam-reg-content">
+                                        <div class="exam-reg-title">{{ __('منهاج مشترك (الكل)') }}</div>
+                                        <div class="exam-reg-desc">{{ __('يظهر لجميع الطلاب المسجلين بالمادة') }}</div>
+                                    </div>
+                                    <div class="exam-reg-check"><i class="fa-solid fa-circle-check"></i></div>
+                                </label>
+
+                                <label class="exam-region-card {{ $currentRegion === 'gaza' ? 'active' : '' }}" id="exam_card_gaza" onclick="selectExamRegion('gaza')">
+                                    <input type="radio" name="target_region" id="exam_reg_gaza" value="gaza" {{ $currentRegion === 'gaza' ? 'checked' : '' }} style="display: none;">
+                                    <div class="exam-reg-icon">🌿</div>
+                                    <div class="exam-reg-content">
+                                        <div class="exam-reg-title">{{ __('قطاع غزة (منهاج غزة)') }}</div>
+                                        <div class="exam-reg-desc">{{ __('يظهر حصرياً لطلبة قطاع غزة') }}</div>
+                                    </div>
+                                    <div class="exam-reg-check"><i class="fa-solid fa-circle-check"></i></div>
+                                </label>
+
+                                <label class="exam-region-card {{ $currentRegion === 'west_bank' ? 'active' : '' }}" id="exam_card_west_bank" onclick="selectExamRegion('west_bank')">
+                                    <input type="radio" name="target_region" id="exam_reg_west_bank" value="west_bank" {{ $currentRegion === 'west_bank' ? 'checked' : '' }} style="display: none;">
+                                    <div class="exam-reg-icon">🏛️</div>
+                                    <div class="exam-reg-content">
+                                        <div class="exam-reg-title">{{ __('الضفة الغربية والقدس') }}</div>
+                                        <div class="exam-reg-desc">{{ __('يظهر حصرياً لطلبة الضفة والقدس') }}</div>
+                                    </div>
+                                    <div class="exam-reg-check"><i class="fa-solid fa-circle-check"></i></div>
+                                </label>
+                            </div>
+                        </div>
+
                         <div class="f-group mb-20" style="padding-top: 14px; border-top: 1px solid var(--border-color);">
                             <label class="f-label" style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: #059669;">
                                 <i class="fa-solid fa-calendar-check"></i>
@@ -681,6 +725,65 @@
             justify-content: space-between;
         }
     }
+
+    /* Region Selector Cards */
+    .exam-region-selector-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 6px;
+    }
+    .exam-region-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+    }
+    .exam-region-card:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .exam-region-card.active {
+        background: #eff6ff;
+        border-color: #3b82f6;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    }
+    .exam-reg-icon {
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .exam-reg-content {
+        flex: 1;
+        min-width: 0;
+    }
+    .exam-reg-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 2px;
+    }
+    .exam-region-card.active .exam-reg-title {
+        color: #1e40af;
+    }
+    .exam-reg-desc {
+        font-size: 0.7rem;
+        color: #64748b;
+        line-height: 1.25;
+    }
+    .exam-reg-check {
+        color: #cbd5e1;
+        font-size: 1rem;
+        transition: color 0.2s;
+    }
+    .exam-region-card.active .exam-reg-check {
+        color: #3b82f6;
+    }
 </style>
 
 <script>
@@ -945,6 +1048,22 @@
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>{{ __('حفظ التغييرات') }}</span>';
             });
+    }
+
+    function selectExamRegion(val) {
+        ['all', 'gaza', 'west_bank'].forEach(v => {
+            const card = document.getElementById('exam_card_' + v);
+            const radio = document.getElementById('exam_reg_' + v);
+            if (card && radio) {
+                if (v === val) {
+                    card.classList.add('active');
+                    radio.checked = true;
+                } else {
+                    card.classList.remove('active');
+                    radio.checked = false;
+                }
+            }
+        });
     }
 </script>
 @endsection

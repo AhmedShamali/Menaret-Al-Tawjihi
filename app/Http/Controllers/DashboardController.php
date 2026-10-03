@@ -135,6 +135,16 @@ class DashboardController extends Controller {
             });
         }
 
+        if (!$isAdminOrTeacher && $student) {
+            $studentRegion = $student->resolved_region ?? 'west_bank';
+            $examsQuery->where(function ($q) use ($studentRegion) {
+                $q->where('target_region', 'all')
+                  ->orWhereNull('target_region')
+                  ->orWhere('target_region', '')
+                  ->orWhere('target_region', $studentRegion);
+            });
+        }
+
         $exams = $examsQuery->get();
 
         // حصر الاختبارات حصرياً بالطلبة المسجلين والمشتركين في المادة
@@ -226,9 +236,16 @@ class DashboardController extends Controller {
             $enrolledSubjectIds = $enrollments->keys()->toArray();
 
             if (!empty($enrolledSubjectIds)) {
-                // جلب الاختبارات التابعة للمواد المسجل بها فقط ولفرع الطالب الأصلي
+                $studentRegion = $student->resolved_region ?? 'all';
+
+                // جلب الاختبارات التابعة للمواد المسجل بها فقط ولفرع الطالب الأصلي مع مراعاة المنهاج الإقليمي
                 $candidateExamsQuery = Exam::whereIn('subject_id', $enrolledSubjectIds)
                     ->whereNotIn('id', $solvedExamIds)
+                    ->where(function ($q) use ($studentRegion) {
+                        $q->whereNull('target_region')
+                            ->orWhere('target_region', 'all')
+                            ->orWhere('target_region', $studentRegion);
+                    })
                     ->with(['subject', 'stage'])
                     ->withCount('questions')
                     ->latest();

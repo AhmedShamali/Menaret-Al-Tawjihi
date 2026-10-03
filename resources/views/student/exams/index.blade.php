@@ -92,6 +92,15 @@
                         <span class="ed-badge {{ $tb['status'] === 'upcoming' ? 'badge-upcoming' : ($tb['status'] === 'expired' ? 'badge-expired' : ($tb['status'] === 'active_limited' ? 'badge-limited' : 'badge-always-open')) }}" style="font-weight: 800;">
                             <i class="{{ $tb['icon'] }}"></i> {{ $tb['label'] }}
                         </span>
+                        @if($exam->target_region === 'gaza')
+                            <span class="ed-badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 800;">
+                                🌿 {{ __('منهاج غزة') }}
+                            </span>
+                        @elseif($exam->target_region === 'west_bank')
+                            <span class="ed-badge" style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-weight: 800;">
+                                🏛️ {{ __('منهاج الضفة والقدس') }}
+                            </span>
+                        @endif
                     </div>
 
                     <h3 class="ed-exam-title">{{ $exam->title }}</h3>

@@ -9,6 +9,7 @@ use App\Models\Subject;
 use App\Models\Student;
 use App\Models\Enrollment;
 use App\Models\EducationalContent;
+use App\Models\Exam;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 
@@ -227,5 +228,146 @@ class TargetRegionContentIsolationTest extends TestCase
         $response->assertSee('فيديو الضفة التعليمي');
         $response->assertSee('غزة العزة 🌿');
         $response->assertSee('الضفة والقدس 🏛️');
+    }
+
+    public function test_teacher_can_create_exam_with_target_region()
+    {
+        $response = $this->actingAs($this->teacher)->postJson(route('teacher.exams.store'), [
+            'subject_id'       => $this->subject->id,
+            'title'            => 'اختبار فيزياء لطلاب غزة',
+            'duration_minutes' => 45,
+            'pass_marks'       => 50,
+            'target_region'    => 'gaza',
+            'questions'        => [
+                [
+                    'type'          => 'mcq',
+                    'question_text' => 'ما هي وحدة قياس القوة؟',
+                    'points'        => 5,
+                    'a'             => 'نيوتن',
+                    'b'             => 'جول',
+                    'c'             => 'واط',
+                    'd'             => 'فولت',
+                    'correct_answer'=> 'a',
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('exams', [
+            'title'         => 'اختبار فيزياء لطلاب غزة',
+            'target_region' => 'gaza',
+        ]);
+    }
+
+    public function test_student_only_sees_exams_for_their_region_and_common_exams()
+    {
+        // 1. اختبار عام مشترك
+        Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'اختبار الفيزياء العام المشترك',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'all',
+        ]);
+
+        // 2. اختبار مخصص لقطاع غزة
+        Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'اختبار فيزياء منهاج غزة',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'gaza',
+        ]);
+
+        // 3. اختبار مخصص للضفة الغربية
+        Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'اختبار فيزياء منهاج الضفة',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'west_bank',
+        ]);
+
+        // فحص طالب غزة
+        $responseGaza = $this->actingAs($this->gazaStudent, 'student')->get(route('student.exams.index'));
+        $responseGaza->assertStatus(200);
+        $responseGaza->assertSee('اختبار الفيزياء العام المشترك');
+        $responseGaza->assertSee('اختبار فيزياء منهاج غزة');
+        $responseGaza->assertDontSee('اختبار فيزياء منهاج الضفة');
+
+        // فحص طالب الضفة
+        $responseWB = $this->actingAs($this->westBankStudent, 'student')->get(route('student.exams.index'));
+        $responseWB->assertStatus(200);
+        $responseWB->assertSee('اختبار الفيزياء العام المشترك');
+        $responseWB->assertSee('اختبار فيزياء منهاج الضفة');
+        $responseWB->assertDontSee('اختبار فيزياء منهاج غزة');
+    }
+
+    public function test_student_cannot_take_or_submit_exam_of_opposing_region()
+    {
+        $wbExam = Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'امتحان توجيهي الضفة والقدس',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'west_bank',
+        ]);
+
+        $gazaExam = Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'امتحان توجيهي قطاع غزة',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'gaza',
+        ]);
+
+        // طالب غزة يحاول دخول اختبار الضفة -> يتم تحويله مع رسالة خطأ
+        $responseTake = $this->actingAs($this->gazaStudent, 'student')->get(route('student.exams.take', $wbExam->id));
+        $responseTake->assertRedirect(route('student.exams.index'));
+        $responseTake->assertSessionHas('error');
+
+        // طالب غزة يحاول تسليم إجابات على اختبار الضفة -> يتم رفضه بـ 403
+        $responseSubmit = $this->actingAs($this->gazaStudent, 'student')->post(route('student.exams.submit', $wbExam->id), [
+            'answers' => [],
+        ]);
+        $responseSubmit->assertStatus(403);
+
+        // طالب الضفة يحاول دخول اختبار غزة
+        $responseWBTake = $this->actingAs($this->westBankStudent, 'student')->get(route('student.exams.take', $gazaExam->id));
+        $responseWBTake->assertRedirect(route('student.exams.index'));
+        $responseWBTake->assertSessionHas('error');
+    }
+
+    public function test_teacher_and_admin_see_all_regional_exams()
+    {
+        Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'امتحان إقليمي لغزة',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'gaza',
+        ]);
+
+        Exam::create([
+            'subject_id'       => $this->subject->id,
+            'title'            => 'امتحان إقليمي للضفة',
+            'duration_minutes' => 60,
+            'status'           => 'published',
+            'target_region'    => 'west_bank',
+        ]);
+
+        // المعلم يرى كافة الاختبارات مع شاراتها
+        $resTeacher = $this->actingAs($this->teacher)->get(route('teacher.exams.index'));
+        $resTeacher->assertStatus(200);
+        $resTeacher->assertSee('امتحان إقليمي لغزة');
+        $resTeacher->assertSee('امتحان إقليمي للضفة');
+        $resTeacher->assertSee('قطاع غزة');
+        $resTeacher->assertSee('الضفة والقدس');
+
+        // المدير يرى كافة الاختبارات
+        $resAdmin = $this->actingAs($this->admin)->get(route('admin.exams.index'));
+        $resAdmin->assertStatus(200);
+        $resAdmin->assertSee('امتحان إقليمي لغزة');
+        $resAdmin->assertSee('امتحان إقليمي للضفة');
     }
 }

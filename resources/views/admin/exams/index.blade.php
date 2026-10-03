@@ -137,6 +137,23 @@
             </button>
         </div>
 
+        <!-- فلتر المناطق المستهدفة (غزة / الضفة / الكل) -->
+        <div class="toolbar-region-filters">
+            <button type="button" class="region-filter-btn active" data-region="all" onclick="filterByRegion('all')">
+                <i class="fa-solid fa-globe"></i>
+                <span>{{ __('الكل') }}</span>
+            </button>
+            <button type="button" class="region-filter-btn" data-region="gaza" onclick="filterByRegion('gaza')">
+                <span>🌿 {{ __('غزة') }}</span>
+            </button>
+            <button type="button" class="region-filter-btn" data-region="west_bank" onclick="filterByRegion('west_bank')">
+                <span>🏛️ {{ __('الضفة والقدس') }}</span>
+            </button>
+            <button type="button" class="region-filter-btn" data-region="common" onclick="filterByRegion('common')">
+                <span>🌐 {{ __('مشترك') }}</span>
+            </button>
+        </div>
+
         <div class="toolbar-stats-pill">
             <i class="fa-solid fa-file-lines"></i>
             <span>{{ __('إجمالي السجلات:') }}</span>
@@ -178,7 +195,7 @@
                                     : ($exam->subject?->name_ar ?? ($exam->subject?->name ?? __('عام')));
                                 $subCount = $exam->submissions_count ?? 0;
                             @endphp
-                            <tr class="exam-row" data-search-text="{{ strtolower($exam->title . ' ' . $examSubName . ' ' . ($exam->created_at ? $exam->created_at->format('Y-m-d') : '')) }}">
+                            <tr class="exam-row" data-region="{{ $exam->target_region ?? 'all' }}" data-search-text="{{ strtolower($exam->title . ' ' . $examSubName . ' ' . ($exam->target_region_label ?? '') . ' ' . ($exam->created_at ? $exam->created_at->format('Y-m-d') : '')) }}">
                                 <td style="text-align: center; font-weight: 800; color: #64748b;">
                                     {{ $loop->iteration }}
                                 </td>
@@ -186,7 +203,16 @@
                                     <div class="ed-exam-title-cell">
                                         <i class="fa-solid fa-file-pen exam-title-icon"></i>
                                         <div>
-                                            <span class="exam-name">{{ $exam->title }}</span>
+                                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                                <span class="exam-name">{{ $exam->title }}</span>
+                                                @if($exam->target_region === 'gaza')
+                                                    <span class="badge-region-gaza" style="font-size: 0.68rem; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 2px 7px; border-radius: 6px; font-weight: 700;">🌿 {{ __('قطاع غزة') }}</span>
+                                                @elseif($exam->target_region === 'west_bank')
+                                                    <span class="badge-region-wb" style="font-size: 0.68rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 2px 7px; border-radius: 6px; font-weight: 700;">🏛️ {{ __('الضفة والقدس') }}</span>
+                                                @else
+                                                    <span class="badge-region-all" style="font-size: 0.68rem; background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; padding: 2px 7px; border-radius: 6px; font-weight: 700;">🌐 {{ __('منهاج مشترك') }}</span>
+                                                @endif
+                                            </div>
                                             @if($exam->stage)
                                                 <small class="exam-stage-meta">
                                                     <i class="fa-solid fa-graduation-cap"></i> {{ $exam->stage->label_ar ?? $exam->stage->name }}
@@ -296,6 +322,20 @@
 
 <!-- دوال التفاعل وتأكيد الحذف والبحث الفوري -->
 <script>
+let currentRegionFilter = 'all';
+
+function filterByRegion(region) {
+    currentRegionFilter = region;
+    document.querySelectorAll('.region-filter-btn').forEach(btn => {
+        if (btn.getAttribute('data-region') === region) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    filterExamsTable();
+}
+
 function filterExamsTable() {
     const input = document.getElementById('examSearchInput');
     const filter = input ? input.value.toLowerCase().trim() : '';
@@ -311,7 +351,14 @@ function filterExamsTable() {
     let visibleCount = 0;
     rows.forEach(row => {
         const text = row.getAttribute('data-search-text') || '';
-        if (text.includes(filter)) {
+        const reg = row.getAttribute('data-region') || 'all';
+
+        const matchesSearch = !filter || text.includes(filter);
+        const matchesRegion = (currentRegionFilter === 'all') || 
+                              (currentRegionFilter === 'common' && (reg === 'all' || !reg)) ||
+                              (currentRegionFilter === reg);
+
+        if (matchesSearch && matchesRegion) {
             row.style.display = '';
             visibleCount++;
         } else {
@@ -706,6 +753,36 @@ function confirmDelete(id) {
     }
     #clearSearchBtn:hover {
         color: #ef4444;
+    }
+    .toolbar-region-filters {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .region-filter-btn {
+        background: #f8fafc;
+        border: 1px solid var(--ed-border-slate);
+        color: #475569;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .region-filter-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+    .region-filter-btn.active {
+        background: var(--ed-royal-navy);
+        color: #ffffff;
+        border-color: var(--ed-royal-navy);
+        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
     }
     .toolbar-stats-pill {
         display: inline-flex;

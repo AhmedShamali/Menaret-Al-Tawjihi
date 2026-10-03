@@ -20,7 +20,8 @@ class Exam extends Model
         'show_result_immediately',
         'is_published',
         'is_active',
-        'status'
+        'status',
+        'target_region',
     ];
 
     protected $casts = [
@@ -194,5 +195,64 @@ class Exam extends Model
     public function submissions()
     {
         return $this->hasMany(ExamSubmission::class);
+    }
+
+    /**
+     * نص المنطقة المستهدفة بالاختبار بالعربية
+     */
+    public function getTargetRegionLabelAttribute(): string
+    {
+        return match($this->target_region) {
+            'gaza'      => 'قطاع غزة 🌿',
+            'west_bank' => 'الضفة الغربية 🏛️',
+            default     => 'منهاج مشترك (الكل) 🌐',
+        };
+    }
+
+    /**
+     * شارة وبيانات تصميم المنطقة المستهدفة للاختبار
+     */
+    public function getTargetRegionBadgeAttribute(): array
+    {
+        return match($this->target_region) {
+            'gaza' => [
+                'label' => 'غزة العزة 🌿',
+                'bg'    => '#ecfdf5',
+                'color' => '#065f46',
+                'border'=> '#a7f3d0',
+                'icon'  => 'fa-solid fa-seedling',
+            ],
+            'west_bank' => [
+                'label' => 'الضفة والقدس 🏛️',
+                'bg'    => '#eff6ff',
+                'color' => '#1e40af',
+                'border'=> '#bfdbfe',
+                'icon'  => 'fa-solid fa-landmark',
+            ],
+            default => [
+                'label' => 'مشترك للجميع 🌐',
+                'bg'    => '#f8fafc',
+                'color' => '#475569',
+                'border'=> '#cbd5e1',
+                'icon'  => 'fa-solid fa-globe',
+            ],
+        };
+    }
+
+    /**
+     * نطاق استعلام لتصفية الاختبارات المتاحة لمنطقة معينة
+     */
+    public function scopeForRegion($query, ?string $region)
+    {
+        if (empty($region)) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($region) {
+            $q->where('target_region', 'all')
+              ->orWhereNull('target_region')
+              ->orWhere('target_region', '')
+              ->orWhere('target_region', $region);
+        });
     }
 }
