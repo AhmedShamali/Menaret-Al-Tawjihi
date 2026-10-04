@@ -163,6 +163,8 @@ class AdminManagerController extends Controller {
             $photoPath = \App\Support\MediaHelper::store($request->file('photo'), 'teachers/photos');
         }
 
+        $targetRole = in_array($request->role, ['teacher', 'videographer']) ? $request->role : 'teacher';
+
         $teacherData = [
             'name'           => $request->name,
             'email'          => $request->email,
@@ -171,9 +173,9 @@ class AdminManagerController extends Controller {
             'phone'          => $request->phone,
             'major'          => $request->major,
             'bio'            => $request->bio,
-            'subject_id'     => $request->subject_id,
+            'subject_id'     => $targetRole === 'videographer' ? null : $request->subject_id,
             'photo'          => $photoPath,
-            'role'           => 'teacher',
+            'role'           => $targetRole,
         ];
 
         try {
@@ -183,8 +185,8 @@ class AdminManagerController extends Controller {
             $teacher = User::create($teacherData);
         }
 
-        // إسناد المادة للمدرس إذا تم تحديدها
-        if ($request->filled('subject_id')) {
+        // إسناد المادة للمدرس إذا تم تحديدها وكان الدور معلماً
+        if ($targetRole === 'teacher' && $request->filled('subject_id')) {
             \App\Models\Subject::where('id', $request->subject_id)->update([
                 'user_id' => $teacher->id,
                 'teacher_id' => $teacher->id,
@@ -192,7 +194,8 @@ class AdminManagerController extends Controller {
             ]);
         }
 
-        return response()->json(['success' => true, 'title' => 'تم إنشاء ملف المدرس بنجاح ✅']);
+        $successMsg = $targetRole === 'videographer' ? 'تم إنشاء وتفعيل حساب المصور بنجاح ✅' : 'تم إنشاء ملف المدرس بنجاح ✅';
+        return response()->json(['success' => true, 'title' => $successMsg]);
     }
 
     /**

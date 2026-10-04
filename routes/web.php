@@ -450,3 +450,20 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     // تذاكر الدعم الفني
     Route::post('/support/ticket', [\App\Http\Controllers\CommunicationController::class, 'submitTicket'])->name('support.ticket');
 });
+
+/*
+|--------------------------------------------------------------------------
+| 5. بوابة المصور ومنسق الوسائط (Videographer Portal)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('videographer.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'dashboard'])->name('dashboard');
+    Route::get('/contents', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'index'])->name('contents.index');
+    Route::get('/contents/create', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'create'])->name('contents.create');
+    Route::post('/contents', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'store'])->name('contents.store');
+    Route::delete('/contents/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'destroy'])->name('contents.destroy')->whereNumber('id');
+
+    // الرفع المجزأ واستئناف الرفع للملفات الكبيرة
+    Route::match(['get', 'post'], '/contents/upload-chunk', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'uploadChunk'])->name('contents.upload_chunk');
+    Route::match(['get', 'post'], '/contents/check-chunk-status', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'checkChunkStatus'])->name('contents.check_chunk_status');
+});

@@ -623,6 +623,12 @@
             border: 1px solid #a7f3d0;
         }
 
+        .role-badge-videographer {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
         .role-badge-student {
             background: #eff6ff;
             color: #1d4ed8;
@@ -2191,6 +2197,14 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('videographer.contents.create') }}" class="nav-item {{ Request::is('videographer/contents/create*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-purple"><i class="fa-solid fa-layer-group"></i></span>
+                            <span>{{ __('استوديو التوزيع المتعدد للمصور') }}</span>
+                        </div>
+                    </div>
+                </a>
 
                 <span class="group-label"><i class="fa-solid fa-sack-dollar"></i> {{ __('الاشتراكات والمالية') }}</span>
                 <a href="{{ route('admin.subjects.pricing') }}" class="nav-item {{ Request::is('admin/subjects/pricing*') ? 'active' : '' }}">
@@ -2361,6 +2375,34 @@
                 </a>
             @endif
 
+            @if(auth()->check() && auth()->user()->role === 'videographer')
+                <span class="group-label"><i class="fa-solid fa-video"></i> {{ __('استوديو المصور الأكاديمي') }}</span>
+                <a href="{{ route('videographer.dashboard') }}" class="nav-item {{ Request::is('videographer/dashboard*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-gauge-high"></i></span>
+                            <span>{{ __('لوحة التحكم والإحصائيات') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('videographer.contents.create') }}" class="nav-item {{ Request::is('videographer/contents/create*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-emerald"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+                            <span>{{ __('رفع وتوزيع محاضرة جديدة') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('videographer.contents.index') }}" class="nav-item {{ Request::is('videographer/contents') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-purple"><i class="fa-solid fa-film"></i></span>
+                            <span>{{ __('سجل ومكتبة المحاضرات') }}</span>
+                        </div>
+                    </div>
+                </a>
+            @endif
+
             @if(auth('student')->check() || (auth()->check() && auth()->user()->role === 'student'))
                 <span class="group-label"><i class="fa-solid fa-graduation-cap"></i> {{ __('المساحة التعليمية') }}</span>
                 <a href="{{ route('student.dashboard') }}" class="nav-item {{ Request::is('student/dashboard*') ? 'active' : '' }}">
@@ -2489,6 +2531,8 @@
                             <span class="role-badge role-badge-admin"><i class="fa-solid fa-shield-halved"></i> {{ __('مدير عام') }}</span>
                         @elseif($userRole === 'teacher')
                             <span class="role-badge role-badge-teacher"><i class="fa-solid fa-chalkboard-user"></i> {{ __('معلم معتمد') }}</span>
+                        @elseif($userRole === 'videographer')
+                            <span class="role-badge role-badge-videographer"><i class="fa-solid fa-video"></i> {{ __('مصور أكاديمي') }}</span>
                         @else
                             <span class="role-badge role-badge-student"><i class="fa-solid fa-graduation-cap"></i> {{ __('طالب توجيهي') }}</span>
                         @endif
@@ -2821,6 +2865,19 @@
             <a href="{{ route('teacher.admin.chat') }}" class="bottom-nav-item {{ Request::is('teacher/admin/chat*') ? 'active' : '' }}">
                 <i class="fa-solid fa-shield-halved"></i>
                 <span>{{ __('الإدارة') }}</span>
+            </a>
+        @elseif(auth()->check() && auth()->user()->role === 'videographer')
+            <a href="{{ route('videographer.dashboard') }}" class="bottom-nav-item {{ Request::is('videographer/dashboard*') ? 'active' : '' }}">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>{{ __('الرئيسية') }}</span>
+            </a>
+            <a href="{{ route('videographer.contents.create') }}" class="bottom-nav-item {{ Request::is('videographer/contents/create*') ? 'active' : '' }}">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>{{ __('رفع محاضرة') }}</span>
+            </a>
+            <a href="{{ route('videographer.contents.index') }}" class="bottom-nav-item {{ Request::is('videographer/contents') ? 'active' : '' }}">
+                <i class="fa-solid fa-film"></i>
+                <span>{{ __('المكتبة') }}</span>
             </a>
         @else
             <a href="/" class="bottom-nav-item {{ Request::is('/') ? 'active' : '' }}">

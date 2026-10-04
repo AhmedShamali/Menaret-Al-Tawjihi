@@ -25,12 +25,15 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // 2. تسجيل الـ Aliases للـ Middleware ليتوافق مع ملف routes/web.php
         $middleware->alias([
-            'IsAdmin'   => \App\Http\Middleware\IsAdmin::class,
-            'IsTeacher' => \App\Http\Middleware\IsTeacher::class,
-            'IsStudent' => \App\Http\Middleware\IsStudent::class,
-            'admin'     => \App\Http\Middleware\IsAdmin::class,   // احتياطاً
-            'teacher'   => \App\Http\Middleware\IsTeacher::class, // احتياطاً
-            'student'   => \App\Http\Middleware\IsStudent::class, // احتياطاً
+            'IsAdmin'        => \App\Http\Middleware\IsAdmin::class,
+            'IsTeacher'      => \App\Http\Middleware\IsTeacher::class,
+            'IsStudent'      => \App\Http\Middleware\IsStudent::class,
+            'IsVideographer' => \App\Http\Middleware\IsVideographer::class,
+            'admin'          => \App\Http\Middleware\IsAdmin::class,   // احتياطاً
+            'teacher'        => \App\Http\Middleware\IsTeacher::class, // احتياطاً
+            'student'        => \App\Http\Middleware\IsStudent::class, // احتياطاً
+            'videographer'   => \App\Http\Middleware\IsVideographer::class,
+            'checkRole'      => \App\Http\Middleware\CheckRole::class,
         ]);
 
         // 3. توجيه المستخدمين المسجلين مسبقاً إذا حاولوا فتح صفحة الدخول
@@ -46,6 +49,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 }
                 if ($user->role === 'teacher') {
                     return route('teacher.dashboard');
+                }
+                if ($user->role === 'videographer') {
+                    return route('videographer.dashboard');
                 }
             }
 

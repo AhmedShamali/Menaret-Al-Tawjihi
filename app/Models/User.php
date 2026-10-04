@@ -91,5 +91,25 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\TeacherSalary::class, 'teacher_id')->orderBy('year', 'desc')->orderBy('month', 'desc');
     }
+
+    public function uploadedContents()
+    {
+        return $this->hasMany(\App\Models\EducationalContent::class, 'uploaded_by');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher';
+    }
+
+    public function isVideographer(): bool
+    {
+        return $this->role === 'videographer';
+    }
 }
 

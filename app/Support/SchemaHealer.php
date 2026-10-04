@@ -120,11 +120,18 @@ class SchemaHealer
                 }
             }
 
-            // 5. فحص عمود المنطقة المستهدفة في جدول المحتوى التعليمي
-            if (Schema::hasTable('educational_contents') && !Schema::hasColumn('educational_contents', 'target_region')) {
-                Schema::table('educational_contents', function (Blueprint $table) {
-                    $table->string('target_region', 20)->default('all');
-                });
+            // 5. فحص عمود المنطقة المستهدفة ومن قام بالرفع في جدول المحتوى التعليمي
+            if (Schema::hasTable('educational_contents')) {
+                if (!Schema::hasColumn('educational_contents', 'target_region')) {
+                    Schema::table('educational_contents', function (Blueprint $table) {
+                        $table->string('target_region', 20)->default('all');
+                    });
+                }
+                if (!Schema::hasColumn('educational_contents', 'uploaded_by')) {
+                    Schema::table('educational_contents', function (Blueprint $table) {
+                        $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
+                    });
+                }
             }
 
             // 6. فحص عمود المنطقة المستهدفة في جدول الامتحانات

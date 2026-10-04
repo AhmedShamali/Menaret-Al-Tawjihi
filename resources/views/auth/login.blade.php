@@ -348,7 +348,7 @@
         /* أزرار اختيار الصفة الأكاديمية (Segmented Tabs) */
         .role-tabs-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: repeat(4, 1fr);
             gap: 6px;
             margin-bottom: 16px;
             background: var(--ed-surface-alt);
@@ -776,6 +776,9 @@
                     <button type="button" class="role-tab-btn" data-role="teacher" onclick="switchRole('teacher')">
                         <i class="fa-solid fa-chalkboard-user"></i> {{ __('معلم') }}
                     </button>
+                    <button type="button" class="role-tab-btn" data-role="videographer" onclick="switchRole('videographer')">
+                        <i class="fa-solid fa-video"></i> {{ __('مصور') }}
+                    </button>
                     <button type="button" class="role-tab-btn" data-role="admin" onclick="switchRole('admin')">
                         <i class="fa-solid fa-shield-halved"></i> {{ __('إدارة') }}
                     </button>
@@ -908,9 +911,11 @@
         const i18n = {
             studentSubmit: "{{ __('تسجيل الدخول كطالب') }}",
             teacherSubmit: "{{ __('الدخول لبوابة المعلمين') }}",
+            videographerSubmit: "{{ __('الدخول لبوابة المصور') }}",
             adminSubmit: "{{ __('الدخول للوحة الإدارة') }}",
             studentText: "{{ __('بوابة دخول الطلبة — أهلاً بك لمتابعة مساقاتك واختباراتك اليومية.') }}",
             teacherText: "{{ __('بوابة الكادر التعليمي — إدارة المقررات والامتحانات ورصد درجات الطلبة.') }}",
+            videographerText: "{{ __('بوابة تصوير وإنتاج المحاضرات — رفع الفيديوهات والملفات وتوزيعها على الفروع والمواد.') }}",
             adminText: "{{ __('بوابة الإدارة المركزية — الإشراف الأكاديمي واعتماد الاشتراكات والإعدادات.') }}"
         };
 
@@ -939,6 +944,12 @@
                 if (regBox) regBox.style.display = 'none';
                 roleIcon.className = 'fa-solid fa-chalkboard-user';
                 roleText.innerText = i18n.teacherText;
+            } else if (role === 'videographer') {
+                emailInput.placeholder = 'cameraman@tawjihi.ps';
+                submitLabel.innerText = i18n.videographerSubmit;
+                if (regBox) regBox.style.display = 'none';
+                roleIcon.className = 'fa-solid fa-video';
+                roleText.innerText = i18n.videographerText;
             } else if (role === 'admin') {
                 emailInput.placeholder = 'admin@tawjihi.ps';
                 submitLabel.innerText = i18n.adminSubmit;

@@ -121,8 +121,33 @@
                     </div>
                 </div>
 
+                <!-- كرت نوع الحساب والدور -->
+                <div class="uni-card" style="border: 1.5px solid #bfdbfe;">
+                    <div class="uni-card-header">
+                        <div class="header-icon primary-bg">
+                            <i class="fa-solid fa-user-tag"></i>
+                        </div>
+                        <div>
+                            <h3>{{ __('نوع الحساب والصلاحية') }}</h3>
+                            <span class="header-desc">{{ __('اختر دور المستخدم في المنصة') }}</span>
+                        </div>
+                    </div>
+                    <div class="uni-card-body">
+                        <div style="display: flex; gap: 10px;">
+                            <label style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid #1d4ed8; border-radius: 10px; cursor: pointer; background: #eff6ff;" id="roleTeacherLabel">
+                                <input type="radio" name="role" value="teacher" checked onchange="toggleRoleFields('teacher')" style="accent-color: #1d4ed8;">
+                                <strong style="font-size: 0.85rem; color: #1e3a8a;">{{ __('معلم معتمد') }}</strong>
+                            </label>
+                            <label style="flex: 1; display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; background: #fff;" id="roleVideographerLabel">
+                                <input type="radio" name="role" value="videographer" onchange="toggleRoleFields('videographer')" style="accent-color: #1d4ed8;">
+                                <strong style="font-size: 0.85rem; color: #334155;">{{ __('مصور استوديو') }}</strong>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- كرت التخصيص الأكاديمي -->
-                <div class="uni-card accent-border">
+                <div class="uni-card accent-border" id="academicCourseCard">
                     <div class="uni-card-header">
                         <div class="header-icon accent-bg">
                             <i class="fa-solid fa-graduation-cap"></i>
@@ -551,6 +576,32 @@
 
 <script>
     const stagesData = @json($stages);
+
+    function toggleRoleFields(role) {
+        const stageCard = document.getElementById('academicCourseCard');
+        const stageSelect = document.getElementById('stage_select');
+        const subjectSelect = document.getElementById('subject_select');
+        const roleTeacherLabel = document.getElementById('roleTeacherLabel');
+        const roleVideographerLabel = document.getElementById('roleVideographerLabel');
+
+        if (role === 'videographer') {
+            stageCard.style.display = 'none';
+            stageSelect.removeAttribute('required');
+            subjectSelect.removeAttribute('required');
+            roleVideographerLabel.style.borderColor = '#1d4ed8';
+            roleVideographerLabel.style.background = '#eff6ff';
+            roleTeacherLabel.style.borderColor = '#cbd5e1';
+            roleTeacherLabel.style.background = '#fff';
+        } else {
+            stageCard.style.display = 'block';
+            stageSelect.setAttribute('required', 'required');
+            subjectSelect.setAttribute('required', 'required');
+            roleTeacherLabel.style.borderColor = '#1d4ed8';
+            roleTeacherLabel.style.background = '#eff6ff';
+            roleVideographerLabel.style.borderColor = '#cbd5e1';
+            roleVideographerLabel.style.background = '#fff';
+        }
+    }
 
     document.getElementById('stage_select').onchange = function() {
         const subPicker = document.getElementById('subject_select');

@@ -22,7 +22,7 @@ class AuthController extends Controller
         $request->validate([
             'email'    => 'required|string',
             'password' => 'required|string',
-            'role'     => 'required|in:student,teacher,admin',
+            'role'     => 'required|in:student,teacher,admin,videographer',
         ], [
             'email.required'    => 'يرجى إدخال اسم المستخدم، البريد الأكاديمي، أو رقم الهوية.',
             'password.required' => 'يرجى إدخال كلمة المرور.',
@@ -31,7 +31,17 @@ class AuthController extends Controller
 
         $input = trim($request->input('email'));
         $password = $request->input('password');
-        $role = $request->role; // طالب، مدرس، أو مدير
+        $role = $request->role; // طالب، مدرس، مدير، أو مصور
+
+        $getRoleName = function($r) {
+            return match($r) {
+                'admin'        => 'مدير',
+                'teacher'      => 'مدرس',
+                'videographer' => 'مصور / منسق وسائط',
+                'student'      => 'طالب',
+                default        => $r
+            };
+        };
 
         // 1. محاولة الدخول كطالب
         if ($role === 'student') {
@@ -69,7 +79,7 @@ class AuthController extends Controller
                 return redirect()->route('student.dashboard');
             }
         }
-        // 2. محاولة الدخول لموظفي النظام (مدرس/مدير)
+        // 2. محاولة الدخول لموظفي وكادر النظام (مدرس / مدير / مصور)
         else {
             // البحث عن المستخدم عبر البريد أو الاسم أو النطاق الرسمي
             $user = User::where('email', $input)
@@ -80,8 +90,8 @@ class AuthController extends Controller
             if ($user && Hash::check($password, $user->password)) {
                 // التحقق: هل الدور الذي اختاره المستخدم يطابق دوره في قاعدة البيانات؟
                 if ($role !== $user->role) {
-                    $roleName = $user->role === 'admin' ? 'مدير' : ($user->role === 'teacher' ? 'مدرس' : $user->role);
-                    $requestedRoleName = $role === 'admin' ? 'مدير' : ($role === 'teacher' ? 'مدرس' : $role);
+                    $roleName = $getRoleName($user->role);
+                    $requestedRoleName = $getRoleName($role);
 
                     return back()->withErrors([
                         'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
@@ -100,6 +110,10 @@ class AuthController extends Controller
                 if ($user->role === 'teacher') {
                     return redirect()->route('teacher.dashboard');
                 }
+
+                if ($user->role === 'videographer') {
+                    return redirect()->route('videographer.dashboard');
+                }
             }
 
             // محاولة بديلة عبر attempt القياسي
@@ -111,8 +125,8 @@ class AuthController extends Controller
                     $request->session()->invalidate();
                     $request->session()->regenerateToken();
 
-                    $roleName = $user->role === 'admin' ? 'مدير' : ($user->role === 'teacher' ? 'مدرس' : $user->role);
-                    $requestedRoleName = $role === 'admin' ? 'مدير' : ($role === 'teacher' ? 'مدرس' : $role);
+                    $roleName = $getRoleName($user->role);
+                    $requestedRoleName = $getRoleName($role);
 
                     return back()->withErrors([
                         'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
@@ -128,6 +142,10 @@ class AuthController extends Controller
 
                 if ($user->role === 'teacher') {
                     return redirect()->route('teacher.dashboard');
+                }
+
+                if ($user->role === 'videographer') {
+                    return redirect()->route('videographer.dashboard');
                 }
             }
         }
