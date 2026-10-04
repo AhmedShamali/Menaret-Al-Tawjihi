@@ -160,20 +160,16 @@ class NotificationController extends Controller
             }
         }
 
-        // 3. توجيه ذكي لإشعارات الشكاوى والاستفسارات والتذاكر لشاشة الدعم والاستفسارات
+        // 3. توجيه ذكي لإشعارات الشكاوى وتذاكر الدعم لشاشة الشكاوى وتذاكر الدعم
         if ($user && $user->role === 'admin' && !empty($data)) {
             $notifTitle = $data['title'] ?? '';
             $notifMsg   = $data['message'] ?? '';
             $notifType  = $data['type'] ?? '';
 
-            if (str_contains($notifTitle, 'شكوى') || 
-                str_contains($notifTitle, 'استفسار') || 
-                str_contains($notifTitle, 'تذكرة') || 
-                str_contains($notifTitle, 'شكاوى') ||
-                str_contains($notifMsg, 'شكوى') ||
-                str_contains($notifMsg, 'تذكرة') ||
-                $notifType === 'support') {
+            $isChatMessage = ($notifType === 'message' || isset($data['student_id']));
+            $hasComplaintData = (!empty($data['open_id']) || !empty($data['complaint_id']) || !empty($data['inquiry_id']));
 
+            if (!$isChatMessage && ($hasComplaintData || $notifType === 'support' || str_contains($notifTitle, 'شكوى') || str_contains($notifMsg, 'شكوى') || str_contains($notifTitle, 'تذكرة'))) {
                 // إذا كان الرابط القديم يشير خطأً إلى الرسائل المباشرة /inbox أو لم يكن محدداً
                 if (empty($targetUrl) || str_contains($targetUrl, 'inbox') || str_contains($targetUrl, 'messages')) {
                     $openId = $data['open_id'] ?? $data['complaint_id'] ?? $data['inquiry_id'] ?? null;

@@ -29,8 +29,7 @@ class CommunicationController extends Controller
         $students = Student::with('stage')
             ->withCount([
                 'messages as unread_count' => function ($q) {
-                    $q->whereNull('teacher_id')
-                      ->where('sender_type', 'student')
+                    $q->where('sender_type', 'student')
                       ->where(function($sub) {
                           $sub->where('is_read', false)->orWhereNull('is_read');
                       });
@@ -40,13 +39,13 @@ class CommunicationController extends Controller
 
         $students->each(function ($st) {
             $lastMsg = Message::where('student_id', $st->id)
-                ->whereNull('teacher_id')
                 ->latest()
                 ->first();
             $st->last_message = $lastMsg ? $lastMsg->message : null;
             $st->last_message_time = $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->diffForHumans() : null;
             $st->last_message_at = $lastMsg ? $lastMsg->created_at : null;
             $st->last_sender_type = $lastMsg ? $lastMsg->sender_type : null;
+            $st->last_teacher_id = $lastMsg ? $lastMsg->teacher_id : null;
         });
 
         $chats = $students->sort(function ($a, $b) use ($selectedStudentId) {
@@ -256,7 +255,9 @@ class CommunicationController extends Controller
     public function fetchMessages($id)
     {
         try {
-            $isStudent = Auth::guard('student')->check();
+            $webUser = Auth::guard('web')->user() ?? Auth::user();
+            $isAdmin = ($webUser && $webUser->role === 'admin') || request()->is('admin/*');
+            $isStudent = !$isAdmin && Auth::guard('student')->check();
 
             if ($isStudent) {
                 // عندما يكون المتصل طالباً: $id يمثل admin_id، بينما الطالب هو صاحب الجلسة الحالي
@@ -280,24 +281,32 @@ class CommunicationController extends Controller
                 $studentId = $id;
 
                 Message::where('student_id', $studentId)
-                    ->whereNull('teacher_id')
                     ->where('sender_type', 'student')
                     ->where(function($q) {
                         $q->where('is_read', false)->orWhereNull('is_read');
                     })
                     ->update(['is_read' => true]);
 
-                $query = Message::where('student_id', $studentId)
-                    ->whereNull('teacher_id');
+                $query = Message::with('teacher')->where('student_id', $studentId);
             }
 
             $messages = $query->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
+                    $teacherName = null;
+                    if ($msg->teacher) {
+                        $teacherName = $msg->teacher->name;
+                    } elseif ($msg->teacher_id) {
+                        $tUser = User::find($msg->teacher_id);
+                        $teacherName = $tUser ? $tUser->name : null;
+                    }
+
                     return [
                         'id'                    => $msg->id,
                         'message'               => $msg->message,
                         'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
+                        'teacher_id'            => $msg->teacher_id,
+                        'teacher_name'          => $teacherName,
                         'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : '',
                         'created_at_human'      => $msg->created_at ? $msg->created_at->diffForHumans() : '',
                     ];
@@ -702,6 +711,9 @@ class CommunicationController extends Controller
                 'message'     => trim($request->message),
             ]);
 
+            $teacherUser = User::find($request->teacher_id);
+            $teacherName = $teacherUser ? $teacherUser->name : 'معلم المادة';
+
             NotificationService::notifyTeacher(
                 $request->teacher_id,
                 'استفسار وسؤال جديد من طالب',
@@ -713,10 +725,14 @@ class CommunicationController extends Controller
 
             NotificationService::notifyAdmin(
                 'استفسار دراسي جديد من طالب',
-                "قام الطالب {$student->name_ar} بإرسال استفسار دراسي لمعلم المادة: " . Str::limit($request->message, 70),
+                "قام الطالب {$student->name_ar} بإرسال استفسار دراسي للأستاذ ({$teacherName}): " . Str::limit($request->message, 70),
                 'message',
                 route('admin.messages.index', ['student_id' => $student->id]),
-                'fa-comments'
+                'fa-comments',
+                [
+                    'student_id' => $student->id,
+                    'teacher_id' => $request->teacher_id,
+                ]
             );
 
             return response()->json([

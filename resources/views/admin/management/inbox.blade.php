@@ -63,6 +63,7 @@
                         $lastText = $student->last_message ?? 'محادثة جديدة';
                         $lastTime = $student->last_message_time ?? '';
                         $isMe = ($student->last_sender_type === 'admin');
+                        $isTeacher = ($student->last_sender_type === 'teacher');
                     @endphp
                     <div onclick="loadChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}', '{{ addslashes($phone) }}', '{{ $student->status }}')"
                          class="student-chat-item {{ $hasUnread ? 'unread' : '' }} {{ (isset($selectedStudentId) && $selectedStudentId == $student->id) ? 'active' : '' }}"
@@ -97,7 +98,12 @@
                             <div class="item-snippet-line">
                                 <span class="snippet-text" id="snippet_{{ $student->id }}">
                                     @if($student->last_message)
-                                        @if($isMe)<strong class="me-prefix">أنت: </strong>@endif{{ Str::limit($lastText, 32) }}
+                                        @if($isMe)
+                                            <strong class="me-prefix">أنت: </strong>
+                                        @elseif($isTeacher)
+                                            <strong class="teacher-prefix" style="color: #059669;">المعلم: </strong>
+                                        @endif
+                                        {{ Str::limit($lastText, 32) }}
                                     @else
                                         <span class="new-conversation-hint">انقر لبدء المحادثة</span>
                                     @endif
@@ -1100,6 +1106,58 @@
         border-radius: 14px 14px 14px 4px;
     }
 
+    .bubble-row.is-teacher {
+        justify-content: flex-start;
+        flex-direction: row;
+    }
+
+    .bubble-row.is-teacher .bubble-avatar-mini {
+        background: #0d9488;
+        color: #ffffff;
+    }
+
+    .bubble-row.is-teacher .bubble-card {
+        background: #f0fdf4;
+        color: #064e3b;
+        border: 1px solid #bbf7d0;
+        border-radius: 14px 14px 14px 4px;
+    }
+
+    .bubble-row.is-teacher .bubble-sender-name {
+        color: #047857;
+    }
+
+    .bubble-row.is-teacher .bubble-footer-meta {
+        color: #059669;
+    }
+
+    .badge-role-teacher {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #dcfce7;
+        color: #15803d;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 6px;
+        border: 1px solid #bbf7d0;
+    }
+
+    .inquiry-teacher-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #dbeafe;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+    }
+
     .bubble-sender-name {
         font-size: 0.72rem;
         font-weight: 800;
@@ -1531,19 +1589,43 @@
 
         const sender = (msg.sender_type || '').toLowerCase().trim();
         const isAdmin = (sender === 'admin');
+        const isTeacher = (sender === 'teacher');
         const time = msg.created_at_formatted || '';
         const studentName = document.getElementById('active_user_name').innerText;
-        const authorLabel = isAdmin ? 'إدارة المنصة' : studentName;
-        const avatarLetter = isAdmin ? '<i class="fa-solid fa-user-shield"></i>' : studentName.charAt(0);
+
+        let authorLabel = studentName;
+        let avatarLetter = studentName.charAt(0);
+        let bubbleClass = 'is-student';
+        let extraTagHtml = '';
+
+        if (isAdmin) {
+            authorLabel = 'إدارة المنصة';
+            avatarLetter = '<i class="fa-solid fa-user-shield"></i>';
+            bubbleClass = 'is-admin';
+        } else if (isTeacher) {
+            authorLabel = msg.teacher_name ? 'الأستاذ: ' + msg.teacher_name : 'معلم المادة';
+            avatarLetter = '<i class="fa-solid fa-chalkboard-user"></i>';
+            bubbleClass = 'is-teacher';
+            extraTagHtml = `<span class="badge-role-teacher"><i class="fa-solid fa-graduation-cap"></i> معلم</span>`;
+        } else {
+            // Student
+            if (msg.teacher_name) {
+                extraTagHtml = `<div class="inquiry-teacher-tag"><i class="fa-solid fa-graduation-cap"></i> استفسار دراسي موجه للأستاذ: <strong>${escapeHtml(msg.teacher_name)}</strong></div>`;
+            }
+        }
 
         const row = document.createElement('div');
-        row.className = `bubble-row ${isAdmin ? 'is-admin' : 'is-student'}`;
+        row.className = `bubble-row ${bubbleClass}`;
         row.innerHTML = `
             <div class="bubble-avatar-mini" title="${escapeHtml(authorLabel)}">
                 ${avatarLetter}
             </div>
             <div class="bubble-card">
-                <span class="bubble-sender-name">${escapeHtml(authorLabel)}</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
+                    <span class="bubble-sender-name">${escapeHtml(authorLabel)}</span>
+                    ${isTeacher ? extraTagHtml : ''}
+                </div>
+                ${(!isTeacher && extraTagHtml) ? extraTagHtml : ''}
                 <div class="bubble-message-text">${escapeHtml(msg.message)}</div>
                 <div class="bubble-footer-meta">
                     <span>${escapeHtml(time)}</span>

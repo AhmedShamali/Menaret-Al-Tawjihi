@@ -90,7 +90,8 @@ class NotificationService
         string $message,
         string $type = 'system',
         ?string $actionUrl = null,
-        ?string $icon = null
+        ?string $icon = null,
+        array $extraData = []
     ): void {
         try {
             $admins = User::where('role', 'admin')->get();
@@ -108,8 +109,18 @@ class NotificationService
                 'student'  => 'fa-user-plus',
                 'exam'     => 'fa-file-signature',
                 'support'  => 'fa-headset',
+                'message'  => 'fa-comments',
                 default    => 'fa-shield-halved',
             };
+
+            $payload = array_merge([
+                'title'      => $title,
+                'message'    => $message,
+                'type'       => $type,
+                'action_url' => $actionUrl,
+                'icon'       => $iconClass,
+                'created_at' => now()->toIso8601String(),
+            ], $extraData);
 
             foreach ($admins as $admin) {
                 DB::table('notifications')->insert([
@@ -117,14 +128,7 @@ class NotificationService
                     'type'            => 'App\\Notifications\\AdminAlert',
                     'notifiable_type' => 'App\\Models\\User',
                     'notifiable_id'   => $admin->id,
-                    'data'            => json_encode([
-                        'title'      => $title,
-                        'message'    => $message,
-                        'type'       => $type,
-                        'action_url' => $actionUrl,
-                        'icon'       => $iconClass,
-                        'created_at' => now()->toIso8601String(),
-                    ], JSON_UNESCAPED_UNICODE),
+                    'data'            => json_encode($payload, JSON_UNESCAPED_UNICODE),
                     'read_at'         => null,
                     'created_at'      => now(),
                     'updated_at'      => now(),

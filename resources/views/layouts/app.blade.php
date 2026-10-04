@@ -2541,18 +2541,18 @@
                             });
 
                             // 2. رسائل الطلاب وتذاكر الدعم غير المقروءة للمدير
-                            $msgNotifs = \App\Models\Message::whereNull('teacher_id')
-                                ->where('sender_type', 'student')
+                            $msgNotifs = \App\Models\Message::where('sender_type', 'student')
                                 ->where('is_read', false)
-                                ->with('student')
+                                ->with(['student', 'teacher'])
                                 ->latest()
                                 ->take(4)
                                 ->get()
                                 ->map(function($m) {
                                     $studentName = $m->student ? ($m->student->name_ar ?? $m->student->name ?? 'طالب') : 'طالب';
+                                    $subTitle = $m->teacher_id ? 'استفسار من ' . $studentName : 'رسالة جديدة من ' . $studentName;
                                     return (object)[
                                         'id'      => 'msg_' . $m->id,
-                                        'title'   => 'رسالة جديدة من ' . $studentName,
+                                        'title'   => $subTitle,
                                         'message' => $m->message,
                                         'icon'    => 'fa-comment-dots',
                                         'url'     => route('admin.messages.index', ['student_id' => $m->student_id]),
@@ -2560,7 +2560,7 @@
                                     ];
                                 });
 
-                            $unreadCount = $adminUser->unreadNotifications()->count() + \App\Models\Message::whereNull('teacher_id')->where('sender_type', 'student')->where('is_read', false)->count();
+                            $unreadCount = $adminUser->unreadNotifications()->count() + \App\Models\Message::where('sender_type', 'student')->where('is_read', false)->count();
                             $unreadItems = $dbNotifs->concat($msgNotifs)->take(8);
 
                         } elseif ($isWeb && auth()->user()->role === 'teacher') {
