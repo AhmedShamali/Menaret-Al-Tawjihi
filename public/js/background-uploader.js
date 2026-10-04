@@ -700,22 +700,26 @@
          * مزامنة الصفحة المفتوحة حالياً تلقائياً إذا كانت تحتوي على نموذج رفع
          */
         syncWithCurrentPage() {
-            // 1. مزامنة صفحة المصور (videographer/contents/create)
-            const vgForm = document.getElementById('videographerUploadForm');
-            if (vgForm) {
-                this.syncVideographerPage();
-            }
+            try {
+                // 1. مزامنة صفحة المصور (videographer/contents/create)
+                const vgForm = document.getElementById('videographerUploadForm');
+                if (vgForm) {
+                    this.syncVideographerPage();
+                }
 
-            // 2. مزامنة صفحة الإدارة / المعلم (educational_contents/create)
-            const edForm = document.getElementById('educationalContentForm');
-            if (edForm) {
-                this.syncEducationalContentPage();
-            }
+                // 2. مزامنة صفحة الإدارة / المعلم (educational_contents/create)
+                const edForm = document.getElementById('educationalContentForm');
+                if (edForm) {
+                    this.syncEducationalContentPage();
+                }
 
-            // 3. مزامنة صفحة مكتبة فيديوهات المعلم (teacher/videos/index)
-            const teacherVideoModal = document.getElementById('uploadVideoModal');
-            if (teacherVideoModal) {
-                this.syncTeacherVideosPage();
+                // 3. مزامنة صفحة مكتبة فيديوهات المعلم (teacher/videos/index)
+                const teacherVideoModal = document.getElementById('uploadVideoModal');
+                if (teacherVideoModal) {
+                    this.syncTeacherVideosPage();
+                }
+            } catch (e) {
+                console.warn("syncWithCurrentPage error:", e);
             }
         }
 
@@ -723,6 +727,16 @@
          * مزامنة خاصة بصفحة المصور
          */
         syncVideographerPage() {
+            // إذا كانت دالة المزامنة المخصصة للصفحة متاحة، نستخدمها مباشرة
+            if (typeof window.syncVideographerUploadUI === 'function') {
+                try {
+                    window.syncVideographerUploadUI(this.state);
+                    return;
+                } catch (e) {
+                    console.warn("window.syncVideographerUploadUI error:", e);
+                }
+            }
+
             const progressWrap = document.getElementById('chunkUploadProgressWrap');
             const fileNameEl = document.getElementById('uploadFileName');
             const fileSizeEl = document.getElementById('uploadFileSize');
@@ -733,15 +747,14 @@
             const uploadedVideoPathInput = document.getElementById('uploadedVideoPath');
             const formattedSizeInput = document.getElementById('formattedSize');
             const btnSubmit = document.getElementById('btnSubmitForm');
-            const videoFileInput = document.getElementById('videoFileInput');
 
             if (!progressWrap) return;
 
             // إذا كان هناك فيديو مكتمل أو قيد الرفع تابع لبوابة المصور
             if (this.hasActiveUpload() || this.hasCompletedUpload()) {
                 progressWrap.style.display = 'block';
-                if (fileNameEl) fileNameEl.textContent = this.state.fileName;
-                if (fileSizeEl) fileSizeEl.textContent = this.state.fileSizeFormatted;
+                if (fileNameEl && this.state.fileName) fileNameEl.textContent = this.state.fileName;
+                if (fileSizeEl && this.state.fileSizeFormatted) fileSizeEl.textContent = this.state.fileSizeFormatted;
                 if (percentageEl) percentageEl.textContent = this.state.progress + '%';
                 if (progressBar) progressBar.style.width = this.state.progress + '%';
 
@@ -765,21 +778,6 @@
                     }
                 }
             }
-
-            // منع إرسال ملف الفيديو الضخم مرتين عبر الفورم التقليدي بعد رفعه مجزأً
-            vgForm.addEventListener('submit', function (e) {
-                if (window.EdBackgroundUploader.hasActiveUpload()) {
-                    e.preventDefault();
-                    alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
-                    return false;
-                }
-                if (uploadedVideoPathInput && uploadedVideoPathInput.value) {
-                    // تفريغ الملف لكي لا يرفعه المتصفح مجدداً في طلب الـ POST العادي
-                    if (videoFileInput) {
-                        videoFileInput.removeAttribute('name');
-                    }
-                }
-            });
         }
 
         /**
@@ -843,23 +841,24 @@
                 // الروابط الداخلية فقط على نفس الدومين
                 if (targetUrl.origin !== window.location.origin) return;
 
-                // استثناء روابط الخروج أو التبديل اللغوي أو التوثيق
-                if (targetUrl.pathname.includes('/logout') || targetUrl.pathname.includes('/lang/')) return;
+                // استثناء روابط الخروج أو التبديل اللغوي أو التوثيق أو التنزيل المباشر
+                if (targetUrl.pathname.includes('/logout') || 
+                    targetUrl.pathname.includes('/lang/') || 
+                    targetUrl.pathname.includes('/download') ||
+                    targetUrl.pathname.endsWith('.pdf') ||
+                    targetUrl.pathname.endsWith('.zip')) return;
 
-                // مسارات اللوحات الداخلية المدعومة: videographer, admin, teacher, student
-                const supportedPrefixes = ['/videographer', '/admin', '/teacher', '/student'];
-                const isSupported = supportedPrefixes.some(p => targetUrl.pathname.startsWith(p));
-
-                if (isSupported) {
-                    e.preventDefault();
-                    this.navigate(targetUrl.href);
-                }
+                // دعم كافة المسارات الداخلية للنظام بسلاسة (سواء على الدومين الرئيسي أو مجلد فرعي مثل XAMPP)
+                e.preventDefault();
+                this.navigate(targetUrl.href);
             });
 
             // دعم زري الرجوع والتقدم في المتصفح
             window.addEventListener('popstate', (e) => {
                 if (e.state && e.state.edPjaxUrl) {
                     this.navigate(e.state.edPjaxUrl, false);
+                } else {
+                    this.navigate(window.location.href, false);
                 }
             });
         }
@@ -868,6 +867,13 @@
          * تحميل الصفحة الجديدة واستبدال المحتوى بسلاسة دون إيقاف الرفع
          */
         async navigate(url, pushState = true) {
+            // حفظ مسودة النموذج الحالي قبل المغادرة إن وجدت
+            try {
+                if (typeof window.saveVideographerDraft === 'function') {
+                    window.saveVideographerDraft();
+                }
+            } catch (e) {}
+
             // شريط تحميل علوي نحيف مثل يوتيوب
             let topLoader = document.getElementById('ed-top-loader');
             if (!topLoader) {
@@ -887,7 +893,9 @@
                 topLoader.style.width = '75%';
 
                 if (!response.ok) {
-                    window.location.href = url;
+                    if (!this.hasActiveUpload()) {
+                        window.location.href = url;
+                    }
                     return;
                 }
 
@@ -900,19 +908,29 @@
 
                 if (newContentBody && currentContentBody) {
                     // تحديث عنوان الصفحة
-                    document.title = newDoc.title;
+                    if (newDoc.title) {
+                        document.title = newDoc.title;
+                    }
 
                     // استبدال المحتوى
                     currentContentBody.innerHTML = newContentBody.innerHTML;
 
-                    // إعادة تنفيذ السكربتات المضمنة في المحتوى الجديد
-                    const scripts = currentContentBody.querySelectorAll('script');
-                    scripts.forEach(oldScript => {
-                        const newScript = document.createElement('script');
-                        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-                        newScript.textContent = oldScript.textContent;
-                        oldScript.parentNode.replaceChild(newScript, oldScript);
-                    });
+                    // إعادة تنفيذ السكربتات المضمنة بأمان تام دون تضارب المتغيرات العامة
+                    try {
+                        const scripts = currentContentBody.querySelectorAll('script');
+                        scripts.forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                            if (oldScript.src) {
+                                newScript.src = oldScript.src;
+                            } else {
+                                newScript.textContent = `(function(){\ntry {\n${oldScript.textContent}\n} catch(err) { console.warn("Page script execution:", err); }\n})();`;
+                            }
+                            oldScript.parentNode.replaceChild(newScript, oldScript);
+                        });
+                    } catch (e) {
+                        console.warn("Script execution warning:", e);
+                    }
 
                     // تحديث رابط المتصفح
                     if (pushState) {
@@ -920,23 +938,40 @@
                     }
 
                     // تحديث الحالة النشطة في القائمة الجانبية وشريط الجوال
-                    this.updateActiveNavLinks(url);
+                    try {
+                        this.updateActiveNavLinks(url);
+                    } catch (e) {}
 
                     // الصعود لأعلى الصفحة بسلاسة
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    try {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } catch (e) {}
 
-                    // إعادة تشغيل المزامنة مع الصفحة الجديدة
-                    this.syncWithCurrentPage();
+                    // إعادة مزامنة الرفع المستمر ومسودة النموذج مع الصفحة الجديدة
+                    try {
+                        this.syncWithCurrentPage();
+                    } catch (e) {
+                        console.warn("syncWithCurrentPage warning:", e);
+                    }
+
+                    // إرسال حدث مخصص للإشعار بتغير الصفحة
+                    try {
+                        window.dispatchEvent(new CustomEvent('ed:page-loaded', { detail: { url: url } }));
+                    } catch (e) {}
 
                     topLoader.style.width = '100%';
                     setTimeout(() => { topLoader.style.display = 'none'; topLoader.style.width = '0%'; }, 250);
                 } else {
-                    // إذا لم نجد محتوى متوافق نذهب بالمتصفح بشكل طبيعي
-                    window.location.href = url;
+                    // إذا لم نجد محتوى متوافق نذهب بالمتصفح بشكل طبيعي فقط إذا لم يكن هناك رفع جاري
+                    if (!this.hasActiveUpload()) {
+                        window.location.href = url;
+                    }
                 }
             } catch (err) {
-                // فشل الطلب: انتقال عادي بالمتصفح
-                window.location.href = url;
+                console.error("PJAX navigation error:", err);
+                if (!this.hasActiveUpload()) {
+                    window.location.href = url;
+                }
             }
         }
 

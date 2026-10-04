@@ -3111,8 +3111,8 @@
     </button>
 
     <!-- محرك الرفع المستمر للفيديوهات بالخلفية والملاحة السلسة للمنصة -->
-    <script src="{{ asset('js/resumable-uploader.js') }}?v=20261004-v1"></script>
-    <script src="{{ asset('js/background-uploader.js') }}?v=20261004-v1"></script>
+    <script src="{{ asset('js/resumable-uploader.js') }}?v={{ file_exists(public_path('js/resumable-uploader.js')) ? filemtime(public_path('js/resumable-uploader.js')) : time() }}"></script>
+    <script src="{{ asset('js/background-uploader.js') }}?v={{ file_exists(public_path('js/background-uploader.js')) ? filemtime(public_path('js/background-uploader.js')) : time() }}"></script>
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')

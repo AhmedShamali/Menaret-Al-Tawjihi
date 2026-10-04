@@ -40,6 +40,17 @@
         </div>
     @endif
 
+    {{-- تنبيه استعادة مسودة المحاضرة تلقائياً --}}
+    <div id="draftRestoredAlert" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; border-radius: 12px; padding: 12px 18px; margin-bottom: 20px; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.88rem;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color: #2563eb; font-size: 1.1rem;"></i>
+            <span>{{ __('تم استعادة مسودة المحاضرة وبيانات الفروع تلقائياً لمواصلة النشر.') }}</span>
+        </div>
+        <button type="button" onclick="clearVideographerDraft()" style="background: #ffffff; border: 1px solid #cbd5e1; color: #dc2626; padding: 6px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+            <i class="fa-solid fa-trash-can"></i> {{ __('مسح المسودة وبدء جديدة') }}
+        </button>
+    </div>
+
     <form id="videographerUploadForm" action="{{ route('videographer.contents.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
@@ -338,84 +349,109 @@
 
 </div>
 
-{{-- سكريبت التوزيع التفاعلي والرفع المجزأ --}}
+{{-- سكريبت التوزيع التفاعلي وحفظ واستعادة المسودة والرفع المجزأ --}}
 <script>
-    const stageSubjectsMap = @json($stageSubjectsMap);
-    let selectedFile = null;
-    let isUploadingChunks = false;
+    window.stageSubjectsMap = @json($stageSubjectsMap);
+    window.selectedFile = null;
+    window.isUploadingChunks = false;
 
     // تبديل الكل / إلغاء تحديد الفروع
-    function selectAllStages(checked) {
+    window.selectAllStages = function(checked) {
         document.querySelectorAll('.stage-checkbox').forEach(cb => {
             cb.checked = checked;
         });
-        handleStageChange();
-    }
+        window.handleStageChange();
+        if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
+    };
 
     // زر سريع لاختيار المادة
-    function setQuickSubject(subjectName) {
+    window.setQuickSubject = function(subjectName) {
         const sel = document.getElementById('commonNameSelect');
-        sel.value = subjectName;
-        handleCommonSubjectSelect();
-    }
+        if (sel) {
+            sel.value = subjectName;
+            window.handleCommonSubjectSelect();
+            if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
+        }
+    };
 
     // تبديل مصدر الفيديو (رفع من الجهاز أم رابط)
-    function switchVideoSource(type) {
+    window.switchVideoSource = function(type) {
         const zoneUpload = document.getElementById('videoUploadZone');
         const zoneUrl = document.getElementById('videoUrlZone');
         const btnUpload = document.getElementById('tabBtnUpload');
         const btnUrl = document.getElementById('tabBtnUrl');
 
+        if (!zoneUpload || !zoneUrl) return;
+
         if (type === 'upload') {
             zoneUpload.style.display = 'block';
             zoneUrl.style.display = 'none';
-            btnUpload.style.background = '#eff6ff';
-            btnUpload.style.borderColor = '#bfdbfe';
-            btnUpload.style.color = '#1d4ed8';
-            btnUrl.style.background = '#ffffff';
-            btnUrl.style.borderColor = '#cbd5e1';
-            btnUrl.style.color = '#475569';
+            if (btnUpload) {
+                btnUpload.style.background = '#eff6ff';
+                btnUpload.style.borderColor = '#bfdbfe';
+                btnUpload.style.color = '#1d4ed8';
+            }
+            if (btnUrl) {
+                btnUrl.style.background = '#ffffff';
+                btnUrl.style.borderColor = '#cbd5e1';
+                btnUrl.style.color = '#475569';
+            }
         } else {
             zoneUpload.style.display = 'none';
             zoneUrl.style.display = 'block';
-            btnUrl.style.background = '#eff6ff';
-            btnUrl.style.borderColor = '#bfdbfe';
-            btnUrl.style.color = '#1d4ed8';
-            btnUpload.style.background = '#ffffff';
-            btnUpload.style.borderColor = '#cbd5e1';
-            btnUpload.style.color = '#475569';
+            if (btnUrl) {
+                btnUrl.style.background = '#eff6ff';
+                btnUrl.style.borderColor = '#bfdbfe';
+                btnUrl.style.color = '#1d4ed8';
+            }
+            if (btnUpload) {
+                btnUpload.style.background = '#ffffff';
+                btnUpload.style.borderColor = '#cbd5e1';
+                btnUpload.style.color = '#475569';
+            }
         }
-    }
+        if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
+    };
 
     // عند تغيير الفروع أو اختيار المادة المشتركة، نقوم بتحديث التوزيع التفاعلي
-    function handleStageChange() {
-        // تحديث مظهر كروت الفروع المحددة
+    window.handleStageChange = function() {
         document.querySelectorAll('.stage-checkbox-card').forEach(card => {
             const cb = card.querySelector('.stage-checkbox');
-            if (cb.checked) {
+            if (cb && cb.checked) {
                 card.style.borderColor = '#1d4ed8';
                 card.style.background = '#eff6ff';
-                card.querySelector('.stage-icon-wrap').style.background = '#1d4ed8';
-                card.querySelector('.stage-icon-wrap').style.color = '#ffffff';
-            } else {
+                const icon = card.querySelector('.stage-icon-wrap');
+                if (icon) {
+                    icon.style.background = '#1d4ed8';
+                    icon.style.color = '#ffffff';
+                }
+            } else if (cb) {
                 card.style.borderColor = 'var(--ed-border)';
                 card.style.background = 'var(--ed-surface)';
-                card.querySelector('.stage-icon-wrap').style.background = '#f1f5f9';
-                card.querySelector('.stage-icon-wrap').style.color = '#334155';
+                const icon = card.querySelector('.stage-icon-wrap');
+                if (icon) {
+                    icon.style.background = '#f1f5f9';
+                    icon.style.color = '#334155';
+                }
             }
         });
 
-        handleCommonSubjectSelect();
-    }
+        window.handleCommonSubjectSelect();
+        if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
+    };
 
-    function handleCommonSubjectSelect() {
-        const commonName = document.getElementById('commonNameSelect').value.trim();
+    window.handleCommonSubjectSelect = function() {
+        const commonSelect = document.getElementById('commonNameSelect');
+        if (!commonSelect) return;
+        const commonName = commonSelect.value.trim();
         const selectedStageCheckboxes = Array.from(document.querySelectorAll('.stage-checkbox:checked'));
         const selectedStageIds = selectedStageCheckboxes.map(cb => parseInt(cb.value));
 
         const wrap = document.getElementById('stageSubjectsSummaryWrap');
         const badgesContainer = document.getElementById('matchedSubjectsBadges');
         const summaryText = document.getElementById('distributionSummaryText');
+
+        if (!wrap || !badgesContainer || !summaryText) return;
 
         if (selectedStageIds.length === 0) {
             wrap.style.display = 'none';
@@ -437,12 +473,15 @@
 
         selectedStageCheckboxes.forEach(cb => {
             const stageId = parseInt(cb.value);
-            const stageName = cb.closest('.stage-checkbox-card').querySelector('strong').textContent.trim();
-            const stageSubjects = stageSubjectsMap[stageId] || [];
+            const stageCard = cb.closest('.stage-checkbox-card');
+            const stageName = stageCard ? stageCard.querySelector('strong').textContent.trim() : `فرع #${stageId}`;
+            const stageSubjects = (window.stageSubjectsMap && window.stageSubjectsMap[stageId]) ? window.stageSubjectsMap[stageId] : [];
 
-            // البحث عن المادة بالاسم النظيف
+            // البحث عن المادة بالاسم
             const matched = stageSubjects.filter(sub => {
-                return sub.clean_name.includes(commonName) || commonName.includes(sub.clean_name) || sub.name_ar.includes(commonName);
+                const clean = (sub.clean_name || '').trim();
+                const nameAr = (sub.name_ar || sub.name || '').trim();
+                return (clean && (clean.includes(commonName) || commonName.includes(clean))) || nameAr.includes(commonName);
             });
 
             matched.forEach(sub => {
@@ -462,7 +501,7 @@
                 badge.innerHTML = `
                     <i class="fa-solid fa-check" style="color: #059669;"></i>
                     <span>${stageName}:</span>
-                    <strong style="color: #047857;">${sub.name_ar}</strong>
+                    <strong style="color: #047857;">${sub.name_ar || sub.name}</strong>
                     <input type="hidden" name="subject_ids[]" value="${sub.id}">
                 `;
                 badgesContainer.appendChild(badge);
@@ -478,61 +517,207 @@
             summaryText.textContent = 'لم يتم مطابقة أي مادة في الفروع المحددة.';
             summaryText.style.color = '#dc2626';
         }
-    }
+    };
 
-    // ==========================================
-    // محرك الرفع المجزأ للفيديوهات الكبيرة (Chunked Upload Engine)
-    // ==========================================
-    const dropArea = document.getElementById('dropArea');
+    // حفظ مسودة النموذج في التخزين المحلي لمنع فقدان البيانات عند الانتقال لصفحات أخرى
+    window.saveVideographerDraft = function() {
+        const form = document.getElementById('videographerUploadForm');
+        if (!form) return;
 
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, preventDefaults, false);
-    });
+        // منع الحفظ أثناء عملية استعادة المسودة الجارية
+        if (window._isRestoringDraft) return;
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
+        try {
+            const title = form.querySelector('input[name="title"]')?.value || '';
+            const commonName = form.querySelector('select[name="common_name"]')?.value || '';
+            const order = form.querySelector('input[name="order"]')?.value || '';
+            const targetRegion = form.querySelector('select[name="target_region"]')?.value || 'all';
+            const channelName = form.querySelector('input[name="channel_name"]')?.value || '';
+            const videoUrl = form.querySelector('input[name="video_url"]')?.value || '';
+            const stageIds = Array.from(form.querySelectorAll('.stage-checkbox:checked')).map(cb => cb.value);
+            const uploadedPath = document.getElementById('uploadedVideoPath')?.value || '';
+            const formattedSize = document.getElementById('formattedSize')?.value || '';
+            const fileName = document.getElementById('uploadFileName')?.textContent || '';
 
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => {
-            dropArea.style.borderColor = '#1d4ed8';
-            dropArea.style.background = '#eff6ff';
-        }, false);
-    });
+            // حماية: لا نحفظ نموذجاً فارغاً بالكامل لتجنب مسح مسودة سابقة دون قصد
+            const hasData = title || commonName || (stageIds && stageIds.length > 0) || videoUrl || uploadedPath;
+            if (!hasData) {
+                return;
+            }
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, () => {
-            dropArea.style.borderColor = '#cbd5e1';
-            dropArea.style.background = '#f8fafc';
-        }, false);
-    });
+            const draft = {
+                title: title,
+                common_name: commonName,
+                order: order,
+                target_region: targetRegion,
+                channel_name: channelName,
+                video_url: videoUrl,
+                stage_ids: stageIds,
+                uploaded_video_path: uploadedPath,
+                formatted_size: formattedSize,
+                file_name: fileName,
+                activeTab: document.getElementById('videoUploadZone')?.style.display === 'none' ? 'url' : 'upload',
+                timestamp: Date.now()
+            };
+            localStorage.setItem('ed_videographer_form_draft', JSON.stringify(draft));
+        } catch (e) {}
+    };
 
-    dropArea.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        handleVideoFileSelect(files);
-    });
+    // استعادة مسودة النموذج المحفوظة
+    window.restoreVideographerDraft = function() {
+        const form = document.getElementById('videographerUploadForm');
+        if (!form) return;
 
-    function handleVideoFileSelect(files) {
+        const saved = localStorage.getItem('ed_videographer_form_draft');
+        if (!saved) {
+            // تحقق إن كان هناك رفع نشط أو مكتمل في المحرك العام
+            if (window.EdBackgroundUploader && (window.EdBackgroundUploader.hasActiveUpload() || window.EdBackgroundUploader.hasCompletedUpload())) {
+                window.syncVideographerUploadUI(window.EdBackgroundUploader.state);
+            }
+            return;
+        }
+
+        try {
+            window._isRestoringDraft = true;
+            const draft = JSON.parse(saved);
+
+            // صلاحية المسودة 24 ساعة
+            if (Date.now() - draft.timestamp > 86400000) {
+                localStorage.removeItem('ed_videographer_form_draft');
+                window._isRestoringDraft = false;
+                return;
+            }
+
+            let hasContent = false;
+
+            if (draft.title && form.querySelector('input[name="title"]')) {
+                form.querySelector('input[name="title"]').value = draft.title;
+                hasContent = true;
+            }
+            if (draft.order && form.querySelector('input[name="order"]')) {
+                form.querySelector('input[name="order"]').value = draft.order;
+            }
+            if (draft.target_region && form.querySelector('select[name="target_region"]')) {
+                form.querySelector('select[name="target_region"]').value = draft.target_region;
+            }
+            if (draft.channel_name && form.querySelector('input[name="channel_name"]')) {
+                form.querySelector('input[name="channel_name"]').value = draft.channel_name;
+            }
+            if (draft.video_url && form.querySelector('input[name="video_url"]')) {
+                form.querySelector('input[name="video_url"]').value = draft.video_url;
+                hasContent = true;
+            }
+
+            if (Array.isArray(draft.stage_ids) && draft.stage_ids.length > 0) {
+                form.querySelectorAll('.stage-checkbox').forEach(cb => {
+                    cb.checked = draft.stage_ids.includes(cb.value);
+                });
+                hasContent = true;
+            }
+
+            if (draft.common_name && form.querySelector('select[name="common_name"]')) {
+                form.querySelector('select[name="common_name"]').value = draft.common_name;
+                hasContent = true;
+            }
+
+            if (draft.activeTab) {
+                window.switchVideoSource(draft.activeTab);
+            }
+
+            // تطبيق التنسيقات وتحديث قائمة المواد المطابقة
+            window.handleStageChange();
+
+            // استعادة بيانات الفيديو إذا كان هناك فيديو مكتمل محفوظ
+            const uploadedPath = draft.uploaded_video_path || 
+                (window.EdBackgroundUploader && window.EdBackgroundUploader.state?.result?.uploaded_video_path);
+
+            if (uploadedPath) {
+                const uploadedPathInput = document.getElementById('uploadedVideoPath');
+                const formattedSizeInput = document.getElementById('formattedSize');
+                const progressWrap = document.getElementById('chunkUploadProgressWrap');
+                const fileNameEl = document.getElementById('uploadFileName');
+                const fileSizeEl = document.getElementById('uploadFileSize');
+                const percentageEl = document.getElementById('uploadPercentage');
+                const progressBar = document.getElementById('uploadProgressBar');
+                const completedBadge = document.getElementById('uploadCompletedBadge');
+                const statusText = document.getElementById('uploadStatusText');
+                const btnSubmit = document.getElementById('btnSubmitForm');
+
+                if (uploadedPathInput) uploadedPathInput.value = uploadedPath;
+                if (formattedSizeInput) formattedSizeInput.value = draft.formatted_size || window.EdBackgroundUploader?.state?.result?.formatted_size || '';
+                if (progressWrap) progressWrap.style.display = 'block';
+                if (fileNameEl) fileNameEl.textContent = draft.file_name || window.EdBackgroundUploader?.state?.fileName || 'فيديو تم رفعه بالخلفية';
+                if (fileSizeEl) fileSizeEl.textContent = draft.formatted_size || window.EdBackgroundUploader?.state?.fileSizeFormatted || '';
+                if (percentageEl) percentageEl.textContent = '100%';
+                if (progressBar) progressBar.style.width = '100%';
+                if (completedBadge) completedBadge.style.display = 'flex';
+                if (statusText) statusText.textContent = 'تم رفع الفيديو ومعالجته بنجاح! جاهز للنشر والتوزيع.';
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+                }
+                hasContent = true;
+            }
+
+            // إذا كان هناك رفع جاري حالياً بالخلفية نقوم بمزامنته
+            if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasActiveUpload()) {
+                window.syncVideographerUploadUI(window.EdBackgroundUploader.state);
+            }
+
+            // إظهار شارة الاستعادة التلقائية
+            if (hasContent) {
+                const draftAlert = document.getElementById('draftRestoredAlert');
+                if (draftAlert) draftAlert.style.display = 'flex';
+            }
+        } catch (e) {
+            console.warn('Draft restore error:', e);
+        } finally {
+            window._isRestoringDraft = false;
+        }
+    };
+
+    // مسح المسودة لبدء محاضرة جديدة تماماً
+    window.clearVideographerDraft = function() {
+        localStorage.removeItem('ed_videographer_form_draft');
+        const form = document.getElementById('videographerUploadForm');
+        if (form) {
+            form.reset();
+            const uploadedPath = document.getElementById('uploadedVideoPath');
+            if (uploadedPath) uploadedPath.value = '';
+            const formattedSize = document.getElementById('formattedSize');
+            if (formattedSize) formattedSize.value = '';
+            window.handleStageChange();
+        }
+        const draftAlert = document.getElementById('draftRestoredAlert');
+        if (draftAlert) draftAlert.style.display = 'none';
+
+        const progressWrap = document.getElementById('chunkUploadProgressWrap');
+        if (progressWrap && (!window.EdBackgroundUploader || !window.EdBackgroundUploader.hasActiveUpload())) {
+            progressWrap.style.display = 'none';
+        }
+    };
+
+    // معالجة اختيار ملف الفيديو
+    window.handleVideoFileSelect = function(files) {
         if (!files || files.length === 0) return;
-        selectedFile = files[0];
+        window.selectedFile = files[0];
 
         const progressWrap = document.getElementById('chunkUploadProgressWrap');
         const fileNameEl = document.getElementById('uploadFileName');
         const fileSizeEl = document.getElementById('uploadFileSize');
         const formattedSizeHidden = document.getElementById('formattedSize');
 
-        const mbSize = (selectedFile.size / 1048576).toFixed(1) + ' MB';
-        fileNameEl.textContent = selectedFile.name;
-        fileSizeEl.textContent = mbSize;
-        formattedSizeHidden.value = mbSize;
-        progressWrap.style.display = 'block';
+        const mbSize = (window.selectedFile.size / 1048576).toFixed(1) + ' MB';
+        if (fileNameEl) fileNameEl.textContent = window.selectedFile.name;
+        if (fileSizeEl) fileSizeEl.textContent = mbSize;
+        if (formattedSizeHidden) formattedSizeHidden.value = mbSize;
+        if (progressWrap) progressWrap.style.display = 'block';
 
-        // بدء الرفع التلقائي بالخلفية عبر محرك الرفع المستمر للمنصة
+        // بدء الرفع بالخلفية عبر محرك المنصة العام
         if (window.EdBackgroundUploader) {
             window.EdBackgroundUploader.start({
-                file: selectedFile,
+                file: window.selectedFile,
                 portal: 'videographer',
                 chunkUrl: "{{ route('videographer.contents.upload_chunk') }}",
                 checkStatusUrl: "{{ route('videographer.contents.check_chunk_status') }}",
@@ -540,10 +725,10 @@
                 chunkSize: 3 * 1024 * 1024
             });
         }
-    }
+    };
 
-    // مزامنة حالة الرفع بالخلفية مع عناصر الصفحة
-    function syncVideographerUploadUI(state) {
+    // مزامنة عناصر شاشة الرفع مع حالة الرفع في الخلفية
+    window.syncVideographerUploadUI = function(state) {
         if (!state) return;
         const progressWrap = document.getElementById('chunkUploadProgressWrap');
         const fileNameEl = document.getElementById('uploadFileName');
@@ -559,19 +744,19 @@
         if (!progressWrap) return;
 
         if (state.status === 'uploading' || state.status === 'paused') {
-            isUploadingChunks = true;
+            window.isUploadingChunks = true;
             progressWrap.style.display = 'block';
-            if (fileNameEl) fileNameEl.textContent = state.fileName;
-            if (fileSizeEl) fileSizeEl.textContent = state.fileSizeFormatted;
+            if (fileNameEl && state.fileName) fileNameEl.textContent = state.fileName;
+            if (fileSizeEl && state.fileSizeFormatted) fileSizeEl.textContent = state.fileSizeFormatted;
             if (percentageEl) percentageEl.textContent = state.progress + '%';
             if (progressBar) progressBar.style.width = state.progress + '%';
             if (completedBadge) completedBadge.style.display = 'none';
 
             if (statusText) {
                 if (state.status === 'paused') {
-                    statusText.innerHTML = '<span style="color: #d97706;"><i class="fa-solid fa-triangle-exclamation fa-beat"></i> انقطع النت (معلّق).. جاري الاستئناف التلقائي</span>';
+                    statusText.innerHTML = '<span style="color: #d97706;"><i class="fa-solid fa-triangle-exclamation fa-beat"></i> انقطع النت (معلّق).. جاري الاستئناف التلقائي فور العودة</span>';
                 } else {
-                    statusText.textContent = `جاري رفع أجزاء الفيديو: ${state.partText || ''} (${state.speed || ''}) متبقي: ${state.eta || ''}`;
+                    statusText.textContent = `جاري رفع أجزاء الفيديو في الخلفية: ${state.partText || ''} (${state.speed || ''}) متبقي: ${state.eta || ''}`;
                 }
             }
 
@@ -581,10 +766,10 @@
                 btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${state.progress}%)...</span>`;
             }
         } else if (state.status === 'completed' && state.result) {
-            isUploadingChunks = false;
+            window.isUploadingChunks = false;
             progressWrap.style.display = 'block';
-            if (fileNameEl) fileNameEl.textContent = state.fileName;
-            if (fileSizeEl) fileSizeEl.textContent = state.fileSizeFormatted;
+            if (fileNameEl && state.fileName) fileNameEl.textContent = state.fileName;
+            if (fileSizeEl && state.fileSizeFormatted) fileSizeEl.textContent = state.fileSizeFormatted;
             if (percentageEl) percentageEl.textContent = '100%';
             if (progressBar) progressBar.style.width = '100%';
             if (completedBadge) completedBadge.style.display = 'flex';
@@ -599,7 +784,7 @@
                 btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
             }
         } else if (state.status === 'error') {
-            isUploadingChunks = false;
+            window.isUploadingChunks = false;
             if (statusText) statusText.textContent = state.error || 'حدث خطأ أثناء الرفع.';
             if (btnSubmit) {
                 btnSubmit.disabled = false;
@@ -607,43 +792,95 @@
                 btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
             }
         }
-    }
+    };
 
+    // ربط مستمع الحالة مع EdBackgroundUploader
     if (window.EdBackgroundUploader) {
-        window.EdBackgroundUploader.onStateChange(syncVideographerUploadUI);
+        window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
     }
 
-    // معالجة إرسال النموذج وحظر الازدواجية
-    document.getElementById('videographerUploadForm').addEventListener('submit', function(e) {
-        if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasActiveUpload()) {
-            e.preventDefault();
-            alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
-            return false;
-        }
+    // تجهيز السحب والإفلات
+    const dropAreaEl = document.getElementById('dropArea');
+    if (dropAreaEl) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropAreaEl.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropAreaEl.addEventListener(eventName, () => {
+                dropAreaEl.style.borderColor = '#1d4ed8';
+                dropAreaEl.style.background = '#eff6ff';
+            }, false);
+        });
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropAreaEl.addEventListener(eventName, () => {
+                dropAreaEl.style.borderColor = '#cbd5e1';
+                dropAreaEl.style.background = '#f8fafc';
+            }, false);
+        });
+        dropAreaEl.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            if (dt && dt.files && dt.files.length > 0) {
+                window.handleVideoFileSelect(dt.files);
+            }
+        });
+    }
 
-        const selectedStageCheckboxes = document.querySelectorAll('.stage-checkbox:checked');
-        if (selectedStageCheckboxes.length === 0) {
-            e.preventDefault();
-            alert('يرجى تحديد فرع أكاديمي واحد على الأقل.');
-            return false;
-        }
+    // إعداد النموذج وتثبيت الحفظ التلقائي عند الكتابة
+    const vgForm = document.getElementById('videographerUploadForm');
+    if (vgForm) {
+        vgForm.addEventListener('input', window.saveVideographerDraft);
+        vgForm.addEventListener('change', window.saveVideographerDraft);
 
-        const uploadedVideoPath = document.getElementById('uploadedVideoPath');
-        const videoFileInput = document.getElementById('videoFileInput');
-        // إذا كان الفيديو مرفوعاً مسبقاً عبر Chunking نزيل اسم الحقل لكي لا يحاول المتصفح رفعه مجدداً عبر الـ POST
-        if (uploadedVideoPath && uploadedVideoPath.value && videoFileInput) {
-            videoFileInput.removeAttribute('name');
-        }
+        vgForm.addEventListener('submit', function(e) {
+            if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasActiveUpload()) {
+                e.preventDefault();
+                alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
+                return false;
+            }
 
-        const btn = document.getElementById('btnSubmitForm');
-        btn.disabled = true;
-        btn.style.opacity = '0.7';
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>جاري النشر والتوزيع الأكاديمي...</span>`;
+            const selectedStageCheckboxes = document.querySelectorAll('.stage-checkbox:checked');
+            if (selectedStageCheckboxes.length === 0) {
+                e.preventDefault();
+                alert('يرجى تحديد فرع أكاديمي واحد على الأقل.');
+                return false;
+            }
+
+            const uploadedVideoPath = document.getElementById('uploadedVideoPath');
+            const videoFileInput = document.getElementById('videoFileInput');
+            if (uploadedVideoPath && uploadedVideoPath.value && videoFileInput) {
+                videoFileInput.removeAttribute('name');
+            }
+
+            // مسح المسودة عند نجاح الإرسال للبدء بمحاضرة جديدة
+            localStorage.removeItem('ed_videographer_form_draft');
+
+            const btn = document.getElementById('btnSubmitForm');
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+                btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>جاري النشر والتوزيع الأكاديمي...</span>`;
+            }
+        });
+    }
+
+    // تشغيل التهيئة واستعادة المسودة فور تحميل الواجهة
+    window.restoreVideographerDraft();
+    window.handleStageChange();
+
+    // تشغيل الاستعادة عند العودة من صفحة أخرى عبر الملاحة السلسة
+    window.addEventListener('ed:page-loaded', function() {
+        window.restoreVideographerDraft();
+        window.handleStageChange();
+        if (window.EdBackgroundUploader) {
+            window.syncVideographerUploadUI(window.EdBackgroundUploader.state);
+        }
     });
 
-    // تشغيل التحديد المبدئي إذا كان هناك قيم قديمة
-    document.addEventListener('DOMContentLoaded', function() {
-        handleStageChange();
+    // حفظ المسودة تلقائياً قبل إغلاق أو تحديث التبويب
+    window.addEventListener('beforeunload', function() {
+        if (typeof window.saveVideographerDraft === 'function') {
+            window.saveVideographerDraft();
+        }
     });
 </script>
 @endsection
