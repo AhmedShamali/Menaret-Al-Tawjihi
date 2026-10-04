@@ -203,33 +203,48 @@
                 </div>
             </div>
 
-            <!-- الرسوم الشهرية المقررة للطالب ونظام الأقساط -->
-            <div style="background: #eff6ff; padding: 14px 16px; border-radius: 8px; border: 1px solid #bfdbfe; grid-column: 1/-1;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <!-- الموقف المالي ونظام الرسوم الفصلية للطالب -->
+            @php
+                $semFin = $student->getSemesterFinancialSummary();
+            @endphp
+            <div style="background: #f8fafc; padding: 16px 20px; border-radius: 10px; border: 1px solid #cbd5e1; border-top: 4px solid #1e3a8a; grid-column: 1/-1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
                     <div>
-                        <span style="font-size: 0.74rem; font-weight: 700; color: #1d4ed8; display: block; margin-bottom: 4px;">
-                            <i class="fa-solid fa-coins"></i> {{ __('الرسوم الشهرية المقررة للطالب (نظام الأقساط الشهرية)') }}
-                        </span>
-                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                            <span style="font-size: 1.15rem; font-weight: 800; color: #1e3a8a;">
-                                <span id="displayMonthlyFee">{{ number_format($student->monthly_fee ?: 150, 2) }}</span> ₪ / {{ __('شهرياً') }}
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <span style="font-size: 0.85rem; font-weight: 800; color: #1e3a8a;">
+                                <i class="fa-solid fa-graduation-cap"></i> {{ __('الموقف المالي الفصلي (نظام فصلي حصراً لكل مقرر)') }}
                             </span>
-                            <span style="background: white; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700; color: #1e40af;">
-                                {{ __('الشهر المستحق حالياً:') }} {{ $student->currentDueMonthName() }} (الشهر {{ $student->currentAcademicMonthIndex() }} من تاريخ الاعتماد)
-                            </span>
-                            <span style="background: {{ $student->isMonthlyFeeDue() ? '#fef2f2' : '#ecfdf5' }}; color: {{ $student->isMonthlyFeeDue() ? '#b91c1c' : '#047857' }}; border: 1px solid {{ $student->isMonthlyFeeDue() ? '#fecaca' : '#a7f3d0' }}; padding: 3px 8px; border-radius: 4px; font-size: 0.78rem; font-weight: 700;">
-                                {{ $student->isMonthlyFeeDue() ? __('يستحق السداد ⚠️') : __('مسدد بالكامل حتى تاريخه ✅') }}
+                            <span style="background: {{ $student->region === 'gaza' ? '#ecfdf5' : '#eff6ff' }}; color: {{ $student->region === 'gaza' ? '#047857' : '#1d4ed8' }}; border: 1px solid {{ $student->region === 'gaza' ? '#a7f3d0' : '#bfdbfe' }}; padding: 2px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 800;">
+                                <i class="fa-solid fa-location-dot"></i> {{ $student->region === 'gaza' ? __('غزة 🇵🇸') : __('الضفة 🇵🇸') }}
                             </span>
                         </div>
+                        <span style="font-size: 0.8rem; color: #64748b;">
+                            {{ __('تُحتسب الرسوم لكل مادة مسجلة حسب الفصل المختار (فصل أول / فصل ثاني / الفصلين معاً) بدون أقساط شهرية.') }}
+                        </span>
                     </div>
-                    
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <input type="number" id="inputMonthlyFee" min="0" step="5" value="{{ (float)($student->monthly_fee ?: 150) }}" 
-                               style="width: 90px; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; font-weight: 800; font-family: monospace; font-size: 0.9rem; text-align: center;">
-                        <button type="button" onclick="saveStudentMonthlyFee({{ $student->id }})" id="btnSaveMonthlyFee"
-                                style="background: #1d4ed8; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-check"></i> {{ __('حفظ الرسوم') }}
-                        </button>
+
+                    <a href="{{ route('admin.subjects.pricing') }}" style="background: #1e3a8a; color: white; border: none; padding: 7px 14px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-tags"></i> {{ __('جدول تسعير المواد فصلياً') }}
+                    </a>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('إجمالي الرسوم الفصلية:') }}</span>
+                        <strong style="font-size: 1.15rem; color: #0f172a; font-family: monospace;">{{ number_format($semFin['total_semester_tuition'], 2) }} ₪</strong>
+                    </div>
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('المدفوع / المسدد:') }}</span>
+                        <strong style="font-size: 1.15rem; color: #059669; font-family: monospace;">{{ number_format($semFin['total_paid'], 2) }} ₪</strong>
+                    </div>
+                    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
+                        <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('المتبقي والمستحق:') }}</span>
+                        <strong style="font-size: 1.15rem; color: {{ $semFin['remaining_balance'] > 0 ? '#dc2626' : '#059669' }}; font-family: monospace;">{{ number_format($semFin['remaining_balance'], 2) }} ₪</strong>
+                    </div>
+                    <div style="background: {{ $semFin['remaining_balance'] <= 0 ? '#ecfdf5' : '#fef2f2' }}; border: 1px solid {{ $semFin['remaining_balance'] <= 0 ? '#a7f3d0' : '#fecaca' }}; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                        <span style="font-size: 0.82rem; font-weight: 800; color: {{ $semFin['remaining_balance'] <= 0 ? '#047857' : '#b91c1c' }};">
+                            {{ $semFin['remaining_balance'] <= 0 ? __('رسوم المواد مسددة بالكامل ✅') : __('توجد رسوم مستحقة للسداد ⚠️') }}
+                        </span>
                     </div>
                 </div>
             </div>
@@ -410,10 +425,23 @@
                         </div>
 
                         <!-- تفاصيل الاشتراك وزر الإلغاء -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.78rem;">
-                            <span style="background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="fa-solid fa-check"></i> {{ __('مفعّل ونشط') }}
-                            </span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.78rem; flex-wrap: wrap; gap: 6px;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fa-solid fa-check"></i> {{ __('مفعّل') }}
+                                </span>
+                                @php
+                                    $semVal = $subject->pivot->semester ?? 'both';
+                                    $semLabel = match($semVal) {
+                                        'term_1' => __('الفصل الأول'),
+                                        'term_2' => __('الفصل الثاني'),
+                                        default => __('الفصلين معاً'),
+                                    };
+                                @endphp
+                                <span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-weight: 700;">
+                                    <i class="fa-solid fa-calendar-week"></i> {{ $semLabel }}
+                                </span>
+                            </div>
 
                             <button type="button" onclick="confirmRemoveSubject({{ $student->id }}, {{ $subject->id }}, '{{ addslashes($subName) }}')" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.74rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                 <i class="fa-solid fa-trash-can"></i> {{ __('إلغاء المادة') }}

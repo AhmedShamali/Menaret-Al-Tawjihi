@@ -24,55 +24,96 @@ class SubjectPricingController extends Controller
         $subjects = $query->orderBy('stage_id')->get();
         $stages = Stage::all();
 
-        // إحصائيات سريعة للأسعار
+        // إحصائيات سريعة للأسعار الفصليّة والمناطقيّة
         $pricingStats = [
-            'total_subjects'  => $subjects->count(),
-            'free_subjects'   => $subjects->where('is_free', true)->count(),
-            'discounted'      => $subjects->filter(fn($s) => $s->discount_price_ils > 0 && !$s->is_free)->count(),
-            'avg_price'       => $subjects->avg('price_ils') ?? 150,
+            'total_subjects'    => $subjects->count(),
+            'free_subjects'     => $subjects->where('is_free', true)->count(),
+            'discounted'        => $subjects->filter(fn($s) => $s->discount_price_ils > 0 && !$s->is_free)->count(),
+            'avg_term_wb'       => round($subjects->avg('price_term_1') ?? 150),
+            'avg_term_gaza'     => round($subjects->avg('price_term_1_gaza') ?? 100),
+            'avg_full_wb'       => round($subjects->avg('price_full_year') ?? 300),
+            'avg_full_gaza'     => round($subjects->avg('price_full_year_gaza') ?? 200),
         ];
 
         return view('admin.subjects.pricing', compact('subjects', 'stages', 'pricingStats', 'stageId'));
     }
 
     /**
-     * تحديث سعر مادة دراسية محددة
+     * تحديث تسعيرة مادة دراسية محددة للفصول الدراسية ومناطق الضفة وغزة
      */
     public function update(Request $request, $id)
     {
         $request->validate([
-            'price_ils'           => 'required|numeric|min:0',
-            'discount_price_ils'  => 'nullable|numeric|min:0',
-            'discount_percentage' => 'nullable|numeric|min:0|max:100',
-            'is_free'             => 'nullable|boolean',
-            'description'         => 'nullable|string|max:1000',
-        ], [
-            'price_ils.required' => 'يرجى إدخال السعر الأساسي بالشيكل.',
-            'price_ils.min'      => 'السعر يجب أن لا يكون سالباً.',
+            // أسعار الضفة الغربية والقدس
+            'price_term_1'         => 'nullable|numeric|min:0',
+            'price_term_2'         => 'nullable|numeric|min:0',
+            'price_full_year'      => 'nullable|numeric|min:0',
+            'price_ils'            => 'nullable|numeric|min:0',
+
+            // أسعار قطاع غزة
+            'price_term_1_gaza'    => 'nullable|numeric|min:0',
+            'price_term_2_gaza'    => 'nullable|numeric|min:0',
+            'price_full_year_gaza' => 'nullable|numeric|min:0',
+
+            'discount_percentage'  => 'nullable|numeric|min:0|max:100',
+            'discount_price_ils'   => 'nullable|numeric|min:0',
+            'is_free'              => 'nullable|boolean',
+            'description'          => 'nullable|string|max:1000',
         ]);
 
         $subject = Subject::findOrFail($id);
 
         $isFree = $request->has('is_free') && ($request->is_free == '1' || $request->is_free === true);
-        $price = (float) $request->price_ils;
-        $discountPrice = $request->filled('discount_price_ils') ? (float) $request->discount_price_ils : null;
+        
+        $pFullWb = $request->filled('price_full_year') 
+            ? (float) $request->price_full_year 
+            : ($request->filled('price_ils') ? (float) $request->price_ils : (float) ($subject->price_full_year ?: $subject->price_ils));
 
-        // إذا أدخل نسبة الخصم ولم يدخل السعر بعد الخصم
-        if ($request->filled('discount_percentage') && (float)$request->discount_percentage > 0 && !$request->filled('discount_price_ils') && $price > 0) {
-            $pct = (float) $request->discount_percentage;
-            $discountPrice = round($price * (1 - ($pct / 100)), 2);
+        $pTerm1Wb = $request->filled('price_term_1') 
+            ? (float) $request->price_term_1 
+            : round($pFullWb / 2, 2);
+
+        $pTerm2Wb = $request->filled('price_term_2') 
+            ? (float) $request->price_term_2 
+            : round($pFullWb / 2, 2);
+
+        // أسعار غزة (إن لم تدخل، تحسب تلقائياً بنسبة مناسبة أو مطابقة)
+        $pTerm1Gaza = $request->filled('price_term_1_gaza') ? (float)$request->price_term_1_gaza : round($pTerm1Wb * 0.6, 2);
+        $pTerm2Gaza = $request->filled('price_term_2_gaza') ? (float)$request->price_term_2_gaza : round($pTerm2Wb * 0.6, 2);
+        $pFullGaza  = $request->filled('price_full_year_gaza') ? (float)$request->price_full_year_gaza : round($pFullWb * 0.6, 2);
+
+        if ($isFree) {
+            $pTerm1Wb = 0.00;
+            $pTerm2Wb = 0.00;
+            $pFullWb  = 0.00;
+            $pTerm1Gaza = 0.00;
+            $pTerm2Gaza = 0.00;
+            $pFullGaza  = 0.00;
         }
 
-        // إذا كانت مجانية
-        if ($isFree) {
-            $discountPrice = null;
+        // الخصومات والعروض
+        $discountPrice = null;
+        $discountPct = null;
+        if ($request->filled('discount_percentage') && (float)$request->discount_percentage > 0) {
+            $discountPct = (float) $request->discount_percentage;
+            $discountPrice = max(0, round($pFullWb - ($pFullWb * ($discountPct / 100)), 2));
+        } elseif ($request->filled('discount_price_ils') && (float)$request->discount_price_ils > 0) {
+            $discountPrice = (float) $request->discount_price_ils;
+            $discountPct = $pFullWb > 0 ? round((($pFullWb - $discountPrice) / $pFullWb) * 100, 1) : 0;
         }
 
         $subject->update([
-            'price_ils'          => $price,
-            'discount_price_ils' => $discountPrice,
-            'is_free'            => $isFree,
-            'description'        => $request->description,
+            'price_term_1'         => $pTerm1Wb,
+            'price_term_2'         => $pTerm2Wb,
+            'price_full_year'      => $pFullWb,
+            'price_term_1_gaza'    => $pTerm1Gaza,
+            'price_term_2_gaza'    => $pTerm2Gaza,
+            'price_full_year_gaza' => $pFullGaza,
+            'price_ils'            => $pFullWb, // الحفاظ على الحقل القديم متوافقاً
+            'discount_price_ils'   => $discountPrice,
+            'discount_percentage'  => $discountPct,
+            'is_free'              => $isFree,
+            'description'          => $request->description,
         ]);
 
         $subject->refresh();
@@ -80,16 +121,16 @@ class SubjectPricingController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
                 'status'                => 'success',
-                'message'               => "تم تحديث تسعيرة ({$subject->name_ar}) بنجاح! 💰",
+                'message'               => "تم تحديث تسعيرة ({$subject->name_ar}) الفصليّة للضفة وغزة بنجاح! 💰",
                 'subject'               => $subject,
-                'has_discount'          => $subject->has_discount,
-                'discount_percentage'   => $subject->discount_percentage,
-                'price_after_discount'  => $subject->price_after_discount,
-                'effective_price'       => $subject->effective_price,
+                'price_ils'             => $subject->price_ils,
+                'has_discount'          => (bool)$subject->has_discount,
+                'discount_percentage'   => (float)$subject->discount_percentage,
+                'price_after_discount'  => (float)$subject->price_after_discount,
             ]);
         }
 
-        return back()->with('success', "تم تحديث تسعيرة ({$subject->name_ar}) بنجاح! 💰");
+        return back()->with('success', "تم تحديث تسعيرة ({$subject->name_ar}) الفصليّة للضفة وغزة بنجاح! 💰");
     }
 
     /**

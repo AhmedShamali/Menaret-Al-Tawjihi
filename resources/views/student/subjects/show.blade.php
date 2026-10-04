@@ -353,6 +353,12 @@
     background: #e2e8f0;
     color: #475569;
 }
+.tab-text-mobile {
+    display: none;
+}
+.tab-text-desktop {
+    display: inline;
+}
 
 /* 5. بطاقات الفيديو الكلاسيكية الفاخرة */
 .ed-video-card {
@@ -1012,13 +1018,30 @@
         gap: 6px;
     }
     .ed-hero-stats-panel {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         width: 100%;
         box-sizing: border-box;
-        justify-content: space-around;
-        padding: 10px;
+        padding: 10px 4px;
+        text-align: center;
+        gap: 0;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
     }
     .ed-hstat-box {
         padding: 0 4px;
+        border-left: 1px solid #e2e8f0;
+    }
+    .ed-hstat-box:last-child {
+        border-left: none;
+    }
+    html[dir="ltr"] .ed-hstat-box {
+        border-left: none;
+        border-right: 1px solid #e2e8f0;
+    }
+    html[dir="ltr"] .ed-hstat-box:last-child {
+        border-right: none;
     }
     .ed-hstat-num {
         font-size: 1.15rem;
@@ -1037,48 +1060,130 @@
         box-sizing: border-box;
     }
 
-    /* التبويبات الكلاسيكية للهواتف */
+    /* التبويبات الكلاسيكية للهواتف - ثنائية الأعمدة بنظام Segmented Control متناسق 100% بدون أي خروج عن الشاشة */
     .ed-classic-tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        padding: 4px;
-        gap: 4px;
-        scrollbar-width: none;
-        margin-bottom: 16px;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding: 4px !important;
+        gap: 6px !important;
+        margin-bottom: 16px !important;
+        background: #f1f5f9 !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 12px !important;
     }
     .ed-classic-tabs::-webkit-scrollbar {
-        display: none;
+        display: none !important;
     }
     .ed-tab-btn {
-        flex: 0 0 auto;
-        padding: 8px 14px;
-        font-size: 0.82rem;
-        white-space: nowrap;
+        width: 100% !important;
+        min-width: 0 !important;
+        flex: none !important;
+        padding: 9px 4px !important;
+        font-size: 0.82rem !important;
+        font-weight: 800 !important;
+        border-radius: 8px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        white-space: nowrap !important;
+        text-overflow: ellipsis !important;
+        box-sizing: border-box !important;
+    }
+    .ed-tab-btn .tab-text-desktop {
+        display: none !important;
+    }
+    .ed-tab-btn .tab-text-mobile {
+        display: inline !important;
+    }
+    .ed-tab-btn i {
+        font-size: 0.88rem !important;
+        flex-shrink: 0 !important;
+    }
+    .ed-tab-count {
+        padding: 1px 6px !important;
+        font-size: 0.72rem !important;
+        border-radius: 10px !important;
+        flex-shrink: 0 !important;
     }
 
     /* مشغل الفيديو وشريط التحكم */
     .ed-smart-player-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        padding: 10px 12px;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 10px 12px !important;
+        box-sizing: border-box !important;
     }
     .speed-buttons-group {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        padding-bottom: 2px;
-        justify-content: flex-start;
-        -webkit-overflow-scrolling: touch;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    .speed-control-lbl {
+        font-size: 0.74rem !important;
+        font-weight: 800 !important;
+        color: #64748b !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+    .speed-buttons-cluster {
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+        flex: 1 !important;
+        justify-content: flex-end !important;
     }
     .speed-btn {
-        padding: 4px 8px;
-        font-size: 0.74rem;
-        flex-shrink: 0;
+        padding: 5px 6px !important;
+        font-size: 0.72rem !important;
+        flex: 1 1 auto !important;
+        max-width: 48px !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        border-radius: 6px !important;
     }
-    .btn-toggle-notes {
-        padding: 5px 10px;
-        font-size: 0.75rem;
+    .ed-player-action-pills {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .ed-player-action-pills .btn-toggle-notes {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+        padding: 7px 4px !important;
+        font-size: 0.74rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* لوحة تدوين الملاحظات بالتوقيت على الموبايل */
+    .video-notes-panel > div:first-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+    .video-notes-panel input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .video-notes-panel button {
+        width: 100% !important;
+        justify-content: center !important;
     }
 
     /* معلومات الدرس وزر أوفلاين والملزمة */
@@ -1150,6 +1255,36 @@
     .ed-empty-cta .ed-btn-royal {
         width: 100%;
         justify-content: center;
+    }
+
+    @media (max-width: 420px) {
+        .ed-tab-btn {
+            font-size: 0.76rem !important;
+            padding: 8px 2px !important;
+            gap: 3px !important;
+        }
+        .ed-tab-btn i {
+            font-size: 0.8rem !important;
+        }
+        .ed-tab-count {
+            padding: 1px 4px !important;
+            font-size: 0.68rem !important;
+        }
+        .speed-control-lbl {
+            font-size: 0.7rem !important;
+        }
+        .speed-btn {
+            padding: 4px 2px !important;
+            font-size: 0.68rem !important;
+        }
+        .ed-player-action-pills .btn-toggle-notes {
+            font-size: 0.7rem !important;
+            padding: 6px 2px !important;
+            gap: 2px !important;
+        }
+        .ed-player-action-pills .btn-toggle-notes i {
+            font-size: 0.72rem !important;
+        }
     }
 }
 </style>
@@ -1271,12 +1406,14 @@
             <div class="ed-classic-tabs">
                 <button type="button" id="tabBtnVideos" class="ed-tab-btn active" onclick="switchSubjectTab('videos')">
                     <i class="fa-solid fa-circle-play"></i>
-                    <span>{{ __('الدروس والحصص المرئية') }}</span>
+                    <span class="tab-text-desktop">{{ __('الدروس والحصص المرئية') }}</span>
+                    <span class="tab-text-mobile">{{ __('الدروس والحصص') }}</span>
                     <span class="ed-tab-count">{{ $videos->count() }}</span>
                 </button>
                 <button type="button" id="tabBtnExams" class="ed-tab-btn" onclick="switchSubjectTab('exams')">
                     <i class="fa-solid fa-file-signature"></i>
-                    <span>{{ __('بنك الامتحانات الإلكترونية') }}</span>
+                    <span class="tab-text-desktop">{{ __('بنك الامتحانات الإلكترونية') }}</span>
+                    <span class="tab-text-mobile">{{ __('بنك الامتحانات') }}</span>
                     <span class="ed-tab-count">{{ $exams->count() }}</span>
                 </button>
             </div>
@@ -1396,17 +1533,19 @@
                                 {{-- شريط التحكم بالسرعة والملاحظات والحفظ أوفلاين --}}
                                 <div class="ed-smart-player-bar">
                                     <div class="speed-buttons-group">
-                                        <span style="font-size: 0.78rem; font-weight: 800; color: #64748b; margin-left: 4px;">
+                                        <span class="speed-control-lbl">
                                             <i class="fa-solid fa-gauge-high"></i> {{ __('سرعة العرض:') }}
                                         </span>
-                                        <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
-                                        <button type="button" class="speed-btn active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x</button>
-                                        <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
-                                        <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
-                                        <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                        <div class="speed-buttons-cluster">
+                                            <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
+                                            <button type="button" class="speed-btn active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x</button>
+                                            <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
+                                            <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                            <button type="button" class="speed-btn" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                        </div>
                                     </div>
 
-                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                    <div class="ed-player-action-pills">
                                         @if($canDownloadOffline)
                                             <button type="button" 
                                                     class="btn-toggle-notes btn-download-quick btn-offline-quick-save" 

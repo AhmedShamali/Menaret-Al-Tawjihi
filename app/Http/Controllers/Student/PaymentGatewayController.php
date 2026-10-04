@@ -146,9 +146,14 @@ class PaymentGatewayController extends Controller
             'receipt_path'       => $receiptPath
         ]);
 
-        // 2. تسجيل قيد الالتحاق (مفعل فورياً إذا كان إعفاء كامل، أو معلق بانتظار مراجعة الإشعار)
+        // 2. تسجيل قيد الالتحاق واشتراك الفصل المحدد (مفعل فورياً إذا كان إعفاء كامل، أو معلق بانتظار مراجعة الإشعار)
         $subjectNames = [];
+        $region = $student->resolved_region;
+
         foreach ($cart['items'] as $item) {
+            $itemSem = $item['semester'] ?? 'both';
+            $itemPrice = (float)($item['price'] ?? 0);
+
             Enrollment::updateOrCreate(
                 [
                     'student_id' => $student->id,
@@ -157,12 +162,41 @@ class PaymentGatewayController extends Controller
                 [
                     'status'         => $isFullDiscount ? 'active' : 'pending',
                     'access_mode'    => 'all',
+                    'semester'       => $itemSem,
+                    'region_applied' => $region,
+                    'fee_amount'     => $itemPrice,
+                    'paid_amount'    => $isFullDiscount ? $itemPrice : 0.00,
                     'payment_status' => $isFullDiscount ? 'scholarship' : 'pending',
                     'activated_at'   => $isFullDiscount ? now() : null,
                     'expires_at'     => now()->addDays(365),
                 ]
             );
-            $subjectNames[] = $item['name_ar'];
+
+            // إنشاء أو تحديث سجل الاشتراك الفصلي
+            \App\Models\StudentSemesterSubscription::updateOrCreate(
+                [
+                    'student_id'    => $student->id,
+                    'subject_id'    => $item['id'],
+                    'academic_year' => '2026-2027',
+                    'semester'      => $itemSem,
+                ],
+                [
+                    'region'      => $region,
+                    'amount'      => $itemPrice,
+                    'paid_amount' => $isFullDiscount ? $itemPrice : 0.00,
+                    'status'      => $isFullDiscount ? 'paid' : 'pending',
+                    'payment_id'  => $payment->id,
+                    'paid_at'     => $isFullDiscount ? now() : null,
+                    'notes'       => $isFullDiscount ? 'منحة وإعفاء كامل 100%' : 'بانتظار تدقيق إشعار السداد',
+                ]
+            );
+
+            $semText = match($itemSem) {
+                'term_1' => ' (الفصل الأول)',
+                'term_2' => ' (الفصل الثاني)',
+                default  => ' (الفصلين معاً)',
+            };
+            $subjectNames[] = $item['name_ar'] . $semText;
         }
 
         // 3. إرسال إشعار فوري للطالب

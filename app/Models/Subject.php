@@ -22,11 +22,64 @@ class Subject extends Model
         'color',
         'price_ils',
         'discount_price_ils',
+        'price_term_1',
+        'price_term_2',
+        'price_full_year',
+        'price_term_1_gaza',
+        'price_term_2_gaza',
+        'price_full_year_gaza',
         'is_free',
         'description'
     ];
 
+    protected $casts = [
+        'price_term_1'         => 'decimal:2',
+        'price_term_2'         => 'decimal:2',
+        'price_full_year'      => 'decimal:2',
+        'price_term_1_gaza'    => 'decimal:2',
+        'price_term_2_gaza'    => 'decimal:2',
+        'price_full_year_gaza' => 'decimal:2',
+        'price_ils'            => 'decimal:2',
+        'discount_price_ils'   => 'decimal:2',
+        'is_free'              => 'boolean',
+    ];
+
     protected $appends = ['clean_name'];
+
+    /**
+     * جلب سعر المادة بدقة وفق الفصل الدراسي (فصل أول / فصل ثاني / الفصلين) والمنطقة (الضفة / غزة)
+     */
+    public function getSemesterPrice(string $semester = 'term_1', ?string $region = 'west_bank'): float
+    {
+        if ($this->is_free) {
+            return 0.00;
+        }
+
+        $regionKey = strtolower(trim($region ?? 'west_bank'));
+        $isGaza = ($regionKey === 'gaza');
+
+        $t1Wb = (float) ($this->price_term_1 ?: round(($this->price_ils ?: 150) / 2, 2));
+        $t2Wb = (float) ($this->price_term_2 ?: round(($this->price_ils ?: 150) / 2, 2));
+        $fullWb = (float) ($this->price_full_year ?: ($this->price_ils ?: ($t1Wb + $t2Wb)));
+
+        $t1Gaza = (float) ($this->price_term_1_gaza ?: round($t1Wb * 0.6, 2));
+        $t2Gaza = (float) ($this->price_term_2_gaza ?: round($t2Wb * 0.6, 2));
+        $fullGaza = (float) ($this->price_full_year_gaza ?: round($fullWb * 0.6, 2));
+
+        if ($isGaza) {
+            return match($semester) {
+                'term_1', 'semester_1', '1' => $t1Gaza,
+                'term_2', 'semester_2', '2' => $t2Gaza,
+                default                     => $fullGaza,
+            };
+        }
+
+        return match($semester) {
+            'term_1', 'semester_1', '1' => $t1Wb,
+            'term_2', 'semester_2', '2' => $t2Wb,
+            default                     => $fullWb,
+        };
+    }
 
     /**
      * الاسم الأساسي المنظف للمادة بدون الفروع والأقواس

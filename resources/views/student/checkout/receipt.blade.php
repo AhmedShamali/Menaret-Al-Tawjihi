@@ -38,7 +38,7 @@
             </a>
             <a href="{{ route('student.subscriptions.index') }}" class="btn-action-light">
                 <i class="fa-solid fa-calendar-check text-emerald"></i>
-                <span>{{ __('سجل الاشتراكات الشهرية') }}</span>
+                <span>{{ __('سجل الاشتراكات والرسوم الفصلية') }}</span>
             </a>
         </div>
 

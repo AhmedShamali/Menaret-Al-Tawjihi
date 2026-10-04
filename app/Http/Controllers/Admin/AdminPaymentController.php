@@ -106,29 +106,52 @@ class AdminPaymentController extends Controller
             if (is_array($payment->items)) {
                 foreach ($payment->items as $item) {
                     if (!empty($item['id'])) {
+                        $sem = $item['semester'] ?? 'both';
+                        $reg = $item['region'] ?? ($payment->student ? $payment->student->resolved_region : 'west_bank');
+                        $fee = (float)($item['price'] ?? 0);
+
                         Enrollment::updateOrCreate(
                             [
                                 'student_id' => $payment->student_id,
                                 'subject_id' => $item['id']
                             ],
                             [
-                                'status'         => 'active',
-                                'access_mode'    => 'all',
-                                'payment_status' => $payment->gateway,
-                                'activated_at'   => now(),
+                                'status'          => 'active',
+                                'access_mode'     => 'all',
+                                'payment_status'  => $payment->gateway,
+                                'activated_at'    => now(),
+                                'semester'        => $sem,
+                                'region_applied'  => $reg,
+                                'fee_amount'      => $fee,
+                                'paid_amount'     => $fee,
+                            ]
+                        );
+
+                        // تحديث أو إنشاء الاشتراك الفصلي للطالب بالمادة
+                        \App\Models\StudentSemesterSubscription::updateOrCreate(
+                            [
+                                'student_id'    => $payment->student_id,
+                                'subject_id'    => $item['id'],
+                                'academic_year' => '2026-2027',
+                            ],
+                            [
+                                'semester'         => $sem,
+                                'status'           => 'paid',
+                                'amount'           => $fee,
+                                'paid_amount'      => $fee,
+                                'payment_method'   => $payment->gateway,
+                                'notes'            => 'تم السداد والاعتماد عبر الدفعة #' . $payment->transaction_number,
                             ]
                         );
                     }
                 }
             }
 
-            // تخصيص وسداد أقساط واشتراكات الشهور الـ 12 للطالب بنظام FIFO
+            // مزامنة الذمة والاشتراكات الفصلية للطالب
             if ($payment->student) {
                 try {
-                    \App\Models\StudentMonthlySubscription::allocatePayment($payment->student, (float)$payment->amount, $payment->id);
-                } catch (\Throwable $e) {
-                    \App\Models\StudentMonthlySubscription::syncWithStudentPayments($payment->student);
-                }
+                    \App\Models\StudentSemesterSubscription::syncWithStudent($payment->student, '2026-2027');
+                } catch (\Throwable $e) {}
             }
 
             // إشعار الطالب
@@ -142,12 +165,16 @@ class AdminPaymentController extends Controller
                 );
             }
         } elseif ($newStatus === 'cancelled' && is_array($payment->items)) {
-            // في حال الإلغاء أو الرفض، يتم إلغاء تفعيل المواد
+            // في حال الإلغاء أو الرفض، يتم إلغاء تفعيل المواد والاشتراكات
             foreach ($payment->items as $item) {
                 if (!empty($item['id'])) {
                     Enrollment::where('student_id', $payment->student_id)
                         ->where('subject_id', $item['id'])
                         ->update(['status' => 'inactive']);
+
+                    \App\Models\StudentSemesterSubscription::where('student_id', $payment->student_id)
+                        ->where('subject_id', $item['id'])
+                        ->update(['status' => 'unpaid', 'paid_amount' => 0]);
                 }
             }
 

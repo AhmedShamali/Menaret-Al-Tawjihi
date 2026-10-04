@@ -408,7 +408,7 @@
         </div>
     @endif
 
-    <!-- 2. كروت الإحصائيات الأكاديمية الفسيحة -->
+    <!-- 2. كروت الإحصائيات الأكاديمية الفسيحة للأسعار الفصليّة والمناطقيّة -->
     <div class="pricing-stats-grid">
         {{-- كرت إجمالي المواد --}}
         <div class="pricing-stat-card" style="--accent-color: #1e3a8a; --icon-bg: #eff6ff;">
@@ -421,36 +421,36 @@
             </div>
         </div>
 
-        {{-- كرت المواد المخفضة --}}
-        <div class="pricing-stat-card" style="--accent-color: #d97706; --icon-bg: #fffbeb;">
+        {{-- كرت متوسط ف1 للضفة --}}
+        <div class="pricing-stat-card" style="--accent-color: #0284c7; --icon-bg: #f0f9ff;">
             <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('عروض وخصومات جارية') }}</span>
-                <span class="stat-val" style="color: #b45309;">{{ $pricingStats['discounted'] }} <span style="font-size: 0.95rem; font-weight: 600; color: #b45309;">{{ __('مادة') }}</span></span>
+                <span class="stat-title">{{ __('متوسط ف1 (الضفة)') }}</span>
+                <span class="stat-val" style="color: #0369a1;">{{ $pricingStats['avg_term_wb'] }} <span style="font-size: 1.1rem; font-weight: 800;">₪</span></span>
             </div>
             <div class="pricing-stat-icon-wrap">
-                <i class="fa-solid fa-fire"></i>
+                <i class="fa-solid fa-landmark"></i>
+            </div>
+        </div>
+
+        {{-- كرت متوسط ف1 لغزة --}}
+        <div class="pricing-stat-card" style="--accent-color: #059669; --icon-bg: #ecfdf5;">
+            <div class="pricing-stat-content">
+                <span class="stat-title">{{ __('متوسط ف1 (غزة)') }}</span>
+                <span class="stat-val" style="color: #047857;">{{ $pricingStats['avg_term_gaza'] }} <span style="font-size: 1.1rem; font-weight: 800;">₪</span></span>
+            </div>
+            <div class="pricing-stat-icon-wrap">
+                <i class="fa-solid fa-location-dot"></i>
             </div>
         </div>
 
         {{-- كرت المواد المجانية --}}
-        <div class="pricing-stat-card" style="--accent-color: #059669; --icon-bg: #ecfdf5;">
+        <div class="pricing-stat-card" style="--accent-color: #7c3aed; --icon-bg: #f5f3ff;">
             <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('مواد مجانية / تجريبية') }}</span>
-                <span class="stat-val" style="color: #047857;">{{ $pricingStats['free_subjects'] }} <span style="font-size: 0.95rem; font-weight: 600; color: #047857;">{{ __('مادة') }}</span></span>
+                <span class="stat-title">{{ __('مواد مجانية بالكامل') }}</span>
+                <span class="stat-val" style="color: #6d28d9;">{{ $pricingStats['free_subjects'] }} <span style="font-size: 0.95rem; font-weight: 600; color: #6d28d9;">{{ __('مادة') }}</span></span>
             </div>
             <div class="pricing-stat-icon-wrap">
                 <i class="fa-solid fa-gift"></i>
-            </div>
-        </div>
-
-        {{-- كرت متوسط السعر --}}
-        <div class="pricing-stat-card" style="--accent-color: #4f46e5; --icon-bg: #eef2ff;">
-            <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('متوسط سعر المادة') }}</span>
-                <span class="stat-val" style="color: #4338ca;">{{ round($pricingStats['avg_price']) }} <span style="font-size: 1.1rem; font-weight: 800;">₪</span></span>
-            </div>
-            <div class="pricing-stat-icon-wrap">
-                <i class="fa-solid fa-shekel-sign"></i>
             </div>
         </div>
     </div>
@@ -491,25 +491,31 @@
         </div>
     </div>
 
-    <!-- 4. جدول أسعار المواد الأكاديمي بتصميم فسيح ومنظم -->
+    <!-- 4. جدول أسعار المواد الأكاديمي بتصميم فسيح ومنظم فصلياً ومناطقيّاً -->
     <div class="pricing-table-card">
         <div class="pricing-table-container">
             <table class="pricing-table">
                 <thead>
                     <tr>
-                        <th style="width: 260px;">{{ __('المادة الدراسية') }}</th>
-                        <th style="width: 170px;">{{ __('الفرع الأكاديمي') }}</th>
-                        <th style="width: 130px;">{{ __('السعر الأساسي') }}</th>
-                        <th style="width: 120px;">{{ __('نسبة الخصم') }}</th>
-                        <th style="width: 140px;">{{ __('السعر بعد الخصم') }}</th>
-                        <th style="width: 220px;">{{ __('الحالة والتسعير الفعلي') }}</th>
+                        <th style="width: 250px;">{{ __('المادة الدراسية') }}</th>
+                        <th style="width: 150px;">{{ __('الفرع') }}</th>
+                        <th style="width: 240px;">
+                            <span style="color: #1e40af; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-landmark"></i> {{ __('تسعيرة الضفة') }}
+                            </span>
+                        </th>
+                        <th style="width: 240px;">
+                            <span style="color: #065f46; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-location-dot"></i> {{ __('تسعيرة غزة') }}
+                            </span>
+                        </th>
+                        <th style="width: 140px;">{{ __('الحالة') }}</th>
                         <th style="width: 130px;" class="text-center">{{ __('الإجراء') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($subjects as $sub)
                         @php
-                            // ضبط مظهر وتسمية الفرع الدراسي بدون تشابك نصي
                             $rawStage = optional($sub->stage)->label_ar ?? optional($sub->stage)->name ?? optional($sub->stage)->name_ar ?? 'توجيهي عام';
                             if (str_contains($rawStage, 'علمي')) {
                                 $stageShort = __('توجيهي علمي');
@@ -529,9 +535,16 @@
                                 $stageIcon  = 'fa-graduation-cap';
                             }
 
-                            // فحص أيقونة المادة (هل هي إيموجي أم FontAwesome)
                             $subIcon = $sub->icon ?? 'fa-book';
                             $isFaIcon = str_starts_with($subIcon, 'fa-') || str_contains($subIcon, 'fa-');
+
+                            $p1Wb = $sub->getSemesterPrice('term_1', 'west_bank');
+                            $p2Wb = $sub->getSemesterPrice('term_2', 'west_bank');
+                            $pFullWb = $sub->getSemesterPrice('both', 'west_bank');
+
+                            $p1Gaza = $sub->getSemesterPrice('term_1', 'gaza');
+                            $p2Gaza = $sub->getSemesterPrice('term_2', 'gaza');
+                            $pFullGaza = $sub->getSemesterPrice('both', 'gaza');
                         @endphp
                         <tr>
                             {{-- المادة الدراسية والأيقونة --}}
@@ -563,68 +576,62 @@
                                 </span>
                             </td>
 
-                            {{-- السعر الأساسي --}}
-                            <td style="font-family: monospace; font-size: 1rem; font-weight: 700; color: #334155;">
-                                {{ number_format($sub->price_ils ?? 150, 2) }} ₪
-                            </td>
-
-                            {{-- نسبة الخصم --}}
+                            {{-- تسعيرة الضفة والقدس --}}
                             <td>
                                 @if($sub->is_free)
-                                    <span class="discount-badge discount-free">
-                                        <i class="fa-solid fa-gift"></i> 100%
-                                    </span>
-                                @elseif($sub->has_discount)
-                                    <span class="discount-badge discount-active">
-                                        <i class="fa-solid fa-arrow-down" style="font-size: 0.72rem;"></i> {{ $sub->discount_percentage }}%
-                                    </span>
+                                    <span style="color: #059669; font-weight: 800;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
                                 @else
-                                    <span class="discount-none">0%</span>
+                                    <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem;">
+                                        <span style="color: #1e3a8a;"><strong style="font-weight: 700;">فصل 1:</strong> <span class="font-mono font-bold">{{ number_format($p1Wb, 0) }} ₪</span></span>
+                                        <span style="color: #1e3a8a;"><strong style="font-weight: 700;">فصل 2:</strong> <span class="font-mono font-bold">{{ number_format($p2Wb, 0) }} ₪</span></span>
+                                        <span style="color: #0f172a; font-weight: 800; background: #eff6ff; padding: 2px 6px; border-radius: 6px; display: inline-block; width: fit-content;">
+                                            {{ __('الفصلين:') }} <span class="font-mono text-primary font-bold">{{ number_format($pFullWb, 0) }} ₪</span>
+                                        </span>
+                                    </div>
                                 @endif
                             </td>
 
-                            {{-- السعر بعد الخصم --}}
-                            <td style="font-family: monospace; font-size: 1.05rem; font-weight: 800;">
+                            {{-- تسعيرة قطاع غزة --}}
+                            <td>
                                 @if($sub->is_free)
-                                    <span style="color: #059669;">0.00 ₪ <small style="font-size: 0.75rem; font-weight: 700;">({{ __('مجاناً') }})</small></span>
-                                @elseif($sub->has_discount)
-                                    <span style="color: #ea580c;">{{ number_format($sub->price_after_discount, 2) }} ₪</span>
+                                    <span style="color: #059669; font-weight: 800;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
                                 @else
-                                    <span style="color: #1e293b;">{{ number_format($sub->price_ils ?? 150, 2) }} ₪</span>
+                                    <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem;">
+                                        <span style="color: #065f46;"><strong style="font-weight: 700;">فصل 1:</strong> <span class="font-mono font-bold">{{ number_format($p1Gaza, 0) }} ₪</span></span>
+                                        <span style="color: #065f46;"><strong style="font-weight: 700;">فصل 2:</strong> <span class="font-mono font-bold">{{ number_format($p2Gaza, 0) }} ₪</span></span>
+                                        <span style="color: #064e3b; font-weight: 800; background: #ecfdf5; padding: 2px 6px; border-radius: 6px; display: inline-block; width: fit-content;">
+                                            {{ __('الفصلين:') }} <span class="font-mono text-emerald font-bold">{{ number_format($pFullGaza, 0) }} ₪</span>
+                                        </span>
+                                    </div>
                                 @endif
                             </td>
 
-                            {{-- الحالة والتسعير الفعلي --}}
+                            {{-- الحالة --}}
                             <td>
                                 @if($sub->is_free)
                                     <span class="status-pill-badge status-free-tag">
                                         <i class="fa-solid fa-gift"></i>
-                                        <span>{{ __('مجانية تجريبية 100%') }}</span>
-                                    </span>
-                                @elseif($sub->has_discount)
-                                    <span class="status-pill-badge status-disc-tag">
-                                        <i class="fa-solid fa-fire"></i>
-                                        <span>{{ __('خصم') }} {{ $sub->discount_percentage }}% • {{ number_format($sub->price_after_discount, 0) }} ₪</span>
+                                        <span>{{ __('مجانية تجريبية') }}</span>
                                     </span>
                                 @else
                                     <span class="status-pill-badge status-normal-tag">
                                         <i class="fa-solid fa-check"></i>
-                                        <span>{{ __('سعر معتمد:') }} {{ number_format($sub->price_ils ?? 150, 0) }} ₪</span>
+                                        <span>{{ __('نظام فصلي معتمد') }}</span>
                                     </span>
                                 @endif
                             </td>
 
                             {{-- الإجراء --}}
                             <td class="text-center">
-                                <button onclick="editPricing({{ json_encode($sub->append(['has_discount', 'discount_percentage', 'price_after_discount'])) }})" class="btn-edit-pricing-action">
+                                <button onclick="editPricing({{ json_encode($sub) }})" class="btn-edit-pricing-action">
                                     <i class="fa-solid fa-pen-to-square"></i>
-                                    <span>{{ __('تعديل السعر') }}</span>
+                                    <span>{{ __('تعديل التسعيرة') }}</span>
                                 </button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="padding: 50px 20px; text-align: center; color: #94a3b8;">
+                            <td colspan="6" style="padding: 50px 20px; text-align: center; color: #94a3b8;">
                                 <i class="fa-solid fa-tags" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
                                 <strong style="font-size: 1rem; color: #64748b;">{{ __('لا توجد مواد مسجلة مطابقة للبحث.') }}</strong>
                             </td>
@@ -637,17 +644,17 @@
 
 </div>
 
-<!-- نافذة تعديل تسعيرة مادة (Modal) بتصميم كلاسيكي وحاسبة تفاعلية متبادلة -->
+<!-- نافذة تعديل تسعيرة مادة (Modal) بنظام فصلي للضفة وغزة -->
 <div id="editModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
-    <div style="background: white; border-radius: 18px; max-width: 530px; width: 100%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); border: 1px solid #cbd5e1; animation: zoomIn 0.2s ease;">
+    <div style="background: white; border-radius: 18px; max-width: 650px; width: 100%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); border: 1px solid #cbd5e1; max-height: 90vh; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; border-radius: 10px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.2rem;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.3rem;">
                     <i class="fa-solid fa-tags"></i>
                 </div>
                 <div>
-                    <h3 id="modalSubjectTitle" style="font-size: 1.15rem; font-weight: 800; color: #0f172a; margin: 0 0 2px;">{{ __('تعديل تسعيرة المادة') }}</h3>
-                    <small style="color: #64748b; font-size: 0.78rem;">{{ __('حاسبة تفاعلية لحساب نسبة الخصم والسعر النهائي') }}</small>
+                    <h3 id="modalSubjectTitle" style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 2px;">{{ __('تعديل تسعيرة المادة (نظام فصلي)') }}</h3>
+                    <small style="color: #64748b; font-size: 0.8rem;">{{ __('تحديد أسعار الفصل الأول والفصل الثاني والفصلين معاً للضفة وغزة') }}</small>
                 </div>
             </div>
             <button onclick="closeEditModal()" style="background: none; border: none; font-size: 1.6rem; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
@@ -657,62 +664,68 @@
             @csrf
             <input type="hidden" id="editSubjectId" name="subject_id">
 
-            {{-- 1. السعر الأساسي --}}
-            <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #334155; margin-bottom: 6px;">{{ __('السعر الأساسي بالشيكل (₪) *') }}</label>
-                <div style="position: relative;">
-                    <input type="number" step="1" min="0" id="modalPrice" name="price_ils" required oninput="onBasePriceChange()" style="width: 100%; padding: 11px 14px 11px 40px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 1.05rem; font-weight: 800; font-family: monospace; color: #0f172a;">
-                    <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #64748b; font-weight: 800;">₪</span>
+            {{-- 1. تسعيرة الضفة الغربية والقدس 🏛️ --}}
+            <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: #1e40af; font-weight: 800; font-size: 0.95rem;">
+                    <i class="fa-solid fa-landmark"></i>
+                    <span>{{ __('تسعيرة الضفة') }}</span>
                 </div>
-            </div>
-
-            {{-- 2. نسبة الخصم والسعر بعد الخصم تفاعليين جنباً إلى جنب --}}
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;">
-                <div>
-                    <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                        <i class="fa-solid fa-percent" style="color: #d97706;"></i> {{ __('نسبة الخصم المئوية (%) *') }}
-                    </label>
-                    <div style="position: relative;">
-                        <input type="number" step="1" min="0" max="100" id="modalDiscountPercent" name="discount_percentage" placeholder="0" oninput="onDiscountPercentChange()" style="width: 100%; padding: 11px 14px 11px 36px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 1rem; font-weight: 800; font-family: monospace; color: #dc2626;">
-                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #dc2626; font-weight: 800;">%</span>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('الفصل الأول (₪) *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm1Wb" name="price_term_1" required oninput="calcWbFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; font-family: monospace; color: #1e40af;">
                     </div>
-                </div>
-
-                <div>
-                    <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                        <i class="fa-solid fa-coins" style="color: #059669;"></i> {{ __('السعر بعد الخصم (₪)') }}
-                    </label>
-                    <div style="position: relative;">
-                        <input type="number" step="0.5" min="0" id="modalDiscountPrice" name="discount_price_ils" placeholder="{{ __('نفس الأساسي') }}" oninput="onDiscountPriceChange()" style="width: 100%; padding: 11px 14px 11px 40px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 1rem; font-weight: 800; font-family: monospace; color: #ea580c;">
-                        <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #ea580c; font-weight: 800;">₪</span>
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('الفصل الثاني (₪) *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm2Wb" name="price_term_2" required oninput="calcWbFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; font-family: monospace; color: #1e40af;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #0f172a; margin-bottom: 5px;">{{ __('الفصلين معاً (₪) *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceFullWb" name="price_full_year" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #3b82f6; font-weight: 800; font-family: monospace; color: #0f172a; background: #eff6ff;">
                     </div>
                 </div>
             </div>
 
-            {{-- بطاقة توضيحية لملخص الحساب الحي --}}
-            <div id="liveCalcBox" style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; font-size: 0.86rem;">
-                <span style="color: #64748b; font-weight: 600;">{{ __('قيمة التوفير للطالب:') }} <strong class="font-mono text-rose font-bold" id="previewSavedAmount" style="color: #e11d48; margin-right: 4px;">0 ₪</strong></span>
-                <span style="color: #334155; font-weight: 700;">{{ __('السعر النهائي المقرر:') }} <strong class="font-mono text-emerald font-bold" style="font-size: 1.15rem; color: #059669; margin-right: 4px;" id="previewFinalPrice">150 ₪</strong></span>
+            {{-- 2. تسعيرة غزة --}}
+            <div style="background: #f0fdf4; border: 1.5px solid #a7f3d0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: #065f46; font-weight: 800; font-size: 0.95rem;">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>{{ __('تسعيرة غزة') }}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #065f46; margin-bottom: 5px;">{{ __('الفصل الأول (₪)') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm1Gaza" name="price_term_1_gaza" oninput="calcGazaFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #a7f3d0; font-weight: 800; font-family: monospace; color: #047857;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #065f46; margin-bottom: 5px;">{{ __('الفصل الثاني (₪)') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm2Gaza" name="price_term_2_gaza" oninput="calcGazaFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #a7f3d0; font-weight: 800; font-family: monospace; color: #047857;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #064e3b; margin-bottom: 5px;">{{ __('الفصلين معاً (₪)') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceFullGaza" name="price_full_year_gaza" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #10b981; font-weight: 800; font-family: monospace; color: #064e3b; background: #ecfdf5;">
+                    </div>
+                </div>
             </div>
 
             {{-- 3. خيار المادة المجانية --}}
-            <div style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="modalIsFree" name="is_free" value="1" onchange="onIsFreeChange()" style="width: 18px; height: 18px; accent-color: #059669; cursor: pointer;">
-                <label for="modalIsFree" style="font-size: 0.88rem; font-weight: 800; color: #065f46; cursor: pointer; margin: 0;">
-                    {{ __('تعيين المادة كمجانية بالكامل لكافة الطلاب (0 ₪)') }}
+            <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="modalIsFree" name="is_free" value="1" onchange="onIsFreeToggle()" style="width: 18px; height: 18px; accent-color: #d97706; cursor: pointer;">
+                <label for="modalIsFree" style="font-size: 0.88rem; font-weight: 800; color: #92400e; cursor: pointer; margin: 0;">
+                    {{ __('تعيين المادة كمجانية بالكامل لكافة الطلاب في الضفة وغزة (0 ₪)') }}
                 </label>
             </div>
 
             {{-- 4. وصف الباقة --}}
             <div style="margin-bottom: 22px;">
                 <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('وصف باقة المادة ومميزاتها للطلاب') }}</label>
-                <textarea id="modalDescription" name="description" rows="2" placeholder="{{ __('مثال: تشمل شرح كامل المنهاج الوزاري، حلول أسئلة السنوات السابقة، وبطاقات المذاكرة السريعة') }}" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 0.88rem; resize: vertical;"></textarea>
+                <textarea id="modalDescription" name="description" rows="2" placeholder="{{ __('مثال: تشمل شرح كامل المنهاج الوزاري للفصلين، حلول أسئلة السنوات السابقة، وبطاقات المذاكرة السريعة') }}" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 0.88rem; resize: vertical;"></textarea>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 12px;">
                 <button type="button" onclick="closeEditModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">{{ __('إلغاء') }}</button>
                 <button type="submit" id="btnSavePrice" style="background: #1e3a8a; color: white; border: none; padding: 10px 26px; border-radius: 10px; font-weight: 800; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);">
-                    <i class="fa-solid fa-check"></i> {{ __('حفظ وتطبيق التسعيرة') }}
+                    <i class="fa-solid fa-check"></i> {{ __('حفظ وتطبيق التسعيرة الفصليّة') }}
                 </button>
             </div>
         </form>
@@ -774,117 +787,61 @@ function editPricing(sub) {
     document.getElementById('editSubjectId').value = sub.id;
     document.getElementById('modalSubjectTitle').textContent = 'تعديل تسعيرة: ' + sub.name_ar;
     
-    const basePrice = parseFloat(sub.price_ils) || 150;
-    const discountPrice = (sub.discount_price_ils !== null && parseFloat(sub.discount_price_ils) > 0) ? parseFloat(sub.discount_price_ils) : '';
     const isFree = (sub.is_free == 1);
-    
-    document.getElementById('modalPrice').value = basePrice;
-    document.getElementById('modalDiscountPrice').value = discountPrice;
     document.getElementById('modalIsFree').checked = isFree;
+
+    const t1Wb = parseFloat(sub.price_term_1) || parseFloat(sub.price_ils / 2) || 250;
+    const t2Wb = parseFloat(sub.price_term_2) || parseFloat(sub.price_ils / 2) || 250;
+    const fullWb = parseFloat(sub.price_full_year) || parseFloat(sub.price_ils) || (t1Wb + t2Wb);
+
+    const t1Gaza = parseFloat(sub.price_term_1_gaza) || Math.round(t1Wb * 0.6);
+    const t2Gaza = parseFloat(sub.price_term_2_gaza) || Math.round(t2Wb * 0.6);
+    const fullGaza = parseFloat(sub.price_full_year_gaza) || Math.round(fullWb * 0.6);
+
+    document.getElementById('modalPriceTerm1Wb').value = t1Wb;
+    document.getElementById('modalPriceTerm2Wb').value = t2Wb;
+    document.getElementById('modalPriceFullWb').value = fullWb;
+
+    document.getElementById('modalPriceTerm1Gaza').value = t1Gaza;
+    document.getElementById('modalPriceTerm2Gaza').value = t2Gaza;
+    document.getElementById('modalPriceFullGaza').value = fullGaza;
+
     document.getElementById('modalDescription').value = sub.description || '';
 
-    if (discountPrice && basePrice > 0 && discountPrice < basePrice) {
-        const pct = Math.round(((basePrice - discountPrice) / basePrice) * 100);
-        document.getElementById('modalDiscountPercent').value = pct;
-    } else {
-        document.getElementById('modalDiscountPercent').value = '';
-    }
-
-    updateLiveCalcBox();
+    onIsFreeToggle();
 
     const modal = document.getElementById('editModal');
     modal.style.display = 'flex';
 }
 
-function onBasePriceChange() {
-    const isFree = document.getElementById('modalIsFree').checked;
-    if (isFree) return;
-
-    const basePrice = parseFloat(document.getElementById('modalPrice').value) || 0;
-    const pct = parseFloat(document.getElementById('modalDiscountPercent').value) || 0;
-
-    if (pct > 0 && basePrice > 0) {
-        const after = Math.round((basePrice * (1 - (pct / 100))) * 100) / 100;
-        document.getElementById('modalDiscountPrice').value = after;
+function calcWbFullPreview() {
+    const t1 = parseFloat(document.getElementById('modalPriceTerm1Wb').value) || 0;
+    const t2 = parseFloat(document.getElementById('modalPriceTerm2Wb').value) || 0;
+    const fullInput = document.getElementById('modalPriceFullWb');
+    if (!fullInput.dataset.manual) {
+        fullInput.value = (t1 + t2);
     }
-    updateLiveCalcBox();
 }
 
-function onDiscountPercentChange() {
-    const isFree = document.getElementById('modalIsFree').checked;
-    if (isFree) return;
-
-    const basePrice = parseFloat(document.getElementById('modalPrice').value) || 0;
-    const pct = parseFloat(document.getElementById('modalDiscountPercent').value);
-
-    if (basePrice > 0 && !isNaN(pct) && pct >= 0 && pct <= 100) {
-        if (pct === 0) {
-            document.getElementById('modalDiscountPrice').value = '';
-        } else {
-            const after = Math.round((basePrice * (1 - (pct / 100))) * 100) / 100;
-            document.getElementById('modalDiscountPrice').value = after;
-        }
+function calcGazaFullPreview() {
+    const t1 = parseFloat(document.getElementById('modalPriceTerm1Gaza').value) || 0;
+    const t2 = parseFloat(document.getElementById('modalPriceTerm2Gaza').value) || 0;
+    const fullInput = document.getElementById('modalPriceFullGaza');
+    if (!fullInput.dataset.manual) {
+        fullInput.value = (t1 + t2);
     }
-    updateLiveCalcBox();
 }
 
-function onDiscountPriceChange() {
+function onIsFreeToggle() {
     const isFree = document.getElementById('modalIsFree').checked;
-    if (isFree) return;
-
-    const basePrice = parseFloat(document.getElementById('modalPrice').value) || 0;
-    const after = parseFloat(document.getElementById('modalDiscountPrice').value);
-
-    if (basePrice > 0 && !isNaN(after) && after >= 0) {
-        if (after >= basePrice) {
-            document.getElementById('modalDiscountPercent').value = '0';
-        } else {
-            const pct = Math.round(((basePrice - after) / basePrice) * 100);
-            document.getElementById('modalDiscountPercent').value = pct;
-        }
-    } else if (isNaN(after) || after === 0) {
-        document.getElementById('modalDiscountPercent').value = '';
-    }
-    updateLiveCalcBox();
-}
-
-function onIsFreeChange() {
-    const isFree = document.getElementById('modalIsFree').checked;
-    const pInput = document.getElementById('modalPrice');
-    const pctInput = document.getElementById('modalDiscountPercent');
-    const afterInput = document.getElementById('modalDiscountPrice');
-
-    if (isFree) {
-        pctInput.value = '100';
-        afterInput.value = '0';
-        pctInput.disabled = true;
-        afterInput.disabled = true;
-    } else {
-        pctInput.disabled = false;
-        afterInput.disabled = false;
-        onBasePriceChange();
-    }
-    updateLiveCalcBox();
-}
-
-function updateLiveCalcBox() {
-    const isFree = document.getElementById('modalIsFree').checked;
-    const basePrice = parseFloat(document.getElementById('modalPrice').value) || 0;
-    const after = parseFloat(document.getElementById('modalDiscountPrice').value);
-
-    let finalPrice = basePrice;
-    let saved = 0;
-
-    if (isFree) {
-        finalPrice = 0;
-        saved = basePrice;
-    } else if (!isNaN(after) && after > 0 && after < basePrice) {
-        finalPrice = after;
-        saved = Math.max(0, basePrice - after);
-    }
-
-    document.getElementById('previewSavedAmount').innerText = saved.toFixed(2) + ' ₪';
-    document.getElementById('previewFinalPrice').innerText = finalPrice.toFixed(2) + ' ₪';
+    const fields = [
+        'modalPriceTerm1Wb', 'modalPriceTerm2Wb', 'modalPriceFullWb',
+        'modalPriceTerm1Gaza', 'modalPriceTerm2Gaza', 'modalPriceFullGaza'
+    ];
+    fields.forEach(f => {
+        document.getElementById(f).disabled = isFree;
+        if (isFree) document.getElementById(f).value = 0;
+    });
 }
 
 function closeEditModal() {
@@ -903,22 +860,23 @@ function submitPricing(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSavePrice');
     const id = document.getElementById('editSubjectId').value;
-    const price = document.getElementById('modalPrice').value;
-    const discountPrice = document.getElementById('modalDiscountPrice').value;
-    const discountPercent = document.getElementById('modalDiscountPercent').value;
     const isFree = document.getElementById('modalIsFree').checked ? 1 : 0;
-    const desc = document.getElementById('modalDescription').value;
 
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
 
-    axios.post(`/admin/subjects/pricing/${id}/update`, {
-        price_ils: price,
-        discount_price_ils: discountPrice,
-        discount_percentage: discountPercent,
+    const payload = {
+        price_term_1: document.getElementById('modalPriceTerm1Wb').value,
+        price_term_2: document.getElementById('modalPriceTerm2Wb').value,
+        price_full_year: document.getElementById('modalPriceFullWb').value,
+        price_term_1_gaza: document.getElementById('modalPriceTerm1Gaza').value,
+        price_term_2_gaza: document.getElementById('modalPriceTerm2Gaza').value,
+        price_full_year_gaza: document.getElementById('modalPriceFullGaza').value,
         is_free: isFree,
-        description: desc
-    })
+        description: document.getElementById('modalDescription').value
+    };
+
+    axios.post(`/admin/subjects/pricing/${id}/update`, payload)
     .then(res => {
         closeEditModal();
         Swal.fire({
@@ -940,3 +898,4 @@ function submitPricing(e) {
 }
 </script>
 @endsection
+

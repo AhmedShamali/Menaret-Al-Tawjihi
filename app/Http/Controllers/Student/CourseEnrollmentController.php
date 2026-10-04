@@ -104,17 +104,34 @@ class CourseEnrollmentController extends Controller
 
         $subtotal = 0;
         $items = [];
+        $region = $student->resolved_region;
+        $requestedSemesters = $request->input('semesters', []);
 
         foreach ($selectedSubjects as $sub) {
-            $effectivePrice = $sub->effective_price;
+            $semKey = $requestedSemesters[$sub->id] ?? $request->input('semester', 'both');
+            if (!in_array($semKey, ['term_1', 'term_2', 'both'])) {
+                $semKey = 'both';
+            }
+
+            $effectivePrice = (float) $sub->getSemesterPrice($semKey, $region);
             $subtotal += $effectivePrice;
+
+            $semLabel = match($semKey) {
+                'term_1' => 'الفصل الأول',
+                'term_2' => 'الفصل الثاني',
+                default  => 'الفصلين معاً (العام كامل)',
+            };
 
             $items[] = [
                 'id'                  => $sub->id,
                 'name_ar'             => $sub->name_ar,
-                'stage'               => optional($sub->stage)->name ?? optional($sub->stage)->name_ar ?? 'توجيهي',
+                'stage'               => optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? 'توجيهي',
+                'semester'            => $semKey,
+                'semester_label'      => $semLabel,
+                'region'              => $region,
+                'region_label'        => $student->region_label,
                 'price'               => $effectivePrice,
-                'orig_price'          => (float) $sub->price_ils,
+                'orig_price'          => $effectivePrice,
                 'has_discount'        => (bool) $sub->has_discount,
                 'discount_percentage' => (int) $sub->discount_percentage,
                 'is_free'             => (bool) $sub->is_free
@@ -152,6 +169,8 @@ class CourseEnrollmentController extends Controller
         session([
             'checkout_cart' => [
                 'student_id'              => $student->id,
+                'region'                  => $region,
+                'region_label'            => $student->region_label,
                 'items'                   => $items,
                 'subtotal'                => $subtotal,
                 'bundle_discount'         => $bundleDiscount,

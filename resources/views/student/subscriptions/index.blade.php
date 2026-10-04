@@ -1,23 +1,47 @@
 @extends('layouts.app')
 
-@section('title', 'سجل اشتراكاتي الشهرية - منصة Step by Step')
+@section('title', __('سجل الاشتراكات والرسوم الفصلية | Step by Step'))
 
 @section('content')
 <div class="student-subs-container">
-    {{-- هيدر الصفحة --}}
+    {{-- هيدر الصفحة الأكاديمي المطور --}}
     <div class="student-subs-header">
         <div class="header-text-block">
             <div class="subs-badge">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>{{ __('Academic Student Subscriptions') }}</span>
+                <span>{{ __('نظام الاشتراكات والرسوم الفصلية المعتمد') }}</span>
             </div>
-            <h1 class="subs-title">{{ __('Monthly Subscriptions Record') }} ({{ $year }})</h1>
-            <p class="subs-subtitle">{{ __('Welcome, :name! Track your subscription status and monthly installments throughout the academic year.', ['name' => $student->name_ar ?? $student->name]) }}</p>
+            <h1 class="subs-title">{{ __('سجل الاشتراكات والرسوم الفصلية للمقررات') }} ({{ $year }})</h1>
+            <p class="subs-subtitle">
+                {{ __('أهلاً بك يا :name! يتم احتساب الرسوم في المنصة وفق نظام الفصول الدراسية (فصل أول / فصل ثاني) لكل مادة مسجلة دون أي أقساط شهرية.', ['name' => $student->name_ar ?? $student->name]) }}
+            </p>
         </div>
         <div class="header-action-block">
             <a href="{{ route('student.pendingPayment.show') }}" class="btn-pay-new-month">
-                <i class="fa-solid fa-receipt"></i> {{ __('Submit New Payment Notice') }}
+                <i class="fa-solid fa-receipt"></i> {{ __('رفع إشعار سداد جديد') }}
             </a>
+        </div>
+    </div>
+
+    {{-- شريط تحديد المنطقة والتسعيرة الإقليمية المطبقة --}}
+    <div class="regional-pricing-alert-banner">
+        <div class="alert-content-wrap">
+            <div class="region-flag-box">
+                <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div>
+                <strong class="region-title">
+                    {{ __('التسعيرة المعتمدة لحسابك:') }} 
+                    <span class="region-badge-pill">{{ $student->region_label }}</span>
+                </strong>
+                <p class="region-desc">
+                    {{ __('رسوم المقررات محددة ومخصصة بحسب منطقتك التعليمية (:region). الرسوم تدفع فصلياً وتتيح لك الوصول الكامل لكافة دروس وشروحات وبنوك أسئلة الفصل المعتمد.', ['region' => $student->region_label]) }}
+                </p>
+            </div>
+        </div>
+        <div class="academic-system-tag">
+            <i class="fa-solid fa-calendar-week"></i>
+            <span>{{ __('نظام فصلي حصراً (Term-Based)') }}</span>
         </div>
     </div>
 
@@ -26,10 +50,10 @@
         <div class="stat-card-clean" style="--card-accent: #1e3a8a;">
             <span class="stat-label">{{ __('إجمالي الرسوم المطلوبة') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-navy">{{ number_format($totalDueAmount ?? 1800, 2) }} ₪</span>
+                <span class="stat-number text-navy">{{ number_format($totalDueAmount, 2) }} ₪</span>
                 <i class="fa-solid fa-file-invoice-dollar stat-icon text-navy"></i>
             </div>
-            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('إجمالي الأقساط المقررة لكامل العام الدراسي') }}</small>
+            <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">{{ __('إجمالي الرسوم الفصلية المقررة لموادك') }}</small>
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #059669;">
@@ -51,7 +75,7 @@
             </div>
             <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
                 @if(($totalRemainingAmount ?? 0) > 0)
-                    {{ __('متبقي بذمتك حتى نهاية العام الدراسي') }}
+                    {{ __('متبقي بذمتك مطلوب استكمال سداده') }}
                 @else
                     {{ __('ذمتك المالية مسددة بالكامل ومبرأة ✅') }}
                 @endif
@@ -59,686 +83,999 @@
         </div>
 
         <div class="stat-card-clean" style="--card-accent: #6366f1;">
-            <span class="stat-label">{{ __('الأقساط المسددة بالكامل') }}</span>
+            <span class="stat-label">{{ __('المواد المعتمدة والمسددة') }}</span>
             <div class="stat-value-wrap">
-                <span class="stat-number text-indigo">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ 12</small></span>
-                <i class="fa-solid fa-calendar-check stat-icon text-indigo"></i>
+                <span class="stat-number text-indigo">{{ $paidCount }} <small style="font-size: 0.85rem; color: #64748b;">/ {{ max(1, count($semesterSubscriptions ?? [])) }}</small></span>
+                <i class="fa-solid fa-book-bookmark stat-icon text-indigo"></i>
             </div>
             <small style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">
                 @if($partialCount > 0)
-                    {{ __(':count أشهر دفع جزئي', ['count' => $partialCount]) }} • 
+                    {{ __(':count مواد دفع جزئي', ['count' => $partialCount]) }} • 
                 @endif
                 {{ __('الاشتراك مفعل في المساقات المعتمدة') }}
             </small>
         </div>
     </div>
 
-    {{-- كشف الموقف المالي الفوري والأقساط المستحقة (معالجة المتأخرات والدفع الجزئي) --}}
-    @if(isset($financialSummary))
-        <div class="active-due-summary-card {{ $financialSummary['has_arrears'] ? 'has-arrears' : ($financialSummary['total_due_now'] > 0 ? 'has-due' : 'all-clear') }}">
+    {{-- كشف الموقف المالي الفوري والأقساط المستحقة --}}
+    @if(($totalRemainingAmount ?? 0) > 0)
+        <div class="active-due-summary-card has-due">
             <div class="due-card-header">
                 <div class="due-badge-pill">
-                    <i class="fa-solid {{ $financialSummary['has_arrears'] ? 'fa-triangle-exclamation text-amber' : ($financialSummary['total_due_now'] > 0 ? 'fa-bell text-blue' : 'fa-circle-check text-emerald') }}"></i>
-                    <span>
-                        @if($financialSummary['has_arrears'])
-                            {{ __('تنبيه محاسبي: يوجد رصيد متبقي ومتأخرات سابقة بانتظار استكمال السداد') }}
-                        @elseif($financialSummary['total_due_now'] > 0)
-                            {{ __('الموقف المالي: قسط الشهر الحالي مستحق للسداد') }}
-                        @else
-                            {{ __('الموقف المالي: كافة الأقساط مسددة ومبرأة بالكامل حتى تاريخه ✅') }}
-                        @endif
-                    </span>
+                    <i class="fa-solid fa-bell text-rose"></i>
+                    <span>{{ __('الموقف المالي: يوجد رصيد متبقي مستحق السداد لموادك الفصلية') }}</span>
                 </div>
                 <div class="due-month-tag">
-                    <i class="fa-regular fa-calendar-check"></i>
-                    <span>{{ $financialSummary['active_due_month_name'] }}</span>
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>{{ __('مستحق السداد') }}</span>
                 </div>
             </div>
 
             <div class="due-figures-grid">
-                @if($financialSummary['has_arrears'])
-                    <div class="due-fig-item arrears-highlight">
-                        <span class="fig-label text-rose">{{ __('المتأخرات والمتبقي من الشهور السابقة:') }}</span>
-                        <div class="fig-value-row">
-                            <strong class="fig-amt text-rose font-mono">{{ number_format($financialSummary['previous_unpaid_balance'], 2) }} ₪</strong>
-                            @if(count($financialSummary['arrears_details']) > 0)
-                                <span class="arrears-count-badge">
-                                    {{ count($financialSummary['arrears_details']) }} {{ __('شهور بها رصيد') }}
-                                </span>
-                            @endif
-                        </div>
-                        <small class="fig-sub">
-                            @foreach($financialSummary['arrears_details'] as $arr)
-                                <span>{{ $arr['month_name'] }} (متبقي: {{ number_format($arr['remaining_amount'], 0) }} ₪){{ !$loop->last ? ' • ' : '' }}</span>
-                            @endforeach
-                        </small>
-                    </div>
-                @endif
-
                 <div class="due-fig-item">
-                    <span class="fig-label">{{ __('قسط :month:', ['month' => $financialSummary['active_due_month_name']]) }}</span>
-                    <strong class="fig-amt text-navy font-mono">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>
-                    <small class="fig-sub">{{ __('الرسم الشهري المقبول بعد تطبيق المنح والخصومات') }}</small>
+                    <span class="fig-label">{{ __('إجمالي المطلوب سداده الآن:') }}</span>
+                    <strong class="fig-amt text-rose font-mono">{{ number_format($totalRemainingAmount, 2) }} ₪</strong>
+                    <small class="fig-sub">{{ __('الرصيد المتبقي لتسوية وتفعيل اشتراكاتك بالكامل') }}</small>
                 </div>
 
                 <div class="due-fig-item grand-due-item">
-                    <span class="fig-label">{{ __('إجمالي المبلغ المستحق للدفع حالياً:') }}</span>
-                    <strong class="fig-amt font-mono text-primary-net">{{ number_format($financialSummary['total_due_now'], 2) }} ₪</strong>
-                    <small class="fig-sub">
-                        @if($financialSummary['has_arrears'])
-                            {{ __('شاملاً متأخرات الشهور السابقة + قسط الشهر الحالي') }}
-                        @else
-                            {{ __('المبلغ المطلوب لسداد هذا الشهر بالكامل') }}
-                        @endif
-                    </small>
+                    <span class="fig-label">{{ __('الإجراء المطلوب:') }}</span>
+                    <a href="{{ route('student.pendingPayment.show', ['amount' => $totalRemainingAmount, 'type' => 'due']) }}" class="btn-pay-now-action">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>{{ __('سداد المستحق الآن (:amt ₪)', ['amt' => number_format($totalRemainingAmount, 0)]) }}</span>
+                    </a>
                 </div>
             </div>
-
-            @if($financialSummary['total_due_now'] > 0)
-                <div class="due-action-options-strip">
-                    <div class="action-options-title">
-                        <i class="fa-solid fa-credit-card"></i>
-                        <span>{{ __('خيارات السداد الإلكتروني المتاحة:') }}</span>
-                    </div>
-                    <div class="action-buttons-wrap">
-                        @if($financialSummary['has_arrears'])
-                            <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['previous_unpaid_balance'], 'month' => $financialSummary['arrears_details'][0]['month'] ?? 1, 'type' => 'arrears']) }}" class="btn-due-action secondary">
-                                <i class="fa-solid fa-clock-rotate-left"></i>
-                                <span>{{ __('سداد المتأخرات السابقة فقط') }} ({{ number_format($financialSummary['previous_unpaid_balance'], 0) }} ₪)</span>
-                            </a>
-                        @endif
-                        <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['current_month_due'], 'month' => $financialSummary['active_due_month'], 'type' => 'current']) }}" class="btn-due-action secondary">
-                            <i class="fa-solid fa-calendar-day"></i>
-                            <span>{{ __('سداد قسط :month فقط', ['month' => $financialSummary['active_due_month_name']]) }} ({{ number_format($financialSummary['current_month_due'], 0) }} ₪)</span>
-                        </a>
-                        <a href="{{ route('student.pendingPayment.show', ['amount' => $financialSummary['total_due_now'], 'month' => $financialSummary['active_due_month'], 'type' => 'total']) }}" class="btn-due-action primary-gold">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span>{{ __('سداد الإجمالي كاملاً الآن') }} ({{ number_format($financialSummary['total_due_now'], 0) }} ₪)</span>
-                        </a>
-                    </div>
+        </div>
+    @else
+        <div class="active-due-summary-card all-clear">
+            <div class="due-card-header">
+                <div class="due-badge-pill">
+                    <i class="fa-solid fa-circle-check text-emerald"></i>
+                    <span>{{ __('الموقف المالي: كافة الرسوم الفصلية لموادك مسددة ومعتمدة بنجاح ✅') }}</span>
                 </div>
-            @endif
+                <div class="due-month-tag">
+                    <i class="fa-solid fa-shield-check"></i>
+                    <span>{{ __('الحساب سليم ومبرأ') }}</span>
+                </div>
+            </div>
         </div>
     @endif
 
-    {{-- شبكة الشهور الـ 12 التفاعلية --}}
-    <div class="months-timeline-card">
-        <div class="timeline-head">
-            <div>
-                <h2 class="timeline-title"><i class="fa-solid fa-calendar-check text-primary"></i> {{ __('12 Months Schedule for the Academic Year') }} ({{ $year }})</h2>
-                <p class="timeline-sub">{{ __('Click on any month to view installment details or submit proof of payment') }}</p>
-            </div>
-            <div class="academic-branch-pill">
-                <i class="fa-solid fa-book-bookmark"></i>
-                <span>{{ $student?->stage?->label_ar ?? ($student?->stage?->name_ar ?? __('Academic Stage')) }}</span>
+    {{-- شبكة بطاقات المواد والاشتراكات الفصلية --}}
+    <div class="subs-grid-wrapper" style="margin-top: 24px;">
+        <div class="grid-section-header">
+            <div class="sec-title-block">
+                <i class="fa-solid fa-layer-group text-primary"></i>
+                <div>
+                    <h2 class="sec-title">{{ __('تفاصيل الاشتراكات والرسوم الفصلية حسب المواد') }}</h2>
+                    <p class="sec-desc">{{ __('جدول يوضح حالة كل مادة مشترَك بها، الفصل الدراسي، الرسم الإقليمي، والمدفوع والمتبقي.') }}</p>
+                </div>
             </div>
         </div>
 
-        <div class="months-cards-grid">
-            @foreach($subscriptions as $sub)
+        <div class="semester-cards-grid">
+            @forelse($semesterSubscriptions ?? [] as $sub)
                 @php
                     $isPaid = $sub->status === 'paid';
                     $isPartial = $sub->status === 'partial';
                     $isPending = $sub->status === 'pending';
                     $isWaived = $sub->status === 'waived';
-                    $badgeInfo = $sub->status_badge;
                     $paidAmt = (float)($sub->paid_amount ?? 0);
                     if ($isPaid && $paidAmt <= 0) $paidAmt = (float)$sub->amount;
-                    $remAmt = (float)$sub->remaining_amount;
+                    $remAmt = max(0, (float)$sub->remaining_amount);
+                    $subName = optional($sub->subject)->name_ar ?? optional($sub->subject)->name ?? __('مادة دراسية');
+                    $subStage = optional(optional($sub->subject)->stage)->label_ar ?? optional(optional($sub->subject)->stage)->name_ar ?? __('توجيهي');
+                    $themeColor = optional($sub->subject)->color ?? '#1e3a8a';
                 @endphp
-                <div class="month-card {{ $isPaid ? 'card-paid' : ($isPartial ? 'card-partial' : ($isPending ? 'card-pending' : ($isWaived ? 'card-waived' : 'card-unpaid'))) }}">
-                    <div class="month-card-header">
-                        <span class="month-number font-mono">{{ sprintf('%02d', $sub->month) }}</span>
-                        <span class="month-state-pill" style="background: {{ $badgeInfo['bg'] }}; color: {{ $badgeInfo['color'] }};">
-                            {{ __($badgeInfo['label']) }}
+
+                <div class="semester-sub-card status-{{ $sub->status }}">
+                    <div class="card-top-head">
+                        <div class="card-icon-title">
+                            <div class="sub-icon-sq" style="color: {{ $themeColor }}; background: {{ $themeColor }}15; border: 1px solid {{ $themeColor }}30;">
+                                <i class="fa-solid {{ optional($sub->subject)->icon ?? 'fa-book-open' }}"></i>
+                            </div>
+                            <div>
+                                <h3 class="subject-title">{{ $subName }}</h3>
+                                <span class="subject-stage-badge">{{ $subStage }}</span>
+                            </div>
+                        </div>
+
+                        <!-- شارة الفصل الدراسي المعتمد -->
+                        <span class="semester-pill-badge">
+                            <i class="fa-solid fa-calendar-day"></i>
+                            {{ $sub->semester_label }}
                         </span>
                     </div>
 
-                    <div class="month-card-body">
-                        <h4 class="month-name">{{ app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? ($monthsNames[$sub->month] ?? "Month {$sub->month}")) }}</h4>
-                        <div class="month-amount-row">
-                            <span class="amount-label">{{ __('المبلغ المستحق:') }}</span>
-                            <strong class="amount-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
+                    <div class="card-pricing-block">
+                        <div class="pricing-row">
+                            <span class="pr-label">{{ __('التسعيرة المطبقة:') }}</span>
+                            <span class="pr-val region-tag">{{ $student->region_label }}</span>
                         </div>
-                        <div class="month-amount-row" style="color: #059669; font-size: 0.85rem;">
-                            <span class="amount-label">{{ __('المبلغ المسدد:') }}</span>
-                            <strong class="amount-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
+                        <div class="pricing-row">
+                            <span class="pr-label">{{ __('الرسم الفصلي المقرر:') }}</span>
+                            <strong class="pr-val font-mono">{{ number_format($sub->amount, 2) }} ₪</strong>
                         </div>
-                        <div class="month-amount-row" style="{{ $remAmt > 0 ? 'color: #dc2626;' : 'color: #059669;' }} font-size: 0.85rem;">
-                            <span class="amount-label">{{ __('الرصيد المتبقي:') }}</span>
-                            <strong class="amount-val font-mono font-bold">{{ number_format($remAmt, 2) }} ₪</strong>
+                        <div class="pricing-row text-emerald">
+                            <span class="pr-label">{{ __('المبلغ المسدد:') }}</span>
+                            <strong class="pr-val font-mono">{{ number_format($paidAmt, 2) }} ₪</strong>
                         </div>
-                        @if($isPaid && $sub->paid_at)
-                            <div class="paid-date-note font-mono">
-                                <i class="fa-regular fa-calendar-check"></i> {{ __('Payment Date:') }} {{ $sub->paid_at->format('Y-m-d') }}
-                            </div>
-                        @elseif($sub->notes)
-                            <div class="paid-date-note">
+                        <div class="pricing-row {{ $remAmt > 0 ? 'text-rose' : 'text-emerald' }}">
+                            <span class="pr-label">{{ __('الرصيد المتبقي:') }}</span>
+                            <strong class="pr-val font-mono">{{ number_format($remAmt, 2) }} ₪</strong>
+                        </div>
+
+                        @if($sub->notes)
+                            <div class="sub-notes-row">
                                 <i class="fa-regular fa-note-sticky"></i> {{ $sub->notes }}
                             </div>
                         @endif
                     </div>
 
-                    <div class="month-card-footer">
+                    <div class="card-footer-strip">
                         @if($isPaid)
-                            <span class="btn-month-status done">
-                                <i class="fa-solid fa-circle-check"></i> {{ __('Paid Successfully') }}
-                            </span>
-                        @elseif($isPartial)
-                            <div class="unpaid-actions-row">
-                                <a href="{{ route('student.pendingPayment.show', ['amount' => $remAmt, 'month' => $sub->month, 'type' => 'remaining']) }}" class="btn-month-status pay" style="flex: 1; background: #b45309;">
-                                    <i class="fa-solid fa-receipt"></i> {{ __('سداد المتبقي') }} ({{ number_format($remAmt, 0) }} ₪)
+                            <div class="status-btn-box status-done">
+                                <i class="fa-solid fa-circle-check"></i>
+                                <span>{{ __('مسدد ومعتمد بالكامل') }}</span>
+                            </div>
+                            @if($sub->subject_id)
+                                <a href="{{ route('student.subjects.show', $sub->subject_id) }}" class="btn-enter-course">
+                                    <span>{{ __('دخول المادة') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
                                 </a>
-                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود سداد باقي قسط (' . $sub->month_name_ar . ') وقيمته ' . number_format($remAmt, 0) . ' ₪ لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
-                                    <i class="fa-brands fa-whatsapp"></i>
-                                </a>
+                            @endif
+                        @elseif($isWaived)
+                            <div class="status-btn-box status-waived">
+                                <i class="fa-solid fa-gift"></i>
+                                <span>{{ __('إعفاء ومنحة كاملة ✨') }}</span>
                             </div>
                         @elseif($isPending)
-                            <span class="btn-month-status waiting">
-                                <i class="fa-solid fa-clock-rotate-left"></i> {{ __('Pending Supervisor Approval') }}
-                            </span>
-                        @elseif($isWaived)
-                            <span class="btn-month-status waived">
-                                <i class="fa-solid fa-tag"></i> {{ __('Scholarship / Fully Waived') }}
-                            </span>
+                            <div class="status-btn-box status-pending">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>{{ __('قيد المراجعة والاعتماد لدى الإدارة') }}</span>
+                            </div>
                         @else
-                            <div class="unpaid-actions-row">
-                                <a href="{{ route('student.pendingPayment.show', ['amount' => $sub->amount, 'month' => $sub->month, 'type' => 'installment']) }}" class="btn-month-status pay" style="flex: 1;">
-                                    <i class="fa-solid fa-receipt"></i> {{ __('سداد هذا القسط') }} ({{ number_format($sub->amount, 0) }} ₪)
+                            <div class="unpaid-actions-cluster">
+                                <a href="{{ route('student.pendingPayment.show', ['amount' => $remAmt > 0 ? $remAmt : $sub->amount, 'type' => 'semester', 'subject_id' => $sub->subject_id]) }}" class="btn-card-pay">
+                                    <i class="fa-solid fa-receipt"></i>
+                                    <span>{{ $isPartial ? __('سداد المتبقي') : __('سداد رسوم المادة') }} ({{ number_format($remAmt > 0 ? $remAmt : $sub->amount, 0) }} ₪)</span>
                                 </a>
-                                <a href="https://wa.me/970567897212?text={{ urlencode('مرحباً، أود الاستفسار وسداد قسط (' . $sub->month_name_ar . ') لحساب الطالب ' . ($student->name_ar ?? $student->name)) }}" target="_blank" class="btn-month-status whatsapp" title="{{ __('Pay or inquire via WhatsApp') }}">
+                                @php
+                                    $waMsg = urlencode("مرحباً إدارة المنصة، أود الاستفسار وسداد رسوم مادة ({$subName}) - ({$sub->semester_label}) بمبلغ " . number_format($remAmt > 0 ? $remAmt : $sub->amount, 0) . " ₪ لحساب الطالب: " . ($student->name_ar ?? $student->name));
+                                @endphp
+                                <a href="https://wa.me/970597694385?text={{ $waMsg }}" target="_blank" class="btn-card-whatsapp" title="{{ __('تواصل عبر واتساب') }}">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a>
                             </div>
                         @endif
                     </div>
                 </div>
-            @endforeach
+            @empty
+                <div class="empty-subs-placeholder">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <h3>{{ __('لا توجد مواد مقيدة بحسابك حالياً') }}</h3>
+                    <p>{{ __('يمكنك تصفح دليل المقررات واختيار المواد والفصول التي ترغب بالدراسة فيها.') }}</p>
+                    <a href="{{ route('student.courses.catalog') }}" class="btn-go-catalog">
+                        <i class="fa-solid fa-book-open"></i> {{ __('استعراض دليل المقررات') }}
+                    </a>
+                </div>
+            @endforelse
         </div>
     </div>
 
-    {{-- جدول كشف الأقساط الكلاسيكي المعتمد --}}
-    <div class="table-card-clean" style="margin-top: 24px;">
-        <div class="table-container-clean">
-            <table class="data-table-clean">
-                <thead>
-                    <tr>
-                        <th style="width: 70px; text-align: center;">#</th>
-                        <th>{{ __('الشهر الدراسي') }}</th>
-                        <th style="width: 140px;">{{ __('قيمة القسط') }}</th>
-                        <th>{{ __('تاريخ السداد / الملاحظات') }}</th>
-                        <th style="width: 150px; text-align: center;">{{ __('الحالة') }}</th>
-                        <th style="width: 140px; text-align: center;">{{ __('الإجراء') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($subscriptions as $sub)
-                        @php
-                            $isPaid = $sub->status === 'paid';
-                            $isPartial = $sub->status === 'partial';
-                            $isPending = $sub->status === 'pending';
-                            $isWaived = $sub->status === 'waived';
-                            $paidAmt = (float)($sub->paid_amount ?? 0);
-                            if ($isPaid && $paidAmt <= 0) $paidAmt = (float)$sub->amount;
-                            $remAmt = (float)$sub->remaining_amount;
-                            $monthTitle = app()->getLocale() == 'ar' ? $sub->month_name_ar : ($sub->month_name_en ?? date('F', mktime(0, 0, 0, $sub->month, 10)));
-                        @endphp
+    {{-- جدول تفصيلي منظم للاشتراكات الفصلية --}}
+    @if(!empty($semesterSubscriptions) && count($semesterSubscriptions) > 0)
+        <div class="table-card-clean" style="margin-top: 24px;">
+            <div class="table-card-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-table-list" style="color: #1e3a8a;"></i>
+                    <strong style="font-size: 0.95rem; color: #0f172a;">{{ __('كشف الحساب الفصلي المعتمد للمواد المسجلة') }}</strong>
+                </div>
+                <span style="font-size: 0.78rem; color: #64748b;">
+                    {{ __('نظام فصلي (Term 1 / Term 2) - تسعيرة :region', ['region' => $student->region_label]) }}
+                </span>
+            </div>
+            <div class="table-container-clean">
+                <table class="data-table-clean">
+                    <thead>
                         <tr>
-                            <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
-                                {{ sprintf('%02d', $sub->month) }}
-                            </td>
-                            <td>
-                                <strong>{{ $monthTitle }}</strong>
-                            </td>
-                            <td style="font-family: monospace; font-weight: 700; color: #0f172a;">
-                                {{ number_format($sub->amount, 2) }} ₪
-                                @if($isPartial)
-                                    <div style="font-size: 0.72rem; color: #dc2626; margin-top: 2px;">
-                                        {{ __('متبقي:') }} {{ number_format($remAmt, 2) }} ₪
-                                    </div>
-                                @endif
-                            </td>
-                            <td style="color: #64748b; font-size: 0.82rem;">
-                                @if($isPaid && $sub->paid_at)
-                                    <i class="fa-regular fa-calendar-check text-emerald"></i> {{ $sub->paid_at->format('Y-m-d') }}
-                                @elseif($isPartial)
-                                    <span style="color: #b45309; font-weight: 600;"><i class="fa-solid fa-circle-half-stroke"></i> {{ __('تم دفع ') }}{{ number_format($paidAmt, 2) }} ₪</span>
-                                    @if($sub->notes)
-                                        <div style="font-size: 0.75rem; color: #64748b;">{{ $sub->notes }}</div>
-                                    @endif
-                                @elseif($sub->notes)
-                                    {{ $sub->notes }}
-                                @else
-                                    —
-                                @endif
-                            </td>
-                            <td style="text-align: center;">
-                                @if($isPaid)
-                                    <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد بالكامل') }}</span>
-                                @elseif($isPartial)
-                                    <span class="status-pill" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;"><span class="dot" style="background: #b45309;"></span> {{ __('دفع جزئي') }}</span>
-                                @elseif($isPending)
-                                    <span class="status-pill status-pending"><span class="dot"></span> {{ __('قيد المراجعة') }}</span>
-                                @elseif($isWaived)
-                                    <span class="status-pill status-info"><span class="dot"></span> {{ __('إعفاء / منحة') }}</span>
-                                @else
-                                    <span class="status-pill status-frozen"><span class="dot"></span> {{ __('مستحق') }}</span>
-                                @endif
-                            </td>
-                            <td style="text-align: center;">
-                                @if(!$isPaid && !$isWaived)
-                                    <a href="{{ route('student.pendingPayment.show', ['amount' => $isPartial ? $remAmt : $sub->amount, 'month' => $sub->month, 'type' => $isPartial ? 'remaining' : 'installment']) }}" class="tbl-btn" style="background: {{ $isPartial ? '#b45309' : '#1e3a8a' }};">
-                                        <i class="fa-solid fa-receipt"></i> {{ $isPartial ? __('سداد الباقي') : __('رفع إشعار') }}
-                                    </a>
-                                @else
-                                    <span style="color: #16a34a; font-size: 0.8rem; font-weight: 700;">
-                                        <i class="fa-solid fa-check-double"></i> {{ __('معتمد') }}
-                                    </span>
-                                @endif
-                            </td>
+                            <th style="width: 50px; text-align: center;">#</th>
+                            <th>{{ __('المادة الدراسية') }}</th>
+                            <th style="width: 140px;">{{ __('الفصل الدراسي') }}</th>
+                            <th style="width: 120px;">{{ __('التسعيرة المعتمدة') }}</th>
+                            <th style="width: 110px;">{{ __('الرسم المقرر') }}</th>
+                            <th style="width: 110px;">{{ __('المسدد') }}</th>
+                            <th style="width: 110px;">{{ __('المتبقي') }}</th>
+                            <th style="width: 130px; text-align: center;">{{ __('الحالة') }}</th>
+                            <th style="width: 130px; text-align: center;">{{ __('الإجراء') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach($semesterSubscriptions as $idx => $sub)
+                            @php
+                                $isPaid = $sub->status === 'paid';
+                                $isPartial = $sub->status === 'partial';
+                                $isPending = $sub->status === 'pending';
+                                $isWaived = $sub->status === 'waived';
+                                $paidAmt = (float)($sub->paid_amount ?? 0);
+                                if ($isPaid && $paidAmt <= 0) $paidAmt = (float)$sub->amount;
+                                $remAmt = max(0, (float)$sub->remaining_amount);
+                                $subName = optional($sub->subject)->name_ar ?? optional($sub->subject)->name ?? __('مادة');
+                            @endphp
+                            <tr>
+                                <td style="text-align: center; color: #94a3b8; font-family: monospace; font-size: 0.8rem; font-weight: 700;">
+                                    {{ $idx + 1 }}
+                                </td>
+                                <td>
+                                    <strong>{{ $subName }}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge-sem-tbl">{{ $sub->semester_label }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge-reg-tbl">{{ $student->region_label }}</span>
+                                </td>
+                                <td style="font-family: monospace; font-weight: 700; color: #0f172a;">
+                                    {{ number_format($sub->amount, 2) }} ₪
+                                </td>
+                                <td style="font-family: monospace; font-weight: 700; color: #059669;">
+                                    {{ number_format($paidAmt, 2) }} ₪
+                                </td>
+                                <td style="font-family: monospace; font-weight: 700; color: {{ $remAmt > 0 ? '#dc2626' : '#059669' }};">
+                                    {{ number_format($remAmt, 2) }} ₪
+                                </td>
+                                <td style="text-align: center;">
+                                    @if($isPaid)
+                                        <span class="status-pill status-active"><span class="dot"></span> {{ __('مسدد بالكامل') }}</span>
+                                    @elseif($isPartial)
+                                        <span class="status-pill" style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a;"><span class="dot" style="background: #b45309;"></span> {{ __('دفع جزئي') }}</span>
+                                    @elseif($isPending)
+                                        <span class="status-pill status-pending"><span class="dot"></span> {{ __('قيد المراجعة') }}</span>
+                                    @elseif($isWaived)
+                                        <span class="status-pill status-info"><span class="dot"></span> {{ __('إعفاء / منحة') }}</span>
+                                    @else
+                                        <span class="status-pill status-frozen"><span class="dot"></span> {{ __('مستحق') }}</span>
+                                    @endif
+                                </td>
+                                <td style="text-align: center;">
+                                    @if($remAmt > 0)
+                                        <a href="{{ route('student.pendingPayment.show', ['amount' => $remAmt, 'type' => 'semester', 'subject_id' => $sub->subject_id]) }}" class="tbl-btn" style="background: #1e3a8a;">
+                                            <i class="fa-solid fa-receipt"></i> {{ __('سداد') }}
+                                        </a>
+                                    @else
+                                        <span style="color: #16a34a; font-size: 0.8rem; font-weight: 700;">
+                                            <i class="fa-solid fa-check-double"></i> {{ __('معتمد') }}
+                                        </span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
+    @endif
 </div>
 
 <style>
     .student-subs-container {
         width: 100%;
         max-width: 100%;
-        margin: 0 auto;
-        padding: 10px 0 60px;
         box-sizing: border-box;
-        overflow-x: hidden;
+        padding-bottom: 60px;
     }
+
+    /* هيدر الصفحة */
     .student-subs-header {
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        border-radius: 24px;
-        padding: 32px 28px;
-        color: #fff;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-top: 4px solid #1e3a8a;
+        border-radius: 12px;
+        padding: 22px 28px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 24px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2);
+        gap: 16px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
+
     .subs-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
+        gap: 8px;
+        background: #eff6ff;
+        color: #1e3a8a;
+        border: 1px solid #bfdbfe;
         padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        color: #94a3b8;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
         margin-bottom: 8px;
     }
+
     .subs-title {
-        font-size: 1.55rem;
+        font-size: 1.4rem;
         font-weight: 800;
+        color: #0f172a;
         margin: 0 0 6px;
     }
+
     .subs-subtitle {
-        margin: 0;
-        color: #cbd5e1;
-        font-size: 0.92rem;
-    }
-    .btn-pay-new-month {
-        background: linear-gradient(135deg, #10b981, #059669);
-        color: #fff;
-        text-decoration: none;
-        padding: 12px 22px;
-        border-radius: 14px;
-        font-weight: 700;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: 0.2s;
-    }
-    .btn-pay-new-month:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
-    }
-
-    /* Summary Grid */
-    .student-summary-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 18px;
-        margin-bottom: 28px;
-    }
-    .student-sum-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 22px 20px;
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }
-    .sum-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: 16px;
-        display: grid;
-        place-items: center;
-        font-size: 1.6rem;
-    }
-    .student-sum-card.green .sum-icon { background: #ecfdf5; color: #059669; }
-    .student-sum-card.blue .sum-icon { background: #f0f9ff; color: #0284c7; }
-    .student-sum-card.amber .sum-icon { background: #fffbeb; color: #d97706; }
-    .student-sum-card.purple .sum-icon { background: #faf5ff; color: #9333ea; }
-    .sum-label { font-size: 0.8rem; color: #64748b; font-weight: 700; display: block; margin-bottom: 4px; }
-    .sum-val { font-size: 1.55rem; font-weight: 800; color: #0f172a; margin: 0 0 4px; }
-    .sum-sub { font-size: 0.76rem; color: #94a3b8; }
-
-    /* Timeline Card */
-    .months-timeline-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        padding: 30px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-    }
-    .timeline-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 16px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid #f1f5f9;
-        margin-bottom: 24px;
-    }
-    .timeline-title {
-        font-size: 1.3rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .timeline-sub {
-        margin: 0;
-        color: #64748b;
         font-size: 0.88rem;
+        color: #64748b;
+        margin: 0;
+        max-width: 700px;
+        line-height: 1.6;
     }
-    .academic-branch-pill {
-        background: #f8fafc;
-        border: 1px solid #cbd5e1;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 0.82rem;
-        font-weight: 700;
-        color: #334155;
+
+    .btn-pay-new-month {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-    }
-
-    /* Months Cards Grid */
-    .months-cards-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-        gap: 20px;
-    }
-    .month-card {
-        background: #ffffff;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: 0.2s;
-    }
-    .month-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
-    }
-    .card-paid { border-color: #10b981; background: #f0fdf4; }
-    .card-pending { border-color: #f59e0b; background: #fffbeb; }
-    .card-waived { border-color: #818cf8; background: #eef2ff; }
-    .card-unpaid { border-color: #fca5a5; background: #fff; }
-
-    .month-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-    .month-number {
-        font-size: 1.3rem;
-        font-weight: 900;
-        color: #0284c7;
-    }
-    .month-state-pill {
-        font-size: 0.74rem;
-        font-weight: 800;
-        padding: 3px 8px;
-        border-radius: 8px;
-    }
-    .month-name {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin: 0 0 8px;
-    }
-    .month-amount-row {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 0.9rem;
-        margin-bottom: 8px;
-    }
-    .amount-label { color: #64748b; }
-    .amount-val { color: #0f172a; font-size: 1.1rem; }
-    .paid-date-note {
-        font-size: 0.76rem;
-        color: #64748b;
-        background: rgba(0,0,0,0.03);
-        padding: 4px 8px;
-        border-radius: 6px;
-    }
-    .month-card-footer {
-        margin-top: 16px;
-        padding-top: 14px;
-        border-top: 1px solid rgba(0,0,0,0.06);
-    }
-    .btn-month-status {
-        display: block;
-        text-align: center;
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-size: 0.82rem;
-        font-weight: 700;
+        gap: 8px;
+        background: #1e3a8a;
+        color: #ffffff !important;
         text-decoration: none;
-    }
-    .btn-month-status.done { background: #d1fae5; color: #065f46; }
-    .btn-month-status.waiting { background: #fef3c7; color: #92400e; }
-    .btn-month-status.waived { background: #e0e7ff; color: #3730a3; }
-    .btn-month-status.pay { background: #0284c7; color: #fff; transition: 0.2s; }
-    .btn-month-status.pay:hover { background: #0369a1; }
-    .unpaid-actions-row { display: flex; align-items: center; gap: 8px; }
-    .btn-month-status.whatsapp {
-        background: #25d366;
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 10px;
-        font-size: 1.15rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: 0.2s;
-    }
-    .btn-month-status.whatsapp:hover { background: #128c7e; }
-
-    /* Active Due Summary Card Styles */
-    .active-due-summary-card {
-        background: #ffffff;
-        border: 2px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 24px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-        margin-bottom: 24px;
-        position: relative;
-        overflow: hidden;
-    }
-    .active-due-summary-card.has-arrears {
-        border-color: #fde68a;
-        background: linear-gradient(180deg, #fffbeb 0%, #ffffff 60px);
-    }
-    .active-due-summary-card.has-due {
-        border-color: #bfdbfe;
-        background: linear-gradient(180deg, #eff6ff 0%, #ffffff 60px);
-    }
-    .active-due-summary-card.all-clear {
-        border-color: #a7f3d0;
-        background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 60px);
-    }
-    .due-card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding-bottom: 16px;
-        border-bottom: 1px solid #f1f5f9;
-        margin-bottom: 20px;
-    }
-    .due-badge-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.95rem;
-        font-weight: 800;
-        color: #0f172a;
-    }
-    .due-month-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #f1f5f9;
-        color: #1e3a8a;
-        border: 1px solid #cbd5e1;
-        padding: 6px 14px;
-        border-radius: 30px;
-        font-size: 0.84rem;
-        font-weight: 800;
-    }
-    .due-figures-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 16px;
-        margin-bottom: 20px;
-    }
-    .due-fig-item {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .due-fig-item.arrears-highlight {
-        background: #fef2f2;
-        border-color: #fecaca;
-    }
-    .due-fig-item.grand-due-item {
-        background: #eff6ff;
-        border-color: #bfdbfe;
-    }
-    .fig-label {
-        font-size: 0.8rem;
-        color: #64748b;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 0.85rem;
         font-weight: 700;
+        transition: 0.2s ease;
     }
-    .fig-value-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+
+    .btn-pay-new-month:hover {
+        background: #172554;
     }
-    .fig-amt {
-        font-size: 1.45rem;
-        font-weight: 800;
-    }
-    .arrears-count-badge {
-        background: #fee2e2;
-        color: #dc2626;
-        border: 1px solid #fca5a5;
-        font-size: 0.72rem;
-        font-weight: 800;
-        padding: 3px 8px;
-        border-radius: 6px;
-    }
-    .fig-sub {
-        font-size: 0.76rem;
-        color: #64748b;
-        line-height: 1.4;
-    }
-    .due-action-options-strip {
+
+    /* شريط التسعيرة الإقليمية */
+    .regional-pricing-alert-banner {
         background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 14px;
+        border: 1px solid #cbd5e1;
+        border-right: 4px solid #0284c7;
+        border-radius: 10px;
         padding: 16px 20px;
+        margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
         gap: 14px;
     }
-    .action-options-title {
+
+    .alert-content-wrap {
         display: flex;
         align-items: center;
-        gap: 8px;
-        color: #1e3a8a;
-        font-weight: 800;
-        font-size: 0.9rem;
+        gap: 14px;
     }
-    .action-buttons-wrap {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .btn-due-action {
-        text-decoration: none;
-        padding: 10px 18px;
+
+    .region-flag-box {
+        width: 44px;
+        height: 44px;
         border-radius: 10px;
-        font-size: 0.86rem;
+        background: #e0f2fe;
+        color: #0284c7;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .region-title {
+        font-size: 0.94rem;
+        color: #0f172a;
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    .region-badge-pill {
+        background: #0284c7;
+        color: #ffffff;
+        font-size: 0.76rem;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        margin-right: 6px;
+    }
+
+    .region-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .academic-system-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    /* بطاقات الإحصاءات */
+    .stats-row-clean {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    .stat-card-clean {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        border-top: 3px solid var(--card-accent, #1e3a8a);
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    }
+
+    .stat-label {
+        font-size: 0.82rem;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+    .stat-value-wrap {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stat-number {
+        font-size: 1.45rem;
         font-weight: 800;
+        font-family: monospace;
+    }
+
+    .stat-icon {
+        font-size: 1.3rem;
+        opacity: 0.85;
+    }
+
+    .text-navy { color: #1e3a8a; }
+    .text-emerald { color: #059669; }
+    .text-rose { color: #dc2626; }
+    .text-indigo { color: #4f46e5; }
+
+    /* كرت الموقف المالي الفوري */
+    .active-due-summary-card {
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+    }
+
+    .active-due-summary-card.has-due {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+    }
+
+    .active-due-summary-card.all-clear {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+    }
+
+    .due-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .due-badge-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        transition: all 0.2s ease;
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0f172a;
     }
-    .btn-due-action.secondary {
+
+    .due-month-tag {
+        font-size: 0.76rem;
+        font-weight: 700;
         background: #ffffff;
-        color: #1e3a8a;
-        border: 1.5px solid #cbd5e1;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
-    .btn-due-action.secondary:hover {
-        background: #f1f5f9;
-        border-color: #94a3b8;
+
+    .due-figures-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 14px;
     }
-    .btn-due-action.primary-gold {
-        background: linear-gradient(135deg, #1e3a8a, #0f172a);
-        color: #fbbf24;
-        border: 1.5px solid #d97706;
-        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+
+    .fig-label {
+        font-size: 0.82rem;
+        color: #64748b;
+        display: block;
+        margin-bottom: 2px;
     }
-    .btn-due-action.primary-gold:hover {
-        background: linear-gradient(135deg, #0f172a, #1e3a8a);
+
+    .fig-amt {
+        font-size: 1.35rem;
+        display: block;
+    }
+
+    .fig-sub {
+        font-size: 0.74rem;
+        color: #64748b;
+    }
+
+    .btn-pay-now-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #dc2626;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 10px 22px;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        transition: 0.2s;
+    }
+
+    .btn-pay-now-action:hover {
+        background: #b91c1c;
+    }
+
+    /* شبكة بطاقات المواد الفصلية */
+    .grid-section-header {
+        margin-bottom: 14px;
+    }
+
+    .sec-title-block {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sec-title {
+        font-size: 1.12rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 2px;
+    }
+
+    .sec-desc {
+        font-size: 0.82rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .semester-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 16px;
+    }
+
+    .semester-sub-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .semester-sub-card:hover {
         transform: translateY(-2px);
-        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    .card-top-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 12px;
+    }
+
+    .card-icon-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .sub-icon-sq {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+
+    .subject-title {
+        font-size: 1.02rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 2px;
+    }
+
+    .subject-stage-badge {
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    .semester-pill-badge {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .card-pricing-block {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .pricing-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+    }
+
+    .pr-label {
+        color: #64748b;
+    }
+
+    .region-tag {
+        background: #f1f5f9;
+        color: #475569;
+        font-size: 0.74rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+
+    .sub-notes-row {
+        background: #f8fafc;
+        border-radius: 6px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 4px;
+    }
+
+    .card-footer-strip {
+        border-top: 1px dashed #e2e8f0;
+        padding-top: 12px;
+    }
+
+    .status-btn-box {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .status-done {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+
+    .status-waived {
+        background: #faf5ff;
+        color: #7e22ce;
+        border: 1px solid #e9d5ff;
+    }
+
+    .status-pending {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+
+    .btn-enter-course {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        margin-top: 6px;
+        background: #1e3a8a;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 7px 12px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: 0.2s;
+    }
+
+    .btn-enter-course:hover {
+        background: #172554;
+    }
+
+    .unpaid-actions-cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-card-pay {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: #1e3a8a;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        transition: 0.2s;
+    }
+
+    .btn-card-pay:hover {
+        background: #172554;
+    }
+
+    .btn-card-whatsapp {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        background: #16a34a;
+        color: #ffffff !important;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        text-decoration: none;
+        flex-shrink: 0;
+        transition: 0.2s;
+    }
+
+    .btn-card-whatsapp:hover {
+        background: #15803d;
+    }
+
+    .empty-subs-placeholder {
+        grid-column: 1 / -1;
+        background: #ffffff;
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        color: #64748b;
+    }
+
+    .empty-subs-placeholder i {
+        font-size: 2.2rem;
+        color: #94a3b8;
+        margin-bottom: 12px;
+    }
+
+    .empty-subs-placeholder h3 {
+        font-size: 1.15rem;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+
+    .btn-go-catalog {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 14px;
+        background: #1e3a8a;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 9px 18px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.84rem;
+    }
+
+    /* جدول الكشف */
+    .table-card-clean {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .table-card-header {
+        padding: 14px 18px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .table-container-clean {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .data-table-clean {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+    }
+
+    .data-table-clean th {
+        background: #ffffff;
+        padding: 12px 14px;
+        font-weight: 700;
+        color: #475569;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: right;
+    }
+
+    .data-table-clean td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .data-table-clean tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .badge-sem-tbl {
+        background: #eff6ff;
+        color: #1d4ed8;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .badge-reg-tbl {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.74rem;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .status-pill .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+
+    .status-active { background: #dcfce7; color: #166534; }
+    .status-active .dot { background: #16a34a; }
+
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-pending .dot { background: #d97706; }
+
+    .status-info { background: #f3e8ff; color: #6b21a8; }
+    .status-info .dot { background: #9333ea; }
+
+    .status-frozen { background: #fee2e2; color: #991b1b; }
+    .status-frozen .dot { background: #dc2626; }
+
+    .tbl-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: #ffffff !important;
+        text-decoration: none;
+        padding: 4px 10px;
+        border-radius: 5px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* ==========================================================
+       SEMESTER SUBSCRIPTIONS RESPONSIVENESS (MOBILE <= 768px)
+       ========================================================== */
+    @media (max-width: 768px) {
+        .student-subs-header {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px 18px;
+            gap: 14px;
+        }
+        .btn-pay-new-month {
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .regional-pricing-alert-banner {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 14px 16px;
+            gap: 12px;
+        }
+        .stats-row-clean {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .active-due-summary-card {
+            padding: 14px 16px;
+        }
+        .due-figures-grid {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        .btn-pay-now-action {
+            width: 100%;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+        .semester-cards-grid {
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        .semester-sub-card {
+            padding: 14px 16px;
+        }
+        .data-table-clean {
+            min-width: 580px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-row-clean {
+            grid-template-columns: 1fr;
+        }
+        .card-top-head {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .semester-pill-badge {
+            align-self: flex-start;
+        }
     }
 </style>
 @endsection

@@ -313,7 +313,7 @@ class StudentController extends Controller
             return redirect()->route('login');
         }
 
-        if ($student->status === 'active' && !$student->isMonthlyFeeDue()) {
+        if ($student->status === 'active' && !$student->isSemesterFeeDue()) {
             return redirect()->route('student.dashboard');
         }
 
@@ -321,34 +321,40 @@ class StudentController extends Controller
             ->where('student_id', $student->id)
             ->get();
 
-        // احتساب التفصيل المالي الدقيق والشفاف للمواد المسجلة
+        // احتساب التفصيل المالي الدقيق والشفاف للمواد المسجلة وفق التسعير الفصلي والإقليمي
         $feeBreakdown = $student->getFeeBreakdown();
 
-        // تحديث رسوم الطالب إذا كانت مسجلة بالافتراضي القديم (150) ولديه مواد مسجلة حقيقية
-        if ($pendingEnrollments->isNotEmpty() && $feeBreakdown['base_after_bundle'] > 0 && abs((float)$student->monthly_fee - 150.00) < 0.01) {
-            $student->monthly_fee = $feeBreakdown['base_after_bundle'];
-            $student->save();
-        }
+        // مزامنة الاشتراكات والذمم الفصلية
+        $semesterSubscriptions = \App\Models\StudentSemesterSubscription::syncWithStudent($student, '2026-2027');
+        $semesterSummary = $student->getSemesterFinancialSummary('2026-2027');
 
-        // مزامنة وتحديث سجل الاشتراكات الشهرية للعام الأكاديمي
-        try {
-            \App\Models\StudentMonthlySubscription::syncWithStudentPayments($student);
-        } catch (\Throwable $e) {}
+        $financialSummary = [
+            'total_due_now'           => $semesterSummary['total_remaining'],
+            'total_year_due'          => $semesterSummary['total_due'],
+            'total_year_paid'         => $semesterSummary['total_paid'],
+            'total_year_remaining'    => $semesterSummary['total_remaining'],
+            'has_arrears'             => false,
+            'active_due_month_name'   => 'الرسوم الفصلية',
+            'previous_unpaid_balance' => 0,
+            'current_month_due'       => $semesterSummary['total_remaining'],
+            'arrears_details'         => [],
+            'subscriptions'           => $semesterSubscriptions,
+            'active_due_month'        => 1
+        ];
 
-        $financialSummary = $student->getFinancialSummary('2026-2027');
-        $subscriptions = $financialSummary['subscriptions'];
-        $dueMonthIndex = $financialSummary['active_due_month'];
-        $dueMonthName = $financialSummary['active_due_month_name'];
+        $subscriptions = $semesterSubscriptions;
+        $dueMonthIndex = 1;
+        $dueMonthName = 'الرسوم الفصلية المعتمدة';
         $monthlyFee = (float) $feeBreakdown['base_after_bundle'];
         $discountAmount = (float) $feeBreakdown['student_discount'];
         $requestedAmount = request()->filled('amount') ? (float) request('amount') : null;
         $requestedMonth = request()->filled('month') ? (int) request('month') : null;
         $requestedType = request()->input('type', 'due');
 
-        $finalAmount = (float) ($requestedAmount ?: ($financialSummary['total_due_now'] > 0 ? $financialSummary['total_due_now'] : $feeBreakdown['final_amount']));
+        $finalAmount = (float) ($requestedAmount ?: $feeBreakdown['final_amount']);
         $totalAmount = (float) $feeBreakdown['subtotal'];
         $bundleDiscount = (float) $feeBreakdown['bundle_discount'];
-        $isFeeDue = $financialSummary['total_due_now'] > 0;
+        $isFeeDue = $semesterSummary['total_remaining'] > 0;
 
         $latestPayment = \App\Models\Payment::where('student_id', $student->id)->latest()->first();
 
@@ -356,7 +362,7 @@ class StudentController extends Controller
             'student', 'pendingEnrollments', 'latestPayment', 
             'totalAmount', 'discountAmount', 'finalAmount', 'bundleDiscount', 'feeBreakdown',
             'subscriptions', 'dueMonthIndex', 'dueMonthName', 'monthlyFee', 'isFeeDue',
-            'financialSummary', 'requestedAmount', 'requestedMonth', 'requestedType'
+            'financialSummary', 'semesterSummary', 'requestedAmount', 'requestedMonth', 'requestedType'
         ));
     }
 

@@ -139,7 +139,7 @@ class Student extends Authenticatable
      */
     public function getRegionLabelAttribute(): string
     {
-        return $this->resolved_region === 'gaza' ? 'قطاع غزة 🌿' : 'الضفة الغربية والقدس 🏛️';
+        return $this->resolved_region === 'gaza' ? 'غزة' : 'الضفة';
     }
 
     /**
@@ -149,20 +149,20 @@ class Student extends Authenticatable
     {
         if ($this->resolved_region === 'gaza') {
             return [
-                'label' => 'غزة العزة 🌿',
+                'label' => 'غزة',
                 'bg'    => '#ecfdf5',
                 'color' => '#065f46',
                 'border'=> '#a7f3d0',
-                'icon'  => 'fa-solid fa-seedling',
+                'icon'  => 'fa-solid fa-location-dot',
             ];
         }
 
         return [
-            'label' => 'الضفة والقدس 🏛️',
+            'label' => 'الضفة',
             'bg'    => '#eff6ff',
             'color' => '#1e40af',
             'border'=> '#bfdbfe',
-            'icon'  => 'fa-solid fa-landmark',
+            'icon'  => 'fa-solid fa-location-dot',
         ];
     }
 
@@ -289,6 +289,14 @@ class Student extends Authenticatable
     }
 
     /**
+     * الاشتراكات والذمم الفصلية للطالب بالمقررات الدراسية
+     */
+    public function semesterSubscriptions()
+    {
+        return $this->hasMany(\App\Models\StudentSemesterSubscription::class);
+    }
+
+    /**
      * الاشتراكات الشهرية للطالب على مدار السنة
      */
     public function monthlySubscriptions()
@@ -297,37 +305,62 @@ class Student extends Authenticatable
     }
 
     /**
-     * حساب رقم الشهر الدراسي المنقضي للطالب بناءً على تاريخ اعتماده بالمنظومة
-     * يبدأ العد (الشهر 1) من تاريخ الاعتماد approved_at، وكل 30 يوماً يدخل الطالب في شهر دراسي جديد.
+     * هل يستحق على الطالب سداد رسوم فصل دراسي حالي أو متأخرات؟
      */
-    public function currentAcademicMonthIndex(): int
+    public function isSemesterFeeDue(?string $academicYear = null): bool
     {
-        $startDate = $this->approved_at ?? $this->created_at;
-        if (!$startDate) {
-            return 1;
+        if ($this->hasDiscount() && $this->custom_discount_percent >= 100) {
+            return false;
         }
 
-        $days = (int) $startDate->diffInDays(now());
-        $monthIndex = (int) floor($days / 30) + 1;
-
-        return min(12, max(1, $monthIndex));
+        $summary = $this->getSemesterFinancialSummary($academicYear);
+        return ($summary['total_remaining'] ?? 0) > 0;
     }
 
     /**
-     * عدد الشهور المسددة أو المعفاة فعلياً للطالب في العام الأكاديمي
+     * حساب كشف الحساب والبيان المالي الفصلي الشامل للطالب بناءً على منطقته ومواده
      */
-    public function paidMonthsCount(?string $academicYear = null): int
+    public function getSemesterFinancialSummary(?string $academicYear = null): array
     {
         $year = $academicYear ?? '2026-2027';
+        \App\Models\StudentSemesterSubscription::syncWithStudent($this, $year);
 
-        return $this->monthlySubscriptions()
+        $subscriptions = $this->semesterSubscriptions()
             ->where('academic_year', $year)
-            ->whereIn('status', ['paid', 'waived'])
-            ->count();
+            ->with('subject')
+            ->get();
+
+        $totalDue = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
+        $totalPaid = (float) $subscriptions->sum(function ($s) {
+            if ($s->status === 'waived') return 0.00;
+            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) return (float) $s->amount;
+            return (float) ($s->paid_amount ?? 0);
+        });
+        $totalRemaining = max(0.00, round($totalDue - $totalPaid, 2));
+
+        $term1Subs = $subscriptions->filter(fn($s) => in_array($s->semester, ['term_1', 'both']));
+        $term2Subs = $subscriptions->filter(fn($s) => in_array($s->semester, ['term_2', 'both']));
+
+        return [
+            'academic_year'      => $year,
+            'region'             => $this->resolved_region,
+            'region_label'       => $this->region_label,
+            'total_due'          => round($totalDue, 2),
+            'total_paid'         => round($totalPaid, 2),
+            'total_remaining'    => $totalRemaining,
+            'is_fully_paid'      => $totalRemaining <= 0,
+            'subscriptions'      => $subscriptions,
+            'term_1_items'       => $term1Subs,
+            'term_2_items'       => $term2Subs,
+            'paid_count'         => $subscriptions->whereIn('status', ['paid', 'waived'])->count(),
+            'partial_count'      => $subscriptions->where('status', 'partial')->count(),
+            'unpaid_count'       => $subscriptions->where('status', 'unpaid')->count(),
+            'pending_count'      => $subscriptions->where('status', 'pending')->count(),
+        ];
     }
 
     /**
-     * هل يستحق على الطالب سداد قسط شهر جديد أو متأخرات سابقة؟
+     * هل يستحق على الطالب سداد قسط شهر جديد أو متأخرات سابقة؟ (تم ربطها بالنظام الفصلي)
      */
     public function isMonthlyFeeDue(?string $academicYear = null): bool
     {
@@ -335,8 +368,23 @@ class Student extends Authenticatable
             return false;
         }
 
-        $summary = $this->getFinancialSummary($academicYear);
-        return ($summary['total_due_now'] ?? 0) > 0;
+        // إذا كان حسابه مفعلاً بالفعل، لا يتم تجميده شهرياً أبداً
+        if ($this->status === 'active') {
+            return false;
+        }
+
+        return $this->isSemesterFeeDue($academicYear);
+    }
+
+    /**
+     * رقم الشهر الأكاديمي الحالي المحسوب للطالب منذ تاريخ الاعتماد (بمعدل 30 يوماً لكل شهر)
+     */
+    public function currentAcademicMonthIndex(): int
+    {
+        $startDate = $this->approved_at ?? $this->created_at ?? now();
+        $days = (int) $startDate->diffInDays(now());
+        $month = (int) floor($days / 30) + 1;
+        return min(12, max(1, $month));
     }
 
     /**
@@ -468,46 +516,54 @@ class Student extends Authenticatable
     }
 
     /**
-     * احتساب التفصيل المالي الدقيق للمواد والاشتراك الشهري للطالب
+     * احتساب التفصيل المالي الدقيق للمواد والاشتراكات الفصلية للطالب بناءً على منطقته
      */
     public function getFeeBreakdown(): array
     {
         $enrollments = $this->enrollments()->with('subject.stage')->get();
         $items = [];
         $subtotal = 0;
+        $region = $this->resolved_region;
 
         if ($enrollments->isNotEmpty()) {
             foreach ($enrollments as $e) {
                 $sub = $e->subject;
                 if (!$sub) continue;
-                $price = (float) $sub->effective_price;
+                $semester = $e->semester ?: 'both';
+                $price = (float) $sub->getSemesterPrice($semester, $region);
                 $subtotal += $price;
                 $items[] = [
-                    'id'         => $sub->id,
-                    'name_ar'    => $sub->name_ar,
-                    'name_en'    => $sub->name_en ?? $sub->name_ar,
-                    'icon'       => $sub->icon ?? '📘',
-                    'stage'      => optional($sub->stage)->name_ar ?? 'توجيهي',
-                    'price'      => $price,
-                    'orig_price' => (float) $sub->price_ils,
-                    'is_free'    => (bool) $sub->is_free,
+                    'id'             => $sub->id,
+                    'name_ar'        => $sub->name_ar,
+                    'name_en'        => $sub->name_en ?? $sub->name_ar,
+                    'icon'           => $sub->icon ?? '📘',
+                    'stage'          => optional($sub->stage)->name_ar ?? 'توجيهي',
+                    'semester'       => $semester,
+                    'semester_label' => $e->semester_label ?? 'الفصلين معاً',
+                    'region'         => $region,
+                    'price'          => $price,
+                    'orig_price'     => (float) $sub->getSemesterPrice($semester, $region),
+                    'is_free'        => (bool) $sub->is_free,
                 ];
             }
         } elseif ($this->stage) {
             $stageSubjects = $this->stage->subjects()->get();
             if ($stageSubjects->isNotEmpty()) {
                 foreach ($stageSubjects as $sub) {
-                    $price = (float) $sub->effective_price;
+                    $price = (float) $sub->getSemesterPrice('both', $region);
                     $subtotal += $price;
                     $items[] = [
-                        'id'         => $sub->id,
-                        'name_ar'    => $sub->name_ar,
-                        'name_en'    => $sub->name_en ?? $sub->name_ar,
-                        'icon'       => $sub->icon ?? '📘',
-                        'stage'      => optional($sub->stage)->name_ar ?? 'توجيهي',
-                        'price'      => $price,
-                        'orig_price' => (float) $sub->price_ils,
-                        'is_free'    => (bool) $sub->is_free,
+                        'id'             => $sub->id,
+                        'name_ar'        => $sub->name_ar,
+                        'name_en'        => $sub->name_en ?? $sub->name_ar,
+                        'icon'           => $sub->icon ?? '📘',
+                        'stage'          => optional($sub->stage)->name_ar ?? 'توجيهي',
+                        'semester'       => 'both',
+                        'semester_label' => 'الفصلين معاً',
+                        'region'         => $region,
+                        'price'          => $price,
+                        'orig_price'     => $price,
+                        'is_free'        => (bool) $sub->is_free,
                     ];
                 }
             }

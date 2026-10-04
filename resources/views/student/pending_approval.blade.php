@@ -118,18 +118,18 @@
             </div>
         </div>
 
-        <!-- بطاقة تفاصيل الرسوم الشهرية والمنح المعتمدة -->
+        <!-- بطاقة تفاصيل الرسوم الفصلية والمنح المعتمدة -->
         <div class="fees-summary-card">
             <div class="fees-header">
                 <div class="fees-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
                 <div>
-                    <h3>{{ __('الرسوم الدراسية الشهرية') }} - <span style="color: var(--ed-primary);">{{ $dueMonthName ?? __('الشهر الأول') }}</span></h3>
-                    <p>{{ __('نظام الاشتراك الأكاديمي المعتمد وفق المواد الدراسية المختارة - Step by Step') }}</p>
+                    <h3>{{ __('الرسوم الدراسية الفصلية المعتمدة') }} - <span style="color: var(--ed-primary);">{{ $student->region_label }}</span></h3>
+                    <p>{{ __('نظام الاشتراك والرسوم الفصلي المعتمد وفق المواد المختارة - Step by Step') }}</p>
                 </div>
             </div>
 
             @if(isset($feeBreakdown['items']) && count($feeBreakdown['items']) > 0)
-                <!-- تفصيل المواد والمباحث الدراسية المسجلة للطالب وأسعارها -->
+                <!-- تفصيل المواد والمباحث الدراسية المسجلة للطالب وأسعارها الفصلية -->
                 <div class="enrolled-subjects-breakdown-box">
                     <div class="breakdown-box-title">
                         <i class="fa-solid fa-layer-group" style="color: #1d4ed8;"></i>
@@ -140,6 +140,7 @@
                             <div class="enrolled-sub-chip">
                                 <span class="sub-icon">{{ $item['icon'] ?? '📘' }}</span>
                                 <span class="sub-name">{{ $item['name_ar'] }}</span>
+                                <span class="sub-sem-tag" style="background: #e0f2fe; color: #0369a1; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ $item['semester_label'] ?? 'الفصل الأول' }}</span>
                                 <span class="sub-price font-mono">{{ number_format($item['price'], 0) }} ₪</span>
                             </div>
                         @endforeach
@@ -149,7 +150,7 @@
 
             <div class="fees-grid">
                 <div class="fee-box">
-                    <span class="fee-title">{{ __('مجموع رسوم المواد') }}</span>
+                    <span class="fee-title">{{ __('مجموع الرسوم الفصلية') }}</span>
                     <span class="fee-value">{{ number_format($totalAmount ?? $monthlyFee, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
                 </div>
                 @if(isset($bundleDiscount) && $bundleDiscount > 0)
@@ -177,7 +178,7 @@
                         @elseif(isset($financialSummary) && $financialSummary['has_arrears'])
                             {{ __('إجمالي المطلوب للدفع الآن') }}
                         @else
-                            {{ __('المطلوب لسداد') }} ({{ $dueMonthName ?? __('الشهر الحالي') }})
+                            {{ __('المطلوب لسداد الرسوم الفصلية') }}
                         @endif
                     </span>
                     <span class="fee-value text-primary-net">{{ number_format($finalAmount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
@@ -194,49 +195,29 @@
             @if(isset($discountAmount) && $discountAmount > 0)
                 <div class="fee-note-alert" style="margin-top: 10px;">
                     <i class="fa-solid fa-gift"></i>
-                    <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على رسوم الشهر.', ['amount' => number_format($discountAmount, 0)]) }}</span>
+                    <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على الرسوم الفصلية.', ['amount' => number_format($discountAmount, 0)]) }}</span>
                 </div>
             @endif
 
-            @if(isset($financialSummary) && $financialSummary['has_arrears'])
-                <div class="fee-note-alert" style="margin-top: 10px; background: #fffbeb; border: 1px solid #fde68a; color: #b45309;">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <span>
-                        <strong>{{ __('تنبيه محاسبي:') }}</strong>
-                        {{ __('يوجد لديك متأخرات سابقة بقيمة (:arrears ₪) إضافة إلى قسط الشهر الحالي (:cur ₪)، إجمالي المطلوب سداده: (:total ₪). يمكنك سداد المتأخرات أو القسط أو كلاهما معاً أدناه.', [
-                            'arrears' => number_format($financialSummary['previous_unpaid_balance'], 0),
-                            'cur'     => number_format($financialSummary['current_month_due'], 0),
-                            'total'   => number_format($financialSummary['total_due_now'], 0)
-                        ]) }}
-                    </span>
-                </div>
-            @endif
-
-            <!-- جدول خطة الشهور الـ 12 ونظام التقسيط الشهري -->
+            <!-- جدول خطة الاشتراكات الفصلية للمقررات -->
             <div class="monthly-schedule-block" style="margin-top: 18px; border-top: 1px dashed #cbd5e1; padding-top: 14px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                     <strong style="font-size: 0.85rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
                         <i class="fa-solid fa-calendar-check" style="color: #1d4ed8;"></i>
-                        {{ __('خطة سداد الشهور الدراسية (12 شهراً):') }}
+                        {{ __('خطة الرسوم والاشتراكات الفصلية للمواد (نظام فصلي حصراً):') }}
                     </strong>
                     <span style="font-size: 0.75rem; color: #64748b;">
-                        {{ __('يبدأ احتساب كل شهر تلقائياً بمعدل 30 يوماً من تاريخ الاعتماد') }}
+                        {{ __('تسعيرة :region المعتمدة للمنهاج', ['region' => $student->region_label]) }}
                     </span>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px;">
-                    @php
-                        $monthLabels = \App\Models\StudentMonthlySubscription::monthNamesAr();
-                        $subsByMonth = isset($subscriptions) ? $subscriptions->keyBy('month') : collect();
-                        $currMonthIdx = $student->currentAcademicMonthIndex();
-                    @endphp
-                    @for($m = 1; $m <= 12; $m++)
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
+                    @forelse($subscriptions ?? [] as $subItem)
                         @php
-                            $subItem = $subsByMonth->get($m);
-                            $stLabel = __('مجدول');
-                            $bgCol = '#f8fafc';
-                            $borderCol = '#e2e8f0';
-                            $textCol = '#64748b';
+                            $stLabel = __('مستحق السداد ⚠️');
+                            $bgCol = '#fef2f2';
+                            $borderCol = '#fecaca';
+                            $textCol = '#b91c1c';
 
                             if ($subItem && in_array($subItem->status, ['paid', 'waived'])) {
                                 $stLabel = __('مسدد ومعتمد ✅');
@@ -248,27 +229,30 @@
                                 $bgCol = '#fffbeb';
                                 $borderCol = '#fde68a';
                                 $textCol = '#b45309';
-                            } elseif ($m === ($dueMonthIndex ?? 1)) {
-                                $stLabel = __('مستحق السداد ⚠️');
-                                $bgCol = '#fef2f2';
-                                $borderCol = '#fecaca';
-                                $textCol = '#b91c1c';
-                            } elseif ($m < ($dueMonthIndex ?? 1)) {
-                                $stLabel = __('مسدد ✅');
-                                $bgCol = '#ecfdf5';
-                                $borderCol = '#a7f3d0';
-                                $textCol = '#047857';
+                            } elseif ($subItem && $subItem->status === 'partial') {
+                                $stLabel = __('سداد جزئي 🕒');
+                                $bgCol = '#fffbeb';
+                                $borderCol = '#fde68a';
+                                $textCol = '#b45309';
                             }
+                            $subItemName = optional($subItem->subject)->name_ar ?? optional($subItem->subject)->name ?? __('مادة');
                         @endphp
-                        <div style="background: {{ $bgCol }}; border: 1px solid {{ $borderCol }}; border-radius: 6px; padding: 6px 8px; text-align: center;">
-                            <div style="font-size: 0.78rem; font-weight: 700; color: #1e293b; margin-bottom: 2px;">
-                                {{ $monthLabels[$m] ?? "الشهر $m" }}
+                        <div style="background: {{ $bgCol }}; border: 1px solid {{ $borderCol }}; border-radius: 8px; padding: 8px 10px; text-align: right;">
+                            <div style="font-size: 0.82rem; font-weight: 800; color: #1e293b; margin-bottom: 2px;">
+                                {{ $subItemName }}
                             </div>
-                            <div style="font-size: 0.68rem; font-weight: 700; color: {{ $textCol }};">
+                            <div style="font-size: 0.72rem; color: #475569; margin-bottom: 4px;">
+                                {{ $subItem->semester_label }} • <strong class="font-mono">{{ number_format($subItem->amount, 0) }} ₪</strong>
+                            </div>
+                            <div style="font-size: 0.72rem; font-weight: 700; color: {{ $textCol }};">
                                 {{ $stLabel }}
                             </div>
                         </div>
-                    @endfor
+                    @empty
+                        <div style="grid-column: 1 / -1; text-align: center; color: #64748b; font-size: 0.8rem; padding: 10px;">
+                            {{ __('سيتم عرض تفاصيل المواد والرسوم الفصلية فور اعتماد التسجيل.') }}
+                        </div>
+                    @endforelse
                 </div>
             </div>
         </div>

@@ -668,7 +668,15 @@
         .admin-payroll-wrapper,
         .academic-inbox-wrapper,
         .gradebook-page-wrap,
-        .pricing-table-card {
+        .pricing-table-card,
+        .ed-sub-wrap,
+        .ed-subject-hero,
+        .ed-layout-grid,
+        .ed-video-card,
+        .ed-smart-player-bar,
+        .ed-courses-grid,
+        .student-subs-container,
+        .checkout-layout-grid {
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
@@ -2157,7 +2165,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-calendar-check"></i></span>
-                            <span>{{ __('مصفوفة الاشتراكات (12 شهراً)') }}</span>
+                            <span>{{ __('مصفوفة الاشتراكات والذمم') }}</span>
                         </div>
                     </div>
                 </a>
@@ -2327,7 +2335,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-emerald"><i class="fa-solid fa-calendar-check"></i></span>
-                            <span>{{ __('سجل الاشتراكات الشهرية') }}</span>
+                            <span>{{ __('سجل الاشتراكات الفصلية') }}</span>
                         </div>
                     </div>
                 </a>

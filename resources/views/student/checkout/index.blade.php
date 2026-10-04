@@ -87,7 +87,22 @@
         </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; align-items: start;">
+<style>
+.checkout-layout-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 20px;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .checkout-layout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+}
+</style>
+
+    <div class="checkout-layout-grid">
 
         <!-- قسم طرق الدفع الفلسطينية أو بطاقة الإعفاء الكامل 100% -->
         @if(($cart['total'] ?? 0) <= 0)
@@ -332,7 +347,19 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;">
                             <div>
                                 <strong style="color: #0f172a; font-size: 0.88rem; display: block;">{{ $itemName }}</strong>
-                                <small style="color: #64748b; font-size: 0.72rem;">{{ $stageName }}</small>
+                                <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap;">
+                                    <small style="color: #64748b; font-size: 0.72rem;">{{ $stageName }}</small>
+                                    @if(!empty($item['semester_label']))
+                                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; border: 1px solid #bfdbfe;">
+                                            <i class="fa-solid fa-calendar-day"></i> {{ $item['semester_label'] }}
+                                        </span>
+                                    @endif
+                                    @if(!empty($item['region_label']))
+                                        <span style="background: #f1f5f9; color: #475569; font-size: 0.7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px;">
+                                            <i class="fa-solid fa-location-dot"></i> {{ $item['region_label'] }}
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                             <div style="text-align: left; font-family: monospace;">
                                 @if(!empty($item['is_free']))

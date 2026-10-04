@@ -331,7 +331,7 @@ class AdminSubscriptionController extends Controller
     }
 
     /**
-     * واجهة استعراض الطالب لسجل اشتراكاته الشهرية الشخصي
+     * واجهة استعراض الطالب لسجل اشتراكاته الفصلية الشخصي
      */
     public function studentIndex()
     {
@@ -341,27 +341,38 @@ class AdminSubscriptionController extends Controller
         }
 
         $year = '2026-2027';
-        // مزامنة وربط الشهور الـ 12 تلقائياً مع مدفوعات الطالب وحالة تسجيله
-        $subscriptions = StudentMonthlySubscription::syncWithStudentPayments($student, $year);
+        // مزامنة وربط الاشتراكات الفصلية لكل مادة مقيدة للطالب
+        $semesterSubscriptions = \App\Models\StudentSemesterSubscription::syncWithStudent($student, $year);
+        $semesterSummary = $student->getSemesterFinancialSummary($year);
 
-        $financialSummary = $student->getFinancialSummary($year);
-        $monthsNames = StudentMonthlySubscription::monthNames();
-        $paidCount = $financialSummary['paid_months_count'];
-        $unpaidCount = $financialSummary['unpaid_months_count'];
-        $pendingCount = $financialSummary['pending_months_count'];
-        $partialCount = $financialSummary['partial_months_count'];
+        $totalDueAmount = (float) $semesterSummary['total_due'];
+        $totalPaidAmount = (float) $semesterSummary['total_paid'];
+        $totalRemainingAmount = (float) $semesterSummary['total_remaining'];
 
-        // 1. كم عليه (إجمالي الرسوم المطلوبة طوال العام)
-        $totalDueAmount = $financialSummary['total_year_due'];
+        $paidCount = $semesterSubscriptions->where('status', 'paid')->count();
+        $unpaidCount = $semesterSubscriptions->where('status', 'unpaid')->count();
+        $pendingCount = $semesterSubscriptions->where('status', 'pending')->count();
+        $partialCount = $semesterSubscriptions->where('status', 'partial')->count();
 
-        // 2. كم دفع (إجمالي المبالغ المسددة فعلياً)
-        $totalPaidAmount = $financialSummary['total_year_paid'];
-
-        // 3. كم ضل قسط مستحق (المبلغ المتبقي المطلوب سداده)
-        $totalRemainingAmount = $financialSummary['total_year_remaining'];
+        // كشف الموقف المالي الفصلي للطالب
+        $financialSummary = [
+            'total_due_now'           => $totalRemainingAmount,
+            'total_year_due'          => $totalDueAmount,
+            'total_year_paid'         => $totalPaidAmount,
+            'total_year_remaining'    => $totalRemainingAmount,
+            'paid_months_count'       => $paidCount,
+            'unpaid_months_count'     => $unpaidCount,
+            'pending_months_count'    => $pendingCount,
+            'partial_months_count'    => $partialCount,
+            'has_arrears'             => $totalRemainingAmount > 0 && $totalPaidAmount > 0,
+            'active_due_month_name'   => 'الفصل الدراسي الحالي',
+            'previous_unpaid_balance' => 0,
+            'current_month_due'       => $totalRemainingAmount,
+            'arrears_details'         => []
+        ];
 
         return view('student.subscriptions.index', compact(
-            'student', 'subscriptions', 'year', 'monthsNames', 
+            'student', 'semesterSubscriptions', 'semesterSummary', 'year',
             'paidCount', 'unpaidCount', 'pendingCount', 'partialCount',
             'totalDueAmount', 'totalPaidAmount', 'totalRemainingAmount',
             'financialSummary'

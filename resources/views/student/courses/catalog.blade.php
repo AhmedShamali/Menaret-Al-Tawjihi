@@ -117,21 +117,48 @@
                         {{ $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.') }}
                     </p>
 
-                    <!-- التسعيرة ونسبة الخصم الأكاديمية -->
-                    <div class="course-pricing-strip">
+                    <!-- التسعيرة الفصلية والإقليمية المعتمدة للمادة -->
+                    @php
+                        $userReg = $student ? $student->resolved_region : 'west_bank';
+                        $pTerm1 = (float)$sub->getSemesterPrice('term_1', $userReg);
+                        $pTerm2 = (float)$sub->getSemesterPrice('term_2', $userReg);
+                        $pBoth  = (float)$sub->getSemesterPrice('both', $userReg);
+                    @endphp
+                    <div class="course-semester-pricing-strip">
                         @if($sub->is_free)
                             <span class="price-pill-free"><i class="fa-solid fa-gift"></i> {{ __('مجانية تجريبية 100%') }}</span>
-                        @elseif($sub->has_discount)
-                            <div class="price-discount-box">
-                                <span class="price-old font-mono">{{ number_format($sub->price_ils, 0) }} ₪</span>
-                                <span class="price-now font-mono">{{ number_format($sub->price_after_discount, 0) }} ₪</span>
-                                <span class="discount-badge"><i class="fa-solid fa-arrow-down"></i> {{ __('خصم') }} {{ $sub->discount_percentage }}%</span>
-                            </div>
                         @else
-                            <div class="price-regular-box">
-                                <span class="price-now font-mono">{{ number_format($sub->price_ils, 0) }} ₪</span>
-                                <span class="price-note">{{ __('شامل الدورة الكاملة') }}</span>
+                            <div class="sem-pricing-tag-row">
+                                <span class="sem-tag-region"><i class="fa-solid fa-location-dot"></i> {{ $student ? $student->region_label : __('تسعيرة المنهاج') }}</span>
+                                @if($sub->has_discount)
+                                    <span class="discount-badge" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; font-size: 0.7rem; font-weight: 800; padding: 1px 6px; border-radius: 4px;">
+                                        <i class="fa-solid fa-arrow-down"></i> {{ __('خصم') }} {{ $sub->discount_percentage }}%
+                                    </span>
+                                @else
+                                    <span class="sem-tag-system">{{ __('نظام فصلي') }}</span>
+                                @endif
                             </div>
+                            <div class="sem-pricing-cols">
+                                <div class="sem-col-box">
+                                    <small>{{ __('فصل 1') }}</small>
+                                    <strong class="font-mono">{{ number_format($pTerm1, 0) }} ₪</strong>
+                                </div>
+                                <div class="sem-col-box">
+                                    <small>{{ __('فصل 2') }}</small>
+                                    <strong class="font-mono">{{ number_format($pTerm2, 0) }} ₪</strong>
+                                </div>
+                                <div class="sem-col-box sem-both-box">
+                                    <small>{{ __('الفصلين') }}</small>
+                                    <strong class="font-mono">{{ number_format($pBoth, 0) }} ₪</strong>
+                                </div>
+                            </div>
+                            @if($sub->has_discount)
+                                <div style="font-size: 0.72rem; color: #ea580c; font-weight: 700; margin-top: 4px; text-align: center; background: #fff7ed; padding: 2px 6px; border-radius: 4px; border: 1px dashed #fdba74;">
+                                    <span>{{ __('عرض خاص:') }}</span> 
+                                    <strong class="font-mono">{{ number_format($sub->price_after_discount, 0) }} ₪</strong> 
+                                    <span style="text-decoration: line-through; color: #94a3b8; font-size: 0.68rem;">{{ number_format($sub->price_ils, 0) }} ₪</span>
+                                </div>
+                            @endif
                         @endif
                     </div>
 
@@ -164,33 +191,54 @@
                             <span>{{ __('قيد المراجعة والاعتماد لدى الإدارة') }}</span>
                         </div>
                     @else
-                        <div class="visitor-actions-row">
-                            <button type="button" class="btn-card-action btn-outline-info" onclick="openSubjectModal({{ json_encode([
-                                'name' => $sub->name_ar ?? $sub->name,
-                                'stage' => optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? __('الثانوية العامة'),
-                                'teacher' => $sub->teacher_display_name,
-                                'desc' => $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.'),
-                                'lessons' => $sub->contents_count ?? 0,
-                                'exams' => $sub->exams_count ?? 0,
-                                'icon' => $sub->icon ?? 'fa-book-open',
-                                'color' => $themeColor,
-                                'price_ils' => (float)$sub->price_ils,
-                                'price_after_discount' => (float)$sub->price_after_discount,
-                                'has_discount' => $sub->has_discount,
-                                'discount_percentage' => $sub->discount_percentage,
-                                'is_free' => (bool)$sub->is_free,
-                            ]) }})">
-                                <i class="fa-solid fa-circle-info"></i>
-                                <span>{{ __('تفاصيل المنهاج') }}</span>
-                            </button>
+                        @if(Auth::guard('student')->check())
+                            <form action="{{ route('student.courses.checkout') }}" method="POST" class="course-direct-enroll-form">
+                                @csrf
+                                <input type="hidden" name="subject_ids[]" value="{{ $sub->id }}">
+                                <div class="enroll-action-group">
+                                    <select name="semesters[{{ $sub->id }}]" class="enroll-semester-select" title="{{ __('اختر الفصل المطلوب') }}">
+                                        <option value="both">{{ __('الفصلين معاً') }} ({{ number_format($pBoth, 0) }} ₪)</option>
+                                        <option value="term_1">{{ __('الفصل الأول') }} ({{ number_format($pTerm1, 0) }} ₪)</option>
+                                        <option value="term_2">{{ __('الفصل الثاني') }} ({{ number_format($pTerm2, 0) }} ₪)</option>
+                                    </select>
+                                    <button type="submit" class="btn-card-action btn-enroll-submit">
+                                        <i class="fa-solid fa-cart-shopping"></i>
+                                        <span>{{ __('اشتراك') }}</span>
+                                    </button>
+                                </div>
+                            </form>
+                        @else
+                            <div class="visitor-actions-row">
+                                <button type="button" class="btn-card-action btn-outline-info" onclick="openSubjectModal({{ json_encode([
+                                    'name' => $sub->name_ar ?? $sub->name,
+                                    'stage' => optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? __('الثانوية العامة'),
+                                    'teacher' => $sub->teacher_display_name,
+                                    'desc' => $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.'),
+                                    'lessons' => $sub->contents_count ?? 0,
+                                    'exams' => $sub->exams_count ?? 0,
+                                    'icon' => $sub->icon ?? 'fa-book-open',
+                                    'color' => $themeColor,
+                                    'price_ils' => (float)$sub->price_ils,
+                                    'is_free' => (bool)$sub->is_free,
+                                    'user_region' => $student ? $student->resolved_region : 'west_bank',
+                                    'user_region_label' => $student ? $student->region_label : __('الضفة الغربية'),
+                                    'wb_term_1' => (float)($sub->price_term_1 ?? 0),
+                                    'wb_term_2' => (float)($sub->price_term_2 ?? 0),
+                                    'wb_full' => (float)($sub->price_full_year ?: $sub->price_ils),
+                                    'gz_term_1' => (float)($sub->price_term_1_gaza ?: $sub->price_term_1),
+                                    'gz_term_2' => (float)($sub->price_term_2_gaza ?: $sub->price_term_2),
+                                    'gz_full' => (float)($sub->price_full_year_gaza ?: $sub->price_full_year ?: $sub->price_ils),
+                                ]) }})">
+                                    <i class="fa-solid fa-circle-info"></i>
+                                    <span>{{ __('تفاصيل المنهاج والتسعير') }}</span>
+                                </button>
 
-                            @if(!Auth::guard('student')->check())
                                 <a href="{{ route('students.create') }}" class="btn-card-action btn-register-cta">
                                     <i class="fa-solid fa-user-plus"></i>
                                     <span>{{ __('التسجيل') }}</span>
                                 </a>
-                            @endif
-                        </div>
+                            </div>
+                        @endif
                     @endif
                 </div>
 
@@ -264,7 +312,7 @@
 
             <div class="modal-enroll-note">
                 <i class="fa-solid fa-lightbulb"></i>
-                <span>{{ __('للالتحاق بهذا المقرر ومتابعة الدروس والاختبارات التفاعلية، يرجى التسجيل في المنصة أو سداد القسط الشهري المعتمد.') }}</span>
+                <span>{{ __('للالتحاق بهذا المقرر ومتابعة الدروس والاختبارات التفاعلية، يرجى التسجيل في المنصة وسداد الرسوم الفصلية المعتمدة للمادة (فصل أول أو فصل ثاني أو الفصلين معاً).') }}</span>
             </div>
         </div>
         <div class="modal-footer">
@@ -989,6 +1037,244 @@ html[dir="ltr"] .modal-close-btn {
     align-items: center;
     justify-content: space-between;
 }
+
+/* التنسيقات الأكاديمية للشريط الفصلي والإقليمي */
+.course-semester-pricing-strip {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+}
+
+.sem-pricing-tag-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    font-size: 0.72rem;
+}
+
+.sem-tag-region {
+    color: #0369a1;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.sem-tag-system {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.sem-pricing-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.2fr;
+    gap: 6px;
+    text-align: center;
+}
+
+.sem-col-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 6px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sem-col-box small {
+    font-size: 0.68rem;
+    color: #64748b;
+}
+
+.sem-col-box strong {
+    font-size: 0.85rem;
+    color: #0f172a;
+}
+
+.sem-col-box.sem-both-box {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.sem-col-box.sem-both-box strong {
+    color: #1d4ed8;
+}
+
+/* نموذج الاشتراك الفوري للمادة */
+.course-direct-enroll-form {
+    width: 100%;
+}
+
+.enroll-action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.enroll-semester-select {
+    flex: 1;
+    height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 0 8px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #0f172a;
+    background: #ffffff;
+}
+
+.btn-enroll-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #1e3a8a;
+    color: #ffffff !important;
+    border: none;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: 0.2s;
+    white-space: nowrap;
+}
+
+.btn-enroll-submit:hover {
+    background: #172554;
+}
+
+/* جدول الرسوم في النافذة المنبثقة للزوار */
+.modal-regional-pricing-wrap {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.modal-pricing-grid-two-region {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.region-price-col {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.region-price-col.gaza-col {
+    border-color: #86efac;
+    background: #f0fdf4;
+}
+
+.col-head {
+    font-size: 0.8rem;
+    display: block;
+    margin-bottom: 6px;
+    color: #0f172a;
+}
+
+.row-p {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: #475569;
+    margin-bottom: 4px;
+}
+
+.row-p.both-row {
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 4px;
+    font-weight: 700;
+    color: #1e3a8a;
+}
+
+/* ==========================================================
+   COURSE DIRECTORY RESPONSIVENESS (MOBILE <= 768px)
+   ========================================================== */
+@media (max-width: 768px) {
+    .ed-page-header {
+        padding: 16px 18px;
+    }
+    .ed-page-title {
+        font-size: 1.25rem;
+    }
+    .ed-info-banner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 16px;
+    }
+    .btn-banner-action {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+    }
+    .ed-courses-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .ed-course-card {
+        padding: 16px;
+    }
+    .modal-pricing-grid-two-region {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .subject-modal-card {
+        padding: 18px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-metrics-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+    .btn-modal-primary, .btn-modal-secondary {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+    }
+}
+
+@media (max-width: 480px) {
+    .enroll-action-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+    .enroll-semester-select {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .btn-enroll-submit {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .sem-pricing-cols {
+        gap: 4px;
+    }
+    .sem-col-box {
+        padding: 3px 4px;
+    }
+    .sem-col-box small {
+        font-size: 0.64rem;
+    }
+    .sem-col-box strong {
+        font-size: 0.78rem;
+    }
+}
 </style>
 
 <script>
@@ -1015,22 +1301,26 @@ function openSubjectModal(data) {
                 <span class="font-mono font-bold" style="color: #15803d;">0 ₪</span>
             </div>
         `;
-    } else if (data.has_discount) {
-        pricingBox.innerHTML = `
-            <div class="m-price-row">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.82rem; color: #64748b;">{{ __('الرسوم:') }}</span>
-                    <span style="text-decoration: line-through; color: #94a3b8; font-family: monospace;">${Math.round(data.price_ils)} ₪</span>
-                    <strong style="color: #ea580c; font-size: 1.1rem; font-family: monospace;">${Math.round(data.price_after_discount)} ₪</strong>
-                </div>
-                <span class="discount-badge"><i class="fa-solid fa-arrow-down"></i> {{ __('خصم') }} ${data.discount_percentage}%</span>
-            </div>
-        `;
     } else {
         pricingBox.innerHTML = `
-            <div class="m-price-row">
-                <span style="font-size: 0.82rem; color: #475569; font-weight: 700;">{{ __('رسوم الاشتراك المعتمدة:') }}</span>
-                <strong style="color: #1e3a8a; font-size: 1.1rem; font-family: monospace;">${Math.round(data.price_ils)} ₪</strong>
+            <div class="modal-regional-pricing-wrap">
+                <div style="margin-bottom: 8px; font-size: 0.82rem; font-weight: 800; color: #1e3a8a; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-tags"></i> {{ __('جدول الرسوم الفصلية المعتمدة للمقرر (نظام فصلي حصراً):') }}
+                </div>
+                <div class="modal-pricing-grid-two-region">
+                    <div class="region-price-col">
+                        <strong class="col-head"><i class="fa-solid fa-map-pin"></i> {{ __('الضفة:') }}</strong>
+                        <div class="row-p"><span>{{ __('الفصل الأول:') }}</span> <strong>${Math.round(data.wb_term_1 || 0)} ₪</strong></div>
+                        <div class="row-p"><span>{{ __('الفصل الثاني:') }}</span> <strong>${Math.round(data.wb_term_2 || 0)} ₪</strong></div>
+                        <div class="row-p both-row"><span>{{ __('الفصلين معاً:') }}</span> <strong>${Math.round(data.wb_full || 0)} ₪</strong></div>
+                    </div>
+                    <div class="region-price-col gaza-col">
+                        <strong class="col-head" style="color: #166534;"><i class="fa-solid fa-map-pin"></i> {{ __('غزة:') }}</strong>
+                        <div class="row-p"><span>{{ __('الفصل الأول:') }}</span> <strong>${Math.round(data.gz_term_1 || 0)} ₪</strong></div>
+                        <div class="row-p"><span>{{ __('الفصل الثاني:') }}</span> <strong>${Math.round(data.gz_term_2 || 0)} ₪</strong></div>
+                        <div class="row-p both-row" style="color: #166534;"><span>{{ __('الفصلين معاً:') }}</span> <strong>${Math.round(data.gz_full || 0)} ₪</strong></div>
+                    </div>
+                </div>
             </div>
         `;
     }

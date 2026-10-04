@@ -458,6 +458,6 @@ class MonthlySubscriptionTest extends TestCase
         $subIndexResp = $this->actingAs($student, 'student')
             ->get(route('student.subscriptions.index'));
         $subIndexResp->assertStatus(200);
-        $subIndexResp->assertSee('سجل الاشتراكات الشهرية');
+        $subIndexResp->assertSee('سجل الاشتراكات والرسوم الفصلية');
     }
 }

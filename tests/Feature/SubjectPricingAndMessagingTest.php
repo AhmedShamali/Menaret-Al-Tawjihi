@@ -123,8 +123,8 @@ class SubjectPricingAndMessagingTest extends TestCase
         $studentResponse->assertSee('إجمالي الرسوم المطلوبة');
         $studentResponse->assertSee('المبلغ المسدد المعتمد');
         $studentResponse->assertSee('الرصيد المتبقي بذمتك');
-        $studentResponse->assertSee('1- الشهر الأول');
-        $studentResponse->assertSee('2- الشهر الثاني');
+        $studentResponse->assertSee('نظام فصلي');
+        $studentResponse->assertSee('سجل الاشتراكات والرسوم الفصلية');
 
         // صفحة المدير
         $adminResponse = $this->actingAs($this->admin)
@@ -319,6 +319,141 @@ class SubjectPricingAndMessagingTest extends TestCase
         $supportFetch->assertStatus(200);
         $supportFetch->assertJsonFragment([
             'status' => 'success',
+        ]);
+    }
+
+    /**
+     * 7. فحص نظام التسعير الفصلي والإقليمي للضفة وغزة
+     */
+    public function test_semester_and_regional_pricing_for_west_bank_and_gaza(): void
+    {
+        $subject = Subject::create([
+            'subject_key' => 'math_tawjihi',
+            'name'       => 'Math Tawjihi',
+            'name_ar'    => 'الرياضيات للتوجيهي',
+            'stage_id'   => $this->stage->id,
+            'teacher_id' => $this->teacher->id,
+            'is_active'  => true,
+        ]);
+
+        // المدير يحدد الأسعار: الضفة (500 ف1 / 500 ف2 / 1000 فصلين)، غزة (250 ف1 / 250 ف2 / 500 فصلين)
+        $pricingResponse = $this->actingAs($this->admin)
+            ->postJson(route('admin.subjects.pricing.update', $subject->id), [
+                'price_term_1'        => 500,
+                'price_term_2'        => 500,
+                'price_full_year'     => 1000,
+                'price_term_1_gaza'   => 250,
+                'price_term_2_gaza'   => 250,
+                'price_full_year_gaza'=> 500,
+            ]);
+
+        $pricingResponse->assertStatus(200);
+        $pricingResponse->assertJsonFragment(['status' => 'success']);
+
+        $subject->refresh();
+        $this->assertEquals(500, (float)$subject->price_term_1);
+        $this->assertEquals(500, (float)$subject->price_term_2);
+        $this->assertEquals(1000, (float)$subject->price_full_year);
+        $this->assertEquals(250, (float)$subject->price_term_1_gaza);
+        $this->assertEquals(250, (float)$subject->price_term_2_gaza);
+        $this->assertEquals(500, (float)$subject->price_full_year_gaza);
+
+        // التحقق من حساب الأسعار لطالب الضفة
+        $this->assertEquals(500, (float)$subject->getSemesterPrice('term_1', 'west_bank'));
+        $this->assertEquals(500, (float)$subject->getSemesterPrice('term_2', 'west_bank'));
+        $this->assertEquals(1000, (float)$subject->getSemesterPrice('both', 'west_bank'));
+
+        // التحقق من حساب الأسعار لطالب غزة
+        $this->assertEquals(250, (float)$subject->getSemesterPrice('term_1', 'gaza'));
+        $this->assertEquals(250, (float)$subject->getSemesterPrice('term_2', 'gaza'));
+        $this->assertEquals(500, (float)$subject->getSemesterPrice('both', 'gaza'));
+    }
+
+    /**
+     * 8. فحص الاشتراك الفصلي واعتماد الإدارة للمدفوعات
+     */
+    public function test_student_checkout_and_admin_payment_approval_activates_semester_subscription(): void
+    {
+        $subject = Subject::create([
+            'subject_key'          => 'physics_tawjihi',
+            'name'                 => 'Physics',
+            'name_ar'              => 'الفيزياء للتوجيهي',
+            'stage_id'             => $this->stage->id,
+            'teacher_id'           => $this->teacher->id,
+            'is_active'            => true,
+            'price_term_1'         => 400,
+            'price_term_2'         => 400,
+            'price_full_year'      => 800,
+            'price_term_1_gaza'    => 200,
+            'price_term_2_gaza'    => 200,
+            'price_full_year_gaza' => 400,
+        ]);
+
+        // طالب من غزة يختار الفصل الأول فقط
+        $gazaStudent = Student::create([
+            'nid'        => '400123456',
+            'phone'      => '0599123456',
+            'age'        => 18,
+            'gender'     => 'male',
+            'name'       => 'Gaza Student',
+            'name_ar'    => 'طالب من غزة',
+            'name_en'    => 'Gaza Student',
+            'email'      => 'gaza@test.com',
+            'password'   => bcrypt('password123'),
+            'city'       => 'غزة',
+            'region'     => 'gaza',
+            'status'     => 'active',
+            'stage_id'   => $this->stage->id,
+        ]);
+
+        // تجهيز السلة للاشتراك في الفصل الأول
+        $checkoutResponse = $this->actingAs($gazaStudent, 'student')
+            ->post(route('student.courses.checkout'), [
+                'subject_ids' => [$subject->id],
+                'semesters'   => [$subject->id => 'term_1'],
+            ]);
+
+        $checkoutResponse->assertRedirect(route('student.checkout.show'));
+        $cart = session('checkout_cart');
+        $this->assertNotNull($cart);
+        $this->assertEquals(200, (float)$cart['total']);
+        $this->assertEquals('gaza', $cart['region']);
+        $this->assertEquals('term_1', $cart['items'][0]['semester']);
+
+        // إنشاء دفعة واعتمادها من الإدارة
+        $payment = \App\Models\Payment::create([
+            'student_id'         => $gazaStudent->id,
+            'transaction_number' => 'TXN-TEST-123',
+            'amount'             => 200,
+            'gateway'            => 'jawwal_pay',
+            'status'             => 'pending',
+            'items'              => $cart['items'],
+        ]);
+
+        $approveResponse = $this->actingAs($this->admin)
+            ->postJson(route('admin.payments.updateStatus', $payment->id), [
+                'status' => 'completed',
+            ]);
+
+        $approveResponse->assertStatus(200);
+
+        // التحقق من تفعيل المادة وتحديث الاشتراك الفصلي
+        $this->assertDatabaseHas('enrollments', [
+            'student_id'      => $gazaStudent->id,
+            'subject_id'      => $subject->id,
+            'status'          => 'active',
+            'semester'        => 'term_1',
+            'region_applied'  => 'gaza',
+            'fee_amount'      => 200,
+        ]);
+
+        $this->assertDatabaseHas('student_semester_subscriptions', [
+            'student_id' => $gazaStudent->id,
+            'subject_id' => $subject->id,
+            'semester'   => 'term_1',
+            'status'     => 'paid',
+            'amount'     => 200,
+            'paid_amount'=> 200,
         ]);
     }
 }
