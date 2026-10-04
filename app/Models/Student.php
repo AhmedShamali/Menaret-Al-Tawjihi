@@ -378,8 +378,9 @@ class Student extends Authenticatable
         $term1Remaining = max(0.00, round($term1Due - $term1Paid, 2));
         $term2Remaining = max(0.00, round($term2Due - $term2Paid, 2));
 
-        $term1Status = $term1Due <= 0 ? 'empty' : ($term1Remaining <= 0 ? 'paid' : ($term1Paid > 0 ? 'partial' : 'unpaid'));
-        $term2Status = $term2Due <= 0 ? 'empty' : ($term2Remaining <= 0 ? 'paid' : ($term2Paid > 0 ? 'partial' : 'unpaid'));
+        $isFullWaived = $this->hasDiscount() && (float)$this->custom_discount_percent >= 100;
+        $term1Status = $term1Subs->isEmpty() ? 'empty' : ($isFullWaived ? 'waived' : ($term1Remaining <= 0 ? 'paid' : ($term1Paid > 0 ? 'partial' : 'unpaid')));
+        $term2Status = $term2Subs->isEmpty() ? 'empty' : ($isFullWaived ? 'waived' : ($term2Remaining <= 0 ? 'paid' : ($term2Paid > 0 ? 'partial' : 'unpaid')));
 
         return [
             'academic_year'          => $year,

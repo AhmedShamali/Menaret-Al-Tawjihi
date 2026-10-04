@@ -190,6 +190,20 @@ class StudentSemesterSubscription extends Model
                                 'paid_amount' => 0.00,
                                 'notes'       => 'معفى رسمياً - منحة كاملة',
                             ]);
+                        } elseif (!$isFullWaived) {
+                            $syncData = [];
+                            if (((float)$existing->amount <= 0 && $feeAmount > 0) || ((float)$existing->paid_amount == 0 && (float)$existing->amount != $feeAmount)) {
+                                $syncData['amount'] = $feeAmount;
+                            }
+                            if ($existing->semester !== $semester) {
+                                $syncData['semester'] = $semester;
+                            }
+                            if ($existing->region !== $region) {
+                                $syncData['region'] = $region;
+                            }
+                            if (!empty($syncData)) {
+                                $existing->update($syncData);
+                            }
                         }
                     }
                 }

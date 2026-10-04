@@ -460,4 +460,88 @@ class MonthlySubscriptionTest extends TestCase
         $subIndexResp->assertStatus(200);
         $subIndexResp->assertSee('سجل الاشتراكات والرسوم الفصلية');
     }
+
+    /**
+     * اختبار معالجة الاشتراكات الصفرية وتحديث المبالغ الصحيحة وعدم ظهور "غير مسجل" لطالب لديه مواد
+     */
+    public function test_enrolled_subjects_with_zero_amount_are_resynced_to_actual_prices(): void
+    {
+        $admin = User::create([
+            'name' => 'Super Admin',
+            'email' => 'admin.sync@tawjihi.ps',
+            'password' => bcrypt('password123'),
+            'role' => 'admin',
+        ]);
+
+        $stage = Stage::first();
+
+        $subject = Subject::create([
+            'stage_id'             => $stage->id,
+            'name_ar'              => 'اللغة العربية',
+            'subject_key'          => 'arabic_sync_test',
+            'price_ils'            => 100.00,
+            'price_term_1'         => 50.00,
+            'price_term_2'         => 50.00,
+            'price_full_year'      => 100.00,
+            'price_term_1_gaza'    => 30.00,
+            'price_term_2_gaza'    => 30.00,
+            'price_full_year_gaza' => 60.00,
+        ]);
+
+        $student = Student::create([
+            'name_ar'     => 'طارق عبد الله',
+            'name_en'     => 'Tariq Abdullah',
+            'nid'         => '400099999',
+            'email'       => 'tariq.sync@tawjihi.ps',
+            'password'    => bcrypt('secret123'),
+            'phone'       => '0599888777',
+            'age'         => 18,
+            'gender'      => 'male',
+            'city'        => 'غزة',
+            'region'      => 'gaza',
+            'stage_id'    => $stage->id,
+            'status'      => 'active',
+            'monthly_fee' => 150.00,
+        ]);
+
+        // تسجيل الطالب في المادة
+        Enrollment::create([
+            'student_id'      => $student->id,
+            'subject_id'      => $subject->id,
+            'status'          => 'pending',
+            'semester'        => 'both',
+            'region_applied'  => 'gaza',
+            'fee_amount'      => 0.00, // كانت صفراً بالخطأ
+        ]);
+
+        // وإنشاء اشتراك فصلي بمبلغ 0.00 محاكي للخلل القديم
+        \App\Models\StudentSemesterSubscription::create([
+            'student_id'    => $student->id,
+            'subject_id'    => $subject->id,
+            'academic_year' => '2026-2027',
+            'semester'      => 'both',
+            'region'        => 'gaza',
+            'amount'        => 0.00, // مبلغ صفر
+            'paid_amount'   => 0.00,
+            'status'        => 'unpaid',
+            'is_manual'     => false,
+        ]);
+
+        // عند طلب خلاصة الحساب الفصلي، يجب أن يعاد المزامنة تلقائياً ويصبح المبلغ 60 شيكل (تسعيرة غزة)
+        $summary = $student->getSemesterFinancialSummary('2026-2027');
+
+        $this->assertEquals(60.00, (float)$summary['total_due'], 'المبلغ المستحق يجب أن يتحدث من 0 إلى 60 شيكل لغزة');
+        $this->assertEquals(30.00, (float)$summary['term_1_due'], 'قسط الفصل الأول يجب أن يكون 30 شيكل');
+        $this->assertEquals(30.00, (float)$summary['term_2_due'], 'قسط الفصل الثاني يجب أن يكون 30 شيكل');
+        $this->assertNotEquals('empty', $summary['term_1_status'], 'الحالة لا يجب أن تكون غير مسجل لأن الطالب مسجل بالمادة');
+        $this->assertEquals('unpaid', $summary['term_1_status']);
+
+        // التحقق من ظهور المبالغ الصحيحة في واجهة الأدمن
+        $response = $this->actingAs($admin)
+            ->get(route('admin.subscriptions.monthly'));
+        $response->assertStatus(200);
+        $response->assertSee('طارق عبد الله');
+        $response->assertDontSee('مستحق: 0 ₪ - غير مسجل');
+    }
 }
+

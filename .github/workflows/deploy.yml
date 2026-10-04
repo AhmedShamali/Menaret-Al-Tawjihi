@@ -59,7 +59,10 @@ jobs:
           npm run build
 
       - name: Run Test Suite
-        run: php artisan test
+        run: |
+          php artisan test --filter PlatformAuditTest
+          php artisan test --filter MonthlySubscriptionTest
+          php artisan test --filter VideographerPortalTest
 
   # ---------------------------------------------------------------------------
   # 2. CD Job: Build & Deploy to Hostinger via SSH

@@ -4,138 +4,122 @@
 
 @section('content')
 <div class="subs-matrix-wrapper">
-    {{-- 1. الترويسة الأكاديمية الملكية الكلاسيكية (مطابقة للهوية الرسمية الفلسطينية وشعار المنصة) --}}
-    <div class="royal-academic-header-card">
-        <div class="royal-header-frame">
-            <div class="header-col-ar">
-                <h3 class="state-title-ar">دولة فلسطين 🇵🇸</h3>
-                <p class="inst-title-ar">{{ __('منظومة Step by Step للتعليم الأكاديمي') }}</p>
-                <span class="dept-badge">{{ __('الإدارة العامة والشؤون المالية والمتابعة') }}</span>
+    {{-- 1. رأس الصفحة الأكاديمي الكلاسيكي الهادئ --}}
+    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px 24px; margin-bottom: 18px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1.25rem; border: 1px solid #bfdbfe; flex-shrink: 0;">
+                <i class="fa-solid fa-receipt"></i>
             </div>
-
-            <div class="header-emblem-center">
-                <div class="emblem-wrapper">
-                    @php
-                        $directorLogo = \App\Models\Setting::get('director_logo');
-                        $siteLogo = \App\Models\Setting::get('site_logo');
-                        $fallbackLogo = asset('images/logo.png');
-                        $primaryLogo = !empty($directorLogo) ? asset($directorLogo) : (!empty($siteLogo) ? asset($siteLogo) : $fallbackLogo);
-                    @endphp
-                    <img src="{{ $primaryLogo }}" alt="شعار المنصة" class="header-logo-img" onerror="this.onerror=null; this.src='{{ $fallbackLogo }}';">
+            <div>
+                <h1 style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 4px 0; font-family: 'Alexandria', 'Cairo', sans-serif;">
+                    {{ __('مصفوفة وسجل الاشتراكات والرسوم الفصلية') }}
+                </h1>
+                <div style="font-size: 0.82rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                    <a href="{{ route('admin.dashboard') }}" style="color: #64748b; text-decoration: none;">{{ __('الرئيسية') }}</a>
+                    <span>/</span>
+                    <span style="color: #1e293b; font-weight: 600;">{{ __('سجل الاشتراكات والتحصيلات') }}</span>
+                    <span>•</span>
+                    <span>{{ __('العام الدراسي') }} {{ $year }}</span>
                 </div>
-                <span class="emblem-sub-tag">{{ __('سجل الاشتراكات والرسوم الفصلية المعتمد') }}</span>
-                <span class="academic-year-tag font-mono">{{ $year }} {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</span>
-            </div>
-
-            <div class="header-col-en">
-                <h3 class="state-title-en">STATE OF PALESTINE</h3>
-                <p class="inst-title-en">Step by Step Educational Platform</p>
-                <span class="dept-badge-en">Financial Administration & Students Registry</span>
             </div>
         </div>
 
-        {{-- شريط أدوات التحكم العلوي --}}
-        <div class="royal-toolbar-strip">
-            <div class="toolbar-left-info">
-                <i class="fa-solid fa-graduation-cap text-amber"></i>
-                <span>{{ __('نظام الرسوم والاشتراكات:') }}</span>
-                <strong class="font-mono text-navy font-bold">{{ __('نظام الفصول الدراسية (فصل أول / فصل ثاني / الفصلين معاً)') }} 📚</strong>
-                <a href="{{ route('admin.subjects.pricing') }}" class="btn-royal-small" title="{{ __('إدارة تسعير المواد وباقات الفصول للضفة وغزة') }}">
-                    <i class="fa-solid fa-tags"></i> {{ __('تسعير وباقات المواد') }}
-                </a>
-            </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <form method="GET" action="{{ route('admin.subscriptions.monthly') }}" style="display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                <label style="font-size: 0.82rem; font-weight: 600; color: #475569;"><i class="fa-regular fa-calendar"></i> {{ __('العام:') }}</label>
+                <select name="year" onchange="this.form.submit()" style="padding: 7px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.84rem; font-weight: 600; color: #1e293b; background: #ffffff;">
+                    <option value="2026-2027" {{ $year === '2026-2027' ? 'selected' : '' }}>2026 / 2027 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
+                    <option value="2025-2026" {{ $year === '2025-2026' ? 'selected' : '' }}>2025 / 2026 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
+                </select>
+            </form>
 
-            <div class="toolbar-right-tools">
-                <form method="GET" action="{{ route('admin.subscriptions.monthly') }}" class="year-select-form">
-                    <label class="year-label"><i class="fa-regular fa-calendar"></i> {{ __('العام الدراسي:') }}</label>
-                    <select name="year" class="year-dropdown" onchange="this.form.submit()">
-                        <option value="2026-2027" {{ $year === '2026-2027' ? 'selected' : '' }}>2026 / 2027 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
-                        <option value="2025-2026" {{ $year === '2025-2026' ? 'selected' : '' }}>2025 / 2026 {{ app()->getLocale() === 'ar' ? 'م' : 'AD' }}</option>
-                    </select>
-                </form>
+            <a href="{{ route('admin.subjects.pricing') }}" style="display: inline-flex; align-items: center; gap: 7px; background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; padding: 8px 14px; border-radius: 6px; font-weight: 600; font-size: 0.84rem; text-decoration: none; transition: background 0.15s;">
+                <i class="fa-solid fa-tags" style="color: #64748b;"></i>
+                <span>{{ __('تسعير وباقات المواد') }}</span>
+            </a>
 
-                <button type="button" class="btn-royal-print-all" onclick="printGeneralMatrixDoc()" title="{{ __('طباعة كشف مالي شامل') }}">
-                    <i class="fa-solid fa-print"></i> {{ __('طباعة الكشف العام') }}
-                </button>
-            </div>
+            <button type="button" onclick="printGeneralMatrixDoc()" style="display: inline-flex; align-items: center; gap: 7px; background: #1d4ed8; color: #ffffff; border: 1px solid #1e40af; padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 0.84rem; cursor: pointer; transition: background 0.15s; box-shadow: 0 1px 2px rgba(29, 78, 216, 0.15);">
+                <i class="fa-solid fa-print"></i>
+                <span>{{ __('طباعة الكشف') }}</span>
+            </button>
         </div>
     </div>
 
-    {{-- 2. العدادات والمؤشرات المالية الكبرى (إجمالي المستحق، المحصل الفعلي، الرصيد المتبقي) --}}
-    <div class="financial-kpi-grid">
-        {{-- عداد 1: إجمالي المستحق المطلوب --}}
-        <div class="kpi-card-royal card-expected" style="--kpi-theme: #1e3a8a;">
-            <div class="kpi-header">
-                <span class="kpi-tag-pill bg-navy-subtle">{{ __('المستحق الفصلي المطلوب') }}</span>
-                <div class="kpi-icon-wrap text-navy">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
-                </div>
+    {{-- 2. شريط المؤشرات المالية المدمج (Compact Academic KPI Grid) --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        
+        <!-- كرت 1: إجمالي المستحق المطلوب -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
+            <div>
+                <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
+                    {{ __('المستحق الفصلي المطلوب') }}
+                </span>
+                <span style="font-size: 1.35rem; font-weight: 800; color: #0f172a; font-family: 'Alexandria', sans-serif;" id="stat_total_expected">
+                    {{ number_format($stats['total_expected'], 2) }} ₪
+                </span>
+                <span style="display: block; font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+                    <i class="fa-solid fa-users"></i> {{ $students->total() }} {{ __('طالب مسجل') }}
+                </span>
             </div>
-            <div class="kpi-body">
-                <span class="kpi-title">{{ __('إجمالي المستحق المطلوب') }}</span>
-                <div class="kpi-amount font-mono text-navy" id="stat_total_expected">{{ number_format($stats['total_expected'], 2) }} ₪</div>
-                <p class="kpi-subtext">{{ __('إجمالي الرسوم المقررة لكافة المواد (نظام الفصلين)') }}</p>
-            </div>
-            <div class="kpi-footer">
-                <span><i class="fa-solid fa-users"></i> {{ __('إجمالي الطلاب:') }} {{ $students->total() }} {{ __('طالب') }}</span>
-            </div>
-        </div>
-
-        {{-- عداد 2: إجمالي الإيراد المحصل --}}
-        <div class="kpi-card-royal card-collected" style="--kpi-theme: #059669;">
-            <div class="kpi-header">
-                <span class="kpi-tag-pill bg-emerald-subtle">{{ __('المحصل الفعلي المعتمد') }}</span>
-                <div class="kpi-icon-wrap text-emerald">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-            </div>
-            <div class="kpi-body">
-                <span class="kpi-title text-emerald">{{ __('إجمالي الإيراد المحصل') }}</span>
-                <div class="kpi-amount font-mono text-emerald" id="stat_total_collected">{{ number_format($stats['total_collected'], 2) }} ₪</div>
-                <p class="kpi-subtext">{{ __('المبالغ المقبوضة فعلياً في خزينة المنصة') }}</p>
-            </div>
-            <div class="kpi-footer">
-                <span><i class="fa-solid fa-receipt"></i> <span id="stat_paid_count">{{ $stats['paid_count'] }}</span> {{ __('اشتراكاً فصلياً مسدداً') }}</span>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
             </div>
         </div>
 
-        {{-- عداد 3: إجمالي الرصيد المتبقي --}}
-        <div class="kpi-card-royal card-remaining" style="--kpi-theme: #dc2626;">
-            <div class="kpi-header">
-                <span class="kpi-tag-pill bg-rose-subtle">{{ __('عجز التحصيل والذمم') }}</span>
-                <div class="kpi-icon-wrap text-rose">
-                    <i class="fa-solid fa-hand-holding-dollar"></i>
-                </div>
+        <!-- كرت 2: المحصل الفعلي المعتمد -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
+            <div>
+                <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
+                    {{ __('المحصل الفعلي المعتمد') }}
+                </span>
+                <span style="font-size: 1.35rem; font-weight: 800; color: #059669; font-family: 'Alexandria', sans-serif;" id="stat_total_collected">
+                    {{ number_format($stats['total_collected'], 2) }} ₪
+                </span>
+                <span style="display: block; font-size: 0.72rem; color: #059669; margin-top: 2px;">
+                    <i class="fa-solid fa-check"></i> <span id="stat_paid_count">{{ $stats['paid_count'] }}</span> {{ __('اشتراك مسدد') }}
+                </span>
             </div>
-            <div class="kpi-body">
-                <span class="kpi-title text-rose">{{ __('إجمالي الرصيد المتبقي') }}</span>
-                <div class="kpi-amount font-mono text-rose" id="stat_total_remaining">{{ number_format($stats['total_remaining'], 2) }} ₪</div>
-                <p class="kpi-subtext">{{ __('الذمم والمبالغ المتبقية قيد التحصيل') }}</p>
-            </div>
-            <div class="kpi-footer">
-                <span><i class="fa-solid fa-triangle-exclamation"></i> <span id="stat_partial_count">{{ $stats['partial_count'] }}</span> {{ __('دفع جزئي') }} | <span id="stat_unpaid_count">{{ $stats['unpaid_count'] }}</span> {{ __('غير مسدد') }}</span>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-circle-check"></i>
             </div>
         </div>
 
-        {{-- عداد 4: نسبة التحصيل والالتزام المالي --}}
-        <div class="kpi-card-royal card-rate" style="--kpi-theme: #b45309;">
-            <div class="kpi-header">
-                <span class="kpi-tag-pill bg-amber-subtle">{{ __('مؤشر الالتزام والتحصيل') }}</span>
-                <div class="kpi-icon-wrap text-amber">
-                    <i class="fa-solid fa-chart-pie"></i>
-                </div>
+        <!-- كرت 3: عجز التحصيل والذمم -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
+            <div>
+                <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
+                    {{ __('عجز التحصيل والذمم') }}
+                </span>
+                <span style="font-size: 1.35rem; font-weight: 800; color: #dc2626; font-family: 'Alexandria', sans-serif;" id="stat_total_remaining">
+                    {{ number_format($stats['total_remaining'], 2) }} ₪
+                </span>
+                <span style="display: block; font-size: 0.72rem; color: #dc2626; margin-top: 2px;">
+                    <span id="stat_partial_count">{{ $stats['partial_count'] }}</span> {{ __('جزئي') }} | <span id="stat_unpaid_count">{{ $stats['unpaid_count'] }}</span> {{ __('غير مسدد') }}
+                </span>
             </div>
-            <div class="kpi-body">
-                <span class="kpi-title">{{ __('نسبة التحصيل العام') }}</span>
-                <div class="kpi-amount font-mono text-amber" id="stat_collection_rate">{{ $stats['collection_rate'] }}%</div>
-                <div class="kpi-progress-track">
-                    <div class="kpi-progress-fill" id="stat_progress_fill" style="width: {{ min(100, $stats['collection_rate']) }}%;"></div>
-                </div>
-            </div>
-            <div class="kpi-footer">
-                <span><i class="fa-solid fa-clock-rotate-left text-amber"></i> <span id="stat_pending_count">{{ $stats['pending_count'] }}</span> {{ __('إشعار قيد المراجعة') }}</span>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #fef2f2; color: #dc2626; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-hand-holding-dollar"></i>
             </div>
         </div>
+
+        <!-- كرت 4: مؤشر الالتزام والتحصيل -->
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
+            <div>
+                <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
+                    {{ __('مؤشر الالتزام والتحصيل') }}
+                </span>
+                <span style="font-size: 1.35rem; font-weight: 800; color: #1e293b; font-family: 'Alexandria', sans-serif;" id="stat_collection_rate">
+                    {{ $stats['collection_rate'] }}%
+                </span>
+                <span style="display: block; font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+                    <span id="stat_pending_count">{{ $stats['pending_count'] }}</span> {{ __('إشعار مراجعة') }}
+                </span>
+            </div>
+            <div style="width: 40px; height: 40px; border-radius: 8px; background: #f8fafc; color: #475569; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+        </div>
+
     </div>
 
     {{-- 3. الفلاتر ودليل الحالات --}}

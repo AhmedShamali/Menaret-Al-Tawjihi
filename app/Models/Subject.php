@@ -58,13 +58,22 @@ class Subject extends Model
         $regionKey = strtolower(trim($region ?? 'west_bank'));
         $isGaza = ($regionKey === 'gaza');
 
-        $t1Wb = (float) ($this->price_term_1 ?: round(($this->price_ils ?: 150) / 2, 2));
-        $t2Wb = (float) ($this->price_term_2 ?: round(($this->price_ils ?: 150) / 2, 2));
-        $fullWb = (float) ($this->price_full_year ?: ($this->price_ils ?: ($t1Wb + $t2Wb)));
+        $p1 = (float) $this->price_term_1;
+        $p2 = (float) $this->price_term_2;
+        $pFull = (float) $this->price_full_year;
+        $baseIls = (float) $this->price_ils > 0 ? (float) $this->price_ils : 150.00;
 
-        $t1Gaza = (float) ($this->price_term_1_gaza ?: round($t1Wb * 0.6, 2));
-        $t2Gaza = (float) ($this->price_term_2_gaza ?: round($t2Wb * 0.6, 2));
-        $fullGaza = (float) ($this->price_full_year_gaza ?: round($fullWb * 0.6, 2));
+        $t1Wb = $p1 > 0 ? $p1 : round($baseIls / 2, 2);
+        $t2Wb = $p2 > 0 ? $p2 : round($baseIls / 2, 2);
+        $fullWb = $pFull > 0 ? $pFull : ($t1Wb + $t2Wb);
+
+        $p1G = (float) $this->price_term_1_gaza;
+        $p2G = (float) $this->price_term_2_gaza;
+        $pFullG = (float) $this->price_full_year_gaza;
+
+        $t1Gaza = $p1G > 0 ? $p1G : round($t1Wb * 0.6, 2);
+        $t2Gaza = $p2G > 0 ? $p2G : round($t2Wb * 0.6, 2);
+        $fullGaza = $pFullG > 0 ? $pFullG : round($fullWb * 0.6, 2);
 
         if ($isGaza) {
             return match($semester) {
