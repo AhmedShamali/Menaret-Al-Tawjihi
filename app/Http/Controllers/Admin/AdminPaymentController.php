@@ -110,21 +110,31 @@ class AdminPaymentController extends Controller
                         $reg = $item['region'] ?? ($payment->student ? $payment->student->resolved_region : 'west_bank');
                         $fee = (float)($item['price'] ?? 0);
 
+                        $enrData = [
+                            'status'          => 'active',
+                            'access_mode'     => 'all',
+                            'payment_status'  => $payment->gateway,
+                            'activated_at'    => now(),
+                        ];
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'semester')) {
+                            $enrData['semester'] = $sem;
+                        }
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'region_applied')) {
+                            $enrData['region_applied'] = $reg;
+                        }
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'fee_amount')) {
+                            $enrData['fee_amount'] = $fee;
+                        }
+                        if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'paid_amount')) {
+                            $enrData['paid_amount'] = $fee;
+                        }
+
                         Enrollment::updateOrCreate(
                             [
                                 'student_id' => $payment->student_id,
                                 'subject_id' => $item['id']
                             ],
-                            [
-                                'status'          => 'active',
-                                'access_mode'     => 'all',
-                                'payment_status'  => $payment->gateway,
-                                'activated_at'    => now(),
-                                'semester'        => $sem,
-                                'region_applied'  => $reg,
-                                'fee_amount'      => $fee,
-                                'paid_amount'     => $fee,
-                            ]
+                            $enrData
                         );
 
                         // تحديث أو إنشاء الاشتراك الفصلي للطالب بالمادة

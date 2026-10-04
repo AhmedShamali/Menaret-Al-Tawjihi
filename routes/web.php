@@ -279,6 +279,12 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/certificates/toggle-gpa', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'toggleGpa'])->name('certificates.toggleGpa');
     Route::post('/certificates/issue', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'issue'])->name('certificates.issue');
     Route::delete('/certificates/{id}', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'destroy'])->name('certificates.destroy')->whereNumber('id');
+
+    // فحص ومعالجة قاعدة البيانات ذاتياً للأدمن
+    Route::get('/system/heal-database', function() {
+        \App\Support\SchemaHealer::heal();
+        return redirect()->back()->with('success', 'تم فحص وإصلاح وتحديث أعمدة قاعدة البيانات تلقائياً بنجاح! 🚀');
+    })->name('system.heal');
 });
 
 

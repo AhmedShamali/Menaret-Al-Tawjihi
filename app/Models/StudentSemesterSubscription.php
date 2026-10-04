@@ -135,44 +135,71 @@ class StudentSemesterSubscription extends Model
                 }
             }
 
-            // تحديث قيمة الرسوم في قيد الالتحاق
-            $enrollment->fee_amount = $feeAmount;
-            $enrollment->region_applied = $region;
-            $enrollment->save();
+            // تحديث قيمة الرسوم في قيد الالتحاق بأمان تام
+            try {
+                $hasFeeCol = \Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'fee_amount');
+                $hasRegCol = \Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'region_applied');
+                $hasSemCol = \Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'semester');
 
-            // فحص السجل الفصلي أو إنشائه
-            $existing = self::where('student_id', $student->id)
-                ->where('subject_id', $sub->id)
-                ->where('academic_year', $academicYear)
-                ->first();
-
-            if (!$existing) {
-                $status = $isFullWaived ? 'waived' : ($enrollment->status === 'active' ? 'paid' : 'unpaid');
-                $paidAmt = in_array($status, ['paid']) ? $feeAmount : 0.00;
-
-                self::create([
-                    'student_id'    => $student->id,
-                    'subject_id'    => $sub->id,
-                    'academic_year' => $academicYear,
-                    'semester'      => $semester,
-                    'region'        => $region,
-                    'amount'        => $feeAmount,
-                    'paid_amount'   => $paidAmt,
-                    'status'        => $status,
-                    'is_manual'     => false,
-                    'paid_at'       => $status === 'paid' ? now() : null,
-                    'notes'         => $isFullWaived ? 'معفى رسمياً - منحة كاملة' : null,
-                ]);
-            } elseif (!$existing->is_manual) {
-                if ($isFullWaived && $existing->status !== 'waived') {
-                    $existing->update([
-                        'status'      => 'waived',
-                        'amount'      => 0.00,
-                        'paid_amount' => 0.00,
-                        'notes'       => 'معفى رسمياً - منحة كاملة',
-                    ]);
+                if ($hasFeeCol) {
+                    $enrollment->fee_amount = $feeAmount;
                 }
+                if ($hasRegCol) {
+                    $enrollment->region_applied = $region;
+                }
+                if ($hasSemCol && empty($enrollment->semester)) {
+                    $enrollment->semester = $semester;
+                }
+                if ($hasFeeCol || $hasRegCol || $hasSemCol) {
+                    $enrollment->save();
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Enrollment fee update skipped: ' . $e->getMessage());
             }
+
+            // فحص السجل الفصلي أو إنشائه بأمان تام
+            try {
+                if (\Illuminate\Support\Facades\Schema::hasTable('student_semester_subscriptions')) {
+                    $existing = self::where('student_id', $student->id)
+                        ->where('subject_id', $sub->id)
+                        ->where('academic_year', $academicYear)
+                        ->first();
+
+                    if (!$existing) {
+                        $status = $isFullWaived ? 'waived' : ($enrollment->status === 'active' ? 'paid' : 'unpaid');
+                        $paidAmt = in_array($status, ['paid']) ? $feeAmount : 0.00;
+
+                        self::create([
+                            'student_id'    => $student->id,
+                            'subject_id'    => $sub->id,
+                            'academic_year' => $academicYear,
+                            'semester'      => $semester,
+                            'region'        => $region,
+                            'amount'        => $feeAmount,
+                            'paid_amount'   => $paidAmt,
+                            'status'        => $status,
+                            'is_manual'     => false,
+                            'paid_at'       => $status === 'paid' ? now() : null,
+                            'notes'         => $isFullWaived ? 'معفى رسمياً - منحة كاملة' : null,
+                        ]);
+                    } elseif (!$existing->is_manual) {
+                        if ($isFullWaived && $existing->status !== 'waived') {
+                            $existing->update([
+                                'status'      => 'waived',
+                                'amount'      => 0.00,
+                                'paid_amount' => 0.00,
+                                'notes'       => 'معفى رسمياً - منحة كاملة',
+                            ]);
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('StudentSemesterSubscription sync item failed: ' . $e->getMessage());
+            }
+        }
+
+        if (!\Illuminate\Support\Facades\Schema::hasTable('student_semester_subscriptions')) {
+            return new \Illuminate\Database\Eloquent\Collection();
         }
 
         return self::where('student_id', $student->id)

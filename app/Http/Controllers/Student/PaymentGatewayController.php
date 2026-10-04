@@ -154,22 +154,32 @@ class PaymentGatewayController extends Controller
             $itemSem = $item['semester'] ?? 'both';
             $itemPrice = (float)($item['price'] ?? 0);
 
+            $enrData = [
+                'status'         => $isFullDiscount ? 'active' : 'pending',
+                'access_mode'    => 'all',
+                'payment_status' => $isFullDiscount ? 'scholarship' : 'pending',
+                'activated_at'   => $isFullDiscount ? now() : null,
+                'expires_at'     => now()->addDays(365),
+            ];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'semester')) {
+                $enrData['semester'] = $itemSem;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'region_applied')) {
+                $enrData['region_applied'] = $region;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'fee_amount')) {
+                $enrData['fee_amount'] = $itemPrice;
+            }
+            if (\Illuminate\Support\Facades\Schema::hasColumn('enrollments', 'paid_amount')) {
+                $enrData['paid_amount'] = $isFullDiscount ? $itemPrice : 0.00;
+            }
+
             Enrollment::updateOrCreate(
                 [
                     'student_id' => $student->id,
                     'subject_id' => $item['id']
                 ],
-                [
-                    'status'         => $isFullDiscount ? 'active' : 'pending',
-                    'access_mode'    => 'all',
-                    'semester'       => $itemSem,
-                    'region_applied' => $region,
-                    'fee_amount'     => $itemPrice,
-                    'paid_amount'    => $isFullDiscount ? $itemPrice : 0.00,
-                    'payment_status' => $isFullDiscount ? 'scholarship' : 'pending',
-                    'activated_at'   => $isFullDiscount ? now() : null,
-                    'expires_at'     => now()->addDays(365),
-                ]
+                $enrData
             );
 
             // إنشاء أو تحديث سجل الاشتراك الفصلي

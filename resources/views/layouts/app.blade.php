@@ -219,6 +219,54 @@
             z-index: 1000000 !important;
         }
 
+        /* Safeguard pagination and prevent unstyled SVG expansion */
+        nav svg, .pagination svg {
+            max-width: 20px !important;
+            max-height: 20px !important;
+            display: inline-block !important;
+        }
+        .pagination {
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            list-style: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            flex-wrap: wrap !important;
+        }
+        .page-item .page-link {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 36px !important;
+            height: 36px !important;
+            padding: 0 12px !important;
+            border-radius: 8px !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+            border: 1px solid #cbd5e1 !important;
+            background: #ffffff !important;
+            color: #334155 !important;
+            transition: all 0.15s ease !important;
+        }
+        .page-item .page-link:hover {
+            background: #f1f5f9 !important;
+            color: #1e3a8a !important;
+        }
+        .page-item.active .page-link {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%) !important;
+            color: #ffffff !important;
+            border-color: #1e3a8a !important;
+            box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25) !important;
+        }
+        .page-item.disabled .page-link {
+            background: #f8fafc !important;
+            color: #94a3b8 !important;
+            border-color: #e2e8f0 !important;
+            cursor: not-allowed !important;
+        }
+
         /* --- دعم اللغة الإنجليزية واتجاه من اليسار لليمين (LTR Support) --- */
         html[dir="ltr"] aside.sidebar {
             right: auto;

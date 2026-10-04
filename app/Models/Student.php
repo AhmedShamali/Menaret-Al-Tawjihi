@@ -323,12 +323,21 @@ class Student extends Authenticatable
     public function getSemesterFinancialSummary(?string $academicYear = null): array
     {
         $year = $academicYear ?? '2026-2027';
-        \App\Models\StudentSemesterSubscription::syncWithStudent($this, $year);
+        
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('student_semester_subscriptions')) {
+                \App\Models\StudentSemesterSubscription::syncWithStudent($this, $year);
 
-        $subscriptions = $this->semesterSubscriptions()
-            ->where('academic_year', $year)
-            ->with('subject')
-            ->get();
+                $subscriptions = $this->semesterSubscriptions()
+                    ->where('academic_year', $year)
+                    ->with('subject')
+                    ->get();
+            } else {
+                $subscriptions = collect();
+            }
+        } catch (\Throwable $e) {
+            $subscriptions = collect();
+        }
 
         $totalDue = (float) $subscriptions->where('status', '!=', 'waived')->sum('amount');
         $totalPaid = (float) $subscriptions->sum(function ($s) {
@@ -342,25 +351,27 @@ class Student extends Authenticatable
         $term2Subs = $subscriptions->filter(fn($s) => in_array($s->semester, ['term_2', 'both']));
 
         return [
-            'academic_year'      => $year,
-            'region'             => $this->resolved_region,
-            'region_label'       => $this->region_label,
-            'total_due'          => round($totalDue, 2),
-            'total_paid'         => round($totalPaid, 2),
-            'total_remaining'    => $totalRemaining,
-            'is_fully_paid'      => $totalRemaining <= 0,
-            'subscriptions'      => $subscriptions,
-            'term_1_items'       => $term1Subs,
-            'term_2_items'       => $term2Subs,
-            'paid_count'         => $subscriptions->whereIn('status', ['paid', 'waived'])->count(),
-            'partial_count'      => $subscriptions->where('status', 'partial')->count(),
-            'unpaid_count'       => $subscriptions->where('status', 'unpaid')->count(),
-            'pending_count'      => $subscriptions->where('status', 'pending')->count(),
+            'academic_year'          => $year,
+            'region'                 => $this->resolved_region,
+            'region_label'           => $this->region_label,
+            'total_due'              => round($totalDue, 2),
+            'total_semester_tuition' => round($totalDue, 2), // متوافق مع واجهة استعراض الملف الأكاديمي
+            'total_paid'             => round($totalPaid, 2),
+            'total_remaining'        => $totalRemaining,
+            'remaining_balance'      => $totalRemaining,      // متوافق مع واجهة استعراض الملف الأكاديمي
+            'is_fully_paid'          => $totalRemaining <= 0,
+            'subscriptions'          => $subscriptions,
+            'term_1_items'           => $term1Subs,
+            'term_2_items'           => $term2Subs,
+            'paid_count'             => $subscriptions->whereIn('status', ['paid', 'waived'])->count(),
+            'partial_count'          => $subscriptions->where('status', 'partial')->count(),
+            'unpaid_count'           => $subscriptions->where('status', 'unpaid')->count(),
+            'pending_count'          => $subscriptions->where('status', 'pending')->count(),
         ];
     }
 
     /**
-     * هل يستحق على الطالب سداد قسط شهر جديد أو متأخرات سابقة؟ (تم ربطها بالنظام الفصلي)
+     * هل يستحق على الطالب سداد قسط شهر جديد أو متأخرات سابقة؟
      */
     public function isMonthlyFeeDue(?string $academicYear = null): bool
     {
@@ -368,12 +379,8 @@ class Student extends Authenticatable
             return false;
         }
 
-        // إذا كان حسابه مفعلاً بالفعل، لا يتم تجميده شهرياً أبداً
-        if ($this->status === 'active') {
-            return false;
-        }
-
-        return $this->isSemesterFeeDue($academicYear);
+        $summary = $this->getFinancialSummary($academicYear);
+        return ($summary['total_due_now'] ?? 0) > 0;
     }
 
     /**
@@ -385,6 +392,15 @@ class Student extends Authenticatable
         $days = (int) $startDate->diffInDays(now());
         $month = (int) floor($days / 30) + 1;
         return min(12, max(1, $month));
+    }
+
+    /**
+     * عدد الأشهر المسددة بالكامل
+     */
+    public function paidMonthsCount(?string $academicYear = null): int
+    {
+        $summary = $this->getFinancialSummary($academicYear);
+        return (int) ($summary['paid_months_count'] ?? 0);
     }
 
     /**

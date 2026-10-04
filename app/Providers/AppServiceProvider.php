@@ -23,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
-        \Illuminate\Pagination\Paginator::useTailwind();
+        // تشغيل المعالج الذاتي للتحقق من سلامة أعمدة وجداول قاعدة البيانات الحيوية تلقائياً
+        \App\Support\SchemaHealer::heal();
+
+        // استخدام مكون الترقيم العصري المخصص باللغة العربية
+        \Illuminate\Pagination\Paginator::useBootstrapFive();
+        \Illuminate\Pagination\Paginator::defaultView('vendor.pagination.bootstrap-5');
     }
 }

@@ -231,19 +231,19 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
                         <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('إجمالي الرسوم الفصلية:') }}</span>
-                        <strong style="font-size: 1.15rem; color: #0f172a; font-family: monospace;">{{ number_format($semFin['total_semester_tuition'], 2) }} ₪</strong>
+                        <strong style="font-size: 1.15rem; color: #0f172a; font-family: monospace;">{{ number_format($semFin['total_semester_tuition'] ?? ($semFin['total_due'] ?? 0), 2) }} ₪</strong>
                     </div>
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
                         <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('المدفوع / المسدد:') }}</span>
-                        <strong style="font-size: 1.15rem; color: #059669; font-family: monospace;">{{ number_format($semFin['total_paid'], 2) }} ₪</strong>
+                        <strong style="font-size: 1.15rem; color: #059669; font-family: monospace;">{{ number_format($semFin['total_paid'] ?? 0, 2) }} ₪</strong>
                     </div>
                     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
                         <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; display: block;">{{ __('المتبقي والمستحق:') }}</span>
-                        <strong style="font-size: 1.15rem; color: {{ $semFin['remaining_balance'] > 0 ? '#dc2626' : '#059669' }}; font-family: monospace;">{{ number_format($semFin['remaining_balance'], 2) }} ₪</strong>
+                        <strong style="font-size: 1.15rem; color: {{ ($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0)) > 0 ? '#dc2626' : '#059669' }}; font-family: monospace;">{{ number_format($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0), 2) }} ₪</strong>
                     </div>
-                    <div style="background: {{ $semFin['remaining_balance'] <= 0 ? '#ecfdf5' : '#fef2f2' }}; border: 1px solid {{ $semFin['remaining_balance'] <= 0 ? '#a7f3d0' : '#fecaca' }}; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: center; text-align: center;">
-                        <span style="font-size: 0.82rem; font-weight: 800; color: {{ $semFin['remaining_balance'] <= 0 ? '#047857' : '#b91c1c' }};">
-                            {{ $semFin['remaining_balance'] <= 0 ? __('رسوم المواد مسددة بالكامل ✅') : __('توجد رسوم مستحقة للسداد ⚠️') }}
+                    <div style="background: {{ ($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0)) <= 0 ? '#ecfdf5' : '#fef2f2' }}; border: 1px solid {{ ($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0)) <= 0 ? '#a7f3d0' : '#fecaca' }}; border-radius: 8px; padding: 10px 12px; display: flex; align-items: center; justify-content: center; text-align: center;">
+                        <span style="font-size: 0.82rem; font-weight: 800; color: {{ ($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0)) <= 0 ? '#047857' : '#b91c1c' }};">
+                            {{ ($semFin['remaining_balance'] ?? ($semFin['total_remaining'] ?? 0)) <= 0 ? __('رسوم المواد مسددة بالكامل ✅') : __('توجد رسوم مستحقة للسداد ⚠️') }}
                         </span>
                     </div>
                 </div>
