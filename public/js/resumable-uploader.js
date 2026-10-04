@@ -23,6 +23,7 @@
             this.onPart = config.onPart || (() => {});
             this.onNetworkStateChange = config.onNetworkStateChange || (() => {});
 
+            this.customChunkSize = config.chunkSize || null;
             this.isAborted = false;
             this.isPausedForOffline = false;
             this.currentFile = null;
@@ -287,8 +288,8 @@
             this.currentFile = file;
             this.fileId = ResumableUploader.getFileId(file);
 
-            // تحديد حجم القطعة: 5 ميغابايت للملفات أكبر من 1 جيجا، و4 ميغابايت لغيرها
-            const CHUNK_SIZE = file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024);
+            // تحديد حجم القطعة: إذا تم تمرير حجم محدد نستخدمه وإلا 4MB/5MB
+            const CHUNK_SIZE = this.customChunkSize || (file.size > (1024 * 1024 * 1024) ? (5 * 1024 * 1024) : (4 * 1024 * 1024));
             const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
             // حفظ تفاصيل الرفع في localStorage لحماية المستخدم في حال إغلاق أو تحديث الصفحة
@@ -368,8 +369,8 @@
                 this.onEta(ResumableUploader.formatEta(etaSec));
                 this.onPart(`الجزء ${i + 1}/${totalChunks}`);
 
-                if (chunkRes && chunkRes.done) {
-                    uploadedVideoPath = chunkRes.uploaded_video_path;
+                if (chunkRes && (chunkRes.done || chunkRes.completed)) {
+                    uploadedVideoPath = chunkRes.uploaded_video_path || chunkRes.file_path;
                     formattedVideoSize = chunkRes.formatted_size;
                 }
             }

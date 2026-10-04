@@ -339,7 +339,10 @@ class VideographerContentController extends Controller
             }
 
             return response()->json([
+                'success'             => true,
                 'done'                => true,
+                'completed'           => true,
+                'file_path'           => $relativeDir . '/' . $finalFilename,
                 'uploaded_video_path' => $relativeDir . '/' . $finalFilename,
                 'formatted_size'      => $formattedSize,
                 'message'             => 'تم اكتمال رفع ودمج الفيديو بنجاح',
@@ -347,6 +350,7 @@ class VideographerContentController extends Controller
         }
 
         return response()->json([
+            'success'     => true,
             'done'        => false,
             'chunk_index' => $chunkIndex,
             'percent'     => round((($chunkIndex + 1) / $totalChunks) * 100),

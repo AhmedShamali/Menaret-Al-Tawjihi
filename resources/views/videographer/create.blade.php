@@ -529,95 +529,95 @@
         formattedSizeHidden.value = mbSize;
         progressWrap.style.display = 'block';
 
-        // إذا كان الملف أكبر من 25MB، نرفعه فوراً بالـ Chunking لضمان عدم توقف المتصفح
-        if (selectedFile.size > 25 * 1024 * 1024) {
-            startChunkedUpload(selectedFile);
-        } else {
-            // للملفات الصغيرة، يمكن إرسالها مباشرة مع الفورم
-            document.getElementById('uploadPercentage').textContent = '100%';
-            document.getElementById('uploadProgressBar').style.width = '100%';
-            document.getElementById('uploadStatusText').textContent = 'جاهز للإرسال مع المحاضرة';
-            document.getElementById('uploadCompletedBadge').style.display = 'flex';
+        // بدء الرفع التلقائي بالخلفية عبر محرك الرفع المستمر للمنصة
+        if (window.EdBackgroundUploader) {
+            window.EdBackgroundUploader.start({
+                file: selectedFile,
+                portal: 'videographer',
+                chunkUrl: "{{ route('videographer.contents.upload_chunk') }}",
+                checkStatusUrl: "{{ route('videographer.contents.check_chunk_status') }}",
+                originUrl: window.location.href,
+                chunkSize: 3 * 1024 * 1024
+            });
         }
     }
 
-    async function startChunkedUpload(file) {
-        isUploadingChunks = true;
-        const chunkSize = 2 * 1024 * 1024; // 2MB للقطعة لتفادي أي قيود على الاستضافة
-        const totalChunks = Math.ceil(file.size / chunkSize);
-        const fileId = 'vid_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
-
-        const btnSubmit = document.getElementById('btnSubmitForm');
-        btnSubmit.disabled = true;
-        btnSubmit.style.opacity = '0.6';
-        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${file.name})...</span>`;
-
-        const progressBar = document.getElementById('uploadProgressBar');
+    // مزامنة حالة الرفع بالخلفية مع عناصر الصفحة
+    function syncVideographerUploadUI(state) {
+        if (!state) return;
+        const progressWrap = document.getElementById('chunkUploadProgressWrap');
+        const fileNameEl = document.getElementById('uploadFileName');
+        const fileSizeEl = document.getElementById('uploadFileSize');
         const percentageEl = document.getElementById('uploadPercentage');
+        const progressBar = document.getElementById('uploadProgressBar');
         const statusText = document.getElementById('uploadStatusText');
+        const completedBadge = document.getElementById('uploadCompletedBadge');
+        const uploadedVideoPath = document.getElementById('uploadedVideoPath');
+        const formattedSizeHidden = document.getElementById('formattedSize');
+        const btnSubmit = document.getElementById('btnSubmitForm');
 
-        for (let i = 0; i < totalChunks; i++) {
-            const start = i * chunkSize;
-            const end = Math.min(file.size, start + chunkSize);
-            const chunk = file.slice(start, end);
+        if (!progressWrap) return;
 
-            const formData = new FormData();
-            formData.append('file_id', fileId);
-            formData.append('chunk_index', i);
-            formData.append('total_chunks', totalChunks);
-            formData.append('file_name', file.name);
-            formData.append('chunk', chunk);
+        if (state.status === 'uploading' || state.status === 'paused') {
+            isUploadingChunks = true;
+            progressWrap.style.display = 'block';
+            if (fileNameEl) fileNameEl.textContent = state.fileName;
+            if (fileSizeEl) fileSizeEl.textContent = state.fileSizeFormatted;
+            if (percentageEl) percentageEl.textContent = state.progress + '%';
+            if (progressBar) progressBar.style.width = state.progress + '%';
+            if (completedBadge) completedBadge.style.display = 'none';
 
-            let success = false;
-            let retries = 3;
-
-            while (!success && retries > 0) {
-                try {
-                    statusText.textContent = `جاري رفع الجزء (${i + 1} من ${totalChunks})...`;
-                    const res = await axios.post("{{ route('videographer.contents.upload_chunk') }}", formData, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-
-                    if (res.data.success) {
-                        success = true;
-                        const pct = Math.round(((i + 1) / totalChunks) * 100);
-                        progressBar.style.width = pct + '%';
-                        percentageEl.textContent = pct + '%';
-
-                        if (res.data.completed) {
-                            document.getElementById('uploadedVideoPath').value = res.data.file_path;
-                            document.getElementById('uploadCompletedBadge').style.display = 'flex';
-                            statusText.textContent = 'اكتمل رفع الفيديو بنجاح!';
-                            isUploadingChunks = false;
-                            btnSubmit.disabled = false;
-                            btnSubmit.style.opacity = '1';
-                            btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
-                        }
-                    } else {
-                        retries--;
-                    }
-                } catch (err) {
-                    retries--;
-                    if (retries === 0) {
-                        statusText.textContent = 'حدث خطأ أثناء رفع الفيديو. يرجى المحاولة ثانية.';
-                        btnSubmit.disabled = false;
-                        btnSubmit.style.opacity = '1';
-                        btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
-                        isUploadingChunks = false;
-                        alert('تعذر استكمال رفع الفيديو المجزأ. يرجى التحقق من سرعة الاتصال.');
-                        return;
-                    }
-                    await new Promise(r => setTimeout(r, 1000));
+            if (statusText) {
+                if (state.status === 'paused') {
+                    statusText.innerHTML = '<span style="color: #d97706;"><i class="fa-solid fa-triangle-exclamation fa-beat"></i> انقطع النت (معلّق).. جاري الاستئناف التلقائي</span>';
+                } else {
+                    statusText.textContent = `جاري رفع أجزاء الفيديو: ${state.partText || ''} (${state.speed || ''}) متبقي: ${state.eta || ''}`;
                 }
+            }
+
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.style.opacity = '0.6';
+                btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${state.progress}%)...</span>`;
+            }
+        } else if (state.status === 'completed' && state.result) {
+            isUploadingChunks = false;
+            progressWrap.style.display = 'block';
+            if (fileNameEl) fileNameEl.textContent = state.fileName;
+            if (fileSizeEl) fileSizeEl.textContent = state.fileSizeFormatted;
+            if (percentageEl) percentageEl.textContent = '100%';
+            if (progressBar) progressBar.style.width = '100%';
+            if (completedBadge) completedBadge.style.display = 'flex';
+            if (statusText) statusText.textContent = 'تم رفع ومعالجة الفيديو بنجاح! جاهز للنشر والتوزيع.';
+
+            if (uploadedVideoPath) uploadedVideoPath.value = state.result.uploaded_video_path;
+            if (formattedSizeHidden) formattedSizeHidden.value = state.result.formatted_size;
+
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = '1';
+                btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+            }
+        } else if (state.status === 'error') {
+            isUploadingChunks = false;
+            if (statusText) statusText.textContent = state.error || 'حدث خطأ أثناء الرفع.';
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = '1';
+                btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
             }
         }
     }
 
-    // منع الإرسال أثناء رفع الأجزاء
+    if (window.EdBackgroundUploader) {
+        window.EdBackgroundUploader.onStateChange(syncVideographerUploadUI);
+    }
+
+    // معالجة إرسال النموذج وحظر الازدواجية
     document.getElementById('videographerUploadForm').addEventListener('submit', function(e) {
-        if (isUploadingChunks) {
+        if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasActiveUpload()) {
             e.preventDefault();
-            alert('يرجى الانتظار حتى اكتمال رفع ملف الفيديو بنجاح.');
+            alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
             return false;
         }
 
@@ -626,6 +626,13 @@
             e.preventDefault();
             alert('يرجى تحديد فرع أكاديمي واحد على الأقل.');
             return false;
+        }
+
+        const uploadedVideoPath = document.getElementById('uploadedVideoPath');
+        const videoFileInput = document.getElementById('videoFileInput');
+        // إذا كان الفيديو مرفوعاً مسبقاً عبر Chunking نزيل اسم الحقل لكي لا يحاول المتصفح رفعه مجدداً عبر الـ POST
+        if (uploadedVideoPath && uploadedVideoPath.value && videoFileInput) {
+            videoFileInput.removeAttribute('name');
         }
 
         const btn = document.getElementById('btnSubmitForm');

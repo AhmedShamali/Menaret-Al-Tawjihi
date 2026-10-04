@@ -241,7 +241,10 @@ class EducationalContentController extends Controller
             }
 
             return response()->json([
+                'success'             => true,
                 'done'                => true,
+                'completed'           => true,
+                'file_path'           => $relativeStoragePath,
                 'uploaded_video_path' => $relativeStoragePath,
                 'formatted_size'      => $formattedSize,
                 'message'             => 'تم اكتمال رفع ودمج الفيديو بنجاح',
@@ -249,6 +252,7 @@ class EducationalContentController extends Controller
         }
 
         return response()->json([
+            'success'     => true,
             'done'        => false,
             'chunk_index' => $chunkIndex,
             'percent'     => round((($chunkIndex + 1) / $totalChunks) * 100),

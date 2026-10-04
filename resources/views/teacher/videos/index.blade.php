@@ -1710,7 +1710,18 @@ async function submitVideoForm(e) {
     let formattedSize = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.size : null;
 
     try {
-        if (!uploadedPath) {
+            if (window.EdBackgroundUploader) {
+                window.EdBackgroundUploader.state.status = 'uploading';
+                window.EdBackgroundUploader.state.file = file;
+                window.EdBackgroundUploader.state.fileName = file.name;
+                window.EdBackgroundUploader.state.fileSize = file.size;
+                window.EdBackgroundUploader.state.fileSizeFormatted = (file.size / 1048576).toFixed(1) + ' MB';
+                window.EdBackgroundUploader.state.portal = 'teacher';
+                window.EdBackgroundUploader.state.originUrl = window.location.href;
+                window.EdBackgroundUploader.showWidget();
+                window.EdBackgroundUploader.updateWidgetUI();
+            }
+
             const uploader = new ResumableUploader({
             chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
             checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
@@ -1719,29 +1730,53 @@ async function submitVideoForm(e) {
             onProgress: (pct) => {
                 progressBar.style.width = pct + '%';
                 progressPct.textContent = pct + '%';
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.progress = pct;
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
             },
             onStatus: (status) => {
                 progressStatus.innerHTML = status.html;
             },
             onSpeed: (speed) => {
                 if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.speed = speed;
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
             },
             onEta: (eta) => {
                 if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.eta = eta;
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
             },
             onMeta: (meta) => {
                 if (fileMeta) fileMeta.textContent = meta;
             },
             onPart: (part) => {
                 if (partMeta) partMeta.textContent = part;
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.partText = part;
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
             },
             onNetworkStateChange: (isOnline, pct) => {
                 if (!isOnline) {
                     progressBar.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
                     btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> {{ __("الرفع معلّق (بانتظار النت)...") }}';
+                    if (window.EdBackgroundUploader) {
+                        window.EdBackgroundUploader.state.status = 'paused';
+                        window.EdBackgroundUploader.updateWidgetUI();
+                    }
                 } else {
                     progressBar.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
                     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري استئناف الرفع...") }}';
+                    if (window.EdBackgroundUploader) {
+                        window.EdBackgroundUploader.state.status = 'uploading';
+                        window.EdBackgroundUploader.updateWidgetUI();
+                    }
                 }
             }
         });
@@ -1752,6 +1787,17 @@ async function submitVideoForm(e) {
 
             if (!uploadedPath) {
                 throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');
+            }
+
+            if (window.EdBackgroundUploader) {
+                window.EdBackgroundUploader.state.status = 'completed';
+                window.EdBackgroundUploader.state.progress = 100;
+                window.EdBackgroundUploader.state.result = {
+                    uploaded_video_path: uploadedPath,
+                    formatted_size: formattedSize
+                };
+                window.EdBackgroundUploader.saveSessionState();
+                window.EdBackgroundUploader.updateWidgetUI();
             }
 
             window._cachedUpload = { key: fileKey, path: uploadedPath, size: formattedSize };
