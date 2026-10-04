@@ -15,7 +15,7 @@
         <div class="nav-breadcrumbs">
             <a href="{{ route('admin.dashboard') }}" class="crumb-link"><i class="fa-solid fa-house"></i> {{ __('الرئيسية') }}</a>
             <span class="crumb-sep">/</span>
-            <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="crumb-link">{{ __('مصفوفة وسجل الاشتراكات الشهرية') }}</a>
+            <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="crumb-link">{{ __('سجل الاشتراكات والرسوم الفصلية') }}</a>
             <span class="crumb-sep">/</span>
             <span class="crumb-current">{{ $studentDisplayName }}</span>
         </div>
@@ -23,7 +23,7 @@
         <div class="nav-actions-group">
             <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="btn-classic-outline">
                 <i class="fa-solid fa-arrow-right"></i>
-                <span>{{ __('العودة للمصفوفة العامة') }}</span>
+                <span>{{ __('العودة لسجل الاشتراكات') }}</span>
             </a>
 
             <button type="button" class="btn-classic-print" onclick="openStatementModal()">
@@ -48,7 +48,7 @@
                     @if($studentRemaining == 0)
                         <span class="clearance-pill-royal"><i class="fa-solid fa-shield-check"></i> {{ __('ذمة مسددة ومبرأة بالكامل') }}</span>
                     @else
-                        <span class="due-pill-royal"><i class="fa-solid fa-circle-exclamation"></i> {{ __('يوجد رصيد مستحق بذمة الطالب') }}</span>
+                        <span class="due-pill-royal"><i class="fa-solid fa-circle-exclamation"></i> {{ __('يوجد رصيد متبقي بذمة الطالب') }}</span>
                     @endif
                 </div>
 
@@ -63,40 +63,32 @@
                     @if($student->guardian_phone)
                         <span class="meta-item"><i class="fa-solid fa-user-shield text-muted"></i> <strong>{{ __('ولي الأمر:') }}</strong> <a href="tel:{{ $student->guardian_phone }}" class="phone-link font-mono" dir="ltr">{{ $student->guardian_phone }}</a></span>
                     @endif
+                    <span class="meta-item"><i class="fa-solid fa-location-dot text-muted"></i> <strong>{{ __('المنطقة:') }}</strong> <span>{{ $student->region_label }}</span></span>
                     <span class="meta-item"><i class="fa-solid fa-calendar-days text-muted"></i> <strong>{{ __('العام الدراسي:') }}</strong> <span class="font-mono">{{ $year }}</span></span>
                 </div>
             </div>
         </div>
 
-        {{-- تفاصيل خطة الرسوم والخصومات --}}
+        {{-- تفاصيل خطة الرسوم الفصلية والمنطقة --}}
         <div class="fee-plan-box">
             <div class="fee-plan-header">
-                <span class="fee-plan-lbl"><i class="fa-solid fa-coins text-amber"></i> {{ __('خطة الرسوم والخصم المعتمدة') }}</span>
-                <button type="button" class="btn-edit-fee-mini" onclick="openStudentFeeModal()" title="{{ __('تعديل خطة رسوم الطالب') }}">
-                    <i class="fa-solid fa-pen-to-square"></i> {{ __('تعديل') }}
+                <span class="fee-plan-lbl"><i class="fa-solid fa-file-invoice-dollar text-amber"></i> {{ __('خطة الرسوم الفصلية المعتمدة') }}</span>
+                <button type="button" class="btn-edit-fee-mini" onclick="openSemesterPaymentModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', 'both', {{ $semesterSummary['total_due'] }}, {{ $semesterSummary['total_paid'] }}, '{{ $studentRemaining == 0 ? "paid" : ($studentPaid > 0 ? "partial" : "unpaid") }}')" title="{{ __('تسديد / تحديث الرسوم') }}">
+                    <i class="fa-solid fa-coins"></i> {{ __('سداد / تعديل') }}
                 </button>
             </div>
             <div class="fee-plan-body">
                 <div class="fee-val-row">
-                    <span class="text-muted">{{ __('القسط الأساسي:') }}</span>
-                    <strong class="font-mono">{{ number_format($student->monthly_fee ?: 150, 0) }} ₪/شهر</strong>
+                    <span class="text-muted">{{ __('المنطقة والتسعيرة:') }}</span>
+                    <strong>{{ $student->region_label }}</strong>
                 </div>
-                @if($student->hasDiscount())
-                    <div class="fee-val-row text-rose">
-                        <span>{{ __('الخصم:') }}</span>
-                        <strong>
-                            @if($student->custom_discount_percent > 0)
-                                {{ $student->custom_discount_percent }}%
-                            @endif
-                            @if($student->custom_discount_fixed > 0)
-                                ({{ number_format($student->custom_discount_fixed, 0) }} ₪)
-                            @endif
-                        </strong>
-                    </div>
-                @endif
+                <div class="fee-val-row">
+                    <span class="text-muted">{{ __('المواد المقيدة:') }}</span>
+                    <strong class="font-mono">{{ $semesterSubscriptions->count() }} {{ __('مواد') }}</strong>
+                </div>
                 <div class="fee-val-row net-due-row">
-                    <span>{{ __('المستحق الصافي:') }}</span>
-                    <strong class="font-mono text-emerald" id="student_fee_label_hero">{{ number_format($student->monthlyAmountDue(), 0) }} ₪/شهر</strong>
+                    <span>{{ __('إجمالي المقرر (فصلين):') }}</span>
+                    <strong class="font-mono text-emerald" id="student_fee_label_hero">{{ number_format($studentDue, 2) }} ₪</strong>
                 </div>
             </div>
         </div>
@@ -110,9 +102,9 @@
                 <i class="fa-solid fa-file-invoice-dollar"></i>
             </div>
             <div class="kpi-content">
-                <span class="kpi-label">{{ __('إجمالي المستحق المطلوب للعام') }}</span>
+                <span class="kpi-label">{{ __('إجمالي الرسوم المقررة للفصلين') }}</span>
                 <div class="kpi-num-wrap font-mono" id="hero_total_due">{{ number_format($studentDue, 2) }} ₪</div>
-                <small class="kpi-sub-text">{{ __('إجمالي الرسوم المقررة عن الشهور الـ 12') }}</small>
+                <small class="kpi-sub-text">{{ __('إجمالي رسوم الفصل الأول + الفصل الثاني') }}</small>
             </div>
         </div>
 
@@ -140,7 +132,7 @@
                 </div>
                 <small class="kpi-sub-text">
                     @if($studentRemaining > 0)
-                        {{ __('مستحق للسداد بموجب أقساط الشهور') }} ⚠️
+                        {{ __('مستحق للسداد بموجب الرسوم الفصلية') }} ⚠️
                     @else
                         {{ __('ذمة مالية بريئة ومسددة 100%') }} ✅
                     @endif
@@ -154,53 +146,35 @@
                 <i class="fa-solid fa-chart-pie"></i>
             </div>
             <div class="kpi-content">
-                <span class="kpi-label">{{ __('حالة سداد الأقساط الـ 12') }}</span>
+                <span class="kpi-label">{{ __('نسبة السداد والتحصيل الفصلي') }}</span>
                 <div class="kpi-num-wrap font-mono" id="hero_installments_count">
-                    {{ $paidCount + $waivedCount }} <span class="kpi-denom">/ 12</span>
+                    {{ $collectionRate }}%
                 </div>
                 <div class="progress-bar-classic">
                     <div class="progress-fill-classic" style="width: {{ $collectionRate }}%;"></div>
                 </div>
-                <small class="kpi-sub-text font-mono">{{ __('نسبة الإنجاز المالي:') }} {{ $collectionRate }}%</small>
+                <small class="kpi-sub-text font-mono">{{ __('المواد المسددة بالكامل:') }} {{ $paidCount }} / {{ $semesterSubscriptions->count() }}</small>
             </div>
         </div>
     </div>
 
     {{-- كشف الحساب والذمة اللحظية المتأخرة والمستحقة الآن --}}
-    @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0 || ($financialSummary['total_due_now'] ?? 0) > 0)
-        <div class="financial-arrears-alert-card {{ ($financialSummary['previous_unpaid_balance'] ?? 0) > 0 ? 'has-arrears-alert' : 'is-normal-due' }}">
+    @if($studentRemaining > 0)
+        <div class="financial-arrears-alert-card has-arrears-alert">
             <div class="alert-content-left">
                 <div class="alert-icon-royal">
-                    @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    @else
-                        <i class="fa-solid fa-circle-info"></i>
-                    @endif
+                    <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
                 <div class="alert-text-royal">
-                    <h3 class="alert-royal-title">
-                        @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
-                            {{ __('ذمة مالية متأخرة مستحقة التحصيل فوراً') }}
-                        @else
-                            {{ __('استحقاق القسط الشهري الحالي') }}
-                        @endif
-                    </h3>
+                    <h3 class="alert-royal-title">{{ __('ذمة مالية مستحقة التحصيل بذمة الطالب') }}</h3>
                     <p class="alert-royal-desc">
-                        @if(($financialSummary['previous_unpaid_balance'] ?? 0) > 0)
-                            {{ __('يوجد بذمة الطالب متأخرات غير مسددة من شهور سابقة بقيمة') }} 
-                            <strong class="font-mono text-danger">{{ number_format($financialSummary['previous_unpaid_balance'], 2) }} ₪</strong>
-                            @if(!empty($financialSummary['arrears_details']))
-                                ({{ __('عن الشهور:') }} 
-                                @foreach($financialSummary['arrears_details'] as $arr)
-                                    <span class="arrears-month-pill">{{ $arr['name'] }}: {{ number_format($arr['remaining'], 0) }} ₪</span>
-                                @endforeach
-                                )
-                            @endif
-                            ، {{ __('بالإضافة إلى قسط :month المستحق بقيمة', ['month' => $financialSummary['active_due_month_name']]) }}
-                            <strong class="font-mono">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>.
-                        @else
-                            {{ __('لا توجد متأخرات سابقة من شهور ماضية. القسط الشهري المستحق حالياً هو عن :month بقيمة', ['month' => $financialSummary['active_due_month_name']]) }}
-                            <strong class="font-mono text-primary">{{ number_format($financialSummary['current_month_due'], 2) }} ₪</strong>.
+                        {{ __('يوجد بذمة الطالب رصيد متبقي غير مسدد بقيمة') }} 
+                        <strong class="font-mono text-danger">{{ number_format($studentRemaining, 2) }} ₪</strong>
+                        @if(($semesterSummary['term_1_remaining'] ?? 0) > 0)
+                            <span class="arrears-month-pill">{{ __('الفصل الأول:') }} {{ number_format($semesterSummary['term_1_remaining'], 2) }} ₪</span>
+                        @endif
+                        @if(($semesterSummary['term_2_remaining'] ?? 0) > 0)
+                            <span class="arrears-month-pill">{{ __('الفصل الثاني:') }} {{ number_format($semesterSummary['term_2_remaining'], 2) }} ₪</span>
                         @endif
                     </p>
                 </div>
@@ -208,19 +182,19 @@
 
             <div class="alert-action-right">
                 <div class="due-now-badge-box">
-                    <span class="badge-title">{{ __('إجمالي المطلوب سداده الآن') }}</span>
-                    <strong class="badge-amt font-mono">{{ number_format($financialSummary['total_due_now'], 2) }} ₪</strong>
+                    <span class="badge-title">{{ __('إجمالي المتبقي المطلوب') }}</span>
+                    <strong class="badge-amt font-mono">{{ number_format($studentRemaining, 2) }} ₪</strong>
                 </div>
             </div>
         </div>
     @endif
 
-    {{-- 4. لوحة التحكم والتحكم الفردي بجميع الشهور الـ 12 --}}
+    {{-- 4. لوحة التحكم والتحكم الفصلي باستحقاقات وسداد الفصول الدراسية --}}
     <div class="months-control-section-classic">
         <div class="section-classic-header">
             <div class="header-titles">
-                <h2 class="sec-title"><i class="fa-solid fa-calendar-check text-primary"></i> {{ __('سجل استحقاقات وسداد الشهور الـ 12') }}</h2>
-                <p class="sec-desc">{{ __('يمكنك النقر على أي شهر لمراجعة بياناته، تسجيل دفع كامل أو جزئي، أو منح إعفاء فوري.') }}</p>
+                <h2 class="sec-title"><i class="fa-solid fa-calendar-check text-primary"></i> {{ __('سجل استحقاقات وسداد الفصول الدراسية') }}</h2>
+                <p class="sec-desc">{{ __('يمكنك استعراض ومراجعة بيانات كل فصل دراسي، تسجيل دفع كامل أو جزئي، أو منح إعفاء فوري.') }}</p>
             </div>
 
             {{-- التبديل السريع بين الطلاب --}}
@@ -249,208 +223,340 @@
             </div>
         </div>
 
-        {{-- شبكة بطاقات الشهور الـ 12 الكلاسيكية --}}
-        <div class="months-cards-grid-classic">
-            @for($m = 1; $m <= 12; $m++)
-                @php
-                    $sub = $subscriptions->firstWhere('month', $m);
-                    $st = $sub ? $sub->status : 'unpaid';
-                    $amt = $sub ? (float)$sub->amount : (float)$student->monthlyAmountDue();
-                    $paidAmt = $sub ? (float)($sub->paid_amount ?? 0) : 0.00;
-                    if ($st === 'paid' && $paidAmt <= 0) {
-                        $paidAmt = $amt;
-                    }
-                    $remAmt = $sub ? (float)$sub->remaining_amount : ($st === 'waived' ? 0.00 : $amt);
-                    $notes = $sub ? ($sub->notes ?? '') : '';
-                    $mTitle = $monthsNames[$m] ?? (app()->getLocale() === 'en' ? "Month $m" : "شهر $m");
-                    $paidAt = ($sub && $sub->paid_at) ? \Carbon\Carbon::parse($sub->paid_at)->format('Y-m-d') : null;
-                @endphp
-
-                <div class="month-card-classic status-border-{{ $st }}" id="month_card_{{ $m }}">
-                    <div class="card-head-bar">
-                        <div class="month-identity">
-                            <span class="month-number-circle font-mono">{{ $m }}</span>
-                            <strong class="month-name-text">{{ $mTitle }}</strong>
-                        </div>
-
-                        <span class="status-badge-classic badge-{{ $st }}" id="status_badge_{{ $m }}">
-                            @if($st === 'paid')
-                                <i class="fa-solid fa-check"></i> {{ __('مسدد بالكامل') }}
-                            @elseif($st === 'partial')
-                                <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
-                            @elseif($st === 'pending')
-                                <i class="fa-solid fa-hourglass-half"></i> {{ __('قيد المراجعة') }}
-                            @elseif($st === 'waived')
-                                <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
-                            @else
-                                <i class="fa-solid fa-xmark"></i> {{ __('غير مسدد') }}
-                            @endif
-                        </span>
+        {{-- بطاقات الفصول الدراسية الكبرى (الفصل الأول + الفصل الثاني + تسديد العام كاملاً) --}}
+        <div class="semester-cards-grid-royal">
+            {{-- كرت الفصل الدراسي الأول --}}
+            <div class="semester-card-royal status-border-{{ $semesterSummary['term_1_status'] ?? 'unpaid' }}">
+                <div class="sem-card-top">
+                    <div class="sem-badge-icon blue">
+                        <i class="fa-solid fa-1"></i>
                     </div>
-
-                    <div class="card-financial-figures">
-                        <div class="fig-item">
-                            <span class="fig-lbl">{{ __('المستحق:') }}</span>
-                            <span class="fig-val font-mono" id="card_amt_{{ $m }}">{{ number_format($amt, 2) }} ₪</span>
-                        </div>
-                        <div class="fig-item">
-                            <span class="fig-lbl">{{ __('المسدد:') }}</span>
-                            <span class="fig-val font-mono text-emerald" id="card_paid_{{ $m }}">{{ number_format($paidAmt, 2) }} ₪</span>
-                        </div>
-                        <div class="fig-item">
-                            <span class="fig-lbl">{{ __('المتبقي:') }}</span>
-                            <span class="fig-val font-mono {{ $remAmt > 0 ? 'text-rose font-bold' : 'text-emerald' }}" id="card_rem_{{ $m }}">
-                                {{ number_format($remAmt, 2) }} ₪
-                            </span>
-                        </div>
+                    <div>
+                        <h3 class="sem-title">{{ __('الفصل الدراسي الأول (Term 1)') }}</h3>
+                        <small class="sem-subtitle">{{ $semesterSummary['term_1_count'] }} {{ __('مواد مقيدة') }}</small>
                     </div>
-
-                    <div class="card-notes-preview">
-                        @if($paidAt)
-                            <div class="date-stamp-row">
-                                <i class="fa-regular fa-clock"></i> <span>{{ __('تاريخ السداد:') }} {{ $paidAt }}</span>
-                            </div>
-                        @endif
-                        @if($notes)
-                            <div class="note-snippet" title="{{ $notes }}">
-                                <i class="fa-regular fa-comment-dots"></i> <span>{{ Str::limit($notes, 36) }}</span>
-                            </div>
+                    <span class="status-pill-royal st-{{ $semesterSummary['term_1_status'] ?? 'unpaid' }}">
+                        @if(($semesterSummary['term_1_status'] ?? '') === 'paid')
+                            <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}
+                        @elseif(($semesterSummary['term_1_status'] ?? '') === 'partial')
+                            <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
+                        @elseif(($semesterSummary['term_1_status'] ?? '') === 'waived')
+                            <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
                         @else
-                            <div class="note-snippet text-muted">
-                                <span>- {{ __('لا توجد ملاحظات إضافية') }} -</span>
-                            </div>
+                            <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}
                         @endif
-                    </div>
+                    </span>
+                </div>
 
-                    <div class="card-action-bar">
-                        <button type="button" 
-                                class="btn-manage-month-action"
-                                data-student-id="{{ $student->id }}"
-                                data-student-name="{{ $studentDisplayName }}"
-                                data-month="{{ $m }}"
-                                data-month-title="{{ $mTitle }}"
-                                data-status="{{ $st }}"
-                                data-amount="{{ $amt }}"
-                                data-paid-amount="{{ $paidAmt }}"
-                                data-remaining-amount="{{ $remAmt }}"
-                                data-notes="{{ $notes }}"
-                                data-student-fee="{{ (float)$student->monthlyAmountDue() }}"
-                                onclick="openMonthModalFromEl(this)">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                            <span>{{ __('تسجيل وسداد القسط') }}</span>
-                        </button>
+                <div class="sem-figures-strip">
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المقرر:') }}</span>
+                        <strong class="font-mono">{{ number_format($semesterSummary['term_1_due'] ?? 0, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المسدد:') }}</span>
+                        <strong class="font-mono text-emerald">{{ number_format($semesterSummary['term_1_paid'] ?? 0, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المتبقي:') }}</span>
+                        <strong class="font-mono {{ ($semesterSummary['term_1_remaining'] ?? 0) > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
+                            {{ number_format($semesterSummary['term_1_remaining'] ?? 0, 2) }} ₪
+                        </strong>
                     </div>
                 </div>
-            @endfor
+
+                <div class="sem-actions-row">
+                    <button type="button" class="btn-sem-action btn-blue" onclick="openSemesterPaymentModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', 'term_1', {{ $semesterSummary['term_1_due'] }}, {{ $semesterSummary['term_1_paid'] }}, '{{ $semesterSummary['term_1_status'] }}')">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>{{ __('سداد / تعديل الفصل الأول') }}</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- كرت الفصل الدراسي الثاني --}}
+            <div class="semester-card-royal status-border-{{ $semesterSummary['term_2_status'] ?? 'unpaid' }}">
+                <div class="sem-card-top">
+                    <div class="sem-badge-icon purple">
+                        <i class="fa-solid fa-2"></i>
+                    </div>
+                    <div>
+                        <h3 class="sem-title">{{ __('الفصل الدراسي الثاني (Term 2)') }}</h3>
+                        <small class="sem-subtitle">{{ $semesterSummary['term_2_count'] }} {{ __('مواد مقيدة') }}</small>
+                    </div>
+                    <span class="status-pill-royal st-{{ $semesterSummary['term_2_status'] ?? 'unpaid' }}">
+                        @if(($semesterSummary['term_2_status'] ?? '') === 'paid')
+                            <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}
+                        @elseif(($semesterSummary['term_2_status'] ?? '') === 'partial')
+                            <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
+                        @elseif(($semesterSummary['term_2_status'] ?? '') === 'waived')
+                            <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
+                        @else
+                            <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}
+                        @endif
+                    </span>
+                </div>
+
+                <div class="sem-figures-strip">
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المقرر:') }}</span>
+                        <strong class="font-mono">{{ number_format($semesterSummary['term_2_due'] ?? 0, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المسدد:') }}</span>
+                        <strong class="font-mono text-emerald">{{ number_format($semesterSummary['term_2_paid'] ?? 0, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المتبقي:') }}</span>
+                        <strong class="font-mono {{ ($semesterSummary['term_2_remaining'] ?? 0) > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
+                            {{ number_format($semesterSummary['term_2_remaining'] ?? 0, 2) }} ₪
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="sem-actions-row">
+                    <button type="button" class="btn-sem-action btn-purple" onclick="openSemesterPaymentModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', 'term_2', {{ $semesterSummary['term_2_due'] }}, {{ $semesterSummary['term_2_paid'] }}, '{{ $semesterSummary['term_2_status'] }}')">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>{{ __('سداد / تعديل الفصل الثاني') }}</span>
+                    </button>
+                </div>
+            </div>
+
+            {{-- كرت سداد العام كاملاً --}}
+            <div class="semester-card-royal status-border-both">
+                <div class="sem-card-top">
+                    <div class="sem-badge-icon amber">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h3 class="sem-title">{{ __('سداد العام كاملاً (الفصلين معاً)') }}</h3>
+                        <small class="sem-subtitle">{{ __('تسجيل دفعة إجمالية لكلا الفصلين') }}</small>
+                    </div>
+                    <span class="status-pill-royal {{ $studentRemaining == 0 ? 'st-paid' : ($studentPaid > 0 ? 'st-partial' : 'st-unpaid') }}">
+                        @if($studentRemaining == 0)
+                            <i class="fa-solid fa-circle-check"></i> {{ __('مسدد 100%') }}
+                        @elseif($studentPaid > 0)
+                            <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
+                        @else
+                            <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}
+                        @endif
+                    </span>
+                </div>
+
+                <div class="sem-figures-strip">
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('إجمالي المطلوب:') }}</span>
+                        <strong class="font-mono">{{ number_format($studentDue, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المسدد:') }}</span>
+                        <strong class="font-mono text-emerald">{{ number_format($studentPaid, 2) }} ₪</strong>
+                    </div>
+                    <div class="sem-fig">
+                        <span class="lbl">{{ __('المتبقي:') }}</span>
+                        <strong class="font-mono {{ $studentRemaining > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
+                            {{ number_format($studentRemaining, 2) }} ₪
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="sem-actions-row">
+                    <button type="button" class="btn-sem-action btn-amber" onclick="openSemesterPaymentModal({{ $student->id }}, '{{ addslashes($studentDisplayName) }}', 'both', {{ $semesterSummary['total_due'] }}, {{ $semesterSummary['total_paid'] }}, '{{ $studentRemaining == 0 ? "paid" : ($studentPaid > 0 ? "partial" : "unpaid") }}')">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>{{ __('سداد العام كاملاً (الفصلين)') }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- جدول المواد الدراسية المقيدة والرسوم الفصلية --}}
+        <div class="registered-subjects-section-box">
+            <div class="subs-sec-header">
+                <h3><i class="fa-solid fa-book-open-reader text-primary"></i> {{ __('المواد الدراسية المقيدة والاشتراكات الفصلية للطالب') }}</h3>
+                <span class="badge-count">{{ $semesterSubscriptions->count() }} {{ __('مواد مقيدة') }}</span>
+            </div>
+
+            <div class="table-responsive" style="overflow-x: auto; width: 100%; max-width: 100%;">
+                <table class="classic-subjects-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45px;">#</th>
+                            <th>{{ __('المادة الدراسية') }}</th>
+                            <th>{{ __('الفصل الدراسي المسجل') }}</th>
+                            <th>{{ __('الرسوم المقررة') }}</th>
+                            <th>{{ __('المسدد فعلياً') }}</th>
+                            <th>{{ __('الرصيد المتبقي') }}</th>
+                            <th>{{ __('الحالة المعتمدة') }}</th>
+                            <th>{{ __('الملاحظات وبيان السداد') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($semesterSubscriptions as $index => $sub)
+                            @php
+                                $sDue = (float)$sub->amount;
+                                $sPaid = ($sub->status === 'waived') ? 0.00 : (($sub->status === 'paid' && ((float)($sub->paid_amount ?? 0) <= 0)) ? $sDue : (float)($sub->paid_amount ?? 0));
+                                $sRem = ($sub->status === 'waived') ? 0.00 : max(0.00, round($sDue - $sPaid, 2));
+                            @endphp
+                            <tr>
+                                <td class="font-mono text-center">{{ $index + 1 }}</td>
+                                <td>
+                                    <strong>{{ $sub->subject->name ?? __('مادة تعليمية') }}</strong>
+                                </td>
+                                <td>
+                                    @if($sub->semester === 'term_1')
+                                        <span class="badge-sem term-1"><i class="fa-solid fa-calendar-check"></i> {{ __('الفصل الأول') }}</span>
+                                    @elseif($sub->semester === 'term_2')
+                                        <span class="badge-sem term-2"><i class="fa-solid fa-calendar-days"></i> {{ __('الفصل الثاني') }}</span>
+                                    @else
+                                        <span class="badge-sem term-both"><i class="fa-solid fa-layer-group"></i> {{ __('كلا الفصلين') }}</span>
+                                    @endif
+                                </td>
+                                <td class="font-mono text-center"><strong>{{ number_format($sDue, 2) }} ₪</strong></td>
+                                <td class="font-mono text-center text-emerald"><strong>{{ number_format($sPaid, 2) }} ₪</strong></td>
+                                <td class="font-mono text-center {{ $sRem > 0 ? 'text-rose font-bold' : 'text-emerald' }}">{{ number_format($sRem, 2) }} ₪</td>
+                                <td class="text-center">
+                                    <span class="status-pill-royal st-{{ $sub->status }}">
+                                        {{ $sub->status_badge['label'] ?? $sub->status }}
+                                    </span>
+                                </td>
+                                <td style="font-size: 0.82rem; color: #475569;">
+                                    {{ $sub->notes ?: '-' }}
+                                    @if($sub->paid_at)
+                                        <div style="font-size: 0.72rem; color: #64748b;">
+                                            <i class="fa-regular fa-clock"></i> {{ $sub->paid_at->format('Y-m-d') }}
+                                        </div>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center" style="padding: 30px; color: #94a3b8;">
+                                    <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 8px; display: block;"></i>
+                                    {{ __('لا توجد مواد مقيدة للطالب حتى الآن.') }}
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-totals-row">
+                            <td colspan="3" class="text-left font-bold">{{ __('الإجمالي الفصلي العام:') }}</td>
+                            <td class="font-mono text-center font-bold">{{ number_format($studentDue, 2) }} ₪</td>
+                            <td class="font-mono text-center font-bold text-emerald">{{ number_format($studentPaid, 2) }} ₪</td>
+                            <td class="font-mono text-center font-bold {{ $studentRemaining > 0 ? 'text-rose' : 'text-emerald' }}">{{ number_format($studentRemaining, 2) }} ₪</td>
+                            <td colspan="2" class="text-center font-bold">
+                                @if($studentRemaining <= 0)
+                                    <span class="text-emerald">{{ __('مبرأة الذمة 100%') }} ✅</span>
+                                @else
+                                    <span class="text-rose">{{ __('متبقي بذمة الطالب') }} ⚠️</span>
+                                @endif
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
 
 </div>
 
-{{-- 5. نافذة تعديل وسداد الشهر الملكية المعتمدة (Edit Month Modal) --}}
-<div id="editMonthModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card-box">
+{{-- 5. نافذة (مودال) سداد وتعديل الرسوم الفصلية للطالب --}}
+<div id="editSemesterModal" class="modal-overlay" style="display: none;">
+    <div class="modal-card-box modal-royal-theme">
         <div class="modal-header-royal">
-            <div class="modal-header-info">
-                <div class="modal-avatar-badge font-mono" id="modalStudentInitials">
-                    <i class="fa-solid fa-receipt"></i>
+            <div class="modal-title-wrap">
+                <div class="modal-crest">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
                 </div>
                 <div>
-                    <h3 class="modal-student-name" id="modalStudentName">{{ $studentDisplayName }}</h3>
-                    <p class="modal-month-subtitle" id="modalMonthTitle">{{ __('اشتراك الشهر') }}</p>
+                    <h3 id="modalStudentNameTitle" class="modal-student-name">{{ __('تحديث الرسوم الفصلية والمبالغ') }}</h3>
+                    <p id="modalSemesterSubtitle" class="modal-month-desc">{{ __('الفصل الدراسي') }}</p>
                 </div>
             </div>
-            <button type="button" class="btn-close-x" onclick="closeMonthModal()">&times;</button>
+            <button type="button" class="btn-close-x" onclick="closeSemesterPaymentModal()">&times;</button>
         </div>
 
-        <form id="editMonthForm" onsubmit="submitMonthForm(event)">
+        <form id="updateSemesterForm" onsubmit="saveSemesterSubscription(event)">
             @csrf
             <input type="hidden" name="student_id" id="formStudentId" value="{{ $student->id }}">
-            <input type="hidden" name="month" id="formMonth">
             <input type="hidden" name="academic_year" value="{{ $year }}">
 
             <div class="form-body-wrap">
-                {{-- أزرار الراديو الكلاسيكية المنسقة بحالات السداد --}}
-                <label class="section-label-royal">{{ __('حالة الاشتراك والسداد لهذا الشهر *') }}</label>
-                <div class="status-options-grid">
-                    <label class="status-card-opt opt-paid">
-                        <input type="radio" name="status" value="paid" id="st_paid" onchange="onStatusRadioChange('paid')">
-                        <div class="opt-content">
-                            <span class="opt-icon"><i class="fa-solid fa-circle-check"></i></span>
-                            <div class="opt-text">
+                {{-- اختيار الفصل الدراسي المستهدف --}}
+                <div class="form-field-group">
+                    <label class="field-label-royal">{{ __('الفصل الدراسي المستهدف للسداد / التعديل') }} <span class="required">*</span></label>
+                    <div class="semester-radio-group">
+                        <label class="sem-radio-pill">
+                            <input type="radio" name="semester" value="term_1" id="radioSemTerm1" onchange="onSemesterRadioChange()">
+                            <span><i class="fa-solid fa-calendar-check text-blue"></i> {{ __('الفصل الأول') }}</span>
+                        </label>
+                        <label class="sem-radio-pill">
+                            <input type="radio" name="semester" value="term_2" id="radioSemTerm2" onchange="onSemesterRadioChange()">
+                            <span><i class="fa-solid fa-calendar-days text-indigo"></i> {{ __('الفصل الثاني') }}</span>
+                        </label>
+                        <label class="sem-radio-pill">
+                            <input type="radio" name="semester" value="both" id="radioSemBoth" onchange="onSemesterRadioChange()">
+                            <span><i class="fa-solid fa-layer-group text-amber"></i> {{ __('كلا الفصلين (العام)') }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                {{-- أزرار سريعة للحالة --}}
+                <div class="form-field-group">
+                    <label class="field-label-royal">{{ __('حالة سداد الرسوم') }} <span class="required">*</span></label>
+                    <div class="status-options-grid">
+                        <label class="status-option-label opt-paid">
+                            <input type="radio" name="status" value="paid" id="optStatusPaid" onchange="onStatusRadioChange('paid')">
+                            <div class="opt-content">
+                                <i class="fa-solid fa-circle-check"></i>
                                 <strong>{{ __('مسدد بالكامل') }}</strong>
-                                <small>{{ __('تم سداد كامل القسط') }}</small>
+                                <small>{{ __('تم سداد كامل الرسوم') }}</small>
                             </div>
-                        </div>
-                    </label>
+                        </label>
 
-                    <label class="status-card-opt opt-partial">
-                        <input type="radio" name="status" value="partial" id="st_partial" onchange="onStatusRadioChange('partial')">
-                        <div class="opt-content">
-                            <span class="opt-icon"><i class="fa-solid fa-circle-half-stroke"></i></span>
-                            <div class="opt-text">
+                        <label class="status-option-label opt-partial">
+                            <input type="radio" name="status" value="partial" id="optStatusPartial" onchange="onStatusRadioChange('partial')">
+                            <div class="opt-content">
+                                <i class="fa-solid fa-circle-half-stroke"></i>
                                 <strong>{{ __('سداد جزئي') }}</strong>
-                                <small>{{ __('سداد جزئي مع بقاء رصيد') }}</small>
+                                <small>{{ __('دفعة مع بقاء رصيد') }}</small>
                             </div>
-                        </div>
-                    </label>
+                        </label>
 
-                    <label class="status-card-opt opt-unpaid">
-                        <input type="radio" name="status" value="unpaid" id="st_unpaid" onchange="onStatusRadioChange('unpaid')">
-                        <div class="opt-content">
-                            <span class="opt-icon"><i class="fa-solid fa-circle-xmark"></i></span>
-                            <div class="opt-text">
+                        <label class="status-option-label opt-unpaid">
+                            <input type="radio" name="status" value="unpaid" id="optStatusUnpaid" onchange="onStatusRadioChange('unpaid')">
+                            <div class="opt-content">
+                                <i class="fa-solid fa-circle-xmark"></i>
                                 <strong>{{ __('غير مسدد') }}</strong>
-                                <small>{{ __('قسط كامل متأخر') }}</small>
+                                <small>{{ __('رسوم مستحقة متأخرة') }}</small>
                             </div>
-                        </div>
-                    </label>
+                        </label>
 
-                    <label class="status-card-opt opt-pending">
-                        <input type="radio" name="status" value="pending" id="st_pending" onchange="onStatusRadioChange('pending')">
-                        <div class="opt-content">
-                            <span class="opt-icon"><i class="fa-solid fa-hourglass-half"></i></span>
-                            <div class="opt-text">
-                                <strong>{{ __('قيد المراجعة') }}</strong>
-                                <small>{{ __('أرسل إشعار تحويل') }}</small>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="status-card-opt opt-waived">
-                        <input type="radio" name="status" value="waived" id="st_waived" onchange="onStatusRadioChange('waived')">
-                        <div class="opt-content">
-                            <span class="opt-icon"><i class="fa-solid fa-tag"></i></span>
-                            <div class="opt-text">
+                        <label class="status-option-label opt-waived">
+                            <input type="radio" name="status" value="waived" id="optStatusWaived" onchange="onStatusRadioChange('waived')">
+                            <div class="opt-content">
+                                <i class="fa-solid fa-award"></i>
                                 <strong>{{ __('إعفاء / منحة') }}</strong>
                                 <small>{{ __('معفى رسمياً 100%') }}</small>
                             </div>
-                        </div>
-                    </label>
+                        </label>
+                    </div>
                 </div>
 
-                {{-- المبالغ والحساب اللحظي التفاعلي --}}
+                {{-- شبكة المبالغ --}}
                 <div class="amounts-calc-grid">
                     <div class="form-field-group">
-                        <label class="field-label-royal" for="formAmount">{{ __('المبلغ المستحق للشهر (₪) *') }}</label>
-                        <div class="input-with-currency">
-                            <input type="number" step="0.5" min="0" name="amount" id="formAmount" class="clean-input" required oninput="calcRemainingRealtime()">
-                            <span class="curr-tag">₪</span>
-                        </div>
-                        <small class="field-hint">{{ __('المبلغ المستحق لهذا الشهر') }}</small>
+                        <label class="field-label-royal">{{ __('إجمالي الرسوم المقررة للفصل (₪)') }}</label>
+                        <input type="number" step="0.01" min="0" id="formSemAmount" class="clean-input font-mono font-bold" readonly style="background: #f1f5f9;">
+                        <small class="field-hint">{{ __('محسوب تلقائياً حسب المواد والمنطقة') }}</small>
                     </div>
 
                     <div class="form-field-group">
-                        <label class="field-label-royal" for="formPaidAmount">{{ __('المبلغ المسدد فعلياً (₪) *') }}</label>
-                        <div class="input-with-currency">
-                            <input type="number" step="0.5" min="0" name="paid_amount" id="formPaidAmount" class="clean-input" required oninput="calcRemainingRealtime()">
-                            <span class="curr-tag">₪</span>
-                        </div>
-                        <small class="field-hint" id="paidHelpText">{{ __('المبلغ المقبوض من الطالب فعلياً') }}</small>
+                        <label class="field-label-royal">{{ __('المبلغ المسدد فعلياً (₪)') }} <span class="required">*</span></label>
+                        <input type="number" step="0.01" min="0" name="paid_amount" id="formPaidAmount" class="clean-input font-mono font-bold text-emerald" required oninput="calcRemainingLive()">
+                        <small class="field-hint">{{ __('المبلغ المقبوض من الطالب فعلياً') }}</small>
                     </div>
                 </div>
 
-                {{-- أزرار سريعة لتسريع الإدخال --}}
+                {{-- أزرار سريعة للمبالغ --}}
                 <div class="presets-row">
                     <span class="presets-label">{{ __('خيارات سريعة:') }}</span>
                     <button type="button" class="btn-preset" onclick="setPresetPaid('full')">{{ __('سداد كامل 100%') }}</button>
@@ -458,10 +564,10 @@
                     <button type="button" class="btn-preset" onclick="setPresetPaid('zero')">{{ __('غير مسدد (0 ₪)') }}</button>
                 </div>
 
-                {{-- شريط الحساب اللحظي المباشر للرصيد المتبقي --}}
+                {{-- حاسبة حية للمتبقي --}}
                 <div class="live-calc-box">
                     <div class="calc-label-row">
-                        <span>{{ __('الرصيد المتبقي بذمة الطالب للشهر:') }}</span>
+                        <span class="calc-text">{{ __('الرصيد المتبقي بذمة الطالب:') }}</span>
                         <strong class="font-mono remaining-display" id="formRemainingPreview">0.00 ₪</strong>
                     </div>
                     <div class="calc-status-indicator" id="formStatusNotice">
@@ -469,15 +575,14 @@
                     </div>
                 </div>
 
-                {{-- الملاحظات ورقم السند --}}
                 <div class="form-field-group">
-                    <label class="field-label-royal" for="formNotes">{{ __('ملاحظات وبيان الدفعة (تظهر في السند)') }}</label>
-                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="{{ __('مثال: نقداً باليد، إشعار سداد بنكي رقم...') }}">
+                    <label class="field-label-royal">{{ __('ملاحظات وبيان الدفعة (تظهر في السند)') }}</label>
+                    <input type="text" name="notes" id="formNotes" class="clean-input" placeholder="{{ __('مثال: إشعار سداد بنكي رقم... دفعة نقدية معتمدة') }}">
                 </div>
             </div>
 
             <div class="modal-footer-royal">
-                <button type="button" class="btn-cancel-sub" onclick="closeMonthModal()">{{ __('إلغاء') }}</button>
+                <button type="button" class="btn-cancel-sub" onclick="closeSemesterPaymentModal()">{{ __('إلغاء') }}</button>
                 <button type="submit" class="btn-save-sub" id="btnSaveSub">
                     <i class="fa-solid fa-check"></i>
                     <span>{{ __('حفظ واعتماد التحديث') }}</span>
@@ -581,7 +686,13 @@
                     <span>{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</span>
                 </div>
                 <div class="doc-header-logo">
-                    <img src="{{ asset('images/logo.png') }}" onerror="this.src='/images/logo.png'" alt="Logo" class="doc-logo-img">
+                    @php
+                        $directorLogo = \App\Models\Setting::get('director_logo');
+                        $siteLogo = \App\Models\Setting::get('site_logo');
+                        $fallbackLogo = asset('images/logo.png');
+                        $sheetLogo = !empty($directorLogo) ? asset($directorLogo) : (!empty($siteLogo) ? asset($siteLogo) : $fallbackLogo);
+                    @endphp
+                    <img src="{{ $sheetLogo }}" alt="Logo" class="doc-logo-img" onerror="this.onerror=null; this.src='{{ $fallbackLogo }}';">
                     <h2 class="doc-main-title">{{ __('سند كشف حساب وذمة مالية') }}</h2>
                     <span class="doc-badge-year">{{ __('العام الدراسي') }} {{ $year }}</span>
                 </div>
@@ -602,14 +713,15 @@
                 <div class="info-cell"><span>{{ __('رقم الهاتف:') }}</span> <strong class="font-mono" dir="ltr">{{ $student->phone ?? '-' }}</strong></div>
             </div>
 
-            {{-- جدول الشهور الـ 12 المعتمد --}}
+            {{-- جدول المواد والرسوم الفصلية المعتمد --}}
             <div class="table-responsive" style="overflow-x: auto; width: 100%; max-width: 100%;">
             <table class="doc-table">
                 <thead>
                     <tr>
                         <th style="width: 45px;">#</th>
-                        <th>{{ __('الشهر') }}</th>
-                        <th>{{ __('المبلغ المستحق (₪)') }}</th>
+                        <th>{{ __('المادة الدراسية') }}</th>
+                        <th>{{ __('الفصل الدراسي') }}</th>
+                        <th>{{ __('المبلغ المقرر (₪)') }}</th>
                         <th>{{ __('المبلغ المسدد (₪)') }}</th>
                         <th>{{ __('الرصيد المتبقي (₪)') }}</th>
                         <th>{{ __('الحالة المعتمدة') }}</th>
@@ -617,31 +729,36 @@
                     </tr>
                 </thead>
                 <tbody id="statementTableBody">
-                    @for($m = 1; $m <= 12; $m++)
+                    @forelse($semesterSubscriptions as $idx => $sub)
                         @php
-                            $sub = $subscriptions->firstWhere('month', $m);
-                            $st = $sub ? $sub->status : 'unpaid';
-                            $amt = $sub ? (float)$sub->amount : (float)$student->monthlyAmountDue();
-                            $paidAmt = $sub ? (float)($sub->paid_amount ?? 0) : 0.00;
-                            if ($st === 'paid' && $paidAmt <= 0) $paidAmt = $amt;
-                            $remAmt = $sub ? (float)$sub->remaining_amount : ($st === 'waived' ? 0.00 : $amt);
-                            $notes = $sub ? ($sub->notes ?? '-') : '-';
-                            $mTitle = $monthsNames[$m] ?? "شهر $m";
+                            $sAmt = (float)$sub->amount;
+                            $sPaidAmt = ($sub->status === 'waived') ? 0.00 : (($sub->status === 'paid' && ((float)($sub->paid_amount ?? 0) <= 0)) ? $sAmt : (float)($sub->paid_amount ?? 0));
+                            $sRemAmt = ($sub->status === 'waived') ? 0.00 : max(0.00, round($sAmt - $sPaidAmt, 2));
+                            $notes = $sub->notes ?: '-';
                         @endphp
                         <tr>
-                            <td class="font-mono text-center">{{ $m }}</td>
-                            <td><strong>{{ $mTitle }}</strong></td>
-                            <td class="font-mono text-center">{{ number_format($amt, 2) }} ₪</td>
-                            <td class="font-mono text-center text-emerald"><strong>{{ number_format($paidAmt, 2) }} ₪</strong></td>
-                            <td class="font-mono text-center {{ $remAmt > 0 ? 'text-rose font-bold' : 'text-emerald' }}">{{ number_format($remAmt, 2) }} ₪</td>
+                            <td class="font-mono text-center">{{ $idx + 1 }}</td>
+                            <td><strong>{{ $sub->subject->name ?? __('مادة تعليمية') }}</strong></td>
                             <td class="text-center">
-                                @if($st === 'paid')
+                                @if($sub->semester === 'term_1')
+                                    <span>{{ __('الفصل الأول') }}</span>
+                                @elseif($sub->semester === 'term_2')
+                                    <span>{{ __('الفصل الثاني') }}</span>
+                                @else
+                                    <span>{{ __('كلا الفصلين') }}</span>
+                                @endif
+                            </td>
+                            <td class="font-mono text-center">{{ number_format($sAmt, 2) }} ₪</td>
+                            <td class="font-mono text-center text-emerald"><strong>{{ number_format($sPaidAmt, 2) }} ₪</strong></td>
+                            <td class="font-mono text-center {{ $sRemAmt > 0 ? 'text-rose font-bold' : 'text-emerald' }}">{{ number_format($sRemAmt, 2) }} ₪</td>
+                            <td class="text-center">
+                                @if($sub->status === 'paid')
                                     <span class="sheet-status bg-p">{{ __('مسدد بالكامل') }} ✅</span>
-                                @elseif($st === 'partial')
-                                    <span class="sheet-status bg-part">{{ __('سداد جزئي (متبقي)') }} ⚠️</span>
-                                @elseif($st === 'pending')
+                                @elseif($sub->status === 'partial')
+                                    <span class="sheet-status bg-part">{{ __('سداد جزئي') }} ⚠️</span>
+                                @elseif($sub->status === 'pending')
                                     <span class="sheet-status bg-pend">{{ __('قيد المراجعة') }} ⏳</span>
-                                @elseif($st === 'waived')
+                                @elseif($sub->status === 'waived')
                                     <span class="sheet-status bg-w">{{ __('إعفاء / منحة') }} 🏷️</span>
                                 @else
                                     <span class="sheet-status bg-u">{{ __('غير مسدد') }} ❌</span>
@@ -649,16 +766,20 @@
                             </td>
                             <td style="font-size: 0.8rem; color: #475569;">{{ $notes }}</td>
                         </tr>
-                    @endfor
+                    @empty
+                        <tr>
+                            <td colspan="8" class="text-center" style="padding: 20px;">{{ __('لا توجد مواد مقيدة للطالب.') }}</td>
+                        </tr>
+                    @endforelse
                 </tbody>
                 <tfoot>
                     <tr class="doc-totals-row">
-                        <td colspan="2" class="text-left font-bold">{{ __('الإجماليات الرسمية:') }}</td>
+                        <td colspan="3" class="text-left font-bold">{{ __('الإجماليات الرسمية للفصلين:') }}</td>
                         <td class="font-mono text-center font-bold" id="docTotalDue">{{ number_format($studentDue, 2) }} ₪</td>
                         <td class="font-mono text-center font-bold text-emerald" id="docTotalPaid">{{ number_format($studentPaid, 2) }} ₪</td>
                         <td class="font-mono text-center font-bold {{ $studentRemaining > 0 ? 'text-rose' : 'text-emerald' }}" id="docTotalRem">{{ number_format($studentRemaining, 2) }} ₪</td>
                         <td colspan="2" class="text-center font-bold">
-                            @if($studentRemaining == 0)
+                            @if($studentRemaining <= 0)
                                 <span class="text-emerald">{{ __('مبرأة الذمة بالكامل 100%') }} ✅</span>
                             @else
                                 <span class="text-rose">{{ __('متبقي بذمة الطالب') }} ⚠️</span>
@@ -673,10 +794,10 @@
             <div class="doc-footer-clearance">
                 <div class="clearance-notice-box">
                     <strong>{{ __('إشعار الاعتماد المالي:') }}</strong>
-                    @if($studentRemaining == 0)
-                        <span>{{ __('يشهد قسم الشؤون المالية والقبول في المنصة بأن الطالب المذكور أعلاه قد أوفى بكامل التزاماته المالية عن العام الدراسي (:year)، وتعتبر ذمته المالية مبرأة ومسددة بالكامل بنسبة 100% عن كافة الشهور المقررة.', ['year' => $year]) }}</span>
+                    @if($studentRemaining <= 0)
+                        <span>{{ __('يشهد قسم الشؤون المالية والقبول في المنصة بأن الطالب المذكور أعلاه قد أوفى بكامل التزاماته المالية عن العام الدراسي (:year)، وتعتبر ذمته المالية مبرأة ومسددة بالكامل بنسبة 100% عن كافة الفصول والمواد المقررة.', ['year' => $year]) }}</span>
                     @else
-                        <span>{{ __('يفيد هذا الكشف بوجود رصيد متبقي بذمة الطالب المذكور أعلاه وقدره (:rem ₪)، ويتوجب سداد الأقساط المتبقية وفقاً لتعليمات قسم الشؤون المالية والاشتراكات.', ['rem' => number_format($studentRemaining, 2)]) }}</span>
+                        <span>{{ __('يفيد هذا الكشف بوجود رصيد متبقي بذمة الطالب المذكور أعلاه وقدره (:rem ₪)، ويتوجب سداد الرسوم الفصلية المتبقية وفقاً لتعليمات قسم الشؤون المالية والاشتراكات.', ['rem' => number_format($studentRemaining, 2)]) }}</span>
                     @endif
                 </div>
 
@@ -2012,82 +2133,343 @@
         padding: 0 !important;
     }
 }
+
+/* ==========================================================================
+   تنسيقات الفصول الدراسية والمواد المسجلة في ملف الطالب
+   ========================================================================== */
+.semester-cards-grid-royal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+}
+.semester-card-royal {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.25s ease;
+}
+.semester-card-royal:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+.semester-card-royal.status-border-paid {
+    border-right: 5px solid #10b981;
+}
+.semester-card-royal.status-border-partial {
+    border-right: 5px solid #f59e0b;
+}
+.semester-card-royal.status-border-unpaid {
+    border-right: 5px solid #ef4444;
+}
+.semester-card-royal.status-border-both {
+    border-right: 5px solid #6366f1;
+}
+
+.sem-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+.sem-badge-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.sem-badge-icon.blue { background: #dbeafe; color: #1e40af; }
+.sem-badge-icon.purple { background: #ede9fe; color: #6d28d9; }
+.sem-badge-icon.amber { background: #fef3c7; color: #b45309; }
+
+.sem-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+.sem-subtitle {
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+.status-pill-royal {
+    margin-right: auto;
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.status-pill-royal.st-paid { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.status-pill-royal.st-partial { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.status-pill-royal.st-unpaid { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.status-pill-royal.st-waived { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+
+.sem-figures-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    border: 1px solid #f1f5f9;
+}
+.sem-fig {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+.sem-fig .lbl {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+}
+.sem-fig strong {
+    font-size: 0.95rem;
+}
+
+.sem-actions-row {
+    display: flex;
+    gap: 10px;
+}
+.btn-sem-action {
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+.btn-sem-action.btn-blue { background: #1e3a8a; color: #fff; }
+.btn-sem-action.btn-blue:hover { background: #1e40af; }
+.btn-sem-action.btn-purple { background: #5b21b6; color: #fff; }
+.btn-sem-action.btn-purple:hover { background: #6d28d9; }
+.btn-sem-action.btn-amber { background: #b45309; color: #fff; }
+.btn-sem-action.btn-amber:hover { background: #d97706; }
+
+/* جدول المواد المقيدة */
+.registered-subjects-section-box {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 22px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+}
+.subs-sec-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+.subs-sec-header h3 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.badge-count {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.classic-subjects-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+.classic-subjects-table th, .classic-subjects-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: right;
+}
+.classic-subjects-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+.classic-subjects-table tbody tr:hover {
+    background: #f8fafc;
+}
+.table-totals-row {
+    background: #f8fafc;
+    font-size: 0.9rem;
+}
+.badge-sem {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+.badge-sem.term-1 { background: #dbeafe; color: #1e40af; }
+.badge-sem.term-2 { background: #ede9fe; color: #6d28d9; }
+.badge-sem.term-both { background: #fef3c7; color: #b45309; }
+
+/* أزرار راديو اختيار الفصل والمودال */
+.semester-radio-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+.sem-radio-pill {
+    flex: 1;
+    min-width: 140px;
+    cursor: pointer;
+}
+.sem-radio-pill input {
+    display: none;
+}
+.sem-radio-pill span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 0.86rem;
+    color: #334155;
+    transition: all 0.2s;
+}
+.sem-radio-pill input:checked + span {
+    border-color: #1e3a8a;
+    background: #eff6ff;
+    color: #1e3a8a;
+    box-shadow: 0 2px 8px rgba(30, 58, 138, 0.15);
+}
+
+.status-option-label {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #ffffff;
+    transition: all 0.2s;
+}
+.status-option-label input {
+    margin-left: 8px;
+}
+.status-option-label:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+.status-option-label input:checked ~ .opt-content {
+    color: #1e3a8a;
+}
 </style>
 
 <script>
-// مزامنة حالة كرت الخيار المحدد
-function syncSelectedStatusCard(status) {
-    document.querySelectorAll('.status-card-opt').forEach(el => {
-        el.classList.remove('is-selected');
-    });
-    const radio = document.getElementById('st_' + status);
-    if (radio) {
-        radio.checked = true;
-        const parent = radio.closest('.status-card-opt');
-        if (parent) parent.classList.add('is-selected');
+const studentSemData = {
+    term_1: {
+        due: {{ (float)($semesterSummary['term_1_due'] ?? 0) }},
+        paid: {{ (float)($semesterSummary['term_1_paid'] ?? 0) }},
+        status: '{{ $semesterSummary['term_1_status'] ?? 'unpaid' }}'
+    },
+    term_2: {
+        due: {{ (float)($semesterSummary['term_2_due'] ?? 0) }},
+        paid: {{ (float)($semesterSummary['term_2_paid'] ?? 0) }},
+        status: '{{ $semesterSummary['term_2_status'] ?? 'unpaid' }}'
+    },
+    both: {
+        due: {{ (float)($semesterSummary['total_due'] ?? 0) }},
+        paid: {{ (float)($semesterSummary['total_paid'] ?? 0) }},
+        status: '{{ $studentRemaining == 0 ? 'paid' : ($studentPaid > 0 ? 'partial' : 'unpaid') }}'
     }
+};
+
+// فتح نافذة سداد وتعديل الرسوم الفصلية
+function openSemesterPaymentModal(studentId, studentName, semester, due, paid, status) {
+    document.getElementById('formStudentId').value = studentId;
+    document.getElementById('modalStudentNameTitle').innerText = studentName;
+    
+    const semTitle = (semester === 'term_1') ? '{{ __('الفصل الأول (Term 1)') }}' : ((semester === 'term_2') ? '{{ __('الفصل الثاني (Term 2)') }}' : '{{ __('كلا الفصلين (العام كامل)') }}');
+    document.getElementById('modalSemesterSubtitle').innerText = semTitle + ' ({{ $year }})';
+
+    // ضبط راديو الفصل
+    document.querySelectorAll('input[name="semester"]').forEach(r => r.checked = false);
+    const semRadio = document.querySelector(`input[name="semester"][value="${semester}"]`);
+    if (semRadio) semRadio.checked = true;
+
+    // ضبط المبالغ
+    const dueVal = parseFloat(due) || 0;
+    const paidVal = (status === 'paid' && parseFloat(paid) <= 0) ? dueVal : (parseFloat(paid) || 0);
+
+    document.getElementById('formSemAmount').value = dueVal.toFixed(2);
+    document.getElementById('formPaidAmount').value = paidVal.toFixed(2);
+    document.getElementById('formNotes').value = '';
+
+    // ضبط راديو الحالة
+    document.querySelectorAll('input[name="status"]').forEach(r => r.checked = false);
+    const effectiveStatus = (status === 'empty' || !status) ? 'unpaid' : status;
+    const stRadio = document.querySelector(`input[name="status"][value="${effectiveStatus}"]`);
+    if (stRadio) stRadio.checked = true;
+
+    calcRemainingLive();
+    document.getElementById('editSemesterModal').style.display = 'flex';
 }
 
-// فتح نافذة تعديل الشهر المحدد
-function openMonthModalFromEl(btn) {
-    const d = btn.dataset;
-    document.getElementById('formStudentId').value = d.studentId;
-    document.getElementById('formMonth').value = d.month;
-    document.getElementById('modalStudentName').innerText = d.studentName;
-    document.getElementById('modalMonthTitle').innerText = d.monthTitle + ' ({{ $year }})';
-
-    const amt = parseFloat(d.amount) || parseFloat(d.studentFee) || 150;
-    const paid = parseFloat(d.paidAmount) || 0;
-    const st = d.status || 'unpaid';
-
-    document.getElementById('formAmount').value = amt.toFixed(2);
-    document.getElementById('formPaidAmount').value = paid.toFixed(2);
-    document.getElementById('formNotes').value = d.notes || '';
-
-    // اختيار وزخرفة زر الراديو المناسب
-    syncSelectedStatusCard(st);
-
-    calcRemainingRealtime();
-
-    const modal = document.getElementById('editMonthModal');
-    modal.style.display = 'flex';
+function closeSemesterPaymentModal() {
+    document.getElementById('editSemesterModal').style.display = 'none';
 }
 
-function closeMonthModal() {
-    document.getElementById('editMonthModal').style.display = 'none';
+// عند تغيير اختيار الفصل في المودال
+function onSemesterRadioChange() {
+    const sem = document.querySelector('input[name="semester"]:checked')?.value || 'term_1';
+    const data = studentSemData[sem] || { due: 0, paid: 0, status: 'unpaid' };
+
+    document.getElementById('formSemAmount').value = data.due.toFixed(2);
+    document.getElementById('formPaidAmount').value = (data.status === 'paid' && data.paid <= 0) ? data.due.toFixed(2) : data.paid.toFixed(2);
+
+    document.querySelectorAll('input[name="status"]').forEach(r => r.checked = false);
+    const effectiveStatus = (data.status === 'empty' || !data.status) ? 'unpaid' : data.status;
+    const stRadio = document.querySelector(`input[name="status"][value="${effectiveStatus}"]`);
+    if (stRadio) stRadio.checked = true;
+
+    calcRemainingLive();
 }
 
-// تغيير الراديو وضبط المبالغ تلقائياً
-function onStatusRadioChange(status) {
-    syncSelectedStatusCard(status);
-
-    const amtInput = document.getElementById('formAmount');
-    const paidInput = document.getElementById('formPaidAmount');
-    let amt = parseFloat(amtInput.value) || 0;
-
-    if (status === 'paid') {
-        if (amt === 0) amt = {{ (float)$student->monthlyAmountDue() }};
-        amtInput.value = amt.toFixed(2);
-        paidInput.value = amt.toFixed(2);
-    } else if (status === 'unpaid') {
-        paidInput.value = '0.00';
-    } else if (status === 'waived') {
-        amtInput.value = '0.00';
-        paidInput.value = '0.00';
-    } else if (status === 'partial') {
-        if (parseFloat(paidInput.value) <= 0 || parseFloat(paidInput.value) >= amt) {
-            paidInput.value = (amt / 2).toFixed(2);
-        }
-    }
-    calcRemainingRealtime();
-}
-
-// حساب المتبقي التفاعلي
-function calcRemainingRealtime() {
-    const amtInput = document.getElementById('formAmount');
+// حساب المتبقي الحي
+function calcRemainingLive() {
+    const amtInput = document.getElementById('formSemAmount');
     const paidInput = document.getElementById('formPaidAmount');
     const remPreview = document.getElementById('formRemainingPreview');
     const statusNotice = document.getElementById('formStatusNotice');
+    const statusRadioPaid = document.getElementById('optStatusPaid');
+    const statusRadioPartial = document.getElementById('optStatusPartial');
+    const statusRadioUnpaid = document.getElementById('optStatusUnpaid');
 
     const amt = parseFloat(amtInput.value) || 0;
     const paid = parseFloat(paidInput.value) || 0;
@@ -2098,24 +2480,23 @@ function calcRemainingRealtime() {
     if (paid >= amt && amt > 0) {
         statusNotice.className = 'calc-status-indicator is-paid';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>{{ __('مسدد بالكامل رسمياً ✅ (الرصيد المتبقي: 0.00 ₪)') }}</span>';
-        syncSelectedStatusCard('paid');
+        if (statusRadioPaid) statusRadioPaid.checked = true;
     } else if (paid > 0 && paid < amt) {
         statusNotice.className = 'calc-status-indicator is-partial';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-half-stroke"></i> <span>{{ __('سداد جزئي ⚠️ (الرصيد المتبقي: ') }}' + remaining.toFixed(2) + ' ₪)</span>';
-        syncSelectedStatusCard('partial');
+        if (statusRadioPartial) statusRadioPartial.checked = true;
     } else if (paid === 0 && amt > 0) {
         statusNotice.className = 'calc-status-indicator is-unpaid';
         statusNotice.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> <span>{{ __('غير مسدد ❌ (إجمالي المستحق: ') }}' + amt.toFixed(2) + ' ₪)</span>';
-        syncSelectedStatusCard('unpaid');
+        if (statusRadioUnpaid) statusRadioUnpaid.checked = true;
     }
 }
 
-// أزرار المبالغ السريعة
+// خيارات سريعة للمبالغ
 function setPresetPaid(type) {
-    const amtInput = document.getElementById('formAmount');
+    const amtInput = document.getElementById('formSemAmount');
     const paidInput = document.getElementById('formPaidAmount');
-    const amt = parseFloat(amtInput.value) || {{ (float)$student->monthlyAmountDue() }};
-    amtInput.value = amt.toFixed(2);
+    const amt = parseFloat(amtInput.value) || 0;
 
     if (type === 'full') {
         paidInput.value = amt.toFixed(2);
@@ -2124,20 +2505,38 @@ function setPresetPaid(type) {
     } else if (type === 'zero') {
         paidInput.value = '0.00';
     }
-    calcRemainingRealtime();
+    calcRemainingLive();
 }
 
-// حفظ بيانات الشهر عبر AJAX وتحديث الصفحة فورياً
-function submitMonthForm(e) {
+// تغيير أزرار الراديو للحالة
+function onStatusRadioChange(val) {
+    const amtInput = document.getElementById('formSemAmount');
+    const paidInput = document.getElementById('formPaidAmount');
+    const amt = parseFloat(amtInput.value) || 0;
+
+    if (val === 'waived') {
+        paidInput.value = '0.00';
+    } else if (val === 'paid') {
+        paidInput.value = amt.toFixed(2);
+    } else if (val === 'partial') {
+        paidInput.value = (amt > 0) ? (amt / 2).toFixed(2) : '0.00';
+    } else if (val === 'unpaid') {
+        paidInput.value = '0.00';
+    }
+    calcRemainingLive();
+}
+
+// حفظ الرسوم الفصلية عبر AJAX
+function saveSemesterSubscription(e) {
     e.preventDefault();
     const btn = document.getElementById('btnSaveSub');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
 
-    const form = document.getElementById('editMonthForm');
+    const form = document.getElementById('updateSemesterForm');
     const formData = new FormData(form);
 
-    fetch("{{ route('admin.subscriptions.monthly.update') }}", {
+    fetch("{{ route('admin.subscriptions.semester.update') }}", {
         method: 'POST',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
@@ -2151,49 +2550,8 @@ function submitMonthForm(e) {
         btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>{{ __('حفظ واعتماد التحديث') }}</span>';
 
         if (data.success) {
-            closeMonthModal();
-            // تحديث بطاقة الشهر المستهدف فورياً في الصفحة
-            const m = formData.get('month');
-            const card = document.getElementById('month_card_' + m);
-            if (card) {
-                // تحديث كلاسات الحالة
-                card.className = 'month-card-classic status-border-' + data.status;
-                const amtEl = document.getElementById('card_amt_' + m);
-                const paidEl = document.getElementById('card_paid_' + m);
-                const remEl = document.getElementById('card_rem_' + m);
-                const badgeEl = document.getElementById('status_badge_' + m);
-
-                if (amtEl) amtEl.innerText = parseFloat(data.amount).toFixed(2) + ' ₪';
-                if (paidEl) paidEl.innerText = parseFloat(data.paid_amount).toFixed(2) + ' ₪';
-                if (remEl) {
-                    remEl.innerText = parseFloat(data.remaining_amount).toFixed(2) + ' ₪';
-                    remEl.className = 'fig-val font-mono ' + (data.remaining_amount > 0 ? 'text-rose font-bold' : 'text-emerald');
-                }
-                if (badgeEl) {
-                    badgeEl.className = 'status-badge-classic badge-' + data.status;
-                    let text = 'غير مسدد';
-                    if (data.status === 'paid') text = 'مسدد بالكامل';
-                    else if (data.status === 'partial') text = 'سداد جزئي';
-                    else if (data.status === 'pending') text = 'قيد المراجعة';
-                    else if (data.status === 'waived') text = 'إعفاء / منحة';
-                    badgeEl.innerText = text;
-                }
-
-                // تحديث خصائص زر التعديل
-                const manageBtn = card.querySelector('.btn-manage-month-action');
-                if (manageBtn) {
-                    manageBtn.dataset.status = data.status;
-                    manageBtn.dataset.amount = data.amount;
-                    manageBtn.dataset.paidAmount = data.paid_amount;
-                    manageBtn.dataset.remainingAmount = data.remaining_amount;
-                    manageBtn.dataset.notes = formData.get('notes') || '';
-                }
-            }
-
-            // تحديث المؤشرات الكبرى عبر إعادة تحميل خفيف
-            setTimeout(() => {
-                window.location.reload();
-            }, 300);
+            closeSemesterPaymentModal();
+            window.location.reload();
         } else {
             alert(data.message || 'حدث خطأ أثناء الحفظ.');
         }
@@ -2278,7 +2636,7 @@ window.addEventListener('click', function(e) {
 });
 window.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        ['editMonthModal', 'studentFeeModal', 'statementModal'].forEach(id => {
+        ['editSemesterModal', 'studentFeeModal', 'statementModal'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.style.display = 'none';
         });

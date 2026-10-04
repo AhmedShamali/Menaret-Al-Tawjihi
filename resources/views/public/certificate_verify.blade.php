@@ -196,7 +196,7 @@
         <div class="verify-header">
             @if(\App\Models\Setting::get('site_logo'))
                 <div style="margin-bottom: 12px;">
-                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ $siteName }}" style="max-height: 60px; max-width: 130px; object-fit: contain; background: white; padding: 6px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="{{ $siteName }}" style="max-height: 60px; max-width: 130px; object-fit: contain; background: white; padding: 6px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                 </div>
             @else
                 <div class="header-icon">

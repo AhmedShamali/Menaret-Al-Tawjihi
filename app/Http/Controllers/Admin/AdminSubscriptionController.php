@@ -13,21 +13,20 @@ use Illuminate\Support\Facades\DB;
 class AdminSubscriptionController extends Controller
 {
     /**
-     * جدول ومصفوفة الاشتراكات الشهرية للطلاب لجميع أشهر السنة (12 شهراً)
+     * جدول ومصفوفة الاشتراكات والرسوم الفصلية للطلاب (الفصل الأول / الفصل الثاني / الفصلين معاً)
      */
     public function index(Request $request)
     {
         $year = $request->query('year', '2026-2027');
         $stageId = $request->query('stage_id');
         $search = $request->query('search');
-        $monthFilter = $request->query('month');
-        $statusFilter = $request->query('status');
+        $semesterFilter = $request->query('semester'); // term_1, term_2, both
+        $statusFilter = $request->query('status'); // paid, partial, unpaid, waived
+        $monthFilter = $request->query('month'); // للتوافق العكسي
 
         $stages = Stage::orderBy('grade_level', 'desc')->get();
 
-        $studentsQuery = Student::with(['stage', 'monthlySubscriptions' => function ($q) use ($year) {
-            $q->where('academic_year', $year)->orderBy('month');
-        }]);
+        $studentsQuery = Student::with(['stage', 'enrolledSubjects.teacher', 'semesterSubscriptions.subject']);
 
         if ($stageId) {
             $studentsQuery->where('stage_id', $stageId);
@@ -44,70 +43,215 @@ class AdminSubscriptionController extends Controller
             });
         }
 
-        // فلاتر الشهور والحالات بمرونة كاملة
-        if ($statusFilter && $monthFilter) {
-            $studentsQuery->whereHas('monthlySubscriptions', function ($q) use ($year, $monthFilter, $statusFilter) {
-                $q->where('academic_year', $year)
-                  ->where('month', (int)$monthFilter)
-                  ->where('status', $statusFilter);
+        // فلترة الفصول الدراسية
+        if ($semesterFilter) {
+            $studentsQuery->where(function ($q) use ($semesterFilter) {
+                $q->whereHas('enrollments', function ($eq) use ($semesterFilter) {
+                    if ($semesterFilter === 'both') {
+                        $eq->where('semester', 'both');
+                    } else {
+                        $eq->whereIn('semester', [$semesterFilter, 'both']);
+                    }
+                })->orWhereHas('semesterSubscriptions', function ($sq) use ($semesterFilter) {
+                    if ($semesterFilter === 'both') {
+                        $sq->where('semester', 'both');
+                    } else {
+                        $sq->whereIn('semester', [$semesterFilter, 'both']);
+                    }
+                });
             });
-        } elseif ($statusFilter) {
-            $studentsQuery->whereHas('monthlySubscriptions', function ($q) use ($year, $statusFilter) {
-                $q->where('academic_year', $year)
-                  ->where('status', $statusFilter);
-            });
-        } elseif ($monthFilter) {
-            $studentsQuery->whereHas('monthlySubscriptions', function ($q) use ($year, $monthFilter) {
-                $q->where('academic_year', $year)
-                  ->where('month', (int)$monthFilter);
+        }
+
+        // فلترة حالة السداد
+        if ($statusFilter) {
+            $studentsQuery->where(function ($query) use ($year, $statusFilter) {
+                $query->whereHas('semesterSubscriptions', function ($sq) use ($year, $statusFilter) {
+                    $sq->where('academic_year', $year)->where('status', $statusFilter);
+                })->orWhereHas('monthlySubscriptions', function ($mq) use ($year, $statusFilter) {
+                    $mq->where('academic_year', $year)->where('status', $statusFilter);
+                });
             });
         }
 
         $students = $studentsQuery->latest()->paginate(25)->withQueryString();
 
-        // التأكد من تهيئة الشهور الـ 12 للطلاب الجدد فقط بدون المساس بأي تعديل يدوي للإدارة
+        // مزامنة وتهيئة البيانات المالية الفصلية لكل طالب في الصفحة الحالية
         foreach ($students as $student) {
-            if ($student->monthlySubscriptions->count() < 12) {
+            $student->semester_summary = $student->getSemesterFinancialSummary($year);
+            if ($student->monthlySubscriptions()->where('academic_year', $year)->count() < 12) {
                 StudentMonthlySubscription::syncWithStudentPayments($student, $year);
-                $student->load(['monthlySubscriptions' => function ($q) use ($year) {
-                    $q->where('academic_year', $year)->orderBy('month');
-                }]);
             }
         }
 
-        // إحصائيات مالية عامة ومؤشرات دقيقة للمدير (اللي لازم يصلني، اللي وصلني، المتبقي)
-        $allSubs = StudentMonthlySubscription::where('academic_year', $year)->get();
-        $totalExpected = (float)$allSubs->where('status', '!=', 'waived')->sum('amount');
-        $totalCollected = (float)$allSubs->sum(function ($s) {
-            if ($s->status === 'waived') {
-                return 0.00;
-            }
-            if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) {
-                return (float) $s->amount;
-            }
-            return (float) ($s->paid_amount ?? 0);
-        });
-        $totalRemaining = max(0.00, round($totalExpected - $totalCollected, 2));
-        $totalPending = (float)$allSubs->where('status', 'pending')->sum('amount');
-        $totalUnpaid = (float)$allSubs->where('status', 'unpaid')->sum('amount');
+        // إحصائيات مالية عامة ومؤشرات دقيقة للرسوم الفصلية في المنصة
+        if (\Illuminate\Support\Facades\Schema::hasTable('student_semester_subscriptions')) {
+            $allSubs = \App\Models\StudentSemesterSubscription::where('academic_year', $year)->get();
+            $totalExpected = (float)$allSubs->where('status', '!=', 'waived')->sum('amount');
+            $totalCollected = (float)$allSubs->sum(function ($s) {
+                if ($s->status === 'waived') {
+                    return 0.00;
+                }
+                if ($s->status === 'paid' && ((float)($s->paid_amount ?? 0) <= 0)) {
+                    return (float) $s->amount;
+                }
+                return (float) ($s->paid_amount ?? 0);
+            });
+            $totalRemaining = max(0.00, round($totalExpected - $totalCollected, 2));
 
+            $stats = [
+                'total_expected'  => $totalExpected,
+                'total_collected' => $totalCollected,
+                'total_remaining' => $totalRemaining,
+                'total_pending'   => (float)$allSubs->where('status', 'pending')->sum('amount'),
+                'total_unpaid'    => (float)$allSubs->where('status', 'unpaid')->sum('amount'),
+                'paid_count'      => $allSubs->where('status', 'paid')->count(),
+                'partial_count'   => $allSubs->where('status', 'partial')->count(),
+                'pending_count'   => $allSubs->where('status', 'pending')->count(),
+                'unpaid_count'    => $allSubs->where('status', 'unpaid')->count(),
+                'waived_count'    => $allSubs->where('status', 'waived')->count(),
+                'collection_rate' => $totalExpected > 0 ? round(($totalCollected / $totalExpected) * 100, 1) : 0,
+            ];
+        } else {
+            $stats = [
+                'total_expected'  => 0,
+                'total_collected' => 0,
+                'total_remaining' => 0,
+                'total_pending'   => 0,
+                'total_unpaid'    => 0,
+                'paid_count'      => 0,
+                'partial_count'   => 0,
+                'pending_count'   => 0,
+                'unpaid_count'    => 0,
+                'waived_count'    => 0,
+                'collection_rate' => 0,
+            ];
+        }
+
+        $monthsNames = StudentMonthlySubscription::monthNames();
+
+        return view('admin.subscriptions.monthly', compact(
+            'students', 'stages', 'year', 'stats', 'monthsNames', 
+            'stageId', 'search', 'semesterFilter', 'statusFilter', 'monthFilter'
+        ));
+    }
+
+    /**
+     * تحديث حالة ومبالغ الرسوم الفصلية للطالب (AJAX) - الفصل الأول / الفصل الثاني / الفصلين
+     */
+    public function updateSemesterStatus(Request $request)
+    {
+        $request->validate([
+            'student_id'    => 'required|exists:students,id',
+            'semester'      => 'required|in:term_1,term_2,both',
+            'status'        => 'required|in:paid,partial,unpaid,waived',
+            'academic_year' => 'nullable|string',
+            'paid_amount'   => 'nullable|numeric|min:0',
+            'notes'         => 'nullable|string',
+        ]);
+
+        $student = Student::findOrFail($request->student_id);
+        $year = $request->input('academic_year', '2026-2027');
+        $sem = $request->input('semester');
+        $newStatus = $request->input('status');
+        $paidAmount = (float) $request->input('paid_amount', 0);
+        $notes = $request->input('notes');
+
+        \App\Models\StudentSemesterSubscription::syncWithStudent($student, $year);
+
+        $subsQuery = $student->semesterSubscriptions()->where('academic_year', $year);
+        if ($sem !== 'both') {
+            $subsQuery->where(function ($q) use ($sem) {
+                $q->where('semester', $sem)->orWhere('semester', 'both');
+            });
+        }
+        $subs = $subsQuery->get();
+        $totalSubsDue = (float)$subs->where('status', '!=', 'waived')->sum('amount');
+
+        foreach ($subs as $sub) {
+            if ($newStatus === 'waived') {
+                $sub->status = 'waived';
+                $sub->paid_amount = 0.00;
+            } elseif ($newStatus === 'paid') {
+                $sub->status = 'paid';
+                $sub->paid_amount = $sub->amount;
+                $sub->paid_at = now();
+            } elseif ($newStatus === 'unpaid') {
+                $sub->status = 'unpaid';
+                $sub->paid_amount = 0.00;
+            } elseif ($newStatus === 'partial') {
+                $sub->status = 'partial';
+                if ($totalSubsDue > 0 && $paidAmount > 0) {
+                    $ratio = $sub->amount / $totalSubsDue;
+                    $sub->paid_amount = min((float)$sub->amount, round($paidAmount * $ratio, 2));
+                } else {
+                    $sub->paid_amount = min((float)$sub->amount, $paidAmount);
+                }
+            }
+            $sub->is_manual = true;
+            if ($notes) {
+                $sub->notes = $notes;
+            }
+            $sub->save();
+
+            // تفعيل قيد المادة للطالب إن تم سداد الرسوم
+            $enrollment = $student->enrollments()->where('subject_id', $sub->subject_id)->first();
+            if ($enrollment) {
+                if (in_array($sub->status, ['paid', 'waived'])) {
+                    $enrollment->status = 'active';
+                    $enrollment->paid_amount = $sub->amount;
+                }
+                $enrollment->save();
+            }
+        }
+
+        // تفعيل حساب الطالب رسمياً فور سداد أي رسوم
+        if ($newStatus === 'paid' && $student->status !== 'active') {
+            $student->status = 'active';
+            $student->save();
+        }
+
+        $summary = $student->getSemesterFinancialSummary($year);
+
+        $allSubs = \App\Models\StudentSemesterSubscription::where('academic_year', $year)->get();
+        $totalExpected = (float)$allSubs->where('status', '!=', 'waived')->sum('amount');
+        $totalCollected = (float)$allSubs->sum('paid_amount');
+        $totalRemaining = max(0, $totalExpected - $totalCollected);
         $stats = [
-            'total_expected'  => $totalExpected,
-            'total_collected' => $totalCollected,
-            'total_remaining' => $totalRemaining,
-            'total_pending'   => $totalPending,
-            'total_unpaid'    => $totalUnpaid,
+            'total_expected'  => number_format($totalExpected, 2),
+            'total_collected' => number_format($totalCollected, 2),
+            'total_remaining' => number_format($totalRemaining, 2),
             'paid_count'      => $allSubs->where('status', 'paid')->count(),
             'partial_count'   => $allSubs->where('status', 'partial')->count(),
-            'pending_count'   => $allSubs->where('status', 'pending')->count(),
             'unpaid_count'    => $allSubs->where('status', 'unpaid')->count(),
             'waived_count'    => $allSubs->where('status', 'waived')->count(),
             'collection_rate' => $totalExpected > 0 ? round(($totalCollected / $totalExpected) * 100, 1) : 0,
         ];
 
-        $monthsNames = StudentMonthlySubscription::monthNames();
+        $subsData = $student->semesterSubscriptions()->where('academic_year', $year)->with('subject')->get()->map(function($sub) {
+            return [
+                'id'               => $sub->id,
+                'subject_name'     => $sub->subject->name ?? 'مادة تعليمية',
+                'semester'         => $sub->semester,
+                'semester_name'    => $sub->semester_name_ar,
+                'amount'           => (float)$sub->amount,
+                'paid_amount'      => (float)$sub->paid_amount,
+                'remaining_amount' => (float)$sub->remaining_amount,
+                'status'           => $sub->status,
+                'status_label'     => $sub->status_badge['label'],
+                'status_class'     => $sub->status_badge['class'],
+                'paid_at'          => $sub->paid_at ? $sub->paid_at->format('Y-m-d') : '-',
+                'notes'            => $sub->notes ?? '-'
+            ];
+        });
 
-        return view('admin.subscriptions.monthly', compact('students', 'stages', 'year', 'stats', 'monthsNames', 'stageId', 'search', 'monthFilter', 'statusFilter'));
+        return response()->json([
+            'success'    => true,
+            'message'    => 'تم تحديث حالة الرسوم الفصلية للطالب (' . ($student->name_ar ?? $student->name) . ') بنجاح! ✅',
+            'student_id' => $student->id,
+            'summary'    => $summary,
+            'stats'      => $stats,
+            'subs'       => $subsData,
+        ]);
     }
 
     /**
@@ -380,37 +524,28 @@ class AdminSubscriptionController extends Controller
     }
 
     /**
-     * واجهة الإدارة المالية المستقلة والشاملة لاشتراكات طالب محدد (12 شهراً)
+     * واجهة الإدارة المالية المستقلة والرسوم الفصلية لطالب محدد
      */
     public function studentProfile(Request $request, Student $student)
     {
         $year = $request->query('year', '2026-2027');
 
-        // مزامنة وتهيئة الشهور الـ 12 للطالب إن لم تكن مكتملة
-        if ($student->monthlySubscriptions()->where('academic_year', $year)->count() < 12) {
-            StudentMonthlySubscription::syncWithStudentPayments($student, $year);
-        }
-
-        $subscriptions = $student->monthlySubscriptions()
-            ->where('academic_year', $year)
-            ->orderBy('month')
-            ->get();
-
-        $financialSummary = $student->getFinancialSummary($year);
+        // مزامنة والبيانات والاشتراكات الفصلية للطالب
+        \App\Models\StudentSemesterSubscription::syncWithStudent($student, $year);
+        $semesterSummary = $student->getSemesterFinancialSummary($year);
+        $semesterSubscriptions = $semesterSummary['subscriptions'];
 
         // حساب المؤشرات المالية الرسمية للطالب
-        $studentDue = $financialSummary['total_year_due'];
-        $studentPaid = $financialSummary['total_year_paid'];
-        $studentRemaining = $financialSummary['total_year_remaining'];
-        $paidCount = $financialSummary['paid_months_count'];
-        $partialCount = $financialSummary['partial_months_count'];
-        $waivedCount = $subscriptions->where('status', 'waived')->count();
-        $pendingCount = $financialSummary['pending_months_count'];
-        $unpaidCount = $financialSummary['unpaid_months_count'];
+        $studentDue = (float)$semesterSummary['total_due'];
+        $studentPaid = (float)$semesterSummary['total_paid'];
+        $studentRemaining = (float)$semesterSummary['total_remaining'];
+        $paidCount = $semesterSummary['paid_count'];
+        $partialCount = $semesterSummary['partial_count'];
+        $waivedCount = $semesterSubscriptions->where('status', 'waived')->count();
+        $pendingCount = $semesterSummary['pending_count'];
+        $unpaidCount = $semesterSummary['unpaid_count'];
 
         $collectionRate = $studentDue > 0 ? round(($studentPaid / $studentDue) * 100, 1) : 100;
-
-        $monthsNames = StudentMonthlySubscription::monthNames();
 
         // الطلاب السابق والتالي للتنقل السريع والمريح بين السجلات
         $prevStudent = Student::where('stage_id', $student->stage_id)
@@ -431,9 +566,9 @@ class AdminSubscriptionController extends Controller
 
         return view('admin.subscriptions.student_profile', compact(
             'student',
-            'subscriptions',
+            'semesterSummary',
+            'semesterSubscriptions',
             'year',
-            'monthsNames',
             'studentDue',
             'studentPaid',
             'studentRemaining',
@@ -445,8 +580,7 @@ class AdminSubscriptionController extends Controller
             'collectionRate',
             'prevStudent',
             'nextStudent',
-            'allStageStudents',
-            'financialSummary'
+            'allStageStudents'
         ));
     }
 }

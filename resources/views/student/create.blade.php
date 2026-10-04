@@ -82,6 +82,14 @@
                         <option {{ (isset($student) && $student->gender == 'ذكر') ? 'selected' : '' }}>{{ __('ذكر') }}</option>
                         <option {{ (isset($student) && $student->gender == 'أنثى') ? 'selected' : '' }}>{{ __('أنثى') }}</option>
                     </select>
+
+                    <label class="f-label" style="margin-top: 15px;">{{ __('المنطقة الجغرافية والتسعيرة الفصلية') }}</label>
+                    <select name="region" class="f-input">
+                        <option value="west_bank" {{ (isset($student) && ($student->region == 'west_bank' || empty($student->region))) ? 'selected' : '' }}>{{ __('الضفة الغربية (150 ₪/فصل للمادة)') }}</option>
+                        <option value="jerusalem" {{ (isset($student) && $student->region == 'jerusalem') ? 'selected' : '' }}>{{ __('القدس والداخل المحتل (250 ₪/فصل للمادة)') }}</option>
+                        <option value="abroad" {{ (isset($student) && $student->region == 'abroad') ? 'selected' : '' }}>{{ __('خارج فلسطين (350 ₪/فصل للمادة)') }}</option>
+                        <option value="gaza" {{ (isset($student) && $student->region == 'gaza') ? 'selected' : '' }}>{{ __('قطاع غزة (مجاني / منحة استثنائية)') }}</option>
+                    </select>
                 </div>
 
                 <!-- المرفقات -->

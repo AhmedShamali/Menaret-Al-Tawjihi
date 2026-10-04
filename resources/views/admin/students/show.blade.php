@@ -509,18 +509,30 @@
                         @php 
                             $isChecked = in_array($sub->id, $enrolledIds); 
                             $subTitle = (app()->getLocale() === 'en' && !empty($sub->name_en)) ? $sub->name_en : $sub->name_ar;
+                            $currentEnrollment = $student->enrollments->where('subject_id', $sub->id)->first();
+                            $currentSem = $currentEnrollment->semester ?? 'both';
                         @endphp
-                        <label class="modal-subject-card" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px solid {{ $isChecked ? '#1d4ed8' : '#e2e8f0' }}; background: {{ $isChecked ? '#eff6ff' : '#ffffff' }}; border-radius: 8px; cursor: pointer; transition: 0.15s; user-select: none;">
-                            <input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}" class="modal-subject-cb" {{ $isChecked ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #1d4ed8; cursor: pointer;">
-                            <span style="font-size: 1.3rem;">{{ $sub->icon ?? '📖' }}</span>
-                            <div style="flex: 1; min-width: 0;">
-                                <div style="font-weight: 700; font-size: 0.86rem; color: #1e293b;">{{ $subTitle }}</div>
-                                <div style="font-size: 0.72rem; color: {{ $sub->hasAssignedTeacher() ? '#1d4ed8' : '#b45309' }}; font-weight: 600;">
-                                    <i class="fa-solid fa-chalkboard-user" style="font-size: 0.68rem;"></i>
-                                    {{ $sub->teacher_display_name }}
+                        <div class="modal-subject-card" style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1.5px solid {{ $isChecked ? '#1d4ed8' : '#e2e8f0' }}; background: {{ $isChecked ? '#eff6ff' : '#ffffff' }}; border-radius: 8px; transition: 0.15s;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                                <input type="checkbox" name="subject_ids[]" value="{{ $sub->id }}" class="modal-subject-cb" {{ $isChecked ? 'checked' : '' }} style="width: 16px; height: 16px; accent-color: #1d4ed8; cursor: pointer;">
+                                <span style="font-size: 1.3rem;">{{ $sub->icon ?? '📖' }}</span>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 700; font-size: 0.86rem; color: #1e293b;">{{ $subTitle }}</div>
+                                    <div style="font-size: 0.72rem; color: {{ $sub->hasAssignedTeacher() ? '#1d4ed8' : '#b45309' }}; font-weight: 600;">
+                                        <i class="fa-solid fa-chalkboard-user" style="font-size: 0.68rem;"></i>
+                                        {{ $sub->teacher_display_name }}
+                                    </div>
                                 </div>
+                            </label>
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+                                <span style="font-size: 0.73rem; color: #64748b; font-weight: 700;">{{ __('الفصل الدراسي:') }}</span>
+                                <select name="semesters[{{ $sub->id }}]" style="font-size: 0.75rem; padding: 2px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; font-weight: 600; color: #1e3a8a;">
+                                    <option value="both" {{ $currentSem === 'both' ? 'selected' : '' }}>{{ __('كلا الفصلين (العام)') }}</option>
+                                    <option value="term_1" {{ $currentSem === 'term_1' ? 'selected' : '' }}>{{ __('الفصل الأول فقط') }}</option>
+                                    <option value="term_2" {{ $currentSem === 'term_2' ? 'selected' : '' }}>{{ __('الفصل الثاني فقط') }}</option>
+                                </select>
                             </div>
-                        </label>
+                        </div>
                     @endforeach
                 @else
                     <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #94a3b8;">

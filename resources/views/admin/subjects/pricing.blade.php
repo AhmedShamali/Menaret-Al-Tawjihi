@@ -1,468 +1,762 @@
 @extends('layouts.app')
 
-@section('title', __('إدارة أسعار المواد والعروض الترويجية'))
+@section('title', __('إدارة أسعار المواد والرسوم الفصلية') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <style>
 /* ========================================================
-   تنسيقات شاشة إدارة تسعير المواد وباقات الاشتراك
-   تصميم أكاديمي كلاسيكي فسيح ومنظم بدقة
+   لوحة إدارة أسعار المواد والرسوم الفصلية - تصميم كلاسيكي رايق
+   طابع أكاديمي فلسطيني رصين، ألوان هادئة، خطوط واضحة، وتنظيم متقن
    ======================================================== */
-.pricing-page-wrapper {
-    max-width: 1420px;
-    margin: 0 auto;
-    padding: 10px 20px 50px;
-    animation: fadeIn 0.4s ease;
+:root {
+    --cls-navy: #1e3a8a;
+    --cls-navy-dark: #0f172a;
+    --cls-navy-subtle: #f0f4f8;
+    --cls-border: #e2e8f0;
+    --cls-border-subtle: #edf2f7;
+    --cls-text-main: #1e293b;
+    --cls-text-muted: #64748b;
+    --cls-surface: #ffffff;
+    --cls-bg-page: #f8fafc;
+    --cls-emerald: #059669;
+    --cls-emerald-subtle: #ecfdf5;
+    --cls-emerald-border: #a7f3d0;
+    --cls-amber: #b45309;
+    --cls-amber-subtle: #fffbeb;
+    --cls-amber-border: #fde68a;
 }
 
-/* 1. الترويسة الرئيسية */
-.pricing-header-box {
+.classic-pricing-wrapper {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 16px 20px 60px;
+    color: var(--cls-text-main);
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* 1. الترويسة الأكاديمية الكلاسيكية */
+.classic-page-header {
+    background: var(--cls-surface);
+    border: 1px solid var(--cls-border);
+    border-radius: 12px;
+    padding: 22px 28px;
+    margin-bottom: 22px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
-.pricing-header-title {
+
+.classic-header-info {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 16px;
 }
-.pricing-header-icon {
+
+.classic-header-icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, #e0f2fe, #dbeafe);
-    color: #0284c7;
-    display: grid;
-    place-items: center;
+    border-radius: 10px;
+    background: #f1f5f9;
+    color: var(--cls-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.35rem;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    border: 1px solid #e2e8f0;
+    flex-shrink: 0;
 }
-.pricing-header-text h1 {
-    font-size: 1.55rem;
+
+.classic-header-text h1 {
+    font-size: 1.4rem;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--cls-navy-dark);
     margin: 0 0 4px;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.2px;
 }
-.pricing-header-text p {
-    color: #64748b;
-    font-size: 0.9rem;
+
+.classic-header-text p {
+    color: var(--cls-text-muted);
+    font-size: 0.88rem;
     margin: 0;
 }
-.btn-seasonal-discount {
-    background: linear-gradient(135deg, #059669, #10b981);
-    color: #ffffff;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 12px;
+
+.classic-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-classic-secondary {
+    background: #ffffff;
+    color: var(--cls-text-main);
+    border: 1px solid var(--cls-border);
+    padding: 10px 18px;
+    border-radius: 8px;
     font-weight: 700;
-    font-size: 0.92rem;
+    font-size: 0.88rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.28);
+    gap: 8px;
     transition: all 0.2s ease;
-}
-.btn-seasonal-discount:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+    text-decoration: none;
 }
 
-/* 2. بطاقات الإحصائيات الفسيحة */
-.pricing-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
-    margin-bottom: 28px;
+.btn-classic-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--cls-navy-dark);
 }
-.pricing-stat-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 22px 24px;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.pricing-stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-}
-.pricing-stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 4px;
-    background: var(--accent-color, #1e3a8a);
-}
-.pricing-stat-content .stat-title {
-    display: block;
-    color: #64748b;
-    font-size: 0.86rem;
+
+.btn-classic-primary {
+    background: var(--cls-navy);
+    color: #ffffff;
+    border: 1px solid var(--cls-navy);
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 700;
-    margin-bottom: 8px;
-}
-.pricing-stat-content .stat-val {
-    font-size: 1.85rem;
-    font-weight: 800;
-    color: #0f172a;
-    font-family: 'Outfit', -apple-system, sans-serif;
-    line-height: 1;
-}
-.pricing-stat-icon-wrap {
-    width: 54px;
-    height: 54px;
-    border-radius: 14px;
-    display: grid;
-    place-items: center;
-    font-size: 1.45rem;
-    background: var(--icon-bg, #f1f5f9);
-    color: var(--accent-color, #1e3a8a);
+    font-size: 0.88rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    text-decoration: none;
 }
 
-/* 3. شريط تصفية الفروع */
-.pricing-filter-bar {
-    background: #ffffff;
+.btn-classic-primary:hover {
+    background: #172554;
+    border-color: #172554;
+    color: #ffffff;
+}
+
+/* 2. بطاقات المؤشرات الكلاسيكية الهادئة */
+.classic-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+@media (max-width: 1024px) {
+    .classic-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .classic-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.classic-stat-card {
+    background: var(--cls-surface);
+    border: 1px solid var(--cls-border);
+    border-radius: 10px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: border-color 0.2s ease;
+}
+
+.classic-stat-card:hover {
+    border-color: #cbd5e1;
+}
+
+.classic-stat-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.classic-stat-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--cls-text-muted);
+}
+
+.classic-stat-value {
+    font-size: 1.65rem;
+    font-weight: 800;
+    color: var(--cls-navy-dark);
+    line-height: 1.1;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.classic-stat-currency {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--cls-text-muted);
+}
+
+.classic-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 14px 20px;
-    margin-bottom: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    color: var(--cls-navy);
+}
+
+/* 3. شريط الفلاتر الكلاسيكي الأنيق */
+.classic-filter-strip {
+    background: var(--cls-surface);
+    border: 1px solid var(--cls-border);
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-bottom: 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 16px;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    gap: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
-.pricing-filter-label {
+
+.classic-filter-label {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: #1e293b;
-    font-weight: 800;
-    font-size: 0.92rem;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--cls-text-main);
 }
-.pricing-filter-label i {
-    color: #0284c7;
-    font-size: 1rem;
+
+.classic-filter-label i {
+    color: var(--cls-navy);
 }
-.pricing-pills-list {
+
+.classic-tabs-wrap {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
 }
-.pricing-pill {
-    padding: 8px 18px;
-    border-radius: 50px;
+
+.classic-tab-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
     font-size: 0.86rem;
     font-weight: 700;
     text-decoration: none;
-    transition: all 0.2s ease;
-    border: 1px solid transparent;
+    transition: all 0.15s ease;
+    border: 1px solid var(--cls-border);
+    background: #f8fafc;
+    color: #475569;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
-.pricing-pill.active {
-    background: #1e3a8a;
-    color: #ffffff;
-    border-color: #1e3a8a;
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
-}
-.pricing-pill:not(.active) {
-    background: #f8fafc;
-    color: #475569;
-    border-color: #cbd5e1;
-}
-.pricing-pill:not(.active):hover {
-    background: #e2e8f0;
-    color: #0f172a;
+
+.classic-tab-btn:hover {
+    background: #edf2f7;
+    color: var(--cls-navy-dark);
 }
 
-/* 4. كارت وجدول البيانات الأكاديمي */
-.pricing-table-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 18px;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+.classic-tab-btn.is-active {
+    background: var(--cls-navy);
+    color: #ffffff;
+    border-color: var(--cls-navy);
+}
+
+/* 4. كرت وجدول البيانات الكلاسيكي */
+.classic-table-card {
+    background: var(--cls-surface);
+    border: 1px solid var(--cls-border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     overflow: hidden;
 }
-.pricing-table-container {
+
+.classic-table-container {
     overflow-x: auto;
     width: 100%;
 }
-.pricing-table {
+
+.classic-data-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 1020px;
-}
-.pricing-table thead th {
-    background: #f8fafc;
-    color: #475569;
-    font-size: 0.86rem;
-    font-weight: 800;
-    padding: 16px 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-collapse: collapse;
+    min-width: 980px;
     text-align: right;
-    white-space: nowrap;
-}
-.pricing-table thead th.text-center {
-    text-align: center;
-}
-.pricing-table tbody tr {
-    transition: background 0.15s ease;
-    border-bottom: 1px solid #f1f5f9;
-}
-.pricing-table tbody tr:hover {
-    background: #f8fafc;
-}
-.pricing-table tbody tr:last-child {
-    border-bottom: none;
-}
-.pricing-table tbody td {
-    padding: 16px 20px;
-    vertical-align: middle;
-    font-size: 0.92rem;
 }
 
-/* تفاصيل الأعمدة داخل الجدول */
-.subject-meta-cell {
+.classic-data-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.84rem;
+    font-weight: 800;
+    padding: 14px 18px;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+    letter-spacing: -0.1px;
+}
+
+.classic-data-table thead th.text-center {
+    text-align: center;
+}
+
+.classic-data-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s ease;
+}
+
+.classic-data-table tbody tr:hover {
+    background: #fbfcfe;
+}
+
+.classic-data-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.classic-data-table tbody td {
+    padding: 16px 18px;
+    vertical-align: middle;
+    font-size: 0.9rem;
+    color: var(--cls-text-main);
+}
+
+/* خلايا الجدول الداخلية */
+.cell-subject-wrap {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
-.subject-icon-box {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: grid;
-    place-items: center;
+
+.cell-subject-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: var(--cls-navy);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
     flex-shrink: 0;
-    font-size: 1.35rem;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
 }
-.subject-title-wrap strong {
+
+.cell-subject-info strong {
     display: block;
-    color: #0f172a;
-    font-size: 1rem;
+    color: var(--cls-navy-dark);
+    font-size: 0.95rem;
     font-weight: 800;
     margin-bottom: 3px;
 }
-.subject-title-wrap small {
-    color: #64748b;
+
+.cell-subject-info small {
+    color: var(--cls-text-muted);
     font-size: 0.78rem;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
-/* شارات الفروع الأكاديمية */
-.branch-tag-pill {
+/* شارات الفروع الأكاديمية الكلاسيكية */
+.branch-pill-classic {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 0.82rem;
-    font-weight: 800;
-    white-space: nowrap;
-}
-.branch-sci {
-    background: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #bfdbfe;
-}
-.branch-lit {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-}
-.branch-bus {
-    background: #f0fdf4;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-}
-.branch-gen {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
     background: #f8fafc;
     color: #475569;
-    border: 1px solid #e2e8f0;
-}
-
-/* شارات الأسعار والخصومات */
-.discount-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 12px;
-    border-radius: 50px;
-    font-size: 0.82rem;
-    font-weight: 800;
-    font-family: monospace;
-}
-.discount-active {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-}
-.discount-free {
-    background: #ecfdf5;
-    color: #059669;
-    border: 1px solid #a7f3d0;
-}
-.discount-none {
-    color: #94a3b8;
-    font-size: 0.85rem;
-}
-
-/* شارات الحالة المعتمدة */
-.status-pill-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 6px 14px;
-    border-radius: 50px;
-    font-size: 0.82rem;
-    font-weight: 800;
     white-space: nowrap;
 }
-.status-free-tag {
-    background: #ecfdf5;
-    color: #065f46;
-    border: 1px solid #a7f3d0;
-}
-.status-disc-tag {
-    background: #fffbeb;
-    color: #92400e;
-    border: 1px solid #fde68a;
-}
-.status-normal-tag {
-    background: #f8fafc;
-    color: #334155;
-    border: 1px solid #e2e8f0;
+
+.branch-pill-classic.sci {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
 }
 
-/* زر التعديل */
-.btn-edit-pricing-action {
-    background: #ffffff;
-    color: #1e3a8a;
-    border: 1.5px solid #cbd5e1;
-    padding: 8px 18px;
-    border-radius: 10px;
+.branch-pill-classic.lit {
+    background: #fdf2f8;
+    border-color: #fbcfe8;
+    color: #9d174d;
+}
+
+.branch-pill-classic.bus {
+    background: #fefce8;
+    border-color: #fef08a;
+    color: #854d0e;
+}
+
+/* عرض الأسعار المنظم الهادئ */
+.price-strip-classic {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.price-terms-line {
+    font-size: 0.82rem;
+    color: var(--cls-text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.price-terms-line strong {
+    color: var(--cls-text-main);
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.price-full-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.82rem;
     font-weight: 800;
-    font-size: 0.85rem;
+    width: fit-content;
+}
+
+.price-full-box.wb {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+}
+
+.price-full-box.gaza {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #d1fae5;
+}
+
+/* شارات الحالة */
+.status-tag-classic {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.status-tag-classic.normal {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.status-tag-classic.free {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+/* زر التعديل الكلاسيكي */
+.btn-classic-edit {
+    background: #ffffff;
+    color: var(--cls-navy);
+    border: 1px solid #cbd5e1;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.82rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     white-space: nowrap;
 }
-.btn-edit-pricing-action:hover {
-    background: #1e3a8a;
+
+.btn-classic-edit:hover {
+    background: var(--cls-navy);
     color: #ffffff;
-    border-color: #1e3a8a;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
+    border-color: var(--cls-navy);
+}
+
+/* تنبيه النجاح الكلاسيكي */
+.classic-alert-success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+    padding: 12px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 5. نوافذ الحوار الكلاسيكية (Modal) */
+.classic-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.classic-modal-card {
+    background: #ffffff;
+    border-radius: 12px;
+    max-width: 620px;
+    width: 100%;
+    padding: 24px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    max-height: 92vh;
+    overflow-y: auto;
+}
+
+.classic-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.classic-modal-title {
+    font-size: 1.18rem;
+    font-weight: 800;
+    color: var(--cls-navy-dark);
+    margin: 0 0 3px;
+}
+
+.classic-modal-subtitle {
+    color: var(--cls-text-muted);
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+.classic-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+}
+
+.classic-modal-close:hover {
+    color: #0f172a;
+}
+
+.pricing-section-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background: #ffffff;
+}
+
+.pricing-section-box.wb {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.pricing-section-box.gaza {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.pricing-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.pricing-section-title.wb {
+    color: #1e40af;
+}
+
+.pricing-section-title.gaza {
+    color: #065f46;
+}
+
+.grid-3-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.form-group-classic label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 4px;
+}
+
+.form-input-classic {
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-family: monospace;
+    color: #0f172a;
+    background: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.form-input-classic:focus {
+    border-color: var(--cls-navy);
+}
+
+.classic-checkbox-box {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.classic-checkbox-box label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #92400e;
+    cursor: pointer;
+    margin: 0;
+}
+
+.classic-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
 }
 </style>
 
-<div class="pricing-page-wrapper">
+<div class="classic-pricing-wrapper">
 
-    <!-- 1. الترويسة الرئيسية -->
-    <div class="pricing-header-box">
-        <div class="pricing-header-title">
-            <div class="pricing-header-icon">
+    {{-- 1. رأس الصفحة الأكاديمي الكلاسيكي --}}
+    <div class="classic-page-header">
+        <div class="classic-header-info">
+            <div class="classic-header-icon">
                 <i class="fa-solid fa-tags"></i>
             </div>
-            <div class="pricing-header-text">
-                <h1>{{ __('إدارة تسعير المواد وباقات الاشتراك') }}</h1>
-                <p>{{ __('تحديد أسعار المواد بالشيكل (₪)، ضبط الخصومات الترويجية، وتفعيل المواد المجانية لطلبة توجيهي فلسطين.') }}</p>
+            <div class="classic-header-text">
+                <h1>{{ __('إدارة أسعار المواد وباقات الاشتراك') }}</h1>
+                <p>{{ __('تحديد أسعار المواد والرسوم الفصلية للضفة الغربية وقطاع غزة، وإدارة العروض الترويجية لطلبة التوجيهي.') }}</p>
             </div>
         </div>
 
-        <button onclick="openSeasonalModal()" class="btn-seasonal-discount">
-            <i class="fa-solid fa-percent"></i>
-            <span>{{ __('تطبيق خصم موسمي شامل') }}</span>
-        </button>
+        <div class="classic-header-actions">
+            <a href="{{ route('admin.subscriptions.monthly') }}" class="btn-classic-secondary">
+                <i class="fa-solid fa-table-cells"></i>
+                <span>{{ __('مصفوفة الاشتراكات') }}</span>
+            </a>
+            <button type="button" onclick="openSeasonalModal()" class="btn-classic-primary">
+                <i class="fa-solid fa-percent"></i>
+                <span>{{ __('خصم موسمي شامل') }}</span>
+            </button>
+        </div>
     </div>
 
     @if(session('success'))
-        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; padding: 14px 20px; border-radius: 14px; margin-bottom: 24px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
-            <i class="fa-solid fa-circle-check" style="font-size: 1.15rem;"></i>
+        <div class="classic-alert-success">
+            <i class="fa-solid fa-circle-check"></i>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    <!-- 2. كروت الإحصائيات الأكاديمية الفسيحة للأسعار الفصليّة والمناطقيّة -->
-    <div class="pricing-stats-grid">
-        {{-- كرت إجمالي المواد --}}
-        <div class="pricing-stat-card" style="--accent-color: #1e3a8a; --icon-bg: #eff6ff;">
-            <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('إجمالي المواد الدراسية') }}</span>
-                <span class="stat-val">{{ $pricingStats['total_subjects'] }} <span style="font-size: 0.95rem; font-weight: 600; color: #64748b;">{{ __('مادة') }}</span></span>
+    {{-- 2. بطاقات المؤشرات الأكاديمية الكلاسيكية الهادئة --}}
+    <div class="classic-stats-grid">
+        {{-- كرت 1: إجمالي المواد --}}
+        <div class="classic-stat-card">
+            <div class="classic-stat-main">
+                <span class="classic-stat-title">{{ __('إجمالي المواد الدراسية') }}</span>
+                <span class="classic-stat-value">
+                    <span>{{ $pricingStats['total_subjects'] }}</span>
+                    <span class="classic-stat-currency">{{ __('مادة') }}</span>
+                </span>
             </div>
-            <div class="pricing-stat-icon-wrap">
+            <div class="classic-stat-icon">
                 <i class="fa-solid fa-book-bookmark"></i>
             </div>
         </div>
 
-        {{-- كرت متوسط ف1 للضفة --}}
-        <div class="pricing-stat-card" style="--accent-color: #0284c7; --icon-bg: #f0f9ff;">
-            <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('متوسط ف1 (الضفة)') }}</span>
-                <span class="stat-val" style="color: #0369a1;">{{ $pricingStats['avg_term_wb'] }} <span style="font-size: 1.1rem; font-weight: 800;">₪</span></span>
+        {{-- كرت 2: متوسط رسوم الضفة --}}
+        <div class="classic-stat-card">
+            <div class="classic-stat-main">
+                <span class="classic-stat-title">{{ __('متوسط رسوم الفصل (الضفة)') }}</span>
+                <span class="classic-stat-value">
+                    <span>{{ $pricingStats['avg_term_wb'] }}</span>
+                    <span class="classic-stat-currency">₪</span>
+                </span>
             </div>
-            <div class="pricing-stat-icon-wrap">
+            <div class="classic-stat-icon">
                 <i class="fa-solid fa-landmark"></i>
             </div>
         </div>
 
-        {{-- كرت متوسط ف1 لغزة --}}
-        <div class="pricing-stat-card" style="--accent-color: #059669; --icon-bg: #ecfdf5;">
-            <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('متوسط ف1 (غزة)') }}</span>
-                <span class="stat-val" style="color: #047857;">{{ $pricingStats['avg_term_gaza'] }} <span style="font-size: 1.1rem; font-weight: 800;">₪</span></span>
+        {{-- كرت 3: متوسط رسوم غزة --}}
+        <div class="classic-stat-card">
+            <div class="classic-stat-main">
+                <span class="classic-stat-title">{{ __('متوسط رسوم الفصل (غزة)') }}</span>
+                <span class="classic-stat-value">
+                    <span>{{ $pricingStats['avg_term_gaza'] }}</span>
+                    <span class="classic-stat-currency">₪</span>
+                </span>
             </div>
-            <div class="pricing-stat-icon-wrap">
+            <div class="classic-stat-icon">
                 <i class="fa-solid fa-location-dot"></i>
             </div>
         </div>
 
-        {{-- كرت المواد المجانية --}}
-        <div class="pricing-stat-card" style="--accent-color: #7c3aed; --icon-bg: #f5f3ff;">
-            <div class="pricing-stat-content">
-                <span class="stat-title">{{ __('مواد مجانية بالكامل') }}</span>
-                <span class="stat-val" style="color: #6d28d9;">{{ $pricingStats['free_subjects'] }} <span style="font-size: 0.95rem; font-weight: 600; color: #6d28d9;">{{ __('مادة') }}</span></span>
+        {{-- كرت 4: مواد مجانية بالكامل --}}
+        <div class="classic-stat-card">
+            <div class="classic-stat-main">
+                <span class="classic-stat-title">{{ __('مواد مجانية بالكامل') }}</span>
+                <span class="classic-stat-value">
+                    <span>{{ $pricingStats['free_subjects'] }}</span>
+                    <span class="classic-stat-currency">{{ __('مادة') }}</span>
+                </span>
             </div>
-            <div class="pricing-stat-icon-wrap">
+            <div class="classic-stat-icon">
                 <i class="fa-solid fa-gift"></i>
             </div>
         </div>
     </div>
 
-    <!-- 3. شريط تصفية الفروع الأكاديمية بتصميم أنيق ومختصر -->
-    <div class="pricing-filter-bar">
-        <div class="pricing-filter-label">
+    {{-- 3. شريط تصفية الفروع الكلاسيكي الرايق --}}
+    <div class="classic-filter-strip">
+        <div class="classic-filter-label">
             <i class="fa-solid fa-filter"></i>
-            <span>{{ __('تصفية حسب الفرع الأكاديمي:') }}</span>
+            <span>{{ __('الفرع الأكاديمي:') }}</span>
         </div>
-        <div class="pricing-pills-list">
-            <a href="{{ route('admin.subjects.pricing') }}" class="pricing-pill {{ empty($stageId) ? 'active' : '' }}">
+        <div class="classic-tabs-wrap">
+            <a href="{{ route('admin.subjects.pricing') }}" class="classic-tab-btn {{ empty($stageId) ? 'is-active' : '' }}">
                 <i class="fa-solid fa-layer-group"></i>
                 <span>{{ __('جميع الفروع') }} ({{ $pricingStats['total_subjects'] }})</span>
             </a>
@@ -483,7 +777,7 @@
                         $stgIcon = 'fa-graduation-cap';
                     }
                 @endphp
-                <a href="{{ route('admin.subjects.pricing', ['stage_id' => $stg->id]) }}" class="pricing-pill {{ $stageId == $stg->id ? 'active' : '' }}">
+                <a href="{{ route('admin.subjects.pricing', ['stage_id' => $stg->id]) }}" class="classic-tab-btn {{ $stageId == $stg->id ? 'is-active' : '' }}">
                     <i class="fa-solid {{ $stgIcon }}"></i>
                     <span>{{ $stgTitle }}</span>
                 </a>
@@ -491,26 +785,22 @@
         </div>
     </div>
 
-    <!-- 4. جدول أسعار المواد الأكاديمي بتصميم فسيح ومنظم فصلياً ومناطقيّاً -->
-    <div class="pricing-table-card">
-        <div class="pricing-table-container">
-            <table class="pricing-table">
+    {{-- 4. جدول أسعار المواد الأكاديمي الكلاسيكي --}}
+    <div class="classic-table-card">
+        <div class="classic-table-container">
+            <table class="classic-data-table">
                 <thead>
                     <tr>
-                        <th style="width: 250px;">{{ __('المادة الدراسية') }}</th>
-                        <th style="width: 150px;">{{ __('الفرع') }}</th>
-                        <th style="width: 240px;">
-                            <span style="color: #1e40af; display: inline-flex; align-items: center; gap: 5px;">
-                                <i class="fa-solid fa-landmark"></i> {{ __('تسعيرة الضفة') }}
-                            </span>
+                        <th style="width: 280px;">{{ __('المادة الدراسية') }}</th>
+                        <th style="width: 140px;">{{ __('الفرع') }}</th>
+                        <th style="width: 250px;">
+                            <span><i class="fa-solid fa-landmark text-navy"></i> {{ __('تسعيرة الضفة والقدس') }}</span>
                         </th>
-                        <th style="width: 240px;">
-                            <span style="color: #065f46; display: inline-flex; align-items: center; gap: 5px;">
-                                <i class="fa-solid fa-location-dot"></i> {{ __('تسعيرة غزة') }}
-                            </span>
+                        <th style="width: 250px;">
+                            <span><i class="fa-solid fa-location-dot text-emerald"></i> {{ __('تسعيرة قطاع غزة') }}</span>
                         </th>
-                        <th style="width: 140px;">{{ __('الحالة') }}</th>
-                        <th style="width: 130px;" class="text-center">{{ __('الإجراء') }}</th>
+                        <th style="width: 130px;">{{ __('الحالة') }}</th>
+                        <th style="width: 120px;" class="text-center">{{ __('الإجراء') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -518,20 +808,20 @@
                         @php
                             $rawStage = optional($sub->stage)->label_ar ?? optional($sub->stage)->name ?? optional($sub->stage)->name_ar ?? 'توجيهي عام';
                             if (str_contains($rawStage, 'علمي')) {
-                                $stageShort = __('توجيهي علمي');
-                                $stageClass = 'branch-sci';
+                                $stageShort = __('العلمي');
+                                $stageClass = 'sci';
                                 $stageIcon  = 'fa-atom';
                             } elseif (str_contains($rawStage, 'أدبي')) {
-                                $stageShort = __('توجيهي أدبي');
-                                $stageClass = 'branch-lit';
+                                $stageShort = __('الأدبي');
+                                $stageClass = 'lit';
                                 $stageIcon  = 'fa-book-open';
                             } elseif (str_contains($rawStage, 'ريادة') || str_contains($rawStage, 'أعمال')) {
-                                $stageShort = __('توجيهي ريادة');
-                                $stageClass = 'branch-bus';
+                                $stageShort = __('ريادة وأعمال');
+                                $stageClass = 'bus';
                                 $stageIcon  = 'fa-briefcase';
                             } else {
                                 $stageShort = $rawStage;
-                                $stageClass = 'branch-gen';
+                                $stageClass = 'gen';
                                 $stageIcon  = 'fa-graduation-cap';
                             }
 
@@ -547,17 +837,17 @@
                             $pFullGaza = $sub->getSemesterPrice('both', 'gaza');
                         @endphp
                         <tr>
-                            {{-- المادة الدراسية والأيقونة --}}
+                            {{-- المادة الدراسية --}}
                             <td>
-                                <div class="subject-meta-cell">
-                                    <div class="subject-icon-box" style="background: {{ $sub->color ?? '#0284c7' }}18; color: {{ $sub->color ?? '#0284c7' }};">
+                                <div class="cell-subject-wrap">
+                                    <div class="cell-subject-avatar">
                                         @if($isFaIcon)
                                             <i class="fa-solid {{ $subIcon }}"></i>
                                         @else
                                             <span>{{ $subIcon }}</span>
                                         @endif
                                     </div>
-                                    <div class="subject-title-wrap">
+                                    <div class="cell-subject-info">
                                         <strong>{{ $sub->name_ar }}</strong>
                                         <small>
                                             <span><i class="fa-solid fa-play" style="font-size: 0.65rem; color: #0284c7;"></i> {{ $sub->contents_count ?? 0 }} {{ __('درس') }}</span>
@@ -570,38 +860,46 @@
 
                             {{-- الفرع الأكاديمي --}}
                             <td>
-                                <span class="branch-tag-pill {{ $stageClass }}">
+                                <span class="branch-pill-classic {{ $stageClass }}">
                                     <i class="fa-solid {{ $stageIcon }}"></i>
                                     <span>{{ $stageShort }}</span>
                                 </span>
                             </td>
 
-                            {{-- تسعيرة الضفة والقدس --}}
+                            {{-- تسعيرة الضفة --}}
                             <td>
                                 @if($sub->is_free)
-                                    <span style="color: #059669; font-weight: 800;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
+                                    <span style="color: #059669; font-weight: 700;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
                                 @else
-                                    <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem;">
-                                        <span style="color: #1e3a8a;"><strong style="font-weight: 700;">فصل 1:</strong> <span class="font-mono font-bold">{{ number_format($p1Wb, 0) }} ₪</span></span>
-                                        <span style="color: #1e3a8a;"><strong style="font-weight: 700;">فصل 2:</strong> <span class="font-mono font-bold">{{ number_format($p2Wb, 0) }} ₪</span></span>
-                                        <span style="color: #0f172a; font-weight: 800; background: #eff6ff; padding: 2px 6px; border-radius: 6px; display: inline-block; width: fit-content;">
-                                            {{ __('الفصلين:') }} <span class="font-mono text-primary font-bold">{{ number_format($pFullWb, 0) }} ₪</span>
-                                        </span>
+                                    <div class="price-strip-classic">
+                                        <div class="price-terms-line">
+                                            <span>{{ __('فصل 1:') }} <strong>{{ number_format($p1Wb, 0) }} ₪</strong></span>
+                                            <span>•</span>
+                                            <span>{{ __('فصل 2:') }} <strong>{{ number_format($p2Wb, 0) }} ₪</strong></span>
+                                        </div>
+                                        <div class="price-full-box wb">
+                                            <span>{{ __('الفصلين معاً:') }}</span>
+                                            <span style="font-family: monospace;">{{ number_format($pFullWb, 0) }} ₪</span>
+                                        </div>
                                     </div>
                                 @endif
                             </td>
 
-                            {{-- تسعيرة قطاع غزة --}}
+                            {{-- تسعيرة غزة --}}
                             <td>
                                 @if($sub->is_free)
-                                    <span style="color: #059669; font-weight: 800;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
+                                    <span style="color: #059669; font-weight: 700;"><i class="fa-solid fa-gift"></i> {{ __('مجانية 100%') }}</span>
                                 @else
-                                    <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.85rem;">
-                                        <span style="color: #065f46;"><strong style="font-weight: 700;">فصل 1:</strong> <span class="font-mono font-bold">{{ number_format($p1Gaza, 0) }} ₪</span></span>
-                                        <span style="color: #065f46;"><strong style="font-weight: 700;">فصل 2:</strong> <span class="font-mono font-bold">{{ number_format($p2Gaza, 0) }} ₪</span></span>
-                                        <span style="color: #064e3b; font-weight: 800; background: #ecfdf5; padding: 2px 6px; border-radius: 6px; display: inline-block; width: fit-content;">
-                                            {{ __('الفصلين:') }} <span class="font-mono text-emerald font-bold">{{ number_format($pFullGaza, 0) }} ₪</span>
-                                        </span>
+                                    <div class="price-strip-classic">
+                                        <div class="price-terms-line">
+                                            <span>{{ __('فصل 1:') }} <strong>{{ number_format($p1Gaza, 0) }} ₪</strong></span>
+                                            <span>•</span>
+                                            <span>{{ __('فصل 2:') }} <strong>{{ number_format($p2Gaza, 0) }} ₪</strong></span>
+                                        </div>
+                                        <div class="price-full-box gaza">
+                                            <span>{{ __('الفصلين معاً:') }}</span>
+                                            <span style="font-family: monospace;">{{ number_format($pFullGaza, 0) }} ₪</span>
+                                        </div>
                                     </div>
                                 @endif
                             </td>
@@ -609,21 +907,21 @@
                             {{-- الحالة --}}
                             <td>
                                 @if($sub->is_free)
-                                    <span class="status-pill-badge status-free-tag">
+                                    <span class="status-tag-classic free">
                                         <i class="fa-solid fa-gift"></i>
-                                        <span>{{ __('مجانية تجريبية') }}</span>
+                                        <span>{{ __('مجانية بالكامل') }}</span>
                                     </span>
                                 @else
-                                    <span class="status-pill-badge status-normal-tag">
+                                    <span class="status-tag-classic normal">
                                         <i class="fa-solid fa-check"></i>
-                                        <span>{{ __('نظام فصلي معتمد') }}</span>
+                                        <span>{{ __('نظام فصلي') }}</span>
                                     </span>
                                 @endif
                             </td>
 
                             {{-- الإجراء --}}
                             <td class="text-center">
-                                <button onclick="editPricing({{ json_encode($sub) }})" class="btn-edit-pricing-action">
+                                <button type="button" onclick="editPricing({{ json_encode($sub) }})" class="btn-classic-edit" title="{{ __('تعديل أسعار المادة') }}">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                     <span>{{ __('تعديل التسعيرة') }}</span>
                                 </button>
@@ -631,9 +929,9 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" style="padding: 50px 20px; text-align: center; color: #94a3b8;">
-                                <i class="fa-solid fa-tags" style="font-size: 2.2rem; color: #cbd5e1; display: block; margin-bottom: 12px;"></i>
-                                <strong style="font-size: 1rem; color: #64748b;">{{ __('لا توجد مواد مسجلة مطابقة للبحث.') }}</strong>
+                            <td colspan="6" style="padding: 40px 20px; text-align: center; color: #94a3b8;">
+                                <i class="fa-solid fa-tags" style="font-size: 2rem; color: #cbd5e1; display: block; margin-bottom: 10px;"></i>
+                                <span style="font-size: 0.95rem; color: #64748b; font-weight: 700;">{{ __('لا توجد مواد مسجلة مطابقة للفرع المحدد.') }}</span>
                             </td>
                         </tr>
                     @endforelse
@@ -644,117 +942,111 @@
 
 </div>
 
-<!-- نافذة تعديل تسعيرة مادة (Modal) بنظام فصلي للضفة وغزة -->
-<div id="editModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
-    <div style="background: white; border-radius: 18px; max-width: 650px; width: 100%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); border: 1px solid #cbd5e1; max-height: 90vh; overflow-y: auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: #e0f2fe; color: #0284c7; display: grid; place-items: center; font-size: 1.3rem;">
-                    <i class="fa-solid fa-tags"></i>
-                </div>
-                <div>
-                    <h3 id="modalSubjectTitle" style="font-size: 1.25rem; font-weight: 800; color: #0f172a; margin: 0 0 2px;">{{ __('تعديل تسعيرة المادة (نظام فصلي)') }}</h3>
-                    <small style="color: #64748b; font-size: 0.8rem;">{{ __('تحديد أسعار الفصل الأول والفصل الثاني والفصلين معاً للضفة وغزة') }}</small>
-                </div>
+{{-- نافذة تعديل تسعيرة مادة (Classic Modal) --}}
+<div id="editModal" class="classic-modal-backdrop">
+    <div class="classic-modal-card">
+        <div class="classic-modal-header">
+            <div>
+                <h3 id="modalSubjectTitle" class="classic-modal-title">{{ __('تعديل تسعيرة المادة (نظام فصلي)') }}</h3>
+                <p class="classic-modal-subtitle">{{ __('تحديد أسعار الفصل الأول، الفصل الثاني، والفصلين معاً لمناطق الضفة وغزة.') }}</p>
             </div>
-            <button onclick="closeEditModal()" style="background: none; border: none; font-size: 1.6rem; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
+            <button type="button" onclick="closeEditModal()" class="classic-modal-close">&times;</button>
         </div>
 
         <form id="editPricingForm" onsubmit="submitPricing(event)">
             @csrf
             <input type="hidden" id="editSubjectId" name="subject_id">
 
-            {{-- 1. تسعيرة الضفة الغربية والقدس 🏛️ --}}
-            <div style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: #1e40af; font-weight: 800; font-size: 0.95rem;">
+            {{-- 1. تسعيرة الضفة الغربية والقدس --}}
+            <div class="pricing-section-box wb">
+                <div class="pricing-section-title wb">
                     <i class="fa-solid fa-landmark"></i>
-                    <span>{{ __('تسعيرة الضفة') }}</span>
+                    <span>{{ __('تسعيرة الضفة الغربية والقدس (شيكل ₪)') }}</span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('الفصل الأول (₪) *') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceTerm1Wb" name="price_term_1" required oninput="calcWbFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; font-family: monospace; color: #1e40af;">
+                <div class="grid-3-inputs">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصل الأول *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm1Wb" name="price_term_1" required oninput="calcWbFullPreview()" class="form-input-classic">
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('الفصل الثاني (₪) *') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceTerm2Wb" name="price_term_2" required oninput="calcWbFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-weight: 800; font-family: monospace; color: #1e40af;">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصل الثاني *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm2Wb" name="price_term_2" required oninput="calcWbFullPreview()" class="form-input-classic">
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #0f172a; margin-bottom: 5px;">{{ __('الفصلين معاً (₪) *') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceFullWb" name="price_full_year" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #3b82f6; font-weight: 800; font-family: monospace; color: #0f172a; background: #eff6ff;">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصلين معاً *') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceFullWb" name="price_full_year" required class="form-input-classic" style="border-color: #3b82f6; background: #eff6ff;">
                     </div>
                 </div>
             </div>
 
-            {{-- 2. تسعيرة غزة --}}
-            <div style="background: #f0fdf4; border: 1.5px solid #a7f3d0; border-radius: 14px; padding: 16px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: #065f46; font-weight: 800; font-size: 0.95rem;">
+            {{-- 2. تسعيرة قطاع غزة --}}
+            <div class="pricing-section-box gaza">
+                <div class="pricing-section-title gaza">
                     <i class="fa-solid fa-location-dot"></i>
-                    <span>{{ __('تسعيرة غزة') }}</span>
+                    <span>{{ __('تسعيرة قطاع غزة (شيكل ₪)') }}</span>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #065f46; margin-bottom: 5px;">{{ __('الفصل الأول (₪)') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceTerm1Gaza" name="price_term_1_gaza" oninput="calcGazaFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #a7f3d0; font-weight: 800; font-family: monospace; color: #047857;">
+                <div class="grid-3-inputs">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصل الأول') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm1Gaza" name="price_term_1_gaza" oninput="calcGazaFullPreview()" class="form-input-classic">
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #065f46; margin-bottom: 5px;">{{ __('الفصل الثاني (₪)') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceTerm2Gaza" name="price_term_2_gaza" oninput="calcGazaFullPreview()" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid #a7f3d0; font-weight: 800; font-family: monospace; color: #047857;">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصل الثاني') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceTerm2Gaza" name="price_term_2_gaza" oninput="calcGazaFullPreview()" class="form-input-classic">
                     </div>
-                    <div>
-                        <label style="display: block; font-size: 0.78rem; font-weight: 700; color: #064e3b; margin-bottom: 5px;">{{ __('الفصلين معاً (₪)') }}</label>
-                        <input type="number" step="1" min="0" id="modalPriceFullGaza" name="price_full_year_gaza" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 2px solid #10b981; font-weight: 800; font-family: monospace; color: #064e3b; background: #ecfdf5;">
+                    <div class="form-group-classic">
+                        <label>{{ __('الفصلين معاً') }}</label>
+                        <input type="number" step="1" min="0" id="modalPriceFullGaza" name="price_full_year_gaza" class="form-input-classic" style="border-color: #10b981; background: #ecfdf5;">
                     </div>
                 </div>
             </div>
 
             {{-- 3. خيار المادة المجانية --}}
-            <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="modalIsFree" name="is_free" value="1" onchange="onIsFreeToggle()" style="width: 18px; height: 18px; accent-color: #d97706; cursor: pointer;">
-                <label for="modalIsFree" style="font-size: 0.88rem; font-weight: 800; color: #92400e; cursor: pointer; margin: 0;">
-                    {{ __('تعيين المادة كمجانية بالكامل لكافة الطلاب في الضفة وغزة (0 ₪)') }}
+            <div class="classic-checkbox-box">
+                <input type="checkbox" id="modalIsFree" name="is_free" value="1" onchange="onIsFreeToggle()" style="width: 17px; height: 17px; cursor: pointer;">
+                <label for="modalIsFree">
+                    {{ __('تعيين المادة كمجانية بالكامل لكافة الطلبة (0 ₪)') }}
                 </label>
             </div>
 
             {{-- 4. وصف الباقة --}}
-            <div style="margin-bottom: 22px;">
-                <label style="display: block; font-size: 0.84rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('وصف باقة المادة ومميزاتها للطلاب') }}</label>
-                <textarea id="modalDescription" name="description" rows="2" placeholder="{{ __('مثال: تشمل شرح كامل المنهاج الوزاري للفصلين، حلول أسئلة السنوات السابقة، وبطاقات المذاكرة السريعة') }}" style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 0.88rem; resize: vertical;"></textarea>
+            <div style="margin-bottom: 18px;">
+                <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 5px;">{{ __('وصف باقة المادة وملاحظات التسعير (اختياري)') }}</label>
+                <textarea id="modalDescription" name="description" rows="2" placeholder="{{ __('مثال: تشمل شرح كامل المنهاج الوزاري للفصلين، حلول أسئلة السنوات السابقة، والمتابعة الأكاديمية') }}" style="width: 100%; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; outline: none; font-size: 0.86rem; resize: vertical; box-sizing: border-box;"></textarea>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" onclick="closeEditModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; cursor: pointer;">{{ __('إلغاء') }}</button>
-                <button type="submit" id="btnSavePrice" style="background: #1e3a8a; color: white; border: none; padding: 10px 26px; border-radius: 10px; font-weight: 800; font-size: 0.92rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(30, 58, 138, 0.25);">
-                    <i class="fa-solid fa-check"></i> {{ __('حفظ وتطبيق التسعيرة الفصليّة') }}
+            <div class="classic-modal-actions">
+                <button type="button" onclick="closeEditModal()" class="btn-classic-secondary">{{ __('إلغاء') }}</button>
+                <button type="submit" id="btnSavePrice" class="btn-classic-primary">
+                    <i class="fa-solid fa-check"></i>
+                    <span>{{ __('حفظ وتطبيق التسعيرة') }}</span>
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- نافذة الخصم الشامل (Seasonal Modal) -->
-<div id="seasonalModal" style="display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.65); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; padding: 20px;">
-    <div style="background: white; border-radius: 18px; max-width: 500px; width: 100%; padding: 28px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); border: 1px solid #cbd5e1;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 38px; height: 38px; border-radius: 10px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 1.15rem;">
-                    <i class="fa-solid fa-percent"></i>
-                </div>
-                <h3 style="font-size: 1.18rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('تطبيق خصم موسمي شامل') }}</h3>
+{{-- نافذة الخصم الموسمي الشامل (Seasonal Modal) --}}
+<div id="seasonalModal" class="classic-modal-backdrop">
+    <div class="classic-modal-card" style="max-width: 480px;">
+        <div class="classic-modal-header">
+            <div>
+                <h3 class="classic-modal-title">{{ __('تطبيق خصم موسمي شامل') }}</h3>
+                <p class="classic-modal-subtitle">{{ __('تطبيق نسبة خصم ترويجية على أسعار المواد الدراسية.') }}</p>
             </div>
-            <button onclick="closeSeasonalModal()" style="background: none; border: none; font-size: 1.6rem; color: #94a3b8; cursor: pointer; line-height: 1;">&times;</button>
+            <button type="button" onclick="closeSeasonalModal()" class="classic-modal-close">&times;</button>
         </div>
 
         <form action="{{ route('admin.subjects.pricing.seasonal') }}" method="POST">
             @csrf
-            <div style="margin-bottom: 18px;">
-                <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('نسبة الخصم المئوية (%) *') }}</label>
-                <input type="number" name="discount_percentage" min="5" max="90" value="20" required style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 1.15rem; font-weight: 800; color: #059669; font-family: monospace;">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('نسبة الخصم المئوية (%) *') }}</label>
+                <input type="number" name="discount_percentage" min="5" max="90" value="20" required class="form-input-classic" style="font-size: 1.1rem; color: #059669;">
             </div>
 
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; font-size: 0.86rem; font-weight: 700; color: #475569; margin-bottom: 6px;">{{ __('تطبيق الخصم على فرع محدد (اختياري)') }}</label>
-                <select name="stage_id" style="width: 100%; padding: 11px 14px; border-radius: 10px; border: 1.5px solid #cbd5e1; outline: none; font-size: 0.92rem; color: #0f172a;">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 5px;">{{ __('تطبيق على فرع محدد (اختياري)') }}</label>
+                <select name="stage_id" class="form-input-classic" style="font-family: inherit;">
                     <option value="">{{ __('جميع فروع الثانوية العامة') }}</option>
                     @foreach($stages as $stg)
                         @php
@@ -769,10 +1061,11 @@
                 </select>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                <button type="button" onclick="closeSeasonalModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer;">{{ __('إلغاء') }}</button>
-                <button type="submit" style="background: #059669; color: white; border: none; padding: 10px 26px; border-radius: 10px; font-weight: 800; cursor: pointer; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);">
-                    <i class="fa-solid fa-check"></i> {{ __('تطبيق الخصم فوراً') }}
+            <div class="classic-modal-actions">
+                <button type="button" onclick="closeSeasonalModal()" class="btn-classic-secondary">{{ __('إلغاء') }}</button>
+                <button type="submit" class="btn-classic-primary">
+                    <i class="fa-solid fa-check"></i>
+                    <span>{{ __('تطبيق الخصم فوراً') }}</span>
                 </button>
             </div>
         </form>
@@ -898,4 +1191,3 @@ function submitPricing(e) {
 }
 </script>
 @endsection
-

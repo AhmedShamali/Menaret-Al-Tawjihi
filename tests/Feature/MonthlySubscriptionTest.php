@@ -344,13 +344,13 @@ class MonthlySubscriptionTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('أحمد العبدالله');
         $response->assertSee('901234567');
-        $response->assertSee('إجمالي المستحق المطلوب للعام');
+        $response->assertSee('إجمالي الرسوم المقررة للفصلين');
         $response->assertSee('إجمالي المبلغ المسدد المعتمد');
         $response->assertSee('الرصيد المتبقي بذمة الطالب');
-        $response->assertSee('سجل استحقاقات وسداد الشهور الـ 12');
-        $response->assertSee('1- الشهر الأول');
-        $response->assertSee('12- الشهر الثاني عشر');
-        $response->assertSee('تسجيل وسداد القسط');
+        $response->assertSee('سجل استحقاقات وسداد الفصول الدراسية');
+        $response->assertSee('الفصل الدراسي الأول');
+        $response->assertSee('الفصل الدراسي الثاني');
+        $response->assertSee('سداد / تعديل');
     }
 
     /**

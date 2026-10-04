@@ -500,9 +500,9 @@
 
                 <div class="header-emblem">
                     @if(\App\Models\Setting::get('director_logo'))
-                        <img src="{{ asset(\App\Models\Setting::get('director_logo')) }}" alt="شعار الإدارة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;">
+                        <img src="{{ asset(\App\Models\Setting::get('director_logo')) }}" alt="شعار الإدارة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                     @elseif(\App\Models\Setting::get('site_logo'))
-                        <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="شعار المنصة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;">
+                        <img src="{{ asset(\App\Models\Setting::get('site_logo')) }}" alt="شعار المنصة" style="max-height: 60px; max-width: 90px; object-fit: contain; margin-bottom: 4px;" onerror="this.onerror=null; this.src='{{ asset('images/logo.png') }}';">
                     @else
                         <div class="emblem-icon">
                             <i class="fa-solid fa-award"></i>

@@ -266,10 +266,11 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/payments/{id}/status', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus')->whereNumber('id');
     Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Admin\AdminPaymentController::class, 'viewReceipt'])->name('payments.receipt')->whereNumber('id');
 
-    // مصفوفة وسجل الاشتراكات الشهرية للطلاب (12 شهراً)
+    // مصفوفة وسجل الاشتراكات والرسوم الفصلية للطلاب (الفصل الأول / الفصل الثاني / الفصلين معاً)
     Route::get('/subscriptions/monthly', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'index'])->name('subscriptions.monthly');
     Route::get('/subscriptions/student/{student}', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'studentProfile'])->name('subscriptions.student');
     Route::post('/subscriptions/monthly/update', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStatus'])->name('subscriptions.monthly.update');
+    Route::post('/subscriptions/semester/update', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateSemesterStatus'])->name('subscriptions.semester.update');
     Route::post('/subscriptions/monthly/update-student-fee', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateStudentFee'])->name('subscriptions.monthly.updateStudentFee');
     Route::post('/subscriptions/monthly/update-global-fee', [\App\Http\Controllers\Admin\AdminSubscriptionController::class, 'updateGlobalFee'])->name('subscriptions.monthly.updateGlobalFee');
 

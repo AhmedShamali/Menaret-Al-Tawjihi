@@ -718,14 +718,24 @@
             }
 
             html += `
-                <label style="display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 7px 10px; cursor: pointer; user-select: none;">
-                    <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 15px; height: 15px; accent-color: var(--ed-primary); cursor: pointer;">
-                    <span style="font-size: 1rem;">${sub.icon || '📘'}</span>
-                    <div style="flex: 1;">
-                        <div style="font-size: 12px; font-weight: 700; color: #0f172a;">${subTitle}</div>
-                        <div style="display: flex; align-items: center; gap: 2px; margin-top: 2px;">${priceHtml}</div>
+                <div style="display: flex; flex-direction: column; gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+                        <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 15px; height: 15px; accent-color: var(--ed-primary); cursor: pointer;">
+                        <span style="font-size: 1rem;">${sub.icon || '📘'}</span>
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; font-weight: 700; color: #0f172a;">${subTitle}</div>
+                            <div style="display: flex; align-items: center; gap: 2px; margin-top: 2px;">${priceHtml}</div>
+                        </div>
+                    </label>
+                    <div style="display: flex; align-items: center; gap: 6px; padding-inline-start: 24px;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">{{ __('الفصل:') }}</span>
+                        <select name="semesters[${sub.id}]" style="font-size: 11px; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; color: #334155; font-weight: 600;">
+                            <option value="both" selected>{{ __('كلا الفصلين (العام كامل)') }}</option>
+                            <option value="term_1">{{ __('الفصل الأول فقط') }}</option>
+                            <option value="term_2">{{ __('الفصل الثاني فقط') }}</option>
+                        </select>
                     </div>
-                </label>
+                </div>
             `;
         });
         container.innerHTML = html;

@@ -2213,7 +2213,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-calendar-check"></i></span>
-                            <span>{{ __('مصفوفة الاشتراكات والذمم') }}</span>
+                            <span>{{ __('سجل الاشتراكات والرسوم الفصلية') }}</span>
                         </div>
                     </div>
                 </a>

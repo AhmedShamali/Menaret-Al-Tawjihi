@@ -234,12 +234,15 @@ class StudentController extends Controller
 
         // إذا اختار الطالب مواد محددة عند التسجيل، تسجل بحالة معلقة pending بانتظار موافقة وسداد الإدارة
         if ($request->has('subject_ids') && is_array($request->subject_ids) && count($request->subject_ids) > 0) {
+            $semesters = $request->input('semesters', []);
             foreach ($request->subject_ids as $subId) {
+                $subSem = $semesters[$subId] ?? 'both';
                 \App\Models\Enrollment::firstOrCreate(
                     ['student_id' => $student->id, 'subject_id' => $subId],
                     [
                         'status'         => $isAdmin ? 'active' : 'pending',
                         'access_mode'    => 'all',
+                        'semester'       => $subSem,
                         'payment_status' => $isAdmin ? 'admin_grant' : 'pending',
                         'activated_at'   => $isAdmin ? now() : null
                     ]
@@ -247,12 +250,8 @@ class StudentController extends Controller
             }
         }
 
-        // احتساب القسط الشهري الدقيق بناءً على المواد الدراسية المختارة وحزم المنهاج
-        $feeBreakdown = $student->getFeeBreakdown();
-        if ($feeBreakdown['base_after_bundle'] > 0) {
-            $student->monthly_fee = $feeBreakdown['base_after_bundle'];
-            $student->save();
-        }
+        // مزامنة سجلات الاشتراكات والرسوم الفصلية للطالب فورياً
+        \App\Models\StudentSemesterSubscription::syncWithStudent($student);
 
         // إذا كان تسجيلاً من قبل مدير مسجل، يتم توجيهه للوحة إدارة الطلاب
         if ($isAdmin) {
@@ -1103,19 +1102,25 @@ class StudentController extends Controller
             }
             $selectedSubjectIds = array_values(array_filter(array_map('intval', $selectedSubjectIds)));
 
+            $semesters = $request->input('semesters', []);
             $now = now();
             $syncData = [];
             foreach ($selectedSubjectIds as $subId) {
+                $subSem = $semesters[$subId] ?? 'both';
                 $syncData[$subId] = [
                     'status'         => 'active',
                     'access_mode'    => 'all',
                     'payment_status' => 'admin_grant',
+                    'semester'       => $subSem,
                     'activated_at'   => $now,
                 ];
             }
 
             // مزامنة فورية فائقة السرعة بحد أدنى من الاستعلامات (Sync)
             $student->enrolledSubjects()->sync($syncData);
+
+            // مزامنة سجلات الاشتراكات والرسوم الفصلية
+            \App\Models\StudentSemesterSubscription::syncWithStudent($student);
 
             $addedCount = count($selectedSubjectIds);
 
@@ -1158,6 +1163,7 @@ class StudentController extends Controller
 
         if ($enrollment) {
             $enrollment->delete();
+            \App\Models\StudentSemesterSubscription::where('student_id', $student->id)->where('subject_id', $subject_id)->delete();
             return response()->json([
                 'success' => true,
                 'status'  => 'removed',
@@ -1169,11 +1175,13 @@ class StudentController extends Controller
             \App\Models\Enrollment::create([
                 'student_id'     => $student->id,
                 'subject_id'     => $subject_id,
+                'semester'       => 'both',
                 'status'         => 'active',
                 'access_mode'    => 'all',
                 'payment_status' => 'admin_grant',
                 'activated_at'   => now(),
             ]);
+            \App\Models\StudentSemesterSubscription::syncWithStudent($student);
             return response()->json([
                 'success' => true,
                 'status'  => 'added',

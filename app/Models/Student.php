@@ -350,6 +350,37 @@ class Student extends Authenticatable
         $term1Subs = $subscriptions->filter(fn($s) => in_array($s->semester, ['term_1', 'both']));
         $term2Subs = $subscriptions->filter(fn($s) => in_array($s->semester, ['term_2', 'both']));
 
+        $term1Due = 0.00;
+        $term1Paid = 0.00;
+        $term2Due = 0.00;
+        $term2Paid = 0.00;
+
+        foreach ($subscriptions as $sub) {
+            $amt = (float)$sub->amount;
+            $pAmt = ($sub->status === 'waived') ? 0.00 : (($sub->status === 'paid' && ((float)($sub->paid_amount ?? 0) <= 0)) ? $amt : (float)($sub->paid_amount ?? 0));
+
+            if ($sub->semester === 'term_1') {
+                $term1Due += $amt;
+                $term1Paid += $pAmt;
+            } elseif ($sub->semester === 'term_2') {
+                $term2Due += $amt;
+                $term2Paid += $pAmt;
+            } else { // both
+                $halfAmt = round($amt / 2, 2);
+                $halfPaid = round($pAmt / 2, 2);
+                $term1Due += $halfAmt;
+                $term1Paid += $halfPaid;
+                $term2Due += round($amt - $halfAmt, 2);
+                $term2Paid += round($pAmt - $halfPaid, 2);
+            }
+        }
+
+        $term1Remaining = max(0.00, round($term1Due - $term1Paid, 2));
+        $term2Remaining = max(0.00, round($term2Due - $term2Paid, 2));
+
+        $term1Status = $term1Due <= 0 ? 'empty' : ($term1Remaining <= 0 ? 'paid' : ($term1Paid > 0 ? 'partial' : 'unpaid'));
+        $term2Status = $term2Due <= 0 ? 'empty' : ($term2Remaining <= 0 ? 'paid' : ($term2Paid > 0 ? 'partial' : 'unpaid'));
+
         return [
             'academic_year'          => $year,
             'region'                 => $this->resolved_region,
@@ -363,6 +394,16 @@ class Student extends Authenticatable
             'subscriptions'          => $subscriptions,
             'term_1_items'           => $term1Subs,
             'term_2_items'           => $term2Subs,
+            'term_1_due'             => round($term1Due, 2),
+            'term_1_paid'            => round($term1Paid, 2),
+            'term_1_remaining'       => $term1Remaining,
+            'term_1_status'          => $term1Status,
+            'term_1_count'           => $term1Subs->count(),
+            'term_2_due'             => round($term2Due, 2),
+            'term_2_paid'            => round($term2Paid, 2),
+            'term_2_remaining'       => $term2Remaining,
+            'term_2_status'          => $term2Status,
+            'term_2_count'           => $term2Subs->count(),
             'paid_count'             => $subscriptions->whereIn('status', ['paid', 'waived'])->count(),
             'partial_count'          => $subscriptions->where('status', 'partial')->count(),
             'unpaid_count'           => $subscriptions->where('status', 'unpaid')->count(),
