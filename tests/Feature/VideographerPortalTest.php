@@ -253,4 +253,76 @@ class VideographerPortalTest extends TestCase
             'name'  => 'المصور الأكاديمي مصطفى',
         ]);
     }
+
+    /**
+     * اختبار استعراض صفحة سجل المصورين ونموذج الإضافة المخصص
+     */
+    public function test_admin_can_access_videographers_index_and_create_pages()
+    {
+        $admin = User::create([
+            'name'     => 'مدير المنصة',
+            'email'    => 'admin.view@jesr.ps',
+            'password' => Hash::make('secret123'),
+            'role'     => 'admin',
+        ]);
+
+        $videographer = User::create([
+            'name'     => 'المصور طارق',
+            'email'    => 'tariq.cam@jesr.ps',
+            'password' => Hash::make('secret123'),
+            'role'     => 'videographer',
+        ]);
+
+        $responseIndex = $this->actingAs($admin)->get(route('admin.videographers.index'));
+        $responseIndex->assertStatus(200);
+        $responseIndex->assertSee('إدارة كادر المصورين');
+        $responseIndex->assertSee('المصور طارق');
+
+        $responseCreate = $this->actingAs($admin)->get(route('admin.videographers.create'));
+        $responseCreate->assertStatus(200);
+        $responseCreate->assertSee('إضافة حساب مصور جديد للمنصة');
+    }
+
+    /**
+     * اختبار إضافة وتحديث كلمة مرور وحذف حساب المصور عبر الواجهة المخصصة
+     */
+    public function test_admin_can_manage_videographers_via_dedicated_portal()
+    {
+        $admin = User::create([
+            'name'     => 'مدير المنصة',
+            'email'    => 'admin.portal@jesr.ps',
+            'password' => Hash::make('secret123'),
+            'role'     => 'admin',
+        ]);
+
+        // 1. إضافة مصور
+        $responseStore = $this->actingAs($admin)->post(route('admin.videographers.store'), [
+            'name'     => 'المصور خليل',
+            'email'    => 'khalil.cam@jesr.ps',
+            'password' => 'Pass@654321',
+            'phone'    => '0599000111',
+            'bio'      => 'مصور استوديو متخصص',
+        ]);
+        $responseStore->assertRedirect(route('admin.videographers.index'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'khalil.cam@jesr.ps',
+            'role'  => 'videographer',
+        ]);
+
+        $videographer = User::where('email', 'khalil.cam@jesr.ps')->first();
+
+        // 2. إعادة تعيين كلمة المرور
+        $responseReset = $this->actingAs($admin)->post(route('admin.videographers.reset_password', $videographer->id), [
+            'new_password' => 'NewPass@999',
+        ]);
+        $responseReset->assertRedirect();
+        $videographer->refresh();
+        $this->assertTrue(Hash::check('NewPass@999', $videographer->password));
+
+        // 3. حذف الحساب
+        $responseDelete = $this->actingAs($admin)->delete(route('admin.videographers.destroy', $videographer->id));
+        $responseDelete->assertRedirect(route('admin.videographers.index'));
+        $this->assertDatabaseMissing('users', ['id' => $videographer->id]);
+    }
 }
+

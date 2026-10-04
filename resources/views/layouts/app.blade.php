@@ -2172,6 +2172,24 @@
                     </div>
                 </a>
 
+                <span class="group-label"><i class="fa-solid fa-video"></i> {{ __('كادر المصورين والإنتاج') }}</span>
+                <a href="{{ route('admin.videographers.index') }}" class="nav-item {{ Request::is('admin/videographers') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-indigo"><i class="fa-solid fa-camera"></i></span>
+                            <span>{{ __('سجل كادر المصورين') }}</span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('admin.videographers.create') }}" class="nav-item {{ Request::is('admin/videographers/create*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-cyan"><i class="fa-solid fa-user-plus"></i></span>
+                            <span>{{ __('إضافة مصور جديد') }}</span>
+                        </div>
+                    </div>
+                </a>
+
                 <span class="group-label"><i class="fa-solid fa-photo-film"></i> {{ __('المحتوى الأكاديمي والمحاضرات') }}</span>
                 <a href="{{ route('admin.videos') }}" class="nav-item {{ Request::is('admin/videos*') ? 'active' : '' }}">
                     <div class="nav-link">

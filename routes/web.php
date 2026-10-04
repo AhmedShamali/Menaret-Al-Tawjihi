@@ -79,6 +79,8 @@ Route::get('/dashboard', function () {
             return redirect()->route('admin.dashboard');
         } elseif ($user->role === 'teacher') {
             return redirect()->route('teacher.dashboard');
+        } elseif ($user->role === 'videographer') {
+            return redirect()->route('videographer.dashboard');
         }
     }
     return redirect()->route('login');
@@ -281,6 +283,13 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/certificates/toggle-gpa', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'toggleGpa'])->name('certificates.toggleGpa');
     Route::post('/certificates/issue', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'issue'])->name('certificates.issue');
     Route::delete('/certificates/{id}', [\App\Http\Controllers\Admin\AdminCertificateController::class, 'destroy'])->name('certificates.destroy')->whereNumber('id');
+
+    // إدارة كادر المصورين الأكاديميين ووحدات الإنتاج المرئي
+    Route::get('/videographers', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'index'])->name('videographers.index');
+    Route::get('/videographers/create', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'create'])->name('videographers.create');
+    Route::post('/videographers', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'store'])->name('videographers.store');
+    Route::post('/videographers/{id}/reset-password', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'resetPassword'])->name('videographers.reset_password')->whereNumber('id');
+    Route::delete('/videographers/{id}', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'destroy'])->name('videographers.destroy')->whereNumber('id');
 
     // فحص ومعالجة قاعدة البيانات ذاتياً للأدمن
     Route::get('/system/heal-database', function() {
