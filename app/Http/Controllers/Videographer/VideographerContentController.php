@@ -141,8 +141,14 @@ class VideographerContentController extends Controller
             }
 
             if (!empty($refName)) {
+                $normalized = preg_replace('/[إأآا]/u', '%', $refName);
+                $normalized = preg_replace('/[ةه]/u', '%', $normalized);
                 $matchedIds = Subject::whereIn('stage_id', $stageIds)
-                    ->where('name_ar', 'like', "%{$refName}%")
+                    ->where(function($q) use ($refName, $normalized) {
+                        $q->where('name_ar', 'like', "%{$refName}%")
+                          ->orWhere('name_ar', 'like', "%{$normalized}%")
+                          ->orWhere('name', 'like', "%{$refName}%");
+                    })
                     ->pluck('id')
                     ->toArray();
 
@@ -194,20 +200,63 @@ class VideographerContentController extends Controller
 
         // 4. إنشاء وتوزيع المحتوى تلقائياً لكل مادة وفرع تم اختياره
         foreach ($targetSubjectIds as $subId) {
-            EducationalContent::create([
+            $sub = Subject::with('teacher')->find($subId);
+
+            // تحديد اسم مقدم الشرح أو القناة تلقائياً (إسناد للمعلم إن وجد)
+            $channelName = $request->channel_name;
+            if (empty($channelName) || $channelName === (auth()->user()->name ?? 'المصور الأكاديمي')) {
+                if ($sub && !empty($sub->teacher_name)) {
+                    $channelName = $sub->teacher_name;
+                } elseif ($sub && $sub->teacher && !empty($sub->teacher->name)) {
+                    $channelName = $sub->teacher->name_ar ?? $sub->teacher->name;
+                } else {
+                    $channelName = $request->channel_name ?? (auth()->user()->name ?? 'المصور الأكاديمي');
+                }
+            }
+
+            $contentRecord = EducationalContent::create([
                 'subject_id'    => $subId,
                 'uploaded_by'   => $userId,
                 'title'         => $request->title,
                 'type'          => 'video',
                 'url_path'      => $videoPath,
                 'pdf_path'      => $pdfPath,
-                'channel_name'  => $request->channel_name ?? (auth()->user()->name ?? 'المصور الأكاديمي'),
+                'channel_name'  => $channelName,
                 'file_size'     => $fileSize,
                 'order'         => (int) ($request->order ?? 0),
                 'is_visible'    => true,
                 'target_region' => $request->target_region ?? 'all',
             ]);
             $createdRecordsCount++;
+
+            // إرسال إشعارات فورية لطلبة هذا الفرع والمادة
+            if ($sub && $sub->stage_id) {
+                try {
+                    \App\Services\NotificationService::notifyStageStudents(
+                        $sub->stage_id,
+                        'محاضرة وشرح مرئي جديد 🎬',
+                        "أُضيف درس مصور جديد: \"{$request->title}\" في مبحث {$sub->name_ar}.",
+                        'content',
+                        route('student.subjects.show', $sub->id),
+                        'fa-video'
+                    );
+                } catch (\Throwable $e) {}
+            }
+
+            // إتاحة الوصول التلقائي للطلبة المسجلين باشتراك نشط في هذه المادة
+            try {
+                $activeEnrollments = \App\Models\Enrollment::where('subject_id', $subId)
+                    ->where('status', 'active')
+                    ->get();
+                foreach ($activeEnrollments as $enr) {
+                    \App\Models\ContentAssignment::firstOrCreate([
+                        'enrollment_id'          => $enr->id,
+                        'educational_content_id' => $contentRecord->id,
+                    ], [
+                        'is_visible' => true,
+                    ]);
+                }
+            } catch (\Throwable $e) {}
         }
 
         $successMsg = "تم رفع المحاضرة ونشرها وتوزيعها تلقائياً على ({$createdRecordsCount}) مواد في ({$affectedBranchesCount}) فروع أكاديمية بنجاح! 🎉";

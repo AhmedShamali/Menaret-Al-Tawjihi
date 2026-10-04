@@ -89,7 +89,7 @@ class DashboardController extends Controller {
         $allowedIds = [];
 
         if (!$isFullAccess && $student && $enrollment) {
-            $isFullAccess = ($enrollment->access_mode === 'all');
+            $isFullAccess = ($enrollment->access_mode === 'all' || empty($enrollment->access_mode));
             if (!$isFullAccess) {
                 $allowedIds = \App\Models\ContentAssignment::where('enrollment_id', $enrollment->id)
                     ->where('is_visible', true)
@@ -113,15 +113,15 @@ class DashboardController extends Controller {
                 return false;
             }
             $isYt = !empty($item->youtube_id) || str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be');
-            $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $url);
+            $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $url) || str_contains($url, 'educational/videos');
             return $isYt || $isDirectVideo || $item->type === 'video' || $item->type === 'both';
-        })->sortBy('order');
+        })->sortBy('order')->values();
 
         // 2. جلب الملفات والملازم والدوسيات الحقيقية فقط
         $files = $contents->filter(function ($item) {
             $pdf = trim($item->pdf_path ?? '');
             return !empty($pdf);
-        })->sortBy('order');
+        })->sortBy('order')->values();
 
         // 3. جلب بنك الاختبارات المعتمدة للمادة التابعة لفرع الطالب الأصلي
         $examsQuery = Exam::where('subject_id', $subject->id)

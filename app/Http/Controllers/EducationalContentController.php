@@ -14,6 +14,7 @@ class EducationalContentController extends Controller
 {
     /**
      * استخراج كافة معرفات المواد المسندة للمعلم بدقة من كافة العلاقات المعتمدة
+     * وتوسيعها لتشمل الفروع الأكاديمية المختلفة لنفس المادة (توزيع متعدد)
      */
     protected function getTeacherSubjectIds($user = null): array
     {
@@ -30,7 +31,40 @@ class EducationalContentController extends Controller
         }
         $fromUser = Subject::where('user_id', $user->id)->pluck('id')->toArray();
         $fromTeacher = Subject::where('teacher_id', $user->id)->pluck('id')->toArray();
-        return array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
+        $assignedIds = array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
+
+        // إذا لم يكن مرتبطاً بمعرف مادة مباشر، البحث بالاسم أو التخصص
+        if (empty($assignedIds) && !empty($user->name)) {
+            $byName = Subject::where(function($q) use ($user) {
+                $q->where('teacher_name', 'like', "%{$user->name}%")
+                  ->orWhere('name_ar', 'like', "%{$user->name}%");
+            })->pluck('id')->toArray();
+            $assignedIds = array_merge($assignedIds, $byName);
+        }
+
+        // توسيع نطاق المواد ليشمل المواد المشتركة عبر كافة الفروع الأكاديمية لنفس تخصص المعلم
+        // مثلاً: إذا كان المعلم يدرس اللغة الإنجليزية في العلمي، يشمل تلقائياً الإنجليزية في الأدبي والصناعي
+        if (!empty($assignedIds)) {
+            $baseSubjects = Subject::whereIn('id', $assignedIds)->get();
+            $sisterSubjectIds = [];
+            foreach ($baseSubjects as $baseSub) {
+                $cleanName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $baseSub->name_ar ?? ''));
+                if (!empty($cleanName)) {
+                    $matched = Subject::where('name_ar', 'like', "%{$cleanName}%")->pluck('id')->toArray();
+                    $sisterSubjectIds = array_merge($sisterSubjectIds, $matched);
+                }
+                if (!empty($baseSub->subject_key)) {
+                    $baseKey = explode('_', $baseSub->subject_key)[0];
+                    if (!empty($baseKey)) {
+                        $matchedKey = Subject::where('subject_key', 'like', "{$baseKey}_%")->pluck('id')->toArray();
+                        $sisterSubjectIds = array_merge($sisterSubjectIds, $matchedKey);
+                    }
+                }
+            }
+            $assignedIds = array_values(array_unique(array_filter(array_merge($assignedIds, $sisterSubjectIds))));
+        }
+
+        return $assignedIds;
     }
 
     /**
@@ -1101,12 +1135,19 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             if (empty($teacherSubjectIds)) {
-                $query->whereRaw('1 = 0');
+                $query->where(function($q) use ($user) {
+                    $q->where('uploaded_by', $user->id)
+                      ->orWhere('channel_name', 'like', "%{$user->name}%");
+                });
             } else {
                 if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
                     $query->where('subject_id', (int)$request->subject_id);
                 } else {
-                    $query->whereIn('subject_id', $teacherSubjectIds);
+                    $query->where(function($q) use ($teacherSubjectIds, $user) {
+                        $q->whereIn('subject_id', $teacherSubjectIds)
+                          ->orWhere('uploaded_by', $user->id)
+                          ->orWhere('channel_name', 'like', "%{$user->name}%");
+                    });
                 }
             }
         } elseif ($request->filled('subject_id')) {
@@ -1129,7 +1170,12 @@ class EducationalContentController extends Controller
             'hidden'  => (clone $query)->where('is_visible', 0)->count(),
         ];
 
-        $videos = $query->orderBy('order')->latest()->paginate(20);
+        // عند تحديد مادة معينة يتم الترتيب حسب ترتيب الدروس، وعند العرض العام يتم إظهار أحدث الفيديوهات المرفوعة أولاً
+        if ($request->filled('subject_id')) {
+            $videos = $query->orderBy('order')->latest('id')->paginate(20);
+        } else {
+            $videos = $query->latest('id')->paginate(20);
+        }
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats', 'stages'));
@@ -1166,12 +1212,19 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             if (empty($teacherSubjectIds)) {
-                $query->whereRaw('1 = 0');
+                $query->where(function($q) use ($user) {
+                    $q->where('uploaded_by', $user->id)
+                      ->orWhere('channel_name', 'like', "%{$user->name}%");
+                });
             } else {
                 if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
                     $query->where('subject_id', (int)$request->subject_id);
                 } else {
-                    $query->whereIn('subject_id', $teacherSubjectIds);
+                    $query->where(function($q) use ($teacherSubjectIds, $user) {
+                        $q->whereIn('subject_id', $teacherSubjectIds)
+                          ->orWhere('uploaded_by', $user->id)
+                          ->orWhere('channel_name', 'like', "%{$user->name}%");
+                    });
                 }
             }
         } elseif ($request->filled('subject_id')) {
@@ -1194,7 +1247,11 @@ class EducationalContentController extends Controller
             'hidden'  => (clone $query)->where('is_visible', 0)->count(),
         ];
 
-        $files = $query->orderBy('order')->latest()->paginate(20);
+        if ($request->filled('subject_id')) {
+            $files = $query->orderBy('order')->latest('id')->paginate(20);
+        } else {
+            $files = $query->latest('id')->paginate(20);
+        }
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.files.index', compact('files', 'subjects', 'subjectId', 'stats', 'stages'));
@@ -1227,12 +1284,19 @@ class EducationalContentController extends Controller
 
         if ($isTeacher) {
             if (empty($teacherSubjectIds)) {
-                $query->whereRaw('1 = 0');
+                $query->where(function($q) use ($user) {
+                    $q->where('uploaded_by', $user->id)
+                      ->orWhere('channel_name', 'like', "%{$user->name}%");
+                });
             } else {
                 if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
                     $query->where('subject_id', (int)$request->subject_id);
                 } else {
-                    $query->whereIn('subject_id', $teacherSubjectIds);
+                    $query->where(function($q) use ($teacherSubjectIds, $user) {
+                        $q->whereIn('subject_id', $teacherSubjectIds)
+                          ->orWhere('uploaded_by', $user->id)
+                          ->orWhere('channel_name', 'like', "%{$user->name}%");
+                    });
                 }
             }
         } elseif ($request->filled('subject_id')) {
@@ -1245,7 +1309,11 @@ class EducationalContentController extends Controller
             });
         }
 
-        $contents = $query->orderBy('order')->latest()->paginate(25);
+        if ($request->filled('subject_id')) {
+            $contents = $query->orderBy('order')->latest('id')->paginate(25);
+        } else {
+            $contents = $query->latest('id')->paginate(25);
+        }
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
         return view('teacher.visibility.index', compact('contents', 'subjects', 'subjectId', 'stages'));
