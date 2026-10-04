@@ -95,8 +95,16 @@ class Subject extends Model
      */
     public function getCleanNameAttribute(): string
     {
-        $name = $this->name_ar ?? $this->name ?? '';
+        $name = $this->name_ar ?? '';
         return trim(preg_replace('/\s*\(.*?\)\s*/u', '', $name));
+    }
+
+    /**
+     * اسم المادة الافتراضي (يطابق name_ar)
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->name_ar ?? '';
     }
 
     /**

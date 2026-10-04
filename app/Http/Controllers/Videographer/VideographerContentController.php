@@ -63,8 +63,7 @@ class VideographerContentController extends Controller
             $query->where(function($q) use ($s) {
                 $q->where('title', 'like', "%{$s}%")
                   ->orWhereHas('subject', function($sq) use ($s) {
-                      $sq->where('name_ar', 'like', "%{$s}%")
-                        ->orWhere('name', 'like', "%{$s}%");
+                      $sq->where('name_ar', 'like', "%{$s}%");
                   });
             });
         }
@@ -133,20 +132,17 @@ class VideographerContentController extends Controller
 
         // إذا تم اختيار اسم مادة عام أو مادة مرجعية، نربطها تلقائياً بالمواد المطابقة في الفروع المختارة
         if ($request->filled('common_name') || $request->filled('primary_subject_id')) {
-            $refName = trim($request->common_name);
+            $refName = trim((string)$request->common_name);
             if ($request->filled('primary_subject_id')) {
                 $refSub = Subject::find($request->primary_subject_id);
                 if ($refSub) {
-                    $refName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $refSub->name_ar ?? $refSub->name));
+                    $refName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $refSub->name_ar ?? ''));
                 }
             }
 
             if (!empty($refName)) {
                 $matchedIds = Subject::whereIn('stage_id', $stageIds)
-                    ->where(function($q) use ($refName) {
-                        $q->where('name_ar', 'like', "%{$refName}%")
-                          ->orWhere('name', 'like', "%{$refName}%");
-                    })
+                    ->where('name_ar', 'like', "%{$refName}%")
                     ->pluck('id')
                     ->toArray();
 
