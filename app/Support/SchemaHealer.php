@@ -141,6 +141,21 @@ class SchemaHealer
                 });
             }
 
+            // 7. التأكد من دعم جدول المستخدمين users لدور المصور videographer وحقل plain_password
+            if (Schema::hasTable('users')) {
+                if (!Schema::hasColumn('users', 'plain_password')) {
+                    Schema::table('users', function (Blueprint $table) {
+                        $table->string('plain_password')->nullable();
+                    });
+                }
+                try {
+                    $driver = DB::getDriverName();
+                    if (in_array($driver, ['mysql', 'mariadb'])) {
+                        DB::statement("ALTER TABLE users MODIFY COLUMN role VARCHAR(32) NOT NULL DEFAULT 'teacher'");
+                    }
+                } catch (\Throwable $e) {}
+            }
+
         } catch (\Throwable $e) {
             Log::warning('SchemaHealer warning: ' . $e->getMessage());
         }

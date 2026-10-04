@@ -29,8 +29,10 @@ class AuthController extends Controller
             'role.required'     => 'يرجى تحديد نوع الحساب.',
         ]);
 
-        $input = trim($request->input('email'));
-        $password = $request->input('password');
+        $input = trim((string)$request->input('email'));
+        $inputLower = strtolower($input);
+        $password = (string)$request->input('password');
+        $passwordTrimmed = trim($password);
         $role = $request->role; // طالب، مدرس، مدير، أو مصور
 
         $getRoleName = function($r) {
@@ -43,23 +45,61 @@ class AuthController extends Controller
             };
         };
 
-        // 1. محاولة الدخول كطالب
-        if ($role === 'student') {
-            // البحث عن الطالب عبر البريد أو رقم الهوية أو الهاتف أو اسم المستخدم
-            $student = Student::where('email', $input)
-                ->orWhere('nid', $input)
-                ->orWhere('phone', $input)
-                ->orWhere('email', strtolower($input) . '@tawjihi.ps')
-                ->orWhere('email', strtolower($input) . '@tawjihi-gaza.ps')
+        // دالة موحدة للتحقق من كلمة المرور بدعم التشفير وكلمات المرور المعتمدة
+        $verifyPassword = function($model) use ($password, $passwordTrimmed) {
+            if (!$model) return false;
+
+            // 1. الفحص القياسي لهاش لارافيل
+            if (Hash::check($password, $model->password) || Hash::check($passwordTrimmed, $model->password)) {
+                return true;
+            }
+
+            // 2. فحص كلمة المرور المعتمدة المخزنة كنص واضح plain_password مع التحديث التلقائي
+            if (!empty($model->plain_password)) {
+                $plain = trim((string)$model->plain_password);
+                if ($plain === $password || $plain === $passwordTrimmed || (string)$model->plain_password === $password) {
+                    try {
+                        $model->password = Hash::make($passwordTrimmed);
+                        $model->save();
+                    } catch (\Throwable $e) {}
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        // دالة موحدة للبحث عن كادر المنظومة (إدارة، مدرسين، مصورين)
+        $findStaff = function($term) use ($inputLower) {
+            return User::where('email', $term)
+                ->orWhere('email', $inputLower)
+                ->orWhere('name', $term)
+                ->orWhere('phone', $term)
+                ->orWhere('email', $inputLower . '@tawjihi.ps')
+                ->orWhere('email', $inputLower . '@step.ps')
                 ->first();
+        };
 
-            if ($student && Hash::check($password, $student->password)) {
+        // دالة موحدة للبحث عن الطلاب
+        $findStudent = function($term) use ($inputLower) {
+            return Student::where('email', $term)
+                ->orWhere('email', $inputLower)
+                ->orWhere('nid', $term)
+                ->orWhere('phone', $term)
+                ->orWhere('email', $inputLower . '@tawjihi.ps')
+                ->orWhere('email', $inputLower . '@tawjihi-gaza.ps')
+                ->orWhere('email', $inputLower . '@step.ps')
+                ->first();
+        };
+
+        // 1. مسار تسجيل دخول الطالب
+        if ($role === 'student') {
+            $student = $findStudent($input);
+
+            if ($student && $verifyPassword($student)) {
                 Auth::guard('student')->login($student, $request->filled('remember'));
-
-                // تنظيف كامل للجلسة وإعادتها لتجنب التداخل
                 $request->session()->regenerate();
 
-                // فحص موافقة المدير على تفعيل حساب الطالب واشتراكه
                 if ($student->status !== 'active') {
                     return redirect()->route('student.pending-approval');
                 }
@@ -68,7 +108,7 @@ class AuthController extends Controller
             }
 
             // محاولة بديلة عبر attempt القياسي
-            if (Auth::guard('student')->attempt(['email' => $input, 'password' => $password], $request->filled('remember'))) {
+            if (Auth::guard('student')->attempt(['email' => $input, 'password' => $passwordTrimmed], $request->filled('remember'))) {
                 $student = Auth::guard('student')->user();
                 $request->session()->regenerate();
 
@@ -78,75 +118,74 @@ class AuthController extends Controller
 
                 return redirect()->route('student.dashboard');
             }
-        }
-        // 2. محاولة الدخول لموظفي وكادر النظام (مدرس / مدير / مصور)
-        else {
-            // البحث عن المستخدم عبر البريد أو الاسم أو النطاق الرسمي
-            $user = User::where('email', $input)
-                ->orWhere('email', strtolower($input) . '@tawjihi.ps')
-                ->orWhere('name', $input)
-                ->first();
 
-            if ($user && Hash::check($password, $user->password)) {
-                // التحقق: هل الدور الذي اختاره المستخدم يطابق دوره في قاعدة البيانات؟
-                if ($role !== $user->role) {
-                    $roleName = $getRoleName($user->role);
-                    $requestedRoleName = $getRoleName($role);
+            // فحص ذكي: هل المستخدم في الحقيقة من كادر النظام واختار بالخطأ تبويب الطالب؟
+            $staff = $findStaff($input);
+            if ($staff && $verifyPassword($staff)) {
+                Auth::guard('web')->login($staff, $request->filled('remember'));
+                $request->session()->regenerate();
+                $request->session()->forget('url.intended');
 
-                    return back()->withErrors([
-                        'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
-                    ])->withInput();
+                if ($staff->role === 'admin') {
+                    return redirect()->route('admin.dashboard');
                 }
+                if ($staff->role === 'teacher') {
+                    return redirect()->route('teacher.dashboard');
+                }
+                if ($staff->role === 'videographer') {
+                    return redirect()->route('videographer.dashboard');
+                }
+            }
+        }
+        // 2. مسار تسجيل دخول كادر المنظومة (مدرس / مدير / مصور)
+        else {
+            $user = $findStaff($input);
 
+            if ($user && $verifyPassword($user)) {
                 Auth::guard('web')->login($user, $request->filled('remember'));
-
                 $request->session()->regenerate();
                 $request->session()->forget('url.intended');
 
                 if ($user->role === 'admin') {
                     return redirect()->route('admin.dashboard');
                 }
-
                 if ($user->role === 'teacher') {
                     return redirect()->route('teacher.dashboard');
                 }
-
                 if ($user->role === 'videographer') {
                     return redirect()->route('videographer.dashboard');
                 }
             }
 
             // محاولة بديلة عبر attempt القياسي
-            if (Auth::guard('web')->attempt(['email' => $input, 'password' => $password], $request->filled('remember'))) {
+            if (Auth::guard('web')->attempt(['email' => $input, 'password' => $passwordTrimmed], $request->filled('remember')) ||
+                Auth::guard('web')->attempt(['email' => $inputLower, 'password' => $passwordTrimmed], $request->filled('remember'))) {
                 $user = Auth::user();
-
-                if ($role !== $user->role) {
-                    Auth::guard('web')->logout();
-                    $request->session()->invalidate();
-                    $request->session()->regenerateToken();
-
-                    $roleName = $getRoleName($user->role);
-                    $requestedRoleName = $getRoleName($role);
-
-                    return back()->withErrors([
-                        'error' => "عذراً، هذا الحساب مسجل كـ ({$roleName}) وليس كـ ({$requestedRoleName})."
-                    ])->withInput();
-                }
-
                 $request->session()->regenerate();
                 $request->session()->forget('url.intended');
 
                 if ($user->role === 'admin') {
                     return redirect()->route('admin.dashboard');
                 }
-
                 if ($user->role === 'teacher') {
                     return redirect()->route('teacher.dashboard');
                 }
-
                 if ($user->role === 'videographer') {
                     return redirect()->route('videographer.dashboard');
                 }
+            }
+
+            // فحص ذكي: هل المستخدم طالب واختار بالخطأ تبويب الكادر؟
+            $student = $findStudent($input);
+            if ($student && $verifyPassword($student)) {
+                Auth::guard('student')->login($student, $request->filled('remember'));
+                $request->session()->regenerate();
+
+                if ($student->status !== 'active') {
+                    return redirect()->route('student.pending-approval');
+                }
+
+                return redirect()->route('student.dashboard');
             }
         }
 

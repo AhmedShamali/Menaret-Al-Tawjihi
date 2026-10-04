@@ -324,5 +324,51 @@ class VideographerPortalTest extends TestCase
         $responseDelete->assertRedirect(route('admin.videographers.index'));
         $this->assertDatabaseMissing('users', ['id' => $videographer->id]);
     }
+
+    /**
+     * اختبار تسجيل دخول المصور بمرونة (رقم الهاتف، مسافات بيضاء، كلمة المرور المعتمدة، أو التحويل التلقائي)
+     */
+    public function test_videographer_can_login_with_phone_or_plain_password_fallback_or_student_tab()
+    {
+        $videographer = User::create([
+            'name'           => 'علي مصبح',
+            'email'          => 'alimosawer@step.ps',
+            'password'       => Hash::make('Pass@123456'),
+            'plain_password' => 'Pass@123456',
+            'phone'          => '0599247108',
+            'role'           => 'videographer',
+        ]);
+
+        // 1. الدخول عبر البريد وكلمة المرور
+        $res1 = $this->post('/login', [
+            'email'    => 'alimosawer@step.ps',
+            'password' => 'Pass@123456',
+            'role'     => 'videographer',
+        ]);
+        $res1->assertRedirect(route('videographer.dashboard'));
+        $this->assertAuthenticatedAs($videographer);
+
+        \Illuminate\Support\Facades\Auth::logout();
+
+        // 2. الدخول حتى لو نسي واختار تبويب الطالب
+        $res2 = $this->post('/login', [
+            'email'    => 'alimosawer@step.ps',
+            'password' => 'Pass@123456',
+            'role'     => 'student',
+        ]);
+        $res2->assertRedirect(route('videographer.dashboard'));
+        $this->assertAuthenticatedAs($videographer);
+
+        \Illuminate\Support\Facades\Auth::logout();
+
+        // 3. الدخول برقم الهاتف
+        $res3 = $this->post('/login', [
+            'email'    => '0599247108',
+            'password' => 'Pass@123456',
+            'role'     => 'videographer',
+        ]);
+        $res3->assertRedirect(route('videographer.dashboard'));
+        $this->assertAuthenticatedAs($videographer);
+    }
 }
 

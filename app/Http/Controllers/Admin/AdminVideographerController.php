@@ -51,23 +51,26 @@ class AdminVideographerController extends Controller
             'password.min'      => 'كلمة المرور يجب ألا تقل عن 6 خانات.',
         ]);
 
+        $cleanEmail = strtolower(trim((string)$request->email));
+        $cleanPass = trim((string)$request->password);
+
         $userData = [
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'phone'    => $request->phone,
-            'bio'      => $request->bio,
+            'name'     => trim((string)$request->name),
+            'email'    => $cleanEmail,
+            'password' => Hash::make($cleanPass),
+            'phone'    => $request->phone ? trim((string)$request->phone) : null,
+            'bio'      => $request->bio ? trim((string)$request->bio) : null,
             'role'     => 'videographer',
         ];
 
         if (Schema::hasColumn('users', 'plain_password')) {
-            $userData['plain_password'] = $request->password;
+            $userData['plain_password'] = $cleanPass;
         }
 
         User::create($userData);
 
         return redirect()->route('admin.videographers.index')
-            ->with('success', 'تم إنشاء وتفعيل حساب المصور (' . $request->name . ') بنجاح! يمكنه الآن تسجيل الدخول ورفع المحاضرات فوراً 🎉');
+            ->with('success', 'تم إنشاء وتفعيل حساب المصور (' . trim((string)$request->name) . ') بنجاح! يمكنه الآن تسجيل الدخول ورفع المحاضرات فوراً 🎉');
     }
 
     /**
@@ -84,12 +87,13 @@ class AdminVideographerController extends Controller
 
         $videographer = User::where('role', 'videographer')->findOrFail($id);
 
+        $cleanPass = trim((string)$request->new_password);
         $updateData = [
-            'password' => Hash::make($request->new_password),
+            'password' => Hash::make($cleanPass),
         ];
 
         if (Schema::hasColumn('users', 'plain_password')) {
-            $updateData['plain_password'] = $request->new_password;
+            $updateData['plain_password'] = $cleanPass;
         }
 
         $videographer->update($updateData);

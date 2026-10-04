@@ -768,18 +768,19 @@
                     <p>{{ __('أدخل بيانات اعتمادك للمتابعة الأكاديمية') }}</p>
                 </div>
 
+                @php $activeRole = old('role', 'student'); @endphp
                 <!-- تبويبات اختيار نوع الحساب الكلاسيكية -->
                 <div class="role-tabs-grid">
-                    <button type="button" class="role-tab-btn active" data-role="student" onclick="switchRole('student')">
+                    <button type="button" class="role-tab-btn {{ $activeRole === 'student' ? 'active' : '' }}" data-role="student" onclick="switchRole('student')">
                         <i class="fa-solid fa-user-graduate"></i> {{ __('طالب') }}
                     </button>
-                    <button type="button" class="role-tab-btn" data-role="teacher" onclick="switchRole('teacher')">
+                    <button type="button" class="role-tab-btn {{ $activeRole === 'teacher' ? 'active' : '' }}" data-role="teacher" onclick="switchRole('teacher')">
                         <i class="fa-solid fa-chalkboard-user"></i> {{ __('معلم') }}
                     </button>
-                    <button type="button" class="role-tab-btn" data-role="videographer" onclick="switchRole('videographer')">
+                    <button type="button" class="role-tab-btn {{ $activeRole === 'videographer' ? 'active' : '' }}" data-role="videographer" onclick="switchRole('videographer')">
                         <i class="fa-solid fa-video"></i> {{ __('مصور') }}
                     </button>
-                    <button type="button" class="role-tab-btn" data-role="admin" onclick="switchRole('admin')">
+                    <button type="button" class="role-tab-btn {{ $activeRole === 'admin' ? 'active' : '' }}" data-role="admin" onclick="switchRole('admin')">
                         <i class="fa-solid fa-shield-halved"></i> {{ __('إدارة') }}
                     </button>
                 </div>
@@ -808,7 +809,7 @@
                 <!-- نموذج الدخول -->
                 <form action="{{ route('login.post') }}" method="POST">
                     @csrf
-                    <input type="hidden" name="role" id="role_input" value="student">
+                    <input type="hidden" name="role" id="role_input" value="{{ $activeRole }}">
 
                     <div class="form-group">
                         <label class="form-label" id="usernameLabel">{{ __('البريد الإلكتروني، اسم المستخدم، أو رقم الهوية (9 أرقام)') }}</label>
@@ -997,6 +998,10 @@
                 }
             }
         }, { passive: true });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            switchRole('{{ $activeRole }}');
+        });
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

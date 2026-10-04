@@ -94,22 +94,26 @@
             </p>
         @endif
 
-        <!-- بطاقة تفاصيل الطالب المسجلة -->
+        <!-- بطاقة تفاصيل الطالب المسجلة (تصميم كلاسيكي راقي) -->
         <div class="student-info-strip">
             <div class="info-cell">
-                <small>{{ __('اسم الطالب') }}</small>
+                <small><i class="fa-regular fa-user" style="margin-left: 4px;"></i>{{ __('اسم الطالب') }}</small>
                 <strong>{{ $studentDispName }}</strong>
             </div>
             <div class="info-cell">
-                <small>{{ __('المرحلة والفرع') }}</small>
+                <small><i class="fa-solid fa-graduation-cap" style="margin-left: 4px;"></i>{{ __('المرحلة والفرع') }}</small>
                 <strong>{{ $stageDispName }}</strong>
             </div>
             <div class="info-cell">
-                <small>{{ __('رقم الهاتف') }}</small>
+                <small><i class="fa-solid fa-map-location-dot" style="margin-left: 4px;"></i>{{ __('المنطقة والمنهاج') }}</small>
+                <strong>{{ $student->region_label }}</strong>
+            </div>
+            <div class="info-cell">
+                <small><i class="fa-solid fa-phone" style="margin-left: 4px;"></i>{{ __('رقم التواصل') }}</small>
                 <strong dir="ltr">{{ $student->phone ?? '—' }}</strong>
             </div>
             <div class="info-cell">
-                <small>{{ __('حالة الحساب') }}</small>
+                <small><i class="fa-solid fa-shield-halved" style="margin-left: 4px;"></i>{{ __('حالة الحساب') }}</small>
                 @if($isFrozen)
                     <span class="status-pill-danger"><i class="fa-solid fa-lock"></i> {{ __('مجمد مؤقتاً') }}</span>
                 @else
@@ -118,142 +122,163 @@
             </div>
         </div>
 
-        <!-- بطاقة تفاصيل الرسوم الفصلية والمنح المعتمدة -->
-        <div class="fees-summary-card">
-            <div class="fees-header">
-                <div class="fees-header-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div>
-                <div>
-                    <h3>{{ __('الرسوم الدراسية الفصلية المعتمدة') }} - <span style="color: var(--ed-primary);">{{ $student->region_label }}</span></h3>
-                    <p>{{ __('نظام الاشتراك والرسوم الفصلي المعتمد وفق المواد المختارة - Step by Step') }}</p>
+        <!-- بطاقة بيان الرسوم الدراسية الأكاديمية المعتمدة (سند كلاسيكي راقي) -->
+        <div class="academic-voucher-card">
+            
+            {{-- ترويسة السند الرسمية الكلاسيكية --}}
+            <div class="academic-voucher-header">
+                <div class="voucher-header-info">
+                    <div class="voucher-header-seal">
+                        <i class="fa-solid fa-landmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="voucher-title">
+                            {{ __('بيان الرسوم الدراسية للمقررات الأكاديمية المعتمدة') }}
+                        </h3>
+                        <p class="voucher-subtitle">
+                            {{ __('المواد والمباحث الدراسية المسجلة بحسابك') }} • {{ __('نظام الفصول الدراسية وتسعيرة :region المعتمدة', ['region' => $student->region_label]) }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="voucher-header-tags">
+                    <span class="v-tag primary">
+                        <i class="fa-solid fa-book-open"></i> {{ count($feeBreakdown['items'] ?? []) }} {{ __('مباحث مسجلة') }}
+                    </span>
+                    <span class="v-tag slate">
+                        {{ $stageDispName }}
+                    </span>
                 </div>
             </div>
 
-            @if(isset($feeBreakdown['items']) && count($feeBreakdown['items']) > 0)
-                <!-- تفصيل المواد والمباحث الدراسية المسجلة للطالب وأسعارها الفصلية -->
-                <div class="enrolled-subjects-breakdown-box">
-                    <div class="breakdown-box-title">
-                        <i class="fa-solid fa-layer-group" style="color: #1d4ed8;"></i>
-                        <span>{{ __('المواد والمباحث الدراسية المسجلة بحسابك:') }} ({{ count($feeBreakdown['items']) }} {{ __('مباحث') }})</span>
-                    </div>
-                    <div class="enrolled-subjects-chips">
-                        @foreach($feeBreakdown['items'] as $item)
-                            <div class="enrolled-sub-chip">
-                                <span class="sub-icon">{{ $item['icon'] ?? '📘' }}</span>
-                                <span class="sub-name">{{ $item['name_ar'] }}</span>
-                                <span class="sub-sem-tag" style="background: #e0f2fe; color: #0369a1; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">{{ $item['semester_label'] ?? 'الفصل الأول' }}</span>
-                                <span class="sub-price font-mono">{{ number_format($item['price'], 0) }} ₪</span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <div class="fees-grid">
-                <div class="fee-box">
-                    <span class="fee-title">{{ __('مجموع الرسوم الفصلية') }}</span>
-                    <span class="fee-value">{{ number_format($totalAmount ?? $monthlyFee, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
-                </div>
-                @if(isset($bundleDiscount) && $bundleDiscount > 0)
-                    <div class="fee-box bundle-discount">
-                        <span class="fee-title">{{ __('خصم باقة التوجيهي (15%)') }}</span>
-                        <span class="fee-value text-emerald">- {{ number_format($bundleDiscount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
-                    </div>
-                @endif
-                @if(isset($discountAmount) && $discountAmount > 0)
-                    <div class="fee-box discount">
-                        <span class="fee-title">{{ __('المنحة / الخصم الخاص') }}</span>
-                        <span class="fee-value text-emerald">- {{ number_format($discountAmount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
-                    </div>
-                @endif
-                @if(isset($financialSummary) && $financialSummary['has_arrears'])
-                    <div class="fee-box arrears-box" style="background: #fef2f2; border: 1.5px solid #fecaca;">
-                        <span class="fee-title text-rose">{{ __('المتأخرات السابقة') }}</span>
-                        <span class="fee-value text-rose">+ {{ number_format($financialSummary['previous_unpaid_balance'], 0) }} ₪</span>
-                    </div>
-                @endif
-                <div class="fee-box net-amount">
-                    <span class="fee-title">
-                        @if(isset($requestedAmount) && $requestedAmount > 0)
-                            {{ __('المبلغ المحدد للسداد') }}
-                        @elseif(isset($financialSummary) && $financialSummary['has_arrears'])
-                            {{ __('إجمالي المطلوب للدفع الآن') }}
-                        @else
-                            {{ __('المطلوب لسداد الرسوم الفصلية') }}
-                        @endif
-                    </span>
-                    <span class="fee-value text-primary-net">{{ number_format($finalAmount, 0) }} {{ app()->getLocale() === 'ar' ? '₪' : 'ILS' }}</span>
-                </div>
-            </div>
-
-            @if(isset($bundleDiscount) && $bundleDiscount > 0)
-                <div class="fee-note-alert bundle" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px; font-size: 0.82rem; font-weight: 700;">
-                    <i class="fa-solid fa-tags" style="color: #16a34a;"></i>
-                    <span>{{ __('مبارك! تم تطبيق خصم باقة التوجيهي الإضافي (15%) لاشتراكك في (:count) مواد ومباحث دراسية.', ['count' => count($feeBreakdown['items'] ?? [])]) }}</span>
-                </div>
-            @endif
-
-            @if(isset($discountAmount) && $discountAmount > 0)
-                <div class="fee-note-alert" style="margin-top: 10px;">
-                    <i class="fa-solid fa-gift"></i>
-                    <span>{{ __('مبارك! تم تطبيق منحة خاصة لحسابك بقيمة (:amount ₪) تخفيضاً على الرسوم الفصلية.', ['amount' => number_format($discountAmount, 0)]) }}</span>
-                </div>
-            @endif
-
-            <!-- جدول خطة الاشتراكات الفصلية للمقررات -->
-            <div class="monthly-schedule-block" style="margin-top: 18px; border-top: 1px dashed #cbd5e1; padding-top: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-                    <strong style="font-size: 0.85rem; color: #1e293b; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-calendar-check" style="color: #1d4ed8;"></i>
-                        {{ __('خطة الرسوم والاشتراكات الفصلية للمواد (نظام فصلي حصراً):') }}
-                    </strong>
-                    <span style="font-size: 0.75rem; color: #64748b;">
-                        {{ __('تسعيرة :region المعتمدة للمنهاج', ['region' => $student->region_label]) }}
-                    </span>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px;">
-                    @forelse($subscriptions ?? [] as $subItem)
+            {{-- جدول المقررات والرسوم الأكاديمي الكلاسيكي --}}
+            <div class="table-responsive">
+                <table class="academic-ledger-table">
+                    <thead>
+                        <tr>
+                            <th class="col-num">#</th>
+                            <th>{{ __('المقرر الدراسي') }}</th>
+                            <th>{{ __('الفصل الدراسي') }}</th>
+                            <th class="col-curr">{{ __('الرسوم المقررة') }}</th>
+                            <th class="col-curr">{{ __('خصم الباقة') }}</th>
+                            <th class="col-curr">{{ __('الصافي المستحق') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                         @php
-                            $stLabel = __('مستحق السداد ⚠️');
-                            $bgCol = '#fef2f2';
-                            $borderCol = '#fecaca';
-                            $textCol = '#b91c1c';
-
-                            if ($subItem && in_array($subItem->status, ['paid', 'waived'])) {
-                                $stLabel = __('مسدد ومعتمد ✅');
-                                $bgCol = '#ecfdf5';
-                                $borderCol = '#a7f3d0';
-                                $textCol = '#047857';
-                            } elseif ($subItem && $subItem->status === 'pending') {
-                                $stLabel = __('قيد المراجعة ⏳');
-                                $bgCol = '#fffbeb';
-                                $borderCol = '#fde68a';
-                                $textCol = '#b45309';
-                            } elseif ($subItem && $subItem->status === 'partial') {
-                                $stLabel = __('سداد جزئي 🕒');
-                                $bgCol = '#fffbeb';
-                                $borderCol = '#fde68a';
-                                $textCol = '#b45309';
-                            }
-                            $subItemName = optional($subItem->subject)->name_ar ?? optional($subItem->subject)->name ?? __('مادة');
+                            $hasBundle = isset($bundleDiscount) && $bundleDiscount > 0;
+                            $bundlePercent = 0.15;
                         @endphp
-                        <div style="background: {{ $bgCol }}; border: 1px solid {{ $borderCol }}; border-radius: 8px; padding: 8px 10px; text-align: right;">
-                            <div style="font-size: 0.82rem; font-weight: 800; color: #1e293b; margin-bottom: 2px;">
-                                {{ $subItemName }}
-                            </div>
-                            <div style="font-size: 0.72rem; color: #475569; margin-bottom: 4px;">
-                                {{ $subItem->semester_label }} • <strong class="font-mono">{{ number_format($subItem->amount, 0) }} ₪</strong>
-                            </div>
-                            <div style="font-size: 0.72rem; font-weight: 700; color: {{ $textCol }};">
-                                {{ $stLabel }}
-                            </div>
-                        </div>
-                    @empty
-                        <div style="grid-column: 1 / -1; text-align: center; color: #64748b; font-size: 0.8rem; padding: 10px;">
-                            {{ __('سيتم عرض تفاصيل المواد والرسوم الفصلية فور اعتماد التسجيل.') }}
-                        </div>
-                    @endforelse
-                </div>
+                        @forelse($feeBreakdown['items'] ?? [] as $index => $item)
+                            @php
+                                $origPrice = (float)($item['orig_price'] ?? $item['price']);
+                                $itemDiscount = $hasBundle ? round($origPrice * $bundlePercent, 2) : 0;
+                                $itemNet = max(0, round($origPrice - $itemDiscount, 2));
+                            @endphp
+                            <tr>
+                                <td class="col-num-cell">{{ $index + 1 }}</td>
+                                <td>
+                                    <div class="subject-title-cell">
+                                        <span class="subj-icon">{{ $item['icon'] ?? '📘' }}</span>
+                                        <strong>{{ $item['name_ar'] }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="semester-pill">
+                                        {{ $item['semester_label'] ?? __('الفصلين معاً') }}
+                                    </span>
+                                </td>
+                                <td class="col-curr-cell orig-price font-mono">
+                                    {{ number_format($origPrice, 0) }} ₪
+                                </td>
+                                <td class="col-curr-cell discount-price font-mono">
+                                    @if($itemDiscount > 0)
+                                        - {{ number_format($itemDiscount, 0) }} ₪
+                                    @else
+                                        <span class="text-muted">—</span>
+                                    @endif
+                                </td>
+                                <td class="col-curr-cell net-price font-mono">
+                                    {{ number_format($itemNet, 0) }} ₪
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="table-empty-cell">
+                                    {{ __('سيتم احتساب تفاصيل المواد فور اكتمال اعتماد التسجيل.') }}
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    <tfoot>
+                        {{-- إجمالي الرسوم الأساسية --}}
+                        <tr class="tfoot-row-subtotal">
+                            <td colspan="4" class="tfoot-label">
+                                {{ __('إجمالي الرسوم الدراسية المقررة لكافة المقررات:') }}
+                            </td>
+                            <td colspan="2" class="tfoot-val font-mono">
+                                {{ number_format($totalAmount ?? $monthlyFee, 0) }} ₪
+                            </td>
+                        </tr>
+
+                        {{-- خصم باقة التوجيهي إن وجد --}}
+                        @if(isset($bundleDiscount) && $bundleDiscount > 0)
+                            <tr class="tfoot-row-bundle">
+                                <td colspan="4" class="tfoot-label bundle-text">
+                                    <i class="fa-solid fa-tags"></i>
+                                    {{ __('خصم باقة التوجيهي (15%):') }}
+                                    <small>({{ __('مطبق لاشتراكك في :count مواد', ['count' => count($feeBreakdown['items'] ?? [])]) }})</small>
+                                </td>
+                                <td colspan="2" class="tfoot-val bundle-text font-mono">
+                                    - {{ number_format($bundleDiscount, 0) }} ₪
+                                </td>
+                            </tr>
+                        @endif
+
+                        {{-- المنحة أو الخصم الخاص إن وجد --}}
+                        @if(isset($discountAmount) && $discountAmount > 0)
+                            <tr class="tfoot-row-scholarship">
+                                <td colspan="4" class="tfoot-label scholarship-text">
+                                    <i class="fa-solid fa-gift"></i>
+                                    {{ __('منحة دراسية خاصة معتمدة من الإدارة:') }}
+                                </td>
+                                <td colspan="2" class="tfoot-val scholarship-text font-mono">
+                                    - {{ number_format($discountAmount, 0) }} ₪
+                                </td>
+                            </tr>
+                        @endif
+
+                        {{-- المتأخرات السابقة إن وجدت --}}
+                        @if(isset($financialSummary) && $financialSummary['has_arrears'])
+                            <tr class="tfoot-row-arrears">
+                                <td colspan="4" class="tfoot-label arrears-text">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
+                                    {{ __('المتأخرات السابقة المستحقة:') }}
+                                </td>
+                                <td colspan="2" class="tfoot-val arrears-text font-mono">
+                                    + {{ number_format($financialSummary['previous_unpaid_balance'], 0) }} ₪
+                                </td>
+                            </tr>
+                        @endif
+
+                        {{-- السطر النهائي: الصافي المطلوب للسداد --}}
+                        <tr class="tfoot-row-grand-total">
+                            <td colspan="4" class="tfoot-grand-label">
+                                <i class="fa-solid fa-coins"></i>
+                                {{ __('صافي المبلغ المطلوب سداده للفصل الدراسي:') }}
+                            </td>
+                            <td colspan="2" class="tfoot-grand-val font-mono">
+                                {{ number_format($finalAmount, 0) }} ₪
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {{-- إشعار ختامي رسمي للسند --}}
+            <div class="voucher-footer-notice">
+                <i class="fa-solid fa-circle-check text-emerald"></i>
+                <span>{{ __('الرسوم معتمدة للفصل الدراسي، وتشمل الوصول الكامل لجميع الدروس المصورة، بنك الأسئلة، والملازم الشاملة فور سداد المبلغ واعتماد الإيصال.') }}</span>
             </div>
         </div>
 
@@ -830,7 +855,7 @@
         border: 1px solid #e2e8f0;
         border-radius: 12px;
         padding: 32px 28px;
-        max-width: 740px;
+        max-width: 880px;
         width: 100%;
         text-align: center;
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
@@ -1042,142 +1067,268 @@
         color: #ffffff;
     }
 
-    /* بطاقة تفاصيل الرسوم */
-    .fees-summary-card {
+    /* بطاقة سند الرسوم الأكاديمي الكلاسيكي */
+    .academic-voucher-card {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #cbd5e1;
         border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 18px;
+        margin-bottom: 22px;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        text-align: right;
     }
-    html[dir="rtl"] .fees-summary-card { text-align: right; }
-    html[dir="ltr"] .fees-summary-card { text-align: left; }
+    html[dir="ltr"] .academic-voucher-card { text-align: left; }
 
-    .fees-header {
+    .academic-voucher-header {
+        padding: 16px 20px;
+        background: #f8fafc;
+        border-bottom: 1.5px solid #e2e8f0;
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-bottom: 12px;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
     }
-    .fees-header-icon {
-        width: 34px;
-        height: 34px;
+    .voucher-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .voucher-header-seal {
+        width: 40px;
+        height: 40px;
         border-radius: 8px;
         background: #eff6ff;
         color: #1d4ed8;
         display: grid;
         place-items: center;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        border: 1px solid #bfdbfe;
         flex-shrink: 0;
     }
-    .fees-header h3 {
+    .voucher-title {
         margin: 0;
-        font-size: 13.5px;
+        font-size: 0.98rem;
         font-weight: 800;
         color: #0f172a;
+        line-height: 1.3;
     }
-    .fees-header p {
-        margin: 0;
-        font-size: 11.5px;
+    .voucher-subtitle {
+        margin: 3px 0 0 0;
+        font-size: 0.78rem;
         color: #64748b;
     }
+    .voucher-header-tags {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .v-tag {
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+    .v-tag.primary {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+    .v-tag.slate {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
 
-    .enrolled-subjects-breakdown-box {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 14px;
+    /* جدول السند الأكاديمي */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .academic-ledger-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
         text-align: right;
     }
-    html[dir="ltr"] .enrolled-subjects-breakdown-box { text-align: left; }
-    .breakdown-box-title {
-        font-size: 12px;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .enrolled-subjects-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .enrolled-sub-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 12px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
-    .enrolled-sub-chip .sub-icon {
-        font-size: 1rem;
-    }
-    .enrolled-sub-chip .sub-name {
-        font-weight: 700;
-        color: #0f172a;
-    }
-    .enrolled-sub-chip .sub-price {
-        font-weight: 800;
-        color: #1d4ed8;
-        background: #eff6ff;
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 11px;
-    }
+    html[dir="ltr"] .academic-ledger-table { text-align: left; }
 
-    .fees-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-    @media (max-width: 580px) { .fees-grid { grid-template-columns: 1fr; } }
-
-    .fee-box {
+    .academic-ledger-table thead tr {
         background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 10px 12px;
+        border-bottom: 2px solid #cbd5e1;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.78rem;
+    }
+    .academic-ledger-table th {
+        padding: 11px 14px;
+        white-space: nowrap;
+    }
+    .academic-ledger-table th.col-num {
+        width: 44px;
         text-align: center;
     }
-    .fee-box.bundle-discount { background: #fefce8; border-color: #fef08a; }
-    .fee-box.discount { background: #f0fdf4; border-color: #bbf7d0; }
-    .fee-box.net-amount { background: #eff6ff; border-color: #bfdbfe; }
-    .fee-title {
-        display: block;
-        font-size: 11px;
-        color: #64748b;
-        font-weight: 600;
-        margin-bottom: 2px;
+    .academic-ledger-table th.col-curr {
+        text-align: center;
     }
-    .fee-value {
-        font-size: 1.15rem;
-        font-weight: 800;
-        color: #0f172a;
-        font-family: monospace;
-    }
-    .text-emerald { color: #16a34a !important; }
-    .text-primary-net { color: #1d4ed8 !important; }
 
-    .fee-note-alert {
-        background: #f0fdf4;
-        border: 1px solid #86efac;
-        color: #166534;
-        font-size: 12px;
-        font-weight: 600;
-        border-radius: 8px;
-        padding: 6px 12px;
+    .academic-ledger-table tbody tr {
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.12s ease;
+    }
+    .academic-ledger-table tbody tr:hover {
+        background: #f8fafc;
+    }
+    .academic-ledger-table td {
+        padding: 11px 14px;
+        vertical-align: middle;
+    }
+    .col-num-cell {
+        text-align: center;
+        color: #94a3b8;
+        font-weight: 700;
+    }
+    .subject-title-cell {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
+    .subj-icon {
+        font-size: 1.05rem;
+    }
+    .subject-title-cell strong {
+        color: #0f172a;
+        font-size: 0.88rem;
+        font-weight: 700;
+    }
+    .semester-pill {
+        display: inline-block;
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+        padding: 3px 8px;
+        border-radius: 5px;
+        font-weight: 600;
+        font-size: 0.76rem;
+    }
+    .col-curr-cell {
+        text-align: center;
+        white-space: nowrap;
+    }
+    .col-curr-cell.orig-price {
+        color: #64748b;
+        font-weight: 600;
+    }
+    .col-curr-cell.discount-price {
+        color: #059669;
+        font-weight: 700;
+    }
+    .col-curr-cell.net-price {
+        color: #0f172a;
+        font-weight: 800;
+        font-size: 0.92rem;
+    }
+    .table-empty-cell {
+        padding: 24px;
+        text-align: center;
+        color: #64748b;
+    }
+
+    /* تذييل الجدول / الحسابات */
+    .academic-ledger-table tfoot {
+        border-top: 2px solid #cbd5e1;
+    }
+    .academic-ledger-table tfoot td {
+        padding: 10px 18px;
+    }
+    .tfoot-label {
+        text-align: left;
+        font-weight: 700;
+        color: #475569;
+        font-size: 0.85rem;
+    }
+    html[dir="ltr"] .tfoot-label { text-align: right; }
+    .tfoot-val {
+        text-align: center;
+        font-weight: 800;
+        color: #0f172a;
+        font-size: 0.92rem;
+        white-space: nowrap;
+    }
+    .tfoot-row-subtotal {
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+    .tfoot-row-bundle {
+        border-bottom: 1px solid #e2e8f0;
+        background: #f0fdf4;
+    }
+    .tfoot-row-bundle .bundle-text {
+        color: #166534;
+    }
+    .tfoot-row-scholarship {
+        border-bottom: 1px solid #e2e8f0;
+        background: #eff6ff;
+    }
+    .tfoot-row-scholarship .scholarship-text {
+        color: #1d4ed8;
+    }
+    .tfoot-row-arrears {
+        border-bottom: 1px solid #e2e8f0;
+        background: #fef2f2;
+    }
+    .tfoot-row-arrears .arrears-text {
+        color: #b91c1c;
+    }
+
+    /* السطر النهائي لسند الرسوم */
+    .tfoot-row-grand-total {
+        background: #0f172a;
+        color: #ffffff;
+    }
+    .tfoot-grand-label {
+        text-align: left;
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #f8fafc;
+    }
+    html[dir="ltr"] .tfoot-grand-label { text-align: right; }
+    .tfoot-grand-label i {
+        color: #38bdf8;
+        margin-left: 6px;
+    }
+    html[dir="ltr"] .tfoot-grand-label i {
+        margin-left: 0;
+        margin-right: 6px;
+    }
+    .tfoot-grand-val {
+        text-align: center;
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: #38bdf8;
+        white-space: nowrap;
+    }
+
+    .voucher-footer-notice {
+        padding: 10px 16px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        color: #475569;
+        line-height: 1.5;
+    }
+    .voucher-footer-notice i {
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .text-emerald { color: #16a34a !important; }
+    .text-primary-net { color: #1d4ed8 !important; }
 
     /* وسائل الدفع المعتمدة */
     .payment-channels-card {

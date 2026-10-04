@@ -52,7 +52,7 @@
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
             <div>
                 <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
-                    {{ __('المستحق الفصلي المطلوب') }}
+                    {{ __('إجمالي المستحق المطلوب') }}
                 </span>
                 <span style="font-size: 1.35rem; font-weight: 800; color: #0f172a; font-family: 'Alexandria', sans-serif;" id="stat_total_expected">
                     {{ number_format($stats['total_expected'], 2) }} ₪
@@ -70,7 +70,7 @@
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
             <div>
                 <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
-                    {{ __('المحصل الفعلي المعتمد') }}
+                    {{ __('إجمالي الإيراد المحصل') }}
                 </span>
                 <span style="font-size: 1.35rem; font-weight: 800; color: #059669; font-family: 'Alexandria', sans-serif;" id="stat_total_collected">
                     {{ number_format($stats['total_collected'], 2) }} ₪
@@ -88,13 +88,13 @@
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.02);">
             <div>
                 <span style="display: block; font-size: 0.78rem; font-weight: 600; color: #64748b; margin-bottom: 2px;">
-                    {{ __('عجز التحصيل والذمم') }}
+                    {{ __('إجمالي الرصيد المتبقي') }}
                 </span>
                 <span style="font-size: 1.35rem; font-weight: 800; color: #dc2626; font-family: 'Alexandria', sans-serif;" id="stat_total_remaining">
                     {{ number_format($stats['total_remaining'], 2) }} ₪
                 </span>
                 <span style="display: block; font-size: 0.72rem; color: #dc2626; margin-top: 2px;">
-                    <span id="stat_partial_count">{{ $stats['partial_count'] }}</span> {{ __('جزئي') }} | <span id="stat_unpaid_count">{{ $stats['unpaid_count'] }}</span> {{ __('غير مسدد') }}
+                    <span id="stat_partial_count">{{ $stats['partial_count'] }}</span> {{ __('سداد جزئي') }} | <span id="stat_unpaid_count">{{ $stats['unpaid_count'] }}</span> {{ __('غير مسدد') }}
                 </span>
             </div>
             <div style="width: 40px; height: 40px; border-radius: 8px; background: #fef2f2; color: #dc2626; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
