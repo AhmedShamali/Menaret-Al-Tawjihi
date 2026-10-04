@@ -258,6 +258,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     // تسعير مواد التوجيهي والعروض الموسمية وباقات المواد
     Route::get('/subjects/pricing', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'index'])->name('subjects.pricing');
     Route::post('/subjects/pricing/seasonal-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.seasonal');
+    Route::post('/subjects/pricing/bulk-discount', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'applySeasonalDiscount'])->name('subjects.pricing.bulk_discount');
     Route::post('/subjects/pricing/{id}', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update')->whereNumber('id');
     Route::post('/subjects/pricing/{id}/update', [\App\Http\Controllers\Admin\SubjectPricingController::class, 'update'])->name('subjects.pricing.update_alias')->whereNumber('id');
 

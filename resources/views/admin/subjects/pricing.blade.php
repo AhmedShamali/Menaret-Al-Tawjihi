@@ -414,7 +414,7 @@
             </button>
         </div>
 
-        <form action="{{ route('admin.subjects.pricing.bulk_discount') }}" method="POST" style="padding: 20px;">
+        <form action="{{ route('admin.subjects.pricing.seasonal') }}" method="POST" style="padding: 20px;">
             @csrf
             <div style="margin-bottom: 14px;">
                 <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #334155; margin-bottom: 4px;">{{ __('نسبة الخصم المئوية (%)') }}</label>
