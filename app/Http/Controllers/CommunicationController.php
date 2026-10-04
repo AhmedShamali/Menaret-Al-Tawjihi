@@ -29,7 +29,8 @@ class CommunicationController extends Controller
         $students = Student::with('stage')
             ->withCount([
                 'messages as unread_count' => function ($q) {
-                    $q->where('sender_type', 'student')
+                    $q->whereNull('teacher_id')
+                      ->where('sender_type', 'student')
                       ->where(function($sub) {
                           $sub->where('is_read', false)->orWhereNull('is_read');
                       });
@@ -39,13 +40,13 @@ class CommunicationController extends Controller
 
         $students->each(function ($st) {
             $lastMsg = Message::where('student_id', $st->id)
+                ->whereNull('teacher_id')
                 ->latest()
                 ->first();
             $st->last_message = $lastMsg ? $lastMsg->message : null;
             $st->last_message_time = $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->diffForHumans() : null;
             $st->last_message_at = $lastMsg ? $lastMsg->created_at : null;
             $st->last_sender_type = $lastMsg ? $lastMsg->sender_type : null;
-            $st->last_teacher_id = $lastMsg ? $lastMsg->teacher_id : null;
         });
 
         $chats = $students->sort(function ($a, $b) use ($selectedStudentId) {
@@ -170,9 +171,10 @@ class CommunicationController extends Controller
                 NotificationService::notifyAdmin(
                     'رسالة جديدة من طالب في الدعم',
                     "أرسل الطالب (" . ($student?->name_ar ?? $student?->name ?? 'طالب') . "): " . Str::limit($request->message, 70),
-                    'support',
+                    'message',
                     route('admin.messages.index', ['student_id' => $studentId]),
-                    'fa-comment-dots'
+                    'fa-comment-dots',
+                    ['student_id' => $studentId]
                 );
             } catch (\Throwable $e) {}
 
@@ -281,32 +283,24 @@ class CommunicationController extends Controller
                 $studentId = $id;
 
                 Message::where('student_id', $studentId)
+                    ->whereNull('teacher_id')
                     ->where('sender_type', 'student')
                     ->where(function($q) {
                         $q->where('is_read', false)->orWhereNull('is_read');
                     })
                     ->update(['is_read' => true]);
 
-                $query = Message::with('teacher')->where('student_id', $studentId);
+                $query = Message::where('student_id', $studentId)
+                    ->whereNull('teacher_id');
             }
 
             $messages = $query->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
-                    $teacherName = null;
-                    if ($msg->teacher) {
-                        $teacherName = $msg->teacher->name;
-                    } elseif ($msg->teacher_id) {
-                        $tUser = User::find($msg->teacher_id);
-                        $teacherName = $tUser ? $tUser->name : null;
-                    }
-
                     return [
                         'id'                    => $msg->id,
                         'message'               => $msg->message,
                         'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
-                        'teacher_id'            => $msg->teacher_id,
-                        'teacher_name'          => $teacherName,
                         'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : '',
                         'created_at_human'      => $msg->created_at ? $msg->created_at->diffForHumans() : '',
                     ];
@@ -721,18 +715,6 @@ class CommunicationController extends Controller
                 'message',
                 route('teacher.messages.index', ['student_id' => $student->id]),
                 'fa-comments'
-            );
-
-            NotificationService::notifyAdmin(
-                'استفسار دراسي جديد من طالب',
-                "قام الطالب {$student->name_ar} بإرسال استفسار دراسي للأستاذ ({$teacherName}): " . Str::limit($request->message, 70),
-                'message',
-                route('admin.messages.index', ['student_id' => $student->id]),
-                'fa-comments',
-                [
-                    'student_id' => $student->id,
-                    'teacher_id' => $request->teacher_id,
-                ]
             );
 
             return response()->json([

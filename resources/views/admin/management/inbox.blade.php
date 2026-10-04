@@ -60,10 +60,9 @@
                         $stageName = $student->stage ? ($student->stage->name_ar ?? $student->stage->name ?? 'توجيهي') : 'توجيهي';
                         $phone = $student->phone ?? $student->whatsapp ?? '';
                         $hasUnread = ($student->unread_count ?? 0) > 0;
-                        $lastText = $student->last_message ?? 'محادثة جديدة';
+                        $lastText = $student->last_message ?? '';
                         $lastTime = $student->last_message_time ?? '';
                         $isMe = ($student->last_sender_type === 'admin');
-                        $isTeacher = ($student->last_sender_type === 'teacher');
                     @endphp
                     <div onclick="loadChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}', '{{ addslashes($phone) }}', '{{ $student->status }}')"
                          class="student-chat-item {{ $hasUnread ? 'unread' : '' }} {{ (isset($selectedStudentId) && $selectedStudentId == $student->id) ? 'active' : '' }}"
@@ -100,12 +99,10 @@
                                     @if($student->last_message)
                                         @if($isMe)
                                             <strong class="me-prefix">أنت: </strong>
-                                        @elseif($isTeacher)
-                                            <strong class="teacher-prefix" style="color: #059669;">المعلم: </strong>
                                         @endif
                                         {{ Str::limit($lastText, 32) }}
                                     @else
-                                        <span class="new-conversation-hint">انقر لبدء المحادثة</span>
+                                        <span class="new-conversation-hint">لا توجد رسائل سابقة</span>
                                     @endif
                                 </span>
                                 <span class="unread-counter-pill" id="badge_{{ $student->id }}" style="{{ $hasUnread ? '' : 'display: none;' }}">
@@ -818,14 +815,15 @@
     /* Active Header (Pinned at top of conversation) */
     .active-conversation-header {
         flex-shrink: 0;
-        height: 66px;
-        padding: 10px 20px;
+        min-height: 74px;
+        height: auto;
+        padding: 14px 22px;
         background: #ffffff;
         border-bottom: 1px solid var(--cr-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 14px;
+        gap: 16px;
         z-index: 5;
         box-sizing: border-box;
     }
@@ -833,8 +831,9 @@
     .header-profile-cluster {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 14px;
         min-width: 0;
+        flex: 1;
     }
 
     .mobile-return-btn {
@@ -848,8 +847,8 @@
     }
 
     .header-avatar {
-        width: 44px;
-        height: 44px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
@@ -857,62 +856,70 @@
         align-items: center;
         justify-content: center;
         font-weight: 800;
-        font-size: 1.15rem;
+        font-size: 1.25rem;
         flex-shrink: 0;
-        box-shadow: 0 2px 6px rgba(30, 58, 138, 0.2);
+        box-shadow: 0 4px 12px rgba(30, 58, 138, 0.22);
+        border: 2px solid #ffffff;
     }
 
     .header-meta-details {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
         min-width: 0;
+        justify-content: center;
     }
 
     .title-and-stage {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         flex-wrap: wrap;
     }
 
     .active-student-name {
-        font-size: 0.98rem;
+        font-size: 1.05rem;
         font-weight: 800;
-        color: var(--cr-text-primary);
+        color: #0f172a;
         margin: 0;
+        line-height: 1.3;
     }
 
     .student-stage-pill {
-        font-size: 0.68rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 6px;
+        padding: 3px 10px;
+        border-radius: 20px;
         background: #eff6ff;
         color: #1e40af;
-        border: 1px solid #dbeafe;
+        border: 1px solid #bfdbfe;
+        white-space: nowrap;
     }
 
     .status-and-contact {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 0.74rem;
+        gap: 12px;
+        font-size: 0.78rem;
         color: var(--cr-text-muted);
+        flex-wrap: wrap;
     }
 
     .status-indicator {
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        font-weight: 600;
+        color: #059669;
     }
 
     .pulse-emerald {
-        width: 7px;
-        height: 7px;
+        width: 8px;
+        height: 8px;
         background: var(--cr-emerald);
         border-radius: 50%;
         display: inline-block;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
 
     .meta-divider {
@@ -922,41 +929,45 @@
     .contact-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
+        gap: 6px;
+        color: #475569;
+        font-weight: 600;
+        direction: ltr;
     }
 
     .contact-pill i {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         color: #94a3b8;
     }
 
     .header-controls {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         flex-shrink: 0;
     }
 
     .control-btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 7px 12px;
-        border-radius: 8px;
-        font-size: 0.8rem;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        font-size: 0.82rem;
         font-weight: 700;
         border: 1px solid var(--cr-border);
         background: #ffffff;
         color: var(--cr-text-primary);
         text-decoration: none;
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.2s ease;
         font-family: inherit;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
 
     .control-btn:hover {
-        background: #f8fafc;
-        border-color: #cbd5e1;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
     }
 
     .btn-wa {
@@ -968,20 +979,29 @@
     .btn-wa:hover {
         background: #16a34a;
         color: #ffffff;
+        border-color: #16a34a;
     }
 
     .btn-academic {
         background: #eff6ff;
-        color: var(--cr-navy-main);
+        color: #1e40af;
         border-color: #bfdbfe;
     }
 
     .btn-academic:hover {
         background: #dbeafe;
+        color: #1e3a8a;
     }
 
     .btn-icon {
-        padding: 7px 10px;
+        padding: 8px 12px;
+        background: #f8fafc;
+        color: #475569;
+    }
+
+    .btn-icon:hover {
+        background: #e2e8f0;
+        color: #0f172a;
     }
 
     /* Messages Canvas */
@@ -989,10 +1009,10 @@
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 20px 24px;
+        padding: 24px 28px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 16px;
         background: #f8fafc;
     }
 
@@ -1001,39 +1021,48 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         color: var(--cr-text-muted);
-        font-size: 0.88rem;
+        font-size: 0.9rem;
     }
 
     .empty-chat-state {
         margin: auto;
         text-align: center;
         color: var(--cr-text-muted);
-        padding: 24px;
+        padding: 36px 28px;
         background: #ffffff;
-        border-radius: 12px;
-        border: 1px dashed var(--cr-border);
-        max-width: 360px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        border-radius: 16px;
+        border: 1px dashed #cbd5e1;
+        max-width: 420px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
     }
 
-    .empty-chat-state i {
-        font-size: 2rem;
-        color: #94a3b8;
-        margin-bottom: 8px;
-        display: block;
+    .empty-chat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        margin: 0 auto 16px;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
     }
 
     .empty-chat-state h4 {
-        font-size: 0.95rem;
-        font-weight: 700;
-        color: var(--cr-text-primary);
-        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 6px;
     }
 
     .empty-chat-state p {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        color: #64748b;
+        line-height: 1.6;
         margin: 0;
     }
 
@@ -1041,7 +1070,7 @@
     .bubble-row {
         display: flex;
         align-items: flex-end;
-        gap: 10px;
+        gap: 12px;
         width: 100%;
     }
 
@@ -1056,35 +1085,38 @@
     }
 
     .bubble-avatar-mini {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.75rem;
+        font-size: 0.85rem;
         font-weight: 800;
         flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
-    .bubble-row.is-student .bubble-avatar-mini {
+    .bubble-avatar-mini.student-mini {
         background: #e2e8f0;
-        color: #475569;
+        color: #334155;
+        border: 1.5px solid #cbd5e1;
     }
 
-    .bubble-row.is-admin .bubble-avatar-mini {
-        background: var(--cr-navy-main);
+    .bubble-avatar-mini.admin-mini {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
         color: #ffffff;
+        border: 1.5px solid #ffffff;
     }
 
     .bubble-card {
-        max-width: 65%;
-        min-width: 140px;
-        padding: 12px 16px;
-        font-size: 0.9rem;
-        line-height: 1.6;
+        max-width: 68%;
+        min-width: 160px;
+        padding: 12px 18px;
+        font-size: 0.92rem;
+        line-height: 1.65;
         word-break: break-word;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.06);
         animation: bubbleSlideIn 0.2s ease-out;
     }
 
@@ -1096,106 +1128,67 @@
     .bubble-row.is-admin .bubble-card {
         background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
         color: #ffffff;
-        border-radius: 14px 14px 4px 14px;
+        border-radius: 16px 16px 4px 16px;
+        box-shadow: 0 4px 14px rgba(30, 58, 138, 0.18);
     }
 
     .bubble-row.is-student .bubble-card {
         background: #ffffff;
-        color: var(--cr-text-primary);
-        border: 1px solid var(--cr-border);
-        border-radius: 14px 14px 14px 4px;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px 16px 16px 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
 
-    .bubble-row.is-teacher {
-        justify-content: flex-start;
-        flex-direction: row;
-    }
-
-    .bubble-row.is-teacher .bubble-avatar-mini {
-        background: #0d9488;
-        color: #ffffff;
-    }
-
-    .bubble-row.is-teacher .bubble-card {
-        background: #f0fdf4;
-        color: #064e3b;
-        border: 1px solid #bbf7d0;
-        border-radius: 14px 14px 14px 4px;
-    }
-
-    .bubble-row.is-teacher .bubble-sender-name {
-        color: #047857;
-    }
-
-    .bubble-row.is-teacher .bubble-footer-meta {
-        color: #059669;
-    }
-
-    .badge-role-teacher {
-        display: inline-flex;
+    .bubble-header-row {
+        display: flex;
         align-items: center;
-        gap: 4px;
-        background: #dcfce7;
-        color: #15803d;
-        font-size: 0.65rem;
-        font-weight: 700;
-        padding: 2px 7px;
-        border-radius: 6px;
-        border: 1px solid #bbf7d0;
-    }
-
-    .inquiry-teacher-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        background: #eff6ff;
-        color: #1d4ed8;
-        border: 1px solid #dbeafe;
-        font-size: 0.72rem;
-        font-weight: 600;
-        padding: 3px 9px;
-        border-radius: 6px;
-        margin-bottom: 6px;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 5px;
     }
 
     .bubble-sender-name {
-        font-size: 0.72rem;
+        font-size: 0.74rem;
         font-weight: 800;
-        margin-bottom: 4px;
-        display: block;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
 
-    .bubble-row.is-admin .bubble-sender-name {
-        color: #93c5fd;
+    .bubble-sender-name.admin-name {
+        color: #bfdbfe;
     }
 
-    .bubble-row.is-student .bubble-sender-name {
-        color: var(--cr-navy-main);
+    .bubble-sender-name.student-name {
+        color: #1e3a8a;
     }
 
     .bubble-message-text {
         white-space: pre-wrap;
+        font-size: 0.92rem;
+        line-height: 1.65;
     }
 
     .bubble-footer-meta {
         display: flex;
         align-items: center;
         justify-content: flex-end;
-        gap: 5px;
+        gap: 6px;
         margin-top: 6px;
-        font-size: 0.68rem;
+        font-size: 0.7rem;
     }
 
     .bubble-row.is-admin .bubble-footer-meta {
-        color: rgba(255, 255, 255, 0.8);
+        color: rgba(255, 255, 255, 0.75);
     }
 
     .bubble-row.is-student .bubble-footer-meta {
-        color: var(--cr-text-muted);
+        color: #94a3b8;
     }
 
-    .bubble-footer-meta i {
-        font-size: 0.7rem;
+    .text-sky {
+        color: #38bdf8 !important;
     }
 
     /* Quick Reply Bar */
@@ -1561,9 +1554,11 @@
                 if (messages.length === 0) {
                     box.innerHTML = `
                         <div class="empty-chat-state">
-                            <i class="fa-regular fa-comment-dots"></i>
-                            <h4>لا توجد رسائل سابقة</h4>
-                            <p>ابدأ المحادثة مع الطالب عبر كتابة رسالة بالأسفل.</p>
+                            <div class="empty-chat-icon">
+                                <i class="fa-solid fa-headset"></i>
+                            </div>
+                            <h4>لا توجد رسائل دعم سابقة</h4>
+                            <p>لم يرسل الطالب أي استفسار للإدارة بعد. يمكنك كتابة رد استباقي أو تقديم المساعدة عبر النموذج بالأسفل.</p>
                         </div>
                     `;
                     return;
@@ -1589,50 +1584,49 @@
 
         const sender = (msg.sender_type || '').toLowerCase().trim();
         const isAdmin = (sender === 'admin');
-        const isTeacher = (sender === 'teacher');
         const time = msg.created_at_formatted || '';
-        const studentName = document.getElementById('active_user_name').innerText;
-
-        let authorLabel = studentName;
-        let avatarLetter = studentName.charAt(0);
-        let bubbleClass = 'is-student';
-        let extraTagHtml = '';
-
-        if (isAdmin) {
-            authorLabel = 'إدارة المنصة';
-            avatarLetter = '<i class="fa-solid fa-user-shield"></i>';
-            bubbleClass = 'is-admin';
-        } else if (isTeacher) {
-            authorLabel = msg.teacher_name ? 'الأستاذ: ' + msg.teacher_name : 'معلم المادة';
-            avatarLetter = '<i class="fa-solid fa-chalkboard-user"></i>';
-            bubbleClass = 'is-teacher';
-            extraTagHtml = `<span class="badge-role-teacher"><i class="fa-solid fa-graduation-cap"></i> معلم</span>`;
-        } else {
-            // Student
-            if (msg.teacher_name) {
-                extraTagHtml = `<div class="inquiry-teacher-tag"><i class="fa-solid fa-graduation-cap"></i> استفسار دراسي موجه للأستاذ: <strong>${escapeHtml(msg.teacher_name)}</strong></div>`;
-            }
-        }
+        const studentName = document.getElementById('active_user_name').innerText || 'طالب';
 
         const row = document.createElement('div');
-        row.className = `bubble-row ${bubbleClass}`;
-        row.innerHTML = `
-            <div class="bubble-avatar-mini" title="${escapeHtml(authorLabel)}">
-                ${avatarLetter}
-            </div>
-            <div class="bubble-card">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 4px;">
-                    <span class="bubble-sender-name">${escapeHtml(authorLabel)}</span>
-                    ${isTeacher ? extraTagHtml : ''}
+        row.className = `bubble-row ${isAdmin ? 'is-admin' : 'is-student'}`;
+
+        if (isAdmin) {
+            row.innerHTML = `
+                <div class="bubble-avatar-mini admin-mini" title="إدارة المنصة">
+                    <i class="fa-solid fa-user-shield"></i>
                 </div>
-                ${(!isTeacher && extraTagHtml) ? extraTagHtml : ''}
-                <div class="bubble-message-text">${escapeHtml(msg.message)}</div>
-                <div class="bubble-footer-meta">
-                    <span>${escapeHtml(time)}</span>
-                    ${isAdmin ? '<i class="fa-solid fa-check-double text-info"></i>' : ''}
+                <div class="bubble-card">
+                    <div class="bubble-header-row">
+                        <span class="bubble-sender-name admin-name">
+                            <i class="fa-solid fa-shield-halved"></i> إدارة المنصة
+                        </span>
+                    </div>
+                    <div class="bubble-message-text">${escapeHtml(msg.message)}</div>
+                    <div class="bubble-footer-meta">
+                        <span>${escapeHtml(time)}</span>
+                        <i class="fa-solid fa-check-double text-sky"></i>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        } else {
+            row.innerHTML = `
+                <div class="bubble-avatar-mini student-mini" title="${escapeHtml(studentName)}">
+                    ${escapeHtml(studentName.charAt(0) || 'ط')}
+                </div>
+                <div class="bubble-card">
+                    <div class="bubble-header-row">
+                        <span class="bubble-sender-name student-name">
+                            <i class="fa-solid fa-user-graduate"></i> ${escapeHtml(studentName)}
+                        </span>
+                    </div>
+                    <div class="bubble-message-text">${escapeHtml(msg.message)}</div>
+                    <div class="bubble-footer-meta">
+                        <span>${escapeHtml(time)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
         box.appendChild(row);
     }
 
