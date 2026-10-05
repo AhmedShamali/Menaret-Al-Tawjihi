@@ -72,14 +72,56 @@ class NotificationService
         string $type = 'content',
         ?string $actionUrl = null
     ): int {
-        $studentIds = Student::where('stage_id', $stageId)->where('status', 'active')->pluck('id');
-        $count = 0;
-        foreach ($studentIds as $sId) {
-            if (self::notifyStudent($sId, $title, $message, $type, $actionUrl)) {
-                $count++;
+        try {
+            $studentIds = Student::where('stage_id', $stageId)->where('status', 'active')->pluck('id');
+            if ($studentIds->isEmpty()) {
+                return 0;
             }
+
+            $defaultIcons = [
+                'message' => 'fa-comment-dots',
+                'exam'    => 'fa-file-signature',
+                'grade'   => 'fa-award',
+                'content' => 'fa-video',
+                'streak'  => 'fa-fire',
+                'payment' => 'fa-receipt',
+                'system'  => 'fa-bell',
+            ];
+            $iconClass = $defaultIcons[$type] ?? 'fa-video';
+
+            $now = now();
+            $dataPayload = json_encode([
+                'title'      => $title,
+                'message'    => $message,
+                'type'       => $type,
+                'action_url' => $actionUrl,
+                'icon'       => $iconClass,
+                'created_at' => $now->toIso8601String(),
+            ], JSON_UNESCAPED_UNICODE);
+
+            $rows = [];
+            foreach ($studentIds as $sId) {
+                $rows[] = [
+                    'id'              => (string) Str::uuid(),
+                    'type'            => 'App\\Notifications\\AcademicAlert',
+                    'notifiable_type' => 'App\\Models\\Student',
+                    'notifiable_id'   => $sId,
+                    'data'            => $dataPayload,
+                    'read_at'         => null,
+                    'created_at'      => $now,
+                    'updated_at'      => $now,
+                ];
+            }
+
+            foreach (array_chunk($rows, 100) as $chunk) {
+                DB::table('notifications')->insert($chunk);
+            }
+
+            return count($rows);
+        } catch (\Throwable $e) {
+            Log::error('فشل إرسال إشعارات المرحلة: ' . $e->getMessage());
+            return 0;
         }
-        return $count;
     }
 
     /**

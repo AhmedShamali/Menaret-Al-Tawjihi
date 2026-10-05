@@ -1499,9 +1499,9 @@
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
-                                            <source src="{{ $directVideoUrl }}">
+                                            <source src="{{ $directVideoUrl }}" type="video/mp4">
                                             @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
-                                                <source src="{{ $directVideoFallback }}">
+                                                <source src="{{ $directVideoFallback }}" type="video/mp4">
                                             @endif
                                             {{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>

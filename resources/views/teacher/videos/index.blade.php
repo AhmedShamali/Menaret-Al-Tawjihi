@@ -147,9 +147,9 @@
                     <div class="video-frame-wrap" id="wrap_vid_{{ $vid->id }}" oncontextmenu="event.preventDefault(); return false;">
                         @if($isDirectVid && $directVidUrl)
                             <video id="vid_direct_{{ $vid->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
-                                <source src="{{ $directVidUrl }}">
+                                <source src="{{ $directVidUrl }}" type="video/mp4">
                                 @if($directVidFallback && $directVidFallback !== $directVidUrl)
-                                    <source src="{{ $directVidFallback }}">
+                                    <source src="{{ $directVidFallback }}" type="video/mp4">
                                 @endif
                                 {{ __('متصفحك لا يدعم مشغل هذا الفيديو المباشر.') }}
                             </video>

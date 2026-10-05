@@ -730,6 +730,14 @@
         if (formattedSizeHidden) formattedSizeHidden.value = mbSize;
         if (progressWrap) progressWrap.style.display = 'block';
 
+        // ملء عنوان المحاضرة تلقائياً من اسم الملف إذا كان حقل العنوان فارغاً
+        const titleInput = document.querySelector('input[name="title"]');
+        if (titleInput && !titleInput.value.trim()) {
+            const rawTitle = window.selectedFile.name.replace(/\.[^/.]+$/, "");
+            titleInput.value = rawTitle;
+            if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
+        }
+
         // بدء الرفع بالخلفية عبر محرك المنصة العام
         if (window.EdBackgroundUploader) {
             window.EdBackgroundUploader.start({
@@ -847,34 +855,178 @@
         vgForm.addEventListener('input', window.saveVideographerDraft);
         vgForm.addEventListener('change', window.saveVideographerDraft);
 
-        vgForm.addEventListener('submit', function(e) {
+        vgForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 1. التحقق هل يوجد رفع فيديو جاري في الخلفية
             if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasActiveUpload()) {
-                e.preventDefault();
-                alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'الرفع قيد التقدم',
+                        text: 'يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert('يرجى الانتظار حتى اكتمال رفع الفيديو في الخلفية أولاً.');
+                }
                 return false;
             }
 
+            // 2. التحقق من اختيار الفروع
             const selectedStageCheckboxes = document.querySelectorAll('.stage-checkbox:checked');
             if (selectedStageCheckboxes.length === 0) {
-                e.preventDefault();
-                alert('يرجى تحديد فرع أكاديمي واحد على الأقل.');
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'لم يتم تحديد أي فرع',
+                        text: 'يرجى تحديد فرع أكاديمي واحد على الأقل لنشر المحاضرة فيه.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert('يرجى تحديد فرع أكاديمي واحد على الأقل.');
+                }
                 return false;
             }
 
-            const uploadedVideoPath = document.getElementById('uploadedVideoPath');
-            const videoFileInput = document.getElementById('videoFileInput');
-            if (uploadedVideoPath && uploadedVideoPath.value && videoFileInput) {
-                videoFileInput.removeAttribute('name');
+            // 3. التحقق من وجود عنوان للمحاضرة
+            const titleInput = vgForm.querySelector('input[name="title"]');
+            if (!titleInput || !titleInput.value.trim()) {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'عنوان المحاضرة مطلوب',
+                        text: 'يرجى كتابة عنوان للمحاضرة قبل المتابعة.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert('يرجى كتابة عنوان للمحاضرة.');
+                }
+                if (titleInput) titleInput.focus();
+                return false;
             }
 
-            // مسح المسودة عند نجاح الإرسال للبدء بمحاضرة جديدة
-            localStorage.removeItem('ed_videographer_form_draft');
+            // 4. التحقق من مصدر الفيديو (مسار مرفوع مسبقاً أو رابط أو رفع مباشر)
+            const uploadedVideoPath = document.getElementById('uploadedVideoPath');
+            const videoUrlInput = document.getElementById('videoUrlInput');
+            const videoFileInput = document.getElementById('videoFileInput');
+
+            // مزامنة فورية إذا كان الرفع مكتملاً في EdBackgroundUploader ولكن الحقل المخفي فارغ
+            if ((!uploadedVideoPath || !uploadedVideoPath.value) && window.EdBackgroundUploader && window.EdBackgroundUploader.hasCompletedUpload()) {
+                if (uploadedVideoPath) uploadedVideoPath.value = window.EdBackgroundUploader.state.result.uploaded_video_path;
+            }
+
+            const hasUploadedPath = uploadedVideoPath && uploadedVideoPath.value.trim().length > 0;
+            const hasUrl = videoUrlInput && videoUrlInput.value.trim().length > 0;
+            const hasRawFile = videoFileInput && videoFileInput.files && videoFileInput.files.length > 0;
+
+            if (!hasUploadedPath && !hasUrl && !hasRawFile) {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ملف الفيديو مطلوب',
+                        text: 'يرجى اختيار ملف فيديو ورفعه، أو إدراج رابط يوتيوب/خارجي للمحاضرة.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert('يرجى اختيار ملف فيديو أو إدراج رابط.');
+                }
+                return false;
+            }
 
             const btn = document.getElementById('btnSubmitForm');
+            const originalBtnHtml = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
                 btn.style.opacity = '0.7';
                 btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>جاري النشر والتوزيع الأكاديمي...</span>`;
+            }
+
+            try {
+                const formData = new FormData(vgForm);
+                // حماية مؤكدة: إذا تم رفع الفيديو عبر أجزاء Chunks، نحذف ملف الفيديو الخام من حمولة النموذج
+                // حتى لا يتم إرسال ملف ضخم (400MB+) عبر HTTP POST عادي ويتسبب بتجميد المتصفح
+                if (hasUploadedPath) {
+                    formData.delete('video_file');
+                }
+
+                const response = await fetch(vgForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok && data && data.success) {
+                    // مسح مسودة النموذج بعد النجاح المؤكد
+                    localStorage.removeItem('ed_videographer_form_draft');
+                    sessionStorage.removeItem('ed_bg_upload_completed');
+                    if (window.EdBackgroundUploader) {
+                        window.EdBackgroundUploader.state.status = 'idle';
+                        window.EdBackgroundUploader.state.result = null;
+                        window.EdBackgroundUploader.hideWidget();
+                    }
+
+                    if (window.Swal) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: '🎉 تم النشر والتوزيع بنجاح!',
+                            text: data.message || 'تم نشر وتوزيع المحاضرة فورياً على الفروع والمواد المحددة.',
+                            confirmButtonText: 'الذهاب لسجل المحاضرات',
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+                    }
+
+                    window.location.href = data.redirect || "{{ route('videographer.contents.index') }}";
+                } else {
+                    // فشل التحقق أو خطأ من السيرفر: إعادة تمكين الزر فوراً
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.style.opacity = '1';
+                        btn.innerHTML = originalBtnHtml;
+                    }
+
+                    let errorMsg = 'تعذر حفظ وتوزيع المحاضرة. يرجى مراجعة البيانات.';
+                    if (data && data.errors) {
+                        const firstKey = Object.keys(data.errors)[0];
+                        errorMsg = Array.isArray(data.errors[firstKey]) ? data.errors[firstKey][0] : data.errors[firstKey];
+                    } else if (data && data.message) {
+                        errorMsg = data.message;
+                    }
+
+                    if (window.Swal) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'تنبيه',
+                            text: errorMsg,
+                            confirmButtonText: 'حسناً'
+                        });
+                    } else {
+                        alert(errorMsg);
+                    }
+                }
+            } catch (err) {
+                console.error("Submission error:", err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerHTML = originalBtnHtml;
+                }
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ في الاتصال',
+                        text: 'حدث خطأ أثناء الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert('حدث خطأ أثناء إرسال البيانات. يرجى إعادة المحاولة.');
+                }
             }
         });
     }

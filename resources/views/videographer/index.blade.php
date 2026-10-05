@@ -157,12 +157,19 @@
                                 <td style="padding: 14px 16px;">
                                     <div style="display: flex; gap: 6px; align-items: center;">
                                         @if($item->url_path)
-                                            <button type="button" onclick="openVideoPreview('{{ $item->title }}', '{{ str_starts_with($item->url_path, 'http') ? $item->url_path : asset('storage/' . $item->url_path) }}')" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                            @php
+                                                $streamUrl = \App\Support\MediaHelper::videoStreamUrl($item->url_path);
+                                            @endphp
+                                            <button type="button" 
+                                                    data-title="{{ $item->title }}" 
+                                                    data-url="{{ $streamUrl }}" 
+                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'))" 
+                                                    style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                                 <i class="fa-solid fa-eye"></i> {{ __('معاينة') }}
                                             </button>
                                         @endif
                                         @if($item->pdf_path)
-                                            <a href="{{ asset('storage/' . $item->pdf_path) }}" target="_blank" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                            <a href="{{ \App\Support\MediaHelper::url($item->pdf_path) }}" target="_blank" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 4px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                                                 <i class="fa-solid fa-file-pdf"></i> {{ __('دوسية') }}
                                             </a>
                                         @endif

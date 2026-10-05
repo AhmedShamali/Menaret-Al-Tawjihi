@@ -148,6 +148,11 @@ class VideoController extends Controller
             $headers['Content-Range'] = "bytes {$from}-{$to}/{$size}";
             $headers['Content-Length'] = $length;
 
+            if ($request->isMethod('HEAD')) {
+                fclose($file);
+                return response('', 206, $headers);
+            }
+
             return response()->stream(function () use ($file, $from, $to) {
                 while (ob_get_level()) {
                     ob_end_clean();
@@ -167,6 +172,12 @@ class VideoController extends Controller
 
         // إرجاع الملف كاملاً إذا لم يطلب المتصفح أجزاء محددة
         $headers['Content-Length'] = $size;
+
+        if ($request->isMethod('HEAD')) {
+            fclose($file);
+            return response('', 200, $headers);
+        }
+
         return response()->stream(function () use ($file) {
             while (ob_get_level()) {
                 ob_end_clean();

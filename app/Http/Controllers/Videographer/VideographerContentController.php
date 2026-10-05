@@ -191,6 +191,12 @@ class VideographerContentController extends Controller
         }
 
         if (empty($targetSubjectIds)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يرجى تحديد مادة واحدة على الأقل أو اختيار فروع تحتوي على المادة المطلوبة.'
+                ], 422);
+            }
             return back()->withInput()->withErrors([
                 'stage_ids' => 'يرجى تحديد مادة واحدة على الأقل أو اختيار فروع تحتوي على المادة المطلوبة.'
             ]);
@@ -220,6 +226,12 @@ class VideographerContentController extends Controller
         }
 
         if (empty($videoPath)) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'يرجى تحديد ملف فيديو أو الانتظار حتى اكتمال الرفع أو تزويد رابط للمحاضرة.'
+                ], 422);
+            }
             return back()->withInput()->withErrors([
                 'video_file' => 'يرجى تحديد ملف فيديو أو الانتظار حتى اكتمال الرفع أو تزويد رابط للمحاضرة.'
             ]);
@@ -278,24 +290,41 @@ class VideographerContentController extends Controller
                         'محاضرة وشرح مرئي جديد 🎬',
                         "أُضيف درس مصور جديد: \"{$request->title}\" في مبحث {$sub->name_ar}.",
                         'content',
-                        route('student.subjects.show', $sub->id),
-                        'fa-video'
+                        route('student.subjects.show', $sub->id)
                     );
                 } catch (\Throwable $e) {}
             }
 
             // إتاحة الوصول التلقائي للطلبة المسجلين باشتراك نشط في هذه المادة
             try {
-                $activeEnrollments = \App\Models\Enrollment::where('subject_id', $subId)
+                $activeEnrollmentIds = \App\Models\Enrollment::where('subject_id', $subId)
                     ->where('status', 'active')
-                    ->get();
-                foreach ($activeEnrollments as $enr) {
-                    \App\Models\ContentAssignment::firstOrCreate([
-                        'enrollment_id'          => $enr->id,
-                        'educational_content_id' => $contentRecord->id,
-                    ], [
-                        'is_visible' => true,
-                    ]);
+                    ->pluck('id');
+
+                if ($activeEnrollmentIds->isNotEmpty()) {
+                    $existingAssigned = \App\Models\ContentAssignment::whereIn('enrollment_id', $activeEnrollmentIds)
+                        ->where('educational_content_id', $contentRecord->id)
+                        ->pluck('enrollment_id')
+                        ->flip();
+
+                    $now = now();
+                    $newAssignments = [];
+                    foreach ($activeEnrollmentIds as $enrId) {
+                        if (!isset($existingAssigned[$enrId])) {
+                            $newAssignments[] = [
+                                'enrollment_id'          => $enrId,
+                                'educational_content_id' => $contentRecord->id,
+                                'is_visible'             => true,
+                                'created_at'             => $now,
+                                'updated_at'             => $now,
+                            ];
+                        }
+                    }
+                    if (!empty($newAssignments)) {
+                        foreach (array_chunk($newAssignments, 100) as $chunk) {
+                            \App\Models\ContentAssignment::insert($chunk);
+                        }
+                    }
                 }
             } catch (\Throwable $e) {}
         }
