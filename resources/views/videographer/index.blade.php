@@ -175,13 +175,22 @@
                                     {{ $item->created_at ? $item->created_at->format('Y/m/d') : '-' }}
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
-                                    <form action="{{ route('videographer.contents.destroy', $item->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة؟') }}')" style="display: inline-block; margin: 0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف المحاضرة') }}">
-                                            <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
-                                        </button>
-                                    </form>
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <form action="{{ route('videographer.contents.sync_branches', $item->id) }}" method="POST" style="display: inline-block; margin: 0;" title="{{ __('توزيع ومزامنة هذه المحاضرة تلقائياً على كافة الفروع الأكاديمية الشقيقة') }}">
+                                            @csrf
+                                            <button type="submit" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" title="{{ __('مزامنة وتوزيع لكافة الفروع') }}">
+                                                <i class="fa-solid fa-layer-group" style="font-size: 0.85rem;"></i>
+                                            </button>
+                                        </form>
+
+                                        <form action="{{ route('videographer.contents.destroy', $item->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة؟') }}')" style="display: inline-block; margin: 0;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف المحاضرة') }}">
+                                                <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

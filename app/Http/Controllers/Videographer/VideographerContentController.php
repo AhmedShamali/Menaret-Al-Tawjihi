@@ -125,34 +125,68 @@ class VideographerContentController extends Controller
         $stageIds = array_map('intval', $request->stage_ids);
         $targetSubjectIds = [];
 
-        // 1. استخراج معرفات المواد المستهدفة في كافة الفروع المختارة
+        // 1. استخراج معرفات المواد المستهدفة الصريحة
         if ($request->filled('subject_ids') && is_array($request->subject_ids)) {
             $targetSubjectIds = array_map('intval', $request->subject_ids);
         }
 
-        // إذا تم اختيار اسم مادة عام أو مادة مرجعية، نربطها تلقائياً بالمواد المطابقة في الفروع المختارة
+        // 2. إذا تم اختيار اسم مادة عام أو مادة مرجعية، نربطها تلقائياً بالمواد المطابقة في الفروع المختارة بأمان تام
         if ($request->filled('common_name') || $request->filled('primary_subject_id')) {
             $refName = trim((string)$request->common_name);
+            $refKey = '';
             if ($request->filled('primary_subject_id')) {
                 $refSub = Subject::find($request->primary_subject_id);
                 if ($refSub) {
                     $refName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $refSub->name_ar ?? ''));
+                    if (!empty($refSub->subject_key)) {
+                        $refKey = explode('_', $refSub->subject_key)[0];
+                    }
                 }
             }
 
-            if (!empty($refName)) {
-                $normalized = preg_replace('/[إأآا]/u', '%', $refName);
-                $normalized = preg_replace('/[ةه]/u', '%', $normalized);
+            if (!empty($refName) || !empty($refKey)) {
+                $cleanRef = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $refName));
+                $normRef = preg_replace('/[إأآا]/u', '%', $cleanRef);
+                $normRef = preg_replace('/[ةه]/u', '%', $normRef);
+                $normRef = preg_replace('/[ىي]/u', '%', $normRef);
+
                 $matchedIds = Subject::whereIn('stage_id', $stageIds)
-                    ->where(function($q) use ($refName, $normalized) {
-                        $q->where('name_ar', 'like', "%{$refName}%")
-                          ->orWhere('name_ar', 'like', "%{$normalized}%")
-                          ->orWhere('name', 'like', "%{$refName}%");
+                    ->where(function($q) use ($cleanRef, $normRef, $refKey) {
+                        if (!empty($cleanRef)) {
+                            $q->where('name_ar', 'like', "%{$cleanRef}%");
+                        }
+                        if (!empty($normRef) && $normRef !== $cleanRef) {
+                            $q->orWhere('name_ar', 'like', "%{$normRef}%");
+                        }
+                        if (!empty($refKey)) {
+                            $q->orWhere('subject_key', 'like', "{$refKey}_%");
+                        }
                     })
                     ->pluck('id')
                     ->toArray();
 
                 $targetSubjectIds = array_values(array_unique(array_merge($targetSubjectIds, $matchedIds)));
+            }
+        }
+
+        // 3. توسيع تلقائي إضافي: إذا اختار المستخدم عدة فروع وتحددت مادة لفرع واحد فقط، جلب نظيراتها في باقي الفروع
+        if (!empty($targetSubjectIds) && count($stageIds) > 1) {
+            $firstSub = Subject::find($targetSubjectIds[0]);
+            if ($firstSub) {
+                $cName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $firstSub->name_ar ?? ''));
+                $bKey = !empty($firstSub->subject_key) ? explode('_', $firstSub->subject_key)[0] : '';
+                $extraIds = Subject::whereIn('stage_id', $stageIds)
+                    ->where(function($q) use ($cName, $bKey) {
+                        if (!empty($cName)) {
+                            $q->where('name_ar', 'like', "%{$cName}%");
+                        }
+                        if (!empty($bKey)) {
+                            $q->orWhere('subject_key', 'like', "{$bKey}_%");
+                        }
+                    })
+                    ->pluck('id')
+                    ->toArray();
+                $targetSubjectIds = array_values(array_unique(array_merge($targetSubjectIds, $extraIds)));
             }
         }
 
@@ -162,13 +196,13 @@ class VideographerContentController extends Controller
             ]);
         }
 
-        // 2. معالجة الفيديو الأساسي
+        // 4. معالجة الفيديو الأساسي
         $videoPath = null;
         $fileSize = null;
 
         // أ) إذا تم رفعه مسبقاً عبر Chunked Upload
         if ($request->filled('uploaded_video_path')) {
-            $videoPath = $request->uploaded_video_path;
+            $videoPath = trim($request->uploaded_video_path);
             $fileSize = $request->formatted_size ?? 'فيديو مرفوع';
         }
         // ب) إذا تم رفعه كملف مباشر في الفورم
@@ -185,7 +219,13 @@ class VideographerContentController extends Controller
             $fileSize = 'رابط خارجي';
         }
 
-        // 3. معالجة ملف الدوسية أو الملخص (PDF)
+        if (empty($videoPath)) {
+            return back()->withInput()->withErrors([
+                'video_file' => 'يرجى تحديد ملف فيديو أو الانتظار حتى اكتمال الرفع أو تزويد رابط للمحاضرة.'
+            ]);
+        }
+
+        // 5. معالجة ملف الدوسية أو الملخص (PDF)
         $pdfPath = null;
         if ($request->hasFile('pdf_file')) {
             $pdfFile = $request->file('pdf_file');
@@ -198,16 +238,17 @@ class VideographerContentController extends Controller
         $createdRecordsCount = 0;
         $affectedBranchesCount = count($stageIds);
 
-        // 4. إنشاء وتوزيع المحتوى تلقائياً لكل مادة وفرع تم اختياره
+        // 6. إنشاء وتوزيع المحتوى تلقائياً لكل مادة وفرع تم اختياره
         foreach ($targetSubjectIds as $subId) {
-            $sub = Subject::with('teacher')->find($subId);
+            $sub = Subject::with(['teacher', 'stage'])->find($subId);
+            if (!$sub) continue;
 
             // تحديد اسم مقدم الشرح أو القناة تلقائياً (إسناد للمعلم إن وجد)
             $channelName = $request->channel_name;
-            if (empty($channelName) || $channelName === (auth()->user()->name ?? 'المصور الأكاديمي')) {
-                if ($sub && !empty($sub->teacher_name)) {
+            if (empty($channelName) || in_array($channelName, [auth()->user()->name, 'المصور الأكاديمي', 'استوديو التصوير المعتمد'])) {
+                if (!empty($sub->teacher_name)) {
                     $channelName = $sub->teacher_name;
-                } elseif ($sub && $sub->teacher && !empty($sub->teacher->name)) {
+                } elseif ($sub->teacher && !empty($sub->teacher->name)) {
                     $channelName = $sub->teacher->name_ar ?? $sub->teacher->name;
                 } else {
                     $channelName = $request->channel_name ?? (auth()->user()->name ?? 'المصور الأكاديمي');
@@ -223,14 +264,14 @@ class VideographerContentController extends Controller
                 'pdf_path'      => $pdfPath,
                 'channel_name'  => $channelName,
                 'file_size'     => $fileSize,
-                'order'         => (int) ($request->order ?? 0),
+                'order'         => (int) ($request->order ?? 1),
                 'is_visible'    => true,
                 'target_region' => $request->target_region ?? 'all',
             ]);
             $createdRecordsCount++;
 
             // إرسال إشعارات فورية لطلبة هذا الفرع والمادة
-            if ($sub && $sub->stage_id) {
+            if ($sub->stage_id) {
                 try {
                     \App\Services\NotificationService::notifyStageStudents(
                         $sub->stage_id,
@@ -270,6 +311,97 @@ class VideographerContentController extends Controller
         }
 
         return redirect()->route('videographer.contents.index')->with('success', $successMsg);
+    }
+
+    /**
+     * مزامنة وتوزيع محاضرة موجودة مسبقاً على كافة الفروع الأكاديمية الشقيقة
+     */
+    public function syncBranches($id, Request $request)
+    {
+        $content = EducationalContent::with('subject.stage')->findOrFail($id);
+        $user = auth()->user();
+        if ($user->role !== 'admin' && $content->uploaded_by !== $user->id) {
+            abort(403, 'غير مصرح لك بمزامنة هذا المحتوى.');
+        }
+
+        $baseSub = $content->subject;
+        if (!$baseSub) {
+            return back()->with('error', 'المادة الأساسية لهذا المحتوى غير مسجلة.');
+        }
+
+        $cleanName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $baseSub->name_ar ?? ''));
+        $baseKey = !empty($baseSub->subject_key) ? explode('_', $baseSub->subject_key)[0] : '';
+
+        // البحث عن كافة المواد المشتركة في كافة المراحل والفروع
+        $allSisterSubjects = Subject::where(function($q) use ($cleanName, $baseKey) {
+            if (!empty($cleanName)) {
+                $norm = preg_replace('/[إأآا]/u', '%', $cleanName);
+                $norm = preg_replace('/[ةه]/u', '%', $norm);
+                $norm = preg_replace('/[ىي]/u', '%', $norm);
+                $q->where('name_ar', 'like', "%{$cleanName}%")
+                  ->orWhere('name_ar', 'like', "%{$norm}%");
+            }
+            if (!empty($baseKey)) {
+                $q->orWhere('subject_key', 'like', "{$baseKey}_%");
+            }
+        })->get();
+
+        $syncedCount = 0;
+        foreach ($allSisterSubjects as $sisterSub) {
+            // التحقق مما إذا كان المحتوى مضافاً مسبقاً في هذه المادة
+            $alreadyExists = EducationalContent::where('subject_id', $sisterSub->id)
+                ->where(function($q) use ($content) {
+                    $q->where('title', $content->title);
+                    if (!empty($content->url_path)) {
+                        $q->orWhere('url_path', $content->url_path);
+                    }
+                })->exists();
+
+            if (!$alreadyExists) {
+                $channelName = $content->channel_name;
+                if (!empty($sisterSub->teacher_name)) {
+                    $channelName = $sisterSub->teacher_name;
+                } elseif ($sisterSub->teacher && !empty($sisterSub->teacher->name)) {
+                    $channelName = $sisterSub->teacher->name_ar ?? $sisterSub->teacher->name;
+                }
+
+                $newRecord = EducationalContent::create([
+                    'subject_id'    => $sisterSub->id,
+                    'uploaded_by'   => $content->uploaded_by,
+                    'title'         => $content->title,
+                    'type'          => $content->type ?: 'video',
+                    'url_path'      => $content->url_path,
+                    'pdf_path'      => $content->pdf_path,
+                    'channel_name'  => $channelName,
+                    'file_size'     => $content->file_size,
+                    'order'         => $content->order ?? 1,
+                    'is_visible'    => true,
+                    'target_region' => $content->target_region ?? 'all',
+                ]);
+                $syncedCount++;
+
+                // إتاحة الوصول للطلبة المسجلين في هذا الفرع
+                try {
+                    $activeEnrollments = \App\Models\Enrollment::where('subject_id', $sisterSub->id)
+                        ->where('status', 'active')
+                        ->get();
+                    foreach ($activeEnrollments as $enr) {
+                        \App\Models\ContentAssignment::firstOrCreate([
+                            'enrollment_id'          => $enr->id,
+                            'educational_content_id' => $newRecord->id,
+                        ], [
+                            'is_visible' => true,
+                        ]);
+                    }
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        $msg = $syncedCount > 0 
+            ? "تم بنجاح توزيع ومزامنة المحاضرة على ({$syncedCount}) فروع أكاديمية إضافية! 🎉" 
+            : "المحاضرة موزعة بالفعل على كافة الفروع الأكاديمية المطابقة.";
+
+        return back()->with('success', $msg);
     }
 
     /**

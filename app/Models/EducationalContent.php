@@ -24,6 +24,12 @@ class EducationalContent extends Model
         'pdf_path', 
     ];
 
+    protected $casts = [
+        'is_visible'  => 'boolean',
+        'order'       => 'integer',
+        'views_count' => 'integer',
+    ];
+
     public function subject() {
         return $this->belongsTo(Subject::class);
     }

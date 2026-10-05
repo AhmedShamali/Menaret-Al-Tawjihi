@@ -440,6 +440,17 @@
         if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
     };
 
+    // تطبيع ومطابقة النصوص العربية وتجاوز اختلافات الهمزات والتاء المربوطة
+    function normalizeArabicText(str) {
+        if (!str) return '';
+        return str
+            .replace(/[إأآا]/g, 'ا')
+            .replace(/[ةه]/g, 'ه')
+            .replace(/[ىي]/g, 'ي')
+            .replace(/[\u064B-\u065F]/g, '')
+            .trim();
+    }
+
     window.handleCommonSubjectSelect = function() {
         const commonSelect = document.getElementById('commonNameSelect');
         if (!commonSelect) return;
@@ -467,9 +478,10 @@
             return;
         }
 
-        // استخراج المواد المطابقة في الفروع المختارة
+        // استخراج المواد المطابقة في الفروع المختارة بدقة
         badgesContainer.innerHTML = '';
         let matchedCount = 0;
+        const normCommon = normalizeArabicText(commonName);
 
         selectedStageCheckboxes.forEach(cb => {
             const stageId = parseInt(cb.value);
@@ -477,11 +489,15 @@
             const stageName = stageCard ? stageCard.querySelector('strong').textContent.trim() : `فرع #${stageId}`;
             const stageSubjects = (window.stageSubjectsMap && window.stageSubjectsMap[stageId]) ? window.stageSubjectsMap[stageId] : [];
 
-            // البحث عن المادة بالاسم
+            // البحث عن المادة بالاسم المنظف والمطبع أو المفتاح الأساسي
             const matched = stageSubjects.filter(sub => {
                 const clean = (sub.clean_name || '').trim();
                 const nameAr = (sub.name_ar || sub.name || '').trim();
-                return (clean && (clean.includes(commonName) || commonName.includes(clean))) || nameAr.includes(commonName);
+                const normClean = normalizeArabicText(clean);
+                const normNameAr = normalizeArabicText(nameAr);
+
+                return (normClean && (normClean.includes(normCommon) || normCommon.includes(normClean)))
+                    || (normNameAr && (normNameAr.includes(normCommon) || normCommon.includes(normNameAr)));
             });
 
             matched.forEach(sub => {
@@ -493,13 +509,13 @@
                 badge.style.background = '#ecfdf5';
                 badge.style.color = '#065f46';
                 badge.style.border = '1px solid #a7f3d0';
-                badge.style.padding = '5px 10px';
+                badge.style.padding = '6px 12px';
                 badge.style.borderRadius = '8px';
-                badge.style.fontSize = '0.78rem';
+                badge.style.fontSize = '0.8rem';
                 badge.style.fontWeight = '700';
 
                 badge.innerHTML = `
-                    <i class="fa-solid fa-check" style="color: #059669;"></i>
+                    <i class="fa-solid fa-circle-check" style="color: #059669;"></i>
                     <span>${stageName}:</span>
                     <strong style="color: #047857;">${sub.name_ar || sub.name}</strong>
                     <input type="hidden" name="subject_ids[]" value="${sub.id}">

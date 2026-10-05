@@ -156,6 +156,49 @@ class SchemaHealer
                 } catch (\Throwable $e) {}
             }
 
+            // 8. فحص وصيانة المحتوى التعليمي وربط صلاحيات وصول الطلبة تلقائياً
+            if (Schema::hasTable('educational_contents')) {
+                // تفعيل ظهور المحتويات التعليمية والتأكد من عدم حجبها بقيم فارغة
+                DB::table('educational_contents')
+                    ->whereNull('is_visible')
+                    ->update(['is_visible' => true]);
+
+                // التأكد من ضبط نوع الفيديو للمحتويات التي تمتلك مسار فيديو
+                DB::table('educational_contents')
+                    ->whereNotNull('url_path')
+                    ->where('url_path', '!=', '')
+                    ->where(function($q) {
+                        $q->whereNull('type')->orWhere('type', '');
+                    })
+                    ->update(['type' => 'video']);
+
+                // ربط الفيديوهات تلقائياً باشتراكات الطلاب النشطة للمواد
+                if (Schema::hasTable('content_assignments') && Schema::hasTable('enrollments')) {
+                    $contents = DB::table('educational_contents')->where('is_visible', true)->get(['id', 'subject_id']);
+                    foreach ($contents as $c) {
+                        $enrIds = DB::table('enrollments')
+                            ->where('subject_id', $c->subject_id)
+                            ->where('status', 'active')
+                            ->pluck('id');
+                        foreach ($enrIds as $eId) {
+                            $exists = DB::table('content_assignments')
+                                ->where('enrollment_id', $eId)
+                                ->where('educational_content_id', $c->id)
+                                ->exists();
+                            if (!$exists) {
+                                DB::table('content_assignments')->insert([
+                                    'enrollment_id'          => $eId,
+                                    'educational_content_id' => $c->id,
+                                    'is_visible'             => true,
+                                    'created_at'             => now(),
+                                    'updated_at'             => now(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
         } catch (\Throwable $e) {
             Log::warning('SchemaHealer warning: ' . $e->getMessage());
         }

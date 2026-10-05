@@ -472,6 +472,7 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     Route::get('/contents/create', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'create'])->name('contents.create');
     Route::post('/contents', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'store'])->name('contents.store');
     Route::delete('/contents/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'destroy'])->name('contents.destroy')->whereNumber('id');
+    Route::post('/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('contents.sync_branches')->whereNumber('id');
 
     // الرفع المجزأ واستئناف الرفع للملفات الكبيرة
     Route::match(['get', 'post'], '/contents/upload-chunk', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'uploadChunk'])->name('contents.upload_chunk');

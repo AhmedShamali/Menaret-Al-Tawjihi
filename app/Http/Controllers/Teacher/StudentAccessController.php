@@ -24,16 +24,14 @@ class StudentAccessController extends Controller
     {
         $teacher = Auth::user();
         
-        // جلب المواد التي يدرسها هذا المعلم
-        $subjects = Subject::where('user_id', $teacher->id)
-            ->orWhere('teacher_id', $teacher->id)
-            ->when($teacher->subject_id, function($q) use ($teacher) {
-                $q->orWhere('id', $teacher->subject_id);
-            })
-            ->get();
+        // جلب المواد التي يدرسها هذا المعلم بكافة الفروع الأكاديمية المشتركة
+        $teacherSubjectIds = $this->getTeacherSubjectIds($teacher);
+        $subjects = !empty($teacherSubjectIds)
+            ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
+            : Subject::where('user_id', $teacher->id)->orWhere('teacher_id', $teacher->id)->get();
 
-        if ($subjects->isEmpty() && $teacher->role === 'admin') {
-            $subjects = Subject::all();
+        if ($subjects->isEmpty() && in_array($teacher->role, ['admin', 'super_admin'])) {
+            $subjects = Subject::with('stage')->orderBy('name_ar')->get();
         }
 
         $selectedSubjectId = $request->get('subject_id', $subjects->first()?->id);
@@ -423,5 +421,76 @@ class StudentAccessController extends Controller
             'status'  => 'success',
             'message' => "تم تفعيل اشتراك الطالب ({$student->name_ar}) بنجاح!"
         ]);
+    }
+
+    /**
+     * استخراج كافة معرفات المواد المسندة للمعلم بدقة وتوسيعها لتشمل الفروع الشقيقة
+     */
+    protected function getTeacherSubjectIds($user = null): array
+    {
+        $user = $user ?? Auth::user();
+        if (!$user) {
+            return [];
+        }
+        if (in_array($user->role, ['admin', 'super_admin'])) {
+            return Subject::pluck('id')->toArray();
+        }
+        $ids = [];
+        if (!empty($user->subject_id)) {
+            $ids[] = (int) $user->subject_id;
+        }
+        $fromUser = Subject::where('user_id', $user->id)->pluck('id')->toArray();
+        $fromTeacher = Subject::where('teacher_id', $user->id)->pluck('id')->toArray();
+        $assignedIds = array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
+
+        if (!empty($user->name)) {
+            $byName = Subject::where('teacher_name', 'like', "%{$user->name}%")->pluck('id')->toArray();
+            $assignedIds = array_merge($assignedIds, $byName);
+        }
+
+        if (!empty($user->major)) {
+            $cleanMajor = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $user->major));
+            if (!empty($cleanMajor)) {
+                $normMajor = preg_replace('/[إأآا]/u', '%', $cleanMajor);
+                $normMajor = preg_replace('/[ةه]/u', '%', $normMajor);
+                $normMajor = preg_replace('/[ىي]/u', '%', $normMajor);
+                $byMajor = Subject::where(function($q) use ($cleanMajor, $normMajor) {
+                    $q->where('name_ar', 'like', "%{$cleanMajor}%")
+                      ->orWhere('name_ar', 'like', "%{$normMajor}%");
+                })->pluck('id')->toArray();
+                $assignedIds = array_merge($assignedIds, $byMajor);
+            }
+        }
+
+        $fromUploads = EducationalContent::where('uploaded_by', $user->id)->pluck('subject_id')->toArray();
+        $assignedIds = array_values(array_unique(array_filter(array_merge($assignedIds, $fromUploads))));
+
+        if (!empty($assignedIds)) {
+            $baseSubjects = Subject::whereIn('id', $assignedIds)->get();
+            $sisterSubjectIds = [];
+            foreach ($baseSubjects as $baseSub) {
+                $cleanName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $baseSub->name_ar ?? ''));
+                if (!empty($cleanName)) {
+                    $normClean = preg_replace('/[إأآا]/u', '%', $cleanName);
+                    $normClean = preg_replace('/[ةه]/u', '%', $normClean);
+                    $normClean = preg_replace('/[ىي]/u', '%', $normClean);
+                    $matched = Subject::where(function($q) use ($cleanName, $normClean) {
+                        $q->where('name_ar', 'like', "%{$cleanName}%")
+                          ->orWhere('name_ar', 'like', "%{$normClean}%");
+                    })->pluck('id')->toArray();
+                    $sisterSubjectIds = array_merge($sisterSubjectIds, $matched);
+                }
+                if (!empty($baseSub->subject_key)) {
+                    $baseKey = explode('_', $baseSub->subject_key)[0];
+                    if (!empty($baseKey)) {
+                        $matchedKey = Subject::where('subject_key', 'like', "{$baseKey}_%")->pluck('id')->toArray();
+                        $sisterSubjectIds = array_merge($sisterSubjectIds, $matchedKey);
+                    }
+                }
+            }
+            $assignedIds = array_values(array_unique(array_filter(array_merge($assignedIds, $sisterSubjectIds))));
+        }
+
+        return $assignedIds;
     }
 }

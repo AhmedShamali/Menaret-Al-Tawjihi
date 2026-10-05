@@ -22,7 +22,7 @@ class EducationalContentController extends Controller
         if (!$user) {
             return [];
         }
-        if ($user->role === 'admin') {
+        if (in_array($user->role, ['admin', 'super_admin'])) {
             return Subject::pluck('id')->toArray();
         }
         $ids = [];
@@ -33,14 +33,30 @@ class EducationalContentController extends Controller
         $fromTeacher = Subject::where('teacher_id', $user->id)->pluck('id')->toArray();
         $assignedIds = array_values(array_unique(array_filter(array_merge($ids, $fromUser, $fromTeacher))));
 
-        // إذا لم يكن مرتبطاً بمعرف مادة مباشر، البحث بالاسم أو التخصص
-        if (empty($assignedIds) && !empty($user->name)) {
-            $byName = Subject::where(function($q) use ($user) {
-                $q->where('teacher_name', 'like', "%{$user->name}%")
-                  ->orWhere('name_ar', 'like', "%{$user->name}%");
-            })->pluck('id')->toArray();
+        // إذا لم يكن مرتبطاً بمعرف مادة مباشر، البحث باسم المعلم
+        if (!empty($user->name)) {
+            $byName = Subject::where('teacher_name', 'like', "%{$user->name}%")->pluck('id')->toArray();
             $assignedIds = array_merge($assignedIds, $byName);
         }
+
+        // فحص التخصص الأكاديمي للمعلم (major) ومطابقته مع أسماء المواد
+        if (!empty($user->major)) {
+            $cleanMajor = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $user->major));
+            if (!empty($cleanMajor)) {
+                $normMajor = preg_replace('/[إأآا]/u', '%', $cleanMajor);
+                $normMajor = preg_replace('/[ةه]/u', '%', $normMajor);
+                $normMajor = preg_replace('/[ىي]/u', '%', $normMajor);
+                $byMajor = Subject::where(function($q) use ($cleanMajor, $normMajor) {
+                    $q->where('name_ar', 'like', "%{$cleanMajor}%")
+                      ->orWhere('name_ar', 'like', "%{$normMajor}%");
+                })->pluck('id')->toArray();
+                $assignedIds = array_merge($assignedIds, $byMajor);
+            }
+        }
+
+        // فحص أي مواد سبق للمعلم رفع محتوى فيها
+        $fromUploads = EducationalContent::where('uploaded_by', $user->id)->pluck('subject_id')->toArray();
+        $assignedIds = array_values(array_unique(array_filter(array_merge($assignedIds, $fromUploads))));
 
         // توسيع نطاق المواد ليشمل المواد المشتركة عبر كافة الفروع الأكاديمية لنفس تخصص المعلم
         // مثلاً: إذا كان المعلم يدرس اللغة الإنجليزية في العلمي، يشمل تلقائياً الإنجليزية في الأدبي والصناعي
@@ -50,7 +66,13 @@ class EducationalContentController extends Controller
             foreach ($baseSubjects as $baseSub) {
                 $cleanName = trim(preg_replace('/\s*\(.*?\)\s*/u', '', $baseSub->name_ar ?? ''));
                 if (!empty($cleanName)) {
-                    $matched = Subject::where('name_ar', 'like', "%{$cleanName}%")->pluck('id')->toArray();
+                    $normClean = preg_replace('/[إأآا]/u', '%', $cleanName);
+                    $normClean = preg_replace('/[ةه]/u', '%', $normClean);
+                    $normClean = preg_replace('/[ىي]/u', '%', $normClean);
+                    $matched = Subject::where(function($q) use ($cleanName, $normClean) {
+                        $q->where('name_ar', 'like', "%{$cleanName}%")
+                          ->orWhere('name_ar', 'like', "%{$normClean}%");
+                    })->pluck('id')->toArray();
                     $sisterSubjectIds = array_merge($sisterSubjectIds, $matched);
                 }
                 if (!empty($baseSub->subject_key)) {
@@ -1166,8 +1188,8 @@ class EducationalContentController extends Controller
 
         $stats = [
             'total'   => (clone $query)->count(),
-            'visible' => (clone $query)->where('is_visible', 1)->count(),
-            'hidden'  => (clone $query)->where('is_visible', 0)->count(),
+            'visible' => (clone $query)->where('is_visible', true)->count(),
+            'hidden'  => (clone $query)->where('is_visible', false)->count(),
         ];
 
         // عند تحديد مادة معينة يتم الترتيب حسب ترتيب الدروس، وعند العرض العام يتم إظهار أحدث الفيديوهات المرفوعة أولاً
@@ -1243,8 +1265,8 @@ class EducationalContentController extends Controller
 
         $stats = [
             'total'   => (clone $query)->count(),
-            'visible' => (clone $query)->where('is_visible', 1)->count(),
-            'hidden'  => (clone $query)->where('is_visible', 0)->count(),
+            'visible' => (clone $query)->where('is_visible', true)->count(),
+            'hidden'  => (clone $query)->where('is_visible', false)->count(),
         ];
 
         if ($request->filled('subject_id')) {
