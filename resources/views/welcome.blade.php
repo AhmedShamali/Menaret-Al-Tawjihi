@@ -518,13 +518,16 @@
             cursor: pointer;
         }
 
-        /* 3. شريط التعاميم الأكاديمية (Sleek Academic Capsule Ticker) */
+        /* 3. شريط آخر الأخبار والتنبيهات المباشرة (Dynamic Royal Academic News Ticker) */
         .royal-ticker-bar {
             width: 100%;
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border-bottom: 1px solid #fde68a;
-            color: #78350f;
-            padding: 8px 24px;
+            background: linear-gradient(90deg, #072344 0%, #0b3b6f 50%, #072344 100%);
+            border-bottom: 2px solid #d97706;
+            color: #ffffff;
+            padding: 6px 20px;
+            box-shadow: 0 3px 12px rgba(7, 35, 68, 0.15);
+            position: relative;
+            z-index: 50;
         }
         .royal-ticker-inner {
             width: 100%;
@@ -533,41 +536,153 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 13px;
+            font-size: 13.5px;
         }
         .royal-ticker-tag {
-            background: #b45309;
+            background: linear-gradient(135deg, #e11d48, #be123c);
             color: #ffffff;
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 800;
-            padding: 3px 11px;
-            border-radius: 999px;
+            padding: 4px 12px;
+            border-radius: 6px;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
-            box-shadow: 0 1px 4px rgba(180, 83, 9, 0.25);
+            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
+            letter-spacing: 0.2px;
         }
         .pulse-dot {
             width: 7px;
             height: 7px;
-            background: #4ade80;
+            background: #ffffff;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.4);
-            animation: pulseDotAnim 1.6s infinite ease-in-out;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+            animation: pulseDotAnim 1.4s infinite ease-in-out;
         }
         @keyframes pulseDotAnim {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.35); opacity: 0.6; }
+            50% { transform: scale(1.4); opacity: 0.6; }
         }
-        .royal-ticker-content {
-            font-weight: 700;
+        .royal-ticker-viewport {
             flex: 1;
-            color: #78350f;
-            line-height: 1.5;
-            font-size: 12.5px;
+            overflow: hidden;
+            position: relative;
+            height: 28px;
+            display: flex;
+            align-items: center;
+        }
+        .royal-ticker-track {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .royal-ticker-item {
+            height: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #f8fafc;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.15s;
+        }
+        .royal-ticker-item:hover {
+            color: #fbbf24;
+        }
+        .royal-ticker-item-badge {
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
+        }
+        .ticker-badge-urgent {
+            background: rgba(225, 29, 72, 0.28);
+            color: #fda4af;
+            border: 1px solid rgba(244, 63, 94, 0.45);
+        }
+        .ticker-badge-warning {
+            background: rgba(217, 119, 6, 0.3);
+            color: #fde68a;
+            border: 1px solid rgba(251, 191, 36, 0.45);
+        }
+        .ticker-badge-info {
+            background: rgba(2, 132, 199, 0.3);
+            color: #bae6fd;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+        }
+        .ticker-badge-success {
+            background: rgba(16, 185, 129, 0.3);
+            color: #a7f3d0;
+            border: 1px solid rgba(52, 211, 153, 0.45);
+        }
+        .royal-ticker-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .royal-ticker-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .ticker-nav-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            width: 26px;
+            height: 26px;
+            border-radius: 5px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.15s;
+        }
+        .ticker-nav-btn:hover {
+            background: #d97706;
+            color: #ffffff;
+            border-color: #d97706;
+        }
+        .ticker-admin-btn {
+            background: rgba(217, 119, 6, 0.25);
+            border: 1px solid rgba(217, 119, 6, 0.5);
+            color: #fbbf24;
+            padding: 3px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.15s;
+            margin-right: 4px;
+        }
+        .ticker-admin-btn:hover {
+            background: #d97706;
+            color: #ffffff;
+        }
+        @media (max-width: 768px) {
+            .royal-ticker-bar {
+                padding: 6px 12px;
+            }
+            .royal-ticker-tag span:last-child {
+                display: none;
+            }
+            .ticker-admin-btn span {
+                display: none;
+            }
         }
 
         /* 4. الحاوية والتخطيط العام */
@@ -2027,18 +2142,63 @@
         </div>
     </nav>
 
-    <!-- 3. شريط التعاميم والأنباء الأكاديمية (Sleek Academic Capsule Ticker) -->
-    <div class="royal-ticker-bar">
+    <!-- 3. شريط آخر الأخبار والتنبيهات المباشرة (Dynamic Royal Academic News Ticker) -->
+    @php
+        $activeNewsItems = \App\Services\NewsTickerService::getActive();
+    @endphp
+    @if(!empty($activeNewsItems))
+    <div class="royal-ticker-bar" id="royalTickerBar">
         <div class="royal-ticker-inner">
-            <span class="royal-ticker-tag">
+            <div class="royal-ticker-tag">
                 <span class="pulse-dot"></span>
-                <span>{{ __('إعلان توجيهي 2026') }}</span>
-            </span>
-            <span class="royal-ticker-content">
-                {{ __('أهلاً وسهلاً بكافة طلبة الثانوية العامة في فلسطين (القدس، الضفة الغربية، وقطاع غزة). المنظومة مفتوحة للتسجيل وتفعيل الشروحات والتدريبات التفاعلية المعتمدة لعام 2026.') }}
-            </span>
+                <i class="fa-solid fa-bullhorn" style="font-size: 11px;"></i>
+                <span>{{ __('آخر الأخبار') }}</span>
+            </div>
+
+            <div class="royal-ticker-viewport" id="tickerViewport">
+                <div class="royal-ticker-track" id="tickerTrack">
+                    @foreach($activeNewsItems as $nIdx => $nItem)
+                        @php
+                            $nType = $nItem['type'] ?? 'urgent';
+                            $badgeClass = 'ticker-badge-' . (in_array($nType, ['urgent', 'warning', 'info', 'success']) ? $nType : 'urgent');
+                            $hasUrl = !empty($nItem['url']);
+                        @endphp
+                        @if($hasUrl)
+                            <a href="{{ $nItem['url'] }}" target="_blank" class="royal-ticker-item" title="{{ $nItem['text'] }}">
+                                <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'عاجل' }}</span>
+                                <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; opacity: 0.65; margin-right: 4px;"></i>
+                            </a>
+                        @else
+                            <div class="royal-ticker-item" title="{{ $nItem['text'] }}">
+                                <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'عاجل' }}</span>
+                                <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
+                            </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
+            <div class="royal-ticker-controls">
+                @if(count($activeNewsItems) > 1)
+                    <button type="button" class="ticker-nav-btn" onclick="prevTickerItem()" title="{{ __('الخبر السابق') }}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button type="button" class="ticker-nav-btn" onclick="nextTickerItem()" title="{{ __('الخبر التالي') }}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                @endif
+
+                @if(auth()->check() && auth()->user()->role === 'admin')
+                    <a href="{{ route('admin.news.index') }}" class="ticker-admin-btn" title="{{ __('إدارة شريط الأخبار') }}">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>{{ __('إدارة الأخبار') }}</span>
+                    </a>
+                @endif
+            </div>
         </div>
     </div>
+    @endif
 
     <!-- 4. الحاوية العامة على كامل الشاشة -->
     <div class="page-container">
@@ -2613,6 +2773,55 @@
                 }
             }
         }, { passive: true });
+
+        // تدوير شريط آخر الأخبار والتنبيهات المباشرة بالصفحة الرئيسية
+        (function() {
+            const track = document.getElementById('tickerTrack');
+            const viewport = document.getElementById('tickerViewport');
+            if (!track) return;
+
+            const items = track.querySelectorAll('.royal-ticker-item');
+            if (items.length <= 1) return;
+
+            let currentIndex = 0;
+            const itemHeight = 28;
+            let tickerInterval = null;
+            const duration = 5000;
+
+            function goToIndex(idx) {
+                currentIndex = (idx + items.length) % items.length;
+                track.style.transform = 'translateY(-' + (currentIndex * itemHeight) + 'px)';
+            }
+
+            window.nextTickerItem = function() {
+                goToIndex(currentIndex + 1);
+            };
+
+            window.prevTickerItem = function() {
+                goToIndex(currentIndex - 1);
+            };
+
+            function startAutoTicker() {
+                if (tickerInterval) clearInterval(tickerInterval);
+                tickerInterval = setInterval(function() {
+                    goToIndex(currentIndex + 1);
+                }, duration);
+            }
+
+            function stopAutoTicker() {
+                if (tickerInterval) {
+                    clearInterval(tickerInterval);
+                    tickerInterval = null;
+                }
+            }
+
+            startAutoTicker();
+
+            if (viewport) {
+                viewport.addEventListener('mouseenter', stopAutoTicker);
+                viewport.addEventListener('mouseleave', startAutoTicker);
+            }
+        })();
     </script>
 
     <!-- زر العودة إلى بداية الصفحة الكلاسيكي الأنيق (Scroll to Top Button) -->

@@ -22,6 +22,8 @@ class DashboardController extends Controller {
             'avg_success'        => 85,
             'recent_submissions' => \App\Models\ExamSubmission::with(['student', 'exam'])->latest()->take(5)->get(),
             'top_subjects'       => \App\Models\Subject::withCount('contents')->get(),
+            'news_ticker_items'  => \App\Services\NewsTickerService::getAll(),
+            'news_ticker_enabled'=> \App\Services\NewsTickerService::isEnabled(),
         ];
 
         return view('admin.dashboard', compact('data'));

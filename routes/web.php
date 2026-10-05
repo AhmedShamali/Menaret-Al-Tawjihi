@@ -291,6 +291,13 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/videographers/{id}/reset-password', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'resetPassword'])->name('videographers.reset_password')->whereNumber('id');
     Route::delete('/videographers/{id}', [\App\Http\Controllers\Admin\AdminVideographerController::class, 'destroy'])->name('videographers.destroy')->whereNumber('id');
 
+    // إدارة شريط آخر الأخبار العاجلة للواجهة الرئيسية
+    Route::get('/news', [\App\Http\Controllers\Admin\NewsTickerController::class, 'index'])->name('news.index');
+    Route::post('/news', [\App\Http\Controllers\Admin\NewsTickerController::class, 'store'])->name('news.store');
+    Route::post('/news/toggle-global', [\App\Http\Controllers\Admin\NewsTickerController::class, 'toggleGlobal'])->name('news.toggleGlobal');
+    Route::post('/news/{id}/toggle', [\App\Http\Controllers\Admin\NewsTickerController::class, 'toggle'])->name('news.toggle');
+    Route::delete('/news/{id}', [\App\Http\Controllers\Admin\NewsTickerController::class, 'destroy'])->name('news.destroy');
+
     // فحص ومعالجة قاعدة البيانات ذاتياً للأدمن
     Route::get('/system/heal-database', function() {
         \App\Support\SchemaHealer::heal();

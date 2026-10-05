@@ -2285,6 +2285,14 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('admin.news.index') }}" class="nav-item {{ Request::is('admin/news*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge badge-rose"><i class="fa-solid fa-bullhorn"></i></span>
+                            <span>{{ __('شريط الأخبار العاجلة') }}</span>
+                        </div>
+                    </div>
+                </a>
                 <a href="{{ route('admin.activities.index') }}" class="nav-item {{ Request::is('admin/system-pulse*') ? 'active' : '' }}">
                     <div class="nav-link">
                         <div class="link-main">

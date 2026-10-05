@@ -31,6 +31,62 @@
         </div>
     </div>
 
+    @php
+        $dashTickerItems = $data['news_ticker_items'] ?? \App\Services\NewsTickerService::getAll();
+        $dashTickerEnabled = $data['news_ticker_enabled'] ?? \App\Services\NewsTickerService::isEnabled();
+        $dashActiveNews = array_values(array_filter($dashTickerItems, fn($i) => !empty($i['is_active'])));
+        $dashLatestActive = $dashActiveNews[0] ?? null;
+    @endphp
+    <!-- شريط إدارة آخر الأخبار العاجلة للواجهة الرئيسية (تحكم مباشر للمدير) -->
+    <div class="dash-news-ticker-panel" style="background: linear-gradient(135deg, #072344 0%, #0c335e 100%); border: 1px solid rgba(217, 119, 6, 0.35); border-radius: 12px; padding: 14px 20px; margin-bottom: 22px; color: #ffffff; box-shadow: 0 4px 14px rgba(7, 35, 68, 0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 14px; flex: 1; min-width: 280px;">
+            <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(225, 29, 72, 0.2); color: #f43f5e; border: 1px solid rgba(225, 29, 72, 0.4); display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0;">
+                <i class="fa-solid fa-bullhorn"></i>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                    <strong style="font-size: 0.94rem; font-family: 'Alexandria', 'Cairo', sans-serif;">{{ __('شريط آخر الأخبار بالواجهة الرئيسية') }}</strong>
+                    @if($dashTickerEnabled)
+                        <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #34d399;"></span>
+                            {{ __('مفعّل بالرئيسية') }}
+                        </span>
+                    @else
+                        <span style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px;">
+                            <span style="width: 6px; height: 6px; border-radius: 50%; background: #94a3b8;"></span>
+                            {{ __('معطّل مؤقتاً') }}
+                        </span>
+                    @endif
+                    <span style="font-size: 0.76rem; color: #94a3b8;">({{ count($dashActiveNews) }} {{ __('خبر معروض') }})</span>
+                </div>
+                <div style="font-size: 0.84rem; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    @if($dashLatestActive)
+                        <span style="background: rgba(217, 119, 6, 0.25); color: #fbbf24; border: 1px solid rgba(217, 119, 6, 0.4); padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; margin-left: 6px;">
+                            {{ $dashLatestActive['badge'] ?? 'عاجل' }}
+                        </span>
+                        <span>{{ $dashLatestActive['text'] ?? '' }}</span>
+                    @else
+                        <span style="color: #94a3b8; font-style: italic;">{{ __('لا توجد أخبار معروضة حالياً. انقر على الزر لإضافة خبر عاجل جديد.') }}</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <button type="button" onclick="openDashNewsModal()" style="display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #e11d48, #be123c); color: #ffffff; border: none; padding: 8px 16px; border-radius: 7px; font-weight: 700; font-size: 0.82rem; cursor: pointer; box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3); transition: transform 0.15s;">
+                <i class="fa-solid fa-plus"></i>
+                <span>{{ __('إضافة خبر عاجل') }}</span>
+            </button>
+            <a href="{{ route('admin.news.index') }}" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.1); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); padding: 8px 14px; border-radius: 7px; font-weight: 600; font-size: 0.82rem; text-decoration: none; transition: background 0.15s;">
+                <i class="fa-solid fa-sliders"></i>
+                <span>{{ __('إدارة الأخبار') }}</span>
+            </a>
+            <a href="{{ route('home') }}" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; background: rgba(255, 255, 255, 0.05); color: #cbd5e1; border: 1px solid rgba(255, 255, 255, 0.12); padding: 8px 12px; border-radius: 7px; font-weight: 600; font-size: 0.82rem; text-decoration: none;" title="{{ __('معاينة بالرئيسية') }}">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+        </div>
+    </div>
+
     <!-- 2. بطاقات المؤشرات الأكاديمية البسيطة والواضحة (Compact Metric Boxes) -->
     <div class="dash-kpi-row">
         <!-- كادر المعلمين -->
@@ -895,4 +951,117 @@
     .text-rose { color: #e11d48 !important; }
     .text-muted { color: #64748b !important; }
 </style>
+
+{{-- مودال الإضافة السريعة للأخبار من لوحة الإدارة للمدير --}}
+<div id="dash-news-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #ffffff; border-radius: 14px; max-width: 560px; width: 100%; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); overflow: hidden; animation: modalPop 0.25s ease-out;">
+        
+        <div style="padding: 18px 22px; background: #072344; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #d97706;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(225, 29, 72, 0.2); color: #f43f5e; display: grid; place-items: center; font-size: 1.1rem; border: 1px solid rgba(225, 29, 72, 0.4);">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; font-family: 'Alexandria', 'Cairo', sans-serif;">
+                        {{ __('إضافة ونشر خبر عاجل للواجهة الرئيسية') }}
+                    </h3>
+                    <div style="font-size: 0.74rem; color: #94a3b8;">
+                        {{ __('سيظهر الخبر فوراً في شريط الصفحة الرئيسية للزوار والطلاب') }}
+                    </div>
+                </div>
+            </div>
+            <button type="button" onclick="closeDashNewsModal()" style="background: rgba(255, 255, 255, 0.1); border: none; color: #ffffff; width: 30px; height: 30px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 0.9rem;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ route('admin.news.store') }}" style="padding: 22px;">
+            @csrf
+
+            {{-- نص الخبر --}}
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 700; font-size: 0.84rem; color: #1e293b; margin-bottom: 6px;">
+                    {{ __('نص الخبر أو التنبيه') }} <span style="color: #e11d48;">*</span>
+                </label>
+                <textarea name="text" rows="3" required placeholder="{{ __('اكتب نص الخبر العاجل هنا، مثال: بدء التسجيل للمكثفات الوزارية الشاملة لطلبة التوجيهي لعام 2026...') }}" style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 10px 14px; font-size: 0.88rem; font-family: inherit; line-height: 1.5; resize: vertical; box-sizing: border-box;"></textarea>
+            </div>
+
+            {{-- الوسم والنوع --}}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; font-weight: 700; font-size: 0.84rem; color: #1e293b; margin-bottom: 6px;">
+                        {{ __('وسم التصنيف') }} <span style="color: #e11d48;">*</span>
+                    </label>
+                    <input type="text" name="badge" id="dash-badge-input" value="عاجل" required placeholder="{{ __('مثل: عاجل، إعلان') }}" style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; box-sizing: border-box;">
+                    <div style="display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px;">
+                        <button type="button" onclick="setDashBadge('عاجل')" style="background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; cursor: pointer;">عاجل</button>
+                        <button type="button" onclick="setDashBadge('إعلان توجيهي 2026')" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; cursor: pointer;">توجيهي 2026</button>
+                        <button type="button" onclick="setDashBadge('تنبيه وزاري')" style="background: #e0f2fe; color: #075985; border: 1px solid #7dd3fc; font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; cursor: pointer;">تنبيه وزاري</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="display: block; font-weight: 700; font-size: 0.84rem; color: #1e293b; margin-bottom: 6px;">
+                        {{ __('نوع الخبر والمظهر') }} <span style="color: #e11d48;">*</span>
+                    </label>
+                    <select name="type" style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; background: #ffffff; box-sizing: border-box;">
+                        <option value="urgent">🔴 عاجل (أحمر ناري)</option>
+                        <option value="warning" selected>🟡 تنبيه رسمي (ذهبي / كهرماني)</option>
+                        <option value="info">🔵 معلومة وتحديث (أزرق)</option>
+                        <option value="success">🟢 تهنئة ونجاح (أخضر)</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- رابط اختياري --}}
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 700; font-size: 0.84rem; color: #1e293b; margin-bottom: 6px;">
+                    {{ __('رابط التفاصيل (اختياري)') }}
+                </label>
+                <input type="url" name="url" placeholder="https://..." style="width: 100%; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; box-sizing: border-box;">
+            </div>
+
+            {{-- خيارات إضافية --}}
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: #1e293b; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" name="is_active" value="1" checked style="width: 16px; height: 16px; accent-color: #059669;">
+                    <span>{{ __('تفعيل هذا الخبر مباشرة في شريط الصفحة الرئيسية') }}</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.84rem; color: #1e293b; font-weight: 600; cursor: pointer;">
+                    <input type="checkbox" name="notify_students" value="1" style="width: 16px; height: 16px; accent-color: #e11d48;">
+                    <span>{{ __('إرسال إشعار فوري لجميع طلبة التوجيهي عبر المنصة 🔔') }}</span>
+                </label>
+            </div>
+
+            {{-- الأزرار --}}
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                <button type="button" onclick="closeDashNewsModal()" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 9px 16px; border-radius: 7px; font-weight: 600; font-size: 0.84rem; cursor: pointer;">
+                    {{ __('إلغاء') }}
+                </button>
+                <button type="submit" style="background: linear-gradient(135deg, #072344, #1e40af); color: #ffffff; border: none; padding: 9px 22px; border-radius: 7px; font-weight: 700; font-size: 0.85rem; cursor: pointer; box-shadow: 0 2px 8px rgba(7, 35, 68, 0.25);">
+                    <i class="fa-solid fa-paper-plane" style="margin-left: 6px;"></i>
+                    <span>{{ __('نشر الخبر الآن') }}</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openDashNewsModal() {
+    document.getElementById('dash-news-modal').style.display = 'flex';
+}
+function closeDashNewsModal() {
+    document.getElementById('dash-news-modal').style.display = 'none';
+}
+function setDashBadge(val) {
+    document.getElementById('dash-badge-input').value = val;
+}
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('dash-news-modal');
+    if (e.target === modal) {
+        closeDashNewsModal();
+    }
+});
+</script>
 @endsection
