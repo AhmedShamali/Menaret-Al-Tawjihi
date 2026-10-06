@@ -810,7 +810,7 @@ class EducationalContentController extends Controller
         ], 200);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         $content = EducationalContent::find($id);
 
@@ -818,27 +818,53 @@ class EducationalContentController extends Controller
             $user = auth()->user();
             if ($user && $user->role === 'teacher') {
                 $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-                if (!in_array((int)$content->subject_id, $teacherSubjectIds)) {
+                if (!in_array((int)$content->subject_id, $teacherSubjectIds) && $content->uploaded_by != $user->id) {
                     return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
                 }
             }
-            if ($content->pdf_path) {
-                $otherPdfUses = EducationalContent::where('id', '!=', $content->id)
-                    ->where('pdf_path', $content->pdf_path)
+
+            $title = $content->title;
+            $urlPath = $content->url_path;
+            $pdfPath = $content->pdf_path;
+
+            // حذف هذه المحاضرة وجميع النسخ الموزعة منها في الفروع الشقيقة لضمان عدم بقاء نسخ يتيمة
+            $allIdsToDelete = [$content->id];
+            if (!empty($urlPath)) {
+                $sisterIds = EducationalContent::where('id', '!=', $content->id)
+                    ->where('title', $content->title)
+                    ->where('url_path', $urlPath)
+                    ->pluck('id')
+                    ->toArray();
+                if (!empty($sisterIds)) {
+                    $allIdsToDelete = array_merge($allIdsToDelete, $sisterIds);
+                }
+            }
+
+            // حذف التعيينات وسجلات تقدم المشاهدة وملاحظات الفيديو
+            try {
+                \App\Models\ContentAssignment::whereIn('educational_content_id', $allIdsToDelete)->delete();
+                \App\Models\VideoProgress::whereIn('educational_content_id', $allIdsToDelete)->delete();
+                \App\Models\VideoNote::whereIn('educational_content_id', $allIdsToDelete)->delete();
+            } catch (\Throwable $e) {}
+
+            // حذف ملفات PDF المرتبطة إذا لم تكن مستخدمة في محتوى آخر
+            if ($pdfPath) {
+                $otherPdfUses = EducationalContent::whereNotIn('id', $allIdsToDelete)
+                    ->where('pdf_path', $pdfPath)
                     ->exists();
 
                 if (!$otherPdfUses) {
                     try {
                         if (!empty(config('filesystems.disks.supabase.key')) && !empty(config('filesystems.disks.supabase.url'))) {
-                            $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $content->pdf_path);
+                            $parsedPath = str_replace(rtrim(config('filesystems.disks.supabase.url'), '/') . '/', '', $pdfPath);
                             if (Storage::disk('supabase')->exists($parsedPath)) {
                                 Storage::disk('supabase')->delete($parsedPath);
                             }
                         }
                     } catch (\Throwable $e) {}
 
-                    if (str_contains($content->pdf_path, 'storage/educational/files/')) {
-                        $localRel = 'educational/files/' . basename($content->pdf_path);
+                    if (str_contains($pdfPath, 'storage/educational/files/')) {
+                        $localRel = 'educational/files/' . basename($pdfPath);
                         try {
                             if (Storage::disk('public')->exists($localRel)) {
                                 Storage::disk('public')->delete($localRel);
@@ -848,25 +874,104 @@ class EducationalContentController extends Controller
                 }
             }
 
-            if ($content->url_path && str_starts_with($content->url_path, 'educational/videos/')) {
-                $otherVideoUses = EducationalContent::where('id', '!=', $content->id)
-                    ->where('url_path', $content->url_path)
+            // حذف ملفات الفيديو المحلية إذا لم تكن مستخدمة في محتوى آخر
+            if ($urlPath && str_starts_with($urlPath, 'educational/videos/')) {
+                $otherVideoUses = EducationalContent::whereNotIn('id', $allIdsToDelete)
+                    ->where('url_path', $urlPath)
                     ->exists();
 
                 if (!$otherVideoUses) {
                     try {
-                        if (Storage::disk('public')->exists($content->url_path)) {
-                            Storage::disk('public')->delete($content->url_path);
+                        if (Storage::disk('public')->exists($urlPath)) {
+                            Storage::disk('public')->delete($urlPath);
                         }
                     } catch (\Throwable $e) {}
                 }
             }
 
-            $deleted = $content->delete();
-            return response()->json(['success' => $deleted, 'message' => 'تم الحذف بنجاح']);
+            EducationalContent::whereIn('id', $allIdsToDelete)->delete();
+
+            $deletedCount = count($allIdsToDelete);
+            $msg = $deletedCount > 1 
+                ? "تم حذف المحاضرة \"{$title}\" بنجاح من كافة الفروع الأكاديمية ({$deletedCount} فروع) ✅"
+                : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+
+            return redirect()->back()->with('success', $msg);
         }
 
-        return response()->json(['success' => false, 'message' => 'العنصر غير موجود'], 404);
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json(['success' => false, 'message' => 'المحاضرة غير موجودة أو تم حذفها مسبقاً.'], 404);
+        }
+
+        return redirect()->back()->with('error', 'المحاضرة غير موجودة أو تم حذفها مسبقاً.');
+    }
+
+    /**
+     * حذف وتصفير جميع المحتويات والمحاضرات على المنصة دفعة واحدة (مخصص للمدير العام فقط)
+     */
+    public function purgeAllContents(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || $user->role !== 'admin') {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => false, 'message' => 'عذراً، هذا الإجراء مخصص للمدير العام فقط.'], 403);
+            }
+            abort(403, 'عذراً، هذا الإجراء مخصص للمدير العام فقط.');
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            $totalCount = EducationalContent::count();
+
+            // 1. تصفير تعيينات المحتوى للطلبة
+            try {
+                \DB::table('content_assignments')->delete();
+            } catch (\Throwable $e) {}
+
+            // 2. تصفير تقدم المشاهدة وملاحظات الفيديو
+            try {
+                \DB::table('video_progress')->delete();
+                \DB::table('video_notes')->delete();
+            } catch (\Throwable $e) {}
+
+            // 3. حذف جميع سجلات المحتوى
+            \DB::table('educational_contents')->delete();
+
+            // 4. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
+            if ($request->boolean('delete_physical_files', false)) {
+                try {
+                    $videoFiles = Storage::disk('public')->files('educational/videos');
+                    Storage::disk('public')->delete($videoFiles);
+                } catch (\Throwable $e) {}
+            }
+
+            \DB::commit();
+
+            $msg = "تم حذف وتصفير كافة المحاضرات والمحتويات بنجاح! تم مسح ({$totalCount}) محتوى تعليمي من المنصة بالكامل لجميع المستخدمين 🗑️";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $msg,
+                ]);
+            }
+
+            return redirect()->back()->with('success', $msg);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء عملية الحذف الشامل: ' . $e->getMessage()
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -222,6 +222,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::delete('/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
+    Route::post('/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
 
     // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة لمنع أخطاء 404 في طلبات الحذف والتحديث
     Route::get('/educational_contents', [EducationalContentController::class, 'index'])->name('educational_contents.index_alias');
@@ -230,6 +231,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit_alias');
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update_alias');
     Route::delete('/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy_alias');
+    Route::post('/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll_alias');
 
     // واجهتا الفيديوهات والملفات والدوسيات المستقلتان للإدارة
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');

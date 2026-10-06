@@ -487,17 +487,50 @@ class VideographerContentController extends Controller
             abort(403, 'غير مصرح لك بحذف هذا المحتوى.');
         }
 
-        // حذف الملفات المرتبطة إن وجدت
+        $title = $content->title;
+        $urlPath = $content->url_path;
+
+        // حذف المحاضرة وجميع النسخ الموزعة في الفروع الشقيقة
+        $allIds = [$content->id];
+        if (!empty($urlPath)) {
+            $sisterIds = EducationalContent::where('id', '!=', $content->id)
+                ->where('title', $content->title)
+                ->where('url_path', $urlPath)
+                ->pluck('id')
+                ->toArray();
+            if (!empty($sisterIds)) {
+                $allIds = array_merge($allIds, $sisterIds);
+            }
+        }
+
+        try {
+            \App\Models\ContentAssignment::whereIn('educational_content_id', $allIds)->delete();
+            \App\Models\VideoProgress::whereIn('educational_content_id', $allIds)->delete();
+            \App\Models\VideoNote::whereIn('educational_content_id', $allIds)->delete();
+        } catch (\Throwable $e) {}
+
+        // حذف الملفات المرتبطة إن وجدت ولم تكن مستخدمة في محتوى آخر
         if (!empty($content->url_path) && !str_starts_with($content->url_path, 'http')) {
-            Storage::disk('public')->delete($content->url_path);
+            $otherUses = EducationalContent::whereNotIn('id', $allIds)->where('url_path', $content->url_path)->exists();
+            if (!$otherUses) {
+                try { Storage::disk('public')->delete($content->url_path); } catch (\Throwable $e) {}
+            }
         }
         if (!empty($content->pdf_path)) {
-            Storage::disk('public')->delete($content->pdf_path);
+            $otherPdf = EducationalContent::whereNotIn('id', $allIds)->where('pdf_path', $content->pdf_path)->exists();
+            if (!$otherPdf) {
+                try { Storage::disk('public')->delete($content->pdf_path); } catch (\Throwable $e) {}
+            }
         }
 
-        $content->delete();
+        EducationalContent::whereIn('id', $allIds)->delete();
 
-        return redirect()->back()->with('success', 'تم حذف المحاضرة بنجاح.');
+        $count = count($allIds);
+        $msg = $count > 1 
+            ? "تم حذف المحاضرة \"{$title}\" بنجاح من كافة الفروع الأكاديمية ({$count} فروع) ✅"
+            : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
+
+        return redirect()->back()->with('success', $msg);
     }
 
     /**
