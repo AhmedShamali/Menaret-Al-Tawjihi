@@ -3,8 +3,6 @@
 @section('title', ($subject->name_ar ?? $subject->name) . ' | ' . __('Step by Step'))
 
 @section('content')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
 /* ==========================================================================
    CLASSIC ROYAL ACADEMIC DESIGN SYSTEM - STUDENT SUBJECT VIEW

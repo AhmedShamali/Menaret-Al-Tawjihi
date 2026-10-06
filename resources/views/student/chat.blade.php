@@ -34,12 +34,21 @@
             margin: 0 !important;
             border-radius: 0 !important;
             border: none !important;
+            width: 100% !important;
+            max-width: 100% !important;
             height: 100dvh !important;
             min-height: 100dvh !important;
             box-shadow: none !important;
         }
+        .chat-header {
+            padding: 10px 14px !important;
+        }
+        .chat-body {
+            padding: 12px 14px !important;
+        }
         .chat-footer {
-            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+            padding: 8px 12px !important;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
         }
         .chat-input {
             font-size: 16px !important;

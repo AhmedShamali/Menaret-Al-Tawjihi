@@ -1335,31 +1335,45 @@
     /* Responsive */
     @media (max-width: 900px) {
         .inbox-classic-wrapper {
-            padding: 4px;
+            padding: 0 !important;
+            margin: 0 !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
         }
         .inbox-classic-card {
-            grid-template-columns: 1fr;
-            height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px));
-            max-height: calc(100vh - 145px - env(safe-area-inset-bottom, 0px));
-            border-radius: 12px;
+            grid-template-columns: 1fr !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         .inbox-classic-main {
             display: none;
         }
         .inbox-classic-card.mobile-active .inbox-classic-sidebar {
-            display: none;
+            display: none !important;
         }
         .inbox-classic-card.mobile-active .inbox-classic-main {
-            display: flex;
+            display: flex !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
         }
         .mobile-return-btn {
-            display: inline-block;
+            display: inline-block !important;
         }
         .bubble-card {
-            max-width: 85%;
+            max-width: 88% !important;
         }
         .composer-send-btn span {
-            display: none;
+            display: none !important;
+        }
+        .composer-container {
+            padding: 8px 12px !important;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .composer-box textarea {
+            font-size: 16px !important;
         }
     }
 </style>

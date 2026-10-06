@@ -243,13 +243,24 @@
 
     /* التجاوب مع الجوال */
     @media (max-width: 768px) {
-        .chat-page-wrapper { padding: 0; height: 100vh; }
-        .chat-main-wrapper { border-radius: 0; border: none; }
-        .bubble { max-width: 85%; }
-        .send-text { display: none; }
-        .chat-nav { padding: 12px 15px; }
-        .teacher-icon { width: 40px; height: 40px; font-size: 1rem; }
-        .btn-text { display: none; }
+        .chat-page-wrapper { padding: 0 !important; margin: 0 !important; height: 100dvh !important; max-height: 100dvh !important; }
+        .chat-main-wrapper { border-radius: 0 !important; border: none !important; height: 100dvh !important; max-height: 100dvh !important; }
+        .bubble { max-width: 88% !important; }
+        .send-text { display: none !important; }
+        .chat-nav { padding: 10px 14px !important; }
+        .teacher-icon { width: 38px !important; height: 38px !important; font-size: 1rem !important; }
+        .btn-text { display: none !important; }
+        .chat-input-bar {
+            padding: 8px 12px !important;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .input-group-custom input {
+            font-size: 16px !important;
+            padding: 10px 14px !important;
+        }
+        .send-trigger {
+            padding: 10px 16px !important;
+        }
     }
 
     /* أنيميشن */

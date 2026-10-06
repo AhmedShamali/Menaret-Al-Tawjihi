@@ -2,7 +2,7 @@
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="manifest" href="/manifest.json?v=20261002-v33">
     <meta name="theme-color" content="#ffffff">
@@ -2127,7 +2127,8 @@
             body.is-chat-page .academic-inbox-wrapper,
             body.is-chat-page .academic-chat-container,
             body.is-chat-page .support-classic-container,
-            body.is-chat-page .academic-teacher-chat-container {
+            body.is-chat-page .academic-teacher-chat-container,
+            body.is-chat-page .inbox-classic-wrapper {
                 padding: 0 !important;
                 margin: 0 !important;
                 width: 100% !important;
@@ -2138,12 +2139,22 @@
                 display: flex !important;
                 flex-direction: column !important;
             }
+            body.is-chat-page .container-fluid {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
             body.is-chat-page .chat-card,
             body.is-chat-page .chat-app-container,
             body.is-chat-page .academic-inbox-grid,
             body.is-chat-page .academic-chat-card,
             body.is-chat-page .support-classic-card,
-            body.is-chat-page .chat-main-card {
+            body.is-chat-page .chat-main-card,
+            body.is-chat-page .chat-main-wrapper,
+            body.is-chat-page .inbox-classic-card {
                 height: 100dvh !important;
                 max-height: 100dvh !important;
                 border-radius: 0 !important;
