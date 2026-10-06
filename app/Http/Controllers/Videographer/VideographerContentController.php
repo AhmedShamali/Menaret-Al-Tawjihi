@@ -38,13 +38,18 @@ class VideographerContentController extends Controller
      */
     public function index(Request $request)
     {
+        // مزامنة فورية لكافة الفيديوهات وتوزيعها
+        try {
+            \App\Services\EducationalContentSyncService::syncAllExistingVideos();
+        } catch (\Throwable $e) {}
+
         $userId = auth()->id();
         $isAdmin = auth()->user()->role === 'admin';
 
         $query = EducationalContent::with('subject.stage', 'uploader');
 
-        // إذا لم يكن مديراً، يعرض فقط ما رفعه هذا المصور
-        if (!$isAdmin) {
+        // إذا طلب المصور فقط ما رفعه بنفسه
+        if ($request->get('my_only') === '1') {
             $query->where('uploaded_by', $userId);
         }
 
@@ -326,6 +331,11 @@ class VideographerContentController extends Controller
                         }
                     }
                 }
+            } catch (\Throwable $e) {}
+
+            // توزيع ونشر تلقائي شامل لكافة المواد الشقيقة في جميع الفروع وفتح الوصول التلقائي للطلبة
+            try {
+                \App\Services\EducationalContentSyncService::distributeContentToAllBranches($contentRecord);
             } catch (\Throwable $e) {}
         }
 

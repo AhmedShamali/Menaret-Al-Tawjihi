@@ -65,8 +65,25 @@ class DashboardController extends Controller {
             }
         }
 
-        // الاعتماد على المحتوى المتاح في المادة
-        $allContents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
+        // مزامنة وضمان توفر كافة الشروحات والمحتويات المنشورة عبر المواد الشقيقة في الفروع
+        try {
+            \App\Services\EducationalContentSyncService::syncAllExistingVideos();
+            $sisterSubjectIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds((int)$subject->id);
+            if (!empty($sisterSubjectIds)) {
+                $missingSisterContents = EducationalContent::whereIn('subject_id', $sisterSubjectIds)
+                    ->where('subject_id', '!=', $subject->id)
+                    ->get();
+                foreach ($missingSisterContents as $mContent) {
+                    \App\Services\EducationalContentSyncService::distributeContentToAllBranches($mContent);
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        // جلب المحتوى المحدث للمادة
+        $allContents = EducationalContent::where('subject_id', $subject->id)->orderBy('order')->latest('id')->get();
+        if ($allContents->isEmpty()) {
+            $allContents = $subject->contents->isNotEmpty() ? $subject->contents : $subject->educationalContents;
+        }
 
         // للطلاب: إظهار المحتوى المعتمد والمرئي فقط وتصفيته بدقة حسب منطقة الطالب (غزة / الضفة)
         // أما المعلم أو المدير فيمكنهما رؤية كافة المحتويات عند المعاينة
@@ -100,9 +117,10 @@ class DashboardController extends Controller {
             }
         }
 
-        // تحديد حالة القفل لكل درس
-        $contents->each(function ($item) use ($isFullAccess, $allowedIds) {
-            $item->is_unlocked = $isFullAccess || in_array($item->id, $allowedIds);
+        // إذا كان لدى الطالب تسجيل نشط ومعتمد في المادة، يتم فتح الوصول لكافة الدروس والشروحات تلقائياً
+        $hasActiveEnrollment = $enrollment && $enrollment->status === 'active';
+        $contents->each(function ($item) use ($isFullAccess, $allowedIds, $hasActiveEnrollment) {
+            $item->is_unlocked = $isFullAccess || $hasActiveEnrollment || in_array($item->id, $allowedIds);
         });
 
         // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط التي رفعها المعلم

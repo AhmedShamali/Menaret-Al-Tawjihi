@@ -122,10 +122,12 @@ class EducationalContentController extends Controller
         $query = EducationalContent::with('subject.stage')->latest();
         if ($user && $user->role === 'teacher') {
             $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-            if (empty($teacherSubjectIds)) {
-                $query->whereRaw('1 = 0');
-            } else {
-                $query->whereIn('subject_id', $teacherSubjectIds);
+            if (!empty($teacherSubjectIds)) {
+                $allTeacherSisterIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds($teacherSubjectIds);
+                $query->where(function($q) use ($allTeacherSisterIds, $user) {
+                    $q->whereIn('subject_id', $allTeacherSisterIds)
+                      ->orWhere('uploaded_by', $user->id);
+                });
             }
         }
         $contents = $query->get();
@@ -596,6 +598,11 @@ class EducationalContentController extends Controller
             } catch (\Throwable $e) {
                 \Log::error("EducationalContent multi-save error: " . $e->getMessage());
             }
+
+            // نشر وتوزيع تلقائي لكافة الفروع والمواد المشتركة وفتح الوصول التلقائي للطلبة
+            try {
+                \App\Services\EducationalContentSyncService::distributeContentToAllBranches($content);
+            } catch (\Throwable $th) {}
 
             // إرسال إشعارات لطلبة المرحلة
             if ($subject->stage_id) {
@@ -1131,6 +1138,11 @@ class EducationalContentController extends Controller
      */
     public function teacherVideos(Request $request)
     {
+        // مزامنة ذاتية لكافة الفيديوهات والشروحات وتوزيعها على الفروع
+        try {
+            \App\Services\EducationalContentSyncService::syncAllExistingVideos();
+        } catch (\Throwable $e) {}
+
         $user = auth()->user();
         $isTeacher = ($user && $user->role === 'teacher');
         $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
@@ -1138,12 +1150,8 @@ class EducationalContentController extends Controller
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
                 ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
-                : collect();
-            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            }])->orderBy('grade_level')->get();
+                : Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         } else {
             $subjects = Subject::with('stage')->orderBy('name_ar')->get();
             $stages = Stage::with('subjects')->orderBy('grade_level')->get();
@@ -1155,25 +1163,18 @@ class EducationalContentController extends Controller
                   ->orWhereIn('type', ['video', 'both']);
             });
 
-        if ($isTeacher) {
-            if (empty($teacherSubjectIds)) {
-                $query->where(function($q) use ($user) {
-                    $q->where('uploaded_by', $user->id)
+        if ($request->filled('subject_id')) {
+            $targetSubIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds((int)$request->subject_id);
+            $query->whereIn('subject_id', $targetSubIds);
+        } elseif ($isTeacher) {
+            if (!empty($teacherSubjectIds) && $request->get('show_all') !== '1') {
+                $allTeacherSisterIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds($teacherSubjectIds);
+                $query->where(function($q) use ($allTeacherSisterIds, $user) {
+                    $q->whereIn('subject_id', $allTeacherSisterIds)
+                      ->orWhere('uploaded_by', $user->id)
                       ->orWhere('channel_name', 'like', "%{$user->name}%");
                 });
-            } else {
-                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
-                    $query->where('subject_id', (int)$request->subject_id);
-                } else {
-                    $query->where(function($q) use ($teacherSubjectIds, $user) {
-                        $q->whereIn('subject_id', $teacherSubjectIds)
-                          ->orWhere('uploaded_by', $user->id)
-                          ->orWhere('channel_name', 'like', "%{$user->name}%");
-                    });
-                }
             }
-        } elseif ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->subject_id);
         }
 
         if ($request->filled('stage_id')) {
@@ -1208,6 +1209,11 @@ class EducationalContentController extends Controller
      */
     public function teacherFiles(Request $request)
     {
+        // مزامنة ذاتية وضمان ظهور كافة الملفات وتوزيعها على الفروع
+        try {
+            \App\Services\EducationalContentSyncService::syncAllExistingVideos();
+        } catch (\Throwable $e) {}
+
         $user = auth()->user();
         $isTeacher = ($user && $user->role === 'teacher');
         $teacherSubjectIds = $isTeacher ? $this->getTeacherSubjectIds($user) : [];
@@ -1215,12 +1221,8 @@ class EducationalContentController extends Controller
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
                 ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
-                : collect();
-            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            }])->orderBy('grade_level')->get();
+                : Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         } else {
             $subjects = Subject::with('stage')->orderBy('name_ar')->get();
             $stages = Stage::with('subjects')->orderBy('grade_level')->get();
@@ -1232,25 +1234,18 @@ class EducationalContentController extends Controller
                   ->orWhereIn('type', ['file', 'pdf', 'both']);
             });
 
-        if ($isTeacher) {
-            if (empty($teacherSubjectIds)) {
-                $query->where(function($q) use ($user) {
-                    $q->where('uploaded_by', $user->id)
+        if ($request->filled('subject_id')) {
+            $targetSubIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds((int)$request->subject_id);
+            $query->whereIn('subject_id', $targetSubIds);
+        } elseif ($isTeacher) {
+            if (!empty($teacherSubjectIds) && $request->get('show_all') !== '1') {
+                $allTeacherSisterIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds($teacherSubjectIds);
+                $query->where(function($q) use ($allTeacherSisterIds, $user) {
+                    $q->whereIn('subject_id', $allTeacherSisterIds)
+                      ->orWhere('uploaded_by', $user->id)
                       ->orWhere('channel_name', 'like', "%{$user->name}%");
                 });
-            } else {
-                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
-                    $query->where('subject_id', (int)$request->subject_id);
-                } else {
-                    $query->where(function($q) use ($teacherSubjectIds, $user) {
-                        $q->whereIn('subject_id', $teacherSubjectIds)
-                          ->orWhere('uploaded_by', $user->id)
-                          ->orWhere('channel_name', 'like', "%{$user->name}%");
-                    });
-                }
             }
-        } elseif ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->subject_id);
         }
 
         if ($request->filled('stage_id')) {
@@ -1291,12 +1286,8 @@ class EducationalContentController extends Controller
         if ($isTeacher) {
             $subjects = !empty($teacherSubjectIds)
                 ? Subject::with('stage')->whereIn('id', $teacherSubjectIds)->orderBy('name_ar')->get()
-                : collect();
-            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            }])->orderBy('grade_level')->get();
+                : Subject::with('stage')->orderBy('name_ar')->get();
+            $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         } else {
             $subjects = Subject::with('stage')->orderBy('name_ar')->get();
             $stages = Stage::with('subjects')->orderBy('grade_level')->get();
@@ -1304,25 +1295,18 @@ class EducationalContentController extends Controller
 
         $query = EducationalContent::with('subject.stage');
 
-        if ($isTeacher) {
-            if (empty($teacherSubjectIds)) {
-                $query->where(function($q) use ($user) {
-                    $q->where('uploaded_by', $user->id)
+        if ($request->filled('subject_id')) {
+            $targetSubIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds((int)$request->subject_id);
+            $query->whereIn('subject_id', $targetSubIds);
+        } elseif ($isTeacher) {
+            if (!empty($teacherSubjectIds) && $request->get('show_all') !== '1') {
+                $allTeacherSisterIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds($teacherSubjectIds);
+                $query->where(function($q) use ($allTeacherSisterIds, $user) {
+                    $q->whereIn('subject_id', $allTeacherSisterIds)
+                      ->orWhere('uploaded_by', $user->id)
                       ->orWhere('channel_name', 'like', "%{$user->name}%");
                 });
-            } else {
-                if ($request->filled('subject_id') && in_array((int)$request->subject_id, $teacherSubjectIds)) {
-                    $query->where('subject_id', (int)$request->subject_id);
-                } else {
-                    $query->where(function($q) use ($teacherSubjectIds, $user) {
-                        $q->whereIn('subject_id', $teacherSubjectIds)
-                          ->orWhere('uploaded_by', $user->id)
-                          ->orWhere('channel_name', 'like', "%{$user->name}%");
-                    });
-                }
             }
-        } elseif ($request->filled('subject_id')) {
-            $query->where('subject_id', $request->subject_id);
         }
 
         if ($request->filled('stage_id')) {

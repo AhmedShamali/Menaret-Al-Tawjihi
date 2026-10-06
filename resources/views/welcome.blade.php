@@ -518,14 +518,14 @@
             cursor: pointer;
         }
 
-        /* 3. شريط آخر الأخبار والتنبيهات المباشرة (Dynamic Royal Academic News Ticker) */
+        /* 3. شريط التعاميم والأنباء الأكاديمية الملكي (Royal Academic News & Announcements Ticker) */
         .royal-ticker-bar {
             width: 100%;
-            background: linear-gradient(90deg, #072344 0%, #0b3b6f 50%, #072344 100%);
-            border-bottom: 2px solid #d97706;
-            color: #ffffff;
-            padding: 6px 20px;
-            box-shadow: 0 3px 12px rgba(7, 35, 68, 0.15);
+            background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
+            border-bottom: 1.5px solid #fde68a;
+            color: #78350f;
+            padding: 9px 24px;
+            box-shadow: 0 1px 4px rgba(180, 83, 9, 0.05);
             position: relative;
             z-index: 50;
         }
@@ -535,97 +535,96 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             font-size: 13.5px;
         }
         .royal-ticker-tag {
-            background: linear-gradient(135deg, #e11d48, #be123c);
+            background: linear-gradient(135deg, #b45309, #92400e);
             color: #ffffff;
             font-size: 11.5px;
             font-weight: 800;
             padding: 4px 12px;
-            border-radius: 6px;
+            border-radius: 999px;
             white-space: nowrap;
             display: inline-flex;
             align-items: center;
             gap: 6px;
             flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.35);
-            letter-spacing: 0.2px;
+            box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
+            letter-spacing: 0.3px;
         }
         .pulse-dot {
             width: 7px;
             height: 7px;
-            background: #ffffff;
+            background: #4ade80;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
-            animation: pulseDotAnim 1.4s infinite ease-in-out;
+            box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.45);
+            animation: pulseDotAnim 1.5s infinite ease-in-out;
         }
         @keyframes pulseDotAnim {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.4); opacity: 0.6; }
+            50% { transform: scale(1.35); opacity: 0.6; }
         }
         .royal-ticker-viewport {
             flex: 1;
-            overflow: hidden;
             position: relative;
-            height: 28px;
+            min-height: 26px;
             display: flex;
             align-items: center;
-        }
-        .royal-ticker-track {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
         }
         .royal-ticker-item {
-            height: 28px;
-            display: flex;
+            display: none;
             align-items: center;
             gap: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: #f8fafc;
-            font-size: 13px;
-            font-weight: 600;
+            width: 100%;
+            color: #78350f;
+            font-size: 13.5px;
+            font-weight: 700;
             text-decoration: none;
-            transition: color 0.15s;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            line-height: 1.5;
+        }
+        .royal-ticker-item.active {
+            display: inline-flex;
+            opacity: 1;
         }
         .royal-ticker-item:hover {
-            color: #fbbf24;
+            color: #9a3412;
         }
         .royal-ticker-item-badge {
             font-size: 10.5px;
             font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 4px;
+            padding: 2px 9px;
+            border-radius: 6px;
             flex-shrink: 0;
             letter-spacing: 0.3px;
         }
         .ticker-badge-urgent {
-            background: rgba(225, 29, 72, 0.28);
-            color: #fda4af;
-            border: 1px solid rgba(244, 63, 94, 0.45);
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
         }
         .ticker-badge-warning {
-            background: rgba(217, 119, 6, 0.3);
-            color: #fde68a;
-            border: 1px solid rgba(251, 191, 36, 0.45);
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
         }
         .ticker-badge-info {
-            background: rgba(2, 132, 199, 0.3);
-            color: #bae6fd;
-            border: 1px solid rgba(56, 189, 248, 0.45);
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #7dd3fc;
         }
         .ticker-badge-success {
-            background: rgba(16, 185, 129, 0.3);
-            color: #a7f3d0;
-            border: 1px solid rgba(52, 211, 153, 0.45);
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
         }
         .royal-ticker-text {
+            color: #78350f;
+            font-weight: 700;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -633,16 +632,25 @@
         .royal-ticker-controls {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             flex-shrink: 0;
         }
+        .ticker-counter {
+            font-size: 11px;
+            font-weight: 800;
+            color: #92400e;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid #fde68a;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
         .ticker-nav-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #e2e8f0;
+            background: #ffffff;
+            border: 1px solid #fde68a;
+            color: #92400e;
             width: 26px;
             height: 26px;
-            border-radius: 5px;
+            border-radius: 6px;
             display: grid;
             place-items: center;
             cursor: pointer;
@@ -650,32 +658,32 @@
             transition: all 0.15s;
         }
         .ticker-nav-btn:hover {
-            background: #d97706;
+            background: #b45309;
             color: #ffffff;
-            border-color: #d97706;
+            border-color: #b45309;
         }
         .ticker-admin-btn {
-            background: rgba(217, 119, 6, 0.25);
-            border: 1px solid rgba(217, 119, 6, 0.5);
-            color: #fbbf24;
-            padding: 3px 10px;
-            border-radius: 5px;
-            font-size: 11px;
-            font-weight: 700;
+            background: #ffffff;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 800;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             gap: 5px;
             transition: all 0.15s;
-            margin-right: 4px;
         }
         .ticker-admin-btn:hover {
-            background: #d97706;
+            background: #b45309;
             color: #ffffff;
+            border-color: #b45309;
         }
         @media (max-width: 768px) {
             .royal-ticker-bar {
-                padding: 6px 12px;
+                padding: 8px 12px;
             }
             .royal-ticker-tag span:last-child {
                 display: none;
@@ -2142,7 +2150,7 @@
         </div>
     </nav>
 
-    <!-- 3. شريط آخر الأخبار والتنبيهات المباشرة (Dynamic Royal Academic News Ticker) -->
+    <!-- 3. شريط آخر الأخبار والتعاميم المباشرة (Royal Academic Announcements Ticker) -->
     @php
         $activeNewsItems = \App\Services\NewsTickerService::getActive();
     @endphp
@@ -2156,31 +2164,30 @@
             </div>
 
             <div class="royal-ticker-viewport" id="tickerViewport">
-                <div class="royal-ticker-track" id="tickerTrack">
-                    @foreach($activeNewsItems as $nIdx => $nItem)
-                        @php
-                            $nType = $nItem['type'] ?? 'urgent';
-                            $badgeClass = 'ticker-badge-' . (in_array($nType, ['urgent', 'warning', 'info', 'success']) ? $nType : 'urgent');
-                            $hasUrl = !empty($nItem['url']);
-                        @endphp
-                        @if($hasUrl)
-                            <a href="{{ $nItem['url'] }}" target="_blank" class="royal-ticker-item" title="{{ $nItem['text'] }}">
-                                <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'عاجل' }}</span>
-                                <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
-                                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; opacity: 0.65; margin-right: 4px;"></i>
-                            </a>
-                        @else
-                            <div class="royal-ticker-item" title="{{ $nItem['text'] }}">
-                                <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'عاجل' }}</span>
-                                <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
-                            </div>
-                        @endif
-                    @endforeach
-                </div>
+                @foreach($activeNewsItems as $nIdx => $nItem)
+                    @php
+                        $nType = $nItem['type'] ?? 'warning';
+                        $badgeClass = 'ticker-badge-' . (in_array($nType, ['urgent', 'warning', 'info', 'success']) ? $nType : 'warning');
+                        $hasUrl = !empty($nItem['url']);
+                    @endphp
+                    @if($hasUrl)
+                        <a href="{{ $nItem['url'] }}" target="_blank" class="royal-ticker-item {{ $nIdx === 0 ? 'active' : '' }}" data-index="{{ $nIdx }}" title="{{ $nItem['text'] }}">
+                            <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'إعلان' }}</span>
+                            <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; color: #b45309; margin-inline-start: 4px;"></i>
+                        </a>
+                    @else
+                        <div class="royal-ticker-item {{ $nIdx === 0 ? 'active' : '' }}" data-index="{{ $nIdx }}" title="{{ $nItem['text'] }}">
+                            <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'إعلان' }}</span>
+                            <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
+                        </div>
+                    @endif
+                @endforeach
             </div>
 
             <div class="royal-ticker-controls">
                 @if(count($activeNewsItems) > 1)
+                    <span class="ticker-counter" id="tickerCounter">1 / {{ count($activeNewsItems) }}</span>
                     <button type="button" class="ticker-nav-btn" onclick="prevTickerItem()" title="{{ __('الخبر السابق') }}">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
@@ -2191,8 +2198,8 @@
 
                 @if(auth()->check() && auth()->user()->role === 'admin')
                     <a href="{{ route('admin.news.index') }}" class="ticker-admin-btn" title="{{ __('إدارة شريط الأخبار') }}">
-                        <i class="fa-solid fa-gear"></i>
-                        <span>{{ __('إدارة الأخبار') }}</span>
+                        <i class="fa-solid fa-pen-to-square"></i>
+                        <span>{{ __('تحرير الأخبار') }}</span>
                     </a>
                 @endif
             </div>
@@ -2774,37 +2781,55 @@
             }
         }, { passive: true });
 
-        // تدوير شريط آخر الأخبار والتنبيهات المباشرة بالصفحة الرئيسية
+        // تدوير شريط آخر الأخبار والتعاميم المباشرة بالصفحة الرئيسية بسلاسة تامة
         (function() {
-            const track = document.getElementById('tickerTrack');
             const viewport = document.getElementById('tickerViewport');
-            if (!track) return;
+            if (!viewport) return;
 
-            const items = track.querySelectorAll('.royal-ticker-item');
-            if (items.length <= 1) return;
+            const items = viewport.querySelectorAll('.royal-ticker-item');
+            if (!items.length) return;
 
+            const counter = document.getElementById('tickerCounter');
             let currentIndex = 0;
-            const itemHeight = 28;
             let tickerInterval = null;
-            const duration = 5000;
+            const duration = 6000;
 
-            function goToIndex(idx) {
-                currentIndex = (idx + items.length) % items.length;
-                track.style.transform = 'translateY(-' + (currentIndex * itemHeight) + 'px)';
+            function showItem(index) {
+                currentIndex = (index + items.length) % items.length;
+                items.forEach((item, idx) => {
+                    if (idx === currentIndex) {
+                        item.style.display = 'inline-flex';
+                        setTimeout(() => { item.style.opacity = '1'; }, 20);
+                        item.classList.add('active');
+                    } else {
+                        item.style.opacity = '0';
+                        setTimeout(() => {
+                            if (idx !== currentIndex) {
+                                item.style.display = 'none';
+                                item.classList.remove('active');
+                            }
+                        }, 250);
+                    }
+                });
+
+                if (counter) {
+                    counter.textContent = (currentIndex + 1) + ' / ' + items.length;
+                }
             }
 
             window.nextTickerItem = function() {
-                goToIndex(currentIndex + 1);
+                showItem(currentIndex + 1);
             };
 
             window.prevTickerItem = function() {
-                goToIndex(currentIndex - 1);
+                showItem(currentIndex - 1);
             };
 
             function startAutoTicker() {
+                if (items.length <= 1) return;
                 if (tickerInterval) clearInterval(tickerInterval);
                 tickerInterval = setInterval(function() {
-                    goToIndex(currentIndex + 1);
+                    showItem(currentIndex + 1);
                 }, duration);
             }
 
@@ -2817,10 +2842,8 @@
 
             startAutoTicker();
 
-            if (viewport) {
-                viewport.addEventListener('mouseenter', stopAutoTicker);
-                viewport.addEventListener('mouseleave', startAutoTicker);
-            }
+            viewport.addEventListener('mouseenter', stopAutoTicker);
+            viewport.addEventListener('mouseleave', startAutoTicker);
         })();
     </script>
 
