@@ -21,13 +21,29 @@
         border: 1px solid var(--border-color);
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         max-width: 900px;
-        margin: 10px auto; /* تقليل الهامش العلوي للجوال */
+        margin: 10px auto;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        /* جعل الارتفاع يتناسب مع طول الشاشة */
         height: calc(100vh - 120px);
-        min-height: 500px;
+        min-height: 480px;
+    }
+
+    @media (max-width: 768px) {
+        .chat-card {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+            height: 100dvh !important;
+            min-height: 100dvh !important;
+            box-shadow: none !important;
+        }
+        .chat-footer {
+            padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .chat-input {
+            font-size: 16px !important;
+        }
     }
 
     .chat-header {

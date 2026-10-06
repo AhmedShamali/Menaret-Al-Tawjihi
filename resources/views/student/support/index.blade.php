@@ -756,30 +756,47 @@
     /* Responsive */
     @media (max-width: 900px) {
         .support-classic-container {
-            padding: 8px;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100dvh !important;
         }
         .support-classic-card {
             grid-template-columns: 1fr;
-            height: calc(100vh - 100px);
-            border-radius: 12px;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
+            border-radius: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
         }
         .support-classic-main {
             display: none;
         }
         .support-classic-card.mobile-active .support-classic-sidebar {
-            display: none;
+            display: none !important;
         }
         .support-classic-card.mobile-active .support-classic-main {
-            display: flex;
+            display: flex !important;
+            height: 100dvh !important;
+            max-height: 100dvh !important;
         }
         .mobile-back-btn {
-            display: inline-block;
+            display: inline-block !important;
         }
         .sup-msg-bubble {
-            max-width: 85%;
+            max-width: 88% !important;
+            font-size: 0.88rem !important;
+        }
+        .support-composer-pane {
+            padding: 8px 12px !important;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        }
+        .composer-field-wrapper input {
+            font-size: 16px !important; /* يمنع التكبير التلقائي في الآيفون Safari */
         }
         .support-send-btn span {
-            display: none;
+            display: none !important;
         }
     }
 </style>

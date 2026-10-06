@@ -1114,10 +1114,12 @@ body.in-standalone-app {
     padding-top: env(safe-area-inset-top, 0px) !important;
 }
 
-/* منع تداخل شريط التنقل مع الامتحانات أو شريط القالب الأساسي */
+/* منع تداخل شريط التنقل مع الامتحانات أو شاشات المحادثة أو شريط القالب الأساسي */
 .no-sidebar .stepvoro-bottom-nav,
 body.in-exam .stepvoro-bottom-nav,
 body[class*="exam"] .stepvoro-bottom-nav,
+body.is-chat-page .stepvoro-bottom-nav,
+body.in-chat-mode .stepvoro-bottom-nav,
 .mobile-bottom-nav ~ .stepvoro-bottom-nav {
     display: none !important;
 }

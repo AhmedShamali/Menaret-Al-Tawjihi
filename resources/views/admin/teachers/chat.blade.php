@@ -756,21 +756,43 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .academic-teacher-chat-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100dvh !important;
+    }
     .chat-main-card {
         grid-template-columns: 1fr;
-        height: calc(100vh - 80px);
-        border-radius: 0;
-        border: none;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
     }
     @isset($selectedTeacher)
-        .teachers-sidebar-pane { display: none; }
-        .chat-viewport-pane { display: flex; }
-        .mobile-return-btn { display: block; }
+        .teachers-sidebar-pane { display: none !important; }
+        .chat-viewport-pane { display: flex !important; height: 100dvh !important; }
+        .mobile-return-btn { display: block !important; }
     @else
-        .teachers-sidebar-pane { display: flex; }
-        .chat-viewport-pane { display: none; }
+        .teachers-sidebar-pane { display: flex !important; height: 100dvh !important; }
+        .chat-viewport-pane { display: none !important; }
     @endisset
-    .classic-chat-bubble { max-width: 88%; }
+    .classic-chat-bubble { max-width: 88% !important; font-size: 0.88rem !important; }
+    .composer-container-pane {
+        padding: 8px 12px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .composer-textarea {
+        font-size: 16px !important; /* يمنع التكبير التلقائي في الآيفون Safari */
+    }
+    .composer-send-btn span {
+        display: none !important;
+    }
+    .composer-footer-bar {
+        display: none !important;
+    }
 }
 </style>
 

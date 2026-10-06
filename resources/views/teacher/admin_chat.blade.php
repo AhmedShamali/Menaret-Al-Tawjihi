@@ -9,6 +9,9 @@
         <!-- الترويسة الأكاديمية الملكية للمحادثة -->
         <header class="academic-chat-header">
             <div class="header-main-group">
+                <a href="{{ route('teacher.dashboard') }}" class="tool-btn" title="{{ __('العودة للوحة التحكم') }}" style="text-decoration: none;">
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
                 <div class="header-avatar-emblem">
                     <i class="fa-solid fa-building-columns"></i>
                     <span class="online-indicator-dot" title="{{ __('متصل ومتاح للرد') }}"></span>
@@ -439,13 +442,66 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .academic-chat-container {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100dvh !important;
+    }
     .academic-chat-card {
-        height: calc(100vh - 80px);
-        border-radius: 0;
-        border: none;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    .academic-chat-header {
+        padding: 10px 14px !important;
+    }
+    .header-avatar-emblem {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 1.1rem !important;
+    }
+    .chat-target-title {
+        font-size: 0.95rem !important;
+    }
+    .palestine-inst-tag {
+        font-size: 0.65rem !important;
+    }
+    .header-sub-line {
+        font-size: 0.7rem !important;
+    }
+    .canned-prompts-strip {
+        padding: 5px 10px !important;
+    }
+    .canned-pill {
+        font-size: 0.72rem !important;
+        padding: 3px 8px !important;
+    }
+    .academic-messages-feed {
+        padding: 12px 14px !important;
     }
     .academic-msg-bubble {
-        max-width: 90%;
+        max-width: 88% !important;
+        font-size: 0.88rem !important;
+    }
+    .academic-composer-pane {
+        padding: 8px 12px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .academic-textarea {
+        font-size: 16px !important; /* يمنع التكبير التلقائي في الآيفون Safari */
+    }
+    .academic-send-btn {
+        padding: 9px 16px !important;
+    }
+    .academic-send-btn span {
+        display: none !important;
+    }
+    .composer-footer-hint {
+        display: none !important;
     }
 }
 </style>

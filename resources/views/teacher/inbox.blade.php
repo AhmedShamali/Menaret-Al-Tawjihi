@@ -674,16 +674,18 @@
         margin: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
+        height: 100dvh !important;
     }
     .academic-inbox-grid {
         grid-template-columns: 1fr !important;
-        height: calc(100dvh - 130px) !important;
-        min-height: calc(100dvh - 130px) !important;
-        max-height: calc(100dvh - 130px) !important;
-        border-radius: 8px !important;
-        border: 1px solid #e2e8f0 !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
         width: 100% !important;
         max-width: 100% !important;
+        box-shadow: none !important;
     }
     .chat-sidebar-pane.mobile-hidden { display: none !important; }
     .chat-viewport-pane.mobile-hidden { display: none !important; }
@@ -693,6 +695,16 @@
         width: 100% !important;
         max-width: 100% !important;
         height: 100% !important;
+    }
+    .teacher-composer-area {
+        padding: 8px 12px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .composer-textarea {
+        font-size: 16px !important; /* يمنع التكبير التلقائي في الآيفون Safari */
+    }
+    .composer-hint-row {
+        display: none !important;
     }
 }
 </style>

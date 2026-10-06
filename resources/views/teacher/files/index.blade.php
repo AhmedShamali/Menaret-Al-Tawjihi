@@ -1308,17 +1308,41 @@ async function submitDocForm(e) {
 }
 
 async function toggleVisibility(id, btn) {
-    const toggleUrl = "{{ auth()->user()->role === 'admin' ? url('admin/visibility/toggle') : url('teacher/visibility/toggle') }}/" + id;
+    const rawBase = "{{ rtrim(url('/'), '/') }}";
+    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
+    const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const toggleUrl = safeBaseUrl + (isModalAdmin ? '/admin/visibility/toggle/' : '/teacher/visibility/toggle/') + id;
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    if (btn) btn.disabled = true;
     try {
-        const res = await axios.post(toggleUrl, { _token: '{{ csrf_token() }}' });
-        if (res.data.success) {
-            const isVis = res.data.is_visible;
-            btn.className = 'visibility-btn ' + (isVis ? 'is-visible' : 'is-hidden');
-            btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
-            Swal.fire({ icon: 'success', title: res.data.message, timer: 1000, showConfirmButton: false });
+        const res = await axios.post(toggleUrl, { _token: token });
+        if (res.data && res.data.success) {
+            const isVis = !!res.data.is_visible;
+            if (btn) {
+                btn.className = 'visibility-btn ' + (isVis ? 'is-visible' : 'is-hidden');
+                btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-eye-slash'}"></i>`;
+            }
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: res.data.message || 'تم تحديث حالة الظهور', timer: 1200, showConfirmButton: false });
+            }
+        } else {
+            const errMsg = (res.data && res.data.error) ? res.data.error : '{{ __("تعذر تعديل حالة الظهور.") }}';
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
+            } else {
+                alert(errMsg);
+            }
         }
     } catch (e) {
-        Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر تعديل حالة الظهور.") }}' });
+        console.error('Toggle visibility error:', e);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر تعديل حالة الظهور.") }}' });
+        } else {
+            alert('تعذر تعديل حالة الظهور.');
+        }
+    } finally {
+        if (btn) btn.disabled = false;
     }
 }
 

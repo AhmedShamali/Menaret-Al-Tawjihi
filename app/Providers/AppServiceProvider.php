@@ -23,8 +23,13 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
-        // تشغيل المعالج الذاتي للتحقق من سلامة أعمدة وجداول قاعدة البيانات الحيوية تلقائياً
-        \App\Support\SchemaHealer::heal();
+        // تشغيل المعالج الذاتي للتحقق من سلامة أعمدة وجداول قاعدة البيانات الحيوية تلقائياً مرة واحدة يومياً (Cached)
+        try {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_flag_v1', 86400, function () {
+                \App\Support\SchemaHealer::heal();
+                return true;
+            });
+        } catch (\Throwable $e) {}
 
         // استخدام مكون الترقيم العصري المخصص باللغة العربية
         \Illuminate\Pagination\Paginator::useBootstrapFive();

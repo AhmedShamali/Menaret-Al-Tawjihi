@@ -173,9 +173,9 @@ class EducationalContentSyncService
         }
         \Illuminate\Support\Facades\Cache::put('educational_contents_last_synced_at', now()->timestamp, 45);
 
-        // 1. جعل كل المحتويات المرئية مرئية ومفعلة (is_visible = true)
+        // 1. تفعيل المحتويات الجديدة التي لا تمتلك قيمة محددة لـ is_visible (دون تغيير المحجوبة عمداً)
         try {
-            EducationalContent::where('is_visible', false)->orWhereNull('is_visible')->update(['is_visible' => true]);
+            EducationalContent::whereNull('is_visible')->update(['is_visible' => true]);
         } catch (\Throwable $e) {}
 
         // 2. فحص الفيديوهات والمحتويات وتوزيعها على المواد الشقيقة

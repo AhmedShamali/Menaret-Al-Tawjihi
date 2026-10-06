@@ -2086,9 +2086,80 @@
                 display: none !important;
             }
         }
+
+        /* --- تخصيص وتجاوب كامل لواجهات المحادثات والرسائل على الهواتف وتطبيق الجوال PWA --- */
+        body.is-chat-page .mobile-bottom-nav,
+        body.is-chat-page .stepvoro-bottom-nav,
+        body.is-chat-page .ed-scroll-top-btn {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            body.is-chat-page {
+                overflow: hidden !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+            }
+            body.is-chat-page main.main-content {
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body.is-chat-page .content-body {
+                padding: 0 !important;
+                margin: 0 !important;
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+            }
+            body.is-chat-page .top-bar {
+                display: none !important;
+            }
+            body.is-chat-page .chat-page-wrapper,
+            body.is-chat-page .academic-inbox-wrapper,
+            body.is-chat-page .academic-chat-container,
+            body.is-chat-page .support-classic-container,
+            body.is-chat-page .academic-teacher-chat-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            body.is-chat-page .chat-card,
+            body.is-chat-page .chat-app-container,
+            body.is-chat-page .academic-inbox-grid,
+            body.is-chat-page .academic-chat-card,
+            body.is-chat-page .support-classic-card,
+            body.is-chat-page .chat-main-card {
+                height: 100dvh !important;
+                max-height: 100dvh !important;
+                border-radius: 0 !important;
+                border: none !important;
+                flex: 1 !important;
+                box-shadow: none !important;
+            }
+        }
     </style>
 </head>
-<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }}">
+@php
+    $isChatPage = request()->routeIs('*chat*', '*inbox*', '*support*') 
+        || request()->is('*chat*', '*inbox*', '*support*', '*messages*') 
+        || View::hasSection('is_chat');
+@endphp
+<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }} {{ $isChatPage ? 'is-chat-page in-chat-mode' : '' }}">
 
     <!-- طبقة التعتيم للجوال -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -3110,6 +3181,35 @@
                     // 3. لبقية الصور الشخصية والرمزية: نظهر رمزاً بديل بأحرف الاسم فوراً
                 }
             }, true);
+
+            // حماية طلبات AJAX والتعامل الذكي مع انتهاء الجلسة أو خطأ 419
+            if (typeof axios !== 'undefined') {
+                axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+                axios.interceptors.response.use(
+                    response => response,
+                    error => {
+                        if (error.response && error.response.status === 419) {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'انتهت الجلسة الدراسية',
+                                    text: 'انتهت صلاحية الجلسة بسبب عدم النشاط لفترة، يرجى إعادة تحميل الصفحة.',
+                                    confirmButtonText: 'تحديث الصفحة',
+                                    confirmButtonColor: '#1e3a8a'
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                if (confirm('انتهت الجلسة، يرجى إعادة تحميل الصفحة.')) {
+                                    window.location.reload();
+                                }
+                            }
+                        }
+                        return Promise.reject(error);
+                    }
+                );
+            }
         })();
     </script>
 

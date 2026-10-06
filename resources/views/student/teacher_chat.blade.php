@@ -688,25 +688,95 @@ body.dark-theme .composer-textarea {
     padding: 0 6px;
 }
 
-/* استعلامات الجوال المتجاوبة */
-@media (max-width: 640px) {
+/* استعلامات الجوال والتطبيق المتجاوبة */
+@media (max-width: 768px) {
     .chat-page-wrapper {
-        margin: 0;
-        padding: 0;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        height: 100dvh !important;
     }
     .chat-app-container {
-        height: calc(100vh - 70px);
-        border-radius: 0;
-        border: none;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
     }
-    .bubble-box {
-        max-width: 88%;
+    .chat-top-header {
+        padding: 10px 14px !important;
+        background: #ffffff !important;
+    }
+    body.dark-theme .chat-top-header {
+        background: #0f172a !important;
+    }
+    .teacher-avatar-circle {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.1rem !important;
+    }
+    .teacher-display-name {
+        font-size: 0.95rem !important;
+    }
+    .pal-tutor-badge {
+        font-size: 0.65rem !important;
+        padding: 1px 6px !important;
+    }
+    .connection-status-text {
+        font-size: 0.7rem !important;
+    }
+    .quick-prompts-bar {
+        padding: 5px 10px !important;
+    }
+    .prompts-label {
+        font-size: 0.7rem !important;
     }
     .prompt-pill {
-        font-size: 0.72rem;
+        font-size: 0.72rem !important;
+        padding: 3px 10px !important;
+    }
+    .quick-emoji-lane {
+        padding: 3px 10px !important;
+        gap: 8px !important;
+    }
+    .emoji-tap {
+        font-size: 1.05rem !important;
+    }
+    .chat-viewport {
+        padding: 12px 14px !important;
+    }
+    .bubble-box {
+        max-width: 88% !important;
+        font-size: 0.88rem !important;
+        padding: 9px 12px !important;
+    }
+    .chat-composer-bar {
+        padding: 8px 12px !important;
+        padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+    .composer-container {
+        border-radius: 14px !important;
+        padding: 4px 10px !important;
+    }
+    .composer-textarea {
+        font-size: 16px !important; /* يمنع التكبير التلقائي في الآيفون Safari */
+        padding: 4px 0 !important;
+    }
+    .composer-send-btn {
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 10px !important;
+        font-size: 1rem !important;
     }
     .composer-hint-row {
-        display: none;
+        display: none !important;
+    }
+    .scroll-bottom-fab {
+        bottom: 75px !important;
+        left: 14px !important;
+        width: 38px !important;
+        height: 38px !important;
     }
 }
 </style>

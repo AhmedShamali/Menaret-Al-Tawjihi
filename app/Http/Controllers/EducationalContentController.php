@@ -1514,9 +1514,23 @@ class EducationalContentController extends Controller
         $newVisible = $content->is_visible ? 0 : 1;
         $content->update(['is_visible' => $newVisible]);
 
+        // مزامنة حالة الظهور مع النسخ الموزعة في الفروع الشقيقة تلقائياً
+        try {
+            if (!empty($content->title)) {
+                $sisterQuery = EducationalContent::where('id', '!=', $content->id)
+                    ->where('title', $content->title);
+                if (!empty($content->url_path)) {
+                    $sisterQuery->where('url_path', $content->url_path);
+                } elseif (!empty($content->pdf_path)) {
+                    $sisterQuery->where('pdf_path', $content->pdf_path);
+                }
+                $sisterQuery->update(['is_visible' => $newVisible]);
+            }
+        } catch (\Throwable $e) {}
+
         return response()->json([
             'success'    => true,
-            'is_visible' => $newVisible,
+            'is_visible' => (bool)$newVisible,
             'message'    => $newVisible ? 'تم إظهار المحتوى وإتاحته للطلبة 🟢' : 'تم إخفاء وقفل المحتوى عن الطلبة 🔒'
         ]);
     }
