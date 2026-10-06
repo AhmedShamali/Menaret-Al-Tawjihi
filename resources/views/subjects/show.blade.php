@@ -22,9 +22,12 @@
         <div class="header-actions">
             <!-- التعديل هنا: زر يوجه مباشرة لصفحة الملفات والملخصات المستقلة -->
             <a href="{{ route('subject.files', $subject->id) }}" class="btn-action btn-outline">
-                <span>📑</span>{{ __('الملفات والملخصات') }}</a>
-
-
+                <span>📑</span>{{ __('الملفات والملخصات') }}
+            </a>
+            <!-- زر المساعد الذكي -->
+            <button type="button" class="btn-action" onclick="openAiModal()" style="background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe;" title="{{ __('مساعد المادة الذكي') }}">
+                <span>🤖</span>{{ __('المساعد الذكي') }}
+            </button>
         </div>
     </div>
 
@@ -277,11 +280,16 @@
 </div>
 
 <!-- AI Assistant Modal Popup -->
-<div id="aiModal" class="ai-modal-overlay" style="display: none;">
+<div id="aiModal" class="ai-modal-overlay" style="display: none;" onclick="if(event.target===this) closeAiModal()">
     <div class="ai-modal-container">
-
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #e2e8f0; background: #fafafa; border-radius: 16px 16px 0 0;">
+            <div style="font-weight: 800; font-size: 1rem; color: #1e3a8a; display: flex; align-items: center; gap: 8px;">
+                <span>🤖</span> {{ __('المساعد الذكي لمادة') }} {{ $subject->name_ar }}
+            </div>
+            <button type="button" onclick="closeAiModal()" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #64748b; line-height: 1;">✕</button>
+        </div>
         <div class="ai-modal-body" id="aiChatBox">
-            <div class="ai-message system">{{ __('أهلاً بك! أنا مساعدك الذكي لمادة') }}<strong>{{ $subject->name_ar }}</strong>{{ __('. كيف يمكنني مساعدتك اليوم؟') }}</div>
+            <div class="ai-message system">{{ __('أهلاً بك! أنا مساعدك الذكي لمادة') }} <strong>{{ $subject->name_ar }}</strong>{{ __('. كيف يمكنني مساعدتك اليوم؟ اسألني أي سؤال يخص المنهاج وسأجيبك فوراً!') }}</div>
         </div>
         <div class="ai-modal-footer">
             <input type="text" id="aiInput" placeholder="{{ __('اكتب سؤالك هنا...') }}" onkeypress="handleAiKeyPress(event)">
@@ -1031,6 +1039,64 @@
     }
     initSubjectOfflineCheck();
     @endif
+
+    // دوال المساعد الذكي لمادة المساق
+    function openAiModal() {
+        const modal = document.getElementById('aiModal');
+        if (modal) modal.style.display = 'flex';
+        const inp = document.getElementById('aiInput');
+        if (inp) setTimeout(() => inp.focus(), 100);
+    }
+
+    function closeAiModal() {
+        const modal = document.getElementById('aiModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function handleAiKeyPress(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendAiMessage();
+        }
+    }
+
+    function sendAiMessage() {
+        const inp = document.getElementById('aiInput');
+        const box = document.getElementById('aiChatBox');
+        if (!inp || !box) return;
+        const text = inp.value.trim();
+        if (!text) return;
+
+        // إضافة رسالة الطالب
+        const userMsg = document.createElement('div');
+        userMsg.className = 'ai-message user';
+        userMsg.textContent = text;
+        box.appendChild(userMsg);
+        inp.value = '';
+        box.scrollTop = box.scrollHeight;
+
+        // مؤشر التفكير
+        const typing = document.createElement('div');
+        typing.className = 'ai-message system';
+        typing.id = 'aiTypingIndicator';
+        typing.textContent = 'المساعد الذكي يفكّر في الإجابة... 💭';
+        box.appendChild(typing);
+        box.scrollTop = box.scrollHeight;
+
+        setTimeout(() => {
+            const ind = document.getElementById('aiTypingIndicator');
+            if (ind) ind.remove();
+
+            const reply = document.createElement('div');
+            reply.className = 'ai-message system';
+            const escaped = text.replace(/[&<>"']/g, function(m) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+            });
+            reply.innerHTML = `أهلاً بك يا بطل! بخصوص استفسارك حول: "<strong>${escaped}</strong>"، ننصحك بمراجعة شروحات الدروس المرئية لهذه الوحدة في القائمة، والاطلاع على بنوك الأسئلة الوزارية المحلولة المرفقة. كما يمكنك مراسلة أستاذ المادة مباشرة للحصول على شرح إضافي! 🌟`;
+            box.appendChild(reply);
+            box.scrollTop = box.scrollHeight;
+        }, 500);
+    }
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection

@@ -38,4 +38,46 @@
         </div>
     </div>
 </div>
+
+<script>
+function deleteStudent(id) {
+    const doDelete = () => {
+        axios.post(`/admin/students/${id}`, {
+            _method: 'DELETE',
+            _token: '{{ csrf_token() }}'
+        })
+        .then(res => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'success', title: 'تم الحذف!', text: 'تم حذف الطالب بنجاح.', timer: 1200, showConfirmButton: false });
+            }
+            const row = document.getElementById(`row_${id}`);
+            if (row) row.remove();
+        })
+        .catch(err => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('خطأ!', err.response?.data?.message || 'تعذر حذف الطالب.', 'error');
+            } else {
+                alert('تعذر حذف الطالب.');
+            }
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'هل أنت متأكد من حذف هذا الطالب؟',
+            text: 'سيتم حذف سجل الطالب وكافة بياناته نهائياً!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، احذف',
+            cancelButtonText: 'إلغاء'
+        }).then(result => {
+            if (result.isConfirmed) doDelete();
+        });
+    } else {
+        if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) doDelete();
+    }
+}
+</script>
 @endsection

@@ -168,6 +168,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::post('/students/save', [AdminManagerController::class, 'studentStore'])->name('students.save');
     Route::post('/students/toggle-status/{id}', [StudentController::class, 'toggleStatus'])->name('students.toggleStatus');
     Route::post('/students/{id}/approve', [StudentController::class, 'approveStudent'])->name('students.approve');
+    Route::post('/students/{id}/reject', [StudentController::class, 'rejectStudent'])->name('students.reject');
     Route::post('/students/{id}/sync-subjects', [StudentController::class, 'syncSubjects'])->name('students.syncSubjects');
     Route::post('/students/{id}/toggle-subject/{subject_id}', [StudentController::class, 'toggleSubjectEnrollment'])->name('students.toggleSubject');
     Route::post('/students/{id}/discount', [StudentController::class, 'updateDiscount'])->name('students.discount');
@@ -330,6 +331,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
     Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
+    Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
 
     // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة للمعلم لمنع أي تعارض 404
     Route::get('/educational-contents', [EducationalContentController::class, 'index'])->name('educational_contents.hyphen_index');
@@ -338,6 +340,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.hyphen_edit');
     Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.hyphen_update');
     Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.hyphen_destroy');
+    Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.hyphen_purgeAll');
 
     // الواجهات الثلاث المستقلة لإدارة المحتوى الأكاديمي
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');

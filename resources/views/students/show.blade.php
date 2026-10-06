@@ -63,4 +63,54 @@
     .ans-opt input:checked + .ans-box { border-color: #2563eb; background: #eff6ff; }
     .ans-opt input:checked + .ans-box .bullet { background: #2563eb; color: white; }
 </style>
+
+<script>
+function submitSolution() {
+    const form = document.getElementById('submissionForm');
+    if (!form) return;
+    const btn = document.getElementById('subBtn');
+
+    const formData = new FormData(form);
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'جاري تسليم الإجابة...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+    }
+
+    if (btn) btn.disabled = true;
+
+    axios.post(window.location.href, formData)
+    .then(res => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم التسليم بنجاح! ✅',
+                text: res.data?.message || 'تم إرسال إجابتك بنجاح.',
+                confirmButtonText: 'حسناً'
+            }).then(() => {
+                if (res.data?.redirect) {
+                    window.location.href = res.data.redirect;
+                } else {
+                    window.location.reload();
+                }
+            });
+        } else {
+            alert('تم تسليم الإجابة بنجاح!');
+            window.location.reload();
+        }
+    })
+    .catch(err => {
+        if (btn) btn.disabled = false;
+        const msg = err.response?.data?.message || 'حدث خطأ أثناء تسليم الإجابة.';
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('خطأ!', msg, 'error');
+        } else {
+            alert(msg);
+        }
+    });
+}
+</script>
 @endsection

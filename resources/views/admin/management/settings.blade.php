@@ -447,6 +447,26 @@
                 </button>
             </div>
 
+            <!-- بطاقة حذف وتصفير جميع المحتويات والدروس التعليمية -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span style="font-size: 1.5rem;">📚</span>
+                        <span style="background: #fef3c7; color: #b45309; font-size: 0.8rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; border: 1px solid #fde68a;">
+                            {{ \App\Models\EducationalContent::count() }} {{ __('محتوى ودرس مسجل') }}
+                        </span>
+                    </div>
+                    <h4 style="margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; color: #0f172a;">{{ __('حذف وتصفير جميع المحتويات والدروس') }}</h4>
+                    <p style="margin: 0 0 16px; font-size: 0.82rem; color: #64748b; line-height: 1.5;">
+                        {{ __('حذف كافة المحاضرات المرئية، الدوسيات، الملازم وأوراق العمل المسجلة على المنصة بالكامل دفعة واحدة.') }}
+                    </p>
+                </div>
+                <button type="button" onclick="purgeAllContentsDirect()" style="width: 100%; background: #ea580c; color: white; border: none; padding: 11px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(234, 88, 12, 0.2);">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>{{ __('حذف وتصفير جميع المحتويات') }}</span>
+                </button>
+            </div>
+
             <!-- بطاقة الحذف الشامل (الطلاب + المعلمين معاً) -->
             <div style="background: #fef2f2; border: 1.5px dashed #f87171; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;">
                 <div>
@@ -890,6 +910,52 @@
                 });
             }
         });
+    }
+
+    function purgeAllContentsDirect() {
+        Swal.fire({
+            title: '⚠️ تأكيد حذف وتصفير جميع المحتويات والدروس دفعة واحدة',
+            text: 'هل أنت متأكد من رغبتك بتصفير وحذف جميع المحاضرات المرئية والدوسيات وأوراق العمل من المنصة بالكامل؟ هذا الإجراء سيحذف كافة محتويات المنصة ولا يمكن التراجع عنه!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'نعم، حذف وتصفير الكل فوراً',
+            cancelButtonText: 'إلغاء التراجع',
+            confirmButtonColor: '#ea580c',
+            cancelButtonColor: '#64748b',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري حذف وتصفير المحتويات...',
+                    text: 'يرجى الانتظار لحظات...',
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                axios.post("{{ route('admin.educational_contents.purgeAll') }}", {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التصفير والحذف بنجاح!',
+                        text: (res.data && res.data.message) ? res.data.message : 'تم حذف وتصفير كافة المحتويات بنجاح.',
+                        confirmButtonText: 'حسناً'
+                    }).then(() => location.reload());
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تعذر الحذف!',
+                        text: (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'حدث خطأ أثناء محاولة التصفير.',
+                        confirmButtonText: 'موافق'
+                    });
+                });
+            }
+        });
+    }
+
     function appendSeoKeyword(keywords) {
         const textarea = document.getElementById('seo_keywords_input');
         if (!textarea) return;

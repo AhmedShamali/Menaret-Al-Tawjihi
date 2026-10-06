@@ -24,7 +24,13 @@
             </p>
         </div>
 
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            @if(in_array(auth()->user()->role, ['admin', 'teacher']))
+                <button type="button" onclick="purgeAllContents()" class="ed-btn-purge" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                    <i class="fa-solid fa-trash-can"></i>
+                    <span>{{ auth()->user()->role === 'admin' ? __('حذف وتصفير كافة المحتويات دفعة واحدة') : __('حذف وتصفير كافة محتوياتي دفعة واحدة') }}</span>
+                </button>
+            @endif
             <button type="button" onclick="openUploadFileModal()" class="ed-btn-upload-file">
                 <i class="fa-solid fa-file-arrow-up"></i>
                 <span>{{ __('رفع ملزمة / دوسية جديدة') }}</span>
@@ -1424,6 +1430,99 @@ window.deleteFileItem = async function(id) {
     } else {
         if (confirm('{{ __("هل أنت متأكد من حذف هذا الملف؟ لن يتمكن الطلاب من تحميله بعد الحذف.") }}')) {
             executeDelete();
+        }
+    }
+};
+
+window.purgeAllContents = async function() {
+    const userRole = "{{ auth()->user()->role }}";
+    const rawBase = "{{ rtrim(url('/'), '/') }}";
+    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
+    const purgeUrl = userRole === 'admin' 
+        ? safeBaseUrl + '/admin/educational-contents/purge-all' 
+        : safeBaseUrl + '/teacher/educational-contents/purge-all';
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    const executePurge = async () => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'جاري الحذف والتصفير الشامل...',
+                text: 'يرجى الانتظار لحظات حتى إتمام مسح السجلات بالكامل...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('_token', token);
+            formData.append('_method', 'DELETE');
+
+            const response = await fetch(purgeUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json().catch(() => null);
+
+            if (response.ok && data && data.success) {
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'تم التصفير الشامل بنجاح! 🗑️',
+                        text: data.message || 'تم حذف وتصفير جميع المحتويات من المنصة بالكامل.',
+                        confirmButtonText: 'حسناً'
+                    });
+                } else {
+                    alert(data.message || 'تم التصفير بنجاح');
+                }
+                location.reload();
+            } else {
+                const errMsg = data?.message || 'تعذر استكمال عملية التصفير.';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: 'خطأ', text: errMsg });
+                } else {
+                    alert('خطأ: ' + errMsg);
+                }
+            }
+        } catch (e) {
+            console.error("Purge error:", e);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ في الاتصال أثناء التصفير.' });
+            } else {
+                alert('حدث خطأ في الاتصال أثناء التصفير.');
+            }
+        }
+    };
+
+    const confirmMsg = userRole === 'admin'
+        ? 'هل أنت متأكد تماماً من رغبتك بحذف وتصفير كافة المحاضرات والمواد والملفات من المنصة بالكامل؟ لن يتمكن أي طالب أو معلم من الوصول إليها بعد ذلك!'
+        : 'هل أنت متأكد تماماً من رغبتك بحذف وتصفير كافة المواد والملازم والدوسيات الخاصة بك؟ هذا الإجراء لا يمكن التراجع عنه!';
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '⚠️ تحذير: تصفير وحذف كافة المحتويات دفعة واحدة',
+            text: confirmMsg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، حذف وتصفير الكل فوراً',
+            cancelButtonText: 'إلغاء التراجع',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executePurge();
+            }
+        });
+    } else {
+        if (confirm(confirmMsg)) {
+            executePurge();
         }
     }
 };

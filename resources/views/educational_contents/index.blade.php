@@ -22,7 +22,13 @@
             </div>
         </div>
 
-        <div class="header-actions">
+        <div class="header-actions" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <!-- زر الحذف الشامل لجميع المحتويات دفعة واحدة -->
+            <button type="button" onclick="purgeAllContents()" class="btn-danger-purge" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 11px 20px; border-radius: var(--radius-md); font-weight: 700; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>{{ __('حذف وتصفير كافة المحتويات دفعة واحدة') }}</span>
+            </button>
+
             <!-- زر الإضافة الديناميكي -->
             <a href="{{ route(auth()->user()->role . '.educational_contents.create') }}" class="btn-primary-create">
                 <i class="fa-solid fa-plus-circle"></i>
@@ -85,7 +91,8 @@
                                                 <i class="fa-solid fa-eye"></i>
                                             </a>
                                             <!-- زر التعديل -->
-                                            <a href="{{ route('teacher.educational_contents.edit', $content->id) }}" class="btn-action edit" title="{{ __('تعديل') }}">                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            <a href="{{ auth()->user()->role === 'admin' ? (Route::has('admin.educational_contents.edit') ? route('admin.educational_contents.edit', $content->id) : route('educational_contents.edit', $content->id)) : (Route::has('teacher.educational_contents.edit') ? route('teacher.educational_contents.edit', $content->id) : route('educational_contents.edit', $content->id)) }}" class="btn-action edit" title="{{ __('تعديل') }}">
+                                                <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
                                             <!-- زر الحذف التفاعلي -->
                                             <button type="button" onclick="deleteContent({{ $content->id }})" class="btn-action delete" title="{{ __('حذف') }}">
@@ -132,7 +139,14 @@
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`/${userRole}/educational_contents/${id}`, {
+                const deleteUrl = userRole === 'admin' 
+                    ? `/admin/educational-contents/${id}` 
+                    : `/teacher/educational-contents/${id}`;
+
+                axios.post(deleteUrl, {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                }, {
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
@@ -151,6 +165,67 @@
                 })
                 .catch(err => {
                     Swal.fire('خطأ!', 'حدثت مشكلة أثناء الحذف، يرجى المحاولة لاحقاً', 'error');
+                });
+            }
+        });
+    }
+
+    function purgeAllContents() {
+        Swal.fire({
+            title: '⚠️ تحذير: حذف وتصفير كافة المحتويات دفعة واحدة!',
+            text: userRole === 'admin' 
+                ? "هل أنت متأكد من رغبتك بحذف وتصفير كافة المحاضرات والمحتويات التعليمية من المنصة بالكامل لجميع المستخدمين؟ هذا الإجراء لا يمكن التراجع عنه!" 
+                : "هل أنت متأكد من رغبتك بحذف وتصفير كافة المحاضرات والمواد الخاصة بك؟ هذا الإجراء لا يمكن التراجع عنه!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، حذف وتصفير الكل فوراً',
+            cancelButtonText: 'إلغاء',
+            reverseButtons: true,
+            customClass: {
+                popup: 'swal2-custom-popup'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'جاري حذف وتصفير المحتويات...',
+                    text: 'يرجى الانتظار لحظات...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const purgeUrl = userRole === 'admin' 
+                    ? "{{ route('admin.educational_contents.purgeAll') }}" 
+                    : "{{ route('teacher.educational_contents.purgeAll') }}";
+
+                axios.post(purgeUrl, {
+                    _token: '{{ csrf_token() }}',
+                    _method: 'DELETE'
+                }, {
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(res => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التصفير والحذف بنجاح!',
+                        text: (res.data && res.data.message) ? res.data.message : 'تم حذف وتصفير كافة المحتويات بنجاح.',
+                        confirmButtonText: 'حسناً'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                })
+                .catch(err => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'تعذر الحذف!',
+                        text: (err.response && err.response.data && err.response.data.message) ? err.response.data.message : 'حدث خطأ أثناء محاولة التصفير.',
+                        confirmButtonText: 'موافق'
+                    });
                 });
             }
         });

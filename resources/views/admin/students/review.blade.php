@@ -407,4 +407,124 @@
     }
 }
 </style>
+
+<script>
+function approveStudent(id) {
+    const doApprove = () => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'جاري اعتماد الحساب...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+        axios.post(`/admin/students/${id}/approve`, {
+            _token: '{{ csrf_token() }}'
+        })
+        .then(res => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم اعتماد وتفعيل الحساب بنجاح! 🎉',
+                    text: res.data?.message || 'تم اعتماد حساب الطالب بنجاح.',
+                    confirmButtonText: 'حسناً'
+                }).then(() => {
+                    window.location.href = "{{ route('admin.students.index') }}";
+                });
+            } else {
+                alert('تم اعتماد وتفعيل الحساب بنجاح!');
+                window.location.href = "{{ route('admin.students.index') }}";
+            }
+        })
+        .catch(err => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('خطأ!', err.response?.data?.message || 'حدث خطأ أثناء اعتماد الحساب.', 'error');
+            } else {
+                alert('حدث خطأ أثناء اعتماد الحساب.');
+            }
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'تأكيد اعتماد وتفعيل الحساب؟',
+            text: 'سيتم تفعيل حساب الطالب فوراً وتسجيل المواد المقررة لمرحلته وإرسال إشعار له.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#16a34a',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، اعتماد الحساب',
+            cancelButtonText: 'إلغاء',
+            reverseButtons: true
+        }).then(result => {
+            if (result.isConfirmed) doApprove();
+        });
+    } else {
+        if (confirm('هل أنت متأكد من رغبتك باعتماد وتفعيل حساب هذا الطالب؟')) doApprove();
+    }
+}
+
+function rejectStudent(id) {
+    const doReject = (reason) => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'جاري رفض الطلب...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+        axios.post(`/admin/students/${id}/reject`, {
+            _token: '{{ csrf_token() }}',
+            reason: reason || 'عدم استيفاء الشروط أو عدم وضوح الوثائق الرسمية.'
+        })
+        .then(res => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'تم رفض الطلب',
+                    text: res.data?.message || 'تم رفض طلب الانضمام بنجاح.',
+                    confirmButtonText: 'حسناً'
+                }).then(() => {
+                    window.location.href = "{{ route('admin.students.index') }}";
+                });
+            } else {
+                alert('تم رفض الطلب بنجاح.');
+                window.location.href = "{{ route('admin.students.index') }}";
+            }
+        })
+        .catch(err => {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('خطأ!', err.response?.data?.message || 'حدث خطأ أثناء رفض الطلب.', 'error');
+            } else {
+                alert('حدث خطأ أثناء رفض الطلب.');
+            }
+        });
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'رفض طلب الانضمام',
+            text: 'يرجى كتابة سبب الرفض ليظهر للطالب:',
+            input: 'textarea',
+            inputPlaceholder: 'مثال: الصورة غير واضحة أو رقم الهوية غير مطابق...',
+            inputAttributes: {
+                rows: 3
+            },
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'تأكيد الرفض',
+            cancelButtonText: 'إلغاء',
+            reverseButtons: true
+        }).then(result => {
+            if (result.isConfirmed) {
+                doReject(result.value);
+            }
+        });
+    } else {
+        const reason = prompt('يرجى إدخال سبب الرفض:');
+        if (reason !== null) doReject(reason);
+    }
+}
+</script>
 @endsection

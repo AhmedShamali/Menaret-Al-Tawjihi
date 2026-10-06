@@ -2928,6 +2928,36 @@
                 controls.addEventListener('mouseenter', stopAutoTicker);
                 controls.addEventListener('mouseleave', startAutoTicker);
             }
+
+            window.triggerPwaInstall = function() {
+                if (window.deferredPwaPrompt) {
+                    window.deferredPwaPrompt.prompt();
+                    window.deferredPwaPrompt.userChoice.then(() => {
+                        window.deferredPwaPrompt = null;
+                    });
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'تثبيت تطبيق Step by Step 📱',
+                            html: `
+                                <div style="text-align: right; font-size: 0.95rem; line-height: 1.7; color: #334155;">
+                                    <p><strong>أجهزة Android (Chrome):</strong> اضغط على خيارات المتصفح (⋮) ثم اختر <strong>"إضافة إلى الشاشة الرئيسية"</strong> أو <strong>"تثبيت التطبيق"</strong>.</p>
+                                    <p style="margin-top: 10px;"><strong>أجهزة iPhone (Safari):</strong> اضغط على زر المشاركة (⎙ / Share) أسفل الشاشة، ثم اختر <strong>"إضافة إلى الصفحة الرئيسية"</strong>.</p>
+                                </div>
+                            `,
+                            icon: 'info',
+                            confirmButtonText: 'حسناً، فهمت'
+                        });
+                    } else {
+                        alert('لتثبيت التطبيق: افتح خيارات المتصفح واختر "إضافة إلى الشاشة الرئيسية".');
+                    }
+                }
+            };
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                window.deferredPwaPrompt = e;
+            });
         })();
     </script>
 

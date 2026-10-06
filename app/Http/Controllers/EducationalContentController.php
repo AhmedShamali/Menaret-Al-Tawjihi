@@ -945,38 +945,61 @@ class EducationalContentController extends Controller
     {
         $req = $request instanceof Request ? $request : request();
         $user = auth()->user();
-        if (!$user || $user->role !== 'admin') {
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
             if ($req->expectsJson() || $req->ajax() || $req->wantsJson()) {
-                return response()->json(['success' => false, 'message' => 'عذراً، هذا الإجراء مخصص للمدير العام فقط.'], 403);
+                return response()->json(['success' => false, 'message' => 'عذراً، هذا الإجراء مخصص للمدير العام والمعلمين المصرح لهم فقط.'], 403);
             }
-            abort(403, 'عذراً، هذا الإجراء مخصص للمدير العام فقط.');
+            abort(403, 'عذراً، هذا الإجراء مخصص للمدير العام والمعلمين المصرح لهم فقط.');
         }
 
         try {
             \DB::beginTransaction();
 
-            $totalCount = EducationalContent::count();
+            if ($user->role === 'teacher') {
+                $query = EducationalContent::where('teacher_id', $user->id);
+                $contentIds = $query->pluck('id')->toArray();
+                $totalCount = count($contentIds);
 
-            // 1. تصفير تعيينات المحتوى للطلبة
-            try {
-                \DB::table('content_assignments')->delete();
-            } catch (\Throwable $e) {}
+                if ($totalCount > 0) {
+                    try {
+                        \DB::table('content_assignments')->whereIn('content_id', $contentIds)->delete();
+                    } catch (\Throwable $e) {}
 
-            // 2. تصفير تقدم المشاهدة وملاحظات الفيديو
-            try {
-                \DB::table('video_progress')->delete();
-                \DB::table('video_notes')->delete();
-            } catch (\Throwable $e) {}
+                    try {
+                        \DB::table('video_progress')->whereIn('content_id', $contentIds)->delete();
+                        \DB::table('video_notes')->whereIn('content_id', $contentIds)->delete();
+                    } catch (\Throwable $e) {}
 
-            // 3. حذف جميع سجلات المحتوى
-            \DB::table('educational_contents')->delete();
+                    EducationalContent::where('teacher_id', $user->id)->delete();
+                }
 
-            // 4. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
-            if ($req->boolean('delete_physical_files', false)) {
+                $msg = "تم حذف وتصفير كافة المحتويات والمحاضرات الخاصة بك بنجاح! تم مسح ({$totalCount}) محتوى تعليمي 🗑️";
+            } else {
+                $totalCount = EducationalContent::count();
+
+                // 1. تصفير تعيينات المحتوى للطلبة
                 try {
-                    $videoFiles = Storage::disk('public')->files('educational/videos');
-                    Storage::disk('public')->delete($videoFiles);
+                    \DB::table('content_assignments')->delete();
                 } catch (\Throwable $e) {}
+
+                // 2. تصفير تقدم المشاهدة وملاحظات الفيديو
+                try {
+                    \DB::table('video_progress')->delete();
+                    \DB::table('video_notes')->delete();
+                } catch (\Throwable $e) {}
+
+                // 3. حذف جميع سجلات المحتوى
+                \DB::table('educational_contents')->delete();
+
+                // 4. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
+                if ($req->boolean('delete_physical_files', false)) {
+                    try {
+                        $videoFiles = Storage::disk('public')->files('educational/videos');
+                        Storage::disk('public')->delete($videoFiles);
+                    } catch (\Throwable $e) {}
+                }
+
+                $msg = "تم حذف وتصفير كافة المحاضرات والمحتويات بنجاح! تم مسح ({$totalCount}) محتوى تعليمي من المنصة بالكامل لجميع المستخدمين 🗑️";
             }
 
             \DB::commit();
@@ -985,8 +1008,6 @@ class EducationalContentController extends Controller
             try {
                 \Illuminate\Support\Facades\Cache::forget('educational_contents_last_synced_at');
             } catch (\Throwable $e) {}
-
-            $msg = "تم حذف وتصفير كافة المحاضرات والمحتويات بنجاح! تم مسح ({$totalCount}) محتوى تعليمي من المنصة بالكامل لجميع المستخدمين 🗑️";
 
             if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || request()->expectsJson() || request()->ajax()) {
                 return response()->json([

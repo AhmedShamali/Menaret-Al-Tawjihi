@@ -25,10 +25,10 @@
         </div>
 
         <div class="header-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            @if(auth()->user()->role === 'admin')
+            @if(in_array(auth()->user()->role, ['admin', 'teacher']))
                 <button type="button" onclick="purgeAllContents()" class="ed-btn-purge" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
                     <i class="fa-solid fa-trash-can"></i>
-                    <span>{{ __('حذف وتصفير كافة المحتويات دفعة واحدة') }}</span>
+                    <span>{{ auth()->user()->role === 'admin' ? __('حذف وتصفير كافة المحتويات دفعة واحدة') : __('حذف وتصفير كافة فيديوهاتي دفعة واحدة') }}</span>
                 </button>
             @endif
             <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload">
@@ -2038,9 +2038,12 @@ window.deleteVideoItem = async function(id) {
 };
 
 window.purgeAllContents = async function() {
+    const userRole = "{{ auth()->user()->role }}";
     const rawBase = "{{ rtrim(url('/'), '/') }}";
     const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
-    const purgeUrl = safeBaseUrl + '/admin/educational-contents/purge-all';
+    const purgeUrl = userRole === 'admin' 
+        ? safeBaseUrl + '/admin/educational-contents/purge-all' 
+        : safeBaseUrl + '/teacher/educational-contents/purge-all';
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
     const executePurge = async () => {

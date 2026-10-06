@@ -1166,6 +1166,36 @@ function setOfflinePlayerSpeed(speed, btn) {
     if (btn) btn.classList.add('active');
 }
 
+function toggleOfflineActiveYt() {
+    const videoEl = document.getElementById('offlineActiveVideo');
+    const iframeEl = document.getElementById('offlineActiveIframe');
+    const centerPlay = document.getElementById('offlineActiveYtCenterPlay');
+
+    if (videoEl && videoEl.style.display !== 'none') {
+        if (videoEl.paused) {
+            videoEl.play();
+            if (centerPlay) centerPlay.style.display = 'none';
+        } else {
+            videoEl.pause();
+            if (centerPlay) centerPlay.style.display = 'flex';
+        }
+        return;
+    }
+
+    if (iframeEl && iframeEl.contentWindow) {
+        try {
+            iframeEl.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+        } catch (e) {}
+    }
+}
+
+function seekOfflineActiveYt(sec) {
+    const videoEl = document.getElementById('offlineActiveVideo');
+    if (videoEl && !isNaN(videoEl.duration)) {
+        videoEl.currentTime = Math.max(0, Math.min(videoEl.duration, videoEl.currentTime + sec));
+    }
+}
+
 function toggleOfflinePlayerFullscreen() {
     const videoEl = document.getElementById('offlineActiveVideo');
     if (!videoEl) return;

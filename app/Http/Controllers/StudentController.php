@@ -555,6 +555,47 @@ class StudentController extends Controller
     }
 
     /**
+     * رفض طلب انضمام الطالب مع توضيح السبب
+     */
+    public function rejectStudent(Request $request, $id)
+    {
+        $student = Student::findOrFail($id);
+        $reason = $request->input('reason', 'تم رفض طلب الانضمام لعدم وضوح الوثائق الرسمية أو عدم استيفاء الشروط.');
+
+        $student->status = 'suspended';
+        $student->freeze_reason = $reason;
+
+        try {
+            $student->save();
+        } catch (\Throwable $e) {
+            \DB::table('students')->where('id', $student->id)->update([
+                'status' => 'suspended',
+                'freeze_reason' => $reason
+            ]);
+        }
+
+        try {
+            \App\Services\NotificationService::notifyStudent(
+                $student->id,
+                'تنبيه بخصوص طلب الانضمام ❌',
+                "نأسف لإبلاغك بأنه تم رفض طلب انضمامك. السبب: " . $reason,
+                'system',
+                route('student.pending-approval'),
+                'fa-circle-xmark'
+            );
+        } catch (\Throwable $e) {}
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => "تم رفض طلب الطالب ({$student->name_ar}) بنجاح."
+            ]);
+        }
+
+        return redirect()->route('admin.students.index')->with('success', "تم رفض طلب الطالب ({$student->name_ar}) بنجاح.");
+    }
+
+    /**
      * تحديد وتعديل الرسوم الشهرية المقررة للطالب من قبل المدير
      */
     public function updateMonthlyFee(Request $request, $id)
