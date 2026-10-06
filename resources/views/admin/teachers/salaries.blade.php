@@ -270,7 +270,19 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="actions-group">
-                                    <button type="button" class="btn-action-edit" onclick='openEditSalaryModal(@json($sal))' title="{{ __('تعديل بيانات الراتب') }}">
+                                    <button type="button" class="btn-action-edit"
+                                        data-teacher-id="{{ $sal->teacher_id }}"
+                                        data-year="{{ $sal->year }}"
+                                        data-month="{{ $sal->month }}"
+                                        data-status="{{ $sal->status }}"
+                                        data-basic="{{ (float)$sal->basic_salary }}"
+                                        data-bonus="{{ (float)$sal->bonus }}"
+                                        data-deductions="{{ (float)$sal->deductions }}"
+                                        data-payment-method="{{ $sal->payment_method ?? 'تحويل بنكي' }}"
+                                        data-payment-date="{{ $sal->payment_date ? $sal->payment_date->format('Y-m-d') : '' }}"
+                                        data-ref="{{ $sal->reference_no ?? '' }}"
+                                        data-notes="{{ $sal->notes ?? '' }}"
+                                        onclick="openEditSalaryModal(this)" title="{{ __('تعديل بيانات الراتب') }}">
                                         <i class="fa-solid fa-pen"></i>
                                     </button>
                                     <button type="button" class="btn-action-delete" onclick="deleteSalaryRecord({{ $sal->id }})" title="{{ __('حذف السجل') }}">
@@ -342,7 +354,19 @@
                     </div>
 
                     <div class="mob-card-footer">
-                        <button type="button" class="btn-mob-edit" onclick='openEditSalaryModal(@json($sal))'>
+                        <button type="button" class="btn-mob-edit"
+                            data-teacher-id="{{ $sal->teacher_id }}"
+                            data-year="{{ $sal->year }}"
+                            data-month="{{ $sal->month }}"
+                            data-status="{{ $sal->status }}"
+                            data-basic="{{ (float)$sal->basic_salary }}"
+                            data-bonus="{{ (float)$sal->bonus }}"
+                            data-deductions="{{ (float)$sal->deductions }}"
+                            data-payment-method="{{ $sal->payment_method ?? 'تحويل بنكي' }}"
+                            data-payment-date="{{ $sal->payment_date ? $sal->payment_date->format('Y-m-d') : '' }}"
+                            data-ref="{{ $sal->reference_no ?? '' }}"
+                            data-notes="{{ $sal->notes ?? '' }}"
+                            onclick="openEditSalaryModal(this)">
                             <i class="fa-solid fa-pen"></i> {{ __('تعديل') }}
                         </button>
                         <button type="button" class="btn-mob-delete" onclick="deleteSalaryRecord({{ $sal->id }})">
@@ -556,18 +580,36 @@
     }
 
     function openEditSalaryModal(salary) {
+        if (!salary) return;
+        let s = salary;
+        if (salary instanceof HTMLElement) {
+            const ds = salary.dataset;
+            s = {
+                teacher_id: ds.teacherId,
+                year: ds.year,
+                month: ds.month,
+                status: ds.status,
+                basic_salary: ds.basic,
+                bonus: ds.bonus,
+                deductions: ds.deductions,
+                payment_method: ds.paymentMethod,
+                payment_date: ds.paymentDate,
+                reference_no: ds.ref,
+                notes: ds.notes
+            };
+        }
         document.getElementById('modalSalaryTitle').innerText = payrollI18n.titleEdit;
-        document.getElementById('modalTeacherId').value = salary.teacher_id;
-        document.getElementById('modalYear').value = salary.year;
-        document.getElementById('modalMonth').value = salary.month;
-        document.getElementById('modalStatus').value = salary.status;
-        document.getElementById('modalBasicSalary').value = salary.basic_salary;
-        document.getElementById('modalBonus').value = salary.bonus;
-        document.getElementById('modalDeductions').value = salary.deductions;
-        document.getElementById('modalPaymentMethod').value = salary.payment_method || 'تحويل بنكي';
-        document.getElementById('modalPaymentDate').value = salary.payment_date ? salary.payment_date.split('T')[0] : '';
-        document.getElementById('modalReferenceNo').value = salary.reference_no || '';
-        document.getElementById('modalNotes').value = salary.notes || '';
+        document.getElementById('modalTeacherId').value = s.teacher_id;
+        document.getElementById('modalYear').value = s.year;
+        document.getElementById('modalMonth').value = s.month;
+        document.getElementById('modalStatus').value = s.status;
+        document.getElementById('modalBasicSalary').value = s.basic_salary;
+        document.getElementById('modalBonus').value = s.bonus;
+        document.getElementById('modalDeductions').value = s.deductions;
+        document.getElementById('modalPaymentMethod').value = s.payment_method || 'تحويل بنكي';
+        document.getElementById('modalPaymentDate').value = s.payment_date ? (s.payment_date.includes('T') ? s.payment_date.split('T')[0] : s.payment_date) : '';
+        document.getElementById('modalReferenceNo').value = s.reference_no || '';
+        document.getElementById('modalNotes').value = s.notes || '';
         calcNetSalary();
         document.getElementById('salaryFormModal').style.display = 'flex';
     }

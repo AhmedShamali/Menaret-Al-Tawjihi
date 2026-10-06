@@ -769,6 +769,10 @@
     text-decoration: none;
     font-size: 0.85rem;
     transition: 0.15s;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
+    cursor: pointer;
 }
 
 .btn-edit:hover {
@@ -788,6 +792,9 @@
     cursor: pointer;
     font-size: 0.85rem;
     transition: 0.15s;
+    position: relative;
+    z-index: 10;
+    pointer-events: auto !important;
 }
 
 .btn-delete:hover {
@@ -1311,10 +1318,9 @@ async function submitDocForm(e) {
 }
 
 async function toggleVisibility(id, btn) {
-    const rawBase = "{{ rtrim(url('/'), '/') }}";
-    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
-    const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const toggleUrl = safeBaseUrl + (isModalAdmin ? '/admin/visibility/toggle/' : '/teacher/visibility/toggle/') + id;
+    if (!id) return;
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const toggleUrl = (isUserAdmin ? '/admin/visibility/toggle/' : '/teacher/visibility/toggle/') + id;
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
     if (btn) btn.disabled = true;
@@ -1350,10 +1356,9 @@ async function toggleVisibility(id, btn) {
 }
 
 window.deleteFileItem = async function(id) {
-    const rawBase = "{{ rtrim(url('/'), '/') }}";
-    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
-    const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const deleteUrl = safeBaseUrl + (isModalAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
+    if (!id) return;
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const deleteUrl = (isUserAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
     const executeDelete = async () => {
@@ -1370,19 +1375,15 @@ window.deleteFileItem = async function(id) {
             formData.append('_method', 'DELETE');
             formData.append('_token', token);
 
-            const response = await fetch(deleteUrl + '?_method=DELETE', {
-                method: 'POST',
+            const res = await axios.post(deleteUrl, formData, {
                 headers: {
                     'X-CSRF-TOKEN': token,
-                    'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
-                },
-                body: formData
+                }
             });
 
-            const data = await response.json().catch(() => null);
-
-            if (response.ok && data && data.success) {
+            const data = res.data;
+            if (data && (data.success || res.status === 200)) {
                 if (typeof Swal !== 'undefined') {
                     await Swal.fire({ 
                         icon: 'success', 
@@ -1404,10 +1405,11 @@ window.deleteFileItem = async function(id) {
             }
         } catch (e) {
             console.error("Delete error:", e);
+            const errMsg = e.response?.data?.message || e.message || '{{ __("تعذر حذف الملف.") }}';
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر حذف الملف.") }}' });
+                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
             } else {
-                alert('{{ __("تعذر حذف الملف.") }}');
+                alert('تعذر حذف الملف.');
             }
         }
     };
@@ -1435,12 +1437,10 @@ window.deleteFileItem = async function(id) {
 };
 
 window.purgeAllContents = async function() {
-    const userRole = "{{ auth()->user()->role }}";
-    const rawBase = "{{ rtrim(url('/'), '/') }}";
-    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
-    const purgeUrl = userRole === 'admin' 
-        ? safeBaseUrl + '/admin/educational-contents/purge-all' 
-        : safeBaseUrl + '/teacher/educational-contents/purge-all';
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const purgeUrl = isUserAdmin 
+        ? '/admin/educational-contents/purge-all' 
+        : '/teacher/educational-contents/purge-all';
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
     const executePurge = async () => {
@@ -1458,19 +1458,15 @@ window.purgeAllContents = async function() {
             formData.append('_token', token);
             formData.append('_method', 'DELETE');
 
-            const response = await fetch(purgeUrl, {
-                method: 'POST',
+            const res = await axios.post(purgeUrl, formData, {
                 headers: {
                     'X-CSRF-TOKEN': token,
-                    'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
-                },
-                body: formData
+                }
             });
 
-            const data = await response.json().catch(() => null);
-
-            if (response.ok && data && data.success) {
+            const data = res.data;
+            if (data && (data.success || res.status === 200)) {
                 if (typeof Swal !== 'undefined') {
                     await Swal.fire({
                         icon: 'success',
@@ -1492,15 +1488,16 @@ window.purgeAllContents = async function() {
             }
         } catch (e) {
             console.error("Purge error:", e);
+            const errMsg = e.response?.data?.message || 'حدث خطأ في الاتصال أثناء التصفير.';
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: 'خطأ', text: 'حدث خطأ في الاتصال أثناء التصفير.' });
+                Swal.fire({ icon: 'error', title: 'خطأ', text: errMsg });
             } else {
                 alert('حدث خطأ في الاتصال أثناء التصفير.');
             }
         }
     };
 
-    const confirmMsg = userRole === 'admin'
+    const confirmMsg = isUserAdmin
         ? 'هل أنت متأكد تماماً من رغبتك بحذف وتصفير كافة المحاضرات والمواد والملفات من المنصة بالكامل؟ لن يتمكن أي طالب أو معلم من الوصول إليها بعد ذلك!'
         : 'هل أنت متأكد تماماً من رغبتك بحذف وتصفير كافة المواد والملازم والدوسيات الخاصة بك؟ هذا الإجراء لا يمكن التراجع عنه!';
 

@@ -293,7 +293,21 @@
 
                             {{-- الإجراء (تعديل التسعيرة) --}}
                             <td style="padding: 10px 16px; text-align: center;">
-                                <button type="button" onclick='editPricing(@json($sub))' style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.15s;" onmouseover="this.style.background='#1d4ed8'; this.style.color='#ffffff';" onmouseout="this.style.background='#ffffff'; this.style.color='#1d4ed8';">
+                                <button type="button" 
+                                    class="btn-edit-pricing"
+                                    data-id="{{ $sub->id }}"
+                                    data-name="{{ $sub->name_ar ?? $sub->name }}"
+                                    data-free="{{ $sub->is_free ? 1 : 0 }}"
+                                    data-t1-wb="{{ (float)($sub->price_term_1 ?? 75) }}"
+                                    data-t2-wb="{{ (float)($sub->price_term_2 ?? 75) }}"
+                                    data-full-wb="{{ (float)($sub->price_full_year ?? 150) }}"
+                                    data-t1-gaza="{{ (float)($sub->price_term_1_gaza ?? 45) }}"
+                                    data-t2-gaza="{{ (float)($sub->price_term_2_gaza ?? 45) }}"
+                                    data-full-gaza="{{ (float)($sub->price_full_year_gaza ?? 90) }}"
+                                    onclick="openPricingModalFromButton(this)" 
+                                    style="display: inline-flex; align-items: center; gap: 5px; background: #ffffff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.15s;" 
+                                    onmouseover="this.style.background='#1d4ed8'; this.style.color='#ffffff';" 
+                                    onmouseout="this.style.background='#ffffff'; this.style.color='#1d4ed8';">
                                     <i class="fa-regular fa-pen-to-square"></i>
                                     <span>{{ __('تعديل') }}</span>
                                 </button>
@@ -458,10 +472,30 @@
         });
     }
 
+    function openPricingModalFromButton(btn) {
+        if (!btn) return;
+        const ds = btn.dataset;
+        editPricing({
+            id: ds.id,
+            name_ar: ds.name,
+            is_free: parseInt(ds.free || 0),
+            price_term_1: parseFloat(ds.t1Wb || 75),
+            price_term_2: parseFloat(ds.t2Wb || 75),
+            price_full_year: parseFloat(ds.fullWb || 150),
+            price_term_1_gaza: parseFloat(ds.t1Gaza || 45),
+            price_term_2_gaza: parseFloat(ds.t2Gaza || 45),
+            price_full_year_gaza: parseFloat(ds.fullGaza || 90)
+        });
+    }
+
     // فتح نافذة التعديل
     function editPricing(sub) {
+        if (!sub) return;
+        if (sub instanceof HTMLElement) {
+            return openPricingModalFromButton(sub);
+        }
         document.getElementById('editSubjectId').value = sub.id;
-        document.getElementById('modalSubjectTitle').textContent = 'تعديل تسعيرة: ' + sub.name_ar;
+        document.getElementById('modalSubjectTitle').textContent = 'تعديل تسعيرة: ' + (sub.name_ar || sub.name || '');
         
         const isFree = (sub.is_free == 1);
         document.getElementById('modalIsFree').checked = isFree;
@@ -484,7 +518,10 @@
 
         onIsFreeToggle();
 
-        document.getElementById('editModal').style.display = 'grid';
+        const modal = document.getElementById('editModal');
+        if (modal) {
+            modal.style.display = 'grid';
+        }
     }
 
     function calcWbFullPreview() {
