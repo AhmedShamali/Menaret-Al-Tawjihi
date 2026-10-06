@@ -51,6 +51,41 @@
         </button>
     </div>
 
+    {{-- تنبيه استرداد ذكي لأي فيديو مكتمل الرفع على الخادم ولم يُسجل في قاعدة البيانات (لتفادي إعادة رفع الملفات الضخمة) --}}
+    @if(!empty($recentUnlinkedVideo))
+        <div id="unlinkedVideoRecoveryAlert" style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 18px 22px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px; min-width: 260px; flex: 1;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #22c55e; color: #ffffff; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <strong style="font-size: 0.96rem; color: #14532d; font-family: 'Alexandria', sans-serif;">
+                            {{ __('تم اكتشاف فيديو مكتمل الرفع على الخادم وجاهز للنشر فوراً!') }}
+                        </strong>
+                        <span style="background: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1px solid #bbf7d0;">
+                            {{ __('استرداد تلقائي ذكي') }}
+                        </span>
+                    </div>
+                    <p style="font-size: 0.83rem; color: #166534; margin: 4px 0 0 0;">
+                        {{ __('الملف:') }} <code style="background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #0f172a; font-size: 0.8rem;">{{ $recentUnlinkedVideo['filename'] }}</code>
+                        • {{ __('الحجم:') }} <strong>{{ $recentUnlinkedVideo['size'] }}</strong>
+                        • {{ __('تم الرفع:') }} <span>{{ $recentUnlinkedVideo['time_ago'] }}</span>
+                    </p>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" onclick="applyRecoveredVideo('{{ $recentUnlinkedVideo['path'] }}', '{{ $recentUnlinkedVideo['size'] }}', '{{ $recentUnlinkedVideo['filename'] }}')" style="background: #16a34a; color: #ffffff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25); transition: transform 0.15s ease;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                    <i class="fa-solid fa-bolt"></i> {{ __('اعتماد ونشر هذا الفيديو فوراً دون إعادة رفعه') }}
+                </button>
+                <button type="button" onclick="document.getElementById('unlinkedVideoRecoveryAlert').style.display='none'" style="background: #ffffff; color: #64748b; border: 1px solid #cbd5e1; padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; cursor: pointer;">
+                    {{ __('تجاهل') }}
+                </button>
+            </div>
+        </div>
+    @endif
+
     <form id="videographerUploadForm" action="{{ route('videographer.contents.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
@@ -229,6 +264,24 @@
                 <span style="display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; color: #1d4ed8; font-size: 0.85rem;">3</span>
                 {{ __('ملف الفيديو والمرفقات الأكاديمية (PDF)') }}
             </h2>
+
+            @if(!empty($recentUnlinkedVideo))
+                <div id="unlinkedVideoRecoveryAlert" style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); border: 1.5px solid #6ee7b7; border-radius: 12px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: #059669; color: #fff; display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <div>
+                            <strong style="color: #065f46; font-size: 0.88rem; display: block;">تم العثور على ملف فيديو مكتمل تم رفعه مؤخراً ({{ $recentUnlinkedVideo['size'] }})!</strong>
+                            <span style="color: #047857; font-size: 0.76rem;">رُفع {{ $recentUnlinkedVideo['time_ago'] }} - يمكنك استخدامه فوراً لنشر المحاضرة دون الحاجة لإعادة رفع الملف مجدداً.</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="applyRecoveredVideo('{{ $recentUnlinkedVideo['path'] }}', '{{ $recentUnlinkedVideo['size'] }}', '{{ $recentUnlinkedVideo['filename'] }}')" style="background: #059669; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>اعتماد الفيديو ونشر المحاضرة فوراً ⚡</span>
+                    </button>
+                </div>
+            @endif
 
             {{-- تبديل طريقة توفير الفيديو: رفع مباشر / رفع مجزأ / رابط خارجي --}}
             <div style="display: flex; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
@@ -823,6 +876,48 @@
         window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
     }
 
+    // اعتماد فيديو مرفوع مسبقاً (استرداد بعد انقطاع الجلسة)
+    window.applyRecoveredVideo = function(path, size, filename) {
+        const uploadedVideoPath = document.getElementById('uploadedVideoPath');
+        const formattedSizeHidden = document.getElementById('formattedSize');
+        const progressWrap = document.getElementById('chunkUploadProgressWrap');
+        const fileNameEl = document.getElementById('uploadFileName');
+        const fileSizeEl = document.getElementById('uploadFileSize');
+        const percentageEl = document.getElementById('uploadPercentage');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const completedBadge = document.getElementById('uploadCompletedBadge');
+        const statusText = document.getElementById('uploadStatusText');
+        const btnSubmit = document.getElementById('btnSubmitForm');
+
+        if (uploadedVideoPath) uploadedVideoPath.value = path;
+        if (formattedSizeHidden) formattedSizeHidden.value = size;
+        if (progressWrap) progressWrap.style.display = 'block';
+        if (fileNameEl) fileNameEl.textContent = filename;
+        if (fileSizeEl) fileSizeEl.textContent = size;
+        if (percentageEl) percentageEl.textContent = '100%';
+        if (progressBar) progressBar.style.width = '100%';
+        if (completedBadge) completedBadge.style.display = 'flex';
+        if (statusText) statusText.textContent = 'تم ربط واعتماد ملف الفيديو المرفوع بنجاح! جاهز للنشر والتوزيع فوراً.';
+
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.style.opacity = '1';
+            btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+        }
+
+        const alertEl = document.getElementById('unlinkedVideoRecoveryAlert');
+        if (alertEl) alertEl.style.display = 'none';
+
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'success',
+                title: 'تم اعتماد الفيديو المرفوع!',
+                text: 'تم ربط ملف الفيديو المرفوع مسبقاً بنجاح. يمكنك الآن مراجعة بيانات المحاضرة والضغط على "نشر وتوزيع المحاضرة فوراً".',
+                confirmButtonText: 'حسناً'
+            });
+        }
+    };
+
     // تجهيز السحب والإفلات
     const dropAreaEl = document.getElementById('dropArea');
     if (dropAreaEl) {
@@ -943,21 +1038,70 @@
             }
 
             try {
+                // 1. تجديد رمز CSRF قبل إرسال النموذج لضمان عدم حدوث خطأ 419 بعد طول مدة رفع الفيديوهات الكبيرة
+                let freshToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                try {
+                    const pingRes = await fetch("{{ route('system.ping') }}", {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                        cache: 'no-store'
+                    });
+                    if (pingRes.ok) {
+                        const pingData = await pingRes.json();
+                        if (pingData && pingData.csrf) {
+                            freshToken = pingData.csrf;
+                            const metaCsrf = document.querySelector('meta[name="csrf-token"]');
+                            if (metaCsrf) metaCsrf.setAttribute('content', freshToken);
+                            const formTokenInput = vgForm.querySelector('input[name="_token"]');
+                            if (formTokenInput) formTokenInput.value = freshToken;
+                        }
+                    }
+                } catch (pingErr) {
+                    console.warn("Could not refresh token before form submit:", pingErr);
+                }
+
                 const formData = new FormData(vgForm);
+                if (freshToken) {
+                    formData.set('_token', freshToken);
+                }
+
                 // حماية مؤكدة: إذا تم رفع الفيديو عبر أجزاء Chunks، نحذف ملف الفيديو الخام من حمولة النموذج
                 // حتى لا يتم إرسال ملف ضخم (400MB+) عبر HTTP POST عادي ويتسبب بتجميد المتصفح
                 if (hasUploadedPath) {
                     formData.delete('video_file');
                 }
 
-                const response = await fetch(vgForm.action, {
+                let response = await fetch(vgForm.action, {
                     method: 'POST',
                     body: formData,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': freshToken
                     }
                 });
+
+                // إذا حدث خطأ 419 استثنائياً، نقوم بتجديد الرمز وإعادة المحاولة تلقائياً مرة واحدة
+                if (response.status === 419) {
+                    try {
+                        const retryPing = await fetch("{{ route('system.ping') }}", { cache: 'no-store' });
+                        const retryData = await retryPing.json();
+                        if (retryData && retryData.csrf) {
+                            freshToken = retryData.csrf;
+                            formData.set('_token', freshToken);
+                            response = await fetch(vgForm.action, {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': freshToken
+                                }
+                            });
+                        }
+                    } catch (rErr) {
+                        console.error("Auto retry on 419 failed:", rErr);
+                    }
+                }
 
                 const data = await response.json().catch(() => null);
 
@@ -991,8 +1135,15 @@
                         btn.innerHTML = originalBtnHtml;
                     }
 
+                    // الحفاظ على المسودة وملف الفيديو المرفوع لعدم ضياع الرفع
+                    if (typeof window.saveVideographerDraft === 'function') {
+                        window.saveVideographerDraft();
+                    }
+
                     let errorMsg = 'تعذر حفظ وتوزيع المحاضرة. يرجى مراجعة البيانات.';
-                    if (data && data.errors) {
+                    if (response.status === 419) {
+                        errorMsg = 'انتهت صلاحية جلسة الأمان المؤقتة أثناء رفع الفيديو. تم حفظ ملف الفيديو المرفوع تلقائياً؛ يمكنك الآن الضغط مجدداً على زر "نشر وتوزيع المحاضرة فوراً" دون إعادة رفع الملف!';
+                    } else if (data && data.errors) {
                         const firstKey = Object.keys(data.errors)[0];
                         errorMsg = Array.isArray(data.errors[firstKey]) ? data.errors[firstKey][0] : data.errors[firstKey];
                     } else if (data && data.message) {
@@ -1021,7 +1172,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'خطأ في الاتصال',
-                        text: 'حدث خطأ أثناء الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.',
+                        text: 'حدث خطأ أثناء الاتصال بالخادم. تم حفظ بيانات المحاضرة وملف الفيديو المرفوع؛ يرجى المحاولة مرة أخرى.',
                         confirmButtonText: 'حسناً'
                     });
                 } else {

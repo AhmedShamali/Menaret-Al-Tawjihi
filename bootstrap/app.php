@@ -18,6 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // 1. الثقة ببروكسي Railway لتجنب مشاكل الـ HTTPS والـ 419
         $middleware->trustProxies(at: '*');
 
+        // استثناء مسارات رفع ونشر المحتوى الأكاديمي من فحص CSRF لتفادي خطأ 419 عند استغراق رفع الفيديوهات وقتاً طويلاً
+        $middleware->validateCsrfTokens(except: [
+            'videographer/contents',
+            'videographer/contents/*',
+            'educational-contents',
+            'educational-contents/*',
+            'teacher/educational-contents/*',
+            'contents/*',
+            'api/*',
+        ]);
+
         // ضبط لغة المنصة تلقائياً للمستخدم (عربي / English)
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
