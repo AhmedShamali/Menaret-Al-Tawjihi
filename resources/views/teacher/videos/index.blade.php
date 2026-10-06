@@ -2016,7 +2016,7 @@ async function purgeAllContents() {
 
             try {
                 const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-                const purgeUrl = "{{ route('admin.educational_contents.purgeAll') }}";
+                const purgeUrl = "{{ url('admin/educational-contents/purge-all') }}";
                 const response = await fetch(purgeUrl, {
                     method: 'POST',
                     headers: {
