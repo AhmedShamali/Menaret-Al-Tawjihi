@@ -569,27 +569,67 @@
         .royal-ticker-viewport {
             flex: 1;
             position: relative;
-            min-height: 26px;
+            height: 34px;
             display: flex;
             align-items: center;
             overflow: hidden;
         }
         .royal-ticker-item {
-            display: none;
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
             align-items: center;
             gap: 10px;
-            width: 100%;
             color: #78350f;
             font-size: 13.5px;
             font-weight: 700;
             text-decoration: none;
+            line-height: 1.4;
             opacity: 0;
-            transition: opacity 0.35s ease;
-            line-height: 1.5;
+            visibility: hidden;
+            transform: translateY(22px);
+            filter: blur(4px);
+            transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+                        visibility 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            will-change: transform, opacity, filter;
         }
         .royal-ticker-item.active {
-            display: inline-flex;
             opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            filter: blur(0);
+            pointer-events: auto;
+            z-index: 2;
+        }
+        .royal-ticker-item.leaving-up {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-22px);
+            filter: blur(4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .royal-ticker-item.leaving-down {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(22px);
+            filter: blur(4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+        .royal-ticker-item.from-top {
+            transform: translateY(-22px) !important;
+            opacity: 0 !important;
+            filter: blur(4px) !important;
+            transition: none !important;
         }
         .royal-ticker-item:hover {
             color: #9a3412;
@@ -597,10 +637,11 @@
         .royal-ticker-item-badge {
             font-size: 10.5px;
             font-weight: 800;
-            padding: 2px 9px;
+            padding: 2.5px 9px;
             border-radius: 6px;
             flex-shrink: 0;
             letter-spacing: 0.3px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
         }
         .ticker-badge-urgent {
             background: #fee2e2;
@@ -628,6 +669,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            display: inline-block;
+            max-width: calc(100% - 90px);
         }
         .royal-ticker-controls {
             display: flex;
@@ -683,10 +726,25 @@
         }
         @media (max-width: 768px) {
             .royal-ticker-bar {
-                padding: 8px 12px;
+                padding: 6px 12px;
+            }
+            .royal-ticker-viewport {
+                height: 30px;
             }
             .royal-ticker-tag span:last-child {
                 display: none;
+            }
+            .royal-ticker-item {
+                font-size: 12px;
+                gap: 6px;
+            }
+            .ticker-counter {
+                font-size: 10px;
+                padding: 1px 5px;
+            }
+            .ticker-nav-btn {
+                width: 24px;
+                height: 24px;
             }
             .ticker-admin-btn span {
                 display: none;
@@ -2781,7 +2839,7 @@
             }
         }, { passive: true });
 
-        // تدوير شريط آخر الأخبار والتعاميم المباشرة بالصفحة الرئيسية بسلاسة تامة
+        // تدوير شريط آخر الأخبار والتعاميم المباشرة بالصفحة الرئيسية بانسيابية سينمائية ناعمة وبدون أي قفز
         (function() {
             const viewport = document.getElementById('tickerViewport');
             if (!viewport) return;
@@ -2791,45 +2849,65 @@
 
             const counter = document.getElementById('tickerCounter');
             let currentIndex = 0;
+            let isAnimating = false;
             let tickerInterval = null;
-            const duration = 6000;
+            const duration = 6500;
 
-            function showItem(index) {
-                currentIndex = (index + items.length) % items.length;
-                items.forEach((item, idx) => {
-                    if (idx === currentIndex) {
-                        item.style.display = 'inline-flex';
-                        setTimeout(() => { item.style.opacity = '1'; }, 20);
-                        item.classList.add('active');
-                    } else {
-                        item.style.opacity = '0';
-                        setTimeout(() => {
-                            if (idx !== currentIndex) {
-                                item.style.display = 'none';
-                                item.classList.remove('active');
-                            }
-                        }, 250);
-                    }
-                });
+            function goToItem(nextIndex, direction) {
+                if (isAnimating || items.length <= 1) return;
+                isAnimating = true;
 
+                const currentItem = items[currentIndex];
+                const nextItem = items[nextIndex];
+
+                if (direction === 'prev') {
+                    // الانتقال للخلف: القادم يبدأ من الأعلى وينزل، والحالي ينزل للأسفل
+                    nextItem.classList.remove('leaving-up', 'leaving-down', 'active');
+                    nextItem.classList.add('from-top');
+                    void nextItem.offsetHeight; // إجبار المتصفح على تطبيق الموضع الأولي فوراً
+
+                    currentItem.classList.remove('active');
+                    currentItem.classList.add('leaving-down');
+
+                    nextItem.classList.remove('from-top');
+                    nextItem.classList.add('active');
+                } else {
+                    // الانتقال للأمام: القادم يصعد بنعومة من الأسفل، والحالي يصعد للأعلى ويتلاشى
+                    nextItem.classList.remove('leaving-up', 'leaving-down', 'from-top', 'active');
+                    void nextItem.offsetHeight; // إجبار المتصفح على تطبيق الموضع الأولي
+
+                    currentItem.classList.remove('active');
+                    currentItem.classList.add('leaving-up');
+
+                    nextItem.classList.add('active');
+                }
+
+                currentIndex = nextIndex;
                 if (counter) {
                     counter.textContent = (currentIndex + 1) + ' / ' + items.length;
                 }
+
+                setTimeout(() => {
+                    currentItem.classList.remove('leaving-up', 'leaving-down');
+                    isAnimating = false;
+                }, 650);
             }
 
             window.nextTickerItem = function() {
-                showItem(currentIndex + 1);
+                const next = (currentIndex + 1) % items.length;
+                goToItem(next, 'next');
             };
 
             window.prevTickerItem = function() {
-                showItem(currentIndex - 1);
+                const prev = (currentIndex - 1 + items.length) % items.length;
+                goToItem(prev, 'prev');
             };
 
             function startAutoTicker() {
                 if (items.length <= 1) return;
-                if (tickerInterval) clearInterval(tickerInterval);
+                stopAutoTicker();
                 tickerInterval = setInterval(function() {
-                    showItem(currentIndex + 1);
+                    window.nextTickerItem();
                 }, duration);
             }
 
@@ -2844,6 +2922,12 @@
 
             viewport.addEventListener('mouseenter', stopAutoTicker);
             viewport.addEventListener('mouseleave', startAutoTicker);
+
+            const controls = document.querySelector('.royal-ticker-controls');
+            if (controls) {
+                controls.addEventListener('mouseenter', stopAutoTicker);
+                controls.addEventListener('mouseleave', startAutoTicker);
+            }
         })();
     </script>
 
