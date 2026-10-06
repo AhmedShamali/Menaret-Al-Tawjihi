@@ -1920,142 +1920,205 @@ async function toggleVisibility(id, btn) {
     }
 }
 
-async function deleteVideoItem(id) {
-    const deleteUrl = "{{ auth()->user()->role === 'admin' ? url('admin/educational-contents') : url('teacher/educational_contents') }}/" + id;
-    Swal.fire({
-        title: '{{ __("حذف هذا الشرح المرئي؟") }}',
-        text: '{{ __("هل أنت متأكد من حذف هذا الدرس؟ سيتم حذفه من جميع الفروع الأكاديمية الشقيقة أيضاً لنفس المحاضرة.") }}',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: '{{ __("نعم، احذف المحاضرة") }}',
-        cancelButtonText: '{{ __("إلغاء") }}'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
+window.deleteVideoItem = async function(id) {
+    const rawBase = "{{ rtrim(url('/'), '/') }}";
+    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
+    const deleteUrl = safeBaseUrl + (isModalAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    const executeDelete = async () => {
+        if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'جاري الحذف...',
+                text: 'يرجى الانتظار لحظات...',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
+        }
 
-            try {
-                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-                const response = await fetch(deleteUrl, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': token,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ _token: token, sync_sisters: true })
-                });
+        try {
+            const formData = new FormData();
+            formData.append('_method', 'DELETE');
+            formData.append('_token', token);
+            formData.append('sync_sisters', '1');
 
-                const data = await response.json().catch(() => null);
+            const response = await fetch(deleteUrl + '?_method=DELETE', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
 
-                if (response.ok && data && data.success) {
+            const data = await response.json().catch(() => null);
+
+            if (response.ok && data && data.success) {
+                if (typeof Swal !== 'undefined') {
                     await Swal.fire({ 
                         icon: 'success', 
-                        title: 'تم الحذف بنجاح', 
+                        title: 'تم الحذف بنجاح ✅', 
                         text: data.message || 'تم حذف المحاضرة بنجاح.',
                         timer: 1500, 
                         showConfirmButton: false 
                     });
-                    location.reload();
                 } else {
+                    alert(data.message || 'تم حذف المحاضرة بنجاح.');
+                }
+                location.reload();
+            } else {
+                const errMsg = data?.message || 'تعذر حذف المحتوى. يرجى مراجعة الصلاحيات أو المحاولة مرة أخرى.';
+                if (typeof Swal !== 'undefined') {
                     Swal.fire({ 
                         icon: 'error', 
                         title: 'خطأ', 
-                        text: data?.message || 'تعذر حذف المحتوى. يرجى مراجعة الصلاحيات أو المحاولة مرة أخرى.' 
+                        text: errMsg 
                     });
+                } else {
+                    alert('خطأ: ' + errMsg);
                 }
-            } catch (e) {
-                console.error("Delete error:", e);
+            }
+        } catch (e) {
+            console.error("Delete error:", e);
+            if (typeof Swal !== 'undefined') {
                 Swal.fire({ 
                     icon: 'error', 
                     title: 'خطأ في الاتصال', 
                     text: 'تعذر الاتصال بالخادم لإتمام عملية الحذف.' 
                 });
+            } else {
+                alert('تعذر الاتصال بالخادم لإتمام عملية الحذف.');
             }
         }
-    });
-}
+    };
 
-async function purgeAllContents() {
-    Swal.fire({
-        title: '⚠️ تحذير فائق الخطورة!',
-        html: `
-            <div style="text-align: right; line-height: 1.6; font-size: 0.9rem;">
-                <p style="color: #dc2626; font-weight: 800; font-size: 1rem; margin-bottom: 8px;">
-                    هل أنت متأكد تماماً من رغبتك في حذف وتصفير جميع الفيديوهات والمحاضرات والملازم على المنصة بالكامل؟
-                </p>
-                <p style="color: #475569; margin-bottom: 12px;">
-                    ⚠️ سيؤدي هذا الإجراء إلى <strong>مسح شامل لجميع المحتويات والشروحات المرئية والملفات</strong> من حسابات كافة المستخدمين (المدير، المدرسين، والطلاب) في جميع الفروع.
-                </p>
-                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; margin-bottom: 8px; color: #991b1b; font-weight: 600;">
-                    لن يمكن التراجع عن هذا الإجراء إطلاقاً بعد تنفيذه!
-                </div>
-            </div>
-        `,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'نعم، احذف جميع المحتويات الآن 🗑️',
-        cancelButtonText: 'إلغاء التراجع',
-        focusCancel: true
-    }).then(async (result) => {
-        if (result.isConfirmed) {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '{{ __("حذف هذا الشرح المرئي؟") }}',
+            text: '{{ __("هل أنت متأكد من حذف هذا الدرس؟ سيتم حذفه من جميع الفروع الأكاديمية الشقيقة أيضاً لنفس المحاضرة.") }}',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '{{ __("نعم، احذف المحاضرة") }}',
+            cancelButtonText: '{{ __("إلغاء") }}'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeDelete();
+            }
+        });
+    } else {
+        if (confirm('{{ __("هل أنت متأكد من حذف هذا الدرس؟ سيتم حذفه من جميع الفروع الأكاديمية الشقيقة أيضاً لنفس المحاضرة.") }}')) {
+            executeDelete();
+        }
+    }
+};
+
+window.purgeAllContents = async function() {
+    const rawBase = "{{ rtrim(url('/'), '/') }}";
+    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
+    const purgeUrl = safeBaseUrl + '/admin/educational-contents/purge-all';
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    const executePurge = async () => {
+        if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: 'جاري الحذف والتصفير الشامل...',
                 text: 'يرجى الانتظار لحظات حتى إتمام مسح السجلات بالكامل...',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
+        }
 
-            try {
-                const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-                const purgeUrl = "{{ url('admin/educational-contents/purge-all') }}";
-                const response = await fetch(purgeUrl, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': token,
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ _token: token })
-                });
+        try {
+            const formData = new FormData();
+            formData.append('_token', token);
 
-                const data = await response.json().catch(() => null);
+            const response = await fetch(purgeUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
 
-                if (response.ok && data && data.success) {
+            const data = await response.json().catch(() => null);
+
+            if (response.ok && data && data.success) {
+                if (typeof Swal !== 'undefined') {
                     await Swal.fire({
                         icon: 'success',
                         title: 'تم التصفير الشامل بنجاح! 🗑️',
                         text: data.message || 'تم حذف وتصفير جميع المحتويات من المنصة بالكامل.',
                         confirmButtonText: 'حسناً'
                     });
-                    location.reload();
                 } else {
+                    alert(data.message || 'تم حذف وتصفير جميع المحتويات من المنصة بالكامل.');
+                }
+                location.reload();
+            } else {
+                const errMsg = data?.message || 'حدث خطأ أثناء محاولة التصفير الشامل للمحتويات.';
+                if (typeof Swal !== 'undefined') {
                     Swal.fire({
                         icon: 'error',
                         title: 'تعذر الحذف الشامل',
-                        text: data?.message || 'حدث خطأ أثناء محاولة التصفير الشامل للمحتويات.'
+                        text: errMsg
                     });
+                } else {
+                    alert('تعذر الحذف الشامل: ' + errMsg);
                 }
-            } catch (err) {
-                console.error("Purge error:", err);
+            }
+        } catch (err) {
+            console.error("Purge error:", err);
+            if (typeof Swal !== 'undefined') {
                 Swal.fire({
                     icon: 'error',
                     title: 'خطأ في الاتصال',
                     text: 'حدث خطأ في الاتصال بالخادم أثناء تنفيذ الحذف الشامل.'
                 });
+            } else {
+                alert('حدث خطأ في الاتصال بالخادم أثناء تنفيذ الحذف الشامل.');
             }
         }
-    });
-}
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '⚠️ تحذير فائق الخطورة!',
+            html: `
+                <div style="text-align: right; line-height: 1.6; font-size: 0.9rem;">
+                    <p style="color: #dc2626; font-weight: 800; font-size: 1rem; margin-bottom: 8px;">
+                        هل أنت متأكد تماماً من رغبتك في حذف وتصفير جميع الفيديوهات والمحاضرات والملازم على المنصة بالكامل؟
+                    </p>
+                    <p style="color: #475569; margin-bottom: 12px;">
+                        ⚠️ سيؤدي هذا الإجراء إلى <strong>مسح شامل لجميع المحتويات والشروحات المرئية والملفات</strong> من حسابات كافة المستخدمين (المدير، المدرسين، والطلاب) في جميع الفروع.
+                    </p>
+                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; margin-bottom: 8px; color: #991b1b; font-weight: 600;">
+                        لن يمكن التراجع عن هذا الإجراء إطلاقاً بعد تنفيذه!
+                    </div>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'نعم، احذف جميع المحتويات الآن 🗑️',
+            cancelButtonText: 'إلغاء التراجع',
+            focusCancel: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executePurge();
+            }
+        });
+    } else {
+        if (confirm("⚠️ تحذير فائق الخطورة!\n\nهل أنت متأكد تماماً من رغبتك في حذف وتصفير جميع الفيديوهات والمحاضرات والملازم على المنصة بالكامل لجميع المستخدمين؟\n\nلن يمكن التراجع عن هذا الإجراء إطلاقاً!")) {
+            executePurge();
+        }
+    }
+};
 
 // نظام مشغل الفيديو الآمن الداخلي المخصص للمنصة (منع الوصول إلى YouTube كلياً)
 let teacherPlayers = {};

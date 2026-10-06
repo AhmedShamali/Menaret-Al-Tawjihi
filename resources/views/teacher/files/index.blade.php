@@ -1322,30 +1322,89 @@ async function toggleVisibility(id, btn) {
     }
 }
 
-async function deleteFileItem(id) {
-    const deleteUrl = "{{ auth()->user()->role === 'admin' ? url('admin/educational-contents') : url('teacher/educational_contents') }}/" + id;
-    Swal.fire({
-        title: '{{ __("حذف هذه الملزمة؟") }}',
-        text: '{{ __("هل أنت متأكد من حذف هذا الملف؟ لن يتمكن الطلاب من تحميله بعد الحذف.") }}',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#dc2626',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: '{{ __("نعم، احذف") }}',
-        cancelButtonText: '{{ __("إلغاء") }}'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                await axios.delete(deleteUrl, {
-                    data: { _token: '{{ csrf_token() }}' }
-                });
-                Swal.fire({ icon: 'success', title: '{{ __("تم حذف الملف بنجاح") }}', timer: 1200, showConfirmButton: false })
-                    .then(() => location.reload());
-            } catch (e) {
+window.deleteFileItem = async function(id) {
+    const rawBase = "{{ rtrim(url('/'), '/') }}";
+    const safeBaseUrl = window.location.protocol === 'https:' ? rawBase.replace(/^http:/, 'https:') : rawBase;
+    const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const deleteUrl = safeBaseUrl + (isModalAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+
+    const executeDelete = async () => {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: 'جاري الحذف...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('_method', 'DELETE');
+            formData.append('_token', token);
+
+            const response = await fetch(deleteUrl + '?_method=DELETE', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': token,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: formData
+            });
+
+            const data = await response.json().catch(() => null);
+
+            if (response.ok && data && data.success) {
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({ 
+                        icon: 'success', 
+                        title: '{{ __("تم حذف الملف بنجاح") }}', 
+                        timer: 1200, 
+                        showConfirmButton: false 
+                    });
+                } else {
+                    alert('{{ __("تم حذف الملف بنجاح") }}');
+                }
+                location.reload();
+            } else {
+                const errMsg = data?.message || '{{ __("تعذر حذف الملف.") }}';
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
+                } else {
+                    alert('خطأ: ' + errMsg);
+                }
+            }
+        } catch (e) {
+            console.error("Delete error:", e);
+            if (typeof Swal !== 'undefined') {
                 Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر حذف الملف.") }}' });
+            } else {
+                alert('{{ __("تعذر حذف الملف.") }}');
             }
         }
-    });
-}
+    };
+
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: '{{ __("حذف هذه الملزمة؟") }}',
+            text: '{{ __("هل أنت متأكد من حذف هذا الملف؟ لن يتمكن الطلاب من تحميله بعد الحذف.") }}',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '{{ __("نعم، احذف") }}',
+            cancelButtonText: '{{ __("إلغاء") }}'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                executeDelete();
+            }
+        });
+    } else {
+        if (confirm('{{ __("هل أنت متأكد من حذف هذا الملف؟ لن يتمكن الطلاب من تحميله بعد الحذف.") }}')) {
+            executeDelete();
+        }
+    }
+};
 </script>
 @endsection

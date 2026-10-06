@@ -810,16 +810,40 @@ class EducationalContentController extends Controller
         ], 200);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request = null, $id = null)
     {
-        $content = EducationalContent::find($id);
+        $req = $request instanceof Request ? $request : request();
+
+        // استخراج معرف المحتوى بكل الطرق الممكنة لمنع أي خطأ في الربط (Route Binding)
+        $targetId = null;
+        if ($id instanceof EducationalContent) {
+            $targetId = $id->id;
+        } elseif ($request instanceof EducationalContent) {
+            $targetId = $request->id;
+        } elseif (is_numeric($id)) {
+            $targetId = (int)$id;
+        } else {
+            $targetId = $req->route('id') 
+                ?? $req->route('educational_content') 
+                ?? $req->input('id') 
+                ?? $id;
+        }
+
+        if (is_object($targetId) && isset($targetId->id)) {
+            $targetId = $targetId->id;
+        }
+
+        $content = EducationalContent::find($targetId);
 
         if ($content) {
             $user = auth()->user();
             if ($user && $user->role === 'teacher') {
                 $teacherSubjectIds = $this->getTeacherSubjectIds($user);
                 if (!in_array((int)$content->subject_id, $teacherSubjectIds) && $content->uploaded_by != $user->id) {
-                    return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
+                    if ($req->expectsJson() || $req->ajax() || $req->wantsJson()) {
+                        return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
+                    }
+                    return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا المحتوى.');
                 }
             }
 
@@ -843,7 +867,11 @@ class EducationalContentController extends Controller
             // حذف التعيينات وسجلات تقدم المشاهدة وملاحظات الفيديو
             try {
                 \App\Models\ContentAssignment::whereIn('educational_content_id', $allIdsToDelete)->delete();
+            } catch (\Throwable $e) {}
+            try {
                 \App\Models\VideoProgress::whereIn('educational_content_id', $allIdsToDelete)->delete();
+            } catch (\Throwable $e) {}
+            try {
                 \App\Models\VideoNote::whereIn('educational_content_id', $allIdsToDelete)->delete();
             } catch (\Throwable $e) {}
 
@@ -896,14 +924,14 @@ class EducationalContentController extends Controller
                 ? "تم حذف المحاضرة \"{$title}\" بنجاح من كافة الفروع الأكاديمية ({$deletedCount} فروع) ✅"
                 : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
 
-            if ($request->ajax() || $request->wantsJson()) {
+            if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || $req->isJson() || request()->expectsJson() || request()->ajax()) {
                 return response()->json(['success' => true, 'message' => $msg]);
             }
 
             return redirect()->back()->with('success', $msg);
         }
 
-        if ($request->ajax() || $request->wantsJson()) {
+        if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || $req->isJson() || request()->expectsJson() || request()->ajax()) {
             return response()->json(['success' => false, 'message' => 'المحاضرة غير موجودة أو تم حذفها مسبقاً.'], 404);
         }
 
@@ -913,11 +941,12 @@ class EducationalContentController extends Controller
     /**
      * حذف وتصفير جميع المحتويات والمحاضرات على المنصة دفعة واحدة (مخصص للمدير العام فقط)
      */
-    public function purgeAllContents(Request $request)
+    public function purgeAllContents(Request $request = null)
     {
+        $req = $request instanceof Request ? $request : request();
         $user = auth()->user();
         if (!$user || $user->role !== 'admin') {
-            if ($request->ajax() || $request->wantsJson()) {
+            if ($req->expectsJson() || $req->ajax() || $req->wantsJson()) {
                 return response()->json(['success' => false, 'message' => 'عذراً، هذا الإجراء مخصص للمدير العام فقط.'], 403);
             }
             abort(403, 'عذراً، هذا الإجراء مخصص للمدير العام فقط.');
@@ -943,7 +972,7 @@ class EducationalContentController extends Controller
             \DB::table('educational_contents')->delete();
 
             // 4. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
-            if ($request->boolean('delete_physical_files', false)) {
+            if ($req->boolean('delete_physical_files', false)) {
                 try {
                     $videoFiles = Storage::disk('public')->files('educational/videos');
                     Storage::disk('public')->delete($videoFiles);
@@ -952,9 +981,14 @@ class EducationalContentController extends Controller
 
             \DB::commit();
 
+            // مسح كاش المزامنة التلقائية
+            try {
+                \Illuminate\Support\Facades\Cache::forget('educational_contents_last_synced_at');
+            } catch (\Throwable $e) {}
+
             $msg = "تم حذف وتصفير كافة المحاضرات والمحتويات بنجاح! تم مسح ({$totalCount}) محتوى تعليمي من المنصة بالكامل لجميع المستخدمين 🗑️";
 
-            if ($request->ajax() || $request->wantsJson()) {
+            if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || request()->expectsJson() || request()->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => $msg,
@@ -962,15 +996,16 @@ class EducationalContentController extends Controller
             }
 
             return redirect()->back()->with('success', $msg);
+
         } catch (\Throwable $e) {
             \DB::rollBack();
-            if ($request->ajax() || $request->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'حدث خطأ أثناء عملية الحذف الشامل: ' . $e->getMessage()
-                ], 500);
+            \Log::error("Purge all educational contents error: " . $e->getMessage());
+
+            if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || request()->expectsJson() || request()->ajax()) {
+                return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء تنفيذ الحذف الشامل: ' . $e->getMessage()], 500);
             }
-            return redirect()->back()->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تنفيذ الحذف الشامل: ' . $e->getMessage());
         }
     }
 
