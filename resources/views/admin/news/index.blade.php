@@ -222,7 +222,17 @@
 
                                 <td style="padding: 14px 18px; text-align: center;">
                                     <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-                                        <button type="button" onclick="openEditModal({{ json_encode($item) }})" style="background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 0.82rem; transition: all 0.15s;" title="{{ __('تعديل الخبر') }}">
+                                        <button type="button" 
+                                            class="btn-edit-news"
+                                            data-id="{{ $item['id'] }}"
+                                            data-text="{{ e($item['text'] ?? '') }}"
+                                            data-badge="{{ e($item['badge'] ?? 'عاجل') }}"
+                                            data-type="{{ e($item['type'] ?? 'urgent') }}"
+                                            data-url="{{ e($item['url'] ?? '') }}"
+                                            data-active="{{ !empty($item['is_active']) ? '1' : '0' }}"
+                                            onclick="openEditNewsModalFromButton(this)" 
+                                            style="background: #f8fafc; border: 1px solid #cbd5e1; color: #334155; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 0.82rem; transition: all 0.15s;" 
+                                            title="{{ __('تعديل الخبر') }}">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </button>
                                         <button type="button" onclick="deleteNewsItem('{{ $item['id'] }}')" style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: grid; place-items: center; font-size: 0.82rem; transition: all 0.15s;" title="{{ __('حذف الخبر') }}">
@@ -375,7 +385,24 @@ function openCreateModal() {
     document.getElementById('news-modal').style.display = 'flex';
 }
 
+function openEditNewsModalFromButton(btn) {
+    if (!btn) return;
+    const ds = btn.dataset;
+    openEditModal({
+        id: ds.id,
+        text: ds.text,
+        badge: ds.badge,
+        type: ds.type,
+        url: ds.url,
+        is_active: ds.active === '1'
+    });
+}
+
 function openEditModal(item) {
+    if (!item) return;
+    if (item instanceof HTMLElement) {
+        return openEditNewsModalFromButton(item);
+    }
     document.getElementById('form-item-id').value = item.id || '';
     document.getElementById('form-item-text').value = item.text || '';
     document.getElementById('form-item-badge').value = item.badge || 'عاجل';

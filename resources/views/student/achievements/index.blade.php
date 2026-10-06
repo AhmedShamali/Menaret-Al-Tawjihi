@@ -159,10 +159,10 @@
                         <input type="text" id="sessionGoalInput" class="ed-input" placeholder="{{ __('مثال: حل تمارين الكتاب المدرسي، مراجعة الدرس الأول...') }}" oninput="updateActiveGoalDisplay()">
                         
                         <div class="quick-tags-wrap">
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('حل تمارين وأسئلة الكتاب')))">✍️ {{ __('تمارين الكتاب') }}</span>
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('حفظ ومراجعة درس ومفاهيم')))">📖 {{ __('حفظ ومراجعة') }}</span>
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('تلخيص وكتابة ملاحظات هامة')))">📝 {{ __('تلخيص شامل') }}</span>
-                            <span class="tag-chip" onclick="setQuickGoal(@json(__('مراجعة المفاهيم والقوانين')))">🎯 {{ __('مراجعة المفاهيم') }}</span>
+                            <span class="tag-chip" data-goal="{{ __('حل تمارين وأسئلة الكتاب') }}" onclick="setQuickGoal(this.dataset.goal)">✍️ {{ __('تمارين الكتاب') }}</span>
+                            <span class="tag-chip" data-goal="{{ __('حفظ ومراجعة درس ومفاهيم') }}" onclick="setQuickGoal(this.dataset.goal)">📖 {{ __('حفظ ومراجعة') }}</span>
+                            <span class="tag-chip" data-goal="{{ __('تلخيص وكتابة ملاحظات هامة') }}" onclick="setQuickGoal(this.dataset.goal)">📝 {{ __('تلخيص شامل') }}</span>
+                            <span class="tag-chip" data-goal="{{ __('مراجعة المفاهيم والقوانين') }}" onclick="setQuickGoal(this.dataset.goal)">🎯 {{ __('مراجعة المفاهيم') }}</span>
                         </div>
                     </div>
 
