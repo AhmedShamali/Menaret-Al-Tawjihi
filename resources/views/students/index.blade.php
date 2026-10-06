@@ -397,7 +397,7 @@
 
 <script>
     function performToggle(id) {
-        axios.post(`{{ url('admin/students/toggle-status') }}/${id}`)
+        axios.post(`/admin/students/toggle-status/${id}`)
         .then(res => {
             Swal.fire({
                 icon: 'success',
@@ -422,13 +422,22 @@
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`{{ url('admin/students') }}/${id}`)
+                axios.post(`/admin/students/${id}`, {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                })
                 .then(res => {
-                    document.getElementById(`row_${id}`).style.opacity = '0';
-                    setTimeout(() => {
-                        document.getElementById(`row_${id}`).remove();
-                    }, 500);
+                    const row = document.getElementById(`row_${id}`);
+                    if (row) {
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                        }, 400);
+                    }
                     Swal.fire('تم الحذف!', 'تمت إزالة الطالب بنجاح', 'success');
+                })
+                .catch(err => {
+                    Swal.fire('خطأ', err.response?.data?.message || 'فشلت عملية الحذف', 'error');
                 });
             }
         });

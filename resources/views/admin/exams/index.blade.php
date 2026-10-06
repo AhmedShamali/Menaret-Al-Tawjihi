@@ -405,7 +405,7 @@ function confirmDelete(id) {
     Swal.fire({
         icon: 'success',
         title: @json(__('تم الاعتماد بنجاح!')),
-        text: "{{ session('success') }}",
+        text: @json(session('success')),
         timer: 3000,
         showConfirmButton: false,
         customClass: { popup: 'swal2-custom-popup' }
@@ -416,7 +416,7 @@ function confirmDelete(id) {
     Swal.fire({
         icon: 'error',
         title: @json(__('تنبيه')),
-        text: "{{ session('error') }}",
+        text: @json(session('error')),
         customClass: { popup: 'swal2-custom-popup' }
     });
 @endif

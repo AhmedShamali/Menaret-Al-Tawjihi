@@ -760,7 +760,7 @@
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const res = await axios.put(`{{ url('student/flashcards') }}/${card.id}`, {
+                    const res = await axios.put(`/student/flashcards/${card.id}`, {
                         _token: '{{ csrf_token() }}',
                         category: result.value.cat,
                         front_text: result.value.front,
@@ -801,7 +801,7 @@
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    await axios.delete(`{{ url('student/flashcards') }}/${card.id}`, {
+                    await axios.delete(`/student/flashcards/${card.id}`, {
                         data: { _token: '{{ csrf_token() }}' }
                     });
                     flashcards.splice(currentIndex, 1);
@@ -827,7 +827,7 @@
         const card = flashcards[currentIndex];
 
         try {
-            const res = await axios.post(`{{ url('student/flashcards') }}/${card.id}/toggle-hide`, {
+            const res = await axios.post(`/student/flashcards/${card.id}/toggle-hide`, {
                 _token: '{{ csrf_token() }}'
             });
             Swal.fire({

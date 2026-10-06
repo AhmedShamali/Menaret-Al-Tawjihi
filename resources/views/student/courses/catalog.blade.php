@@ -209,26 +209,24 @@
                             </form>
                         @else
                             <div class="visitor-actions-row">
-                                <button type="button" class="btn-card-action btn-outline-info" onclick="openSubjectModal({{ json_encode([
-                                    'name' => $sub->name_ar ?? $sub->name,
-                                    'stage' => optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? __('الثانوية العامة'),
-                                    'teacher' => $sub->teacher_display_name,
-                                    'desc' => $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.'),
-                                    'lessons' => $sub->contents_count ?? 0,
-                                    'exams' => $sub->exams_count ?? 0,
-                                    'icon' => $sub->icon ?? 'fa-book-open',
-                                    'color' => $themeColor,
-                                    'price_ils' => (float)$sub->price_ils,
-                                    'is_free' => (bool)$sub->is_free,
-                                    'user_region' => $student ? $student->resolved_region : 'west_bank',
-                                    'user_region_label' => $student ? $student->region_label : __('الضفة الغربية'),
-                                    'wb_term_1' => (float)($sub->price_term_1 ?? 0),
-                                    'wb_term_2' => (float)($sub->price_term_2 ?? 0),
-                                    'wb_full' => (float)($sub->price_full_year ?: $sub->price_ils),
-                                    'gz_term_1' => (float)($sub->price_term_1_gaza ?: $sub->price_term_1),
-                                    'gz_term_2' => (float)($sub->price_term_2_gaza ?: $sub->price_term_2),
-                                    'gz_full' => (float)($sub->price_full_year_gaza ?: $sub->price_full_year ?: $sub->price_ils),
-                                ]) }})">
+                                <button type="button" class="btn-card-action btn-outline-info" 
+                                    data-name="{{ $sub->name_ar ?? $sub->name }}"
+                                    data-stage="{{ optional($sub->stage)->label_ar ?? optional($sub->stage)->name_ar ?? __('الثانوية العامة') }}"
+                                    data-teacher="{{ $sub->teacher_display_name }}"
+                                    data-desc="{{ $sub->description ?: __('شرح منهجي شامل وتفاعلي لمفردات الكتاب الوزاري الفلسطيني مع تطبيقات عملية، حلول أسئلة السنوات السابقة، ونماذج امتحانات تفاعلية.') }}"
+                                    data-lessons="{{ $sub->contents_count ?? 0 }}"
+                                    data-exams="{{ $sub->exams_count ?? 0 }}"
+                                    data-icon="{{ $sub->icon ?? 'fa-book-open' }}"
+                                    data-color="{{ $themeColor }}"
+                                    data-price-ils="{{ (float)$sub->price_ils }}"
+                                    data-is-free="{{ $sub->is_free ? '1' : '0' }}"
+                                    data-wb-term-1="{{ (float)($sub->price_term_1 ?? 0) }}"
+                                    data-wb-term-2="{{ (float)($sub->price_term_2 ?? 0) }}"
+                                    data-wb-full="{{ (float)($sub->price_full_year ?: $sub->price_ils) }}"
+                                    data-gz-term-1="{{ (float)($sub->price_term_1_gaza ?: $sub->price_term_1) }}"
+                                    data-gz-term-2="{{ (float)($sub->price_term_2_gaza ?: $sub->price_term_2) }}"
+                                    data-gz-full="{{ (float)($sub->price_full_year_gaza ?: $sub->price_full_year ?: $sub->price_ils) }}"
+                                    onclick="openSubjectModal(this)">
                                     <i class="fa-solid fa-circle-info"></i>
                                     <span>{{ __('تفاصيل المنهاج والتسعير') }}</span>
                                 </button>
@@ -1279,6 +1277,27 @@ html[dir="ltr"] .modal-close-btn {
 
 <script>
 function openSubjectModal(data) {
+    if (data instanceof HTMLElement) {
+        const ds = data.dataset;
+        data = {
+            name: ds.name || '',
+            stage: ds.stage || '',
+            teacher: ds.teacher || '',
+            desc: ds.desc || '',
+            lessons: ds.lessons || '0',
+            exams: ds.exams || '0',
+            icon: ds.icon || 'fa-book-open',
+            color: ds.color || '#1e3a8a',
+            price_ils: parseFloat(ds.priceIls) || 0,
+            is_free: ds.isFree === '1',
+            wb_term_1: parseFloat(ds.wbTerm1) || 0,
+            wb_term_2: parseFloat(ds.wbTerm2) || 0,
+            wb_full: parseFloat(ds.wbFull) || 0,
+            gz_term_1: parseFloat(ds.gzTerm1) || 0,
+            gz_term_2: parseFloat(ds.gzTerm2) || 0,
+            gz_full: parseFloat(ds.gzFull) || 0
+        };
+    }
     document.getElementById('modalTitle').textContent = data.name;
     document.getElementById('modalStage').textContent = data.stage;
     document.getElementById('modalTeacher').textContent = data.teacher;

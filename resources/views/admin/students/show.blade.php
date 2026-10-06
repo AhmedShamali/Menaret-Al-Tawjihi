@@ -686,7 +686,7 @@
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    const response = await axios.post(`{{ url('admin/students') }}/${sId}/toggle-subject/${subId}`, {
+                    const response = await axios.post(`/admin/students/${sId}/toggle-subject/${subId}`, {
                         _token: '{{ csrf_token() }}'
                     });
 
@@ -1052,7 +1052,7 @@ function quickResetStudentPassShow(studentId, studentName) {
                     didOpen: () => { Swal.showLoading(); }
                 });
 
-                fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+                fetch(`/admin/students/${studentId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1105,7 +1105,7 @@ function quickResetStudentPassShow(studentId, studentName) {
     } else {
         const pass = prompt('{{ __("أدخل كلمة المرور الجديدة للطالب:") }}', defaultPass);
         if (pass && pass.length >= 6) {
-            fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+            fetch(`/admin/students/${studentId}/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
                 body: JSON.stringify({ new_password: pass })

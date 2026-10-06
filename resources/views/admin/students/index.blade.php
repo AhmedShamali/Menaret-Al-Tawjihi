@@ -1143,7 +1143,7 @@
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.post(`{{ url('admin/students') }}/${id}/approve`)
+                axios.post(`/admin/students/${id}/approve`)
                 .then(res => {
                     Swal.fire({
                         icon: 'success',
@@ -1215,7 +1215,7 @@
     }
 
     function executeToggleStatus(id, reason) {
-        axios.post(`{{ url('admin/students/toggle-status') }}/${id}`, { freeze_reason: reason })
+        axios.post(`/admin/students/toggle-status/${id}`, { freeze_reason: reason })
         .then(res => {
             Swal.fire({
                 icon: 'success',
@@ -1240,7 +1240,10 @@
             cancelButtonText: 'إلغاء'
         }).then((result) => {
             if (result.isConfirmed) {
-                axios.delete(`{{ url('admin/students') }}/${id}`)
+                axios.post(`/admin/students/${id}`, {
+                    _method: 'DELETE',
+                    _token: '{{ csrf_token() }}'
+                })
                 .then(res => {
                     const row = document.getElementById(`row_${id}`);
                     if (row) {
@@ -1426,7 +1429,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري الحفظ...';
 
-        axios.post(`{{ url('admin/students') }}/${currentDiscountStudentId}/discount`, {
+        axios.post(`/admin/students/${currentDiscountStudentId}/discount`, {
             discount_type: val > 0 ? type : 'none',
             discount_value: val,
             discount_notes: notes

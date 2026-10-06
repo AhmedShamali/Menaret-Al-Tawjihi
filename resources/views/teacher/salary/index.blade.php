@@ -71,7 +71,15 @@
                     </p>
                 </div>
             </div>
-            <button type="button" class="btn-table-action" onclick="openViewClaimReplyModal({{ json_encode($repliedClaims->first()) }}, '{{ addslashes($repliedClaims->first()->month_name_ar) }}')" style="background: #059669; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);">
+            @php $topClaim = $repliedClaims->first(); @endphp
+            <button type="button" class="btn-table-action" 
+                data-message="{{ $topClaim->message }}"
+                data-created-at="{{ $topClaim->created_at }}"
+                data-admin-reply="{{ $topClaim->admin_reply }}"
+                data-replied-at="{{ $topClaim->replied_at }}"
+                data-month-label="{{ $topClaim->month_name_ar }}"
+                onclick="openViewClaimReplyModal(this)" 
+                style="background: #059669; color: #ffffff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 8px rgba(5, 150, 105, 0.35);">
                 <i class="fa-solid fa-eye"></i> {{ __('استعراض الرد بالكامل') }}
             </button>
         </div>
@@ -228,7 +236,18 @@
                                     @if($sal)
                                         <button type="button" 
                                                 class="btn-table-action btn-payslip" 
-                                                onclick="openPayslipModal({{ json_encode($sal) }}, '{{ addslashes($monthLabel) }}')" 
+                                                data-id="{{ $sal->id }}"
+                                                data-month="{{ $sal->month }}"
+                                                data-month-label="{{ $monthLabel }}"
+                                                data-payment-date="{{ $sal->payment_date }}"
+                                                data-payment-method="{{ $sal->payment_method }}"
+                                                data-reference-no="{{ $sal->reference_no }}"
+                                                data-basic-salary="{{ $sal->basic_salary }}"
+                                                data-bonus="{{ $sal->bonus }}"
+                                                data-deductions="{{ $sal->deductions }}"
+                                                data-net-salary="{{ $sal->net_salary }}"
+                                                data-notes="{{ $sal->notes }}"
+                                                onclick="openPayslipModal(this)" 
                                                 title="{{ __('قسيمة الراتب') }}">
                                             <i class="fa-solid fa-receipt"></i> {{ __('قسيمة الراتب') }}
                                         </button>
@@ -238,7 +257,12 @@
                                         @if($latestClaim->status === 'replied')
                                             <button type="button" 
                                                     class="btn-table-action" 
-                                                    onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" 
+                                                    data-message="{{ $latestClaim->message }}"
+                                                    data-created-at="{{ $latestClaim->created_at }}"
+                                                    data-admin-reply="{{ $latestClaim->admin_reply }}"
+                                                    data-replied-at="{{ $latestClaim->replied_at }}"
+                                                    data-month-label="{{ $monthLabel }}"
+                                                    onclick="openViewClaimReplyModal(this)" 
                                                     title="{{ __('عرض رد الإدارة على الاستفسار') }}"
                                                     style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700;">
                                                 <i class="fa-solid fa-envelope-circle-check"></i> {{ __('رد الإدارة ✅') }}
@@ -246,7 +270,12 @@
                                         @else
                                             <button type="button" 
                                                     class="btn-table-action" 
-                                                    onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" 
+                                                    data-message="{{ $latestClaim->message }}"
+                                                    data-created-at="{{ $latestClaim->created_at }}"
+                                                    data-admin-reply="{{ $latestClaim->admin_reply }}"
+                                                    data-replied-at="{{ $latestClaim->replied_at }}"
+                                                    data-month-label="{{ $monthLabel }}"
+                                                    onclick="openViewClaimReplyModal(this)" 
                                                     title="{{ __('استفسارك قيد المتابعة من الإدارة') }}"
                                                     style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-weight: 700;">
                                                 <i class="fa-solid fa-clock-rotate-left"></i> {{ __('قيد المراجعة ⏳') }}
@@ -328,17 +357,43 @@
                             $latestClaim = $monthClaims->first();
                         @endphp
                         @if($sal)
-                            <button type="button" class="btn-table-action btn-payslip w-full" onclick="openPayslipModal({{ json_encode($sal) }}, '{{ addslashes($monthLabel) }}')">
+                            <button type="button" class="btn-table-action btn-payslip w-full" 
+                                data-id="{{ $sal->id }}"
+                                data-month="{{ $sal->month }}"
+                                data-month-label="{{ $monthLabel }}"
+                                data-payment-date="{{ $sal->payment_date }}"
+                                data-payment-method="{{ $sal->payment_method }}"
+                                data-reference-no="{{ $sal->reference_no }}"
+                                data-basic-salary="{{ $sal->basic_salary }}"
+                                data-bonus="{{ $sal->bonus }}"
+                                data-deductions="{{ $sal->deductions }}"
+                                data-net-salary="{{ $sal->net_salary }}"
+                                data-notes="{{ $sal->notes }}"
+                                onclick="openPayslipModal(this)">
                                 <i class="fa-solid fa-receipt"></i> {{ __('قسيمة الراتب الرسمية') }}
                             </button>
                         @endif
                         @if($latestClaim)
                             @if($latestClaim->status === 'replied')
-                                <button type="button" class="btn-table-action w-full" onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; margin-top: 6px; padding: 8px; font-weight: 700;">
+                                <button type="button" class="btn-table-action w-full" 
+                                    data-message="{{ $latestClaim->message }}"
+                                    data-created-at="{{ $latestClaim->created_at }}"
+                                    data-admin-reply="{{ $latestClaim->admin_reply }}"
+                                    data-replied-at="{{ $latestClaim->replied_at }}"
+                                    data-month-label="{{ $monthLabel }}"
+                                    onclick="openViewClaimReplyModal(this)" 
+                                    style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; margin-top: 6px; padding: 8px; font-weight: 700;">
                                     <i class="fa-solid fa-envelope-circle-check"></i> {{ __('عرض رد الإدارة على الاستفسار ✅') }}
                                 </button>
                             @else
-                                <button type="button" class="btn-table-action w-full" onclick="openViewClaimReplyModal({{ json_encode($latestClaim) }}, '{{ addslashes($monthLabel) }}')" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; margin-top: 6px; padding: 8px; font-weight: 700;">
+                                <button type="button" class="btn-table-action w-full" 
+                                    data-message="{{ $latestClaim->message }}"
+                                    data-created-at="{{ $latestClaim->created_at }}"
+                                    data-admin-reply="{{ $latestClaim->admin_reply }}"
+                                    data-replied-at="{{ $latestClaim->replied_at }}"
+                                    data-month-label="{{ $monthLabel }}"
+                                    onclick="openViewClaimReplyModal(this)" 
+                                    style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; margin-top: 6px; padding: 8px; font-weight: 700;">
                                     <i class="fa-solid fa-clock-rotate-left"></i> {{ __('استفسارك قيد المراجعة ⏳') }}
                                 </button>
                             @endif
@@ -733,7 +788,24 @@
         return 'فقط ' + txt + ' ' + curr + ' لا غير';
     }
 
-    function openPayslipModal(salary, monthLabel) {
+    function openPayslipModal(salaryOrBtn, monthLabel) {
+        let salary = salaryOrBtn;
+        if (salaryOrBtn instanceof HTMLElement) {
+            const ds = salaryOrBtn.dataset;
+            monthLabel = ds.monthLabel || monthLabel || '';
+            salary = {
+                id: ds.id,
+                month: ds.month,
+                payment_date: ds.paymentDate,
+                payment_method: ds.paymentMethod,
+                reference_no: ds.referenceNo,
+                basic_salary: ds.basicSalary,
+                bonus: ds.bonus,
+                deductions: ds.deductions,
+                net_salary: ds.netSalary,
+                notes: ds.notes
+            };
+        }
         document.getElementById('slipSerialNo').innerText = `SLIP-{{ $year }}-${String(salary.month).padStart(2, '0')}-${salary.id}`;
         document.getElementById('slipMonthYear').innerText = `${monthLabel} {{ $year }} ${teacherSalaryI18n.adSuffix}`;
         document.getElementById('slipPaymentDate').innerText = salary.payment_date || '{{ date("Y-m-d") }}';
@@ -808,7 +880,18 @@
         });
     }
 
-    function openViewClaimReplyModal(claim, monthLabel) {
+    function openViewClaimReplyModal(claimOrBtn, monthLabel) {
+        let claim = claimOrBtn;
+        if (claimOrBtn instanceof HTMLElement) {
+            const ds = claimOrBtn.dataset;
+            monthLabel = ds.monthLabel || monthLabel || '';
+            claim = {
+                message: ds.message || '',
+                created_at: ds.createdAt || '',
+                admin_reply: ds.adminReply || '',
+                replied_at: ds.repliedAt || ''
+            };
+        }
         document.getElementById('viewClaimMonthTitle').innerText = `{{ __('بخصوص مستحقات') }} (${monthLabel} {{ $year }})`;
         document.getElementById('viewClaimOriginalText').innerText = claim.message || '';
         document.getElementById('viewClaimDate').innerText = claim.created_at ? new Date(claim.created_at).toLocaleDateString() : '';

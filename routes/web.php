@@ -221,7 +221,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
     Route::post('/educational-contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
-    Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
+    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
     Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
 
@@ -230,7 +230,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create_alias');
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store_alias');
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit_alias');
-    Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update_alias');
+    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update_alias');
     Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy_alias');
     Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll_alias');
 
@@ -246,6 +246,7 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('students/profile/{id}', [StudentController::class, 'profile'])->name('students.profile')->whereNumber('id');
     Route::get('students/{student}/document/{type}/download', [StudentController::class, 'downloadDocument'])->name('students.document.download')->whereNumber('student');
     Route::get('students/{student}/document/{type}/view', [StudentController::class, 'viewDocument'])->name('students.document.view')->whereNumber('student');
+    Route::match(['delete', 'post'], '/students/{id}', [StudentController::class, 'destroy'])->name('students.destroy_post')->whereNumber('id');
     Route::resource('students', StudentController::class);
 
     // إدارة ومسير رواتب المعلمين (يجب أن تسبق مسار teachers/{id} لتفادي أي تعارض)
@@ -329,7 +330,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
     Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
-    Route::put('/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
+    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
     Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
     Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
 
@@ -338,7 +339,7 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.hyphen_create');
     Route::post('/educational-contents', [EducationalContentController::class, 'store'])->name('educational_contents.hyphen_store');
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.hyphen_edit');
-    Route::put('/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.hyphen_update');
+    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.hyphen_update');
     Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.hyphen_destroy');
     Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.hyphen_purgeAll');
 

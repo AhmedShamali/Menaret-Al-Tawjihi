@@ -423,7 +423,7 @@ function quickResetStudentPass(studentId, studentName) {
                     didOpen: () => { Swal.showLoading(); }
                 });
 
-                fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+                fetch(`/admin/students/${studentId}/reset-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -473,7 +473,7 @@ function quickResetStudentPass(studentId, studentName) {
     } else {
         const pass = prompt('{{ __("أدخل كلمة المرور الجديدة للطالب:") }}', defaultPass);
         if (pass && pass.length >= 6) {
-            fetch(`{{ url('admin/students') }}/${studentId}/reset-password`, {
+            fetch(`/admin/students/${studentId}/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
                 body: JSON.stringify({ new_password: pass })

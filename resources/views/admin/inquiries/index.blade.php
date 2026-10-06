@@ -169,7 +169,18 @@
                             </td>
                             <td style="text-align: center;">
                                 <div class="action-buttons-group">
-                                    <button type="button" id="btn-reply-{{ $inq->id }}" onclick="openReplyModal({{ json_encode($inq) }})" class="btn-reply-action" title="{{ __('قراءة التذكرة والرد') }}">
+                                    <button type="button" id="btn-reply-{{ $inq->id }}" 
+                                        data-id="{{ $inq->id }}"
+                                        data-name="{{ $inq->name }}"
+                                        data-email="{{ $inq->email }}"
+                                        data-category="{{ $inq->category }}"
+                                        data-date="{{ $inq->created_at ? substr($inq->created_at, 0, 10) : '' }}"
+                                        data-subject="{{ $inq->subject }}"
+                                        data-message="{{ $inq->message }}"
+                                        data-reply="{{ $inq->reply }}"
+                                        data-admin-notes="{{ $inq->admin_notes }}"
+                                        onclick="openReplyModal(this)" 
+                                        class="btn-reply-action" title="{{ __('قراءة التذكرة والرد') }}">
                                         <i class="fa-solid fa-reply"></i> {{ __('رد') }}
                                     </button>
 
@@ -269,12 +280,26 @@
 
 <script>
     function openReplyModal(inq) {
+        if (inq instanceof HTMLElement) {
+            const ds = inq.dataset;
+            inq = {
+                id: ds.id,
+                name: ds.name,
+                email: ds.email,
+                category: ds.category,
+                created_at: ds.date,
+                subject: ds.subject,
+                message: ds.message,
+                reply: ds.reply,
+                admin_notes: ds.adminNotes
+            };
+        }
         document.getElementById('modalInqId').value = inq.id;
         document.getElementById('modalInqSender').innerText = inq.name + ' (' + inq.email + ')';
         document.getElementById('modalInqCategory').innerText = inq.category || '{{ __('استفسار عام') }}';
-        document.getElementById('modalInqDate').innerText = inq.created_at ? inq.created_at.substring(0, 10) : '';
+        document.getElementById('modalInqDate').innerText = inq.created_at ? (typeof inq.created_at === 'string' ? inq.created_at.substring(0, 10) : inq.created_at) : '';
         document.getElementById('modalInqSubject').innerText = inq.subject || '{{ __('بدون عنوان') }}';
-        document.getElementById('modalInqMessage').innerText = inq.message;
+        document.getElementById('modalInqMessage').innerText = inq.message || '';
         document.getElementById('modalReplyText').value = inq.reply || '';
         document.getElementById('modalAdminNotes').value = inq.admin_notes || '';
 
@@ -297,7 +322,7 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري الحفظ...') }}';
 
-        axios.post(`{{ url('admin/academic-inquiries') }}/${id}/reply`, {
+        axios.post(`/admin/academic-inquiries/${id}/reply`, {
             reply: reply,
             admin_notes: notes,
             _token: '{{ csrf_token() }}'
