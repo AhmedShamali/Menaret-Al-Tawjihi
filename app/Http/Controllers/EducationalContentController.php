@@ -1201,7 +1201,39 @@ class EducationalContentController extends Controller
         }
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
 
-        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats', 'stages'));
+        // فحص أي ملف فيديو مكتمل تم رفعه مؤخراً على السيرفر ولم يُسجل في قاعدة البيانات بعد
+        $recentUnlinkedVideo = null;
+        if (!$isTeacher) {
+            try {
+                $videoDir = storage_path('app/public/educational/videos');
+                if (file_exists($videoDir)) {
+                    $files = glob($videoDir . '/*.{mp4,webm,mov,mkv}', GLOB_BRACE);
+                    if ($files) {
+                        usort($files, fn($a, $b) => filemtime($b) - filemtime($a));
+                        $linkedUrls = EducationalContent::whereNotNull('url_path')->pluck('url_path')->toArray();
+                        $linkedBaseNames = array_map('basename', $linkedUrls);
+                        foreach ($files as $filePath) {
+                            $fBase = basename($filePath);
+                            if (!in_array($fBase, $linkedBaseNames) && (time() - filemtime($filePath) < 86400)) {
+                                $sizeBytes = filesize($filePath);
+                                if ($sizeBytes > 1048576) {
+                                    $sizeMb = round($sizeBytes / 1048576, 1);
+                                    $recentUnlinkedVideo = [
+                                        'path' => 'educational/videos/' . $fBase,
+                                        'filename' => $fBase,
+                                        'size' => $sizeMb >= 1024 ? round($sizeMb / 1024, 2) . ' GB' : $sizeMb . ' MB',
+                                        'time_ago' => \Carbon\Carbon::createFromTimestamp(filemtime($filePath))->diffForHumans(),
+                                    ];
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats', 'stages', 'recentUnlinkedVideo'));
     }
 
     /**

@@ -131,6 +131,34 @@
         </div>
     </div>
 
+    {{-- تنبيه ذكي للمدير في حال وجود فيديو مرفوع على السيرفر ولم يستكمل نشره بعد --}}
+    @if(!empty($recentUnlinkedVideo))
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 16px 22px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: #22c55e; color: #ffffff; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);">
+                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                </div>
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <strong style="font-size: 0.96rem; color: #14532d; font-family: 'Alexandria', sans-serif;">
+                            {{ __('تم اكتشاف فيديو مكتمل الرفع على الخادم بحجم ') }} ({{ $recentUnlinkedVideo['size'] }}) {{ __('بانتظار إكمال النشر!') }}
+                        </strong>
+                        <span style="background: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1px solid #bbf7d0;">
+                            {{ __('جاهز للنشر فوراً') }}
+                        </span>
+                    </div>
+                    <span style="font-size: 0.8rem; color: #166534; display: block; margin-top: 3px;">
+                        {{ __('الملف:') }} <code style="background: rgba(255,255,255,0.85); padding: 2px 6px; border-radius: 4px; font-weight: 700; color: #0f172a;">{{ $recentUnlinkedVideo['filename'] }}</code> • {{ __('رُفع:') }} {{ $recentUnlinkedVideo['time_ago'] }}
+                    </span>
+                </div>
+            </div>
+
+            <a href="{{ route('videographer.contents.create') }}" style="background: #16a34a; color: #ffffff; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25); transition: transform 0.15s ease;">
+                <i class="fa-solid fa-bolt"></i> {{ __('إكمال نشر وتوزيع المحاضرة الآن') }}
+            </a>
+        </div>
+    @endif
+
     <!-- شبكة بطاقات الفيديوهات -->
     <div class="ed-videos-grid">
         @forelse($videos as $vid)
