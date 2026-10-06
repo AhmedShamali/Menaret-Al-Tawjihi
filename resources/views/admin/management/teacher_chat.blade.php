@@ -258,7 +258,6 @@
     .loading-art { font-size: 3rem; margin-bottom: 10px; opacity: 0.3; }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <script>
     const teacherId = {{ $teacher->id }};
     const feed = document.getElementById('chat_messages');

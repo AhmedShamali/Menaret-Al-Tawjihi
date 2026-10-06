@@ -44,8 +44,8 @@
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Native Dialogs -->
+    <script src="{{ asset('js/native-dialogs.js') }}"></script>
 
     <style>
         :root {

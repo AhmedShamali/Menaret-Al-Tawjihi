@@ -239,94 +239,108 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $(document).ready(function () {
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('input[name="_token"]').val() || $('meta[name="csrf-token"]').attr('content'),
-                'Accept': 'application/json'
-            }
-        });
-
-        const teacherId = $('#teacherIdInput').val();
-        const chatBox = $('#chatBox');
+    document.addEventListener('DOMContentLoaded', function() {
+        const teacherInput = document.getElementById('teacherIdInput');
+        const teacherId = teacherInput ? teacherInput.value : '';
+        const chatBox = document.getElementById('chatBox');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const csrfToken = document.querySelector('input[name="_token"]')?.value || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         function loadMessages() {
-            if (!teacherId) return;
+            if (!teacherId || !chatBox) return;
 
-            $.ajax({
-                url: "/student/teacher-messages/" + teacherId,
-                type: "GET",
-                success: function (res) {
-                    let html = '';
-                    if (res.messages && res.messages.length > 0) {
-                        res.messages.forEach(function (m) {
-                            let isStudent = m.sender_type === 'student';
-                            html += `
-                                <div class="msg-wrapper ${isStudent ? 'student' : 'teacher'}">
-                                    <div class="msg-bubble">
-                                        ${escapeHtml(m.message)}
-                                        <div class="msg-time">
-                                            ${m.created_at_formatted}
-                                        </div>
+            fetch("/student/teacher-messages/" + teacherId, {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(res => {
+                let html = '';
+                if (res.messages && res.messages.length > 0) {
+                    res.messages.forEach(function(m) {
+                        const isStudent = m.sender_type === 'student';
+                        html += `
+                            <div class="msg-wrapper ${isStudent ? 'student' : 'teacher'}">
+                                <div class="msg-bubble">
+                                    ${escapeHtml(m.message)}
+                                    <div class="msg-time">
+                                        ${m.created_at_formatted || ''}
                                     </div>
                                 </div>
-                            `;
-                        });
-                    } else {
-                        html = '<div style="text-align: center; color: #94a3b8; margin: auto;">ابدأ المحادثة الآن! 👋</div>';
-                    }
-
-                    // تحديث المحتوى فقط إذا كان هناك تغيير (لتجنب الرعشة في الشاشة)
-                    if (chatBox.html() !== html) {
-                        const isAtBottom = chatBox[0].scrollHeight - chatBox.scrollTop() <= chatBox.outerHeight() + 50;
-                        chatBox.html(html);
-                        if (isAtBottom) scrollBottom();
-                    }
+                            </div>
+                        `;
+                    });
+                } else {
+                    html = '<div style="text-align: center; color: #94a3b8; margin: auto;">ابدأ المحادثة الآن! 👋</div>';
                 }
-            });
+
+                if (chatBox.innerHTML !== html) {
+                    const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.offsetHeight + 60;
+                    chatBox.innerHTML = html;
+                    if (isAtBottom) scrollBottom();
+                }
+            })
+            .catch(err => console.error('Error loading messages:', err));
         }
 
         function sendMessage() {
-            let input = $('#messageInput');
-            let text = input.val().trim();
+            if (!messageInput) return;
+            const text = messageInput.value.trim();
             if (text === '' || !teacherId) return;
 
-            $('#sendBtn').prop('disabled', true);
+            if (sendBtn) sendBtn.disabled = true;
 
-            $.ajax({
-                url: "/student/send-to-teacher",
-                type: "POST",
-                data: { teacher_id: teacherId, message: text },
-                success: function (res) {
-                    if (res.status === 'success') {
-                        input.val('');
-                        loadMessages();
-                        scrollBottom();
-                    }
+            fetch("/student/send-to-teacher", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
-                complete: function () {
-                    $('#sendBtn').prop('disabled', false);
+                body: JSON.stringify({ teacher_id: teacherId, message: text })
+            })
+            .then(res => res.json())
+            .then(res => {
+                if (res.status === 'success') {
+                    messageInput.value = '';
+                    loadMessages();
+                    scrollBottom();
                 }
+            })
+            .catch(err => console.error('Error sending message:', err))
+            .finally(() => {
+                if (sendBtn) sendBtn.disabled = false;
+                messageInput.focus();
             });
         }
 
         function escapeHtml(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
         }
 
         function scrollBottom() {
-            chatBox.scrollTop(chatBox[0].scrollHeight);
+            if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        $('#sendBtn').on('click', sendMessage);
-        $('#messageInput').on('keydown', function (e) {
-            if (e.which === 13 || e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        if (sendBtn) {
+            sendBtn.addEventListener('click', sendMessage);
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+        }
 
         loadMessages();
         setInterval(loadMessages, 5000);

@@ -365,9 +365,6 @@
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
 <script>
 async function toggleVisibilityAjax(id, btn) {
     const originalText = btn.innerHTML;

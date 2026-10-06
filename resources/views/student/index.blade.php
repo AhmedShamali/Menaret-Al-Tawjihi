@@ -170,9 +170,6 @@
     }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     // 1. وظيفة التفعيل والتعطيل (Toggle)
     function performToggle(id) {

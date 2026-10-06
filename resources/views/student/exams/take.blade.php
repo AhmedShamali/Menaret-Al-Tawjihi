@@ -2426,10 +2426,6 @@
     }
 </style>
 
-<!-- مكتبات الاتصال والتنبيهات -->
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     // منع الرجوع العشوائي بالمتصفح أثناء الاختبار
     history.pushState(null, null, location.href);

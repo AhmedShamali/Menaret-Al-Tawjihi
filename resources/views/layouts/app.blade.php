@@ -124,8 +124,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/axios.min.js') }}?v={{ file_exists(public_path('js/axios.min.js')) ? filemtime(public_path('js/axios.min.js')) : '1' }}"></script>
+    <script src="{{ asset('js/native-dialogs.js') }}?v={{ file_exists(public_path('js/native-dialogs.js')) ? filemtime(public_path('js/native-dialogs.js')) : '1' }}"></script>
     <script>
         if (window.axios) {
             window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

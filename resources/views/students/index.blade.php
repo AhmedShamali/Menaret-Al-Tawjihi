@@ -395,10 +395,6 @@
     }
 </style>
 
-{{-- نفس الـ Scripts التي كانت لديك مع تحسين خفيف --}}
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
     function performToggle(id) {
         axios.post(`{{ url('admin/students/toggle-status') }}/${id}`)
