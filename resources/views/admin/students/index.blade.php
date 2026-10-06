@@ -190,15 +190,15 @@
                                         </a>
                                     </div>
                                     <div class="meta-line">
-                                        <span class="student-email" dir="ltr">{{ $student->email }}</span>
+                                        <span class="student-email" dir="ltr"><i class="fa-regular fa-envelope" style="font-size: 0.68rem; margin-right: 3px;"></i>{{ $student->email }}</span>
                                         @if(!empty($student->plain_password))
                                             <span class="pwd-snippet" title="{{ __('كلمة المرور للدخول (انقر للنسخ)') }}" onclick="copyToClipboard('{{ $student->plain_password }}', '{{ __('تم نسخ كلمة المرور') }}')">
-                                                <i class="fa-solid fa-key"></i>
+                                                <i class="fa-solid fa-key" style="color: #b45309; font-size: 0.65rem;"></i>
                                                 <code>{{ $student->plain_password }}</code>
                                             </span>
                                         @else
-                                            <span class="pwd-snippet" style="background: #f1f5f9; color: #64748b; border-color: #cbd5e1;" title="{{ __('مشفرة بأمان في النظام') }}">
-                                                <i class="fa-solid fa-shield-halved"></i>
+                                            <span class="pwd-snippet pwd-encrypted" title="{{ __('مشفرة بأمان في النظام') }}">
+                                                <i class="fa-solid fa-shield-halved" style="font-size: 0.65rem;"></i>
                                                 <code>{{ __('مشفرة') }}</code>
                                             </span>
                                         @endif
@@ -286,35 +286,36 @@
                                 @if($student->status !== 'active')
                                     <button type="button" 
                                             onclick="approveStudentDirect({{ $student->id }}, '{{ addslashes($studentDispName) }}')"
-                                            class="tbl-btn tbl-btn-approve"
+                                            class="tbl-btn-action tbl-btn-approve"
                                             title="{{ __('تفعيل واعتماد الطالب') }}">
-                                        {{ __('تفعيل') }}
+                                        <i class="fa-solid fa-check"></i>
+                                        <span>{{ __('تفعيل') }}</span>
                                     </button>
                                 @endif
 
                                 <a href="{{ route('admin.students.show', $student->id) }}"
-                                   class="tbl-btn-icon"
-                                   title="{{ __('عرض المواد والملف') }}">
-                                    <i class="fa-regular fa-folder-open"></i>
+                                   class="tbl-btn-action tbl-btn-view"
+                                   title="{{ __('عرض المواد والملف الأكاديمي') }}">
+                                    <i class="fa-solid fa-folder-open"></i>
                                 </a>
 
                                 <a href="{{ route('admin.subscriptions.monthly', ['search' => $student->nid ?: $student->name_ar]) }}"
-                                   class="tbl-btn-icon text-navy"
-                                   title="{{ __('كشف واشتراكات الشهور الـ 12 والذمم المالية') }}">
+                                   class="tbl-btn-action tbl-btn-finance"
+                                   title="{{ __('كشف واشتراكات الشهور والذمم المالية') }}">
                                     <i class="fa-solid fa-receipt"></i>
                                 </a>
 
                                 <button type="button" 
                                         onclick="openDiscountModal({{ $student->id }}, '{{ addslashes($studentDispName) }}', {{ (float)($student->custom_discount_percent ?? 0) }}, {{ (float)($student->custom_discount_fixed ?? 0) }}, '{{ addslashes($student->discount_notes ?? '') }}')"
-                                        class="tbl-btn-icon"
+                                        class="tbl-btn-action tbl-btn-discount"
                                         title="{{ __('المنحة والخصم') }}">
-                                    <i class="fa-solid fa-tag"></i>
+                                    <i class="fa-solid fa-percent"></i>
                                 </button>
 
                                 <button type="button" 
                                         onclick="performToggle({{ $student->id }}, '{{ $student->status }}', '{{ addslashes($studentDispName) }}')"
-                                        class="tbl-btn-icon {{ $student->status == 'active' ? '' : 'text-amber' }}"
-                                        title="{{ $student->status == 'active' ? __('تجميد الحساب') : __('إلغاء التجميد') }}">
+                                        class="tbl-btn-action {{ $student->status == 'active' ? 'tbl-btn-freeze' : 'tbl-btn-unfreeze' }}"
+                                        title="{{ $student->status == 'active' ? __('تجميد الحساب') : __('إلغاء التجميد والتفعيل') }}">
                                     @if($student->status == 'active')
                                         <i class="fa-solid fa-lock"></i>
                                     @else
@@ -323,16 +324,16 @@
                                 </button>
 
                                 <a href="{{ route('admin.students.edit', $student->id) }}"
-                                   class="tbl-btn-icon"
+                                   class="tbl-btn-action tbl-btn-edit"
                                    title="{{ __('تعديل البيانات') }}">
-                                    <i class="fa-regular fa-pen-to-square"></i>
+                                    <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
 
                                 <button type="button" 
                                         onclick="deleteStudent({{ $student->id }})" 
-                                        class="tbl-btn-icon tbl-btn-del" 
+                                        class="tbl-btn-action tbl-btn-del" 
                                         title="{{ __('حذف الطالب') }}">
-                                    <i class="fa-regular fa-trash-can"></i>
+                                    <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
                         </td>
@@ -880,50 +881,118 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: 5px;
         white-space: nowrap;
     }
 
-    .tbl-btn {
-        background: #0f172a;
-        color: #ffffff;
-        border: none;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 0.74rem;
-        font-weight: 600;
-        cursor: pointer;
-    }
-    .tbl-btn:hover {
-        background: #1e293b;
-    }
-
-    .tbl-btn-icon {
-        width: 26px;
-        height: 26px;
-        border-radius: 4px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        color: #64748b;
+    .tbl-btn-action {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 0.76rem;
+        font-size: 0.82rem;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.15s;
+        border: 1px solid transparent;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .tbl-btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
     }
 
-    .tbl-btn-icon:hover {
-        background: #f8fafc;
-        color: #0f172a;
+    .tbl-btn-approve {
+        width: auto !important;
+        padding: 0 10px;
+        gap: 4px;
+        background: #15803d;
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+    .tbl-btn-approve:hover {
+        background: #166534;
+        color: #ffffff;
+    }
+
+    .tbl-btn-view {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border-color: #bfdbfe;
+    }
+    .tbl-btn-view:hover {
+        background: #1d4ed8;
+        color: #ffffff;
+        border-color: #1d4ed8;
+    }
+
+    .tbl-btn-finance {
+        background: #ecfdf5;
+        color: #047857;
+        border-color: #a7f3d0;
+    }
+    .tbl-btn-finance:hover {
+        background: #047857;
+        color: #ffffff;
+        border-color: #047857;
+    }
+
+    .tbl-btn-discount {
+        background: #faf5ff;
+        color: #7c3aed;
+        border-color: #ddd6fe;
+    }
+    .tbl-btn-discount:hover {
+        background: #7c3aed;
+        color: #ffffff;
+        border-color: #7c3aed;
+    }
+
+    .tbl-btn-freeze {
+        background: #fffbeb;
+        color: #b45309;
+        border-color: #fde68a;
+    }
+    .tbl-btn-freeze:hover {
+        background: #b45309;
+        color: #ffffff;
+        border-color: #b45309;
+    }
+
+    .tbl-btn-unfreeze {
+        background: #f0fdf4;
+        color: #15803d;
+        border-color: #bbf7d0;
+    }
+    .tbl-btn-unfreeze:hover {
+        background: #15803d;
+        color: #ffffff;
+        border-color: #15803d;
+    }
+
+    .tbl-btn-edit {
+        background: #f1f5f9;
+        color: #334155;
         border-color: #cbd5e1;
     }
+    .tbl-btn-edit:hover {
+        background: #334155;
+        color: #ffffff;
+        border-color: #334155;
+    }
 
-    .tbl-btn-del:hover {
+    .tbl-btn-del {
         background: #fef2f2;
         color: #dc2626;
         border-color: #fecaca;
+    }
+    .tbl-btn-del:hover {
+        background: #dc2626;
+        color: #ffffff;
+        border-color: #dc2626;
     }
 
     .empty-state-cell {
