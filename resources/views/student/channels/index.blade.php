@@ -410,12 +410,33 @@
 
 <script>
     function requestJoin() {
-        axios.post("{{ route('student.channels.join') }}").then(res => {
+        const btn = document.getElementById('joinBtn');
+        const origHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __("Sending Request...") }}</span>';
+        }
+
+        axios.post("{{ route('student.channels.join') }}")
+        .then(res => {
             Swal.fire({ 
                 icon: res.data.icon || 'success', 
                 title: res.data.title || '{{ __("Request Sent Successfully") }}',
                 confirmButtonColor: '#1e3a8a'
             }).then(() => location.reload());
+        })
+        .catch(err => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+            const errMsg = err.response?.data?.title || err.response?.data?.message || '{{ __("Failed to send request. Please try again.") }}';
+            Swal.fire({
+                icon: 'error',
+                title: '{{ __("Error") }}',
+                text: errMsg,
+                confirmButtonColor: '#1e3a8a'
+            });
         });
     }
 </script>

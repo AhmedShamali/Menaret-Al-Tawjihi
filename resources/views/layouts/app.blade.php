@@ -2163,6 +2163,64 @@
                 box-shadow: none !important;
             }
         }
+
+        /* ضبط مثالي لواجهات المراسلات على الشاشات الكبيرة والحواسيب المحمولة لمنع أي خروج لحقل الإرسال عن الشاشة */
+        @media (min-width: 769px) {
+            body.is-chat-page {
+                overflow: hidden !important;
+                height: 100vh !important;
+                max-height: 100vh !important;
+            }
+            body.is-chat-page main.main-content {
+                height: 100vh !important;
+                max-height: 100vh !important;
+                overflow: hidden !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            body.is-chat-page .content-body {
+                padding: 12px 18px 14px !important;
+                margin: 0 !important;
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+                min-height: 0 !important;
+                height: calc(100vh - 64px) !important;
+            }
+            body.is-chat-page .chat-page-wrapper,
+            body.is-chat-page .academic-inbox-wrapper,
+            body.is-chat-page .academic-chat-container,
+            body.is-chat-page .support-classic-container,
+            body.is-chat-page .academic-teacher-chat-container,
+            body.is-chat-page .inbox-classic-wrapper {
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
+                max-height: 100% !important;
+                min-height: 0 !important;
+                flex: 1 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                overflow: hidden !important;
+            }
+            body.is-chat-page .chat-card,
+            body.is-chat-page .chat-app-container,
+            body.is-chat-page .academic-inbox-grid,
+            body.is-chat-page .academic-chat-card,
+            body.is-chat-page .support-classic-card,
+            body.is-chat-page .chat-main-card,
+            body.is-chat-page .chat-main-wrapper,
+            body.is-chat-page .inbox-classic-card {
+                height: 100% !important;
+                max-height: 100% !important;
+                min-height: 0 !important;
+                flex: 1 !important;
+                overflow: hidden !important;
+            }
+        }
     </style>
 </head>
 @php
@@ -3117,6 +3175,53 @@
             });
         }
 
+        // دالة نسخ النصوص العامة مع معالجة بديلة لأجهزة الجوال والمتصفحات غير الآمنة
+        window.copyToClipboard = function(text, msg) {
+            if (!text) return;
+            const feedback = msg || @json(__('تم النسخ بنجاح'));
+            const showNotice = () => {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        toast: true,
+                        position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+                        icon: 'success',
+                        title: feedback,
+                        showConfirmButton: false,
+                        timer: 1600
+                    });
+                } else {
+                    alert(feedback);
+                }
+            };
+
+            const fallbackCopy = () => {
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = text;
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    ta.style.left = '-9999px';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    showNotice();
+                } catch(e) {
+                    prompt(@json(__('انسخ النص يدوياً:')), text);
+                }
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(showNotice).catch(() => {
+                    fallbackCopy();
+                });
+            } else {
+                fallbackCopy();
+            }
+        };
+
         window.addEventListener('scroll', function() {
             const btn = document.getElementById('edScrollTopBtn');
             if (btn) {
@@ -3147,7 +3252,6 @@
                 }
             }, true);
 
-            // منع النقر بالزر الأيمن على كافة مشغلات وحاويات الفيديو لحظر أي وصول لروابط يوتيوب نهائياً
             document.addEventListener('contextmenu', function(e) {
                 if (e.target.closest('.ed-player-frame, .ed-yt-shield-container, .video-frame-wrap, .custom-video-wrapper, [id^="player_frame_"], [id^="card_video_"], iframe')) {
                     e.preventDefault();
@@ -3156,7 +3260,6 @@
                 }
             }, true);
 
-            // معالج ذكي شامل لحماية كافة صور المنصة من الانكسار (Global Image Fallback)
             document.addEventListener('error', function(e) {
                 if (e.target && e.target.tagName === 'IMG') {
                     const img = e.target;
@@ -3169,7 +3272,6 @@
                     const altText = (img.getAttribute('alt') || '').trim();
                     const cleanAlt = (altText && altText.length > 0 && !altText.includes('http')) ? altText : 'مستخدم';
 
-                    // 1. إذا كان رابط الصورة محلياً من مجلد /storage/ وفشل، نجرب جلبه فوراً من السحابة Supabase
                     if (currentSrc.includes('/storage/')) {
                         const pathParts = currentSrc.split('/storage/');
                         if (pathParts[1]) {

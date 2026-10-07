@@ -834,8 +834,8 @@ body.dark-theme .composer-textarea {
     }
 
     // جلب الرسائل
-    function fetchMessages(isInitial = false) {
-        if (isPolling) return;
+    function fetchMessages(isInitial = false, force = false) {
+        if (isPolling && !force) return;
         isPolling = true;
 
         axios.get(`/student/teachers/${teacherId}/messages`)
@@ -847,7 +847,7 @@ body.dark-theme .composer-textarea {
                     loadingState.style.display = 'none';
                 }
 
-                if (currentJson === lastMessagesJson) {
+                if (currentJson === lastMessagesJson && !force) {
                     isPolling = false;
                     return;
                 }
@@ -885,7 +885,7 @@ body.dark-theme .composer-textarea {
                 const isNearBottom = feed.scrollHeight - feed.scrollTop <= feed.clientHeight + 160;
                 messagesList.innerHTML = html;
 
-                if (isInitial || isNearBottom) {
+                if (isInitial || force || isNearBottom) {
                     scrollToBottomSmooth();
                 } else {
                     // إظهار زر التمرير مع تنبيه بوجود رسائل جديدة
@@ -893,7 +893,7 @@ body.dark-theme .composer-textarea {
                 }
 
                 // إصدار صوت تنبيه عند وصول رسالة جديدة أثناء المحادثة
-                if (hadMessagesBefore) {
+                if (hadMessagesBefore && !force) {
                     playNotificationTone();
                 }
             })
@@ -905,7 +905,14 @@ body.dark-theme .composer-textarea {
             });
     }
 
-    // إرسال رسالة
+    function escapeHtml(str) {
+        if (!str) return '';
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // إرسال رسالة مع Optimistic UI
     function sendChatMessage() {
         const text = msgInput.value.trim();
         if (!text) return;
@@ -913,19 +920,36 @@ body.dark-theme .composer-textarea {
         sendBtn.disabled = true;
         sendBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
+        // Optimistic UI: إظهار الرسالة فوراً في الشاشة دون انتظار السيرفر
+        const tempBubble = document.createElement('div');
+        tempBubble.className = 'bubble-row me';
+        tempBubble.innerHTML = `
+            <div class="bubble-box" style="opacity: 0.88;">
+                <div class="bubble-text-content">${escapeHtml(text)}</div>
+                <div class="bubble-meta-info">
+                    <span>{{ __('الآن') }}</span>
+                    <i class="fa-solid fa-clock" style="font-size: 0.65rem;" title="{{ __('جاري الإرسال...') }}"></i>
+                </div>
+            </div>`;
+        messagesList.appendChild(tempBubble);
+        scrollToBottomSmooth();
+
+        msgInput.value = '';
+        msgInput.style.height = 'auto';
+        updateCharCounter();
+
         axios.post('/student/teachers/send', {
             teacher_id: teacherId,
             message: text,
             _token: '{{ csrf_token() }}'
         })
         .then(res => {
-            msgInput.value = '';
-            msgInput.style.height = 'auto';
-            updateCharCounter();
-            fetchMessages();
-            setTimeout(scrollToBottomSmooth, 100);
+            fetchMessages(false, true);
         })
         .catch(err => {
+            if (tempBubble.parentNode) tempBubble.remove();
+            msgInput.value = text;
+            updateCharCounter();
             alert('حدث خطأ أثناء إرسال الرسالة، يرجى المحاولة ثانية.');
         })
         .finally(() => {

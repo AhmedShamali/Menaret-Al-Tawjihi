@@ -1335,11 +1335,12 @@
             cancelButtonText: 'إلغاء',
             confirmButtonColor: '#dc2626',
             preConfirm: (val) => {
-                if (val !== 'تأكيد الحذف' && val !== 'DELETE') {
+                const trimmed = (val || '').trim();
+                if (trimmed !== 'تأكيد الحذف' && trimmed !== 'DELETE') {
                     Swal.showValidationMessage('يرجى كتابة (تأكيد الحذف) بدقة');
                     return false;
                 }
-                return val;
+                return trimmed;
             }
         }).then((result) => {
             if (result.isConfirmed) {

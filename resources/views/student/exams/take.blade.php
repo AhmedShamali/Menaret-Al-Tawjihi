@@ -578,6 +578,16 @@
        (Royal Palestinian Classic Academic Examination Arena)
        ========================================================= */
 
+    body.exam-pseudo-fullscreen {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 99999 !important;
+        overflow-y: auto !important;
+        background: #f8fafc !important;
+    }
+
     :root {
         --ed-navy-950: #091a2e;
         --ed-navy-900: #0f243d;
@@ -2458,16 +2468,26 @@
     let lastScreenshotTime = 0;
 
     // ==========================================
-    // 1. إدارة ملء الشاشة الكلاسيكية الحقيقية
+    // 1. إدارة ملء الشاشة الكلاسيكية الحقيقية مع دعم iOS Safari
     // ==========================================
     function toggleExamFullscreen() {
         const doc = document.documentElement;
         const icon = document.getElementById('fullscreenIcon');
         const text = document.getElementById('fullscreenText');
 
+        // إذا كان المتصفح جهاز iOS لا يدعم Fullscreen API القياسي للـ Document
+        if (!doc.requestFullscreen && !doc.webkitRequestFullscreen && !doc.mozRequestFullScreen && !doc.msRequestFullscreen) {
+            document.body.classList.toggle('exam-pseudo-fullscreen');
+            updateFullscreenButtonState();
+            return;
+        }
+
         if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
             if (doc.requestFullscreen) {
-                doc.requestFullscreen().catch(err => {});
+                doc.requestFullscreen().catch(err => {
+                    document.body.classList.toggle('exam-pseudo-fullscreen');
+                    updateFullscreenButtonState();
+                });
             } else if (doc.webkitRequestFullscreen) {
                 doc.webkitRequestFullscreen();
             } else if (doc.mozRequestFullScreen) {
@@ -2485,6 +2505,7 @@
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
+            document.body.classList.remove('exam-pseudo-fullscreen');
         }
     }
 
@@ -2494,7 +2515,7 @@
     document.addEventListener('MSFullscreenChange', updateFullscreenButtonState);
 
     function updateFullscreenButtonState() {
-        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        const isFull = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement || document.body.classList.contains('exam-pseudo-fullscreen'));
         const icon = document.getElementById('fullscreenIcon');
         const text = document.getElementById('fullscreenText');
         if (icon) {
@@ -2819,12 +2840,17 @@
         window.onbeforeunload = null;
 
         const btn = document.getElementById('submitBtn');
+        const quickBtns = document.querySelectorAll('.ed-quick-submit-btn');
         const formData = new FormData(document.getElementById('fullExamForm'));
 
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> جاري توثيق واعتماد الإجابات...";
         }
+        quickBtns.forEach(qb => {
+            qb.disabled = true;
+            qb.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> <span>جاري التسليم...</span>";
+        });
 
         axios.post("{{ route('student.exams.submit', $exam->id) }}", formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
@@ -2847,6 +2873,10 @@
                     btn.disabled = false;
                     btn.innerHTML = "<i class='fa-solid fa-paper-plane'></i> إعادة محاولة التسليم";
                 }
+                quickBtns.forEach(qb => {
+                    qb.disabled = false;
+                    qb.innerHTML = "<i class='fa-solid fa-paper-plane'></i> <span>{{ __('تسليم الاختبار') }}</span>";
+                });
                 isSubmittingExam = false;
             }
         })
@@ -2860,6 +2890,10 @@
                 btn.disabled = false;
                 btn.innerHTML = "<i class='fa-solid fa-paper-plane'></i> إعادة محاولة التسليم";
             }
+            quickBtns.forEach(qb => {
+                qb.disabled = false;
+                qb.innerHTML = "<i class='fa-solid fa-paper-plane'></i> <span>{{ __('تسليم الاختبار') }}</span>";
+            });
             isSubmittingExam = false;
         });
     }

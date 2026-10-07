@@ -487,11 +487,12 @@
             cancelButtonText: 'تراجع وإلغاء',
             confirmButtonColor: '#dc2626',
             preConfirm: (inputVal) => {
-                if (inputVal !== 'تأكيد الحذف' && inputVal !== 'DELETE') {
+                const trimmed = (inputVal || '').trim();
+                if (trimmed !== 'تأكيد الحذف' && trimmed !== 'DELETE') {
                     Swal.showValidationMessage('العبارة غير متطابقة! يرجى كتابة (تأكيد الحذف)');
                     return false;
                 }
-                return inputVal;
+                return trimmed;
             }
         }).then((result) => {
             if (result.isConfirmed) {

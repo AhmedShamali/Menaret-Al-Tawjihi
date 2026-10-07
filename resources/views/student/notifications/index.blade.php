@@ -625,6 +625,8 @@ function markReadDirect(id) {
             const badge = card.querySelector('.badge-new-dot');
             if (badge) badge.remove();
         }
+    }).catch(err => {
+        console.error('Error marking notification as read:', err);
     });
 }
 
@@ -644,6 +646,16 @@ function markAllNotificationsRead() {
             card.classList.remove('is-unread');
             const badge = card.querySelector('.badge-new-dot');
             if (badge) badge.remove();
+        });
+    }).catch(err => {
+        const msg = err.response?.data?.message || '{{ __("Could not update notifications. Please try again.") }}';
+        Swal.fire({
+            toast: true,
+            position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+            icon: 'error',
+            title: msg,
+            showConfirmButton: false,
+            timer: 2500
         });
     });
 }
@@ -676,6 +688,16 @@ function deleteNotifItem(id) {
                     title: res.data.message || '{{ __("Notification deleted") }}',
                     showConfirmButton: false,
                     timer: 1500
+                });
+            }).catch(err => {
+                const msg = err.response?.data?.message || '{{ __("Could not delete notification. Please try again.") }}';
+                Swal.fire({
+                    toast: true,
+                    position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+                    icon: 'error',
+                    title: msg,
+                    showConfirmButton: false,
+                    timer: 2500
                 });
             });
         }

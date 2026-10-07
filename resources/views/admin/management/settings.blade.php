@@ -816,11 +816,12 @@
             cancelButtonText: settingsI18n.cancelBtn,
             confirmButtonColor: '#dc2626',
             preConfirm: (val) => {
-                if (val !== 'تأكيد الحذف' && val !== 'DELETE' && val !== settingsI18n.confirmDeletePhrase) {
+                const trimmed = (val || '').trim();
+                if (trimmed !== 'تأكيد الحذف' && trimmed !== 'DELETE' && trimmed !== settingsI18n.confirmDeletePhrase) {
                     Swal.showValidationMessage(settingsI18n.mismatchValidation);
                     return false;
                 }
-                return val;
+                return trimmed;
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -849,11 +850,12 @@
             cancelButtonText: settingsI18n.cancelBtn,
             confirmButtonColor: '#dc2626',
             preConfirm: (val) => {
-                if (val !== 'تأكيد الحذف' && val !== 'DELETE' && val !== settingsI18n.confirmDeletePhrase) {
+                const trimmed = (val || '').trim();
+                if (trimmed !== 'تأكيد الحذف' && trimmed !== 'DELETE' && trimmed !== settingsI18n.confirmDeletePhrase) {
                     Swal.showValidationMessage(settingsI18n.mismatchValidation);
                     return false;
                 }
-                return val;
+                return trimmed;
             }
         }).then((result) => {
             if (result.isConfirmed) {
@@ -882,11 +884,12 @@
             cancelButtonText: settingsI18n.backAndCancelBtn,
             confirmButtonColor: '#991b1b',
             preConfirm: (val) => {
-                if (val !== 'تأكيد الحذف الشامل' && val !== 'DELETE ALL' && val !== 'تأكيد الحذف' && val !== settingsI18n.confirmFullResetPhrase) {
+                const trimmed = (val || '').trim();
+                if (trimmed !== 'تأكيد الحذف الشامل' && trimmed !== 'DELETE ALL' && trimmed !== 'تأكيد الحذف' && trimmed !== settingsI18n.confirmFullResetPhrase) {
                     Swal.showValidationMessage(settingsI18n.mismatchFullResetValidation);
                     return false;
                 }
-                return val;
+                return trimmed;
             }
         }).then((result) => {
             if (result.isConfirmed) {

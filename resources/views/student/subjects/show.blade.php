@@ -2418,6 +2418,9 @@ function deleteVideoNote(noteId, videoId) {
         } else {
             alert(res.message || '{{ __('تعذر حذف الملاحظة') }}');
         }
+    })
+    .catch(err => {
+        alert('{{ __('حدث خطأ في الاتصال أثناء حذف الملاحظة.') }}');
     });
 }
 

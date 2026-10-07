@@ -856,25 +856,30 @@ function requestRetakePrompt() {
         confirmButtonColor: '#1e3a8a',
         cancelButtonColor: '#64748b',
         showLoaderOnConfirm: true,
-        preConfirm: (notes) => {
-            return axios.post("{{ route('student.exams.requestRetake', $submission->exam_id) }}", {
-                notes: notes,
-                _token: '{{ csrf_token() }}'
-            }).then(response => {
+        preConfirm: async (notes) => {
+            try {
+                const response = await axios.post("{{ route('student.exams.requestRetake', $submission->exam_id) }}", {
+                    notes: (notes || '').trim(),
+                    _token: '{{ csrf_token() }}'
+                });
+                if (response.data && response.data.error) {
+                    Swal.showValidationMessage(response.data.error);
+                    return false;
+                }
                 return response.data;
-            }).catch(error => {
-                Swal.showValidationMessage(
-                    error.response?.data?.error || 'تعذر إرسال الطلب، يرجى المحاولة لاحقاً'
-                );
-            });
+            } catch (error) {
+                const msg = error.response?.data?.error || error.response?.data?.message || '{{ __("تعذر إرسال الطلب، يرجى المحاولة لاحقاً") }}';
+                Swal.showValidationMessage(msg);
+                return false;
+            }
         },
         allowOutsideClick: () => !Swal.isLoading()
     }).then((result) => {
-        if (result.isConfirmed && result.value?.success) {
+        if (result && result.isConfirmed && result.value) {
             Swal.fire({
                 icon: 'success',
                 title: '{{ __("نجاح") }}',
-                text: result.value.title || 'تم إرسال طلبك للمعلم بنجاح',
+                text: result.value.title || result.value.message || '{{ __("تم إرسال طلبك للمعلم بنجاح") }}',
                 confirmButtonColor: '#1e3a8a'
             }).then(() => location.reload());
         }

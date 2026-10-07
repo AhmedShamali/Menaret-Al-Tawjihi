@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'مركز المحادثات والتواصل الأكاديمي | ' . config('app.name', 'Step by Step'))
+@section('is_chat', true)
 
 @section('content')
 <div class="inbox-classic-wrapper">
@@ -1064,6 +1065,44 @@
         color: #64748b;
         line-height: 1.6;
         margin: 0;
+    }
+
+    /* Day Divider */
+    .chat-day-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px 0 10px;
+        position: relative;
+        text-align: center;
+        width: 100%;
+    }
+
+    .chat-day-divider::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 1px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    .chat-day-divider span {
+        position: relative;
+        z-index: 2;
+        background: #ffffff;
+        color: #475569;
+        padding: 4px 14px;
+        border-radius: 999px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        border: 1px solid #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
 
     /* Classic Bubble Rows */

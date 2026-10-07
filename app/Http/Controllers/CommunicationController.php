@@ -15,9 +15,59 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Services\NotificationService;
+use Carbon\Carbon;
 
 class CommunicationController extends Controller
 {
+    /**
+     * تنسيق التاريخ بلغة عربية سهلة ومباشرة (اليوم، أمس، اليوم والتاريخ)
+     */
+    public static function formatHumanDate($dt)
+    {
+        if (!$dt) return '';
+        if ($dt->isToday()) {
+            return 'اليوم';
+        }
+        if ($dt->isYesterday()) {
+            return 'أمس';
+        }
+
+        $days = [
+            'Sunday'    => 'الأحد',
+            'Monday'    => 'الإثنين',
+            'Tuesday'   => 'الثلاثاء',
+            'Wednesday' => 'الأربعاء',
+            'Thursday'  => 'الخميس',
+            'Friday'    => 'الجمعة',
+            'Saturday'  => 'السبت',
+        ];
+        $months = [
+            1 => 'يناير', 2 => 'فبراير', 3 => 'مارس', 4 => 'أبريل',
+            5 => 'مايو', 6 => 'يونيو', 7 => 'يوليو', 8 => 'أغسطس',
+            9 => 'سبتمبر', 10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر'
+        ];
+
+        $dayName = $days[$dt->format('l')] ?? '';
+        $monthName = $months[(int)$dt->format('n')] ?? '';
+
+        if ($dt->isCurrentYear()) {
+            return "{$dayName}، {$dt->format('j')} {$monthName}";
+        }
+
+        return "{$dayName}، {$dt->format('j')} {$monthName} {$dt->format('Y')}";
+    }
+
+    /**
+     * تنسيق الوقت بنظام 12 ساعة مع مؤشر ص / م العربي
+     */
+    public static function formatArabicTime($dt)
+    {
+        if (!$dt) return '';
+        $timeStr = $dt->format('g:i');
+        $amPm = $dt->format('A') === 'AM' ? 'ص' : 'م';
+        return "{$timeStr} {$amPm}";
+    }
+
     // ==========================================
     // 1. الجزء الخاص بالأدمن والدعم الفني (Support)
     // ==========================================
@@ -297,12 +347,15 @@ class CommunicationController extends Controller
             $messages = $query->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
+                    $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                     return [
                         'id'                    => $msg->id,
                         'message'               => $msg->message,
                         'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
-                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : '',
+                        'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : '',
                         'created_at_human'      => $msg->created_at ? $msg->created_at->diffForHumans() : '',
+                        'created_date'          => $dt ? $dt->format('Y-m-d') : '',
+                        'created_date_human'    => $dt ? self::formatHumanDate($dt) : '',
                     ];
                 });
 
@@ -394,9 +447,10 @@ class CommunicationController extends Controller
     }
 
 
-    public function teacherInbox()
+    public function teacherInbox(Request $request = null)
     {
         $teacher = Auth::user();
+        $selectedStudentId = $request ? $request->query('student_id') : null;
         $subjectId = $teacher->subject_id ?? null;
 
         // جلب المواد التابعة للمعلم لتحديد المراحل الدراسية
@@ -410,18 +464,72 @@ class CommunicationController extends Controller
 
         $stageIds = Subject::whereIn('id', $subjectIds)->whereNotNull('stage_id')->pluck('stage_id')->unique()->toArray();
 
+        // معرفات الطلاب الذين دارت معهم محادثات سابقة مع هذا المعلم
+        $messagingStudentIds = Message::where('teacher_id', $teacher->id)->pluck('student_id')->unique()->toArray();
+
+        $query = Student::with('stage')
+            ->withCount([
+                'messages as unread_count' => function ($q) use ($teacher) {
+                    $q->where('teacher_id', $teacher->id)
+                      ->where('sender_type', 'student')
+                      ->where(function($sub) {
+                          $sub->where('is_read', false)->orWhereNull('is_read');
+                      });
+                }
+            ]);
+
         if (!empty($stageIds)) {
-            $students = Student::with('stage')
-                ->whereIn('stage_id', $stageIds)
-                ->orderBy('name_ar')
-                ->get();
-        } else {
-            $students = Student::with('stage')
-                ->orderBy('name_ar')
-                ->get();
+            $query->where(function($q) use ($stageIds, $messagingStudentIds) {
+                $q->whereIn('stage_id', $stageIds)
+                  ->orWhereIn('id', $messagingStudentIds);
+            });
+        } elseif (!empty($messagingStudentIds)) {
+            $query->whereIn('id', $messagingStudentIds);
         }
 
-        return view('teacher.inbox', compact('students'));
+        $students = $query->get();
+
+        $students->each(function ($st) use ($teacher) {
+            $lastMsg = Message::where('student_id', $st->id)
+                ->where('teacher_id', $teacher->id)
+                ->latest()
+                ->first();
+            $st->last_message = $lastMsg ? $lastMsg->message : null;
+            $st->last_message_time = $lastMsg && $lastMsg->created_at ? $lastMsg->created_at->diffForHumans() : null;
+            $st->last_message_at = $lastMsg ? $lastMsg->created_at : null;
+            $st->last_sender_type = $lastMsg ? $lastMsg->sender_type : null;
+        });
+
+        // فرز وترتيب ذكي لقائمة الطلاب:
+        // 1. الطالب المحدد يظهر أولاً
+        // 2. الطلاب الذين لديهم رسائل غير مقروءة بالأعلى
+        // 3. الطلاب الذين لديهم رسائل حديثة
+        // 4. ترتيب أبجدي لبقية الطلاب
+        $students = $students->sort(function ($a, $b) use ($selectedStudentId) {
+            if ($selectedStudentId) {
+                if ($a->id == $selectedStudentId) return -1;
+                if ($b->id == $selectedStudentId) return 1;
+            }
+            if ($a->unread_count !== $b->unread_count) {
+                return $b->unread_count <=> $a->unread_count;
+            }
+            if ($a->last_message_at && $b->last_message_at) {
+                return $b->last_message_at <=> $a->last_message_at;
+            }
+            if ($a->last_message_at && !$b->last_message_at) return -1;
+            if (!$a->last_message_at && $b->last_message_at) return 1;
+            return strcmp($a->name_ar ?? $a->name, $b->name_ar ?? $b->name);
+        })->values();
+
+        $selectedStudent = null;
+        if ($selectedStudentId) {
+            $selectedStudent = $students->firstWhere('id', (int)$selectedStudentId);
+            if (!$selectedStudent) {
+                $selectedStudent = Student::with('stage')->find($selectedStudentId);
+            }
+        }
+
+        return view('teacher.inbox', compact('students', 'selectedStudentId', 'selectedStudent'));
     }
 
 
@@ -442,11 +550,15 @@ class CommunicationController extends Controller
                 ->orderBy('created_at', 'asc')
                 ->get()
                 ->map(function ($msg) {
+                    $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                     return [
                         'id'                    => $msg->id,
                         'message'               => $msg->message,
                         'sender_type'           => strtolower(trim($msg->sender_type)),
-                        'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                        'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : '',
+                        'created_date'          => $dt ? $dt->format('Y-m-d') : '',
+                        'created_date_human'    => $dt ? self::formatHumanDate($dt) : '',
+                        'is_read'               => (bool)$msg->is_read,
                     ];
                 });
 
@@ -474,6 +586,7 @@ class CommunicationController extends Controller
                 'teacher_id'  => $teacherId,
                 'sender_type' => 'teacher',
                 'message'     => trim($request->message),
+                'is_read'     => false,
             ]);
 
             $teacherUser = Auth::user();
@@ -487,13 +600,17 @@ class CommunicationController extends Controller
             );
 
             if ($request->expectsJson() || $request->ajax()) {
+                $dt = $message->created_at ? $message->created_at->timezone('Asia/Gaza') : null;
                 return response()->json([
                     'status' => 'success',
                     'data'   => [
                         'id'                   => $message->id,
                         'message'              => $message->message,
                         'sender_type'          => 'teacher',
-                        'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                        'created_at_formatted' => $dt ? self::formatArabicTime($dt) : 'الآن',
+                        'created_date'         => $dt ? $dt->format('Y-m-d') : date('Y-m-d'),
+                        'created_date_human'   => $dt ? self::formatHumanDate($dt) : 'اليوم',
+                        'is_read'              => false,
                     ]
                 ]);
             }
@@ -604,11 +721,15 @@ class CommunicationController extends Controller
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($msg) {
+                $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                 return [
                     'id'                   => $msg->id,
                     'message'              => $msg->message,
                     'sender_type'          => strtolower(trim($msg->sender_type ?? 'student')),
-                    'created_at_formatted' => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                    'created_at_formatted' => $dt ? self::formatArabicTime($dt) : '',
+                    'created_date'         => $dt ? $dt->format('Y-m-d') : '',
+                    'created_date_human'   => $dt ? self::formatHumanDate($dt) : '',
+                    'is_read'              => (bool)$msg->is_read,
                 ];
             });
 
@@ -643,13 +764,17 @@ class CommunicationController extends Controller
             );
         } catch (\Throwable $e) {}
 
+        $dt = $message->created_at ? $message->created_at->timezone('Asia/Gaza') : null;
         return response()->json([
             'status' => 'success',
             'data'   => [
                 'id'                   => $message->id,
                 'message'              => $message->message,
                 'sender_type'          => 'teacher',
-                'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                'created_at_formatted' => $dt ? self::formatArabicTime($dt) : 'الآن',
+                'created_date'         => $dt ? $dt->format('Y-m-d') : date('Y-m-d'),
+                'created_date_human'   => $dt ? self::formatHumanDate($dt) : 'اليوم',
+                'is_read'              => false,
             ]
         ]);
     }
@@ -674,11 +799,15 @@ class CommunicationController extends Controller
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($msg) {
+                $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                 return [
                     'id'                    => $msg->id,
                     'message'               => $msg->message,
                     'sender_type'           => strtolower(trim($msg->sender_type ?? 'student')),
-                    'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                    'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : '',
+                    'created_date'          => $dt ? $dt->format('Y-m-d') : '',
+                    'created_date_human'    => $dt ? self::formatHumanDate($dt) : '',
+                    'is_read'               => (bool)$msg->is_read,
                 ];
             });
 
@@ -703,6 +832,7 @@ class CommunicationController extends Controller
                 'teacher_id'  => $request->teacher_id,
                 'sender_type' => 'student',
                 'message'     => trim($request->message),
+                'is_read'     => false,
             ]);
 
             $teacherUser = User::find($request->teacher_id);
@@ -717,13 +847,17 @@ class CommunicationController extends Controller
                 'fa-comments'
             );
 
+            $dt = $message->created_at ? $message->created_at->timezone('Asia/Gaza') : null;
             return response()->json([
                 'status' => 'success',
                 'data'   => [
                     'id'                    => $message->id,
                     'message'               => $message->message,
                     'sender_type'           => $message->sender_type,
-                    'created_at_formatted'  => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                    'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : 'الآن',
+                    'created_date'          => $dt ? $dt->format('Y-m-d') : date('Y-m-d'),
+                    'created_date_human'    => $dt ? self::formatHumanDate($dt) : 'اليوم',
+                    'is_read'               => false,
                 ]
             ]);
         } catch (\Exception $e) {
@@ -746,11 +880,15 @@ class CommunicationController extends Controller
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($msg) use ($adminId) {
+                $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                 return [
                     'id'                    => $msg->id,
                     'message'               => $msg->message,
                     'sender_type'           => ($msg->sender_type === 'admin') ? 'admin' : 'teacher',
-                    'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : ''
+                    'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : '',
+                    'created_date'          => $dt ? $dt->format('Y-m-d') : '',
+                    'created_date_human'    => $dt ? self::formatHumanDate($dt) : '',
+                    'is_read'               => (bool)$msg->is_read,
                 ];
             });
 
@@ -769,6 +907,7 @@ class CommunicationController extends Controller
             'teacher_id'  => $request->teacher_id,
             'sender_type' => 'admin',
             'message'     => trim($request->message),
+            'is_read'     => false,
         ]);
 
         try {
@@ -782,7 +921,19 @@ class CommunicationController extends Controller
             );
         } catch (\Throwable $e) {}
 
-        return response()->json(['status' => 'success', 'data' => $message]);
+        $dt = $message->created_at ? $message->created_at->timezone('Asia/Gaza') : null;
+        return response()->json([
+            'status' => 'success', 
+            'data'   => [
+                'id'                    => $message->id,
+                'message'               => $message->message,
+                'sender_type'           => $message->sender_type,
+                'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : 'الآن',
+                'created_date'          => $dt ? $dt->format('Y-m-d') : date('Y-m-d'),
+                'created_date_human'    => $dt ? self::formatHumanDate($dt) : 'اليوم',
+                'is_read'               => false,
+            ]
+        ]);
     }
 
 
@@ -807,11 +958,15 @@ class CommunicationController extends Controller
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($msg) {
+                $dt = $msg->created_at ? $msg->created_at->timezone('Asia/Gaza') : null;
                 return [
                     'id'                    => $msg->id,
                     'message'               => $msg->message,
                     'sender_type'           => strtolower(trim($msg->sender_type ?? 'teacher')),
-                    'created_at_formatted'  => $msg->created_at ? $msg->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                    'created_at_formatted'  => $dt ? self::formatArabicTime($dt) : 'الآن',
+                    'created_date'          => $dt ? $dt->format('Y-m-d') : '',
+                    'created_date_human'    => $dt ? self::formatHumanDate($dt) : '',
+                    'is_read'               => (bool)$msg->is_read,
                 ];
             });
 
@@ -837,6 +992,7 @@ class CommunicationController extends Controller
                 'teacher_id'  => $teacher->id,
                 'sender_type' => 'teacher',
                 'message'     => trim($request->message),
+                'is_read'     => false,
             ]);
 
             try {
@@ -849,13 +1005,17 @@ class CommunicationController extends Controller
                 );
             } catch (\Throwable $e) {}
 
+            $dt = $message->created_at ? $message->created_at->timezone('Asia/Gaza') : null;
             return response()->json([
                 'status' => 'success',
                 'data'   => [
                     'id'                   => $message->id,
                     'message'              => $message->message,
                     'sender_type'          => $message->sender_type,
-                    'created_at_formatted' => $message->created_at ? $message->created_at->timezone('Asia/Gaza')->format('h:i A') : 'الآن'
+                    'created_at_formatted' => $dt ? self::formatArabicTime($dt) : 'الآن',
+                    'created_date'         => $dt ? $dt->format('Y-m-d') : date('Y-m-d'),
+                    'created_date_human'   => $dt ? self::formatHumanDate($dt) : 'اليوم',
+                    'is_read'              => false,
                 ]
             ]);
         } catch (\Exception $e) {

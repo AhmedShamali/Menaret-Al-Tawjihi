@@ -956,7 +956,13 @@ class EducationalContentController extends Controller
             \DB::beginTransaction();
 
             if ($user->role === 'teacher') {
-                $query = EducationalContent::where('teacher_id', $user->id);
+                $teacherSubjectIds = $this->getTeacherSubjectIds($user);
+                $query = EducationalContent::where(function($q) use ($user, $teacherSubjectIds) {
+                    $q->where('uploaded_by', $user->id);
+                    if (!empty($teacherSubjectIds)) {
+                        $q->orWhereIn('subject_id', $teacherSubjectIds);
+                    }
+                });
                 $contentIds = $query->pluck('id')->toArray();
                 $totalCount = count($contentIds);
 
@@ -970,7 +976,7 @@ class EducationalContentController extends Controller
                         \DB::table('video_notes')->whereIn('content_id', $contentIds)->delete();
                     } catch (\Throwable $e) {}
 
-                    EducationalContent::where('teacher_id', $user->id)->delete();
+                    EducationalContent::whereIn('id', $contentIds)->delete();
                 }
 
                 $msg = "تم حذف وتصفير كافة المحتويات والمحاضرات الخاصة بك بنجاح! تم مسح ({$totalCount}) محتوى تعليمي 🗑️";

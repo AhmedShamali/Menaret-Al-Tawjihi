@@ -1222,6 +1222,13 @@ function confirmDeleteOfflineVideo(id) {
             if (typeof showPwaToast === 'function') {
                 showPwaToast('تم حذف الدرس من الذاكرة بنجاح.', 'success');
             }
+        }).catch(function(err) {
+            console.error("Error deleting offline video:", err);
+            if (typeof showPwaToast === 'function') {
+                showPwaToast('حدث خطأ أثناء حذف الدرس من الذاكرة.', 'error');
+            } else {
+                alert('حدث خطأ أثناء حذف الدرس من الذاكرة.');
+            }
         });
     }
 }
@@ -1239,6 +1246,14 @@ function confirmClearAllOfflineVideos() {
                 closeActiveOfflinePlayer();
                 if (typeof showPwaToast === 'function') {
                     showPwaToast('تم إفراغ ذاكرة الفيديوهات الأوفلاين بالكامل.', 'success');
+                }
+            })
+            .catch(function(err) {
+                console.error("Error clearing offline videos:", err);
+                if (typeof showPwaToast === 'function') {
+                    showPwaToast('حدث خطأ أثناء إفراغ الذاكرة.', 'error');
+                } else {
+                    alert('حدث خطأ أثناء إفراغ الذاكرة.');
                 }
             });
     }

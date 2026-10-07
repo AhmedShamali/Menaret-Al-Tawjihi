@@ -47,7 +47,7 @@ class ChannelController extends Controller
             ], 401);
         }
 
-        $stageName = $student->stage->label_ar ?? $student->stage->name_ar ?? 'المرحلة';
+        $stageName = $student->stage?->label_ar ?? $student->stage?->name_ar ?? 'المرحلة';
         $genderLabel = ($student->gender == 'ذكر' || $student->gender == 'male') ? 'طلاب' : 'طالبات';
 
         ChannelRequest::firstOrCreate([
