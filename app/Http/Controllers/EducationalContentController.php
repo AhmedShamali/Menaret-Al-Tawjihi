@@ -551,6 +551,7 @@ class EducationalContentController extends Controller
 
             $content = new EducationalContent();
             $content->subject_id   = $subId;
+            $content->uploaded_by  = auth()->id();
             $content->title        = $request->title;
             $content->type         = $contentType;
             $content->file_size    = $fileSize;

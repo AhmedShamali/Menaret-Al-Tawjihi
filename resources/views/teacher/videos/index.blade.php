@@ -365,7 +365,7 @@
                             <label class="f-label" style="font-weight: 700; color: #1e3a8a; font-size: 0.88rem; margin-bottom: 6px;">
                                 <i class="fa-solid fa-book-open" style="color: #2563eb;"></i> {{ __('المادة الدراسية المشتركة / المبحث:') }}
                             </label>
-                            <select id="video_admin_subject_select" class="f-control" required onchange="onVideoModalSelectionChange()" style="min-height: 48px; line-height: 1.6;">
+                            <select id="video_admin_subject_select" name="subject_id" class="f-control" required onchange="onVideoModalSelectionChange()" style="min-height: 48px; line-height: 1.6;">
                                 <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
                                 @php
                                     $uniqueSubjects = collect($subjects)->unique('clean_name');
@@ -1557,21 +1557,33 @@ function onVideoModalSelectionChange() {
     alertBox.style.display = 'block';
 }
 
-function openUploadVideoModal() {
+window.openUploadVideoModal = function() {
     const m = document.getElementById('uploadVideoModal');
     if (m) {
         m.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        if (typeof onVideoModalSelectionChange === 'function') {
+            try { onVideoModalSelectionChange(); } catch (e) {}
+        }
     }
-}
+};
 
-function closeUploadVideoModal() {
+window.closeUploadVideoModal = function() {
+    const chunkWrap = document.getElementById('chunkProgressWrap');
+    if (chunkWrap && chunkWrap.style.display !== 'none' && !chunkWrap.dataset.completed) {
+        if (!confirm('{{ __("هناك عملية رفع فيديو جارية حالياً، هل أنت متأكد من الإلغاء؟") }}')) {
+            return;
+        }
+    }
     const m = document.getElementById('uploadVideoModal');
     if (m) {
         m.style.display = 'none';
         document.body.style.overflow = '';
     }
-}
+};
+
+function openUploadVideoModal() { window.openUploadVideoModal(); }
+function closeUploadVideoModal() { window.closeUploadVideoModal(); }
 
 function updateVideoRegionSelect(radio) {
     ['v_card_gaza', 'v_card_west_bank', 'v_card_all'].forEach(id => {
@@ -1591,16 +1603,6 @@ function updateVideoRegionSelect(radio) {
         const c = document.getElementById('v_card_all');
         if (c) { c.style.borderColor = '#2563eb'; c.style.background = '#eff6ff'; }
     }
-}
-
-function closeUploadVideoModal() {
-    const chunkWrap = document.getElementById('chunkProgressWrap');
-    if (chunkWrap && chunkWrap.style.display !== 'none' && !chunkWrap.dataset.completed) {
-        if (!confirm('{{ __("هناك عملية رفع فيديو جارية حالياً، هل أنت متأكد من الإلغاء؟") }}')) {
-            return;
-        }
-    }
-    document.getElementById('uploadVideoModal').style.display = 'none';
 }
 
 function formatBytes(bytes) {
@@ -1700,7 +1702,7 @@ function formatEtaTime(seconds) {
 
 // نظام الرفع فائق السرعة والموثوقية للملفات الضخمة بالجيجابايت (Gigabyte Chunked & Resumable Upload)
 async function submitVideoForm(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
     const btnCancel = document.getElementById('btnCancelUpload');
     const originalText = btn.innerHTML;
@@ -1749,6 +1751,7 @@ async function submitVideoForm(e) {
     let formattedSize = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.size : null;
 
     try {
+        if (!uploadedPath) {
             if (window.EdBackgroundUploader) {
                 window.EdBackgroundUploader.state.status = 'uploading';
                 window.EdBackgroundUploader.state.file = file;
@@ -1851,7 +1854,7 @@ async function submitVideoForm(e) {
         progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل دمج وحفظ الفيديو بالجيجاوات بنجاح! جاري النشر...") }}';
         if (etaMeta) etaMeta.innerHTML = '<i class="fa-solid fa-check"></i> {{ __("مكتمل") }}';
 
-        const storeUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+        const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
         const contentFormData = new FormData(form);
         // استبدال حقل الملف المباشر بالمسار المرفوع لتفادي إعادة إرساله
         contentFormData.delete('video_file');
@@ -1909,6 +1912,7 @@ async function submitVideoForm(e) {
         });
     }
 }
+window.submitVideoForm = submitVideoForm;
 
 async function toggleVisibility(id, btn) {
     if (!id) return;
@@ -1951,7 +1955,7 @@ async function toggleVisibility(id, btn) {
 window.deleteVideoItem = async function(id) {
     if (!id) return;
     const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const deleteUrl = (isUserAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
+    const deleteUrl = (isUserAdmin ? "{{ url('admin/educational-contents') }}/" : "{{ url('teacher/educational-contents') }}/") + id;
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
     const executeDelete = async () => {
@@ -2039,6 +2043,7 @@ window.deleteVideoItem = async function(id) {
         }
     }
 };
+function deleteVideoItem(id) { return window.deleteVideoItem(id); }
 
 window.purgeAllContents = async function() {
     const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
