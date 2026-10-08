@@ -1643,6 +1643,17 @@
                                             @endif
                                         </div>
 
+                                        {{-- زر تحميل الفيديو المباشر للطالب --}}
+                                        @if(!empty($video->url_path))
+                                            <a href="{{ route('content.downloadVideo', $video->id) }}?force_download=1" 
+                                               class="ed-btn-lecture-video-download" 
+                                               title="{{ __('تحميل ملف الفيديو إلى جهازك') }}"
+                                               download>
+                                                <i class="fa-solid fa-cloud-arrow-down"></i>
+                                                <span>{{ __('تحميل الفيديو') }}</span>
+                                            </a>
+                                        @endif
+
                                         {{-- ملزمة وملازم الدرس PDF المعتمدة للدراسة والطباعة --}}
                                         @if(!empty($video->pdf_path))
                                             <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf" title="{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}">

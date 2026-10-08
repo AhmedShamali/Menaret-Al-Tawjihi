@@ -425,8 +425,8 @@
                         </div>
 
                         <!-- تفاصيل الاشتراك وزر الإلغاء -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.78rem; flex-wrap: wrap; gap: 6px;">
-                            <div style="display: flex; align-items: center; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.78rem; flex-wrap: wrap; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                                 <span style="background: #ecfdf5; color: #047857; padding: 3px 8px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
                                     <i class="fa-solid fa-check"></i> {{ __('مفعّل') }}
                                 </span>
@@ -441,9 +441,19 @@
                                 <span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 3px 8px; border-radius: 4px; font-weight: 700;">
                                     <i class="fa-solid fa-calendar-week"></i> {{ $semLabel }}
                                 </span>
+
+                                @if(empty($subject->pivot->assigned_by))
+                                    <span style="background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 3px 8px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('سجل بها الطالب عند إنشاء حسابه') }}">
+                                        <i class="fa-solid fa-user-pen"></i> {{ __('تسجيل الطالب') }}
+                                    </span>
+                                @else
+                                    <span style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; padding: 3px 8px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('أضيفت من الإدارة') }}">
+                                        <i class="fa-solid fa-user-gear"></i> {{ __('إضافة إدارية') }}
+                                    </span>
+                                @endif
                             </div>
 
-                            <button type="button" onclick="confirmRemoveSubject({{ $student->id }}, {{ $subject->id }}, '{{ addslashes($subName) }}')" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.74rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                            <button type="button" onclick="confirmRemoveSubject({{ $student->id }}, {{ $subject->id }}, '{{ addslashes($subName) }}')" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 12px; border-radius: 6px; font-weight: 700; font-size: 0.76rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: 0.15s ease;" title="{{ __('إلغاء اشتراك الطالب في هذه المادة') }}">
                                 <i class="fa-solid fa-trash-can"></i> {{ __('إلغاء المادة') }}
                             </button>
                         </div>

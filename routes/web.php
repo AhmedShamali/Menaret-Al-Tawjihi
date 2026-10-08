@@ -217,22 +217,24 @@ Route::middleware(['auth', 'IsAdmin'])->prefix('admin')->name('admin.')->group(f
     Route::get('/exams/{id}/stats', [ExamController::class, 'stats'])->name('exams.stats');
     Route::resource('exams', ExamController::class);
 
+    // تصفير وحذف كافة المحتويات دفعة واحدة (يجب أن تسبق مسار {id} لمنع التقاطها كمعرف عددي)
+    Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
+    Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll_alias');
+
     Route::get('/educational-contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
     Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
     Route::post('/educational-contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
-    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
-    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
-    Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
-    Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
+    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit')->whereNumber('id');
+    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update')->whereNumber('id');
+    Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy')->whereNumber('id');
 
     // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة لمنع أخطاء 404 في طلبات الحذف والتحديث
     Route::get('/educational_contents', [EducationalContentController::class, 'index'])->name('educational_contents.index_alias');
     Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create_alias');
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store_alias');
-    Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit_alias');
-    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update_alias');
-    Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy_alias');
-    Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll_alias');
+    Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit_alias')->whereNumber('id');
+    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update_alias')->whereNumber('id');
+    Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy_alias')->whereNumber('id');
 
     // واجهتا الفيديوهات والملفات والدوسيات المستقلتان للإدارة
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
@@ -326,22 +328,24 @@ Route::middleware(['auth', 'IsTeacher'])->prefix('teacher')->name('teacher.')->g
     Route::post('/submissions/{submission}/deny-retake', [ExamController::class, 'denyRetake'])->name('submissions.denyRetake');
     Route::resource('exams', ExamController::class);
 
+    // تصفير وحذف كافة المحتويات دفعة واحدة (يجب أن تسبق مسار {id} للمعلم لمنع أي تعارض)
+    Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
+    Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.hyphen_purgeAll');
+
     Route::get('/educational_contents', [EducationalContentController::class, 'index'])->name('educational_contents.index');
     Route::get('/educational_contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.create');
     Route::post('/educational_contents', [EducationalContentController::class, 'store'])->name('educational_contents.store');
-    Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit');
-    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update');
-    Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy');
-    Route::match(['delete', 'post'], '/educational_contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.purgeAll');
+    Route::get('/educational_contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit')->whereNumber('id');
+    Route::match(['put', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update')->whereNumber('id');
+    Route::match(['delete', 'post'], '/educational_contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.destroy')->whereNumber('id');
 
     // دعم كلا الصيغتين بالشرطة السفلية أو المتوسطة للمعلم لمنع أي تعارض 404
     Route::get('/educational-contents', [EducationalContentController::class, 'index'])->name('educational_contents.hyphen_index');
     Route::get('/educational-contents/create/{subject_id?}', [EducationalContentController::class, 'create'])->name('educational_contents.hyphen_create');
     Route::post('/educational-contents', [EducationalContentController::class, 'store'])->name('educational_contents.hyphen_store');
-    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.hyphen_edit');
-    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.hyphen_update');
-    Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.hyphen_destroy');
-    Route::match(['delete', 'post'], '/educational-contents/purge-all', [EducationalContentController::class, 'purgeAllContents'])->name('educational_contents.hyphen_purgeAll');
+    Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.hyphen_edit')->whereNumber('id');
+    Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.hyphen_update')->whereNumber('id');
+    Route::match(['delete', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'destroy'])->name('educational_contents.hyphen_destroy')->whereNumber('id');
 
     // الواجهات الثلاث المستقلة لإدارة المحتوى الأكاديمي
     Route::get('/videos', [EducationalContentController::class, 'teacherVideos'])->name('videos');
@@ -485,6 +489,8 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     Route::get('/contents/create', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'create'])->name('contents.create');
     Route::post('/contents', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'store'])->name('contents.store');
     Route::match(['delete', 'post'], '/contents/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'destroy'])->name('contents.destroy')->whereNumber('id');
+    Route::get('/contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('contents.edit')->whereNumber('id');
+    Route::match(['put', 'post'], '/contents/{id}', [EducationalContentController::class, 'update'])->name('contents.update')->whereNumber('id');
     Route::post('/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('contents.sync_branches')->whereNumber('id');
 
     // الرفع المجزأ واستئناف الرفع للملفات الكبيرة

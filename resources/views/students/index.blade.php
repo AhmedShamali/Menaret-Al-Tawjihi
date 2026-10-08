@@ -434,10 +434,20 @@
                             row.remove();
                         }, 400);
                     }
-                    Swal.fire('تم الحذف!', 'تمت إزالة الطالب بنجاح', 'success');
+                    Swal.fire('تم الحذف!', 'تمت إزالة الطالب بنجاح ✅', 'success');
                 })
                 .catch(err => {
-                    Swal.fire('خطأ', err.response?.data?.message || 'فشلت عملية الحذف', 'error');
+                    const errMsg = err.response?.data?.message || '';
+                    if (err.response?.status === 404 || errMsg.includes('غير موجود') || errMsg.includes('تم حذف')) {
+                        const row = document.getElementById(`row_${id}`);
+                        if (row) {
+                            row.style.opacity = '0';
+                            setTimeout(() => { row.remove(); }, 400);
+                        }
+                        Swal.fire('تمت الإزالة', 'تم التأكد من مسح حساب الطالب بنجاح ✅', 'success');
+                    } else {
+                        Swal.fire('خطأ', errMsg || 'فشلت عملية الحذف', 'error');
+                    }
                 });
             }
         });

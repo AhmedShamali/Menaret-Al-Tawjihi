@@ -1109,6 +1109,45 @@
         justify-content: center;
     }
 }
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 8mm;
+    }
+    .no-print,
+    .sidebar,
+    .navbar,
+    .top-bar,
+    .mobile-bottom-nav,
+    .footer,
+    .access-hero-card,
+    .control-tabs-bar,
+    .btn-print-roster,
+    .table-search-box,
+    .btn-action-trigger,
+    .access-actions-menu,
+    .pagination-wrapper,
+    .modal-overlay-custom,
+    th:last-child,
+    td:last-child {
+        display: none !important;
+    }
+    .access-control-wrapper {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    .access-table-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    .access-data-table {
+        min-width: 100% !important;
+        width: 100% !important;
+    }
+}
 </style>
 
 <script>

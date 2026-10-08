@@ -337,6 +337,40 @@
         }
     }
 
+    window.copyAdminCredential = function(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const text = input.value;
+        const originalText = btn.innerHTML;
+
+        const setSuccess = () => {
+            btn.innerHTML = '<i class="fas fa-check" style="color:#059669;"></i> <span style="color:#059669;">تم النسخ!</span>';
+            btn.style.borderColor = '#059669';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.borderColor = '#a7f3d0';
+            }, 2000);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(setSuccess).catch(fallback);
+        } else {
+            fallback();
+        }
+
+        function fallback() {
+            input.focus();
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                setSuccess();
+            } catch(e) {
+                alert('يرجى تحديد النص ونسخه يدوياً.');
+            }
+        }
+    };
+
     // وظيفة الإرسال
     async function handleRegistration() {
         const form = document.getElementById('studentRegistrationForm');
@@ -367,10 +401,58 @@
         try {
             const response = await axios.post("{{ route('admin.students.save') }}", formData);
 
+            const rawFormEmail = formData.get('email') || '';
+            const fallbackEmail = rawFormEmail.includes('@') ? rawFormEmail : (rawFormEmail ? rawFormEmail + '@tawjihi.ps' : '');
+            const studentEmail = response.data.email || fallbackEmail;
+            const studentPassword = response.data.password || formData.get('password') || '';
+            const studentName = response.data.student_name || formData.get('name_ar') || '';
+
+            const credentialsHtml = `
+                <div style="direction: rtl; text-align: right; font-family: 'Tajawal', sans-serif;">
+                    <p style="font-size: 13.5px; color: #475569; margin: 0 0 16px; line-height: 1.6; text-align: center;">
+                        ${studentName ? 'تم إنشاء حساب الطالب <strong style="color: #0f172a;">' + studentName + '</strong> وتفعيل مواده بنجاح.' : 'تم تسجيل الطالب وتفعيل مواده بنجاح.'}
+                        <br>يمكنك نسخ بيانات الدخول لتزويد الطالب بها:
+                    </p>
+
+                    <!-- بطاقة البريد الإلكتروني -->
+                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <label style="font-size: 12px; font-weight: 700; color: #334155; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-envelope" style="color: #10b981;"></i> البريد الإلكتروني (اسم المستخدم):
+                            </label>
+                            <span style="font-size: 10.5px; background: #ecfdf5; color: #059669; padding: 2px 7px; border-radius: 6px; font-weight: 700;">معتمد للدخول</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; direction: ltr;">
+                            <input type="text" id="adminPopupEmail" readonly value="${studentEmail}" style="flex: 1; padding: 9px 12px; font-size: 13.5px; font-weight: 800; color: #0f172a; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: monospace, sans-serif; direction: ltr; text-align: left; user-select: all;">
+                            <button type="button" onclick="copyAdminCredential('adminPopupEmail', this)" style="padding: 9px 14px; font-size: 12px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s;">
+                                <i class="fas fa-copy"></i> <span>نسخ</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- بطاقة كلمة المرور -->
+                    <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <label style="font-size: 12px; font-weight: 700; color: #334155; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-lock" style="color: #d97706;"></i> كلمة المرور المعتمدة:
+                            </label>
+                            <span style="font-size: 10.5px; background: #fffbeb; color: #b45309; padding: 2px 7px; border-radius: 6px; font-weight: 700;">حساب الطالب</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; direction: ltr;">
+                            <input type="text" id="adminPopupPwd" readonly value="${studentPassword}" style="flex: 1; padding: 9px 12px; font-size: 13.5px; font-weight: 800; color: #0f172a; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: monospace, sans-serif; direction: ltr; text-align: left; user-select: all;">
+                            <button type="button" onclick="copyAdminCredential('adminPopupPwd', this)" style="padding: 9px 14px; font-size: 12px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s;">
+                                <i class="fas fa-copy"></i> <span>نسخ</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
             Swal.fire({
                 icon: 'success',
-                title: 'تمت العملية بنجاح! 🎉',
-                text: response.data.title || 'تم تسجيل الطالب بنجاح وتفعيل مواده الدراسية.',
+                title: 'تم تسجيل الطالب بنجاح! 🎉',
+                html: credentialsHtml,
+                width: 500,
                 confirmButtonColor: '#10b981',
                 confirmButtonText: 'الانتقال إلى سجل الطلاب'
             }).then(() => {

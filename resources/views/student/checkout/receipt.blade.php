@@ -856,6 +856,76 @@
         line-height: 1.4;
     }
 
+    /* استجابة شاشات الهواتف الذكية وتطبيق الجوال */
+    @media (max-width: 768px) {
+        .school-voucher-page-wrapper {
+            padding: 12px 8px 40px !important;
+        }
+        .voucher-top-actions {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 8px !important;
+        }
+        .actions-left, .actions-right {
+            width: 100% !important;
+            flex-direction: column !important;
+            gap: 8px !important;
+        }
+        .btn-action-light, .btn-action-print {
+            width: 100% !important;
+            justify-content: center !important;
+        }
+        .school-cash-voucher-sheet {
+            padding: 8px !important;
+            border-radius: 8px !important;
+        }
+        .voucher-double-border {
+            padding: 12px 10px 8px !important;
+        }
+        .voucher-gov-header {
+            grid-template-columns: 1fr !important;
+            text-align: center !important;
+            gap: 8px !important;
+        }
+        .gov-header-col.right-col,
+        .gov-header-col.left-col {
+            text-align: center !important;
+            justify-content: center !important;
+        }
+        .voucher-meta-mini-table {
+            margin: 0 auto !important;
+        }
+        .voucher-statement-block {
+            padding: 10px 12px !important;
+            font-size: 0.8rem !important;
+            line-height: 1.6 !important;
+        }
+        .voucher-table-wrapper {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+        .voucher-clearance-box {
+            flex-direction: column !important;
+            gap: 8px !important;
+            text-align: center !important;
+        }
+        .voucher-signatures-section {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 16px !important;
+        }
+        .sig-column {
+            width: 100% !important;
+            text-align: center !important;
+        }
+        .stamp-center-col {
+            order: -1 !important;
+            margin-bottom: 6px !important;
+        }
+    }
+
     /* ==========================================================================
        محددات الطباعة الدقيقة (Strict A4 Single Sheet Guarantee)
        ========================================================================== */

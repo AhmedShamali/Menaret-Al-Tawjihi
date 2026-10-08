@@ -830,11 +830,29 @@
         document.getElementById('slipNotes').innerText = salary.notes || teacherSalaryI18n.defaultNotes;
 
         document.getElementById('payslipModal').style.display = 'flex';
+        document.body.classList.add('payslip-modal-active');
     }
 
     function closePayslipModal() {
         document.getElementById('payslipModal').style.display = 'none';
+        document.body.classList.remove('payslip-modal-active');
     }
+
+    window.addEventListener('beforeprint', function() {
+        const modal = document.getElementById('payslipModal');
+        if (modal && modal.style.display === 'flex') {
+            document.body.classList.add('payslip-modal-active');
+        } else {
+            document.body.classList.remove('payslip-modal-active');
+        }
+    });
+
+    window.addEventListener('afterprint', function() {
+        const modal = document.getElementById('payslipModal');
+        if (!modal || modal.style.display !== 'flex') {
+            document.body.classList.remove('payslip-modal-active');
+        }
+    });
 
     function openClaimModal(monthNum, monthLabel) {
         document.getElementById('claimMonthInput').value = monthNum;
@@ -1609,11 +1627,15 @@
     .payslip-modal-container {
         max-width: 860px;
         width: 100%;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
         background: #ffffff;
-        border-radius: 6px;
+        border-radius: 12px;
         padding: 16px;
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         box-sizing: border-box;
+        overflow: hidden;
     }
 
     .voucher-double-border {
@@ -1623,6 +1645,10 @@
         padding: 20px 22px 14px;
         box-sizing: border-box;
         background: #ffffff;
+        overflow-y: auto !important;
+        flex: 1;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
     }
 
     .voucher-gov-header {
@@ -1879,10 +1905,15 @@
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
-        .no-print, .sidebar, .navbar, .topbar, .footer, .salary-dashboard-wrapper, #claimModal {
+        .no-print, .sidebar, .navbar, .topbar, .footer, #claimModal {
             display: none !important;
         }
-        #payslipModal {
+
+        /* 1. طباعة سند الصرف الفردي للمعلم */
+        body.payslip-modal-active .salary-dashboard-wrapper {
+            display: none !important;
+        }
+        body.payslip-modal-active #payslipModal {
             display: block !important;
             position: static !important;
             background: none !important;
@@ -1891,19 +1922,43 @@
             width: 100% !important;
             height: auto !important;
         }
-        .payslip-modal-container {
+        body.payslip-modal-active .payslip-modal-container {
             max-width: 100% !important;
             width: 100% !important;
+            max-height: none !important;
+            height: auto !important;
             box-shadow: none !important;
             padding: 0 !important;
             border-radius: 0 !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            overflow: visible !important;
         }
-        .voucher-double-border {
+        body.payslip-modal-active .voucher-double-border {
             border: 2px solid #000000 !important;
             outline: 1px solid #000000 !important;
             padding: 12px 14px 10px !important;
+            overflow: visible !important;
+            max-height: none !important;
+        }
+
+        /* 2. طباعة كشف مسير الرواتب السنوي العام */
+        body:not(.payslip-modal-active) #payslipModal {
+            display: none !important;
+        }
+        body:not(.payslip-modal-active) .salary-dashboard-wrapper {
+            display: block !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        body:not(.payslip-modal-active) .header-actions,
+        body:not(.payslip-modal-active) .row-actions-group,
+        body:not(.payslip-modal-active) .table-header-badge {
+            display: none !important;
+        }
+        body:not(.payslip-modal-active) .salary-luxury-table {
+            min-width: 100% !important;
         }
     }
 </style>

@@ -524,10 +524,13 @@ class AdminManagerController extends Controller {
             : 'تم إنشاء حساب الطالب بنجاح (يمكنك تخصيص مواده لاحقاً) ✅';
 
         return response()->json([
-            'success'  => true,
-            'icon'     => 'success',
-            'title'    => $titleMsg,
-            'redirect' => route('admin.students.index')
+            'success'      => true,
+            'icon'         => 'success',
+            'title'        => $titleMsg,
+            'email'        => $student->email,
+            'password'     => $request->password,
+            'student_name' => $student->name_ar ?? $student->name_en,
+            'redirect'     => route('admin.students.index')
         ]);
     }
 

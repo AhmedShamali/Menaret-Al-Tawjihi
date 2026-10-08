@@ -2163,8 +2163,12 @@
     .modal-statement-sheet-wrap {
         max-width: 900px;
         width: 95%;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
         padding: 0;
         overflow: hidden;
+        border-radius: 16px;
     }
     .statement-toolbar {
         background: #0f172a;
@@ -2174,6 +2178,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        flex-shrink: 0;
     }
     .statement-title-info {
         font-size: 0.92rem;
@@ -2199,7 +2204,13 @@
         padding: 36px 40px;
         position: relative;
         color: #0f172a;
-        min-height: 800px;
+        overflow-y: auto !important;
+        overflow-x: hidden;
+        flex: 1;
+        min-height: 0;
+        max-height: calc(90vh - 65px);
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
     }
     .royal-outer-border {
         position: absolute;
@@ -2767,6 +2778,7 @@
         body.print-statement-active .modal-statement-sheet-wrap {
             max-width: 100% !important;
             width: 100% !important;
+            max-height: none !important;
             box-shadow: none !important;
             border-radius: 0 !important;
             padding: 0 !important;
@@ -2783,12 +2795,14 @@
         body.print-statement-active #statementPrintableArea {
             display: block !important;
             width: 100% !important;
+            max-height: none !important;
+            overflow: visible !important;
             padding: 16px 20px !important;
             margin: 0 !important;
             box-shadow: none !important;
             background: #ffffff !important;
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
         }
     }
 </style>

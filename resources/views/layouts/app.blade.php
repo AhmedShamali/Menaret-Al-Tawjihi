@@ -301,7 +301,7 @@
 
         html {
             width: 100%;
-            max-width: 100vw;
+            max-width: 100%;
             overflow-x: hidden;
             font-size: 14px;
         }
@@ -311,7 +311,7 @@
             color: var(--ed-text-body);
             min-height: 100vh;
             width: 100%;
-            max-width: 100vw;
+            max-width: 100%;
             overflow-x: hidden;
             display: flex;
             line-height: 1.5;
@@ -1301,16 +1301,26 @@
                 min-width: 600px !important;
             }
 
-            /* حماية تلقائية لأي جدول غير مغلف لمنع كسر عرض الشاشة */
-            .content-body > table,
-            .card > table,
-            .glass-card > table,
-            .ed-card > table {
-                display: block !important;
+            /* حماية شاملة وتلقائية لجميع الجداول والحاويات من كسر عرض شاشة الجوال */
+            .table-responsive,
+            .table-container-clean,
+            .table-responsive-box,
+            .table-responsive-wrapper,
+            .ed-table-responsive,
+            .registered-subjects-section-box,
+            .glass-card:has(table),
+            .card:has(table),
+            div:has(> table) {
                 width: 100% !important;
                 max-width: 100% !important;
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
+                display: block !important;
+                scrollbar-width: thin;
+                margin-bottom: 12px !important;
+            }
+            .content-body table {
+                max-width: none !important;
             }
             .data-table-clean th,
             .classic-table th,
@@ -1972,6 +1982,19 @@
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
 
+        @media (max-width: 768px) {
+            .modal-overlay {
+                padding: 10px !important;
+            }
+            .modal-card-box {
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 18px 14px !important;
+                border-radius: 14px !important;
+                max-height: 92vh !important;
+            }
+        }
+
         /* --- أنماط الطباعة العامة للنظام (Clean Global Print Rules) --- */
         @media print {
             html, body {
@@ -2082,8 +2105,38 @@
         }
 
         @media print {
-            .ed-scroll-top-btn {
+            aside.sidebar,
+            header.top-bar,
+            nav.mobile-bottom-nav,
+            .stepvoro-bottom-nav,
+            .ed-scroll-top-btn,
+            .sidebar-overlay,
+            #liveChatTriggerBtn,
+            .floating-support-btn,
+            .chat-widget-container,
+            .notifications-dropdown-container,
+            .canned-prompts-strip,
+            .no-print {
                 display: none !important;
+            }
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                overflow: visible !important;
+            }
+            main.main-content {
+                margin: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                overflow: visible !important;
+            }
+            .content-body {
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
         }
 
@@ -2219,6 +2272,43 @@
                 min-height: 0 !important;
                 flex: 1 !important;
                 overflow: hidden !important;
+            }
+        /* أنماط الطباعة العامة للمنصة: إخفاء أشرطة التنقل والقوائم عند طباعة أي مستند أو تقرير */
+        @media print {
+            body {
+                background: #ffffff !important;
+                color: #000000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            .sidebar,
+            .sidebar-overlay,
+            .top-bar,
+            .mobile-bottom-nav,
+            .floating-whatsapp-widget,
+            .whatsapp-float-btn,
+            .ed-scroll-top-btn,
+            .announcement-bar,
+            .ticker-container,
+            .news-ticker,
+            .no-print,
+            [data-no-print] {
+                display: none !important;
+            }
+            main.main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-height: auto !important;
+                box-shadow: none !important;
+                background: transparent !important;
+            }
+            .content-body {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
             }
         }
     </style>
@@ -3364,9 +3454,11 @@
         <i class="fa-solid fa-chevron-up"></i>
     </button>
 
-    <!-- محرك الرفع المستمر للفيديوهات بالخلفية والملاحة السلسة للمنصة -->
-    <script src="{{ asset('js/resumable-uploader.js') }}?v={{ file_exists(public_path('js/resumable-uploader.js')) ? filemtime(public_path('js/resumable-uploader.js')) : time() }}"></script>
-    <script src="{{ asset('js/background-uploader.js') }}?v={{ file_exists(public_path('js/background-uploader.js')) ? filemtime(public_path('js/background-uploader.js')) : time() }}"></script>
+    <!-- محرك الرفع المستمر للفيديوهات بالخلفية للمصرح لهم بالرفع فقط -->
+    @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher', 'videographer']))
+        <script src="{{ asset('js/resumable-uploader.js') }}?v={{ file_exists(public_path('js/resumable-uploader.js')) ? filemtime(public_path('js/resumable-uploader.js')) : time() }}"></script>
+        <script src="{{ asset('js/background-uploader.js') }}?v={{ file_exists(public_path('js/background-uploader.js')) ? filemtime(public_path('js/background-uploader.js')) : time() }}"></script>
+    @endif
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')

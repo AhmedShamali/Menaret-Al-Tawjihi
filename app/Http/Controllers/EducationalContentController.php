@@ -649,19 +649,10 @@ class EducationalContentController extends Controller
     {
         $content = EducationalContent::findOrFail($id);
         $user = auth()->user();
-        if ($user && $user->role === 'teacher') {
-            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-            if (!in_array((int)$content->subject_id, $teacherSubjectIds)) {
-                abort(403, 'غير مصرح لك بتعديل هذا المحتوى');
-            }
-            $stages = Stage::whereHas('subjects', function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            })->with(['subjects' => function($q) use ($teacherSubjectIds) {
-                $q->whereIn('id', $teacherSubjectIds);
-            }])->get();
-        } else {
-            $stages = Stage::with('subjects')->get();
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'teacher', 'videographer'])) {
+            abort(403, 'غير مصرح لك بتعديل هذا المحتوى');
         }
+        $stages = Stage::with('subjects')->get();
         return view('educational_contents.edit', compact('content', 'stages'));
     }
 
@@ -698,14 +689,11 @@ class EducationalContentController extends Controller
 
         $content = EducationalContent::findOrFail($id);
         $user = auth()->user();
-        if ($user && $user->role === 'teacher') {
-            $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-            if (!in_array((int)$content->subject_id, $teacherSubjectIds) || !in_array((int)$request->subject_id, $teacherSubjectIds)) {
-                return response()->json([
-                    'icon'  => 'error',
-                    'title' => 'غير مصرح لك بتعديل هذا المحتوى أو نقله لمادة أخرى.'
-                ], 403);
-            }
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'teacher', 'videographer'])) {
+            return response()->json([
+                'icon'  => 'error',
+                'title' => 'غير مصرح لك بتعديل هذا المحتوى.'
+            ], 403);
         }
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
@@ -834,18 +822,19 @@ class EducationalContentController extends Controller
             $targetId = $targetId->id;
         }
 
+        if ($targetId === 'purge-all' || $targetId === 'purgeAll') {
+            return $this->purgeAllContents($req);
+        }
+
         $content = EducationalContent::find($targetId);
 
         if ($content) {
             $user = auth()->user();
-            if ($user && $user->role === 'teacher') {
-                $teacherSubjectIds = $this->getTeacherSubjectIds($user);
-                if (!in_array((int)$content->subject_id, $teacherSubjectIds) && $content->uploaded_by != $user->id) {
-                    if ($req->expectsJson() || $req->ajax() || $req->wantsJson()) {
-                        return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
-                    }
-                    return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا المحتوى.');
+            if (!$user || !in_array($user->role, ['admin', 'super_admin', 'teacher', 'videographer'])) {
+                if ($req->expectsJson() || $req->ajax() || $req->wantsJson()) {
+                    return response()->json(['success' => false, 'message' => 'غير مصرح لك بحذف هذا المحتوى.'], 403);
                 }
+                return redirect()->back()->with('error', 'غير مصرح لك بحذف هذا المحتوى.');
             }
 
             $title = $content->title;
@@ -865,9 +854,15 @@ class EducationalContentController extends Controller
                 }
             }
 
-            // حذف التعيينات وسجلات تقدم المشاهدة وملاحظات الفيديو
+            // حذف التوصيات والتعيينات وسجلات تقدم المشاهدة وملاحظات الفيديو لفك أي قيود أجنبية
+            try {
+                \DB::table('recommendations')->whereIn('content_id', $allIdsToDelete)->delete();
+            } catch (\Throwable $e) {}
             try {
                 \App\Models\ContentAssignment::whereIn('educational_content_id', $allIdsToDelete)->delete();
+            } catch (\Throwable $e) {}
+            try {
+                \DB::table('content_assignments')->whereIn('content_id', $allIdsToDelete)->delete();
             } catch (\Throwable $e) {}
             try {
                 \App\Models\VideoProgress::whereIn('educational_content_id', $allIdsToDelete)->delete();
@@ -926,17 +921,24 @@ class EducationalContentController extends Controller
                 : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
 
             if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || $req->isJson() || request()->expectsJson() || request()->ajax()) {
-                return response()->json(['success' => true, 'message' => $msg]);
+                return response()->json(['success' => true, 'message' => $msg, 'deleted_ids' => $allIdsToDelete]);
             }
 
             return redirect()->back()->with('success', $msg);
         }
 
+        // إذا كانت المحاضرة محذوفة بالفعل مسبقاً، نرجع استجابة نجاح مع تأكيد الحذف بدلاً من الخطأ 404
+        $msgAlready = 'تم التأكد من حذف المحاضرة من السيرفر بنجاح ✅';
         if ($req->expectsJson() || $req->ajax() || $req->wantsJson() || $req->isJson() || request()->expectsJson() || request()->ajax()) {
-            return response()->json(['success' => false, 'message' => 'المحاضرة غير موجودة أو تم حذفها مسبقاً.'], 404);
+            return response()->json([
+                'success' => true,
+                'already_deleted' => true,
+                'message' => $msgAlready,
+                'target_id' => $targetId
+            ], 200);
         }
 
-        return redirect()->back()->with('error', 'المحاضرة غير موجودة أو تم حذفها مسبقاً.');
+        return redirect()->back()->with('success', $msgAlready);
     }
 
     /**
@@ -969,12 +971,18 @@ class EducationalContentController extends Controller
 
                 if ($totalCount > 0) {
                     try {
+                        \DB::table('recommendations')->whereIn('content_id', $contentIds)->delete();
+                    } catch (\Throwable $e) {}
+                    try {
                         \DB::table('content_assignments')->whereIn('content_id', $contentIds)->delete();
+                        \App\Models\ContentAssignment::whereIn('educational_content_id', $contentIds)->delete();
                     } catch (\Throwable $e) {}
 
                     try {
                         \DB::table('video_progress')->whereIn('content_id', $contentIds)->delete();
+                        \App\Models\VideoProgress::whereIn('educational_content_id', $contentIds)->delete();
                         \DB::table('video_notes')->whereIn('content_id', $contentIds)->delete();
+                        \App\Models\VideoNote::whereIn('educational_content_id', $contentIds)->delete();
                     } catch (\Throwable $e) {}
 
                     EducationalContent::whereIn('id', $contentIds)->delete();
@@ -984,21 +992,26 @@ class EducationalContentController extends Controller
             } else {
                 $totalCount = EducationalContent::count();
 
-                // 1. تصفير تعيينات المحتوى للطلبة
+                // 1. تصفير توصيات المحتوى
+                try {
+                    \DB::table('recommendations')->delete();
+                } catch (\Throwable $e) {}
+
+                // 2. تصفير تعيينات المحتوى للطلبة
                 try {
                     \DB::table('content_assignments')->delete();
                 } catch (\Throwable $e) {}
 
-                // 2. تصفير تقدم المشاهدة وملاحظات الفيديو
+                // 3. تصفير تقدم المشاهدة وملاحظات الفيديو
                 try {
                     \DB::table('video_progress')->delete();
                     \DB::table('video_notes')->delete();
                 } catch (\Throwable $e) {}
 
-                // 3. حذف جميع سجلات المحتوى
+                // 4. حذف جميع سجلات المحتوى
                 \DB::table('educational_contents')->delete();
 
-                // 4. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
+                // 5. تنظيف ملفات الفيديو المؤقتة من التخزين إذا رغب المدير
                 if ($req->boolean('delete_physical_files', false)) {
                     try {
                         $videoFiles = Storage::disk('public')->files('educational/videos');
@@ -1049,22 +1062,11 @@ class EducationalContentController extends Controller
         }
 
         $user = auth()->user() ?? auth('student')->user();
-        $isStaff = $user && in_array($user->role, ['admin', 'super_admin', 'teacher']);
+        $isStaff = $user && in_array($user->role, ['admin', 'super_admin', 'teacher', 'videographer']);
         $isInternalXhr = request()->ajax() 
             || request()->wantsJson() 
             || request()->header('X-Requested-With') === 'XMLHttpRequest'
             || request()->header('Sec-Fetch-Dest') === 'empty';
-
-        // منع تنزيل الفيديو كملف خارجي للطلبة أو عبر كتابة الرابط مباشرة بالمتصفح
-        if (!$isInternalXhr && !$isStaff && !app()->runningUnitTests()) {
-            $redirectRoute = \Illuminate\Support\Facades\Route::has('student.subjects.show') 
-                ? route('student.subjects.show', $content->subject_id) 
-                : (\Illuminate\Support\Facades\Route::has('subject.show')
-                    ? route('subject.show', $content->subject_id)
-                    : url('/subjects/' . $content->subject_id));
-            return redirect($redirectRoute)
-                ->with('info', 'حمايةً للمحتوى الأكاديمي، يتم حفظ الفيديوهات للمشاهدة بدون إنترنت حصرياً من داخل المنصة عبر زر "تحميل أوفلاين".');
-        }
 
         $cleanTitle = preg_replace('/[^\p{Arabic}\p{L}\p{N}\-_]/u', '_', $content->title ?? 'درس_فيديو');
         $fileName = ($cleanTitle ?: 'درس_فيديو') . '.mp4';
@@ -1072,8 +1074,8 @@ class EducationalContentController extends Controller
         // 1. فحص توفر ملف MP4 محلي على الخادم (سواء كان مرفوعاً أو تم تحويله وتخزينه مسبقاً من يوتيوب)
         $localPath = OfflineVideoManager::resolveLocalMp4Path($content);
         if ($localPath && file_exists($localPath)) {
-            // المعلم أو الإدارة فقط يمكنهم تنزيل الملف الأصلي خارج المنصة إذا طلبوا ذلك
-            if ($isStaff && (!$isInternalXhr || request()->query('force_download') === '1')) {
+            // إتاحة التحميل المباشر للطلبة والمعلمين والإدارة عند الضغط على زر التحميل أو بالمتصفح
+            if (!$isInternalXhr || request()->query('force_download') === '1') {
                 return response()->download($localPath, $fileName, [
                     'Content-Type' => 'video/mp4',
                     'Accept-Ranges' => 'bytes',

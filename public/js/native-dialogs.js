@@ -328,6 +328,9 @@
 
                 const card = document.createElement('div');
                 card.className = 'sv-modal-card';
+                if (options.width) {
+                    card.style.maxWidth = typeof options.width === 'number' ? options.width + 'px' : options.width;
+                }
 
                 // Icon
                 if (options.icon) {

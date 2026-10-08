@@ -2010,6 +2010,19 @@ window.deleteVideoItem = async function(id) {
         } catch (e) {
             console.error("Delete error:", e);
             const errMsg = e.response?.data?.message || e.message || 'تعذر الاتصال بالخادم لإتمام عملية الحذف.';
+            if (e.response?.status === 404 || errMsg.includes('غير موجودة') || errMsg.includes('تم حذفها')) {
+                if (typeof Swal !== 'undefined') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'تمت إزالة المحاضرة ✅',
+                        text: 'المحاضرة تم مسحها بالفعل من السيرفر.',
+                        timer: 1400,
+                        showConfirmButton: false
+                    });
+                }
+                location.reload();
+                return;
+            }
             if (typeof Swal !== 'undefined') {
                 Swal.fire({ 
                     icon: 'error', 

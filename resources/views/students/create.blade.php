@@ -632,13 +632,17 @@
 
                 <!-- قائمة المواد التابعة للفرع للاشتراك بها -->
                 <div class="input-group" style="margin-bottom: 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
                         <label style="font-weight: 700; color: var(--ed-text-main); font-size: 12.5px;">
-                            <i class="fas fa-book-bookmark" style="color: var(--ed-primary);"></i> {{ __('المواد المقررة للاشتراك بها في الفرع:') }}
+                            <i class="fas fa-book-bookmark" style="color: var(--ed-primary);"></i> {{ __('المواد الدراسية المراد التسجيل فيها:') }} <span class="req">*</span>
                         </label>
-                        <span style="font-size: 11px; color: var(--ed-success); font-weight: 700;">{{ __('(جميع المواد مفعلة تلقائياً أو اختر ما يناسبك)') }}</span>
+                        <div style="display: flex; gap: 6px;">
+                            <button type="button" onclick="toggleRegSubjects(true)" style="background: var(--ed-primary-soft); color: var(--ed-primary); border: 1px solid var(--ed-primary-border); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">{{ __('تحديد الكل') }}</button>
+                            <button type="button" onclick="toggleRegSubjects(false)" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; cursor: pointer;">{{ __('إلغاء التحديد') }}</button>
+                        </div>
                     </div>
-                    <div id="subjectsSelectionContainer" style="background: #ffffff; border: 1px solid var(--ed-border); border-radius: var(--radius-sm); padding: 10px 14px; max-height: 180px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
+                    <span style="font-size: 11px; color: #64748b; display: block; margin-bottom: 6px;">{{ __('اختر المادة أو المواد التي ترغب بالتسجيل فيها في هذا الفرع:') }}</span>
+                    <div id="subjectsSelectionContainer" style="background: #ffffff; border: 1px solid var(--ed-border); border-radius: var(--radius-sm); padding: 10px 14px; max-height: 220px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
                         <!-- يتم ملء المواد ديناميكياً بواسطة جافاسكريبت -->
                     </div>
                 </div>
@@ -718,16 +722,16 @@
             }
 
             html += `
-                <div style="display: flex; flex-direction: column; gap: 6px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px;">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
-                        <input type="checkbox" name="subject_ids[]" value="${sub.id}" checked style="width: 15px; height: 15px; accent-color: var(--ed-primary); cursor: pointer;">
-                        <span style="font-size: 1rem;">${sub.icon || '📘'}</span>
+                <div class="reg-subject-choice-card" style="display: flex; flex-direction: column; gap: 6px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; transition: 0.15s ease;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none;">
+                        <input type="checkbox" name="subject_ids[]" value="${sub.id}" class="reg-subject-cb" onchange="const c = this.closest('.reg-subject-choice-card'); if(c) { c.style.borderColor = this.checked ? 'var(--ed-primary)' : '#e2e8f0'; c.style.background = this.checked ? '#eff6ff' : '#f8fafc'; }" style="width: 17px; height: 17px; accent-color: var(--ed-primary); cursor: pointer;">
+                        <span style="font-size: 1.2rem;">${sub.icon || '📘'}</span>
                         <div style="flex: 1;">
-                            <div style="font-size: 12px; font-weight: 700; color: #0f172a;">${subTitle}</div>
-                            <div style="display: flex; align-items: center; gap: 2px; margin-top: 2px;">${priceHtml}</div>
+                            <div style="font-size: 12.5px; font-weight: 700; color: #0f172a;">${subTitle}</div>
+                            <div style="display: flex; align-items: center; gap: 4px; margin-top: 2px;">${priceHtml}</div>
                         </div>
                     </label>
-                    <div style="display: flex; align-items: center; gap: 6px; padding-inline-start: 24px;">
+                    <div style="display: flex; align-items: center; gap: 6px; padding-inline-start: 27px; margin-top: 2px; border-top: 1px dashed #e2e8f0; padding-top: 6px;">
                         <span style="font-size: 11px; color: #64748b; font-weight: 600;">{{ __('الفصل:') }}</span>
                         <select name="semesters[${sub.id}]" style="font-size: 11px; padding: 2px 6px; border: 1px solid #cbd5e1; border-radius: 4px; background: #ffffff; color: #334155; font-weight: 600;">
                             <option value="both" selected>{{ __('كلا الفصلين (العام كامل)') }}</option>
@@ -739,6 +743,18 @@
             `;
         });
         container.innerHTML = html;
+    }
+
+    function toggleRegSubjects(selectAll) {
+        const checkboxes = document.querySelectorAll('#subjectsSelectionContainer .reg-subject-cb');
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll;
+            const card = cb.closest('.reg-subject-choice-card');
+            if (card) {
+                card.style.borderColor = selectAll ? 'var(--ed-primary)' : '#e2e8f0';
+                card.style.background = selectAll ? '#eff6ff' : '#f8fafc';
+            }
+        });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -821,6 +837,68 @@
         // strength indicator hook if needed
     }
 
+    window.regPopupPwdRevealed = false;
+    window.toggleRegPopupPwdVisibility = function(btn) {
+        const input = document.getElementById('regPopupPwd');
+        const eye = document.getElementById('regPopupPwdEye');
+        if (!input) return;
+        window.regPopupPwdRevealed = !window.regPopupPwdRevealed;
+        input.type = window.regPopupPwdRevealed ? 'text' : 'password';
+        if (eye) {
+            eye.className = window.regPopupPwdRevealed ? 'fas fa-eye-slash' : 'fas fa-eye';
+        }
+    };
+
+    window.copyRegCredential = function(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const text = input.value;
+        const isPwd = (input.type === 'password');
+
+        const updateBtn = () => {
+            const span = btn.querySelector('span');
+            const icon = btn.querySelector('i');
+            const oldText = span ? span.textContent : btn.textContent;
+            if (span) span.textContent = '{{ __("تم النسخ!") }}';
+            if (icon) icon.className = 'fas fa-check';
+            btn.style.borderColor = '#10b981';
+            btn.style.color = '#10b981';
+            btn.style.background = '#ecfdf5';
+
+            setTimeout(() => {
+                if (span) span.textContent = oldText;
+                if (icon) icon.className = 'fas fa-copy';
+                btn.style.borderColor = '#bfdbfe';
+                btn.style.color = '#1d4ed8';
+                btn.style.background = '#eff6ff';
+            }, 2200);
+        };
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(updateBtn).catch(() => {
+                doFallback();
+            });
+        } else {
+            doFallback();
+        }
+
+        function doFallback() {
+            if (isPwd) input.type = 'text';
+            input.focus();
+            input.select();
+            input.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                updateBtn();
+            } catch (e) {
+                alert('{{ __("يرجى تحديد النص ونسخه يدوياً.") }}');
+            }
+            if (isPwd && !window.regPopupPwdRevealed) {
+                input.type = 'password';
+            }
+        }
+    };
+
     function handleRegisterSubmit(e) {
         e.preventDefault();
         const form = document.getElementById('registerForm');
@@ -848,6 +926,18 @@
             return;
         }
 
+        const checkedSubjects = form.querySelectorAll('input[name="subject_ids[]"]:checked');
+        if (checkedSubjects.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("تحديد المواد الدراسية") }}',
+                text: '{{ __("يرجى اختيار مادة دراسية واحدة على الأقل ترغب بالتسجيل فيها في هذا الفرع.") }}',
+                confirmButtonColor: '#1d4ed8',
+                confirmButtonText: '{{ __("حسناً، سأختار المادة") }}'
+            });
+            return;
+        }
+
         btn.disabled = true;
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${regI18n.creating}`;
 
@@ -855,12 +945,77 @@
 
         axios.post('{{ route("students.store") }}', formData)
             .then(res => {
+                const rawFormEmail = formData.get('email') || '';
+                const fallbackEmail = rawFormEmail.includes('@') ? rawFormEmail : (rawFormEmail ? rawFormEmail + '@tawjihi.ps' : '');
+                const studentEmail = res.data.email || fallbackEmail;
+                const studentPassword = res.data.password || formData.get('password') || '';
+                const studentName = res.data.student_name || formData.get('name_ar') || '';
+
+                const credentialsHtml = `
+                    <div style="direction: rtl; text-align: right; font-family: 'Tajawal', 'Alexandria', sans-serif;">
+                        <p style="font-size: 13.5px; color: #475569; margin: 0 0 16px; line-height: 1.6; text-align: center;">
+                            ${studentName ? '{{ __("مرحباً بك يا") }} <strong style="color: #0f172a;">' + studentName + '</strong>! ' : ''}
+                            {{ __("تم إنشاء حسابك الأكاديمي بنجاح. احتفظ ببيانات دخولك الخاصة لمتابعة دراستك والوصول للمنصة:") }}
+                        </p>
+
+                        <!-- بطاقة البريد الإلكتروني -->
+                        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                <label style="font-size: 12px; font-weight: 700; color: #334155; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-envelope" style="color: #2563eb;"></i> {{ __('البريد الإلكتروني (اسم المستخدم):') }}
+                                </label>
+                                <span style="font-size: 10.5px; background: #eff6ff; color: #1d4ed8; padding: 2px 7px; border-radius: 6px; font-weight: 700;">
+                                    {{ __('معتمد للدخول') }}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; direction: ltr;">
+                                <input type="text" id="regPopupEmail" readonly value="${studentEmail}" style="flex: 1; padding: 9px 12px; font-size: 13.5px; font-weight: 800; color: #0f172a; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: monospace, sans-serif; direction: ltr; text-align: left; user-select: all;">
+                                <button type="button" onclick="copyRegCredential('regPopupEmail', this)" style="padding: 9px 14px; font-size: 12px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s;">
+                                    <i class="fas fa-copy"></i> <span>{{ __('نسخ') }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- بطاقة كلمة المرور -->
+                        <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                <label style="font-size: 12px; font-weight: 700; color: #334155; margin: 0; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-lock" style="color: #d97706;"></i> {{ __('كلمة المرور الخاصة بك:') }}
+                                </label>
+                                <span style="font-size: 10.5px; background: #fffbeb; color: #b45309; padding: 2px 7px; border-radius: 6px; font-weight: 700;">
+                                    {{ __('سرية وخاصة') }}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; direction: ltr;">
+                                <input type="password" id="regPopupPwd" readonly value="${studentPassword}" style="flex: 1; padding: 9px 12px; font-size: 13.5px; font-weight: 800; color: #0f172a; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; outline: none; font-family: monospace, sans-serif; direction: ltr; text-align: left; user-select: all;">
+                                <button type="button" onclick="toggleRegPopupPwdVisibility(this)" title="{{ __('إظهار أو إخفاء كلمة المرور') }}" style="padding: 9px 11px; font-size: 13px; color: #475569; background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 8px; cursor: pointer;">
+                                    <i class="fas fa-eye" id="regPopupPwdEye"></i>
+                                </button>
+                                <button type="button" onclick="copyRegCredential('regPopupPwd', this)" style="padding: 9px 14px; font-size: 12px; font-weight: 700; color: #1d4ed8; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: 0.2s;">
+                                    <i class="fas fa-copy"></i> <span>{{ __('نسخ') }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- بطاقة التنبيه وأخذ لقطة شاشة -->
+                        <div style="background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 10px; padding: 11px 13px; display: flex; align-items: center; gap: 10px; color: #92400e; font-size: 12px; line-height: 1.5;">
+                            <i class="fas fa-camera-retro" style="font-size: 20px; color: #d97706; flex-shrink: 0;"></i>
+                            <div>
+                                <strong>{{ __('تنبيه هام:') }}</strong> {{ __('يُرجى أخذ لقطة شاشة (Screenshot) للشاشة الآن أو نسخ البيانات وحفظها في مكان آمن لضمان سهولة تسجيل الدخول لاحقاً.') }}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
                 Swal.fire({
-                    icon: res.data.icon || 'success',
-                    title: res.data.title || regI18n.createdTitle,
-                    text: res.data.text || res.data.message || '',
+                    icon: 'success',
+                    title: res.data.title || '{{ __("تم إنشاء حسابك بنجاح! 🎉") }}',
+                    html: credentialsHtml,
+                    width: 500,
                     confirmButtonColor: '#1d4ed8',
-                    confirmButtonText: regI18n.confirmBtn
+                    confirmButtonText: '{{ __("متابعة واستكمال الحساب 🚀") }}',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
                 }).then(() => {
                     if (res.data.redirect) {
                         window.location.href = res.data.redirect;

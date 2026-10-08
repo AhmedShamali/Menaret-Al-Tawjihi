@@ -120,7 +120,7 @@
                     </thead>
                     <tbody>
                         @foreach($contents as $index => $item)
-                            <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                            <tr id="content_row_{{ $item->id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                                 <td style="padding: 14px 20px; color: #94a3b8; font-weight: 600; font-size: 0.8rem;">
                                     {{ $contents->firstItem() + $index }}
                                 </td>
@@ -183,6 +183,10 @@
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
                                     <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <a href="{{ route('educational_contents.edit', $item->id) }}" style="background: #f8fafc; border: 1px solid #cbd5e1; color: #0284c7; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; text-decoration: none; transition: all 0.15s;" title="{{ __('تعديل المحاضرة والملفات') }}">
+                                            <i class="fa-regular fa-pen-to-square" style="font-size: 0.85rem;"></i>
+                                        </a>
+
                                         <form action="{{ route('videographer.contents.sync_branches', $item->id) }}" method="POST" style="display: inline-block; margin: 0;" title="{{ __('توزيع ومزامنة هذه المحاضرة تلقائياً على كافة الفروع الأكاديمية الشقيقة') }}">
                                             @csrf
                                             <button type="submit" style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" title="{{ __('مزامنة وتوزيع لكافة الفروع') }}">
@@ -190,10 +194,10 @@
                                             </button>
                                         </form>
 
-                                        <form action="{{ route('videographer.contents.destroy', $item->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة؟') }}')" style="display: inline-block; margin: 0;">
+                                        <form id="delete_form_video_{{ $item->id }}" action="{{ route('videographer.contents.destroy', $item->id) }}" method="POST" style="display: inline-block; margin: 0;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف المحاضرة') }}">
+                                            <button type="button" onclick="deleteVideographerContent({{ $item->id }}, '{{ addslashes($item->title) }}')" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف المحاضرة') }}">
                                                 <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
                                             </button>
                                         </form>
@@ -287,5 +291,61 @@
             closeVideoPreview();
         }
     });
+
+    function deleteVideographerContent(id, title) {
+        const doDelete = () => {
+            const row = document.getElementById('content_row_' + id);
+            if (row) {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0.3';
+            }
+            fetch('/videographer/contents/' + id, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-HTTP-Method-Override': 'DELETE',
+                    'Accept': 'application/json'
+                }
+            }).then(res => res.json().catch(() => ({})))
+            .then(data => {
+                if (row) {
+                    row.remove();
+                }
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم الحذف بنجاح ✅',
+                        text: data.message || 'تم حذف المحاضرة نهائياً من كافة الفروع الأكاديمية.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            }).catch(() => {
+                const form = document.getElementById('delete_form_video_' + id);
+                if (form) form.submit();
+            });
+        };
+
+        if (window.Swal) {
+            Swal.fire({
+                title: 'هل أنت متأكد من الحذف؟',
+                text: 'سيتم حذف المحاضرة "' + title + '" وجميع نسخها من كافة الفروع الأكاديمية.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'نعم، احذف الآن',
+                cancelButtonText: 'إلغاء'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    doDelete();
+                }
+            });
+        } else {
+            if (confirm('هل أنت متأكد من حذف هذه المحاضرة نهائياً؟')) {
+                doDelete();
+            }
+        }
+    }
 </script>
 @endsection

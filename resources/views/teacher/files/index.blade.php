@@ -99,9 +99,14 @@
                 <span>{{ __('تصفية حسب المادة الدراسية:') }}</span>
             </div>
             <div class="filter-pills">
-                <a href="{{ auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files') }}" class="filter-chip {{ empty(request('subject_id')) ? 'active' : '' }}">
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files') }}" class="filter-chip {{ empty(request('subject_id')) && !request('show_all') ? 'active' : '' }}">
                     {{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}
                 </a>
+                @if(auth()->user()->role === 'teacher')
+                    <a href="{{ route('teacher.files', ['show_all' => '1']) }}" class="filter-chip {{ request('show_all') == '1' ? 'active' : '' }}" style="{{ request('show_all') == '1' ? 'background: #1e3a8a; border-color: #1e3a8a; color: #fff;' : '' }}">
+                        🌐 {{ __('كافة ملفات ودوسيات المنصة (المدير والمصور والمعلمين)') }}
+                    </a>
+                @endif
                 @foreach($subjects as $sub)
                     <a href="{{ (auth()->user()->role === 'admin' ? route('admin.files') : route('teacher.files')) . '?subject_id=' . $sub->id . (request('target_region') ? '&target_region=' . request('target_region') : '') }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
                         {{ $sub->name_ar ?? $sub->name }}
@@ -148,7 +153,7 @@
                     'label' => 'PDF'
                 ];
             @endphp
-            <div class="ed-file-card">
+            <div class="ed-file-card" id="file_card_{{ $file->id }}">
                 <div>
                     <div class="file-card-header">
                         <div class="file-icon-box" style="background: {{ $meta['bg'] }}; color: {{ $meta['color'] }};">
@@ -214,9 +219,18 @@
                                 </a>
                             @endif
 
-                            <button type="button" onclick="deleteFileItem({{ $file->id }})" class="btn-delete" title="{{ __('حذف') }}">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
+                            @php
+                                $fileDeleteUrl = auth()->user()->role === 'admin' 
+                                    ? route('admin.educational_contents.destroy', $file->id) 
+                                    : route('teacher.educational_contents.destroy', $file->id);
+                            @endphp
+                            <form id="delete_form_file_{{ $file->id }}" action="{{ $fileDeleteUrl }}" method="POST" style="margin: 0; display: inline;" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه الملزمة؟') }}');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" onclick="deleteFileItem({{ $file->id }}, event)" class="btn-delete" title="{{ __('حذف') }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -1355,16 +1369,38 @@ async function toggleVisibility(id, btn) {
     }
 }
 
-window.deleteFileItem = async function(id) {
+window.deleteFileItem = async function(id, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
     if (!id) return;
+
     const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
     const deleteUrl = (isUserAdmin ? '/admin/educational-contents/' : '/teacher/educational_contents/') + id;
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
+    const cardEl = document.getElementById('file_card_' + id);
+
+    const removeCardFromDom = () => {
+        if (cardEl) {
+            cardEl.style.transition = 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+            cardEl.style.opacity = '0';
+            cardEl.style.transform = 'scale(0.9) translateY(10px)';
+            setTimeout(() => {
+                if (cardEl.parentNode) cardEl.parentNode.removeChild(cardEl);
+                const grid = document.querySelector('.ed-files-grid');
+                if (grid && grid.querySelectorAll('.ed-file-card').length === 0) {
+                    location.reload();
+                }
+            }, 350);
+        }
+    };
 
     const executeDelete = async () => {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: 'جاري الحذف...',
+                title: '{{ __("جاري الحذف...") }}',
+                text: '{{ __("يرجى الانتظار لحظات...") }}',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
@@ -1383,33 +1419,52 @@ window.deleteFileItem = async function(id) {
             });
 
             const data = res.data;
-            if (data && (data.success || res.status === 200)) {
-                if (typeof Swal !== 'undefined') {
-                    await Swal.fire({ 
-                        icon: 'success', 
-                        title: '{{ __("تم حذف الملف بنجاح") }}', 
-                        timer: 1200, 
-                        showConfirmButton: false 
-                    });
-                } else {
-                    alert('{{ __("تم حذف الملف بنجاح") }}');
-                }
-                location.reload();
-            } else {
-                const errMsg = data?.message || '{{ __("تعذر حذف الملف.") }}';
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
-                } else {
-                    alert('خطأ: ' + errMsg);
-                }
+            removeCardFromDom();
+
+            const successMsg = data?.message || '{{ __("تم حذف الملف بنجاح.") }}';
+            if (typeof Swal !== 'undefined') {
+                await Swal.fire({ 
+                    icon: 'success', 
+                    title: '{{ __("تم الحذف بنجاح ✅") }}', 
+                    text: successMsg,
+                    timer: 1400, 
+                    showConfirmButton: false 
+                });
             }
         } catch (e) {
-            console.error("Delete error:", e);
-            const errMsg = e.response?.data?.message || e.message || '{{ __("تعذر حذف الملف.") }}';
+            console.warn("File delete error / 404:", e);
+            const errMsg = e.response?.data?.message || e.message || '';
+
+            // إذا كانت المحاضرة أو الملف محذوفاً مسبقاً، نزيله فوراً من الواجهة دون تركه عالقاً
+            if (e.response?.status === 404 || errMsg.includes('غير موجود') || errMsg.includes('تم حذف') || errMsg.includes('already')) {
+                removeCardFromDom();
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: '{{ __("تمت إزالة الملف ✅") }}', 
+                        text: '{{ __("تم التأكد من مسح الملف من السيرفر وإزالته من القائمة.") }}',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                }
+                return;
+            }
+
+            // محاولة الإرسال عبر النموذج الكلاسيكي كحل مضمون 100%
+            const nativeForm = document.getElementById('delete_form_file_' + id);
+            if (nativeForm) {
+                nativeForm.submit();
+                return;
+            }
+
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: '{{ __("تعذر إتمام الحذف") }}', 
+                    text: errMsg || '{{ __("تعذر حذف الملف.") }}' 
+                });
             } else {
-                alert('تعذر حذف الملف.');
+                alert(errMsg || 'تعذر حذف الملف.');
             }
         }
     };
@@ -1435,6 +1490,7 @@ window.deleteFileItem = async function(id) {
         }
     }
 };
+function deleteFileItem(id, event) { return window.deleteFileItem(id, event); }
 
 window.purgeAllContents = async function() {
     const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};

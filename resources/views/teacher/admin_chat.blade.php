@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('is_chat', true)
 @section('title', __('مراسلة الإدارة العامة والشؤون الأكاديمية') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')

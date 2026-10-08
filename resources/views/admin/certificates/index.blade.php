@@ -1300,6 +1300,9 @@
         background: #ffffff;
         width: 100%;
         max-width: 560px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
         border-radius: 6px;
         border: 1px solid var(--reg-border);
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -1320,6 +1323,7 @@
         justify-content: space-between;
         align-items: center;
         border-bottom: 2px solid var(--reg-gold);
+        flex-shrink: 0;
     }
 
     .modal-header-title {
@@ -1370,6 +1374,9 @@
 
     .modal-body-classic {
         padding: 20px;
+        overflow-y: auto !important;
+        flex: 1;
+        min-height: 0;
     }
 
     .modal-fields-grid {

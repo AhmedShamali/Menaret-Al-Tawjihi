@@ -389,7 +389,7 @@ class VideographerContentController extends Controller
     {
         $content = EducationalContent::with('subject.stage')->findOrFail($id);
         $user = auth()->user();
-        if ($user->role !== 'admin' && $content->uploaded_by !== $user->id) {
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer', 'teacher'])) {
             abort(403, 'غير مصرح لك بمزامنة هذا المحتوى.');
         }
 
@@ -481,9 +481,18 @@ class VideographerContentController extends Controller
         $userId = auth()->id();
         $isAdmin = auth()->user()->role === 'admin';
 
-        $content = EducationalContent::findOrFail($id);
+        $content = EducationalContent::find($id);
 
-        if (!$isAdmin && $content->uploaded_by !== $userId) {
+        if (!$content) {
+            $msg = 'المحاضرة غير موجودة أو تم حذفها مسبقاً من السيرفر ✅';
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json(['success' => true, 'already_deleted' => true, 'message' => $msg]);
+            }
+            return redirect()->back()->with('success', $msg);
+        }
+
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer', 'teacher'])) {
             abort(403, 'غير مصرح لك بحذف هذا المحتوى.');
         }
 
@@ -504,7 +513,11 @@ class VideographerContentController extends Controller
         }
 
         try {
+            \DB::table('recommendations')->whereIn('content_id', $allIds)->delete();
+        } catch (\Throwable $e) {}
+        try {
             \App\Models\ContentAssignment::whereIn('educational_content_id', $allIds)->delete();
+            \DB::table('content_assignments')->whereIn('content_id', $allIds)->delete();
             \App\Models\VideoProgress::whereIn('educational_content_id', $allIds)->delete();
             \App\Models\VideoNote::whereIn('educational_content_id', $allIds)->delete();
         } catch (\Throwable $e) {}
@@ -529,6 +542,10 @@ class VideographerContentController extends Controller
         $msg = $count > 1 
             ? "تم حذف المحاضرة \"{$title}\" بنجاح من كافة الفروع الأكاديمية ({$count} فروع) ✅"
             : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
+
+        if (request()->ajax() || request()->wantsJson()) {
+            return response()->json(['success' => true, 'message' => $msg]);
+        }
 
         return redirect()->back()->with('success', $msg);
     }

@@ -290,12 +290,15 @@ class StudentController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json([
-                'success'  => true,
-                'icon'     => 'info',
-                'title'    => 'تم استلام طلبك بنجاح! ⏳',
-                'text'     => 'يرجى مراجعة إشعار سداد الرسوم لإتمام تفعيل اشتراكك.',
-                'message'  => 'تم استلام طلبك بنجاح! ⏳ يرجى مراجعة إشعار سداد الرسوم لإتمام تفعيل اشتراكك.',
-                'redirect' => route('student.pending-approval')
+                'success'      => true,
+                'icon'         => 'success',
+                'title'        => 'تم إنشاء حسابك بنجاح! 🎉',
+                'text'         => 'احتفظ ببيانات دخولك الخاصة لمتابعة دراستك.',
+                'message'      => 'تم إنشاء حسابك بنجاح! 🎉 احتفظ ببيانات دخولك الخاصة لمتابعة دراستك.',
+                'email'        => $student->email,
+                'password'     => $request->password,
+                'student_name' => $student->name_ar ?? $student->name_en,
+                'redirect'     => route('student.pending-approval')
             ]);
         }
 
@@ -483,28 +486,13 @@ class StudentController extends Controller
             ]);
         }
 
-        // تفعيل كافة المواد المقيد بها الطالب أو تسجيل مواد مرحلته تلقائياً
+        // تفعيل المواد التي سجل واختارها الطالب حصراً عند التسجيل دون فرض كافة مواد الفرع
         try {
-            $affected = \App\Models\Enrollment::where('student_id', $student->id)->update([
+            \App\Models\Enrollment::where('student_id', $student->id)->update([
                 'status'         => 'active',
                 'payment_status' => 'paid',
                 'activated_at'   => now(),
             ]);
-
-            if ($affected === 0 && $student->stage_id) {
-                $stageSubjects = \App\Models\Subject::where('stage_id', $student->stage_id)->pluck('id');
-                foreach ($stageSubjects as $subId) {
-                    \App\Models\Enrollment::firstOrCreate(
-                        ['student_id' => $student->id, 'subject_id' => $subId],
-                        [
-                            'status'         => 'active',
-                            'access_mode'    => 'all',
-                            'payment_status' => 'admin_grant',
-                            'activated_at'   => now(),
-                        ]
-                    );
-                }
-            }
         } catch (\Throwable $e) {
             \Log::error('Approve student enrollment error: ' . $e->getMessage());
         }

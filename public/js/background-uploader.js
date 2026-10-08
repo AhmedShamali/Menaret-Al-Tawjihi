@@ -818,18 +818,23 @@
         }
 
         /**
-         * محرك الملاحة السلسة عبر الروابط (SPA Transitions)
-         * يتيح للمستخدم الانتقال لأي صفحة داخل البوابة بدون تفريغ الصفحة أو إيقاف الرفع
+         * حماية الملاحة أثناء الرفع النشط بالخلفية
+         * في الوضع الطبيعي: لا يتدخل إطلاقاً في ملاحة المتصفح لضمان تنفيذ كافة السكربتات والأزرار بشكل طبيعي 100%.
+         * أثناء الرفع النشط: يحمي الرفع من الانقطاع عبر تنبيه المستخدم وإتاحة فتح الرابط في تبويب جديد.
          */
         initSeamlessNavigation() {
             document.addEventListener('click', (e) => {
+                // إذا لم يكن هناك رفع نشط في الخلفية، لا نتدخل إطلاقاً ونترك المتصفح ينفذ الملاحة الطبيعية
+                if (!this.hasActiveUpload()) {
+                    return;
+                }
+
                 const link = e.target.closest('a');
                 if (!link) return;
 
                 const href = link.getAttribute('href');
                 if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
                 if (link.target === '_blank' || link.hasAttribute('download')) return;
-                if (link.classList.contains('no-pjax') || link.dataset.noPjax) return;
 
                 let targetUrl;
                 try {
@@ -841,24 +846,41 @@
                 // الروابط الداخلية فقط على نفس الدومين
                 if (targetUrl.origin !== window.location.origin) return;
 
-                // استثناء روابط الخروج أو التبديل اللغوي أو التوثيق أو التنزيل المباشر
+                // استثناء روابط الخروج أو التحميل المباشر
                 if (targetUrl.pathname.includes('/logout') || 
-                    targetUrl.pathname.includes('/lang/') || 
                     targetUrl.pathname.includes('/download') ||
                     targetUrl.pathname.endsWith('.pdf') ||
                     targetUrl.pathname.endsWith('.zip')) return;
 
-                // دعم كافة المسارات الداخلية للنظام بسلاسة (سواء على الدومين الرئيسي أو مجلد فرعي مثل XAMPP)
+                // حماية الرفع النشط: منع فقدان الرفع وتخيير المستخدم لفتح الصفحة في تبويب جديد
                 e.preventDefault();
-                this.navigate(targetUrl.href);
+
+                if (window.Swal && typeof window.Swal.fire === 'function') {
+                    window.Swal.fire({
+                        title: 'يوجد رفع فيديو نشط في الخلفية',
+                        text: 'مغادرة هذه الصفحة ستؤدي لإيقاف عملية رفع الفيديو الجارية. هل ترغب في فتح الصفحة في تبويب جديد لمتابعة التصفح دون إيقاف الرفع؟',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: '<i class="fa-solid fa-arrow-up-right-from-square"></i> فتح في تبويب جديد',
+                        cancelButtonText: 'البقاء هنا ومتابعة الرفع',
+                        confirmButtonColor: '#2563eb',
+                        cancelButtonColor: '#64748b'
+                    }).then(res => {
+                        if (res.isConfirmed) {
+                            window.open(targetUrl.href, '_blank');
+                        }
+                    });
+                } else if (confirm('يوجد رفع فيديو نشط في الخلفية. الانتقال المباشر سيوقف الرفع. هل ترغب في فتح الرابط في تبويب جديد؟')) {
+                    window.open(targetUrl.href, '_blank');
+                }
             });
 
-            // دعم زري الرجوع والتقدم في المتصفح
+            // دعم أزرار التقدم والرجوع عند وجود رفع نشط فقط
             window.addEventListener('popstate', (e) => {
-                if (e.state && e.state.edPjaxUrl) {
-                    this.navigate(e.state.edPjaxUrl, false);
-                } else {
-                    this.navigate(window.location.href, false);
+                if (this.hasActiveUpload()) {
+                    if (!confirm('يوجد رفع فيديو نشط في الخلفية. هل أنت متأكد من الانتقال بالمتصفح؟')) {
+                        history.pushState(null, '', window.location.href);
+                    }
                 }
             });
         }

@@ -1941,11 +1941,14 @@
 /* مودال كشف الحساب وسند الذمة */
 .modal-statement-sheet-wrap {
     max-width: 880px;
-    max-height: 92vh;
+    width: 95%;
+    max-height: 90vh;
     padding: 0;
     background: #ffffff;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    border-radius: 18px;
 }
 .statement-toolbar {
     background: #1e293b;
@@ -1953,7 +1956,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: 24px 24px 0 0;
+    border-radius: 18px 18px 0 0;
+    flex-shrink: 0;
 }
 .btn-print-action {
     background: #10b981;
@@ -1976,8 +1980,11 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 .statement-document {
-    padding: 32px 36px;
-    overflow-y: auto;
+    padding: 24px 30px;
+    overflow-y: auto !important;
+    flex: 1;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
 }
 .doc-header {
     display: flex;
@@ -2108,29 +2115,62 @@
 }
 
 @media print {
-    body * {
+    @page {
+        size: auto;
+        margin: 8mm;
+    }
+
+    body.print-statement-active * {
         visibility: hidden;
     }
-    #statementModal, #statementModal * {
+    body.print-statement-active #statementModal, 
+    body.print-statement-active #statementModal * {
         visibility: visible;
     }
-    #statementModal {
-        position: absolute;
-        inset: 0;
+    body.print-statement-active #statementModal {
+        position: static !important;
         display: block !important;
         background: transparent !important;
         padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
     }
-    .modal-statement-sheet-wrap {
+    body.print-statement-active .modal-statement-sheet-wrap {
         box-shadow: none !important;
         border: none !important;
         max-width: 100% !important;
+        width: 100% !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
     }
-    .statement-toolbar {
+    body.print-statement-active .statement-toolbar,
+    body.print-statement-active .btn-close-x {
         display: none !important;
     }
-    .statement-document {
-        padding: 0 !important;
+    body.print-statement-active .statement-document {
+        padding: 10px 14px !important;
+        max-height: none !important;
+        overflow: visible !important;
+        page-break-inside: auto !important;
+    }
+
+    body:not(.print-statement-active) #statementModal {
+        display: none !important;
+    }
+    body:not(.print-statement-active) .sidebar,
+    body:not(.print-statement-active) .top-bar,
+    body:not(.print-statement-active) .mobile-bottom-nav,
+    body:not(.print-statement-active) .no-print,
+    body:not(.print-statement-active) .btn-manage-fee,
+    body:not(.print-statement-active) .btn-statement-royal {
+        display: none !important;
     }
 }
 
@@ -2623,10 +2663,32 @@ function submitStudentFeeForm(e) {
 // نافذة كشف الذمة
 function openStatementModal() {
     document.getElementById('statementModal').style.display = 'flex';
+    document.body.classList.add('print-statement-active');
 }
 function closeStatementModal() {
     document.getElementById('statementModal').style.display = 'none';
+    document.body.classList.remove('print-statement-active');
 }
+function printStatementDoc() {
+    document.body.classList.add('print-statement-active');
+    window.print();
+}
+
+window.addEventListener('beforeprint', function() {
+    const modal = document.getElementById('statementModal');
+    if (modal && modal.style.display === 'flex') {
+        document.body.classList.add('print-statement-active');
+    } else {
+        document.body.classList.remove('print-statement-active');
+    }
+});
+
+window.addEventListener('afterprint', function() {
+    const modal = document.getElementById('statementModal');
+    if (!modal || modal.style.display !== 'flex') {
+        document.body.classList.remove('print-statement-active');
+    }
+});
 
 // إغلاق النوافذ عند النقر على الخلفية المعتمة أو الضغط على Escape
 window.addEventListener('click', function(e) {

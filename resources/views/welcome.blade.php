@@ -208,6 +208,7 @@
 
         html, body {
             width: 100%;
+            max-width: 100%;
             min-height: 100vh;
             background-color: var(--academic-bg);
             color: var(--academic-text-body);
@@ -518,16 +519,17 @@
             cursor: pointer;
         }
 
-        /* 3. شريط التعاميم والأنباء الأكاديمية الملكي (Royal Academic News & Announcements Ticker) */
+        /* 3. شريط التعاميم والأنباء الأكاديمية الملكي الفاخر (Royal Academic News & Announcements Ticker) */
         .royal-ticker-bar {
             width: 100%;
-            background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 50%, #fffbeb 100%);
+            background: linear-gradient(90deg, #fffbeb 0%, #fef3c7 45%, #fffbeb 100%);
             border-bottom: 1.5px solid #fde68a;
             color: #78350f;
-            padding: 9px 24px;
-            box-shadow: 0 1px 4px rgba(180, 83, 9, 0.05);
+            padding: 8px 20px;
+            box-shadow: 0 2px 8px rgba(180, 83, 9, 0.06);
             position: relative;
             z-index: 50;
+            overflow: hidden;
         }
         .royal-ticker-inner {
             width: 100%;
@@ -535,7 +537,7 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             font-size: 13.5px;
         }
         .royal-ticker-tag {
@@ -552,6 +554,12 @@
             flex-shrink: 0;
             box-shadow: 0 2px 6px rgba(180, 83, 9, 0.25);
             letter-spacing: 0.3px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .royal-ticker-tag:hover {
+            transform: scale(1.03);
+            box-shadow: 0 3px 8px rgba(180, 83, 9, 0.35);
         }
         .pulse-dot {
             width: 7px;
@@ -569,10 +577,13 @@
         .royal-ticker-viewport {
             flex: 1;
             position: relative;
-            height: 34px;
+            height: 36px;
             display: flex;
             align-items: center;
             overflow: hidden;
+            /* تلاشٍ سينمائي ناعم عند الحواف لمنع القطع الحاد للنص */
+            mask-image: linear-gradient(to left, transparent 0%, black 18px, black calc(100% - 18px), transparent 100%);
+            -webkit-mask-image: linear-gradient(to left, transparent 0%, black 18px, black calc(100% - 18px), transparent 100%);
         }
         .royal-ticker-item {
             position: absolute;
@@ -594,12 +605,14 @@
             visibility: hidden;
             transform: translateY(22px);
             filter: blur(4px);
-            transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                        transform 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                        filter 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-                        visibility 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                        filter 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                        visibility 0.55s cubic-bezier(0.16, 1, 0.3, 1);
             pointer-events: none;
             will-change: transform, opacity, filter;
+            cursor: pointer;
+            user-select: none;
         }
         .royal-ticker-item.active {
             opacity: 1;
@@ -631,17 +644,17 @@
             filter: blur(4px) !important;
             transition: none !important;
         }
-        .royal-ticker-item:hover {
-            color: #9a3412;
-        }
         .royal-ticker-item-badge {
             font-size: 10.5px;
             font-weight: 800;
-            padding: 2.5px 9px;
+            padding: 3px 9px;
             border-radius: 6px;
             flex-shrink: 0;
             letter-spacing: 0.3px;
             box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
         .ticker-badge-urgent {
             background: #fee2e2;
@@ -663,28 +676,79 @@
             color: #15803d;
             border: 1px solid #86efac;
         }
+        .royal-ticker-text-wrap {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            position: relative;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+        }
         .royal-ticker-text {
             color: #78350f;
             font-weight: 700;
-            overflow: hidden;
-            text-overflow: ellipsis;
             white-space: nowrap;
             display: inline-block;
-            max-width: calc(100% - 90px);
+            flex-shrink: 0;
+            width: max-content;
+            will-change: transform;
+            transition: transform 0.1s linear;
+        }
+        .royal-ticker-item:hover .royal-ticker-text {
+            color: #9a3412;
+        }
+        .ticker-detail-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2.5px 8px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid #fde68a;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #b45309;
+            flex-shrink: 0;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 2px rgba(180, 83, 9, 0.08);
+        }
+        .royal-ticker-item:hover .ticker-detail-pill {
+            background: #b45309;
+            color: #ffffff;
+            border-color: #b45309;
+        }
+        .ticker-ext-link {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid #fde68a;
+            color: #b45309;
+            display: grid;
+            place-items: center;
+            font-size: 9px;
+            flex-shrink: 0;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .ticker-ext-link:hover {
+            background: #b45309;
+            color: #ffffff;
         }
         .royal-ticker-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             flex-shrink: 0;
         }
         .ticker-counter {
             font-size: 11px;
             font-weight: 800;
             color: #92400e;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.7);
             border: 1px solid #fde68a;
-            padding: 2px 8px;
+            padding: 2px 7px;
             border-radius: 6px;
         }
         .ticker-nav-btn {
@@ -698,7 +762,7 @@
             place-items: center;
             cursor: pointer;
             font-size: 10px;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
         .ticker-nav-btn:hover {
             background: #b45309;
@@ -717,25 +781,288 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
         .ticker-admin-btn:hover {
             background: #b45309;
             color: #ffffff;
             border-color: #b45309;
         }
+        /* خط التقدم الزمني الدقيق في أسفل الشريط */
+        .royal-ticker-progress {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            left: 0;
+            height: 2px;
+            background: rgba(253, 230, 138, 0.45);
+            overflow: hidden;
+        }
+        .royal-ticker-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #b45309, #d97706);
+            transition: width 0.1s linear;
+        }
+
+        /* نافذة تفاصيل الخبر الفاخرة (News Detail Modal & Archive) */
+        .royal-news-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .royal-news-modal-backdrop.open {
+            display: flex;
+            opacity: 1;
+        }
+        .royal-news-modal-card {
+            background: #ffffff;
+            border-radius: 20px;
+            max-width: 580px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            border: 1.5px solid #fed7aa;
+            position: relative;
+            overflow: hidden;
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            direction: rtl;
+            text-align: right;
+        }
+        .royal-news-modal-backdrop.open .royal-news-modal-card {
+            transform: scale(1) translateY(0);
+        }
+        .news-modal-close {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: none;
+            color: #475569;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.15s ease;
+            z-index: 5;
+        }
+        .news-modal-close:hover {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        .news-modal-header {
+            padding: 24px 24px 16px;
+            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+            border-bottom: 1px solid #fef3c7;
+        }
+        .news-modal-badge-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .news-modal-date {
+            font-size: 0.78rem;
+            color: #64748b;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .news-modal-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .news-modal-title i {
+            color: #b45309;
+        }
+        .news-modal-body {
+            padding: 22px 24px;
+            position: relative;
+            background: #ffffff;
+        }
+        .news-modal-quote-icon {
+            font-size: 2.2rem;
+            color: #fef3c7;
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            pointer-events: none;
+        }
+        .news-modal-text {
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: #1e293b;
+            margin: 0;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+            word-break: break-word;
+        }
+        .news-modal-footer {
+            padding: 16px 24px;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .news-modal-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-nav-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+        .modal-nav-btn:hover {
+            background: #b45309;
+            color: #ffffff;
+            border-color: #b45309;
+        }
+        .modal-nav-counter {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 700;
+        }
+        .news-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #b45309;
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+        .modal-action-link:hover {
+            background: #92400e;
+        }
+        .modal-action-close {
+            background: #e2e8f0;
+            border: none;
+            color: #475569;
+            padding: 7px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .modal-action-close:hover {
+            background: #cbd5e1;
+        }
+
+        /* نافذة أرشيف كافة الأخبار */
+        .news-archive-card {
+            max-width: 680px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .news-archive-list {
+            padding: 18px 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: calc(85vh - 140px);
+        }
+        .archive-news-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .archive-news-card:hover {
+            background: #fffbeb;
+            border-color: #fde68a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(180, 83, 9, 0.08);
+        }
+        .archive-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .archive-card-date {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .archive-card-text {
+            font-size: 0.94rem;
+            line-height: 1.7;
+            color: #1e293b;
+            margin: 0;
+            font-weight: 600;
+        }
+        .archive-card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: #b45309;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .archive-card-link:hover {
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             .royal-ticker-bar {
                 padding: 6px 12px;
             }
             .royal-ticker-viewport {
-                height: 30px;
+                height: 32px;
             }
             .royal-ticker-tag span:last-child {
                 display: none;
             }
             .royal-ticker-item {
-                font-size: 12px;
+                font-size: 12.5px;
                 gap: 6px;
             }
             .ticker-counter {
@@ -748,6 +1075,12 @@
             }
             .ticker-admin-btn span {
                 display: none;
+            }
+            .ticker-detail-pill span {
+                display: none;
+            }
+            .ticker-detail-pill {
+                padding: 2px 6px;
             }
         }
 
@@ -1803,14 +2136,17 @@
 
             /* 3. شريط الإعلانات والتعاميم: مدمج ومنظم على سطرين */
             .royal-ticker-bar {
-                padding: 8px 12px !important;
+                padding: 6px 12px !important;
                 background: #fffbeb !important;
                 border-bottom: 1px solid #fde68a !important;
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
             }
             .royal-ticker-inner {
                 flex-direction: row !important;
                 align-items: center !important;
                 gap: 8px !important;
+                max-width: 100% !important;
             }
             .royal-ticker-tag {
                 font-size: 10.5px !important;
@@ -1821,15 +2157,23 @@
                 color: #ffffff !important;
                 box-shadow: none !important;
             }
-            .royal-ticker-content {
-                font-size: 11.5px !important;
-                line-height: 1.45 !important;
+            .royal-ticker-text-wrap {
+                flex: 1 !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+                white-space: nowrap !important;
+                display: flex !important;
+                align-items: center !important;
+            }
+            .royal-ticker-text {
+                font-size: 12px !important;
+                line-height: 1.4 !important;
                 color: #92400e !important;
                 font-weight: 700 !important;
-                display: -webkit-box !important;
-                -webkit-line-clamp: 2 !important;
-                -webkit-box-orient: vertical !important;
-                overflow: hidden !important;
+                white-space: nowrap !important;
+                display: inline-block !important;
+                flex-shrink: 0 !important;
+                width: max-content !important;
             }
 
             /* 4. الحاوية العامة والصرح الترحيبي */
@@ -2208,14 +2552,14 @@
         </div>
     </nav>
 
-    <!-- 3. شريط آخر الأخبار والتعاميم المباشرة (Royal Academic Announcements Ticker) -->
+    <!-- 3. شريط آخر الأخبار والتعاميم المباشرة الملكي (Royal Academic Announcements Ticker) -->
     @php
         $activeNewsItems = \App\Services\NewsTickerService::getActive();
     @endphp
     @if(!empty($activeNewsItems))
     <div class="royal-ticker-bar" id="royalTickerBar">
         <div class="royal-ticker-inner">
-            <div class="royal-ticker-tag">
+            <div class="royal-ticker-tag" onclick="openAllNewsArchiveModal()" title="{{ __('انقر لعرض كافة الأخبار والتعاميم') }}">
                 <span class="pulse-dot"></span>
                 <i class="fa-solid fa-bullhorn" style="font-size: 11px;"></i>
                 <span>{{ __('آخر الأخبار') }}</span>
@@ -2228,24 +2572,37 @@
                         $badgeClass = 'ticker-badge-' . (in_array($nType, ['urgent', 'warning', 'info', 'success']) ? $nType : 'warning');
                         $hasUrl = !empty($nItem['url']);
                     @endphp
-                    @if($hasUrl)
-                        <a href="{{ $nItem['url'] }}" target="_blank" class="royal-ticker-item {{ $nIdx === 0 ? 'active' : '' }}" data-index="{{ $nIdx }}" title="{{ $nItem['text'] }}">
-                            <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'إعلان' }}</span>
-                            <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 10px; color: #b45309; margin-inline-start: 4px;"></i>
-                        </a>
-                    @else
-                        <div class="royal-ticker-item {{ $nIdx === 0 ? 'active' : '' }}" data-index="{{ $nIdx }}" title="{{ $nItem['text'] }}">
-                            <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? 'إعلان' }}</span>
+                    <div class="royal-ticker-item {{ $nIdx === 0 ? 'active' : '' }}" 
+                         data-index="{{ $nIdx }}" 
+                         onclick="openNewsDetailModal({{ $nIdx }})" 
+                         title="{{ __('انقر لقراءة الخبر بالكامل') }}">
+                        
+                        <span class="royal-ticker-item-badge {{ $badgeClass }}">{{ $nItem['badge'] ?? __('إعلان') }}</span>
+                        
+                        <div class="royal-ticker-text-wrap">
                             <span class="royal-ticker-text">{{ $nItem['text'] }}</span>
                         </div>
-                    @endif
+
+                        <span class="ticker-detail-pill" onclick="event.stopPropagation(); openNewsDetailModal({{ $nIdx }})" title="{{ __('قراءة الخبر كاملاً') }}">
+                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                            <span>{{ __('تفاصيل') }}</span>
+                        </span>
+
+                        @if($hasUrl)
+                            <a href="{{ $nItem['url'] }}" target="_blank" class="ticker-ext-link" onclick="event.stopPropagation()" title="{{ __('الانتقال للرابط المرفق') }}">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
+                        @endif
+                    </div>
                 @endforeach
             </div>
 
             <div class="royal-ticker-controls">
                 @if(count($activeNewsItems) > 1)
                     <span class="ticker-counter" id="tickerCounter">1 / {{ count($activeNewsItems) }}</span>
+                    <button type="button" class="ticker-nav-btn" id="tickerPlayPauseBtn" onclick="toggleTickerPlayPause()" title="{{ __('إيقاف مؤقت / تشغيل') }}">
+                        <i class="fa-solid fa-pause"></i>
+                    </button>
                     <button type="button" class="ticker-nav-btn" onclick="prevTickerItem()" title="{{ __('الخبر السابق') }}">
                         <i class="fa-solid fa-chevron-right"></i>
                     </button>
@@ -2254,12 +2611,120 @@
                     </button>
                 @endif
 
+                <button type="button" class="ticker-nav-btn" onclick="openAllNewsArchiveModal()" title="{{ __('عرض كافة الأخبار والتعاميم') }}">
+                    <i class="fa-solid fa-layer-group"></i>
+                </button>
+
                 @if(auth()->check() && auth()->user()->role === 'admin')
                     <a href="{{ route('admin.news.index') }}" class="ticker-admin-btn" title="{{ __('إدارة شريط الأخبار') }}">
                         <i class="fa-solid fa-pen-to-square"></i>
                         <span>{{ __('تحرير الأخبار') }}</span>
                     </a>
                 @endif
+            </div>
+        </div>
+
+        <!-- خط التقدم الزمني الدقيق في أسفل الشريط -->
+        <div class="royal-ticker-progress">
+            <div class="royal-ticker-progress-fill" id="tickerProgressFill"></div>
+        </div>
+    </div>
+
+    <!-- نافذة تفاصيل الخبر الفاخرة (News Detail Modal) -->
+    <div class="royal-news-modal-backdrop" id="newsDetailModal" onclick="closeNewsDetailModal(event)">
+        <div class="royal-news-modal-card" onclick="event.stopPropagation()">
+            <button type="button" class="news-modal-close" onclick="closeNewsDetailModal()" aria-label="{{ __('إغلاق') }}">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="news-modal-header">
+                <div class="news-modal-badge-row">
+                    <span class="royal-ticker-item-badge ticker-badge-warning" id="modalNewsBadge">{{ __('إعلان') }}</span>
+                    <span class="news-modal-date" id="modalNewsDate"></span>
+                </div>
+                <h3 class="news-modal-title">
+                    <i class="fa-solid fa-bullhorn text-amber"></i>
+                    <span>{{ __('إعلان وتعميم أكاديمي رسمي') }}</span>
+                </h3>
+            </div>
+
+            <div class="news-modal-body">
+                <div class="news-modal-quote-icon">
+                    <i class="fa-solid fa-quote-right"></i>
+                </div>
+                <p class="news-modal-text" id="modalNewsText"></p>
+            </div>
+
+            <div class="news-modal-footer">
+                <div class="news-modal-nav">
+                    <button type="button" class="modal-nav-btn" onclick="navigateModalNews(-1)" title="{{ __('الخبر السابق') }}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                        <span>{{ __('السابق') }}</span>
+                    </button>
+                    <span class="modal-nav-counter" id="modalNewsCounter">1 / {{ count($activeNewsItems) }}</span>
+                    <button type="button" class="modal-nav-btn" onclick="navigateModalNews(1)" title="{{ __('الخبر التالي') }}">
+                        <span>{{ __('التالي') }}</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+
+                <div class="news-modal-actions">
+                    <a href="#" target="_blank" class="modal-action-link" id="modalNewsLink" style="display: none;">
+                        <span>{{ __('الانتقال إلى الرابط المرفق') }}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    <button type="button" class="modal-action-close" onclick="closeNewsDetailModal()">
+                        {{ __('إغلاق') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة أرشيف كافة الأخبار والتعاميم (All Announcements Modal) -->
+    <div class="royal-news-modal-backdrop" id="allNewsModal" onclick="closeAllNewsModal(event)">
+        <div class="royal-news-modal-card news-archive-card" onclick="event.stopPropagation()">
+            <div class="news-modal-header">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                    <h3 class="news-modal-title" style="margin: 0;">
+                        <i class="fa-solid fa-layer-group text-amber"></i>
+                        <span>{{ __('سجل التعاميم والأخبار الأكاديمية') }}</span>
+                    </h3>
+                    <button type="button" class="news-modal-close" style="position: static;" onclick="closeAllNewsModal()" aria-label="{{ __('إغلاق') }}">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <p style="font-size: 0.85rem; color: #64748b; margin: 6px 0 0;">{{ __('كافة الإعلانات والتعاميم المعتمدة لطلبة الثانوية العامة المحدثة لحظياً:') }}</p>
+            </div>
+
+            <div class="news-archive-list">
+                @foreach($activeNewsItems as $aIdx => $aItem)
+                @php
+                    $aType = $aItem['type'] ?? 'warning';
+                    $aBadgeClass = 'ticker-badge-' . (in_array($aType, ['urgent', 'warning', 'info', 'success']) ? $aType : 'warning');
+                @endphp
+                <div class="archive-news-card" onclick="openNewsDetailModal({{ $aIdx }}); closeAllNewsModal();">
+                    <div class="archive-card-top">
+                        <span class="royal-ticker-item-badge {{ $aBadgeClass }}">{{ $aItem['badge'] ?? __('إعلان') }}</span>
+                        @if(!empty($aItem['created_at']))
+                        <span class="archive-card-date"><i class="fa-regular fa-clock"></i> {{ $aItem['created_at'] }}</span>
+                        @endif
+                    </div>
+                    <p class="archive-card-text">{{ $aItem['text'] }}</p>
+                    @if(!empty($aItem['url']))
+                    <a href="{{ $aItem['url'] }}" target="_blank" class="archive-card-link" onclick="event.stopPropagation()">
+                        <span>{{ __('الرابط المرفق') }}</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    </a>
+                    @endif
+                </div>
+                @endforeach
+            </div>
+
+            <div class="news-modal-footer" style="justify-content: flex-end;">
+                <button type="button" class="modal-action-close" onclick="closeAllNewsModal()">
+                    {{ __('إغلاق النافذة') }}
+                </button>
             </div>
         </div>
     </div>
@@ -2839,7 +3304,10 @@
             }
         }, { passive: true });
 
-        // تدوير شريط آخر الأخبار والتعاميم المباشرة بالصفحة الرئيسية بانسيابية سينمائية ناعمة وبدون أي قفز
+        // =========================================================
+        // تدوير وتحريك شريط آخر الأخبار والتعاميم المباشرة فائق السلاسة
+        // (Deluxe Academic Announcement Ticker Engine & Modals)
+        // =========================================================
         (function() {
             const viewport = document.getElementById('tickerViewport');
             if (!viewport) return;
@@ -2848,23 +3316,154 @@
             if (!items.length) return;
 
             const counter = document.getElementById('tickerCounter');
+            const progressFill = document.getElementById('tickerProgressFill');
+            const playPauseBtn = document.getElementById('tickerPlayPauseBtn');
+            const tickerData = @json($activeNewsItems ?? []);
+
             let currentIndex = 0;
+            let modalIndex = 0;
             let isAnimating = false;
-            let tickerInterval = null;
-            const duration = 6500;
+            let slideTimer = null;
+            let nextTimer = null;
+            let isHovered = false;
+            let isPaused = false;
+
+            function clearTimers() {
+                if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
+                if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+            }
+
+            function resetProgressBar() {
+                if (progressFill) {
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = '0%';
+                }
+            }
+
+            function startProgressBar(durationMs) {
+                if (progressFill && !isPaused && !isHovered) {
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = '0%';
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            if (progressFill && !isPaused && !isHovered) {
+                                progressFill.style.transition = `width ${durationMs}ms linear`;
+                                progressFill.style.width = '100%';
+                            }
+                        });
+                    });
+                }
+            }
+
+            function pauseProgressBar() {
+                if (progressFill) {
+                    const computed = window.getComputedStyle(progressFill);
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = computed.width;
+                }
+            }
+
+            function runTextAnimation() {
+                clearTimers();
+                if (isHovered || isPaused) return;
+
+                const currentItem = items[currentIndex];
+                if (!currentItem) return;
+
+                const wrap = currentItem.querySelector('.royal-ticker-text-wrap');
+                const text = currentItem.querySelector('.royal-ticker-text');
+                if (!wrap || !text) {
+                    if (items.length > 1) {
+                        nextTimer = setTimeout(() => window.nextTickerItem(), 6000);
+                    }
+                    return;
+                }
+
+                // إعادة الضبط الفوري للموضع المبدئي
+                text.style.transition = 'none';
+                text.style.transform = 'translateX(0)';
+                resetProgressBar();
+
+                // منح المتصفح فرصة لاحتساب المقاسات بدقة متناهية
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
+
+                        const wrapWidth = wrap.clientWidth;
+                        // قياس العرض الحقيقي للنص كاملاً
+                        const textWidth = Math.max(text.scrollWidth, Math.ceil(text.getBoundingClientRect().width));
+                        const overflowDist = textWidth - wrapWidth;
+
+                        // إذا كان النص أطول من مساحة العرض
+                        if (overflowDist > 8) {
+                            const speed = 34; // سرعة قراءة مريحة وطبيعية باللغة العربية (بكسل بالثانية)
+                            const scrollSec = Math.max(3.8, (overflowDist + 28) / speed);
+                            const pauseStart = 1400; // مهلة لقراءة مطلع الخبر (1.4 ثانية)
+                            const pauseEnd = 2000;   // مهلة لقراءة ختام الخبر (2 ثانية)
+                            const totalMs = pauseStart + (scrollSec * 1000) + pauseEnd;
+
+                            startProgressBar(totalMs);
+
+                            // بدء الحركة بعد استيعاب البداية
+                            slideTimer = setTimeout(() => {
+                                if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
+                                text.style.transition = `transform ${scrollSec}s linear`;
+                                // في اتجاه RTL: تحريك العنصر موجباً لليمين يُظهر الجزء المتدفق على اليسار بنعومة تامة
+                                text.style.transform = `translateX(${overflowDist + 28}px)`;
+                            }, pauseStart);
+
+                            // الانتقال للخبر التالي بعد انتهاء قراءة كامل الخبر
+                            nextTimer = setTimeout(() => {
+                                if (isHovered || isPaused) return;
+                                if (items.length > 1) {
+                                    window.nextTickerItem();
+                                } else {
+                                    // إذا كان خبراً واحداً: العودة للبداية بلباقة وإعادة التدفق
+                                    text.style.transition = 'opacity 0.4s ease';
+                                    text.style.opacity = '0';
+                                    setTimeout(() => {
+                                        text.style.transition = 'none';
+                                        text.style.transform = 'translateX(0)';
+                                        text.style.opacity = '1';
+                                        runTextAnimation();
+                                    }, 400);
+                                }
+                            }, totalMs);
+
+                        } else {
+                            // النص قصير ومناسب بالكامل لمساحة العرض
+                            const standardWait = 6500;
+                            startProgressBar(standardWait);
+
+                            if (items.length > 1) {
+                                nextTimer = setTimeout(() => {
+                                    if (!isHovered && !isPaused) window.nextTickerItem();
+                                }, standardWait);
+                            }
+                        }
+                    });
+                });
+            }
 
             function goToItem(nextIndex, direction) {
                 if (isAnimating || items.length <= 1) return;
                 isAnimating = true;
+                clearTimers();
+                resetProgressBar();
 
                 const currentItem = items[currentIndex];
                 const nextItem = items[nextIndex];
 
+                const curText = currentItem.querySelector('.royal-ticker-text');
+                if (curText) {
+                    curText.style.transition = 'none';
+                    curText.style.transform = 'translateX(0)';
+                }
+
                 if (direction === 'prev') {
-                    // الانتقال للخلف: القادم يبدأ من الأعلى وينزل، والحالي ينزل للأسفل
                     nextItem.classList.remove('leaving-up', 'leaving-down', 'active');
                     nextItem.classList.add('from-top');
-                    void nextItem.offsetHeight; // إجبار المتصفح على تطبيق الموضع الأولي فوراً
+                    void nextItem.offsetHeight;
 
                     currentItem.classList.remove('active');
                     currentItem.classList.add('leaving-down');
@@ -2872,9 +3471,8 @@
                     nextItem.classList.remove('from-top');
                     nextItem.classList.add('active');
                 } else {
-                    // الانتقال للأمام: القادم يصعد بنعومة من الأسفل، والحالي يصعد للأعلى ويتلاشى
                     nextItem.classList.remove('leaving-up', 'leaving-down', 'from-top', 'active');
-                    void nextItem.offsetHeight; // إجبار المتصفح على تطبيق الموضع الأولي
+                    void nextItem.offsetHeight;
 
                     currentItem.classList.remove('active');
                     currentItem.classList.add('leaving-up');
@@ -2890,7 +3488,8 @@
                 setTimeout(() => {
                     currentItem.classList.remove('leaving-up', 'leaving-down');
                     isAnimating = false;
-                }, 650);
+                    runTextAnimation();
+                }, 550);
             }
 
             window.nextTickerItem = function() {
@@ -2903,31 +3502,193 @@
                 goToItem(prev, 'prev');
             };
 
-            function startAutoTicker() {
-                if (items.length <= 1) return;
-                stopAutoTicker();
-                tickerInterval = setInterval(function() {
-                    window.nextTickerItem();
-                }, duration);
-            }
-
-            function stopAutoTicker() {
-                if (tickerInterval) {
-                    clearInterval(tickerInterval);
-                    tickerInterval = null;
+            // زر تشغيل/إيقاف مؤقت للشريط
+            window.toggleTickerPlayPause = function() {
+                isPaused = !isPaused;
+                if (playPauseBtn) {
+                    playPauseBtn.innerHTML = isPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
+                    playPauseBtn.title = isPaused ? 'استئناف الشريط' : 'إيقاف مؤقت';
                 }
+                if (isPaused) {
+                    clearTimers();
+                    pauseProgressBar();
+                    const activeItem = items[currentIndex];
+                    if (activeItem) {
+                        const text = activeItem.querySelector('.royal-ticker-text');
+                        if (text) {
+                            const style = window.getComputedStyle(text);
+                            text.style.transition = 'none';
+                            text.style.transform = style.transform;
+                        }
+                    }
+                } else {
+                    runTextAnimation();
+                }
+            };
+
+            // إيقاف مؤقت ذكي عند وضع الفأرة (Hover) للقراءة براحة تامة
+            viewport.addEventListener('mouseenter', function() {
+                if (isPaused) return;
+                isHovered = true;
+                clearTimers();
+                pauseProgressBar();
+                const activeItem = items[currentIndex];
+                if (activeItem) {
+                    const text = activeItem.querySelector('.royal-ticker-text');
+                    if (text) {
+                        const style = window.getComputedStyle(text);
+                        text.style.transition = 'none';
+                        text.style.transform = style.transform;
+                    }
+                }
+            });
+
+            viewport.addEventListener('mouseleave', function() {
+                if (isPaused) return;
+                isHovered = false;
+                runTextAnimation();
+            });
+
+            // دعم الأجهزة اللمسية والهواتف
+            viewport.addEventListener('touchstart', function() {
+                if (!isPaused) {
+                    isHovered = true;
+                    clearTimers();
+                    pauseProgressBar();
+                }
+            }, { passive: true });
+
+            viewport.addEventListener('touchend', function() {
+                if (!isPaused) {
+                    setTimeout(() => {
+                        isHovered = false;
+                        runTextAnimation();
+                    }, 1200);
+                }
+            }, { passive: true });
+
+            // نافذة تفاصيل الخبر الفاخرة (News Detail Modal)
+            window.openNewsDetailModal = function(idx) {
+                modalIndex = (typeof idx === 'number' && idx >= 0 && idx < tickerData.length) ? idx : currentIndex;
+                const data = tickerData[modalIndex];
+                if (!data) return;
+
+                const modal = document.getElementById('newsDetailModal');
+                const badge = document.getElementById('modalNewsBadge');
+                const date = document.getElementById('modalNewsDate');
+                const text = document.getElementById('modalNewsText');
+                const link = document.getElementById('modalNewsLink');
+                const modalCounter = document.getElementById('modalNewsCounter');
+
+                if (badge) {
+                    badge.textContent = data.badge || 'إعلان';
+                    const nType = data.type || 'warning';
+                    badge.className = 'royal-ticker-item-badge ticker-badge-' + (['urgent', 'warning', 'info', 'success'].includes(nType) ? nType : 'warning');
+                }
+
+                if (date) {
+                    date.innerHTML = data.created_at ? `<i class="fa-regular fa-clock"></i> ${data.created_at}` : '';
+                }
+
+                if (text) {
+                    text.textContent = data.text || '';
+                }
+
+                if (link) {
+                    if (data.url && data.url.trim() !== '') {
+                        link.href = data.url;
+                        link.style.display = 'inline-flex';
+                    } else {
+                        link.style.display = 'none';
+                    }
+                }
+
+                if (modalCounter) {
+                    modalCounter.textContent = `${modalIndex + 1} / ${tickerData.length}`;
+                }
+
+                if (modal) {
+                    modal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                // إيقاف شريط الأخبار مؤقتاً أثناء فتح المودال
+                isHovered = true;
+                clearTimers();
+                pauseProgressBar();
+            };
+
+            window.closeNewsDetailModal = function(e) {
+                if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('news-modal-close') && !e.target.classList.contains('modal-action-close')) {
+                    return;
+                }
+                const modal = document.getElementById('newsDetailModal');
+                if (modal) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+                isHovered = false;
+                if (!isPaused) runTextAnimation();
+            };
+
+            window.navigateModalNews = function(delta) {
+                if (!tickerData.length) return;
+                modalIndex = (modalIndex + delta + tickerData.length) % tickerData.length;
+                window.openNewsDetailModal(modalIndex);
+                if (modalIndex !== currentIndex && typeof goToItem === 'function') {
+                    goToItem(modalIndex, delta > 0 ? 'next' : 'prev');
+                }
+            };
+
+            // نافذة أرشيف كافة الأخبار
+            window.openAllNewsArchiveModal = function() {
+                const modal = document.getElementById('allNewsModal');
+                if (modal) {
+                    modal.classList.add('open');
+                    document.body.style.overflow = 'hidden';
+                }
+                isHovered = true;
+                clearTimers();
+                pauseProgressBar();
+            };
+
+            window.closeAllNewsModal = function(e) {
+                if (e && e.target && e.target !== e.currentTarget && !e.target.classList.contains('news-modal-close') && !e.target.classList.contains('modal-action-close')) {
+                    return;
+                }
+                const modal = document.getElementById('allNewsModal');
+                if (modal) {
+                    modal.classList.remove('open');
+                    document.body.style.overflow = '';
+                }
+                isHovered = false;
+                if (!isPaused) runTextAnimation();
+            };
+
+            // إغلاق النوافذ عند الضغط على Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    window.closeNewsDetailModal();
+                    window.closeAllNewsModal();
+                }
+            });
+
+            // إعادة فحص المقاسات والتمرير عند تغيير مقاس الشاشة
+            let resizeTimer = null;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    runTextAnimation();
+                }, 200);
+            }, { passive: true });
+
+            // بدء الحركة فور اكتمال تحميل الصفحة وتنسيق الخطوط
+            if (document.readyState === 'complete') {
+                runTextAnimation();
+            } else {
+                window.addEventListener('load', runTextAnimation, { once: true });
             }
-
-            startAutoTicker();
-
-            viewport.addEventListener('mouseenter', stopAutoTicker);
-            viewport.addEventListener('mouseleave', startAutoTicker);
-
-            const controls = document.querySelector('.royal-ticker-controls');
-            if (controls) {
-                controls.addEventListener('mouseenter', stopAutoTicker);
-                controls.addEventListener('mouseleave', startAutoTicker);
-            }
+        })();
 
             window.triggerPwaInstall = function() {
                 if (window.deferredPwaPrompt) {

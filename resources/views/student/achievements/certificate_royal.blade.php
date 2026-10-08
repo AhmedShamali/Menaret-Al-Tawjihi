@@ -136,9 +136,17 @@
         .cert-outer-frame {
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             overflow-x: auto;
-            padding-bottom: 20px;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 10px 30px;
+            box-sizing: border-box;
+            scrollbar-width: thin;
+        }
+        @media (min-width: 1100px) {
+            .cert-outer-frame {
+                justify-content: center;
+            }
         }
 
         /* ورقة الشهادة الرسمية قياس A4 أفقي */
@@ -430,13 +438,54 @@
             color: #0f172a;
         }
 
+        .cert-mobile-hint {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .actions-toolbar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+                padding: 12px 14px !important;
+            }
+            .brand-title {
+                justify-content: center !important;
+                text-align: center !important;
+                font-size: 0.92rem !important;
+            }
+            .buttons-group {
+                flex-direction: column !important;
+                width: 100% !important;
+                gap: 8px !important;
+            }
+            .btn-action {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+            .cert-mobile-hint {
+                display: flex !important;
+            }
+        }
+
         /* تنسيقات الطباعة الدقيقة A4 Landscape */
         @media print {
             body {
                 background: #ffffff !important;
                 padding: 0 !important;
             }
-            .actions-toolbar {
+            .actions-toolbar,
+            .cert-mobile-hint {
                 display: none !important;
             }
             .cert-outer-frame {
@@ -477,6 +526,12 @@
             <a href="{{ route('student.achievements') }}" class="btn-action btn-back">
                 <i class="fa-solid fa-arrow-right"></i>{{ __('لوحة الإنجازات') }}</a>
         </div>
+    </div>
+
+    <!-- تلميح التمرير للجوال -->
+    <div class="cert-mobile-hint">
+        <i class="fa-solid fa-arrows-left-right"></i>
+        <span>{{ __('يمكنك التمرير أفقياً لمعاينة كامل الشهادة، أو الضغط على زر الطباعة للحفظ بدقة A4.') }}</span>
     </div>
 
     <!-- حاوية ورقة الشهادة الرسمية -->
