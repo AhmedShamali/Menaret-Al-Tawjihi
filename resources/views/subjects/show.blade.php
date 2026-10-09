@@ -790,27 +790,15 @@
             width: 95vw;
             max-height: 85vh;
         }
-    .ed-btn-lecture-video-download {
-        color: #15803d;
-        font-size: 0.82rem;
-        font-weight: 800;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: #f0fdf4;
-        padding: 7px 16px;
-        border-radius: 8px;
-        border: 1px solid #bbf7d0;
-        transition: all 0.2s ease;
-        box-shadow: 0 1px 3px rgba(22, 101, 52, 0.08);
+    .ed-btn-lecture-video-download,
+    [data-download-video-external] {
+        display: none !important;
     }
-    .ed-btn-lecture-video-download:hover {
-        background: #dcfce7;
-        border-color: #86efac;
-        color: #166534;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(22, 101, 52, 0.15);
+    video::-internal-media-controls-download-button {
+        display: none !important;
+    }
+    video::-webkit-media-controls-download-button {
+        display: none !important;
     }
     .ed-btn-lecture-pdf {
         color: #b91c1c;
@@ -1096,7 +1084,12 @@
             box.appendChild(reply);
             box.scrollTop = box.scrollHeight;
         }, 500);
+    // إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
+    function purgeExternalDownloadButtons() {
+        document.querySelectorAll('.ed-btn-lecture-video-download, a[download][href*="downloadVideo"], a[href*="force_download=1"]').forEach(el => el.remove());
     }
+    purgeExternalDownloadButtons();
+    document.addEventListener('DOMContentLoaded', purgeExternalDownloadButtons);
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection

@@ -689,27 +689,17 @@
     color: #991b1b;
 }
 
-.ed-btn-lecture-video-download {
-    color: #15803d;
-    font-size: 0.82rem;
-    font-weight: 800;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #f0fdf4;
-    padding: 7px 16px;
-    border-radius: 8px;
-    border: 1px solid #bbf7d0;
-    transition: all 0.2s ease;
-    box-shadow: 0 1px 3px rgba(22, 101, 52, 0.08);
+.ed-btn-lecture-video-download,
+[data-download-video-external] {
+    display: none !important;
 }
-.ed-btn-lecture-video-download:hover {
-    background: #dcfce7;
-    border-color: #86efac;
-    color: #166534;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(22, 101, 52, 0.15);
+
+video::-internal-media-controls-download-button {
+    display: none !important;
+}
+
+video::-webkit-media-controls-download-button {
+    display: none !important;
 }
 
 .btn-download-quick {
@@ -1496,7 +1486,7 @@
                                             </div>
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
-                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
+                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" disableRemotePlayback oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">
                                             @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
                                                 <source src="{{ $directVideoFallback }}" type="video/mp4">
@@ -2456,6 +2446,13 @@ document.addEventListener('contextmenu', function(e) {
         return false;
     }
 }, true);
+
+// إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
+function purgeExternalDownloadButtons() {
+    document.querySelectorAll('.ed-btn-lecture-video-download, a[download][href*="downloadVideo"], a[href*="force_download=1"]').forEach(el => el.remove());
+}
+purgeExternalDownloadButtons();
+document.addEventListener('DOMContentLoaded', purgeExternalDownloadButtons);
 
 // فحص حالة كافة الفيديوهات في الذاكرة المحلية لتفعيل المشغل أوفلاين
 function initSubjectOfflineCheck(attempt = 0) {
