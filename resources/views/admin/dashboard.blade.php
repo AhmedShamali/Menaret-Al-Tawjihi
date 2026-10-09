@@ -59,7 +59,7 @@
                     @endif
                     <span style="font-size: 0.76rem; color: #94a3b8;">({{ count($dashActiveNews) }} {{ __('خبر معروض') }})</span>
                 </div>
-                <div style="font-size: 0.84rem; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <div style="font-size: 0.84rem; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $dashLatestActive['text'] ?? '' }}">
                     @if($dashLatestActive)
                         <span style="background: rgba(217, 119, 6, 0.25); color: #fbbf24; border: 1px solid rgba(217, 119, 6, 0.4); padding: 1px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; margin-left: 6px;">
                             {{ $dashLatestActive['badge'] ?? 'عاجل' }}

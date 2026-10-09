@@ -692,6 +692,8 @@
             display: inline-block;
             flex-shrink: 0;
             width: max-content;
+            text-overflow: clip !important;
+            overflow: visible !important;
             will-change: transform;
             transition: transform 0.1s linear;
         }
@@ -2174,6 +2176,8 @@
                 display: inline-block !important;
                 flex-shrink: 0 !important;
                 width: max-content !important;
+                text-overflow: clip !important;
+                overflow: visible !important;
             }
 
             /* 4. الحاوية العامة والصرح الترحيبي */
@@ -3309,15 +3313,11 @@
         // (Deluxe Academic Announcement Ticker Engine & Modals)
         // =========================================================
         (function() {
-            const viewport = document.getElementById('tickerViewport');
-            if (!viewport) return;
-
-            const items = viewport.querySelectorAll('.royal-ticker-item');
-            if (!items.length) return;
-
-            const counter = document.getElementById('tickerCounter');
-            const progressFill = document.getElementById('tickerProgressFill');
-            const playPauseBtn = document.getElementById('tickerPlayPauseBtn');
+            let viewport = null;
+            let items = [];
+            let counter = null;
+            let progressFill = null;
+            let playPauseBtn = null;
             const tickerData = @json($activeNewsItems ?? []);
 
             let currentIndex = 0;
@@ -3328,183 +3328,25 @@
             let isHovered = false;
             let isPaused = false;
 
-            function clearTimers() {
-                if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
-                if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
-            }
-
-            function resetProgressBar() {
-                if (progressFill) {
-                    progressFill.style.transition = 'none';
-                    progressFill.style.width = '0%';
-                }
-            }
-
-            function startProgressBar(durationMs) {
-                if (progressFill && !isPaused && !isHovered) {
-                    progressFill.style.transition = 'none';
-                    progressFill.style.width = '0%';
-                    requestAnimationFrame(() => {
-                        requestAnimationFrame(() => {
-                            if (progressFill && !isPaused && !isHovered) {
-                                progressFill.style.transition = `width ${durationMs}ms linear`;
-                                progressFill.style.width = '100%';
-                            }
-                        });
-                    });
-                }
-            }
-
-            function pauseProgressBar() {
-                if (progressFill) {
-                    const computed = window.getComputedStyle(progressFill);
-                    progressFill.style.transition = 'none';
-                    progressFill.style.width = computed.width;
-                }
-            }
-
-            function runTextAnimation() {
-                clearTimers();
-                if (isHovered || isPaused) return;
-
-                const currentItem = items[currentIndex];
-                if (!currentItem) return;
-
-                const wrap = currentItem.querySelector('.royal-ticker-text-wrap');
-                const text = currentItem.querySelector('.royal-ticker-text');
-                if (!wrap || !text) {
-                    if (items.length > 1) {
-                        nextTimer = setTimeout(() => window.nextTickerItem(), 6000);
-                    }
-                    return;
-                }
-
-                // إعادة الضبط الفوري للموضع المبدئي
-                text.style.transition = 'none';
-                text.style.transform = 'translateX(0)';
-                resetProgressBar();
-
-                // منح المتصفح فرصة لاحتساب المقاسات بدقة متناهية
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
-
-                        const wrapWidth = wrap.clientWidth;
-                        // قياس العرض الحقيقي للنص كاملاً
-                        const textWidth = Math.max(text.scrollWidth, Math.ceil(text.getBoundingClientRect().width));
-                        const overflowDist = textWidth - wrapWidth;
-
-                        // إذا كان النص أطول من مساحة العرض
-                        if (overflowDist > 8) {
-                            const speed = 34; // سرعة قراءة مريحة وطبيعية باللغة العربية (بكسل بالثانية)
-                            const scrollSec = Math.max(3.8, (overflowDist + 28) / speed);
-                            const pauseStart = 1400; // مهلة لقراءة مطلع الخبر (1.4 ثانية)
-                            const pauseEnd = 2000;   // مهلة لقراءة ختام الخبر (2 ثانية)
-                            const totalMs = pauseStart + (scrollSec * 1000) + pauseEnd;
-
-                            startProgressBar(totalMs);
-
-                            // بدء الحركة بعد استيعاب البداية
-                            slideTimer = setTimeout(() => {
-                                if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
-                                text.style.transition = `transform ${scrollSec}s linear`;
-                                // في اتجاه RTL: تحريك العنصر موجباً لليمين يُظهر الجزء المتدفق على اليسار بنعومة تامة
-                                text.style.transform = `translateX(${overflowDist + 28}px)`;
-                            }, pauseStart);
-
-                            // الانتقال للخبر التالي بعد انتهاء قراءة كامل الخبر
-                            nextTimer = setTimeout(() => {
-                                if (isHovered || isPaused) return;
-                                if (items.length > 1) {
-                                    window.nextTickerItem();
-                                } else {
-                                    // إذا كان خبراً واحداً: العودة للبداية بلباقة وإعادة التدفق
-                                    text.style.transition = 'opacity 0.4s ease';
-                                    text.style.opacity = '0';
-                                    setTimeout(() => {
-                                        text.style.transition = 'none';
-                                        text.style.transform = 'translateX(0)';
-                                        text.style.opacity = '1';
-                                        runTextAnimation();
-                                    }, 400);
-                                }
-                            }, totalMs);
-
-                        } else {
-                            // النص قصير ومناسب بالكامل لمساحة العرض
-                            const standardWait = 6500;
-                            startProgressBar(standardWait);
-
-                            if (items.length > 1) {
-                                nextTimer = setTimeout(() => {
-                                    if (!isHovered && !isPaused) window.nextTickerItem();
-                                }, standardWait);
-                            }
-                        }
-                    });
-                });
-            }
-
-            function goToItem(nextIndex, direction) {
-                if (isAnimating || items.length <= 1) return;
-                isAnimating = true;
-                clearTimers();
-                resetProgressBar();
-
-                const currentItem = items[currentIndex];
-                const nextItem = items[nextIndex];
-
-                const curText = currentItem.querySelector('.royal-ticker-text');
-                if (curText) {
-                    curText.style.transition = 'none';
-                    curText.style.transform = 'translateX(0)';
-                }
-
-                if (direction === 'prev') {
-                    nextItem.classList.remove('leaving-up', 'leaving-down', 'active');
-                    nextItem.classList.add('from-top');
-                    void nextItem.offsetHeight;
-
-                    currentItem.classList.remove('active');
-                    currentItem.classList.add('leaving-down');
-
-                    nextItem.classList.remove('from-top');
-                    nextItem.classList.add('active');
-                } else {
-                    nextItem.classList.remove('leaving-up', 'leaving-down', 'from-top', 'active');
-                    void nextItem.offsetHeight;
-
-                    currentItem.classList.remove('active');
-                    currentItem.classList.add('leaving-up');
-
-                    nextItem.classList.add('active');
-                }
-
-                currentIndex = nextIndex;
-                if (counter) {
-                    counter.textContent = (currentIndex + 1) + ' / ' + items.length;
-                }
-
-                setTimeout(() => {
-                    currentItem.classList.remove('leaving-up', 'leaving-down');
-                    isAnimating = false;
-                    runTextAnimation();
-                }, 550);
-            }
-
+            // ==========================================
+            // تعريف الدوال العامة على window فوراً لحمايتها
+            // من أي تأخر في التحميل
+            // ==========================================
             window.nextTickerItem = function() {
+                if (!items || !items.length) return;
                 const next = (currentIndex + 1) % items.length;
                 goToItem(next, 'next');
             };
 
             window.prevTickerItem = function() {
+                if (!items || !items.length) return;
                 const prev = (currentIndex - 1 + items.length) % items.length;
                 goToItem(prev, 'prev');
             };
 
-            // زر تشغيل/إيقاف مؤقت للشريط
             window.toggleTickerPlayPause = function() {
                 isPaused = !isPaused;
+                if (!playPauseBtn) playPauseBtn = document.getElementById('tickerPlayPauseBtn');
                 if (playPauseBtn) {
                     playPauseBtn.innerHTML = isPaused ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
                     playPauseBtn.title = isPaused ? 'استئناف الشريط' : 'إيقاف مؤقت';
@@ -3512,9 +3354,8 @@
                 if (isPaused) {
                     clearTimers();
                     pauseProgressBar();
-                    const activeItem = items[currentIndex];
-                    if (activeItem) {
-                        const text = activeItem.querySelector('.royal-ticker-text');
+                    if (items && items[currentIndex]) {
+                        const text = items[currentIndex].querySelector('.royal-ticker-text');
                         if (text) {
                             const style = window.getComputedStyle(text);
                             text.style.transition = 'none';
@@ -3526,48 +3367,6 @@
                 }
             };
 
-            // إيقاف مؤقت ذكي عند وضع الفأرة (Hover) للقراءة براحة تامة
-            viewport.addEventListener('mouseenter', function() {
-                if (isPaused) return;
-                isHovered = true;
-                clearTimers();
-                pauseProgressBar();
-                const activeItem = items[currentIndex];
-                if (activeItem) {
-                    const text = activeItem.querySelector('.royal-ticker-text');
-                    if (text) {
-                        const style = window.getComputedStyle(text);
-                        text.style.transition = 'none';
-                        text.style.transform = style.transform;
-                    }
-                }
-            });
-
-            viewport.addEventListener('mouseleave', function() {
-                if (isPaused) return;
-                isHovered = false;
-                runTextAnimation();
-            });
-
-            // دعم الأجهزة اللمسية والهواتف
-            viewport.addEventListener('touchstart', function() {
-                if (!isPaused) {
-                    isHovered = true;
-                    clearTimers();
-                    pauseProgressBar();
-                }
-            }, { passive: true });
-
-            viewport.addEventListener('touchend', function() {
-                if (!isPaused) {
-                    setTimeout(() => {
-                        isHovered = false;
-                        runTextAnimation();
-                    }, 1200);
-                }
-            }, { passive: true });
-
-            // نافذة تفاصيل الخبر الفاخرة (News Detail Modal)
             window.openNewsDetailModal = function(idx) {
                 modalIndex = (typeof idx === 'number' && idx >= 0 && idx < tickerData.length) ? idx : currentIndex;
                 const data = tickerData[modalIndex];
@@ -3612,7 +3411,6 @@
                     document.body.style.overflow = 'hidden';
                 }
 
-                // إيقاف شريط الأخبار مؤقتاً أثناء فتح المودال
                 isHovered = true;
                 clearTimers();
                 pauseProgressBar();
@@ -3640,7 +3438,6 @@
                 }
             };
 
-            // نافذة أرشيف كافة الأخبار
             window.openAllNewsArchiveModal = function() {
                 const modal = document.getElementById('allNewsModal');
                 if (modal) {
@@ -3665,6 +3462,237 @@
                 if (!isPaused) runTextAnimation();
             };
 
+            function clearTimers() {
+                if (slideTimer) { clearTimeout(slideTimer); slideTimer = null; }
+                if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+            }
+
+            function resetProgressBar() {
+                if (progressFill) {
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = '0%';
+                }
+            }
+
+            function startProgressBar(durationMs) {
+                if (progressFill && !isPaused && !isHovered) {
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = '0%';
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            if (progressFill && !isPaused && !isHovered) {
+                                progressFill.style.transition = `width ${durationMs}ms linear`;
+                                progressFill.style.width = '100%';
+                            }
+                        });
+                    });
+                }
+            }
+
+            function pauseProgressBar() {
+                if (progressFill) {
+                    const computed = window.getComputedStyle(progressFill);
+                    progressFill.style.transition = 'none';
+                    progressFill.style.width = computed.width;
+                }
+            }
+
+            // ==========================================
+            // محرك التحريك الأفقي الذكي والسلس للنصوص الطويلة
+            // ==========================================
+            function runTextAnimation() {
+                clearTimers();
+                if (isHovered || isPaused || !items || !items.length) return;
+
+                const currentItem = items[currentIndex];
+                if (!currentItem) return;
+
+                const wrap = currentItem.querySelector('.royal-ticker-text-wrap');
+                const text = currentItem.querySelector('.royal-ticker-text');
+                if (!wrap || !text) {
+                    if (items.length > 1) {
+                        nextTimer = setTimeout(() => window.nextTickerItem(), 6000);
+                    }
+                    return;
+                }
+
+                // إعادة الضبط الفوري للموضع المبدئي
+                text.style.transition = 'none';
+                text.style.transform = 'translateX(0)';
+                resetProgressBar();
+
+                // منح المتصفح فرصة لاحتساب المقاسات بدقة متناهية
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
+
+                        const wrapWidth = wrap.clientWidth;
+                        // قياس العرض الحقيقي للنص كاملاً
+                        const textWidth = Math.max(text.scrollWidth, Math.ceil(text.getBoundingClientRect().width));
+                        const overflowDist = textWidth - wrapWidth;
+
+                        // إذا كان النص أطول من مساحة العرض
+                        if (overflowDist > 6) {
+                            const speed = 36; // سرعة قراءة مريحة وطبيعية باللغة العربية (بكسل بالثانية)
+                            const scrollSec = Math.max(3.5, (overflowDist + 35) / speed);
+                            const pauseStart = 1000; // مهلة لقراءة مطلع الخبر (1 ثانية)
+                            const pauseEnd = 1600;   // مهلة لقراءة ختام الخبر (1.6 ثانية)
+                            const totalMs = pauseStart + (scrollSec * 1000) + pauseEnd;
+
+                            startProgressBar(totalMs);
+
+                            // بدء الحركة بعد استيعاب البداية
+                            slideTimer = setTimeout(() => {
+                                if (isHovered || isPaused || !currentItem.classList.contains('active')) return;
+                                text.style.transition = `transform ${scrollSec}s linear`;
+                                // في اتجاه RTL: تحريك العنصر موجباً لليمين يُظهر الجزء المتبقي على اليسار بسلاسة
+                                text.style.transform = `translateX(${overflowDist + 35}px)`;
+                            }, pauseStart);
+
+                            // الانتقال للخبر التالي بعد انتهاء قراءة كامل الخبر
+                            nextTimer = setTimeout(() => {
+                                if (isHovered || isPaused) return;
+                                if (items.length > 1) {
+                                    window.nextTickerItem();
+                                } else {
+                                    // إذا كان خبراً واحداً: العودة للبداية بلباقة وإعادة التدفق
+                                    text.style.transition = 'opacity 0.4s ease';
+                                    text.style.opacity = '0';
+                                    setTimeout(() => {
+                                        text.style.transition = 'none';
+                                        text.style.transform = 'translateX(0)';
+                                        text.style.opacity = '1';
+                                        runTextAnimation();
+                                    }, 400);
+                                }
+                            }, totalMs);
+
+                        } else {
+                            // النص قصير ومناسب بالكامل لمساحة العرض
+                            const standardWait = 6500;
+                            startProgressBar(standardWait);
+
+                            if (items.length > 1) {
+                                nextTimer = setTimeout(() => {
+                                    if (!isHovered && !isPaused) window.nextTickerItem();
+                                }, standardWait);
+                            }
+                        }
+                    });
+                });
+            }
+
+            function goToItem(nextIndex, direction) {
+                if (!items || items.length <= 1) return;
+                if (isAnimating) return;
+                isAnimating = true;
+                clearTimers();
+                resetProgressBar();
+
+                const currentItem = items[currentIndex];
+                const nextItem = items[nextIndex];
+
+                if (!currentItem || !nextItem) {
+                    isAnimating = false;
+                    return;
+                }
+
+                const curText = currentItem.querySelector('.royal-ticker-text');
+                if (curText) {
+                    curText.style.transition = 'none';
+                    curText.style.transform = 'translateX(0)';
+                }
+
+                if (direction === 'prev') {
+                    nextItem.classList.remove('leaving-up', 'leaving-down', 'active');
+                    nextItem.classList.add('from-top');
+                    void nextItem.offsetHeight;
+
+                    currentItem.classList.remove('active');
+                    currentItem.classList.add('leaving-down');
+
+                    nextItem.classList.remove('from-top');
+                    nextItem.classList.add('active');
+                } else {
+                    nextItem.classList.remove('leaving-up', 'leaving-down', 'from-top', 'active');
+                    void nextItem.offsetHeight;
+
+                    currentItem.classList.remove('active');
+                    currentItem.classList.add('leaving-up');
+
+                    nextItem.classList.add('active');
+                }
+
+                currentIndex = nextIndex;
+                if (counter) {
+                    counter.textContent = (currentIndex + 1) + ' / ' + items.length;
+                }
+
+                setTimeout(() => {
+                    currentItem.classList.remove('leaving-up', 'leaving-down');
+                    isAnimating = false;
+                    runTextAnimation();
+                }, 550);
+            }
+
+            // ==========================================
+            // تشغيل وتهيئة الشريط عند جاهزية الصفحة
+            // ==========================================
+            function initTicker() {
+                viewport = document.getElementById('tickerViewport');
+                if (!viewport) return;
+
+                items = Array.from(viewport.querySelectorAll('.royal-ticker-item'));
+                if (!items.length) return;
+
+                counter = document.getElementById('tickerCounter');
+                progressFill = document.getElementById('tickerProgressFill');
+                playPauseBtn = document.getElementById('tickerPlayPauseBtn');
+
+                // إيقاف مؤقت ذكي عند وضع الفأرة (Hover) للقراءة براحة تامة
+                viewport.addEventListener('mouseenter', function() {
+                    if (isPaused) return;
+                    isHovered = true;
+                    clearTimers();
+                    pauseProgressBar();
+                    const activeItem = items[currentIndex];
+                    if (activeItem) {
+                        const text = activeItem.querySelector('.royal-ticker-text');
+                        if (text) {
+                            const style = window.getComputedStyle(text);
+                            text.style.transition = 'none';
+                            text.style.transform = style.transform;
+                        }
+                    }
+                });
+
+                viewport.addEventListener('mouseleave', function() {
+                    if (isPaused) return;
+                    isHovered = false;
+                    runTextAnimation();
+                });
+
+                // دعم الأجهزة اللمسية والهواتف
+                viewport.addEventListener('touchstart', function() {
+                    if (!isPaused) {
+                        isHovered = true;
+                        clearTimers();
+                        pauseProgressBar();
+                    }
+                }, { passive: true });
+
+                viewport.addEventListener('touchend', function() {
+                    if (!isPaused) {
+                        setTimeout(() => {
+                            isHovered = false;
+                            runTextAnimation();
+                        }, 1200);
+                    }
+                }, { passive: true });
+
+                runTextAnimation();
+            }
+
             // إغلاق النوافذ عند الضغط على Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
@@ -3682,14 +3710,15 @@
                 }, 200);
             }, { passive: true });
 
-            // بدء الحركة فور اكتمال تحميل الصفحة وتنسيق الخطوط
-            if (document.readyState === 'complete') {
-                runTextAnimation();
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initTicker);
             } else {
-                window.addEventListener('load', runTextAnimation, { once: true });
+                initTicker();
             }
         })();
 
+        // إدارة تثبيت تطبيق الويب التقدمي (PWA Install Prompt)
+        (function() {
             window.triggerPwaInstall = function() {
                 if (window.deferredPwaPrompt) {
                     window.deferredPwaPrompt.prompt();

@@ -88,23 +88,56 @@
             </div>
         </div>
 
-        {{-- شريط المعاينة --}}
-        <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; overflow: hidden;">
+        {{-- شريط المعاينة التفاعلي الحي --}}
+        @php
+            $activeList = array_values(array_filter($items, fn($i) => !empty($i['is_active'])));
+        @endphp
+        <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; overflow: hidden; position: relative;">
             <div style="background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; padding: 4px 12px; border-radius: 6px; font-weight: 800; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(225, 29, 72, 0.4);">
-                <i class="fa-solid fa-bolt" style="font-size: 0.75rem;"></i>
-                <span>{{ __('آخر الأخبار') }}</span>
+                <i class="fa-solid fa-bullhorn" style="font-size: 0.75rem;"></i>
+                <span>{{ __('معاينة الشريط') }}</span>
             </div>
-            <div id="live-preview-content" style="flex: 1; font-size: 0.88rem; color: #f1f5f9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">
-                @if($activeCount > 0)
-                    @php $first = array_values(array_filter($items, fn($i) => !empty($i['is_active'])))[0]; @endphp
-                    <span style="background: rgba(217, 119, 6, 0.25); color: #fbbf24; border: 1px solid rgba(217, 119, 6, 0.4); padding: 2px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; margin-left: 8px;">
-                        {{ $first['badge'] ?? 'عاجل' }}
-                    </span>
-                    <span>{{ $first['text'] ?? '' }}</span>
+
+            <div style="flex: 1; min-width: 0; overflow: hidden; position: relative; height: 32px; display: flex; align-items: center;" id="adminPreviewViewport">
+                @if(count($activeList) > 0)
+                    @foreach($activeList as $pIdx => $pItem)
+                        @php
+                            $pType = $pItem['type'] ?? 'urgent';
+                            $pBadgeStyles = [
+                                'urgent'  => 'background: rgba(239,68,68,0.25); color: #fca5a5; border: 1px solid rgba(239,68,68,0.4);',
+                                'warning' => 'background: rgba(217,119,6,0.25); color: #fde68a; border: 1px solid rgba(217,119,6,0.4);',
+                                'info'    => 'background: rgba(14,165,233,0.25); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.4);',
+                                'success' => 'background: rgba(16,185,129,0.25); color: #86efac; border: 1px solid rgba(16,185,129,0.4);',
+                            ];
+                            $bStyle = $pBadgeStyles[$pType] ?? $pBadgeStyles['urgent'];
+                        @endphp
+                        <div class="admin-prev-item" data-prev-idx="{{ $pIdx }}" style="position: absolute; inset: 0; display: {{ $pIdx === 0 ? 'flex' : 'none' }}; align-items: center; gap: 10px; width: 100%;">
+                            <span style="{{ $bStyle }} padding: 2px 8px; border-radius: 4px; font-size: 0.74rem; font-weight: 700; flex-shrink: 0;">
+                                {{ $pItem['badge'] ?? 'عاجل' }}
+                            </span>
+                            <div class="admin-prev-text-wrap" style="flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; display: flex; align-items: center;">
+                                <span class="admin-prev-text" style="font-size: 0.88rem; color: #f1f5f9; font-weight: 600; white-space: nowrap; display: inline-block; width: max-content; will-change: transform;">
+                                    {{ $pItem['text'] }}
+                                </span>
+                            </div>
+                        </div>
+                    @endforeach
                 @else
-                    <span style="color: #94a3b8; font-style: italic;">{{ __('لا توجد أخبار مفعلة حالياً، الشريط لن يظهر بالصفحة الرئيسية.') }}</span>
+                    <span style="color: #94a3b8; font-style: italic; font-size: 0.84rem;">{{ __('لا توجد أخبار مفعلة حالياً، الشريط لن يظهر بالصفحة الرئيسية.') }}</span>
                 @endif
             </div>
+
+            @if(count($activeList) > 1)
+                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <span id="adminPrevCounter" style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px;">1 / {{ count($activeList) }}</span>
+                    <button type="button" onclick="adminPrevNewsItem()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: grid; place-items: center; font-size: 0.7rem;" title="{{ __('الخبر السابق') }}">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button type="button" onclick="adminNextNewsItem()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; display: grid; place-items: center; font-size: 0.7rem;" title="{{ __('الخبر التالي') }}">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -514,5 +547,58 @@ function deleteNewsItem(id) {
         window.location.reload();
     });
 }
+
+// تشغيل شريط المعاينة التفاعلي في لوحة التحكم مع تحريك ناعم للأخبار الطويلة
+(function() {
+    const prevItems = document.querySelectorAll('.admin-prev-item');
+    if (!prevItems.length) return;
+
+    let pCurrent = 0;
+    const pCounter = document.getElementById('adminPrevCounter');
+
+    function showItem(idx) {
+        prevItems.forEach((el, i) => {
+            el.style.display = (i === idx) ? 'flex' : 'none';
+            const t = el.querySelector('.admin-prev-text');
+            if (t) {
+                t.style.transition = 'none';
+                t.style.transform = 'translateX(0)';
+            }
+        });
+        pCurrent = idx;
+        if (pCounter) pCounter.textContent = (pCurrent + 1) + ' / ' + prevItems.length;
+
+        // تدفق النص الطويل تلقائياً
+        const cur = prevItems[pCurrent];
+        if (cur) {
+            const wrap = cur.querySelector('.admin-prev-text-wrap');
+            const text = cur.querySelector('.admin-prev-text');
+            if (wrap && text) {
+                requestAnimationFrame(() => {
+                    const wrapW = wrap.clientWidth;
+                    const textW = Math.max(text.scrollWidth, text.getBoundingClientRect().width);
+                    const diff = textW - wrapW;
+                    if (diff > 8) {
+                        const sec = Math.max(3.2, (diff + 25) / 36);
+                        setTimeout(() => {
+                            text.style.transition = 'transform ' + sec + 's linear';
+                            text.style.transform = 'translateX(' + (diff + 25) + 'px)';
+                        }, 1200);
+                    }
+                });
+            }
+        }
+    }
+
+    window.adminNextNewsItem = function() {
+        showItem((pCurrent + 1) % prevItems.length);
+    };
+
+    window.adminPrevNewsItem = function() {
+        showItem((pCurrent - 1 + prevItems.length) % prevItems.length);
+    };
+
+    showItem(0);
+})();
 </script>
 @endsection
