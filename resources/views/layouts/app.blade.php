@@ -217,6 +217,42 @@
 
         .swal2-container {
             z-index: 1000000 !important;
+            font-family: 'Tajawal', 'Alexandria', sans-serif !important;
+            direction: rtl !important;
+        }
+        .swal2-popup {
+            border-radius: 20px !important;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
+            border-top: 4px solid var(--ed-primary, #1d4ed8) !important;
+            font-family: inherit !important;
+            padding: 28px 24px 22px !important;
+        }
+        .swal2-title {
+            font-size: 1.3rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+        }
+        .swal2-html-container {
+            font-size: 0.95rem !important;
+            color: #334155 !important;
+            line-height: 1.65 !important;
+        }
+        .swal2-confirm {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+            border-radius: 12px !important;
+            font-weight: 800 !important;
+            font-size: 0.94rem !important;
+            padding: 12px 24px !important;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+        }
+        .swal2-cancel {
+            background: #f8fafc !important;
+            color: #334155 !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 0.94rem !important;
+            padding: 12px 24px !important;
         }
 
         /* Safeguard pagination and prevent unstyled SVG expansion */
@@ -1954,44 +1990,122 @@
         .modal-overlay {
             position: fixed !important;
             inset: 0 !important;
-            background: rgba(15, 23, 42, 0.72) !important;
-            backdrop-filter: blur(8px) !important;
-            -webkit-backdrop-filter: blur(8px) !important;
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+            backdrop-filter: blur(8px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
             z-index: 999999 !important;
             display: none;
             align-items: center !important;
             justify-content: center !important;
-            padding: 20px !important;
+            padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)) !important;
             overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
         }
         .modal-card-box {
             background: #ffffff !important;
             border-radius: 20px !important;
-            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(226, 232, 240, 0.8) !important;
+            box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35), 0 0 0 1px rgba(226, 232, 240, 0.9) !important;
             width: 100% !important;
             max-width: 620px;
-            max-height: 90vh;
+            max-height: calc(100vh - 40px);
             overflow-y: auto;
             position: relative !important;
             margin: auto !important;
-            padding: 28px 32px;
-            animation: globalModalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            padding: 30px 32px !important;
+            border-top: 4px solid var(--ed-primary, #1d4ed8) !important;
+            animation: globalModalScaleIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            font-family: 'Tajawal', 'Alexandria', sans-serif !important;
         }
         @keyframes globalModalScaleIn {
-            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            from { opacity: 0; transform: scale(0.94) translateY(12px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-head, .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--ed-border, #e2e8f0);
+        }
+        .modal-title {
+            font-size: 1.25rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+            letter-spacing: -0.01em;
+        }
+        .btn-modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        .btn-modal-close:hover {
+            background: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+            transform: rotate(90deg);
+        }
+        .btn-modal-submit, .btn-modal-submit-file {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+            color: #ffffff !important;
+            border: 1px solid #1e3a8a !important;
+            border-radius: 12px !important;
+            padding: 11px 22px !important;
+            font-weight: 800 !important;
+            font-size: 0.92rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-modal-submit:hover, .btn-modal-submit-file:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35) !important;
+            filter: brightness(1.06) !important;
+        }
+        .btn-modal-cancel {
+            background: #f8fafc !important;
+            color: #334155 !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            padding: 11px 22px !important;
+            font-weight: 700 !important;
+            font-size: 0.92rem !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-modal-cancel:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
         }
 
         @media (max-width: 768px) {
             .modal-overlay {
-                padding: 10px !important;
+                padding: calc(10px + env(safe-area-inset-top, 0px)) 10px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
             }
             .modal-card-box {
                 width: 100% !important;
                 max-width: 100% !important;
-                padding: 18px 14px !important;
-                border-radius: 14px !important;
-                max-height: 92vh !important;
+                padding: 22px 18px 18px !important;
+                border-radius: 16px !important;
+                max-height: calc(100vh - 20px) !important;
             }
         }
 
@@ -2309,6 +2423,201 @@
                 padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+        }
+
+        /* ==========================================================================
+           --- تصميم النوافذ المنبثقة الكلاسيكي الملكي الموحد (Classic Royal Popups & Modals) ---
+           تصميم عالمي فخم ومتزن، متوافق مع كافة الشاشات والأجهزة وتطبيقات الجوال والـ PWA
+           ========================================================================== */
+        
+        /* 1. طبقات التعتيم والخلفيات الزجاجية الفاخرة لكافة النوافذ */
+        .modal-backdrop,
+        .modal-overlay,
+        .inquiry-modal-overlay,
+        .receipt-modal-backdrop,
+        .swal2-container {
+            backdrop-filter: blur(8px) saturate(160%) !important;
+            -webkit-backdrop-filter: blur(8px) saturate(160%) !important;
+            background: radial-gradient(circle at center, rgba(15, 23, 42, 0.65) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+            z-index: 999999 !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        /* 2. هياكل وصناديق النوافذ الكلاسيكية الملكية */
+        .modal-content,
+        .modal-card-box,
+        .inquiry-modal-card,
+        .receipt-modal-content,
+        .swal2-popup {
+            font-family: 'Tajawal', 'Alexandria', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+            background: #ffffff !important;
+            border-radius: 20px !important;
+            border: 1px solid rgba(226, 232, 240, 0.9) !important;
+            border-top: 4px solid #1d4ed8 !important;
+            box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.28), 
+                        0 0 0 1px rgba(15, 23, 42, 0.08),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+            color: #0f172a !important;
+            position: relative !important;
+            box-sizing: border-box !important;
+            direction: rtl !important;
+            text-align: right !important;
+            max-width: min(580px, 94vw) !important;
+            padding: 24px 26px !important;
+            animation: svModalCardIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        @keyframes svModalCardIn {
+            0% { transform: scale(0.93) translateY(16px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        /* 3. ترويسة وعناوين النوافذ المنبثقة */
+        .modal-header,
+        .inquiry-modal-header,
+        .receipt-modal-header {
+            padding: 16px 20px !important;
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            border-top-left-radius: 16px !important;
+            border-top-right-radius: 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+
+        .swal2-title,
+        .modal-title,
+        .modal-main-title {
+            font-size: 1.25rem !important;
+            font-weight: 800 !important;
+            color: #0f172a !important;
+            line-height: 1.45 !important;
+            margin: 0 0 10px !important;
+            letter-spacing: -0.01em !important;
+            text-align: inherit !important;
+        }
+
+        .swal2-html-container,
+        .modal-body,
+        .inquiry-modal-body,
+        .receipt-modal-body {
+            font-size: 0.95rem !important;
+            color: #475569 !important;
+            line-height: 1.68 !important;
+            margin: 0 !important;
+        }
+
+        /* 4. أزرار الإغلاق الكلاسيكية (Close Buttons) */
+        .btn-close-modal,
+        .modal-btn-close,
+        .swal2-close {
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 50% !important;
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            color: #64748b !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 16px !important;
+            cursor: pointer !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            outline: none !important;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04) !important;
+        }
+        .btn-close-modal:hover,
+        .modal-btn-close:hover,
+        .swal2-close:hover {
+            background: #fee2e2 !important;
+            color: #dc2626 !important;
+            border-color: #fca5a5 !important;
+            transform: rotate(90deg) scale(1.05) !important;
+        }
+
+        /* 5. أزرار التفاعل والإجراءات الكلاسيكية الملكية */
+        .swal2-actions,
+        .modal-actions-row,
+        .receipt-modal-footer {
+            display: flex !important;
+            gap: 12px !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            margin-top: 20px !important;
+            padding-top: 14px !important;
+            border-top: 1px solid #f1f5f9 !important;
+        }
+
+        .swal2-confirm,
+        .btn-submit-modal {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            font-size: 0.94rem !important;
+            border: 1px solid #1e3a8a !important;
+            border-radius: 12px !important;
+            padding: 11px 24px !important;
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        .swal2-confirm:hover,
+        .btn-submit-modal:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 18px rgba(29, 78, 216, 0.35) !important;
+            filter: brightness(1.08) !important;
+        }
+
+        .swal2-cancel,
+        .btn-cancel-modal {
+            background: #f8fafc !important;
+            color: #475569 !important;
+            font-weight: 700 !important;
+            font-size: 0.94rem !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 12px !important;
+            padding: 11px 22px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        .swal2-cancel:hover,
+        .btn-cancel-modal:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+        }
+
+        /* 6. التوافق التام مع شاشات الجوال وتطبيقات الهواتف والـ PWA */
+        @media (max-width: 640px) {
+            .modal-content,
+            .modal-card-box,
+            .inquiry-modal-card,
+            .receipt-modal-content,
+            .swal2-popup {
+                padding: 20px 16px !important;
+                border-radius: 16px !important;
+                max-width: 95vw !important;
+                margin: auto !important;
+            }
+            .swal2-title,
+            .modal-title,
+            .modal-main-title {
+                font-size: 1.15rem !important;
+            }
+            .swal2-html-container,
+            .modal-body {
+                font-size: 0.9rem !important;
+            }
+            .swal2-confirm,
+            .swal2-cancel,
+            .btn-submit-modal,
+            .btn-cancel-modal {
+                flex: 1 1 auto !important;
+                min-width: 100px !important;
+                padding: 10px 16px !important;
+                font-size: 0.88rem !important;
             }
         }
     </style>

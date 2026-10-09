@@ -1,7 +1,8 @@
 /**
- * Step by Step - Native Vanilla Dialog & Toast Engine
- * 100% Zero-Dependency, Ultra-Fast Drop-in Replacement for Heavy External Libraries (SweetAlert2)
- * Designed for maximum performance, rich aesthetics, accessibility, and instant 0ms response.
+ * Step by Step - Royal Classic Native Vanilla Dialog & Toast Engine
+ * 100% Zero-Dependency, Ultra-Fast Drop-in Replacement for SweetAlert2
+ * Designed for World-Class Aesthetics, Classical Royal Elegance, 
+ * Responsive Across All Screens (Desktop, Tablet, Mobile) & Mobile App/PWA Ready.
  */
 (function() {
     'use strict';
@@ -12,156 +13,253 @@
         const style = document.createElement('style');
         style.id = styleId;
         style.textContent = `
+            :root {
+                --sv-font: 'Tajawal', 'Alexandria', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                --sv-primary: #1d4ed8;
+                --sv-primary-dark: #1e3a8a;
+                --sv-gold: #d97706;
+                --sv-emerald: #059669;
+                --sv-ruby: #dc2626;
+                --sv-amethyst: #7c3aed;
+                --sv-card-bg: #ffffff;
+                --sv-text-main: #0f172a;
+                --sv-text-muted: #475569;
+                --sv-border: #e2e8f0;
+            }
+
             .sv-modal-backdrop {
                 position: fixed;
                 inset: 0;
-                background: rgba(15, 23, 42, 0.65);
-                backdrop-filter: blur(6px);
-                -webkit-backdrop-filter: blur(6px);
+                background: radial-gradient(circle at center, rgba(15, 23, 42, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+                backdrop-filter: blur(8px) saturate(160%);
+                -webkit-backdrop-filter: blur(8px) saturate(160%);
                 z-index: 999999;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 16px;
+                padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px));
                 opacity: 0;
-                transition: opacity 0.22s ease;
-                font-family: 'Tajawal', 'Alexandria', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                transition: opacity 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+                font-family: var(--sv-font);
                 direction: rtl;
                 box-sizing: border-box;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
             .sv-modal-backdrop.sv-visible {
                 opacity: 1;
             }
+
             .sv-modal-card {
-                background: #ffffff;
+                background: var(--sv-card-bg);
                 width: 100%;
-                max-width: 440px;
-                border-radius: 18px;
-                padding: 26px 24px;
-                box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.06);
+                max-width: 480px;
+                border-radius: 20px;
+                padding: 32px 28px 26px;
+                box-shadow: 0 25px 60px -12px rgba(15, 23, 42, 0.28), 
+                            0 0 0 1px rgba(15, 23, 42, 0.08),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.9);
                 text-align: center;
-                transform: scale(0.92) translateY(12px);
+                transform: scale(0.93) translateY(14px);
                 opacity: 0;
-                transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+                transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease;
                 position: relative;
                 box-sizing: border-box;
+                border-top: 4px solid var(--sv-accent-color, #1d4ed8);
+                margin: auto;
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
             }
             .sv-modal-backdrop.sv-visible .sv-modal-card {
                 transform: scale(1) translateY(0);
                 opacity: 1;
             }
-            .sv-modal-icon-wrap {
-                width: 64px;
-                height: 64px;
+
+            /* Close Button */
+            .sv-modal-close-btn {
+                position: absolute;
+                top: 14px;
+                inset-inline-end: 14px;
+                width: 32px;
+                height: 32px;
                 border-radius: 50%;
-                margin: 0 auto 16px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                color: #64748b;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 28px;
+                font-size: 15px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                outline: none;
+                z-index: 10;
             }
+            .sv-modal-close-btn:hover {
+                background: #fee2e2;
+                color: #dc2626;
+                border-color: #fca5a5;
+                transform: rotate(90deg);
+            }
+
+            /* Classical Icons with Multi-Ring Emblems */
+            .sv-modal-icon-wrap {
+                width: 72px;
+                height: 72px;
+                border-radius: 50%;
+                margin: 0 auto 18px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                position: relative;
+            }
+            .sv-modal-backdrop.sv-visible .sv-modal-icon-wrap {
+                animation: sv-icon-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+            @keyframes sv-icon-pop {
+                0% { transform: scale(0.6); opacity: 0; }
+                70% { transform: scale(1.1); }
+                100% { transform: scale(1); opacity: 1; }
+            }
+
             .sv-icon-success {
                 background: #ecfdf5;
                 color: #059669;
                 border: 2px solid #a7f3d0;
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.12);
             }
             .sv-icon-error {
                 background: #fef2f2;
                 color: #dc2626;
                 border: 2px solid #fecaca;
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.12);
             }
             .sv-icon-warning {
                 background: #fffbeb;
                 color: #d97706;
                 border: 2px solid #fde68a;
+                box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.12);
             }
             .sv-icon-info {
                 background: #eff6ff;
-                color: #2563eb;
+                color: #1d4ed8;
                 border: 2px solid #bfdbfe;
+                box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.12);
             }
             .sv-icon-question {
                 background: #f5f3ff;
                 color: #7c3aed;
                 border: 2px solid #ddd6fe;
+                box-shadow: 0 0 0 6px rgba(124, 58, 237, 0.12);
             }
+
             .sv-modal-title {
-                font-size: 1.25rem;
+                font-size: 1.32rem;
                 font-weight: 800;
-                color: #0f172a;
+                color: var(--sv-text-main);
                 margin: 0 0 10px;
                 line-height: 1.4;
+                letter-spacing: -0.01em;
             }
             .sv-modal-text {
-                font-size: 0.95rem;
-                color: #475569;
-                line-height: 1.6;
-                margin: 0 0 18px;
+                font-size: 0.96rem;
+                color: var(--sv-text-muted);
+                line-height: 1.68;
+                margin: 0 0 20px;
                 word-break: break-word;
             }
-            .sv-modal-input, .sv-modal-textarea {
+            .sv-modal-text code {
+                background: #f1f5f9;
+                color: #0f172a;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+
+            /* Classical Inputs */
+            .sv-modal-input, .sv-modal-textarea, .sv-modal-select {
                 width: 100%;
-                padding: 10px 14px;
+                padding: 12px 16px;
                 border: 1.5px solid #cbd5e1;
                 border-radius: 12px;
                 font-family: inherit;
                 font-size: 0.95rem;
                 box-sizing: border-box;
-                margin: 10px 0 14px;
+                margin: 10px 0 16px;
                 outline: none;
-                transition: border-color 0.2s, box-shadow 0.2s;
+                transition: all 0.2s ease;
                 background: #f8fafc;
                 color: #0f172a;
                 text-align: inherit;
             }
             .sv-modal-textarea {
-                min-height: 90px;
+                min-height: 95px;
                 resize: vertical;
             }
-            .sv-modal-input:focus, .sv-modal-textarea:focus {
-                border-color: #2563eb;
+            .sv-modal-input:focus, .sv-modal-textarea:focus, .sv-modal-select:focus {
+                border-color: var(--sv-primary);
                 background: #ffffff;
-                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+                box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12);
             }
+
             .sv-modal-validation {
                 display: none;
                 background: #fef2f2;
                 color: #b91c1c;
                 border: 1px solid #fecaca;
                 border-radius: 10px;
-                padding: 8px 14px;
-                font-size: 0.85rem;
-                font-weight: 600;
-                margin-bottom: 14px;
+                padding: 9px 15px;
+                font-size: 0.88rem;
+                font-weight: 700;
+                margin-bottom: 16px;
                 text-align: start;
                 line-height: 1.5;
             }
+
+            .sv-modal-footer {
+                margin-top: 18px;
+                padding-top: 14px;
+                border-top: 1px solid #f1f5f9;
+                font-size: 0.84rem;
+                color: #64748b;
+                line-height: 1.5;
+            }
+
             .sv-modal-actions {
                 display: flex;
-                gap: 10px;
+                gap: 12px;
                 justify-content: center;
                 align-items: center;
                 flex-wrap: wrap;
-                margin-top: 14px;
+                margin-top: 16px;
             }
+
+            /* Royal Classic Buttons */
             .sv-btn {
-                padding: 10px 22px;
-                border-radius: 10px;
-                font-size: 0.92rem;
-                font-weight: 700;
+                padding: 12px 26px;
+                border-radius: 12px;
+                font-size: 0.95rem;
+                font-weight: 800;
                 cursor: pointer;
                 border: none;
                 outline: none;
-                transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
-                min-width: 100px;
+                transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+                min-width: 110px;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
                 gap: 8px;
                 font-family: inherit;
+                text-decoration: none;
+                user-select: none;
             }
-            .sv-btn:active {
-                transform: scale(0.97);
+            .sv-btn:hover:not(:disabled) {
+                transform: translateY(-2px);
+            }
+            .sv-btn:active:not(:disabled) {
+                transform: translateY(0) scale(0.98);
             }
             .sv-btn:disabled {
                 opacity: 0.65;
@@ -169,25 +267,28 @@
                 transform: none !important;
             }
             .sv-btn-confirm {
-                background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+                background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
                 color: #ffffff;
-                box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+                border: 1px solid #1e3a8a;
+                box-shadow: 0 4px 14px rgba(29, 78, 216, 0.28);
             }
             .sv-btn-confirm:hover:not(:disabled) {
-                filter: brightness(1.08);
+                box-shadow: 0 6px 18px rgba(29, 78, 216, 0.38);
+                filter: brightness(1.06);
             }
             .sv-btn-cancel {
-                background: #f1f5f9;
-                color: #475569;
-                border: 1px solid #cbd5e1;
+                background: #f8fafc;
+                color: #334155;
+                border: 1.5px solid #cbd5e1;
             }
             .sv-btn-cancel:hover:not(:disabled) {
-                background: #e2e8f0;
-                color: #1e293b;
+                background: #f1f5f9;
+                border-color: #94a3b8;
+                color: #0f172a;
             }
             .sv-btn-spinner {
-                width: 15px;
-                height: 15px;
+                width: 16px;
+                height: 16px;
                 border: 2px solid rgba(255, 255, 255, 0.35);
                 border-top-color: #ffffff;
                 border-radius: 50%;
@@ -195,54 +296,142 @@
                 display: inline-block;
             }
             .sv-spinner {
-                width: 44px;
-                height: 44px;
+                width: 48px;
+                height: 48px;
                 border: 4px solid #e2e8f0;
                 border-top-color: #1d4ed8;
                 border-radius: 50%;
                 animation: sv-spin 0.8s linear infinite;
-                margin: 10px auto;
+                margin: 16px auto;
             }
             @keyframes sv-spin {
                 to { transform: rotate(360deg); }
             }
-            /* Toast Notification */
+
+            /* Royal Toast Notification - Multi-position & Classical Elegance */
             .sv-toast-wrap {
                 position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%) translateY(-30px);
+                top: calc(20px + env(safe-area-inset-top, 0px));
+                inset-inline-end: calc(20px + env(safe-area-inset-right, 0px));
+                transform: translateY(-24px) scale(0.96);
                 background: #ffffff;
-                border-radius: 50px;
-                padding: 12px 24px;
+                border-radius: 16px;
+                padding: 12px 20px;
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.08);
+                box-shadow: 0 20px 45px -8px rgba(15, 23, 42, 0.24), 
+                            0 0 0 1px rgba(15, 23, 42, 0.08),
+                            inset 0 1px 0 rgba(255, 255, 255, 0.9);
                 z-index: 1000000;
                 opacity: 0;
-                transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+                transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.24s ease;
                 direction: rtl;
-                font-family: 'Tajawal', sans-serif;
-                max-width: 90vw;
+                font-family: var(--sv-font);
+                max-width: min(440px, 92vw);
+                box-sizing: border-box;
+                border-inline-start: 4px solid var(--sv-toast-accent, #1d4ed8);
+                overflow: hidden;
+                cursor: pointer;
             }
             .sv-toast-wrap.sv-toast-visible {
-                transform: translateX(-50%) translateY(0);
+                transform: translateY(0) scale(1);
                 opacity: 1;
+            }
+            .sv-toast-wrap.sv-pos-top-start {
+                inset-inline-end: auto;
+                inset-inline-start: calc(20px + env(safe-area-inset-left, 0px));
+            }
+            .sv-toast-wrap.sv-pos-top-center {
+                inset-inline-end: auto;
+                inset-inline-start: 50%;
+                transform: translateX(50%) translateY(-24px) scale(0.96);
+            }
+            .sv-toast-wrap.sv-pos-top-center.sv-toast-visible {
+                transform: translateX(50%) translateY(0) scale(1);
+            }
+            .sv-toast-wrap.sv-pos-bottom-end {
+                top: auto;
+                bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+                transform: translateY(24px) scale(0.96);
+            }
+            .sv-toast-wrap.sv-pos-bottom-end.sv-toast-visible {
+                transform: translateY(0) scale(1);
+            }
+            .sv-toast-wrap.sv-pos-bottom-start {
+                top: auto;
+                bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+                inset-inline-end: auto;
+                inset-inline-start: calc(20px + env(safe-area-inset-left, 0px));
+                transform: translateY(24px) scale(0.96);
+            }
+            .sv-toast-wrap.sv-pos-bottom-start.sv-toast-visible {
+                transform: translateY(0) scale(1);
+            }
+            .sv-toast-icon svg {
+                width: 22px;
+                height: 22px;
+                flex-shrink: 0;
             }
             .sv-toast-title {
                 font-size: 0.92rem;
                 font-weight: 700;
                 color: #0f172a;
+                line-height: 1.45;
+                flex: 1;
             }
+            .sv-toast-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: rgba(15, 23, 42, 0.08);
+            }
+            .sv-toast-progress-bar {
+                height: 100%;
+                background: var(--sv-toast-accent, #1d4ed8);
+                width: 100%;
+                transition: width linear;
+            }
+
+            /* Progress bar for timer */
+            .sv-timer-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                height: 3px;
+                background: rgba(29, 78, 216, 0.15);
+                border-bottom-left-radius: 20px;
+                border-bottom-right-radius: 20px;
+                overflow: hidden;
+            }
+            .sv-timer-progress-bar {
+                height: 100%;
+                background: var(--sv-accent-color, #1d4ed8);
+                width: 100%;
+                transition: width linear;
+            }
+
+            /* Responsive and Mobile App / Webview Friendly */
             @media (max-width: 640px) {
                 .sv-modal-card {
-                    padding: 22px 18px;
-                    border-radius: 16px;
+                    padding: 24px 20px 20px;
+                    border-radius: 18px;
+                    max-width: 92vw;
+                }
+                .sv-modal-title {
+                    font-size: 1.18rem;
+                }
+                .sv-modal-text {
+                    font-size: 0.91rem;
                 }
                 .sv-btn {
                     flex: 1 1 auto;
-                    min-width: 80px;
+                    min-width: 95px;
+                    padding: 11px 18px;
+                    font-size: 0.9rem;
                 }
             }
         `;
@@ -255,17 +444,28 @@
     function getIconSvg(type) {
         switch (type) {
             case 'success':
-                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+                return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
             case 'error':
-                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+                return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
             case 'warning':
-                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+                return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
             case 'info':
-                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
+                return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
             case 'question':
-                return '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+                return '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
             default:
                 return '';
+        }
+    }
+
+    function getAccentColor(icon) {
+        switch (icon) {
+            case 'success': return '#059669';
+            case 'error': return '#dc2626';
+            case 'warning': return '#d97706';
+            case 'question': return '#7c3aed';
+            case 'info':
+            default: return '#1d4ed8';
         }
     }
 
@@ -296,29 +496,54 @@
                 // --- TOAST MODE ---
                 if (options.toast) {
                     const toast = document.createElement('div');
-                    toast.className = 'sv-toast-wrap';
-                    const iconColor = options.icon === 'success' ? '#059669' :
-                                      options.icon === 'error' ? '#dc2626' :
-                                      options.icon === 'warning' ? '#d97706' : '#2563eb';
+                    let posClass = '';
+                    const pos = (options.position || 'top-end').toLowerCase();
+                    if (pos.includes('start') || pos.includes('left')) {
+                        posClass = pos.includes('bottom') ? 'sv-pos-bottom-start' : 'sv-pos-top-start';
+                    } else if (pos.includes('center')) {
+                        posClass = 'sv-pos-top-center';
+                    } else if (pos.includes('bottom')) {
+                        posClass = 'sv-pos-bottom-end';
+                    }
+                    toast.className = `sv-toast-wrap ${posClass}`.trim();
+                    const iconColor = getAccentColor(options.icon);
+                    toast.style.setProperty('--sv-toast-accent', iconColor);
+                    
+                    const hasTimer = !!options.timer;
+                    const timerMs = options.timer || 2500;
+                    
                     toast.innerHTML = `
-                        <div style="color: ${iconColor}; display: flex; align-items: center; justify-content: center;">
+                        <div class="sv-toast-icon" style="color: ${iconColor}; display: flex; align-items: center; justify-content: center;">
                             ${getIconSvg(options.icon || 'info')}
                         </div>
                         <div class="sv-toast-title">${options.title || options.text || ''}</div>
+                        ${hasTimer ? `<div class="sv-toast-progress"><div class="sv-toast-progress-bar" style="transition-duration: ${timerMs}ms;"></div></div>` : ''}
                     `;
+                    
                     document.body.appendChild(toast);
                     activeToast = toast;
-                    requestAnimationFrame(() => toast.classList.add('sv-toast-visible'));
+                    requestAnimationFrame(() => {
+                        toast.classList.add('sv-toast-visible');
+                        if (hasTimer) {
+                            const bar = toast.querySelector('.sv-toast-progress-bar');
+                            if (bar) requestAnimationFrame(() => bar.style.width = '0%');
+                        }
+                    });
 
-                    const timer = options.timer || 2000;
-                    setTimeout(() => {
+                    let dismissed = false;
+                    const dismissToast = () => {
+                        if (dismissed) return;
+                        dismissed = true;
                         toast.classList.remove('sv-toast-visible');
                         setTimeout(() => {
                             if (toast.parentNode) toast.parentNode.removeChild(toast);
                             if (activeToast === toast) activeToast = null;
                             resolve({ isConfirmed: true, isDismissed: false });
                         }, 250);
-                    }, timer);
+                    };
+
+                    toast.onclick = dismissToast;
+                    setTimeout(dismissToast, timerMs);
                     return;
                 }
 
@@ -328,8 +553,22 @@
 
                 const card = document.createElement('div');
                 card.className = 'sv-modal-card';
+                const accentColor = getAccentColor(options.icon);
+                card.style.setProperty('--sv-accent-color', accentColor);
+
                 if (options.width) {
                     card.style.maxWidth = typeof options.width === 'number' ? options.width + 'px' : options.width;
+                }
+
+                // Close (X) button if allowed or requested
+                if (options.showCloseButton !== false && options.allowOutsideClick !== false) {
+                    const closeBtn = document.createElement('button');
+                    closeBtn.type = 'button';
+                    closeBtn.className = 'sv-modal-close-btn';
+                    closeBtn.innerHTML = '✕';
+                    closeBtn.title = 'إغلاق';
+                    closeBtn.onclick = () => closeModal(false);
+                    card.appendChild(closeBtn);
                 }
 
                 // Icon
@@ -372,6 +611,17 @@
                     if (options.input === 'textarea') {
                         inputEl = document.createElement('textarea');
                         inputEl.className = 'sv-modal-textarea';
+                    } else if (options.input === 'select') {
+                        inputEl = document.createElement('select');
+                        inputEl.className = 'sv-modal-select';
+                        if (options.inputOptions && typeof options.inputOptions === 'object') {
+                            Object.entries(options.inputOptions).forEach(([k, v]) => {
+                                const opt = document.createElement('option');
+                                opt.value = k;
+                                opt.innerText = v;
+                                inputEl.appendChild(opt);
+                            });
+                        }
                     } else {
                         inputEl = document.createElement('input');
                         inputEl.type = (options.input === 'password' || options.input === 'email' || options.input === 'number') ? options.input : 'text';
@@ -380,6 +630,14 @@
                     if (options.inputPlaceholder) inputEl.placeholder = options.inputPlaceholder;
                     if (options.inputValue) inputEl.value = options.inputValue;
                     card.appendChild(inputEl);
+                }
+
+                // Footer if requested
+                if (options.footer) {
+                    const footerEl = document.createElement('div');
+                    footerEl.className = 'sv-modal-footer';
+                    footerEl.innerHTML = options.footer;
+                    card.appendChild(footerEl);
                 }
 
                 // Buttons container
@@ -399,6 +657,7 @@
                     confirmBtn.innerText = options.confirmButtonText || 'موافق';
                     if (options.confirmButtonColor) {
                         confirmBtn.style.background = options.confirmButtonColor;
+                        confirmBtn.style.borderColor = options.confirmButtonColor;
                     }
                     actions.appendChild(confirmBtn);
                 }
@@ -411,12 +670,27 @@
                     if (options.cancelButtonColor) {
                         cancelBtn.style.background = options.cancelButtonColor;
                         cancelBtn.style.color = '#ffffff';
+                        cancelBtn.style.borderColor = options.cancelButtonColor;
                     }
                     actions.appendChild(cancelBtn);
                 }
 
                 if (showConfirm || showCancel) {
                     card.appendChild(actions);
+                }
+
+                // Timer progress bar if requested
+                if (options.timer && options.timerProgressBar) {
+                    const progressWrap = document.createElement('div');
+                    progressWrap.className = 'sv-timer-progress';
+                    const progressBar = document.createElement('div');
+                    progressBar.className = 'sv-timer-progress-bar';
+                    progressBar.style.transitionDuration = options.timer + 'ms';
+                    progressWrap.appendChild(progressBar);
+                    card.appendChild(progressWrap);
+                    requestAnimationFrame(() => {
+                        progressBar.style.width = '0%';
+                    });
                 }
 
                 backdrop.appendChild(card);
@@ -483,7 +757,7 @@
                 }
 
                 if (inputEl) {
-                    setTimeout(() => inputEl.focus(), 50);
+                    setTimeout(() => inputEl.focus(), 60);
                     if (inputEl.tagName === 'INPUT') {
                         inputEl.addEventListener('keydown', (e) => {
                             if (e.key === 'Enter') {
@@ -571,7 +845,7 @@
         },
 
         getInput: function() {
-            return activeModal ? activeModal.querySelector('.sv-modal-input, .sv-modal-textarea') : null;
+            return activeModal ? activeModal.querySelector('.sv-modal-input, .sv-modal-textarea, .sv-modal-select') : null;
         },
 
         getPopup: function() {
