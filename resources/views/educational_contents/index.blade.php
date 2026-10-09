@@ -111,7 +111,7 @@
                     <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
                     <h3>{{ __('لا يوجد محتوى تعليمي مضاف حتى الآن') }}</h3>
                     <p>{{ __('يمكنك البدء بنشر أُولى الفيديوهات والملفات التعليمية لطلابك بضغطة زر.') }}</p>
-                    <a href="{{ route(auth()->user()->role . '.educational_contents.create') }}" class="btn-secondary-create">
+                    <a href="{{ auth()->user()->role === 'videographer' ? url('/videographer/contents/create') : (Route::has(auth()->user()->role . '.educational_contents.create') ? route(auth()->user()->role . '.educational_contents.create') : url('/' . auth()->user()->role . '/educational-contents/create')) }}" class="btn-secondary-create">
                         <i class="fa-solid fa-plus"></i>{{ __('إضافة محتوى الآن') }}</a>
                 </div>
             @endif

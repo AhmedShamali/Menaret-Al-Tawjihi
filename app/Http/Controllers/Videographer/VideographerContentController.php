@@ -18,8 +18,13 @@ class VideographerContentController extends Controller
     public function dashboard()
     {
         $userId = auth()->id();
+        $isAdmin = auth()->user() && in_array(auth()->user()->role, ['admin', 'super_admin']);
 
-        $uploadedContents = EducationalContent::where('uploaded_by', $userId)->with('subject.stage')->latest()->get();
+        $query = EducationalContent::with('subject.stage')->latest();
+        if (!$isAdmin) {
+            $query->where('uploaded_by', $userId);
+        }
+        $uploadedContents = $query->get();
 
         $stats = [
             'total_videos'      => $uploadedContents->where('type', 'video')->count(),

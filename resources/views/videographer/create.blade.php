@@ -828,8 +828,8 @@
             window.EdBackgroundUploader.start({
                 file: window.selectedFile,
                 portal: 'videographer',
-                chunkUrl: "{{ route('videographer.contents.upload_chunk') }}",
-                checkStatusUrl: "{{ route('videographer.contents.check_chunk_status') }}",
+                chunkUrl: "{{ Route::has('videographer.contents.upload_chunk') ? route('videographer.contents.upload_chunk') : url('/videographer/contents/upload-chunk') }}",
+                checkStatusUrl: "{{ Route::has('videographer.contents.check_chunk_status') ? route('videographer.contents.check_chunk_status') : url('/videographer/contents/check-chunk-status') }}",
                 originUrl: window.location.href,
                 chunkSize: 3 * 1024 * 1024
             });
@@ -1028,7 +1028,7 @@
 
             // 5. إشعار السيرفر بحذف الملف المؤقت إن وجد
             if (currentVideoPath) {
-                fetch('{{ route("videographer.contents.remove_temp_video") }}', {
+                fetch('{{ Route::has("videographer.contents.remove_temp_video") ? route("videographer.contents.remove_temp_video") : url("/videographer/contents/remove-temp-video") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1284,7 +1284,7 @@
                         });
                     }
 
-                    window.location.href = data.redirect || "{{ route('videographer.contents.index') }}";
+                    window.location.href = data.redirect || "{{ Route::has('videographer.contents.index') ? route('videographer.contents.index') : url('/videographer/contents') }}";
                 } else {
                     // فشل التحقق أو خطأ من السيرفر: إعادة تمكين الزر فوراً
                     if (btn) {

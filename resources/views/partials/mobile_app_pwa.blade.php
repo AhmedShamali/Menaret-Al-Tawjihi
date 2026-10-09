@@ -29,7 +29,7 @@
         <span class="nav-tab-label">{{ __('المحملة ⚡') }}</span>
     </a>
     @if(Auth::guard('student')->check() || Auth::check())
-        <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') ? 'active' : '' }}">
+        <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') || request()->is('teacher*') || request()->is('videographer*') ? 'active' : '' }}">
             <div class="nav-tab-icon"><i class="fa-solid fa-user-circle"></i></div>
             <span class="nav-tab-label">{{ __('حسابي') }}</span>
         </a>
