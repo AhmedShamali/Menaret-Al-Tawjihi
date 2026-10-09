@@ -317,30 +317,60 @@
                 </div>
 
                 {{-- حاوية معلومات وتقدم الرفع المجزأ الحي --}}
-                <div id="chunkUploadProgressWrap" style="display: none; background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 18px; margin-top: 14px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="width: 36px; height: 36px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1.1rem;">
+                <div id="chunkUploadProgressWrap" style="display: none; background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 14px; padding: 18px 20px; margin-top: 14px; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.06);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px; min-width: 220px;">
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0; border: 1px solid #dbeafe;">
                                 <i class="fa-solid fa-file-video"></i>
                             </div>
-                            <div>
-                                <strong id="uploadFileName" style="display: block; font-size: 0.88rem; color: #0f172a;">-</strong>
-                                <span id="uploadFileSize" style="font-size: 0.76rem; color: #64748b;">-</span>
+                            <div style="min-width: 0;">
+                                <strong id="uploadFileName" style="display: block; font-size: 0.9rem; color: #0f172a; word-break: break-all;">-</strong>
+                                <span id="uploadFileSize" style="font-size: 0.78rem; color: #64748b; font-weight: 600;">-</span>
                             </div>
                         </div>
-                        <div style="text-align: left;">
-                            <span id="uploadPercentage" style="font-size: 1.1rem; font-weight: 800; color: #1d4ed8; font-family: 'Alexandria', sans-serif;">0%</span>
-                            <span id="uploadStatusText" style="display: block; font-size: 0.72rem; color: #64748b;">{{ __('جاري تهيئة الرفع...') }}</span>
+
+                        <div style="display: flex; align-items: center; gap: 12px; margin-inline-start: auto;">
+                            <div style="text-align: left;">
+                                <span id="uploadPercentage" style="font-size: 1.15rem; font-weight: 800; color: #1d4ed8; font-family: 'Alexandria', sans-serif;">0%</span>
+                                <span id="uploadStatusText" style="display: block; font-size: 0.72rem; color: #64748b;">{{ __('جاري تهيئة الرفع...') }}</span>
+                            </div>
+
+                            <!-- زر مخصص لإزالة الفيديو المحمل -->
+                            <button type="button" 
+                                    id="btnRemoveUploadedVideo" 
+                                    onclick="removeUploadedVideo()" 
+                                    class="btn-remove-video"
+                                    style="background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; padding: 7px 14px; border-radius: 9px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; white-space: nowrap; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08);"
+                                    onmouseover="this.style.background='#fee2e2'" 
+                                    onmouseout="this.style.background='#fef2f2'"
+                                    title="{{ __('إلغاء وإزالة هذا الفيديو واختيار ملف آخر') }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                                <span>{{ __('إزالة الفيديو المحمل') }}</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: 100%; height: 9px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-bottom: 8px;">
                         <div id="uploadProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #1d4ed8, #3b82f6); border-radius: 99px; transition: width 0.2s ease;"></div>
                     </div>
 
-                    <div id="uploadCompletedBadge" style="display: none; color: #059669; font-size: 0.8rem; font-weight: 700; align-items: center; gap: 6px; margin-top: 6px;">
-                        <i class="fa-solid fa-circle-check"></i>
-                        <span>{{ __('تم رفع ومعالجة ملف الفيديو بنجاح! جاهز للنشر والتوزيع.') }}</span>
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 6px;">
+                        <div id="uploadCompletedBadge" style="display: none; color: #059669; font-size: 0.82rem; font-weight: 700; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-circle-check" style="font-size: 1.1rem;"></i>
+                            <span>{{ __('تم رفع ومعالجة ملف الفيديو بنجاح! جاهز للنشر والتوزيع.') }}</span>
+                        </div>
+                        
+                        <div id="uploadCompletedActions" style="display: none; margin-inline-start: auto;">
+                            <button type="button" 
+                                    onclick="removeUploadedVideo()" 
+                                    style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 5px 12px; border-radius: 7px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s;"
+                                    onmouseover="this.style.background='#f8fafc'; this.style.color='#dc2626';" 
+                                    onmouseout="this.style.background='#ffffff'; this.style.color='#475569';"
+                                    title="{{ __('إزالة هذا الفيديو لاختيار ملف مختلف') }}">
+                                <i class="fa-solid fa-arrow-rotate-left"></i>
+                                <span>{{ __('اختيار فيديو آخر بدلاً منه') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -720,6 +750,8 @@
                 if (percentageEl) percentageEl.textContent = '100%';
                 if (progressBar) progressBar.style.width = '100%';
                 if (completedBadge) completedBadge.style.display = 'flex';
+                const completedActions = document.getElementById('uploadCompletedActions');
+                if (completedActions) completedActions.style.display = 'inline-flex';
                 if (statusText) statusText.textContent = 'تم رفع الفيديو ومعالجته بنجاح! جاهز للنشر والتوزيع.';
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
@@ -860,6 +892,9 @@
                 btnSubmit.style.opacity = '1';
                 btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
             }
+
+            const completedActions = document.getElementById('uploadCompletedActions');
+            if (completedActions) completedActions.style.display = 'inline-flex';
         } else if (state.status === 'error') {
             window.isUploadingChunks = false;
             if (statusText) statusText.textContent = state.error || 'حدث خطأ أثناء الرفع.';
@@ -886,6 +921,7 @@
         const percentageEl = document.getElementById('uploadPercentage');
         const progressBar = document.getElementById('uploadProgressBar');
         const completedBadge = document.getElementById('uploadCompletedBadge');
+        const completedActions = document.getElementById('uploadCompletedActions');
         const statusText = document.getElementById('uploadStatusText');
         const btnSubmit = document.getElementById('btnSubmitForm');
 
@@ -897,6 +933,7 @@
         if (percentageEl) percentageEl.textContent = '100%';
         if (progressBar) progressBar.style.width = '100%';
         if (completedBadge) completedBadge.style.display = 'flex';
+        if (completedActions) completedActions.style.display = 'inline-flex';
         if (statusText) statusText.textContent = 'تم ربط واعتماد ملف الفيديو المرفوع بنجاح! جاهز للنشر والتوزيع فوراً.';
 
         if (btnSubmit) {
@@ -915,6 +952,127 @@
                 text: 'تم ربط ملف الفيديو المرفوع مسبقاً بنجاح. يمكنك الآن مراجعة بيانات المحاضرة والضغط على "نشر وتوزيع المحاضرة فوراً".',
                 confirmButtonText: 'حسناً'
             });
+        }
+    };
+
+    // زر مخصص لإزالة وإلغاء الفيديو المحمل
+    window.removeUploadedVideo = function() {
+        const doRemove = () => {
+            const uploadedPathInput = document.getElementById('uploadedVideoPath');
+            const formattedSizeInput = document.getElementById('formattedSize');
+            const videoFileInput = document.getElementById('videoFileInput');
+            const progressWrap = document.getElementById('chunkUploadProgressWrap');
+            const completedBadge = document.getElementById('uploadCompletedBadge');
+            const completedActions = document.getElementById('uploadCompletedActions');
+            const percentageEl = document.getElementById('uploadPercentage');
+            const progressBar = document.getElementById('uploadProgressBar');
+            const statusText = document.getElementById('uploadStatusText');
+            const fileNameEl = document.getElementById('uploadFileName');
+            const fileSizeEl = document.getElementById('uploadFileSize');
+            const btnSubmit = document.getElementById('btnSubmitForm');
+
+            const currentVideoPath = uploadedPathInput ? uploadedPathInput.value : '';
+
+            // 1. مسح المدخلات والملف المحدد
+            if (uploadedPathInput) uploadedPathInput.value = '';
+            if (formattedSizeInput) formattedSizeInput.value = '';
+            if (videoFileInput) videoFileInput.value = '';
+            window.selectedFile = null;
+            window.isUploadingChunks = false;
+
+            // 2. إيقاف ومسح حالة محرك الرفع بالخلفية
+            if (window.EdBackgroundUploader) {
+                if (typeof window.EdBackgroundUploader.reset === 'function') {
+                    window.EdBackgroundUploader.reset();
+                } else {
+                    if (window.EdBackgroundUploader.uploaderInstance) {
+                        try { window.EdBackgroundUploader.uploaderInstance.abort(); } catch (e) {}
+                    }
+                    window.EdBackgroundUploader.state.status = 'idle';
+                    window.EdBackgroundUploader.state.file = null;
+                    window.EdBackgroundUploader.state.result = null;
+                    window.EdBackgroundUploader.state.progress = 0;
+                    try { sessionStorage.removeItem('ed_bg_upload_completed'); } catch (e) {}
+                    window.EdBackgroundUploader.hideWidget();
+                    window.EdBackgroundUploader.notifyPageListeners();
+                }
+            }
+
+            // 3. تحديث وتطهير المسودة في localStorage
+            try {
+                const rawDraft = localStorage.getItem('ed_videographer_form_draft');
+                if (rawDraft) {
+                    const draft = JSON.parse(rawDraft);
+                    delete draft.uploaded_video_path;
+                    delete draft.formatted_size;
+                    delete draft.file_name;
+                    localStorage.setItem('ed_videographer_form_draft', JSON.stringify(draft));
+                }
+            } catch (e) {}
+
+            // 4. إخفاء وتصفير واجهة التقدم
+            if (progressWrap) progressWrap.style.display = 'none';
+            if (completedBadge) completedBadge.style.display = 'none';
+            if (completedActions) completedActions.style.display = 'none';
+            if (percentageEl) percentageEl.textContent = '0%';
+            if (progressBar) progressBar.style.width = '0%';
+            if (statusText) statusText.textContent = 'تم إلغاء وإزالة الفيديو.';
+            if (fileNameEl) fileNameEl.textContent = '-';
+            if (fileSizeEl) fileSizeEl.textContent = '-';
+
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.style.opacity = '1';
+                btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+            }
+
+            // 5. إشعار السيرفر بحذف الملف المؤقت إن وجد
+            if (currentVideoPath) {
+                fetch('{{ route("videographer.contents.remove_temp_video") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ video_path: currentVideoPath })
+                }).catch(() => {});
+            }
+
+            // 6. إشعار توست بنجاح الإزالة
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-start',
+                    icon: 'success',
+                    title: 'تم إزالة الفيديو المحمل بنجاح ✅',
+                    text: 'يمكنك الآن اختيار ملف فيديو جديد أو النشر.',
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+        };
+
+        if (window.Swal) {
+            Swal.fire({
+                title: 'هل تريد إزالة هذا الفيديو؟',
+                text: 'سيتم إلغاء ربط ملف الفيديو المرفوع لتتمكن من اختيار ملف آخر أو إلغاء الرفع.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'نعم، إزالة الفيديو',
+                cancelButtonText: 'تراجع',
+                reverseButtons: true
+            }).then(result => {
+                if (result.isConfirmed) {
+                    doRemove();
+                }
+            });
+        } else {
+            if (confirm('هل أنت متأكد من إزالة هذا الفيديو المحمل؟')) {
+                doRemove();
+            }
         }
     };
 

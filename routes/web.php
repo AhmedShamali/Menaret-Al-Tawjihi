@@ -499,4 +499,5 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     // الرفع المجزأ واستئناف الرفع للملفات الكبيرة
     Route::match(['get', 'post'], '/contents/upload-chunk', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'uploadChunk'])->name('contents.upload_chunk');
     Route::match(['get', 'post'], '/contents/check-chunk-status', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'checkChunkStatus'])->name('contents.check_chunk_status');
+    Route::post('/contents/remove-temp-video', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'removeTempVideo'])->name('contents.remove_temp_video');
 });

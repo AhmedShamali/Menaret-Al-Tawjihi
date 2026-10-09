@@ -841,4 +841,28 @@ class VideographerContentController extends Controller
             'total_chunks'    => $totalChunks,
         ]);
     }
+
+    /**
+     * إزالة وحذف ملف فيديو مؤقت تم رفعه عند رغبة المصور بإلغائه أو استبداله
+     */
+    public function removeTempVideo(Request $request)
+    {
+        $videoPath = $request->input('video_path');
+        if (!empty($videoPath) && is_string($videoPath)) {
+            $cleanPath = ltrim(str_replace(['../', '..\\'], '', $videoPath), '/');
+            if (str_starts_with($cleanPath, 'educational/videos/') || str_starts_with($cleanPath, 'chunks/')) {
+                $isPublished = EducationalContent::where('url_path', $cleanPath)->exists();
+                if (!$isPublished) {
+                    try {
+                        Storage::disk('public')->delete($cleanPath);
+                    } catch (\Throwable $e) {}
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم إزالة ملف الفيديو المؤقت بنجاح.'
+        ]);
+    }
 }

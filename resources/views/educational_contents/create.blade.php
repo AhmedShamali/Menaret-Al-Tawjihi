@@ -231,12 +231,18 @@
 
                     <!-- شريط التقدم للرفع المباشر بالأجزاء للملفات الضخمة بالجيجابايت -->
                     <div id="upload_progress_container" class="progress-box" style="display: none; margin-top: 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px;">
-                        <div class="progress-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <div class="progress-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
                             <span id="progress_status_text" style="font-size: 0.86rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-solid fa-spinner fa-spin"></i>
                                 <span>جاري بدء تجهيز ورفع أجزاء الفيديو...</span>
                             </span>
-                            <span id="progress_percent_text" style="font-size: 0.95rem; font-weight: 900; color: #1e3a8a; font-family: monospace;">0%</span>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span id="progress_percent_text" style="font-size: 0.95rem; font-weight: 900; color: #1e3a8a; font-family: monospace;">0%</span>
+                                <button type="button" onclick="cancelAndRemoveUploadedVideo()" style="background: #fef2f2; border: 1.5px solid #fca5a5; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="{{ __('إزالة الفيديو المحمل واختيار غيره') }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                    <span>{{ __('إزالة الفيديو') }}</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="progress-bar-bg" style="width: 100%; height: 10px; background: #e2e8f0; border-radius: 999px; overflow: hidden;">
                             <div id="progress_bar_fill" class="progress-bar-fill" style="width: 0%; height: 100%; background: linear-gradient(90deg, #2563eb, #3b82f6, #059669); transition: width 0.2s ease;"></div>
@@ -605,6 +611,32 @@
             });
             btn.disabled = false;
             btn.innerHTML = originalText;
+        }
+    }
+
+    function cancelAndRemoveUploadedVideo() {
+        if (confirm('هل أنت متأكد من إزالة هذا الفيديو؟')) {
+            const input = document.getElementById('input_video_file');
+            if (input) input.value = '';
+            const container = document.getElementById('upload_progress_container');
+            if (container) container.style.display = 'none';
+            if (window.EdBackgroundUploader) {
+                if (typeof window.EdBackgroundUploader.reset === 'function') {
+                    window.EdBackgroundUploader.reset();
+                } else {
+                    window.EdBackgroundUploader.cancel();
+                }
+            }
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-start',
+                    icon: 'success',
+                    title: 'تم إزالة الفيديو بنجاح',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
         }
     }
 </script>

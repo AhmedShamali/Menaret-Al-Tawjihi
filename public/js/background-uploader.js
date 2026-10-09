@@ -250,16 +250,28 @@
                 : 'هل تريد حذف نتيجة رفع الفيديو الحالية؟';
 
             if (confirm(confirmMsg)) {
-                if (this.uploaderInstance) {
-                    this.uploaderInstance.abort();
-                }
-                this.state.status = 'idle';
-                this.state.file = null;
-                this.state.result = null;
-                this.saveSessionState();
-                this.hideWidget();
-                this.notifyPageListeners();
+                this.reset();
             }
+        }
+
+        /**
+         * تصفير وإلغاء حالة الرفع برمجياً وفورياً
+         */
+        reset() {
+            if (this.uploaderInstance) {
+                try { this.uploaderInstance.abort(); } catch (e) {}
+            }
+            this.state.status = 'idle';
+            this.state.file = null;
+            this.state.result = null;
+            this.state.progress = 0;
+            this.state.speed = '--';
+            this.state.eta = '--';
+            this.state.partText = '';
+            try { sessionStorage.removeItem('ed_bg_upload_completed'); } catch (e) {}
+            this.saveSessionState();
+            this.hideWidget();
+            this.notifyPageListeners();
         }
 
         /**
