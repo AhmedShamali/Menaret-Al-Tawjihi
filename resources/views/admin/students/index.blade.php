@@ -203,6 +203,23 @@
                                             </span>
                                         @endif
                                     </div>
+                                    <div class="meta-line" style="margin-top: 4px;">
+                                        @if($student->whatsapp_url)
+                                            <a href="{{ $student->whatsapp_url }}" 
+                                               target="_blank" 
+                                               rel="noopener noreferrer" 
+                                               class="whatsapp-badge-link" 
+                                               title="{{ __('فتح محادثة واتساب فورية مع الطالب (:num)', ['num' => $student->display_whatsapp]) }}">
+                                                <i class="fa-brands fa-whatsapp"></i>
+                                                <span dir="ltr">{{ $student->display_whatsapp }}</span>
+                                            </a>
+                                        @elseif($student->phone)
+                                            <span class="phone-snippet" dir="ltr">
+                                                <i class="fa-solid fa-phone" style="font-size: 0.65rem;"></i>
+                                                <span>{{ $student->phone }}</span>
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </td>
@@ -298,6 +315,16 @@
                                    title="{{ __('عرض المواد والملف الأكاديمي') }}">
                                     <i class="fa-solid fa-folder-open"></i>
                                 </a>
+
+                                @if($student->whatsapp_url)
+                                    <a href="{{ $student->whatsapp_url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="tbl-btn-action tbl-btn-whatsapp"
+                                       title="{{ __('محادثة واتساب مباشرة مع الطالب (:num)', ['num' => $student->display_whatsapp]) }}">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </a>
+                                @endif
 
                                 <a href="{{ route('admin.subscriptions.monthly', ['search' => $student->nid ?: $student->name_ar]) }}"
                                    class="tbl-btn-action tbl-btn-finance"
@@ -993,6 +1020,54 @@
         background: #dc2626;
         color: #ffffff;
         border-color: #dc2626;
+    }
+
+    .tbl-btn-whatsapp {
+        background: #ecfdf5;
+        color: #059669;
+        border-color: #a7f3d0;
+        font-size: 0.95rem;
+    }
+    .tbl-btn-whatsapp:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .whatsapp-badge-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #059669;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 2px 7px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    .whatsapp-badge-link:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+        box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    }
+
+    .phone-snippet {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 5px;
     }
 
     .empty-state-cell {

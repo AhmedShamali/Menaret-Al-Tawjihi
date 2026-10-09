@@ -700,5 +700,93 @@ class Student extends Authenticatable
 
         return max(0, round($baseFee, 2));
     }
+
+    /**
+     * تنظيف وتنسيق رقم الواتساب ليعمل كرابط مباشر دولي wa.me
+     */
+    public static function formatWhatsappNumber(?string $rawNumber): ?string
+    {
+        if (empty($rawNumber)) {
+            return null;
+        }
+
+        // إزالة كافة الرموز والمسافات والإبقاء على الأرقام فقط
+        $digits = preg_replace('/[^0-9]/', '', (string)$rawNumber);
+
+        if (empty($digits)) {
+            return null;
+        }
+
+        // إذا بدأ بالصفرين الدوليين 00
+        if (str_starts_with($digits, '00')) {
+            $digits = substr($digits, 2);
+        }
+
+        // إذا بدأ بالبادئة المحلية الفلسطينية 059 أو 056 (10 أرقام)
+        if (str_starts_with($digits, '059') || str_starts_with($digits, '056')) {
+            return '970' . substr($digits, 1);
+        }
+
+        // إذا بدأ مباشرة بـ 59 أو 56 وكان طوله 9 أرقام
+        if ((str_starts_with($digits, '59') || str_starts_with($digits, '56')) && strlen($digits) === 9) {
+            return '970' . $digits;
+        }
+
+        // أرقام القدس والداخل (050, 052, 053, 054, 055, 058)
+        if (preg_match('/^05[023458]/', $digits)) {
+            return '972' . substr($digits, 1);
+        }
+
+        // أي رقم يبدأ بـ 05 عامة (افتراض فلسطين 970)
+        if (str_starts_with($digits, '05') && strlen($digits) === 10) {
+            return '970' . substr($digits, 1);
+        }
+
+        // إذا بدأ بـ 07 (الأردن مثلاً 079 / 078 / 077)
+        if (str_starts_with($digits, '07') && strlen($digits) === 10) {
+            return '962' . substr($digits, 1);
+        }
+
+        return $digits;
+    }
+
+    /**
+     * رابط الواتساب المباشر للطالب للفتح الفوري للمدير
+     */
+    public function getWhatsappUrlAttribute(): ?string
+    {
+        $target = $this->whatsapp ?: $this->phone;
+        $formatted = self::formatWhatsappNumber($target);
+
+        if (!$formatted) {
+            return null;
+        }
+
+        return "https://wa.me/{$formatted}";
+    }
+
+    /**
+     * رابط الواتساب المباشر لولي أمر الطالب
+     */
+    public function getGuardianWhatsappUrlAttribute(): ?string
+    {
+        $target = $this->guardian_phone;
+        $formatted = self::formatWhatsappNumber($target);
+
+        if (!$formatted) {
+            return null;
+        }
+
+        return "https://wa.me/{$formatted}";
+    }
+
+    /**
+     * عرض رقم الواتساب المعتمد
+     */
+    public function getDisplayWhatsappAttribute(): string
+    {
+        return (string) ($this->whatsapp ?: ($this->phone ?: 'غير متوفر'));
+    }
 }
+
 

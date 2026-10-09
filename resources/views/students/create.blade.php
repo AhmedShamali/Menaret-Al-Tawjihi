@@ -476,11 +476,20 @@
                     </div>
 
                     <div class="input-group">
-                        <label for="phone"><span>{{ __('رقم جوال الطالب / واتساب') }} <span class="req">*</span></span></label>
+                        <label for="whatsapp">
+                            <span>
+                                <i class="fab fa-whatsapp" style="color: #25D366; font-size: 1.05rem; margin-inline-end: 4px;"></i>
+                                {{ __('رقم الواتساب المعتمد للطالب') }} <span class="req">*</span>
+                            </span>
+                        </label>
                         <div class="input-control-wrap">
-                            <i class="fas fa-mobile-screen-button lead-icon"></i>
-                            <input type="tel" name="phone" id="phone" class="form-input has-icon" placeholder="059XXXXXXX / 056XXXXXXX" required>
+                            <i class="fab fa-whatsapp lead-icon" style="color: #25D366; font-size: 1.15rem;"></i>
+                            <input type="tel" name="whatsapp" id="whatsapp" class="form-input has-icon" placeholder="059XXXXXXX / 056XXXXXXX" required oninput="syncPhoneFromWa(this.value)">
+                            <input type="hidden" name="phone" id="phone_sync">
                         </div>
+                        <small style="color: #059669; font-size: 11px; margin-top: 3px; display: flex; align-items: center; gap: 4px; font-weight: 600;">
+                            <i class="fas fa-circle-check"></i> {{ __('إلزامي: يُرجى كتابة رقم واتساب فعّال للتواصل المباشر مع إدارة المنصة وتفعيل الحساب.') }}
+                        </small>
                     </div>
                 </div>
 
@@ -926,6 +935,23 @@
             return;
         }
 
+        const waInput = document.getElementById('whatsapp');
+        const waVal = waInput ? waInput.value.trim() : '';
+        const waDigits = waVal.replace(/\D/g, '');
+        if (!waVal || waDigits.length < 9) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("رقم الواتساب مطلوب") }}',
+                text: '{{ __("يُرجى إدخال رقم الواتساب المعتمد بصيغة صحيحة (9 أرقام على الأقل، مثال: 0599123456) لضمان تفعيل الحساب ومتابعتك أكاديمياً.") }}',
+                confirmButtonColor: '#1d4ed8',
+                confirmButtonText: '{{ __("حسناً، سأكتب الرقم") }}'
+            });
+            if (waInput) waInput.focus();
+            return;
+        }
+        const phoneSync = document.getElementById('phone_sync');
+        if (phoneSync) phoneSync.value = waVal;
+
         const checkedSubjects = form.querySelectorAll('input[name="subject_ids[]"]:checked');
         if (checkedSubjects.length === 0) {
             Swal.fire({
@@ -1064,6 +1090,13 @@
             regSelect.value = 'gaza';
         } else if (cityVal !== 'أخرى') {
             regSelect.value = 'west_bank';
+        }
+    }
+
+    function syncPhoneFromWa(val) {
+        const phoneSync = document.getElementById('phone_sync');
+        if (phoneSync) {
+            phoneSync.value = val;
         }
     }
 </script>

@@ -17,6 +17,17 @@
         </a>
 
         <div class="student-show-actions" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            @if($student->whatsapp_url)
+                <a href="{{ $student->whatsapp_url }}" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   style="background: #10b981; color: #ffffff; border: 1px solid #059669; padding: 10px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.25); transition: 0.2s;"
+                   onmouseover="this.style.background='#059669'"
+                   onmouseout="this.style.background='#10b981'"
+                   title="{{ __('فتح محادثة واتساب فورية مع الطالب (:num)', ['num' => $student->display_whatsapp]) }}">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 1.15rem;"></i> {{ __('محادثة واتساب مباشرة') }}
+                </a>
+            @endif
             <button type="button" onclick="openDiscountModalDirect()" style="background: #ffffff; color: #6d28d9; border: 1px solid #ddd6fe; padding: 10px 18px; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-tags"></i> {{ __('الخصم والمنحة') }} ({{ $student->discount_label }})
             </button>
@@ -115,12 +126,31 @@
                 </div>
             </div>
 
-            <!-- رقم الجوال -->
+            <!-- رقم الجوال والواتساب -->
             <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <span style="font-size: 0.74rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">{{ __('رقم الجوال') }}</span>
-                <span class="font-mono" style="font-size: 0.88rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;" dir="ltr">
-                    <i class="fa-solid fa-phone" style="color: var(--ed-primary, #1d4ed8);"></i> {{ $student->phone ?? __('غير متوفر') }}
-                </span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.74rem; font-weight: 700; color: #64748b;">{{ __('رقم الجوال والواتساب المعتمد') }}</span>
+                    @if($student->whatsapp_url)
+                        <span style="font-size: 0.68rem; color: #059669; background: #ecfdf5; padding: 1px 6px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                            <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب مفعّل') }}
+                        </span>
+                    @endif
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                    <span class="font-mono" style="font-size: 0.88rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;" dir="ltr">
+                        <i class="fa-solid fa-mobile-screen-button" style="color: var(--ed-primary, #1d4ed8);"></i> {{ $student->display_whatsapp }}
+                    </span>
+                    @if($student->whatsapp_url)
+                        <a href="{{ $student->whatsapp_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;"
+                           onmouseover="this.style.background='#10b981';this.style.color='#ffffff';"
+                           onmouseout="this.style.background='#ecfdf5';this.style.color='#059669';">
+                            <i class="fa-brands fa-whatsapp"></i> {{ __('مراسلة فورية') }}
+                        </a>
+                    @endif
+                </div>
             </div>
 
             <!-- المرحلة والفرع الدراسي -->
@@ -157,10 +187,29 @@
 
             <!-- هاتف ولي الأمر -->
             <div style="background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                <span style="font-size: 0.74rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">{{ __('هاتف ولي الأمر / واتساب') }}</span>
-                <span class="font-mono" style="font-size: 0.88rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;" dir="ltr">
-                    <i class="fa-solid fa-user-shield" style="color: var(--ed-primary, #1d4ed8);"></i> {{ $student->guardian_phone ?? $student->whatsapp ?? __('غير متوفر') }}
-                </span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 0.74rem; font-weight: 700; color: #64748b;">{{ __('هاتف ولي الأمر / المتابعة') }}</span>
+                    @if($student->guardian_whatsapp_url)
+                        <span style="font-size: 0.68rem; color: #059669; background: #ecfdf5; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                            <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب ولي الأمر') }}
+                        </span>
+                    @endif
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+                    <span class="font-mono" style="font-size: 0.88rem; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px;" dir="ltr">
+                        <i class="fa-solid fa-user-shield" style="color: var(--ed-primary, #1d4ed8);"></i> {{ $student->guardian_phone ?: __('غير مسجل') }}
+                    </span>
+                    @if($student->guardian_whatsapp_url)
+                        <a href="{{ $student->guardian_whatsapp_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s;"
+                           onmouseover="this.style.background='#10b981';this.style.color='#ffffff';"
+                           onmouseout="this.style.background='#ecfdf5';this.style.color='#059669';">
+                            <i class="fa-brands fa-whatsapp"></i> {{ __('مراسلة ولي الأمر') }}
+                        </a>
+                    @endif
+                </div>
             </div>
 
             <!-- الجنس والعمر -->

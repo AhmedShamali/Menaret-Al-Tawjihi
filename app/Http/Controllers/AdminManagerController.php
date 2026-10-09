@@ -390,12 +390,21 @@ class AdminManagerController extends Controller {
     }
 
     public function studentStore(Request $request) {
+        $rawWhatsapp = trim((string)($request->input('whatsapp') ?: $request->input('phone') ?: ''));
+        if (!empty($rawWhatsapp)) {
+            $request->merge([
+                'whatsapp' => $rawWhatsapp,
+                'phone'    => $rawWhatsapp,
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'name_ar'  => 'required|string|max:255',
             'email'    => 'required|email|unique:students,email',
             'password' => 'required|min:6',
             'nid'      => 'required|digits:9|unique:students,nid',
             'stage_id' => 'required',
+            'whatsapp' => 'required|string|min:9|max:20',
             'phone'    => 'nullable|string|max:20',
             'photo'    => 'nullable|file|mimes:jpeg,png,jpg,webp|max:10240',
             'id_photo' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240'
@@ -409,6 +418,8 @@ class AdminManagerController extends Controller {
             'nid.digits'        => 'رقم الهوية يجب أن يتكون من 9 أرقام بدقة.',
             'nid.unique'        => 'رقم الهوية مسجل مسبقاً في النظام.',
             'stage_id.required' => 'يرجى اختيار المرحلة أو الفرع الدراسي.',
+            'whatsapp.required' => 'يرجى إدخال رقم الواتساب المعتمد للطالب للتواصل والمتابعة.',
+            'whatsapp.min'      => 'رقم الواتساب يجب أن يتكون من 9 أرقام على الأقل.',
             'photo.mimes'       => 'الصورة الشخصية يجب أن تكون من نوع JPG أو PNG أو WEBP.',
             'photo.max'         => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
             'id_photo.mimes'    => 'وثيقة الهوية يجب أن تكون صورة (JPG, PNG, WEBP) أو ملف PDF.',
@@ -446,12 +457,13 @@ class AdminManagerController extends Controller {
             DB::statement('ALTER TABLE students DROP CONSTRAINT IF EXISTS students_gender_check');
         } catch (\Throwable $e) {}
 
-        $phone = $request->phone ?: '0590000000';
+        $whatsapp = $request->input('whatsapp') ?: $request->input('phone') ?: '0590000000';
+        $phone = $request->input('phone') ?: $whatsapp;
         $age = $request->age ? (int)$request->age : 18;
         $nameEn = $request->name_en ?: $request->name_ar;
         $city = $request->input('city', 'رام الله والبيرة');
         $schoolName = $request->input('school_name');
-        $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
+        $guardianPhone = $request->input('guardian_phone', $whatsapp);
 
         $region = $request->input('region');
         if (!in_array($region, ['gaza', 'west_bank'])) {
@@ -465,7 +477,7 @@ class AdminManagerController extends Controller {
             'age'                => $age,
             'email'              => $request->email,
             'phone'              => $phone,
-            'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
+            'whatsapp'           => $whatsapp,
             'guardian_phone'     => $guardianPhone,
             'city'               => $city,
             'region'             => $region,

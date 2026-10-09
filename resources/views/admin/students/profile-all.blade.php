@@ -67,9 +67,16 @@
                             </div>
                         </td>
                         <td style="text-align: center;">
-                            <a href="{{ route('admin.students.show', $student->id) }}" class="btn-view-profile">
-                                <i class="fa-solid fa-id-card"></i> {{ __('الملف الشخصي') }}
-                            </a>
+                            <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                                @if($student->whatsapp_url)
+                                    <a href="{{ $student->whatsapp_url }}" target="_blank" rel="noopener noreferrer" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; transition: 0.2s;" onmouseover="this.style.background='#10b981';this.style.color='#fff';" onmouseout="this.style.background='#ecfdf5';this.style.color='#059669';" title="{{ __('محادثة واتساب مباشرة') }}">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </a>
+                                @endif
+                                <a href="{{ route('admin.students.show', $student->id) }}" class="btn-view-profile">
+                                    <i class="fa-solid fa-id-card"></i> {{ __('الملف الشخصي') }}
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     @empty

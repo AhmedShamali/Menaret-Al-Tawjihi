@@ -146,8 +146,12 @@
                             <input type="email" name="email" class="modern-input" placeholder="student@example.com" required>
                         </div>
                         <div>
-                            <label class="form-label">رقم التواصل / واتساب <span>*</span></label>
-                            <input type="tel" name="phone" class="modern-input" placeholder="059xxxxxxxx" required>
+                            <label class="form-label"><i class="fab fa-whatsapp" style="color: #10b981; font-size: 1rem; margin-inline-end: 4px;"></i> {{ __('رقم الواتساب المعتمد') }} <span>*</span></label>
+                            <input type="tel" name="whatsapp" id="admin_student_whatsapp" class="modern-input" placeholder="059xxxxxxx أو 056xxxxxxx" required oninput="const p=document.getElementById('admin_student_phone'); if(p) p.value = this.value;">
+                            <input type="hidden" name="phone" id="admin_student_phone">
+                            <small style="color: #059669; font-size: 0.75rem; margin-top: 4px; display: block; font-weight: 700;">
+                                <i class="fas fa-check-circle"></i> {{ __('إلزامي للتواصل والمتابعة الأكاديمية الفورية') }}
+                            </small>
                         </div>
                         <div>
                             <label class="form-label">{{ __('كلمة المرور') }}<span>*</span></label>

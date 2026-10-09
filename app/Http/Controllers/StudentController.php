@@ -107,14 +107,23 @@ class StudentController extends Controller
         $officialEmail = $username . '@tawjihi.ps';
         $request->merge(['email' => $officialEmail]);
 
+        // ضمان دمج وتنسيق رقم الواتساب ورقم الهاتف
+        $rawWhatsapp = trim((string)($request->input('whatsapp') ?: $request->input('phone') ?: ''));
+        if (!empty($rawWhatsapp)) {
+            $request->merge([
+                'whatsapp' => $rawWhatsapp,
+                'phone'    => $rawWhatsapp,
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'name_ar'       => 'required|string|max:255',
             'nid'           => 'required|digits:9|unique:students,nid',
             'email'         => 'required|email|unique:students,email',
             'password'      => 'required|min:6',
             'stage_id'      => 'required',
+            'whatsapp'      => 'required|string|min:9|max:20',
             'phone'         => 'nullable|string|max:20',
-            'whatsapp'      => 'nullable|string|max:20',
             'guardian_phone'=> 'nullable|string|max:20',
             'city'          => 'nullable|string|max:100',
             'region'        => 'nullable|string|in:gaza,west_bank',
@@ -122,18 +131,20 @@ class StudentController extends Controller
             'photo'         => 'nullable|image|mimes:jpeg,png,jpg,webp|max:10240',
             'id_photo'      => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240',
         ], [
-            'name_ar.required' => 'يرجى كتابة الاسم الرباعي كاملاً.',
-            'nid.required'     => 'يرجى إدخال رقم الهوية الفلسطينية.',
-            'nid.digits'       => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
-            'nid.unique'       => 'رقم الهوية هذا مسجل مسبقاً في المنصة.',
-            'email.required'   => 'اسم المستخدم للبريد الأكاديمي مطلوب.',
-            'email.unique'     => 'اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.',
-            'password.min'     => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
-            'stage_id.required'=> 'يرجى اختيار الفرع أو المرحلة الدراسية.',
-            'photo.image'      => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
-            'photo.max'        => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
-            'id_photo.max'     => 'حجم وثيقة الهوية يجب ألا يتجاوز 10 ميغابايت.',
-            'id_photo.mimes'   => 'وثيقة الهوية يجب أن تكون صورة (JPG, PNG, WEBP) أو ملف PDF.',
+            'name_ar.required'  => 'يرجى كتابة الاسم الرباعي كاملاً.',
+            'nid.required'      => 'يرجى إدخال رقم الهوية الفلسطينية.',
+            'nid.digits'        => 'رقم الهوية يجب أن يتكون من 9 أرقام.',
+            'nid.unique'        => 'رقم الهوية هذا مسجل مسبقاً في المنصة.',
+            'email.required'    => 'اسم المستخدم للبريد الأكاديمي مطلوب.',
+            'email.unique'      => 'اسم المستخدم هذا مسجل مسبقاً، يرجى اختيار اسم مستخدم آخر.',
+            'password.min'      => 'كلمة المرور يجب أن لا تقل عن 6 خانات.',
+            'stage_id.required' => 'يرجى اختيار الفرع أو المرحلة الدراسية.',
+            'whatsapp.required' => 'يرجى إدخال رقم الواتساب المعتمد للطالب (حقل إلزامي للتواصل والمتابعة الأكاديمية الفورية).',
+            'whatsapp.min'      => 'رقم الواتساب المدخل غير صالح، يجب أن يتكون من 9 أرقام على الأقل.',
+            'photo.image'       => 'الصورة الشخصية يجب أن تكون ملف صورة صالح (JPG, PNG, WEBP).',
+            'photo.max'         => 'حجم الصورة الشخصية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.max'      => 'حجم وثيقة الهوية يجب ألا يتجاوز 10 ميغابايت.',
+            'id_photo.mimes'    => 'وثيقة الهوية يجب أن تكون صورة (JPG, PNG, WEBP) أو ملف PDF.',
         ]);
 
         if ($validator->fails()) {
@@ -171,7 +182,8 @@ class StudentController extends Controller
             ->first();
         $stageId = $stage ? $stage->id : (Stage::where('grade_level', 122)->value('id') ?? 1);
 
-        $phone = $request->phone ?: '0590000000';
+        $whatsapp = $request->input('whatsapp') ?: $request->input('phone') ?: '0590000000';
+        $phone = $request->input('phone') ?: $whatsapp;
         $age = $request->age ? (int)$request->age : 18;
         $nameEn = $request->name_en ?: $request->name_ar;
         $city = $request->input('city', 'رام الله والبيرة');
@@ -181,7 +193,7 @@ class StudentController extends Controller
             $region = $dummyStd->inferRegionFromCity();
         }
         $schoolName = $request->input('school_name');
-        $guardianPhone = $request->input('guardian_phone', $request->input('whatsapp'));
+        $guardianPhone = $request->input('guardian_phone', $whatsapp);
 
         $isAdmin = Auth::guard('web')->check();
         $accountStatus = $isAdmin ? 'active' : 'pending';
@@ -194,7 +206,7 @@ class StudentController extends Controller
             'age'                => $age,
             'email'              => $request->email,
             'phone'              => $phone,
-            'whatsapp'           => $request->whatsapp ?? $guardianPhone ?? $phone,
+            'whatsapp'           => $whatsapp,
             'guardian_phone'     => $guardianPhone,
             'city'               => $city,
             'region'             => $region,

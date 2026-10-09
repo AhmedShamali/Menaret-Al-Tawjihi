@@ -14,6 +14,12 @@
             <p class="page-subtitle">{{ __('يرجى التأكد من مطابقة وثيقة الهوية مع البيانات والاسم الأكاديمي المدخل.') }}</p>
         </div>
         <div class="header-actions">
+            @if($student->whatsapp_url)
+                <a href="{{ $student->whatsapp_url }}" target="_blank" rel="noopener noreferrer" style="background: #10b981; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.88rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'" title="{{ __('فتح محادثة واتساب مع الطالب قبل الاعتماد') }}">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 1.15rem;"></i>
+                    <span>{{ __('مراسلة الطالب واتساب') }}</span>
+                </a>
+            @endif
             <button type="button" onclick="approveStudent({{ $student->id }})" class="btn-approve">
                 <i class="fa-solid fa-circle-check"></i>
                 <span>{{ __('اعتماد وتفعيل الحساب') }}</span>
@@ -110,9 +116,29 @@
                     <strong class="val stage-pill">{{ $student->stage->label_ar ?? __('غير محدد') }}</strong>
                 </div>
                 <div class="info-row">
-                    <span class="lbl"><i class="fa-solid fa-phone"></i> {{ __('الجوال:') }}</span>
-                    <strong class="val font-mono" dir="ltr">{{ $student->phone }}</strong>
+                    <span class="lbl"><i class="fa-brands fa-whatsapp" style="color: #10b981;"></i> {{ __('الواتساب المعتمد:') }}</span>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <strong class="val font-mono" dir="ltr">{{ $student->display_whatsapp }}</strong>
+                        @if($student->whatsapp_url)
+                            <a href="{{ $student->whatsapp_url }}" target="_blank" rel="noopener noreferrer" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                <i class="fa-brands fa-whatsapp"></i> {{ __('محادثة فورية') }}
+                            </a>
+                        @endif
+                    </div>
                 </div>
+                @if($student->guardian_phone)
+                    <div class="info-row">
+                        <span class="lbl"><i class="fa-solid fa-user-shield"></i> {{ __('هاتف ولي الأمر:') }}</span>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong class="val font-mono" dir="ltr">{{ $student->guardian_phone }}</strong>
+                            @if($student->guardian_whatsapp_url)
+                                <a href="{{ $student->guardian_whatsapp_url }}" target="_blank" rel="noopener noreferrer" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                    <i class="fa-brands fa-whatsapp"></i> {{ __('واتساب') }}
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                @endif
                 <div class="info-row">
                     <span class="lbl"><i class="fa-solid fa-envelope"></i> {{ __('البريد الإلكتروني:') }}</span>
                     <strong class="val font-mono text-sm">{{ $student->email }}</strong>

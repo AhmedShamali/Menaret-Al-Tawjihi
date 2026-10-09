@@ -240,7 +240,13 @@
                         <div class="student-sub-line">
                             <span class="branch-pill">{{ $stageDisplayName }}</span>
                             <span class="region-pill-mini {{ $student->resolved_region === 'gaza' ? 'bg-gaza' : 'bg-wb' }}">{{ $regionBadge }}</span>
-                            <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? ($student->nid ?? '-') }}</span>
+                            @if($student->whatsapp_url)
+                                <a href="{{ $student->whatsapp_url }}" target="_blank" rel="noopener noreferrer" class="monthly-wa-chip" title="{{ __('فتح واتساب الطالب للمتابعة المالية (:num)', ['num' => $student->display_whatsapp]) }}">
+                                    <i class="fa-brands fa-whatsapp"></i> <span dir="ltr">{{ $student->display_whatsapp }}</span>
+                                </a>
+                            @else
+                                <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? ($student->nid ?? '-') }}</span>
+                            @endif
                             @if(!empty($student->plain_password))
                                 <code class="pass-chip font-mono" title="{{ __('كلمة المرور') }}" onclick="if(typeof Swal !== 'undefined'){ navigator.clipboard.writeText('{{ $student->plain_password }}'); Swal.fire({toast:true,position:'top-end',icon:'success',title:'{{ __('تم نسخ كلمة المرور') }}',showConfirmButton:false,timer:1500}); }">{{ $student->plain_password }}</code>
                             @endif
@@ -350,6 +356,17 @@
 
                 {{-- أزرار التحكم والسندات --}}
                 <div class="student-actions-block">
+                    @if($student->whatsapp_url)
+                        <a href="{{ $student->whatsapp_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn-statement-whatsapp"
+                           title="{{ __('مراسلة الطالب مباشرة عبر واتساب للمتابعة والتحصيل') }}">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            <span>{{ __('واتساب') }}</span>
+                        </a>
+                    @endif
+
                     <button type="button" 
                             class="btn-statement-royal"
                             onclick="openStudentStatementModal({{ $student->id }})"
@@ -1723,6 +1740,46 @@
     .btn-statement-royal:hover {
         background: #fef3c7;
         border-color: #b45309;
+    }
+    .btn-statement-whatsapp {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #059669;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 0.74rem;
+        font-weight: 800;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+    }
+    .btn-statement-whatsapp:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25);
+    }
+    .monthly-wa-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #059669;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        padding: 2px 7px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .monthly-wa-chip:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
     }
     .btn-student-profile-link {
         background: #eff6ff;
