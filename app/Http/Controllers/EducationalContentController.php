@@ -1141,8 +1141,8 @@ class EducationalContentController extends Controller
         // 1. فحص توفر ملف MP4 محلي على الخادم (سواء كان مرفوعاً أو تم تحويله وتخزينه مسبقاً من يوتيوب)
         $localPath = OfflineVideoManager::resolveLocalMp4Path($content);
         if ($localPath && file_exists($localPath)) {
-            // إتاحة التحميل المباشر للطلبة والمعلمين والإدارة عند الضغط على زر التحميل أو بالمتصفح
-            if (!$isInternalXhr || request()->query('force_download') === '1') {
+            // التحميل المباشر كملف خارجي مسموح حصرياً للإدارة والمعلمين فقط (أما الطالب فحصرياً للحفظ والتشغيل داخل المنصة أوفلاين)
+            if ($isStaff && request()->query('force_download') === '1') {
                 return response()->download($localPath, $fileName, [
                     'Content-Type' => 'video/mp4',
                     'Accept-Ranges' => 'bytes',
@@ -1162,7 +1162,7 @@ class EducationalContentController extends Controller
             if (OfflineVideoManager::isEngineAvailable()) {
                 $conversion = OfflineVideoManager::downloadAndCacheYouTube($content);
                 if ($conversion['success'] && !empty($conversion['path']) && file_exists($conversion['path'])) {
-                    if ($isStaff && (!$isInternalXhr || request()->query('force_download') === '1')) {
+                    if ($isStaff && request()->query('force_download') === '1') {
                         return response()->download($conversion['path'], $fileName, [
                             'Content-Type' => 'video/mp4',
                             'Accept-Ranges' => 'bytes',
