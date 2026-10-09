@@ -489,6 +489,9 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     Route::get('/contents/create', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'create'])->name('contents.create');
     Route::post('/contents', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'store'])->name('contents.store');
     Route::match(['delete', 'post'], '/contents/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'destroy'])->name('contents.destroy')->whereNumber('id');
+    Route::match(['delete', 'post'], '/contents/purge-all', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'purgeAllContents'])->name('contents.purgeAll');
+    Route::post('/contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggle_visibility')->whereNumber('id');
+    Route::post('/visibility/toggle/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('visibility.toggle')->whereNumber('id');
     Route::get('/contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('contents.edit')->whereNumber('id');
     Route::match(['put', 'post'], '/contents/{id}', [EducationalContentController::class, 'update'])->name('contents.update')->whereNumber('id');
     Route::post('/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('contents.sync_branches')->whereNumber('id');

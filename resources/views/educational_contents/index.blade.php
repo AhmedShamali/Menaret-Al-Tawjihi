@@ -138,10 +138,12 @@
                 popup: 'swal2-custom-popup'
             }
         }).then((result) => {
-            if (result.isConfirmed) {
-                const deleteUrl = userRole === 'admin' 
-                    ? `/admin/educational-contents/${id}` 
-                    : `/teacher/educational-contents/${id}`;
+                let deleteUrl = `/teacher/educational-contents/${id}`;
+                if (userRole === 'admin') {
+                    deleteUrl = `/admin/educational-contents/${id}`;
+                } else if (userRole === 'videographer') {
+                    deleteUrl = `/videographer/contents/${id}`;
+                }
 
                 axios.post(deleteUrl, {
                     _method: 'DELETE',
@@ -197,9 +199,12 @@
                     }
                 });
 
-                const purgeUrl = userRole === 'admin' 
-                    ? "{{ route('admin.educational_contents.purgeAll') }}" 
-                    : "{{ route('teacher.educational_contents.purgeAll') }}";
+                let purgeUrl = "{{ route('teacher.educational_contents.purgeAll') }}";
+                if (userRole === 'admin') {
+                    purgeUrl = "{{ route('admin.educational_contents.purgeAll') }}";
+                } else if (userRole === 'videographer') {
+                    purgeUrl = "{{ route('videographer.contents.purgeAll') }}";
+                }
 
                 axios.post(purgeUrl, {
                     _token: '{{ csrf_token() }}',

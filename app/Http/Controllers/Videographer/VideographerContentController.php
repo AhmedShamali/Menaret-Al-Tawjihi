@@ -73,6 +73,16 @@ class VideographerContentController extends Controller
             });
         }
 
+        if ($request->filled('visibility')) {
+            if ($request->visibility === 'visible') {
+                $query->where('is_visible', true);
+            } elseif ($request->visibility === 'hidden') {
+                $query->where(function($q) {
+                    $q->where('is_visible', false)->orWhereNull('is_visible');
+                });
+            }
+        }
+
         $contents = $query->latest()->paginate(20)->withQueryString();
         $stages = Stage::with('subjects')->orderBy('grade_level')->get();
 
@@ -474,80 +484,216 @@ class VideographerContentController extends Controller
     }
 
     /**
-     * حذف فيديو من مكتبة المصور
+     * إتاحة أو حجب الفيديو عن الطلاب بلمسة واحدة للمصور
+     */
+    public function toggleVisibility($id, Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer'])) {
+            return response()->json(['success' => false, 'error' => 'غير مصرح لك بتعديل حالة هذا المحتوى'], 403);
+        }
+
+        $content = EducationalContent::findOrFail($id);
+        $newVisible = $content->is_visible ? 0 : 1;
+        $content->update(['is_visible' => $newVisible]);
+
+        // مزامنة حالة العرض/الحجب مع كافة النسخ الموزعة في الفروع الشقيقة تلقائياً
+        try {
+            $sisterQuery = EducationalContent::where('id', '!=', $content->id);
+            if (!empty($content->url_path)) {
+                $sisterQuery->where('url_path', $content->url_path);
+            } elseif (!empty($content->pdf_path)) {
+                $sisterQuery->where('pdf_path', $content->pdf_path);
+            } elseif (!empty($content->title)) {
+                $sisterQuery->where('title', $content->title);
+            }
+            $sisterIds = $sisterQuery->pluck('id')->toArray();
+            $sisterQuery->update(['is_visible' => $newVisible]);
+
+            // تحديث تعيينات وصول الطلبة في ContentAssignment لضمان الحجب الفوري أو الإتاحة الفورية
+            $allAffectedIds = array_merge([(int)$content->id], $sisterIds);
+            \App\Models\ContentAssignment::whereIn('educational_content_id', $allAffectedIds)
+                ->update(['is_visible' => (bool)$newVisible]);
+        } catch (\Throwable $e) {}
+
+        $msg = $newVisible 
+            ? 'تم إتاحة وعرض الفيديو للطلاب بنجاح 🟢' 
+            : 'تم حجب الفيديو وقفله عن الطلاب 🔒';
+
+        return response()->json([
+            'success'    => true,
+            'is_visible' => (bool)$newVisible,
+            'message'    => $msg
+        ]);
+    }
+
+    /**
+     * حذف فيديو نهائياً من قاعدة البيانات والسيرفر
      */
     public function destroy($id)
     {
-        $userId = auth()->id();
-        $isAdmin = auth()->user()->role === 'admin';
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer', 'teacher'])) {
+            abort(403, 'غير مصرح لك بحذف هذا المحتوى.');
+        }
 
         $content = EducationalContent::find($id);
 
         if (!$content) {
-            $msg = 'المحاضرة غير موجودة أو تم حذفها مسبقاً من السيرفر ✅';
+            $msg = 'المحاضرة تم مسحها بالفعل مسبقاً من قاعدة البيانات والسيرفر ✅';
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json(['success' => true, 'already_deleted' => true, 'message' => $msg]);
             }
             return redirect()->back()->with('success', $msg);
         }
 
-        $user = auth()->user();
-        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer', 'teacher'])) {
-            abort(403, 'غير مصرح لك بحذف هذا المحتوى.');
-        }
-
         $title = $content->title;
         $urlPath = $content->url_path;
+        $pdfPath = $content->pdf_path;
 
-        // حذف المحاضرة وجميع النسخ الموزعة في الفروع الشقيقة
-        $allIds = [$content->id];
-        if (!empty($urlPath)) {
-            $sisterIds = EducationalContent::where('id', '!=', $content->id)
-                ->where('title', $content->title)
-                ->where('url_path', $urlPath)
-                ->pluck('id')
-                ->toArray();
-            if (!empty($sisterIds)) {
-                $allIds = array_merge($allIds, $sisterIds);
-            }
+        // العثور على المحاضرة وكافة النسخ الموزعة منها في الفروع الشقيقة بدقة
+        $allIds = EducationalContent::where('id', $content->id)
+            ->orWhere(function($q) use ($content, $urlPath, $pdfPath) {
+                if (!empty($urlPath)) {
+                    $q->where('url_path', $urlPath);
+                }
+                if (!empty($pdfPath)) {
+                    $q->orWhere('pdf_path', $pdfPath);
+                }
+                if (!empty($content->title)) {
+                    $q->orWhere(function($subQ) use ($content) {
+                        $subQ->where('title', $content->title)
+                             ->where('uploaded_by', $content->uploaded_by);
+                    });
+                }
+            })
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($allIds)) {
+            $allIds = [(int)$content->id];
         }
 
+        // مسح كافة التبعيات من الجداول المرتبطة لفك أي قيود
         try {
             \DB::table('recommendations')->whereIn('content_id', $allIds)->delete();
         } catch (\Throwable $e) {}
         try {
             \App\Models\ContentAssignment::whereIn('educational_content_id', $allIds)->delete();
-            \DB::table('content_assignments')->whereIn('content_id', $allIds)->delete();
+            \DB::table('content_assignments')->whereIn('content_id', $allIds)->orWhereIn('educational_content_id', $allIds)->delete();
+        } catch (\Throwable $e) {}
+        try {
             \App\Models\VideoProgress::whereIn('educational_content_id', $allIds)->delete();
+            \DB::table('video_progress')->whereIn('content_id', $allIds)->orWhereIn('educational_content_id', $allIds)->delete();
             \App\Models\VideoNote::whereIn('educational_content_id', $allIds)->delete();
+            \DB::table('video_notes')->whereIn('content_id', $allIds)->orWhereIn('educational_content_id', $allIds)->delete();
         } catch (\Throwable $e) {}
 
-        // حذف الملفات المرتبطة إن وجدت ولم تكن مستخدمة في محتوى آخر
-        if (!empty($content->url_path) && !str_starts_with($content->url_path, 'http')) {
-            $otherUses = EducationalContent::whereNotIn('id', $allIds)->where('url_path', $content->url_path)->exists();
+        // حذف الملفات الفعلية من السيرفر إن لم تكن مستخدمة في سجلات أخرى
+        if (!empty($urlPath) && !str_starts_with($urlPath, 'http')) {
+            $otherUses = EducationalContent::whereNotIn('id', $allIds)->where('url_path', $urlPath)->exists();
             if (!$otherUses) {
-                try { Storage::disk('public')->delete($content->url_path); } catch (\Throwable $e) {}
+                try { Storage::disk('public')->delete($urlPath); } catch (\Throwable $e) {}
             }
         }
-        if (!empty($content->pdf_path)) {
-            $otherPdf = EducationalContent::whereNotIn('id', $allIds)->where('pdf_path', $content->pdf_path)->exists();
+        if (!empty($pdfPath)) {
+            $otherPdf = EducationalContent::whereNotIn('id', $allIds)->where('pdf_path', $pdfPath)->exists();
             if (!$otherPdf) {
-                try { Storage::disk('public')->delete($content->pdf_path); } catch (\Throwable $e) {}
+                try { Storage::disk('public')->delete($pdfPath); } catch (\Throwable $e) {}
             }
         }
 
+        // حذف السجلات نهائياً ومباشرة من قاعدة البيانات
+        \DB::table('educational_contents')->whereIn('id', $allIds)->delete();
         EducationalContent::whereIn('id', $allIds)->delete();
+
+        // مسح كاش المزامنة التلقائية
+        try {
+            \Illuminate\Support\Facades\Cache::forget('educational_contents_last_synced_at');
+        } catch (\Throwable $e) {}
 
         $count = count($allIds);
         $msg = $count > 1 
-            ? "تم حذف المحاضرة \"{$title}\" بنجاح من كافة الفروع الأكاديمية ({$count} فروع) ✅"
-            : "تم حذف المحاضرة \"{$title}\" بنجاح ✅";
+            ? "تم مسح وحذف المحاضرة \"{$title}\" وكافة نسخها في الفروع ({$count} فروع) نهائياً من قاعدة البيانات ✅"
+            : "تم مسح وحذف المحاضرة \"{$title}\" نهائياً من قاعدة البيانات بنجاح ✅";
 
         if (request()->ajax() || request()->wantsJson()) {
-            return response()->json(['success' => true, 'message' => $msg]);
+            return response()->json(['success' => true, 'message' => $msg, 'deleted_ids' => $allIds]);
         }
 
         return redirect()->back()->with('success', $msg);
+    }
+
+    /**
+     * تصفير وحذف جميع المحتويات المرفوعة بواسطة المصور نهائياً من قاعدة البيانات
+     */
+    public function purgeAllContents(Request $request)
+    {
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['admin', 'super_admin', 'videographer'])) {
+            return response()->json(['success' => false, 'message' => 'غير مصرح لك بتنفيذ هذا الإجراء'], 403);
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            $query = EducationalContent::query();
+            if ($user->role === 'videographer') {
+                $query->where('uploaded_by', $user->id);
+            }
+
+            $contentIds = $query->pluck('id')->toArray();
+            $totalCount = count($contentIds);
+
+            if ($totalCount > 0) {
+                // العثور على كافة النسخ الشقيقة المرتبطة بهذه المحتويات
+                $urls = EducationalContent::whereIn('id', $contentIds)->whereNotNull('url_path')->pluck('url_path')->toArray();
+                $pdfs = EducationalContent::whereIn('id', $contentIds)->whereNotNull('pdf_path')->pluck('pdf_path')->toArray();
+                
+                $allSisterIds = EducationalContent::where(function($q) use ($contentIds, $urls, $pdfs, $user) {
+                    $q->whereIn('id', $contentIds)->orWhere('uploaded_by', $user->id);
+                    if (!empty($urls)) $q->orWhereIn('url_path', $urls);
+                    if (!empty($pdfs)) $q->orWhereIn('pdf_path', $pdfs);
+                })->pluck('id')->toArray();
+
+                try {
+                    \DB::table('recommendations')->whereIn('content_id', $allSisterIds)->delete();
+                } catch (\Throwable $e) {}
+
+                try {
+                    \App\Models\ContentAssignment::whereIn('educational_content_id', $allSisterIds)->delete();
+                    \DB::table('content_assignments')->whereIn('content_id', $allSisterIds)->orWhereIn('educational_content_id', $allSisterIds)->delete();
+                } catch (\Throwable $e) {}
+
+                try {
+                    \App\Models\VideoProgress::whereIn('educational_content_id', $allSisterIds)->delete();
+                    \DB::table('video_progress')->whereIn('content_id', $allSisterIds)->orWhereIn('educational_content_id', $allSisterIds)->delete();
+                    \App\Models\VideoNote::whereIn('educational_content_id', $allSisterIds)->delete();
+                    \DB::table('video_notes')->whereIn('content_id', $allSisterIds)->orWhereIn('educational_content_id', $allSisterIds)->delete();
+                } catch (\Throwable $e) {}
+
+                // حذف السجلات نهائياً من قاعدة البيانات
+                \DB::table('educational_contents')->whereIn('id', $allSisterIds)->delete();
+                EducationalContent::whereIn('id', $allSisterIds)->delete();
+            }
+
+            \DB::commit();
+
+            try {
+                \Illuminate\Support\Facades\Cache::forget('educational_contents_last_synced_at');
+            } catch (\Throwable $e) {}
+
+            $msg = "تم حذف وتصفير ({$totalCount}) محتوى تعليمي نهائياً من قاعدة البيانات بنجاح 🗑️";
+
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+
+            return redirect()->back()->with('success', $msg);
+        } catch (\Throwable $e) {
+            \DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'حدث خطأ أثناء محاولة الحذف من قاعدة البيانات: ' . $e->getMessage()], 500);
+        }
     }
 
     /**

@@ -168,6 +168,7 @@
                             <th style="padding: 14px 16px;">{{ __('الفرع الأكاديمي') }}</th>
                             <th style="padding: 14px 16px;">{{ __('المادة') }}</th>
                             <th style="padding: 14px 16px;">{{ __('الملفات المرفقة') }}</th>
+                            <th style="padding: 14px 16px; text-align: center;">{{ __('حالة العرض للطلاب') }}</th>
                             <th style="padding: 14px 16px;">{{ __('المشاهدات') }}</th>
                             <th style="padding: 14px 16px;">{{ __('تاريخ النشر') }}</th>
                             <th style="padding: 14px 20px; text-align: center;">{{ __('الإجراءات') }}</th>
@@ -175,7 +176,10 @@
                     </thead>
                     <tbody style="divide-y: 1px solid var(--ed-border);">
                         @foreach($recentContents as $content)
-                            <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                            @php
+                                $isVis = (bool) ($content->is_visible ?? true);
+                            @endphp
+                            <tr id="content_row_{{ $content->id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                                 <td style="padding: 14px 20px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
                                         <div style="width: 38px; height: 38px; border-radius: 8px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1rem; flex-shrink: 0;">
@@ -217,6 +221,16 @@
                                         @endif
                                     </div>
                                 </td>
+                                <td style="padding: 14px 16px; text-align: center;">
+                                    <button type="button" 
+                                            id="dash_vis_btn_{{ $content->id }}" 
+                                            onclick="toggleVideographerVisibility({{ $content->id }}, this)" 
+                                            class="vis-toggle-pill {{ $isVis ? 'is-visible' : 'is-hidden' }}" 
+                                            title="{{ $isVis ? __('انقر لقفل وحجب المحاضرة فوراً عن الطلاب') : __('انقر لإتاحة وعرض المحاضرة فوراً للطلاب') }}">
+                                        <i class="fa-solid {{ $isVis ? 'fa-eye' : 'fa-eye-slash' }}"></i>
+                                        <span>{{ $isVis ? __('متاح للطلبة') : __('محجوب عن الطلبة') }}</span>
+                                    </button>
+                                </td>
                                 <td style="padding: 14px 16px; color: #64748b; font-weight: 600; font-size: 0.84rem;">
                                     <i class="fa-regular fa-eye" style="margin-left: 4px;"></i> {{ number_format($content->views_count) }}
                                 </td>
@@ -224,10 +238,10 @@
                                     {{ $content->created_at ? $content->created_at->format('Y-m-d') : '-' }}
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
-                                    <form action="{{ route('videographer.contents.destroy', $content->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة؟') }}')" style="display: inline-block; margin: 0;">
+                                    <form action="{{ route('videographer.contents.destroy', $content->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة نهائياً من قاعدة البيانات والسيرفر؟') }}')" style="display: inline-block; margin: 0;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف') }}">
+                                        <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف نهائي') }}">
                                             <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
                                         </button>
                                     </form>
@@ -242,4 +256,102 @@
     </div>
 
 </div>
+
+<script>
+async function toggleVideographerVisibility(id, btn) {
+    const pillBtn = btn || document.getElementById('dash_vis_btn_' + id);
+    const origHtml = pillBtn ? pillBtn.innerHTML : '';
+    if (pillBtn) {
+        pillBtn.disabled = true;
+        pillBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>{{ __("جاري التحديث...") }}</span>';
+    }
+
+    try {
+        const response = await fetch('/videographer/contents/' + id + '/toggle-visibility', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const isVis = Boolean(data.is_visible);
+            if (pillBtn) {
+                pillBtn.className = 'vis-toggle-pill ' + (isVis ? 'is-visible' : 'is-hidden');
+                pillBtn.title = isVis ? '{{ __("انقر لقفل وحجب المحاضرة فوراً عن الطلاب") }}' : '{{ __("انقر لإتاحة وعرض المحاضرة فوراً للطلاب") }}';
+                pillBtn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-eye-slash'}"></i><span>${isVis ? '{{ __("متاح للطلبة") }}' : '{{ __("محجوب عن الطلبة") }}'}</span>`;
+                pillBtn.disabled = false;
+            }
+
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+                    icon: 'success',
+                    title: data.message || '{{ __("تم تحديث حالة العرض للطلاب بنجاح") }}',
+                    showConfirmButton: false,
+                    timer: 2200
+                });
+            }
+        } else {
+            throw new Error(data.error || 'حدث خطأ أثناء التحديث');
+        }
+    } catch (err) {
+        if (pillBtn) {
+            pillBtn.disabled = false;
+            pillBtn.innerHTML = origHtml;
+        }
+        if (window.Swal) {
+            Swal.fire({
+                icon: 'error',
+                title: 'خطأ',
+                text: err.message || 'تعذر تحديث حالة العرض حالياً.'
+            });
+        }
+    }
+}
+</script>
+
+<style>
+.vis-toggle-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.vis-toggle-pill.is-visible {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1.5px solid #a7f3d0;
+}
+.vis-toggle-pill.is-visible:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(16, 185, 129, 0.15);
+}
+
+.vis-toggle-pill.is-hidden {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1.5px solid #fecaca;
+}
+.vis-toggle-pill.is-hidden:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(239, 68, 68, 0.15);
+}
+</style>
 @endsection

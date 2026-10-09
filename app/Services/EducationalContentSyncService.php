@@ -104,7 +104,7 @@ class EducationalContentSyncService
                     'channel_name'  => $channelName,
                     'file_size'     => $content->file_size,
                     'order'         => $content->order ?? 1,
-                    'is_visible'    => true,
+                    'is_visible'    => (bool) ($content->is_visible ?? true),
                     'target_region' => $content->target_region ?? 'all',
                 ]);
                 $replicatedCount++;
@@ -140,13 +140,14 @@ class EducationalContentSyncService
                 ->flip();
 
             $now = now();
+            $isVisibleState = (bool) ($content->is_visible ?? true);
             $records = [];
             foreach ($enrollmentIds as $enrId) {
                 if (!isset($alreadyAssigned[$enrId])) {
                     $records[] = [
                         'enrollment_id'          => $enrId,
                         'educational_content_id' => $content->id,
-                        'is_visible'             => true,
+                        'is_visible'             => $isVisibleState,
                         'created_at'             => $now,
                         'updated_at'             => $now,
                     ];
