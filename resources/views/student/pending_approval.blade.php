@@ -62,15 +62,20 @@
             <!-- زر التواصل المباشر مع المشرف العام عبر واتساب لفك التجميد -->
             <div class="unfreeze-actions-strip">
                 @php
+                    $rawWa = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
+                    $cleanWa = preg_replace('/[^0-9]/', '', $rawWa) ?: '970597694385';
+                    if (!str_starts_with($cleanWa, '970') && !str_starts_with($cleanWa, '972')) {
+                        $cleanWa = '970' . ltrim($cleanWa, '0');
+                    }
                     $waUnfreeze = urlencode(app()->getLocale() === 'ar'
                         ? ("السلام عليكم م.أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هويتي (" . ($student->nid ?? '-') . ")، حسابي مجمد على المنصة بسبب: [" . ($student->freeze_reason ?: 'عدم سداد الرسوم أو مراجعة الإدارة') . "]. أرجو التكرم بمساعدتي لفك التجميد وإعادة تفعيل الحساب.")
                         : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") ID (" . ($student->nid ?? '-') . "), my account is frozen. Please assist me in unfreezing and reactivating my account."));
                 @endphp
-                <a href="https://wa.me/970567897212?text={{ $waUnfreeze }}" 
+                <a href="https://wa.me/{{ $cleanWa }}?text={{ $waUnfreeze }}" 
                    target="_blank" 
                    class="btn-whatsapp-unfreeze">
                     <i class="fa-brands fa-whatsapp"></i>
-                    <span>{{ __('تواصل مباشرة مع المشرف العام لفك التجميد (واتساب: 0567897212)') }}</span>
+                    <span>{{ __('تواصل مباشرة مع المشرف العام لفك التجميد (واتساب: 00970597694385)') }}</span>
                 </a>
             </div>
 
@@ -554,18 +559,23 @@
         <!-- أزرار الإجراء والتواصل المباشر مع المشرف -->
         <div class="pending-actions-wrap">
             @php
+                $rawWa = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
+                $cleanWa = preg_replace('/[^0-9]/', '', $rawWa) ?: '970597694385';
+                if (!str_starts_with($cleanWa, '970') && !str_starts_with($cleanWa, '972')) {
+                    $cleanWa = '970' . ltrim($cleanWa, '0');
+                }
                 $waMsg = urlencode(app()->getLocale() === 'ar'
                     ? ("مرحباً بشمهندس أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة Step by Step وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
                     : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Step by Step platform and paid tuition. Please verify and activate my enrollment."));
             @endphp
-            <a href="https://wa.me/970567897212?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
+            <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
                 <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام (م.أحمد شمالي) عبر واتساب') }}
             </a>
 
             <div class="whatsapp-direct-info">
                 <i class="fa-solid fa-phone"></i>
                 <span>{{ __('رقم التواصل المباشر / واتساب:') }}</span>
-                <a href="https://wa.me/970567897212?text={{ $waMsg }}" target="_blank" dir="ltr" class="phone-link">0567897212</a>
+                <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" dir="ltr" class="phone-link">00970597694385</a>
             </div>
 
             <div class="secondary-actions-row">
@@ -721,7 +731,7 @@
         }
         msg += ` أرجو التكرم باعتماد وتفعيل حسابي.`;
 
-        const waUrl = `https://wa.me/970567897212?text=${encodeURIComponent(msg)}`;
+        const waUrl = `https://wa.me/{{ $cleanWa ?? '970597694385' }}?text=${encodeURIComponent(msg)}`;
         const waBtn = document.getElementById('supervisorWhatsAppBtn');
         if (waBtn) {
             waBtn.href = waUrl;
