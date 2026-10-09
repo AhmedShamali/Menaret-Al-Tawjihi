@@ -30,7 +30,7 @@
             </button>
 
             <!-- زر الإضافة الديناميكي -->
-            <a href="{{ route(auth()->user()->role . '.educational_contents.create') }}" class="btn-primary-create">
+            <a href="{{ auth()->user()->role === 'videographer' ? url('/videographer/contents/create') : (Route::has(auth()->user()->role . '.educational_contents.create') ? route(auth()->user()->role . '.educational_contents.create') : url('/' . auth()->user()->role . '/educational-contents/create')) }}" class="btn-primary-create">
                 <i class="fa-solid fa-plus-circle"></i>
                 <span>{{ __('إضافة محتوى جديد') }}</span>
             </a>
@@ -199,11 +199,11 @@
                     }
                 });
 
-                let purgeUrl = "{{ route('teacher.educational_contents.purgeAll') }}";
+                let purgeUrl = "{{ url('/teacher/educational_contents/purge-all') }}";
                 if (userRole === 'admin') {
-                    purgeUrl = "{{ route('admin.educational_contents.purgeAll') }}";
+                    purgeUrl = "{{ url('/admin/educational-contents/purge-all') }}";
                 } else if (userRole === 'videographer') {
-                    purgeUrl = "{{ route('videographer.contents.purgeAll') }}";
+                    purgeUrl = "{{ url('/videographer/contents/purge-all') }}";
                 }
 
                 axios.post(purgeUrl, {

@@ -475,7 +475,7 @@
                         didOpen: () => { Swal.showLoading(); }
                     });
 
-                    fetch('{{ route("videographer.contents.purgeAll") }}', {
+                    fetch('{{ url("/videographer/contents/purge-all") }}', {
                         method: 'POST',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}',
@@ -515,7 +515,7 @@
             if (confirm('هل أنت متأكد من حذف وتصفير كافة محاضراتك نهائياً من قاعدة البيانات والسيرفر؟')) {
                 const form = document.createElement('form');
                 form.method = 'POST';
-                form.action = '{{ route("videographer.contents.purgeAll") }}';
+                form.action = '{{ url("/videographer/contents/purge-all") }}';
                 const token = document.createElement('input');
                 token.type = 'hidden';
                 token.name = '_token';
