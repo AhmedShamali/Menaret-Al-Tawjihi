@@ -1309,6 +1309,41 @@
             return;
         }
 
+        // التحقق من أن كل سؤال يحتوي إما على نص أو صورة مرفقة
+        let emptyQuestion = null;
+        let emptyQuestionIndex = 0;
+        qCards.forEach((card, idx) => {
+            const textarea = card.querySelector('textarea[name*="[question_text]"]');
+            const fileInput = card.querySelector('input[type="file"][name*="[image]"]');
+            const preview = card.querySelector('.q-image-preview');
+            const hasImg = (preview && preview.style.display !== 'none') || (fileInput && fileInput.files && fileInput.files.length > 0);
+            const textVal = textarea ? textarea.value.trim() : '';
+
+            if (!textVal && !hasImg && !emptyQuestion) {
+                emptyQuestion = card;
+                emptyQuestionIndex = idx + 1;
+            }
+        });
+
+        if (emptyQuestion) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("سؤال غير مكتمل!") }}',
+                html: `{{ __("السؤال رقم") }} <b>(${emptyQuestionIndex})</b> {{ __("فارغ! يرجى كتابة نص السؤال أو إرفاق صورة له، أو حذف السؤال إذا أضيف بالخطأ.") }}`,
+                confirmButtonText: '{{ __("الانتقال إلى السؤال") }}',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                emptyQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const textarea = emptyQuestion.querySelector('textarea[name*="[question_text]"]');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.style.border = '2px solid #ef4444';
+                    setTimeout(() => { textarea.style.border = ''; }, 3500);
+                }
+            });
+            return;
+        }
+
         const formData = new FormData(form);
 
         btn.disabled = true;
@@ -1331,11 +1366,28 @@
                 });
             })
             .catch(err => {
-                const msg = err.response?.data?.message || '{{ __("يرجى التأكد من ملء نص جميع الأسئلة والخيارات.") }}';
+                let errorMessages = [];
+                if (err.response?.data?.errors) {
+                    for (const [key, msgs] of Object.entries(err.response.data.errors)) {
+                        if (Array.isArray(msgs)) {
+                            errorMessages.push(...msgs);
+                        } else if (typeof msgs === 'string') {
+                            errorMessages.push(msgs);
+                        }
+                    }
+                }
+                
+                let msg = errorMessages.length > 0 
+                    ? errorMessages.join('<br>') 
+                    : (err.response?.data?.message && err.response.data.message !== 'validation.required' 
+                        ? err.response.data.message 
+                        : '{{ __("يرجى التأكد من ملء نص جميع الأسئلة والخيارات المطلوبة.") }}');
+
                 Swal.fire({
                     icon: 'error',
-                    title: '{{ __("خطأ في العملية!") }}',
-                    text: msg,
+                    title: '{{ __("خطأ في البيانات المدخلة!") }}',
+                    html: msg,
+                    confirmButtonText: '{{ __("حسناً") }}'
                 });
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> <span>{{ __("حفظ ونشر الاختبار") }}</span>';

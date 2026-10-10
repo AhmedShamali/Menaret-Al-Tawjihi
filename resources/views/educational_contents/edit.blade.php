@@ -70,7 +70,7 @@
                             <span>{{ __('الجمهور والمنهاج المستهدف') }} <span class="req-star">*</span></span>
                             <small style="color: #64748b; font-weight: normal;">{{ __('تحديد من يرى هذا المحتوى من الطلبة المسجلين') }}</small>
                         </label>
-                        <div class="region-select-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                        <div class="region-select-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 6px;">
                             <label style="cursor: pointer; margin: 0;">
                                 <input type="radio" name="target_region" value="gaza" {{ $curRegion === 'gaza' ? 'checked' : '' }} style="display: none;" onchange="updateEditRegionUI(this)">
                                 <div id="edit_card_gaza" style="border: 2px solid {{ $curRegion === 'gaza' ? '#059669' : '#cbd5e1' }}; border-radius: 10px; padding: 10px 8px; text-align: center; background: {{ $curRegion === 'gaza' ? '#ecfdf5' : '#fff' }}; transition: all 0.2s;">

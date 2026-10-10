@@ -450,6 +450,7 @@
         max-width: 100%;
         margin: 0 auto;
         box-sizing: border-box;
+        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
     }
 
     /* 1. ترويسة الصفحة البسيطة والواضحة */
@@ -706,18 +707,141 @@
         background: #f8fafc;
     }
 
+    /* تحويل جدول السجلات إلى بطاقات مرنة ذكية على الهواتف والشاشات الصغيرة (100% Mobile Responsive) */
     @media (max-width: 768px) {
-        .academic-simple-table {
-            min-width: 580px;
-        }
         .dash-header-bar {
             flex-direction: column !important;
             align-items: stretch !important;
             gap: 10px !important;
+            padding: 12px 14px !important;
         }
         .dash-header-meta {
             width: 100% !important;
             justify-content: flex-start !important;
+            gap: 6px !important;
+        }
+        .table-responsive {
+            overflow-x: visible !important;
+        }
+        .academic-simple-table {
+            min-width: 0 !important;
+            width: 100% !important;
+            display: block !important;
+        }
+        .academic-simple-table thead {
+            display: none !important;
+        }
+        .academic-simple-table tbody {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            padding: 10px !important;
+            background: #f8fafc !important;
+        }
+        .academic-simple-table tr {
+            display: grid !important;
+            grid-template-columns: 1fr auto auto !important;
+            grid-template-areas:
+                "entity entity entity"
+                "count status action" !important;
+            align-items: center !important;
+            gap: 10px 8px !important;
+            padding: 12px 14px !important;
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .academic-simple-table tr:hover {
+            background: #ffffff !important;
+            border-color: #cbd5e1 !important;
+        }
+        .academic-simple-table td {
+            padding: 0 !important;
+            border: none !important;
+        }
+        .academic-simple-table td:nth-child(1) {
+            grid-area: entity !important;
+            text-align: right !important;
+            width: 100% !important;
+        }
+        .academic-simple-table td:nth-child(2) {
+            grid-area: count !important;
+            text-align: right !important;
+            justify-self: start !important;
+        }
+        .academic-simple-table td:nth-child(3) {
+            grid-area: status !important;
+            text-align: center !important;
+            justify-self: center !important;
+        }
+        .academic-simple-table td:nth-child(4) {
+            grid-area: action !important;
+            text-align: left !important;
+            justify-self: end !important;
+        }
+        .academic-simple-table .cell-entity {
+            gap: 10px !important;
+        }
+        .academic-simple-table .cell-entity strong {
+            font-size: 0.86rem !important;
+            line-height: 1.3 !important;
+        }
+        .academic-simple-table .cell-entity small {
+            font-size: 0.73rem !important;
+            line-height: 1.3 !important;
+        }
+        .btn-action-view {
+            padding: 4px 10px !important;
+            font-size: 0.78rem !important;
+        }
+    }
+
+    @media (max-width: 440px) {
+        .academic-simple-table tr {
+            grid-template-columns: 1fr 1fr !important;
+            grid-template-areas:
+                "entity entity"
+                "count status"
+                "action action" !important;
+            gap: 10px 8px !important;
+            padding: 11px 12px !important;
+        }
+        .academic-simple-table td:nth-child(4) {
+            justify-self: stretch !important;
+        }
+        .academic-simple-table td:nth-child(4) .btn-action-view {
+            width: 100% !important;
+            justify-content: center !important;
+            padding: 6px 10px !important;
+            border-radius: 6px !important;
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border-color: #bfdbfe !important;
+            font-weight: 700 !important;
+        }
+        .dash-kpi-row {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+        }
+        .kpi-box {
+            padding: 10px 12px !important;
+        }
+        .kpi-value {
+            font-size: 1.25rem !important;
+        }
+        .kpi-label {
+            font-size: 0.74rem !important;
+        }
+        .kpi-subtext {
+            font-size: 0.68rem !important;
+        }
+        .kpi-icon-wrap {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 0.95rem !important;
         }
     }
 
@@ -950,6 +1074,32 @@
     .text-indigo { color: #4f46e5 !important; }
     .text-rose { color: #e11d48 !important; }
     .text-muted { color: #64748b !important; }
+
+    /* استجابة شريط الأخبار العاجلة للموبايل والتابلت */
+    @media (max-width: 768px) {
+        .dash-news-ticker-panel {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            padding: 12px 14px !important;
+            gap: 12px !important;
+        }
+        .dash-news-ticker-panel > div:first-child {
+            min-width: 0 !important;
+            width: 100% !important;
+        }
+        .dash-news-ticker-panel > div:last-child {
+            width: 100% !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 6px !important;
+        }
+        .dash-news-ticker-panel > div:last-child button,
+        .dash-news-ticker-panel > div:last-child a {
+            flex: 1 1 auto !important;
+            text-align: center !important;
+            justify-content: center !important;
+        }
+    }
 </style>
 
 {{-- مودال الإضافة السريعة للأخبار من لوحة الإدارة للمدير --}}

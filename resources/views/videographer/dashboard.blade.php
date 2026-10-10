@@ -189,17 +189,22 @@
                                             <strong style="color: var(--ed-text-main); font-weight: 600; display: block; font-size: 0.9rem;">
                                                 {{ $content->title }}
                                             </strong>
-                                            @if($content->channel_name)
-                                                <span style="font-size: 0.74rem; color: #64748b;">
-                                                    <i class="fa-solid fa-camera"></i> {{ $content->channel_name }}
-                                                </span>
-                                            @endif
+                                            <div style="display: flex; gap: 8px; align-items: center; font-size: 0.74rem; color: #64748b; margin-top: 3px; flex-wrap: wrap;">
+                                                @if($content->channel_name)
+                                                    <span><i class="fa-solid fa-camera"></i> {{ $content->channel_name }}</span>
+                                                @endif
+                                                @if(!empty($content->branches_count) && $content->branches_count > 1)
+                                                    <span style="background: #eff6ff; color: #1d4ed8; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                                        <i class="fa-solid fa-layer-group"></i> {{ $content->branches_count }} {{ __('فروع') }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td style="padding: 14px 16px;">
                                     <span style="display: inline-block; background: #f1f5f9; color: #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;">
-                                        {{ $content->subject?->stage?->name ?? __('غير محدد') }}
+                                        {{ $content->subject?->stage?->name ?? __('متعدد الفروع') }}
                                     </span>
                                 </td>
                                 <td style="padding: 14px 16px;">

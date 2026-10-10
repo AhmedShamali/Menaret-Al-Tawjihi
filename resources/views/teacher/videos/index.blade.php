@@ -429,7 +429,7 @@
                             {{ __('يحدد من يشاهد هذا الفيديو في حسابه') }}
                         </span>
                     </label>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px;">
+                    <div class="region-select-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 4px;">
                         <label style="cursor: pointer; margin: 0;">
                             <input type="radio" name="target_region" value="gaza" style="display: none;" onchange="updateVideoRegionSelect(this)">
                             <div class="region-pill-box" id="v_card_gaza" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; transition: all 0.2s ease; background: #ffffff;">

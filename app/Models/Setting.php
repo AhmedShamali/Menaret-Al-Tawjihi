@@ -28,10 +28,23 @@ class Setting extends Model {
             if (is_string($val)) {
                 $val = str_replace(['منارة التوجيهي', 'Stepvoro'], 'Step by Step', $val);
             }
+            if ($key === 'contact_whatsapp' && (empty($val) || $val === '0567897212')) {
+                $val = '00970597694385';
+            } elseif ($key === 'supervisor_whatsapp' && empty($val)) {
+                $val = '+970597694385';
+            } elseif (in_array($key, ['payment_phone', 'palpay_account', 'jawwal_pay_account']) && empty($val)) {
+                $val = '0567897212';
+            }
             static::$cache[$key] = $val;
             return $val;
         } catch (\Throwable $e) {
             static::$dbAvailable = false;
+            if ($key === 'contact_whatsapp') {
+                return '00970597694385';
+            }
+            if (in_array($key, ['payment_phone', 'palpay_account', 'jawwal_pay_account'])) {
+                return '0567897212';
+            }
             return $default;
         }
     }

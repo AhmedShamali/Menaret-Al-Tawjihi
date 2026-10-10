@@ -1018,6 +1018,41 @@
         const btn = document.getElementById('saveBtn');
         const form = document.getElementById('editExamForm');
 
+        const qCards = document.querySelectorAll('.q-card');
+        let emptyQuestion = null;
+        let emptyQuestionIndex = 0;
+        qCards.forEach((card, idx) => {
+            const textarea = card.querySelector('textarea[name*="[question_text]"]');
+            const fileInput = card.querySelector('input[type="file"][name*="[image]"]');
+            const preview = card.querySelector('.q-image-preview');
+            const hasImg = (preview && preview.style.display !== 'none') || (fileInput && fileInput.files && fileInput.files.length > 0);
+            const textVal = textarea ? textarea.value.trim() : '';
+
+            if (!textVal && !hasImg && !emptyQuestion) {
+                emptyQuestion = card;
+                emptyQuestionIndex = idx + 1;
+            }
+        });
+
+        if (emptyQuestion) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'سؤال غير مكتمل!',
+                html: `السؤال رقم <b>(${emptyQuestionIndex})</b> فارغ! يرجى كتابة نص السؤال أو إرفاق صورة له، أو حذف السؤال.`,
+                confirmButtonText: 'الانتقال إلى السؤال',
+                confirmButtonColor: '#0284c7'
+            }).then(() => {
+                emptyQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const textarea = emptyQuestion.querySelector('textarea[name*="[question_text]"]');
+                if (textarea) {
+                    textarea.focus();
+                    textarea.style.border = '2px solid #ef4444';
+                    setTimeout(() => { textarea.style.border = ''; }, 3500);
+                }
+            });
+            return;
+        }
+
         const formData = new FormData(form);
         formData.append('_method', 'PUT');
 
@@ -1040,10 +1075,28 @@
                 });
             })
             .catch(err => {
+                let errorMessages = [];
+                if (err.response?.data?.errors) {
+                    for (const [key, msgs] of Object.entries(err.response.data.errors)) {
+                        if (Array.isArray(msgs)) {
+                            errorMessages.push(...msgs);
+                        } else if (typeof msgs === 'string') {
+                            errorMessages.push(msgs);
+                        }
+                    }
+                }
+                
+                let msg = errorMessages.length > 0 
+                    ? errorMessages.join('<br>') 
+                    : (err.response?.data?.message && err.response.data.message !== 'validation.required' 
+                        ? err.response.data.message 
+                        : 'يرجى التأكد من ملء كافة الحقول بشكل صحيح.');
+
                 Swal.fire({
                     icon: 'error',
                     title: 'خطأ في العملية!',
-                    text: err.response?.data?.message || 'يرجى التأكد من ملء كافة الحقول بشكل صحيح.',
+                    html: msg,
+                    confirmButtonText: 'حسناً'
                 });
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> <span>{{ __('حفظ التغييرات') }}</span>';

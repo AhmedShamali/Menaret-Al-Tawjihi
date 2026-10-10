@@ -114,7 +114,7 @@ class ExamController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'title' => ['required', 'string', 'max:255'],
             'subject_id' => ['required', 'exists:subjects,id'],
             'stage_id' => ['nullable', 'exists:stages,id'],
@@ -125,7 +125,7 @@ class ExamController extends Controller
             'target_region' => ['nullable', 'string', 'in:all,gaza,west_bank'],
             'questions' => ['required', 'array', 'min:1'],
             'questions.*.type' => ['required', 'in:mcq,essay,text'],
-            'questions.*.question_text' => ['required', 'string'],
+            'questions.*.question_text' => ['nullable', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
             'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
             'questions.*.a' => ['nullable', 'string'],
@@ -139,7 +139,38 @@ class ExamController extends Controller
             'questions.*.correct_answer' => ['nullable'],
             'questions.*.require_file' => ['nullable'],
             'questions.*.is_multiple' => ['nullable'],
+        ], [
+            'title.required' => 'يرجى إدخال عنوان الاختبار.',
+            'subject_id.required' => 'يرجى اختيار المادة التعليمية.',
+            'duration_minutes.required' => 'يرجى تحديد مدة الاختبار بالدقائق.',
+            'questions.required' => 'يجب إضافة سؤال واحد على الأقل للاختبار.',
+            'questions.min' => 'يجب إضافة سؤال واحد على الأقل للاختبار.',
+            'questions.*.points.required' => 'يرجى تحديد درجة السؤال.',
+            'questions.*.points.min' => 'يجب أن تكون درجة السؤال 1 على الأقل.',
+        ], [
+            'title' => 'عنوان الاختبار',
+            'subject_id' => 'المادة التعليمية',
+            'duration_minutes' => 'مدة الاختبار',
+            'questions' => 'الأسئلة',
+            'questions.*.question_text' => 'نص السؤال',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            $questions = $request->input('questions', []);
+            if (!is_array($questions)) return;
+
+            foreach ($questions as $index => $q) {
+                $qNum = (int)$index + 1;
+                $hasText = !empty(trim($q['question_text'] ?? ''));
+                $hasImage = $request->hasFile("questions.{$index}.image") || !empty($q['image']);
+
+                if (!$hasText && !$hasImage) {
+                    $validator->errors()->add("questions.{$index}.question_text", "يرجى كتابة نص السؤال أو إرفاق صورة للسؤال رقم ({$qNum}).");
+                }
+            }
+        });
+
+        $validated = $validator->validate();
 
         $showResultImmediately = filter_var($request->input('show_result_immediately', false), FILTER_VALIDATE_BOOLEAN);
         $sub = Subject::find($validated['subject_id']);
@@ -224,10 +255,15 @@ class ExamController extends Controller
                     $correctAnswer = json_encode($correctAnswer);
                 }
 
+                $qText = trim($q['question_text'] ?? '');
+                if (empty($qText) && !empty($imagePath)) {
+                    $qText = 'انظر الصورة المرفقة';
+                }
+
                 Question::create([
                     'exam_id' => $exam->id,
                     'type' => $q['type'],
-                    'question_text' => $q['question_text'],
+                    'question_text' => $qText,
                     'image' => $imagePath,
                     'a' => $q['a'] ?? null,
                     'a_image' => $optImages['a'],
@@ -1149,24 +1185,60 @@ class ExamController extends Controller
             ]);
         }
 
+        $totalViolations = (int)$submission->tab_switches_count + (int)$submission->screenshots_count;
+        $maxAllowed = 5;
+        $shouldForceSubmit = ($totalViolations >= $maxAllowed);
+
+        $studentName = $student->name_ar ?? $student->name ?? 'طالب';
+        $actionText = match($type) {
+            'screenshot' => 'محاولة أخذ لقطة شاشة (Screenshot)',
+            'tab_switch' => 'مغادرة نافذة/تبويب الاختبار (Tab Switch)',
+            default => $details ?: 'حركة مريبة أثناء الامتحان'
+        };
+
         try {
-            $teacherId = $this->getExamTeacherId($exam);
-            $studentName = $student->name_ar ?? $student->name ?? 'طالب';
-            $actionText = $type === 'screenshot' ? 'محاولة أخذ لقطة شاشة (Screenshot)' : 'مغادرة نافذة/تبويب الاختبار';
+            $teacherId = $exam->teacher_id;
 
             if ($teacherId) {
                 \App\Services\NotificationService::notifyTeacher(
                     $teacherId,
                     '⚠️ رصد حركة مريبة في الامتحان!',
-                    "تم رصد الطالب ({$studentName}) أثناء تأدية اختبار \"{$exam->title}\": {$actionText}.",
-                    'cheating_alert',
+                    "تم رصد الطالب ({$studentName}) أثناء تأدية اختبار \"{$exam->title}\": {$actionText} (المخالفة {$totalViolations} من {$maxAllowed}).",
+                    'exam',
                     route('teacher.exams.submissions', $exam->id),
                     'fa-triangle-exclamation'
                 );
             }
-        } catch (\Throwable $e) {}
 
-        return response()->json(['success' => true, 'logged' => true, 'status' => 'logged']);
+            // إشعار إدارة المنصة دوماً لضمان المتابعة الإشرافية
+            \App\Services\NotificationService::notifyAdmin(
+                '⚠️ رصد اشتباه غش في اختبار!',
+                "تم رصد الطالب ({$studentName}) في اختبار \"{$exam->title}\": {$actionText} (المخالفة {$totalViolations} من {$maxAllowed}).",
+                'exam',
+                route('admin.exams.submissions', $exam->id),
+                'fa-triangle-exclamation',
+                [
+                    'exam_id' => $exam->id,
+                    'student_id' => $student->id,
+                    'violation_type' => $type,
+                    'total_violations' => $totalViolations,
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('فشل إرسال إشعارات اشتباه الغش: ' . $e->getMessage());
+        }
+
+        return response()->json([
+            'success' => true,
+            'logged' => true,
+            'status' => 'logged',
+            'violation_type' => $type,
+            'details' => $details,
+            'action_text' => $actionText,
+            'total_violations' => $totalViolations,
+            'max_allowed' => $maxAllowed,
+            'should_force_submit' => $shouldForceSubmit,
+        ]);
     }
 
     /**

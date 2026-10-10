@@ -153,28 +153,30 @@
             <div class="filter-cell">
                 <select name="status" class="filter-select" onchange="this.form.submit()">
                     <option value="">{{ __('كافة حالات الدفع') }}</option>
-                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('مسدد بالكامل رسمياً') }} ✅</option>
-                    <option value="partial" {{ $statusFilter === 'partial' ? 'selected' : '' }}>{{ __('سداد جزئي (يوجد رصيد متبقي)') }} ⚠️</option>
-                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>{{ __('قيد المراجعة والاعتماد') }} ⏳</option>
-                    <option value="unpaid" {{ $statusFilter === 'unpaid' ? 'selected' : '' }}>{{ __('غير مسدد نهائياً') }} ❌</option>
-                    <option value="waived" {{ $statusFilter === 'waived' ? 'selected' : '' }}>{{ __('إعفاء / منحة دراسية') }} 🏷️</option>
+                    <option value="paid" {{ $statusFilter === 'paid' ? 'selected' : '' }}>{{ __('مسدد بالكامل رسمياً') }}</option>
+                    <option value="partial" {{ $statusFilter === 'partial' ? 'selected' : '' }}>{{ __('سداد جزئي (يوجد رصيد متبقي)') }}</option>
+                    <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>{{ __('قيد المراجعة والاعتماد') }}</option>
+                    <option value="unpaid" {{ $statusFilter === 'unpaid' ? 'selected' : '' }}>{{ __('غير مسدد نهائياً') }}</option>
+                    <option value="waived" {{ $statusFilter === 'waived' ? 'selected' : '' }}>{{ __('إعفاء / منحة دراسية') }}</option>
                 </select>
             </div>
 
-            <button type="submit" class="btn-filter-submit"><i class="fa-solid fa-filter"></i> {{ __('تطبيق الفلترة') }}</button>
+            <div class="filter-actions-cell">
+                <button type="submit" class="btn-filter-submit"><i class="fa-solid fa-filter"></i> {{ __('تطبيق الفلترة') }}</button>
 
-            @if($search || $stageId || $semesterFilter || $statusFilter)
-                <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="btn-reset-filter">{{ __('تصفير') }}</a>
-            @endif
+                @if($search || $stageId || $semesterFilter || $statusFilter)
+                    <a href="{{ route('admin.subscriptions.monthly', ['year' => $year]) }}" class="btn-reset-filter"><i class="fa-solid fa-rotate-left"></i> {{ __('تصفير') }}</a>
+                @endif
+            </div>
         </form>
 
         <div class="legend-strip">
-            <span class="legend-title">{{ __('دليل الحالات:') }}</span>
-            <span class="legend-item"><span class="badge-mini bg-paid"></span> {{ __('مسدد بالكامل') }} ✅</span>
-            <span class="legend-item"><span class="badge-mini bg-partial"></span> {{ __('سداد جزئي مع بقاء رصيد') }} ⚠️</span>
-            <span class="legend-item"><span class="badge-mini bg-pending"></span> {{ __('قيد المراجعة') }} ⏳</span>
-            <span class="legend-item"><span class="badge-mini bg-unpaid"></span> {{ __('غير مسدد') }} ❌</span>
-            <span class="legend-item"><span class="badge-mini bg-waived"></span> {{ __('إعفاء / منحة') }} 🏷️</span>
+            <span class="legend-title"><i class="fa-solid fa-circle-info"></i> {{ __('دليل الحالات:') }}</span>
+            <span class="legend-pill st-paid"><i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}</span>
+            <span class="legend-pill st-partial"><i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}</span>
+            <span class="legend-pill st-pending"><i class="fa-solid fa-hourglass-half"></i> {{ __('قيد المراجعة') }}</span>
+            <span class="legend-pill st-unpaid"><i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}</span>
+            <span class="legend-pill st-waived"><i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}</span>
         </div>
     </div>
 
@@ -232,7 +234,7 @@
             >
                 {{-- تعريف الطالب --}}
                 <div class="student-profile-block">
-                    <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $studentDisplayName }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($studentDisplayName) }}&background=1d4ed8&color=fff&size=50&bold=true';">
+                    <img src="{{ $student->photo_url }}" class="student-avatar" alt="{{ $studentDisplayName }}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($studentDisplayName) }}&background=1e3a8a&color=fff&size=80&bold=true';">
                     <div class="student-text">
                         <a href="{{ route('admin.subscriptions.student', ['student' => $student->id, 'year' => $year]) }}" class="student-name" title="{{ __('فتح الواجهة المالية وسجل اشتراكات الطالب') }}">
                             {{ $studentDisplayName }}
@@ -245,10 +247,10 @@
                                     <i class="fa-brands fa-whatsapp"></i> <span dir="ltr">{{ $student->display_whatsapp }}</span>
                                 </a>
                             @else
-                                <span class="phone-text font-mono" dir="ltr">{{ $student->phone ?? ($student->nid ?? '-') }}</span>
+                                <span class="phone-text font-mono" dir="ltr"><i class="fa-solid fa-phone"></i> {{ $student->phone ?? ($student->nid ?? '-') }}</span>
                             @endif
                             @if(!empty($student->plain_password))
-                                <code class="pass-chip font-mono" title="{{ __('كلمة المرور') }}" onclick="if(typeof Swal !== 'undefined'){ navigator.clipboard.writeText('{{ $student->plain_password }}'); Swal.fire({toast:true,position:'top-end',icon:'success',title:'{{ __('تم نسخ كلمة المرور') }}',showConfirmButton:false,timer:1500}); }">{{ $student->plain_password }}</code>
+                                <code class="pass-chip font-mono" title="{{ __('انقر لنسخ كلمة المرور') }}" onclick="if(typeof Swal !== 'undefined'){ navigator.clipboard.writeText('{{ $student->plain_password }}'); Swal.fire({toast:true,position:'top-end',icon:'success',title:'{{ __('تم نسخ كلمة المرور') }}',showConfirmButton:false,timer:1500}); }"><i class="fa-solid fa-key"></i> {{ $student->plain_password }}</code>
                             @endif
                         </div>
                     </div>
@@ -261,10 +263,17 @@
                         <span class="term-count-badge font-mono">{{ $semFin['term_1_count'] }} {{ __('مواد') }}</span>
                     </div>
                     <div class="term-figures-row font-mono">
-                        <span>{{ __('مستحق:') }} <strong>{{ number_format($semFin['term_1_due'], 0) }} ₪</strong></span>
-                        <span class="text-emerald">{{ __('مسدد:') }} <strong>{{ number_format($semFin['term_1_paid'], 0) }} ₪</strong></span>
-                        <span class="{{ $semFin['term_1_remaining'] > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
-                            {{ __('متبقي:') }} <strong>{{ number_format($semFin['term_1_remaining'], 0) }} ₪</strong>
+                        <span class="term-fig-cell">
+                            <span class="term-fig-lbl">{{ __('مستحق') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_1_due'], 0) }} ₪</strong>
+                        </span>
+                        <span class="term-fig-cell text-emerald">
+                            <span class="term-fig-lbl">{{ __('مسدد') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_1_paid'], 0) }} ₪</strong>
+                        </span>
+                        <span class="term-fig-cell {{ $semFin['term_1_remaining'] > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
+                            <span class="term-fig-lbl">{{ __('متبقي') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_1_remaining'], 0) }} ₪</strong>
                         </span>
                     </div>
                     <div class="term-status-action-row">
@@ -273,15 +282,15 @@
                         @endphp
                         <span class="term-status-pill st-{{ $t1St }}">
                             @if($t1St === 'paid')
-                                <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل ✅') }}
+                                <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}
                             @elseif($t1St === 'partial')
-                                <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي ⚠️') }}
+                                <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
                             @elseif($t1St === 'waived')
-                                <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة 🏷️') }}
+                                <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
                             @elseif($t1St === 'empty')
                                 <i class="fa-solid fa-minus"></i> {{ __('غير مسجل') }}
                             @else
-                                <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد ❌') }}
+                                <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}
                             @endif
                         </span>
                         <button type="button" class="btn-term-quick-edit" 
@@ -299,10 +308,17 @@
                         <span class="term-count-badge font-mono">{{ $semFin['term_2_count'] }} {{ __('مواد') }}</span>
                     </div>
                     <div class="term-figures-row font-mono">
-                        <span>{{ __('مستحق:') }} <strong>{{ number_format($semFin['term_2_due'], 0) }} ₪</strong></span>
-                        <span class="text-emerald">{{ __('مسدد:') }} <strong>{{ number_format($semFin['term_2_paid'], 0) }} ₪</strong></span>
-                        <span class="{{ $semFin['term_2_remaining'] > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
-                            {{ __('متبقي:') }} <strong>{{ number_format($semFin['term_2_remaining'], 0) }} ₪</strong>
+                        <span class="term-fig-cell">
+                            <span class="term-fig-lbl">{{ __('مستحق') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_2_due'], 0) }} ₪</strong>
+                        </span>
+                        <span class="term-fig-cell text-emerald">
+                            <span class="term-fig-lbl">{{ __('مسدد') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_2_paid'], 0) }} ₪</strong>
+                        </span>
+                        <span class="term-fig-cell {{ $semFin['term_2_remaining'] > 0 ? 'text-rose font-bold' : 'text-emerald' }}">
+                            <span class="term-fig-lbl">{{ __('متبقي') }}</span>
+                            <strong class="term-fig-val">{{ number_format($semFin['term_2_remaining'], 0) }} ₪</strong>
                         </span>
                     </div>
                     <div class="term-status-action-row">
@@ -311,15 +327,15 @@
                         @endphp
                         <span class="term-status-pill st-{{ $t2St }}">
                             @if($t2St === 'paid')
-                                <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل ✅') }}
+                                <i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}
                             @elseif($t2St === 'partial')
-                                <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي ⚠️') }}
+                                <i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}
                             @elseif($t2St === 'waived')
-                                <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة 🏷️') }}
+                                <i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}
                             @elseif($t2St === 'empty')
                                 <i class="fa-solid fa-minus"></i> {{ __('غير مسجل') }}
                             @else
-                                <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد ❌') }}
+                                <i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}
                             @endif
                         </span>
                         <button type="button" class="btn-term-quick-edit" 
@@ -345,9 +361,9 @@
                             <span class="fin-lbl">{{ __('المتبقي:') }}</span>
                             <strong class="font-mono font-bold" id="std_rem_{{ $student->id }}">
                                 @if($semFin['total_remaining'] > 0)
-                                    {{ number_format($semFin['total_remaining'], 0) }} ₪ ⚠️
+                                    {{ number_format($semFin['total_remaining'], 0) }} ₪
                                 @else
-                                    0 ₪ ✅
+                                    0 ₪
                                 @endif
                             </strong>
                         </div>
@@ -356,17 +372,6 @@
 
                 {{-- أزرار التحكم والسندات --}}
                 <div class="student-actions-block">
-                    @if($student->whatsapp_url)
-                        <a href="{{ $student->whatsapp_url }}" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="btn-statement-whatsapp"
-                           title="{{ __('مراسلة الطالب مباشرة عبر واتساب للمتابعة والتحصيل') }}">
-                            <i class="fa-brands fa-whatsapp"></i>
-                            <span>{{ __('واتساب') }}</span>
-                        </a>
-                    @endif
-
                     <button type="button" 
                             class="btn-statement-royal"
                             onclick="openStudentStatementModal({{ $student->id }})"
@@ -381,6 +386,17 @@
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                         <span>{{ __('الملف المالي') }}</span>
                     </a>
+
+                    @if($student->whatsapp_url)
+                        <a href="{{ $student->whatsapp_url }}" 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           class="btn-statement-whatsapp"
+                           title="{{ __('مراسلة الطالب مباشرة عبر واتساب للمتابعة والتحصيل') }}">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            <span>{{ __('واتساب') }}</span>
+                        </a>
+                    @endif
                 </div>
             </div>
         @empty
@@ -896,7 +912,7 @@
                 if (sDueEl) sDueEl.innerText = Math.round(summary.total_due) + ' ₪';
                 if (sPaidEl) sPaidEl.innerText = Math.round(summary.total_paid) + ' ₪';
                 if (sRemEl) {
-                    sRemEl.innerText = (summary.total_remaining > 0) ? Math.round(summary.total_remaining) + ' ₪ ⚠️' : '0 ₪ ✅';
+                    sRemEl.innerText = (summary.total_remaining > 0) ? Math.round(summary.total_remaining) + ' ₪' : '0 ₪';
                     const parentPill = sRemEl.closest('.fin-remaining');
                     if (parentPill) {
                         if (summary.total_remaining > 0) {
@@ -948,11 +964,11 @@
     }
 
     function getStatusPillContent(st) {
-        if (st === 'paid') return '<i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل ✅') }}';
-        if (st === 'partial') return '<i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي ⚠️') }}';
-        if (st === 'waived') return '<i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة 🏷️') }}';
+        if (st === 'paid') return '<i class="fa-solid fa-circle-check"></i> {{ __('مسدد بالكامل') }}';
+        if (st === 'partial') return '<i class="fa-solid fa-circle-half-stroke"></i> {{ __('سداد جزئي') }}';
+        if (st === 'waived') return '<i class="fa-solid fa-tag"></i> {{ __('إعفاء / منحة') }}';
         if (st === 'empty') return '<i class="fa-solid fa-minus"></i> {{ __('غير مسجل') }}';
-        return '<i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد ❌') }}';
+        return '<i class="fa-solid fa-circle-xmark"></i> {{ __('غير مسدد') }}';
     }
 
     function addslashes(str) {
@@ -1428,339 +1444,272 @@
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 14px 18px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+        padding: 16px 20px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
     }
     .filters-wrap {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         align-items: center;
         flex-wrap: wrap;
     }
     .search-cell {
-        flex: 1;
-        min-width: 220px;
+        flex: 1.5;
+        min-width: 240px;
         position: relative;
     }
     .search-cell i {
         position: absolute;
-        right: 12px;
+        right: 14px;
         top: 50%;
         transform: translateY(-50%);
         color: #94a3b8;
+        font-size: 0.9rem;
     }
     .search-input {
         width: 100%;
-        padding: 8px 36px 8px 12px;
+        padding: 9px 38px 9px 14px;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
-        font-size: 0.84rem;
+        font-size: 0.85rem;
+        background: #ffffff;
+        color: #0f172a;
         outline: none;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
     }
     .search-input:focus {
         border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+    .filter-cell {
+        flex: 1;
+        min-width: 170px;
     }
     .filter-select {
-        padding: 8px 12px;
+        width: 100%;
+        padding: 9px 12px;
         border: 1px solid #cbd5e1;
         border-radius: 8px;
         font-size: 0.84rem;
         background: #ffffff;
         color: #0f172a;
+        font-weight: 600;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+    }
+    .filter-select:focus {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+    .filter-actions-cell {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
     }
     .btn-filter-submit {
         background: #1e3a8a;
         color: #ffffff;
-        border: none;
-        padding: 8px 16px;
+        border: 1px solid #1e3a8a;
+        padding: 9px 20px;
         border-radius: 8px;
-        font-size: 0.84rem;
+        font-size: 0.85rem;
         font-weight: 700;
         cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px rgba(30, 58, 138, 0.15);
+        white-space: nowrap;
+    }
+    .btn-filter-submit:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(29, 78, 216, 0.2);
     }
     .btn-reset-filter {
         color: #64748b;
         font-size: 0.82rem;
-        text-decoration: underline;
-        margin-right: 6px;
+        font-weight: 700;
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+    .btn-reset-filter:hover {
+        color: #0f172a;
+        background: #f1f5f9;
+        border-color: #cbd5e1;
     }
 
+    /* دليل الحالات الكلاسيكي المطور */
     .legend-strip {
-        margin-top: 10px;
-        padding-top: 8px;
-        border-top: 1px dashed #f1f5f9;
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px dashed #e2e8f0;
         display: flex;
-        gap: 16px;
+        gap: 8px;
         align-items: center;
         flex-wrap: wrap;
-        font-size: 0.74rem;
+    }
+    .legend-title {
+        font-weight: 800;
+        font-size: 0.78rem;
         color: #475569;
+        margin-left: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
-    .legend-title { font-weight: 800; color: #1e293b; }
-    .legend-item { display: inline-flex; align-items: center; gap: 5px; }
-    .badge-mini {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
+    .legend-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 6px;
+        white-space: nowrap;
     }
-    .bg-paid { background: #059669; }
-    .bg-partial { background: #b45309; }
-    .bg-pending { background: #d97706; }
-    .bg-unpaid { background: #dc2626; }
-    .bg-waived { background: #4f46e5; }
+    .legend-pill.st-paid {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .legend-pill.st-partial {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+    .legend-pill.st-pending {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+    .legend-pill.st-unpaid {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .legend-pill.st-waived {
+        background: #f5f3ff;
+        color: #6d28d9;
+        border: 1px solid #ddd6fe;
+    }
 
-    /* 4. قائمة مصفوفة الطلاب */
+    /* 4. قائمة مصفوفة الطلاب - نمط الجدول الأكاديمي */
     .students-list-wrapper {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
     }
     .list-header-row {
         display: grid;
-        grid-template-columns: 280px 240px 1fr 140px;
+        grid-template-columns: 280px 1.15fr 1.15fr 210px 150px;
         gap: 14px;
-        padding: 8px 16px;
+        padding: 10px 18px;
         background: #f8fafc;
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        font-size: 0.78rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
         font-weight: 800;
         color: #475569;
+        align-items: center;
     }
-    @media (max-width: 1200px) {
-        .list-header-row { display: none; }
+    @media (max-width: 1024px) {
+        .list-header-row { display: none !important; }
     }
 
     .student-matrix-row {
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 12px 16px;
+        padding: 14px 18px;
         display: grid;
-        grid-template-columns: 280px 240px 1fr 140px;
+        grid-template-columns: 280px 1.15fr 1.15fr 210px 150px;
         gap: 14px;
         align-items: center;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.02);
-        transition: all 0.2s;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+        transition: all 0.2s ease;
     }
     .student-matrix-row:hover {
         border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-    }
-    @media (max-width: 1200px) {
-        .student-matrix-row {
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
     }
 
+    /* تعريف وبيانات الطالب */
     .student-profile-block {
         display: flex;
-        align-items: center;
-        gap: 10px;
+        align-items: flex-start;
+        gap: 12px;
     }
     .student-avatar {
         width: 44px;
         height: 44px;
         border-radius: 10px;
         object-fit: cover;
-        border: 1px solid #cbd5e1;
+        border: 1.5px solid #e2e8f0;
+        background: #eff6ff;
+        flex-shrink: 0;
+    }
+    .student-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+        flex: 1;
     }
     .student-name {
-        font-size: 0.92rem;
+        font-size: 0.95rem;
         font-weight: 800;
         color: #0f172a;
         text-decoration: none;
+        line-height: 1.35;
+        transition: color 0.15s;
     }
-    .student-name:hover { color: #1d4ed8; }
+    .student-name:hover {
+        color: #1d4ed8;
+    }
     .student-sub-line {
         display: flex;
         gap: 6px;
         align-items: center;
         flex-wrap: wrap;
-        margin-top: 2px;
     }
     .branch-pill {
         background: #eff6ff;
         color: #1e40af;
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 0.7rem;
-        font-weight: 700;
-    }
-    .phone-text {
-        font-size: 0.72rem;
-        color: #64748b;
-    }
-    .student-fee-badge-btn {
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        color: #92400e;
-        padding: 1px 6px;
-        border-radius: 4px;
-        font-size: 0.72rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .badge-discount-tag {
-        background: #b45309;
-        color: white;
-        font-size: 0.62rem;
-        padding: 0 3px;
-        border-radius: 3px;
-    }
-
-    /* ملخص الموقف المالي لكل طالب */
-    .student-financial-summary-block {
-        display: flex;
-        align-items: center;
-    }
-    .fin-pill-group {
-        display: flex;
-        gap: 6px;
-        width: 100%;
-    }
-    .fin-pill {
-        flex: 1;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 4px 8px;
+        border: 1px solid #dbeafe;
+        padding: 2px 7px;
         border-radius: 6px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .fin-lbl {
-        font-size: 0.65rem;
-        color: #64748b;
+        font-size: 0.71rem;
         font-weight: 700;
     }
-    .fin-due strong { color: #1e3a8a; font-size: 0.86rem; }
-    .fin-paid strong { color: #059669; font-size: 0.86rem; }
-    .fin-remaining strong { font-size: 0.86rem; }
-    .has-remaining-alert {
-        background: #fff1f2;
-        border-color: #fecdd3;
+    .region-pill-mini {
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-size: 0.71rem;
+        font-weight: 600;
     }
-    .has-remaining-alert strong { color: #dc2626; }
-    .is-clear {
+    .region-pill-mini.bg-wb {
+        background: #f1f5f9;
+        color: #334155;
+        border: 1px solid #e2e8f0;
+    }
+    .region-pill-mini.bg-gaza {
         background: #ecfdf5;
-        border-color: #a7f3d0;
-    }
-    .is-clear strong { color: #059669; }
-
-    /* أزرار الشهور الـ 12 */
-    .months-strip-grid {
-        display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 5px;
-    }
-    .month-micro-badge {
-        height: 38px;
-        border-radius: 7px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        position: relative;
-        font-size: 0.68rem;
-        border: 1px solid transparent;
-        transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .month-micro-badge:hover {
-        transform: scale(1.08);
-        z-index: 5;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.12);
-    }
-    .m-digit { font-size: 0.65rem; font-weight: 800; line-height: 1; }
-    .badge-icon { font-size: 0.68rem; margin-top: 1px; }
-    .badge-partial-sub {
-        font-size: 0.58rem;
-        font-weight: 800;
-        color: #92400e;
-        line-height: 1;
-        margin-top: 1px;
-    }
-
-    .badge-paid {
-        background: #ecfdf5;
-        border-color: #a7f3d0;
-        color: #059669;
-    }
-    .badge-partial {
-        background: #fef3c7;
-        border-color: #fcd34d;
-        color: #b45309;
-    }
-    .badge-pending {
-        background: #fffbeb;
-        border-color: #fef08a;
-        color: #d97706;
-    }
-    .badge-unpaid {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #dc2626;
-    }
-    .badge-waived {
-        background: #eef2ff;
-        border-color: #c7d2fe;
-        color: #4f46e5;
-    }
-    .month-highlight-col {
-        outline: 2px solid #1e3a8a;
-        box-shadow: 0 0 6px rgba(30, 58, 138, 0.4);
-    }
-
-    /* أزرار الإجراءات */
-    .student-actions-block {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        justify-content: flex-end;
-    }
-    .btn-statement-royal {
-        background: #fffdf9;
-        border: 1px solid #d97706;
-        color: #92400e;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 0.74rem;
-        font-weight: 800;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s;
-    }
-    .btn-statement-royal:hover {
-        background: #fef3c7;
-        border-color: #b45309;
-    }
-    .btn-statement-whatsapp {
-        background: #ecfdf5;
+        color: #047857;
         border: 1px solid #a7f3d0;
-        color: #059669;
-        padding: 6px 10px;
-        border-radius: 8px;
-        font-size: 0.74rem;
-        font-weight: 800;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.2s;
-    }
-    .btn-statement-whatsapp:hover {
-        background: #10b981;
-        color: #ffffff;
-        border-color: #10b981;
-        transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25);
     }
     .monthly-wa-chip {
         display: inline-flex;
@@ -1768,7 +1717,7 @@
         gap: 4px;
         font-size: 0.72rem;
         font-weight: 700;
-        color: #059669;
+        color: #047857;
         background: #ecfdf5;
         border: 1px solid #a7f3d0;
         padding: 2px 7px;
@@ -1781,26 +1730,303 @@
         color: #ffffff;
         border-color: #10b981;
     }
+    .phone-text {
+        font-size: 0.72rem;
+        color: #64748b;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 2px 6px;
+        border-radius: 5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .pass-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f8fafc;
+        color: #475569;
+        border: 1px dashed #cbd5e1;
+        padding: 2px 7px;
+        border-radius: 6px;
+        font-size: 0.71rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .pass-chip:hover {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #3b82f6;
+    }
+
+    /* كروت الفصول الدراسية (الفصل الأول والفصل الثاني) */
+    .term-col-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: all 0.15s ease;
+    }
+    .term-col-box:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .term-box-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 5px;
+        border-bottom: 1px dashed #e2e8f0;
+    }
+    .term-title-tag {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .term-title-tag i {
+        font-size: 0.85rem;
+    }
+    .term-count-badge {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #475569;
+        padding: 1px 7px;
+        border-radius: 10px;
+        font-size: 0.71rem;
+        font-weight: 700;
+    }
+    .term-figures-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
+        background: #ffffff;
+        border: 1px solid #edf2f7;
+        border-radius: 8px;
+        padding: 6px 4px;
+        text-align: center;
+    }
+    .term-fig-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+    .term-fig-cell:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 15%;
+        height: 70%;
+        width: 1px;
+        background: #f1f5f9;
+    }
+    .term-fig-lbl {
+        font-size: 0.66rem;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 1px;
+    }
+    .term-fig-val {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .term-status-action-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+        margin-top: 2px;
+    }
+    .term-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .term-status-pill.st-paid {
+        background: #ecfdf5;
+        color: #047857;
+        border: 1px solid #a7f3d0;
+    }
+    .term-status-pill.st-partial {
+        background: #fffbeb;
+        color: #b45309;
+        border: 1px solid #fde68a;
+    }
+    .term-status-pill.st-unpaid {
+        background: #fef2f2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
+    }
+    .term-status-pill.st-waived {
+        background: #f5f3ff;
+        color: #6d28d9;
+        border: 1px solid #ddd6fe;
+    }
+    .term-status-pill.st-empty {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+    .btn-term-quick-edit {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        color: #1e3a8a;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 6px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .btn-term-quick-edit:hover {
+        background: #eff6ff;
+        border-color: #1d4ed8;
+        color: #1d4ed8;
+    }
+
+    /* ملخص الموقف المالي لكل طالب */
+    .student-financial-summary-block {
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .fin-pill-group {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        width: 100%;
+    }
+    .fin-pill {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 6px 4px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        transition: all 0.15s;
+    }
+    .fin-lbl {
+        font-size: 0.65rem;
+        color: #64748b;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+    .fin-due strong {
+        color: #0f172a;
+        font-size: 0.84rem;
+    }
+    .fin-paid strong {
+        color: #059669;
+        font-size: 0.84rem;
+    }
+    .fin-remaining strong {
+        font-size: 0.84rem;
+    }
+    .has-remaining-alert {
+        background: #fef2f2;
+        border-color: #fecaca;
+    }
+    .has-remaining-alert strong {
+        color: #dc2626;
+    }
+    .is-clear {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+    }
+    .is-clear strong {
+        color: #059669;
+    }
+
+    /* أزرار الإجراءات والتحكم */
+    .student-actions-block {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+    }
+    .student-actions-block > * {
+        box-sizing: border-box;
+    }
+    .btn-statement-royal {
+        background: #fffdf9;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        padding: 6px 10px;
+        border-radius: 7px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.15s;
+        text-decoration: none;
+    }
+    .btn-statement-royal:hover {
+        background: #fef3c7;
+        border-color: #d97706;
+    }
     .btn-student-profile-link {
         background: #eff6ff;
         border: 1px solid #bfdbfe;
         color: #1e40af;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 0.76rem;
-        font-weight: 800;
+        padding: 6px 10px;
+        border-radius: 7px;
+        font-size: 0.74rem;
+        font-weight: 700;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.15s;
     }
     .btn-student-profile-link:hover {
         background: #1e3a8a;
         color: #ffffff;
         border-color: #1e3a8a;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(30, 58, 138, 0.2);
+    }
+    .btn-statement-whatsapp {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+        padding: 6px 10px;
+        border-radius: 7px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        transition: all 0.15s;
+    }
+    .btn-statement-whatsapp:hover {
+        background: #10b981;
+        color: #ffffff;
+        border-color: #10b981;
     }
 
     /* درج جدول الشهور الـ 12 */
@@ -2486,15 +2712,43 @@
             display: none !important;
         }
         .student-matrix-row {
-            grid-template-columns: 1fr !important;
-            gap: 12px;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 14px !important;
+            padding: 16px !important;
+            border-radius: 14px !important;
+            border-top: 3.5px solid #1e3a8a !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04) !important;
+        }
+        .student-profile-block {
+            width: 100% !important;
+        }
+        .term-col-box {
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .student-financial-summary-block {
+            width: 100% !important;
+        }
+        .student-actions-block {
+            width: 100% !important;
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+        }
+        .student-actions-block > * {
+            width: 100% !important;
+            height: 38px !important;
+            padding: 0 10px !important;
+            font-size: 0.78rem !important;
         }
     }
 
     @media (max-width: 768px) {
         .subs-matrix-wrapper {
-            gap: 14px;
-            padding-bottom: 24px;
+            gap: 12px;
+            padding-bottom: 75px;
         }
         .royal-academic-header-card {
             padding: 14px 16px;
@@ -2556,37 +2810,117 @@
             font-size: 1.35rem;
         }
         .filter-box-card {
-            padding: 12px 14px;
+            padding: 14px 14px;
+            border-radius: 12px;
         }
         .filters-wrap {
             flex-direction: column;
             align-items: stretch;
-            gap: 8px;
+            gap: 10px;
         }
         .search-cell {
             min-width: 100%;
-        }
-        .filter-select, .btn-filter-submit {
             width: 100%;
         }
-        .student-matrix-row {
-            padding: 12px;
-            border-radius: 10px;
-        }
-        .months-strip-grid {
-            grid-template-columns: repeat(6, 1fr) !important;
-            gap: 6px !important;
-        }
-        .student-actions-block {
+        .filter-cell {
             width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+        }
+        .filter-select, .search-input {
+            width: 100%;
+            height: 42px;
+            font-size: 0.86rem;
+        }
+        .filter-actions-cell {
+            width: 100%;
+            display: flex;
             gap: 8px;
         }
-        .btn-statement-royal, .btn-student-profile-link {
-            width: 100%;
+        .btn-filter-submit {
+            flex: 1;
+            height: 42px;
             justify-content: center;
-            text-align: center;
+            font-size: 0.88rem;
+        }
+        .btn-reset-filter {
+            height: 42px;
+            justify-content: center;
+            padding: 0 16px;
+            box-sizing: border-box;
+        }
+        .legend-strip {
+            gap: 6px;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        .legend-title {
+            width: 100%;
+            margin-bottom: 2px;
+            font-size: 0.78rem;
+        }
+        .legend-pill {
+            padding: 4px 8px;
+            font-size: 0.72rem;
+        }
+        .student-matrix-row {
+            padding: 14px !important;
+            border-radius: 12px !important;
+            gap: 12px !important;
+        }
+        .student-avatar {
+            width: 44px;
+            height: 44px;
+        }
+        .student-name {
+            font-size: 0.95rem;
+        }
+        .term-col-box {
+            padding: 10px 12px !important;
+            border-radius: 10px !important;
+            background: #f8fafc !important;
+        }
+        .term-title-tag {
+            font-size: 0.84rem !important;
+        }
+        .term-figures-row {
+            padding: 8px 4px !important;
+            margin: 6px 0 !important;
+            background: #ffffff !important;
+        }
+        .term-fig-lbl {
+            font-size: 0.68rem !important;
+        }
+        .term-fig-val {
+            font-size: 0.86rem !important;
+        }
+        .term-status-pill {
+            padding: 4px 8px !important;
+            font-size: 0.72rem !important;
+        }
+        .btn-term-quick-edit {
+            padding: 5px 10px !important;
+            font-size: 0.74rem !important;
+        }
+        .fin-pill-group {
+            gap: 6px !important;
+        }
+        .fin-pill {
+            padding: 7px 4px !important;
+        }
+        .fin-lbl {
+            font-size: 0.67rem !important;
+        }
+        .fin-due strong, .fin-paid strong, .fin-remaining strong {
+            font-size: 0.88rem !important;
+        }
+        .student-actions-block {
+            display: grid !important;
+            grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
+            gap: 8px !important;
+        }
+        .student-actions-block > * {
+            height: 38px !important;
+            font-size: 0.78rem !important;
+            border-radius: 8px !important;
         }
         .modal-card-box {
             padding: 16px 14px !important;
@@ -2617,29 +2951,26 @@
             grid-template-columns: 1fr !important;
         }
         .fin-pill-group {
-            gap: 4px;
+            gap: 4px !important;
         }
         .fin-pill {
-            padding: 3px 6px;
+            padding: 6px 3px !important;
         }
         .fin-due strong, .fin-paid strong, .fin-remaining strong {
-            font-size: 0.78rem;
-        }
-        .months-strip-grid {
-            grid-template-columns: repeat(4, 1fr) !important;
-            gap: 5px !important;
-        }
-        .month-micro-badge {
-            height: 40px;
-        }
-        .student-profile-block {
-            align-items: flex-start;
+            font-size: 0.82rem !important;
         }
         .student-sub-line {
             gap: 4px;
         }
-        .student-fee-badge-btn {
+        .pass-chip {
             font-size: 0.68rem;
+            padding: 2px 5px;
+        }
+        .student-actions-block {
+            grid-template-columns: 1fr 1fr !important;
+        }
+        .student-actions-block > *:last-child:nth-child(odd) {
+            grid-column: 1 / -1;
         }
         .modal-footer-row {
             flex-direction: column;

@@ -202,3 +202,35 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// =========================================================
+// إدارة شارة أيقونة التطبيق الرسمية (App Badging API Engine)
+// =========================================================
+self.addEventListener('message', (event) => {
+  if (event.data && (event.data.type === 'SET_BADGE' || event.data.action === 'SET_BADGE')) {
+    const count = parseInt(event.data.count || 0, 10);
+    if ('setAppBadge' in self.navigator) {
+      if (count > 0) {
+        self.navigator.setAppBadge(count).catch(() => {});
+      } else {
+        self.navigator.clearAppBadge().catch(() => {});
+      }
+    }
+  }
+});
+
+self.addEventListener('push', (event) => {
+  let count = 1;
+  try {
+    const data = event.data ? event.data.json() : {};
+    if (data.unread_count) count = parseInt(data.unread_count, 10);
+  } catch(e) {}
+
+  if ('setAppBadge' in self.navigator) {
+    if (count > 0) {
+      self.navigator.setAppBadge(count).catch(() => {});
+    } else {
+      self.navigator.clearAppBadge().catch(() => {});
+    }
+  }
+});

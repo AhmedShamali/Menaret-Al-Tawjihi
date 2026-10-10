@@ -319,56 +319,126 @@ class NotificationController extends Controller
      */
     public function getUnread()
     {
-        $student = CurrentActor::student() ?? Auth::guard('student')->user();
-        if (!$student) {
-            return response()->json(['count' => 0, 'items' => []]);
-        }
+        $isStudent = auth('student')->check();
+        $isWeb = auth('web')->check();
 
-        // إشعارات النظام غير المقروءة
-        $systemUnread = $student->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
-            $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
-            return [
-                'id'         => $notif->id,
-                'title'      => $data['title'] ?? 'إشعار جديد',
-                'message'    => Str::limit($data['message'] ?? '', 55),
-                'type'       => $data['type'] ?? 'system',
-                'url'        => $data['action_url'] ?? $data['url'] ?? route('student.dashboard'),
-                'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
-            ];
-        });
+        if ($isStudent) {
+            $student = CurrentActor::student() ?? auth('student')->user();
+            if (!$student) {
+                return response()->json(['count' => 0, 'items' => []]);
+            }
 
-        // رسائل غير مقروءة
-        $messagesUnread = Message::where('student_id', $student->id)
-            ->where('sender_type', '!=', 'student')
-            ->where(function ($q) {
-                $q->where('is_read', false)->orWhereNull('is_read');
-            })
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(function ($msg) {
+            // إشعارات النظام غير المقروءة للطالب
+            $systemUnread = $student->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+                $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
                 return [
-                    'id'         => 'msg_' . $msg->id,
-                    'title'      => $msg->sender_type === 'teacher' ? 'رسالة من المعلم' : 'رد من الدعم الفني',
-                    'message'    => Str::limit($msg->message, 55),
-                    'type'       => 'message',
-                    'url'        => $msg->sender_type === 'teacher' ? route('student.teachers.chat', $msg->teacher_id ?? 1) : route('student.support'),
-                    'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
+                    'id'         => $notif->id,
+                    'title'      => $data['title'] ?? 'إشعار جديد',
+                    'message'    => Str::limit($data['message'] ?? '', 55),
+                    'type'       => $data['type'] ?? 'system',
+                    'url'        => $data['action_url'] ?? $data['url'] ?? route('student.dashboard'),
+                    'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
                 ];
             });
 
-        $combined = $systemUnread->concat($messagesUnread)->sortByDesc('created_at')->take(5)->values();
-        $unreadMessagesCount = Message::where('student_id', $student->id)
-            ->where('sender_type', '!=', 'student')
-            ->where(function ($q) {
-                $q->where('is_read', false)->orWhereNull('is_read');
-            })
-            ->count();
-        $totalCount = $student->unreadNotifications()->count() + $unreadMessagesCount;
+            // رسائل المحادثة غير المقروءة للطالب
+            $messagesUnread = Message::where('student_id', $student->id)
+                ->where('sender_type', '!=', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(function ($msg) {
+                    return [
+                        'id'         => 'msg_' . $msg->id,
+                        'title'      => $msg->sender_type === 'teacher' ? 'رسالة من المعلم' : 'رد من الدعم الفني',
+                        'message'    => Str::limit($msg->message, 55),
+                        'type'       => 'message',
+                        'url'        => $msg->sender_type === 'teacher' ? route('student.teachers.chat', $msg->teacher_id ?? 1) : route('student.support'),
+                        'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
+                    ];
+                });
+
+            $combined = $systemUnread->concat($messagesUnread)->sortByDesc('created_at')->take(5)->values();
+            $unreadMessagesCount = Message::where('student_id', $student->id)
+                ->where('sender_type', '!=', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->count();
+            $totalCount = $student->unreadNotifications()->count() + $unreadMessagesCount;
+
+            return response()->json([
+                'success' => true,
+                'count' => $totalCount,
+                'items' => $combined
+            ]);
+        } elseif ($isWeb && auth()->user()->role === 'admin') {
+            $admin = auth()->user();
+
+            $systemUnread = $admin->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+                $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
+                return [
+                    'id'         => $notif->id,
+                    'title'      => $data['title'] ?? 'تنبيه إداري',
+                    'message'    => Str::limit($data['message'] ?? '', 55),
+                    'type'       => $data['type'] ?? 'system',
+                    'url'        => $data['action_url'] ?? $data['url'] ?? route('admin.dashboard'),
+                    'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
+                ];
+            });
+
+            $msgCount = Message::whereNull('teacher_id')
+                ->where('sender_type', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->count();
+
+            $totalCount = $admin->unreadNotifications()->count() + $msgCount;
+
+            return response()->json([
+                'success' => true,
+                'count' => $totalCount,
+                'items' => $systemUnread
+            ]);
+        } elseif ($isWeb && auth()->user()->role === 'teacher') {
+            $teacher = auth()->user();
+
+            $systemUnread = $teacher->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+                $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
+                return [
+                    'id'         => $notif->id,
+                    'title'      => $data['title'] ?? 'تنبيه أكاديمي',
+                    'message'    => Str::limit($data['message'] ?? '', 55),
+                    'type'       => $data['type'] ?? 'system',
+                    'url'        => $data['action_url'] ?? $data['url'] ?? route('teacher.dashboard'),
+                    'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
+                ];
+            });
+
+            $msgCount = Message::where('teacher_id', $teacher->id)
+                ->where('sender_type', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->count();
+
+            $totalCount = $teacher->unreadNotifications()->count() + $msgCount;
+
+            return response()->json([
+                'success' => true,
+                'count' => $totalCount,
+                'items' => $systemUnread
+            ]);
+        }
 
         return response()->json([
-            'count' => $totalCount,
-            'items' => $combined
+            'success' => true,
+            'count' => 0,
+            'items' => []
         ]);
     }
 }

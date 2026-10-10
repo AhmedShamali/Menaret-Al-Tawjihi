@@ -232,6 +232,52 @@
         width: 0%;
         transition: 0.4s;
     }
+
+    @media (max-width: 768px) {
+        .main-header {
+            padding: 24px 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+        .main-header h1 {
+            font-size: 1.6rem !important;
+        }
+        .main-header p {
+            font-size: 0.92rem !important;
+        }
+        .course-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        .question-box {
+            padding: 20px 16px;
+            border-radius: 16px;
+        }
+        .question-box h3#q_text {
+            font-size: 1.25rem !important;
+            margin-bottom: 25px !important;
+        }
+        .sidebar-panel {
+            padding: 18px 14px;
+            position: static;
+        }
+        #palette {
+            grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)) !important;
+            gap: 8px !important;
+        }
+        .btn-premium {
+            padding: 12px 18px;
+            font-size: 0.9rem;
+        }
+        .option-item {
+            padding: 14px 16px;
+            font-size: 0.92rem;
+        }
+        .result-stats-grid {
+            grid-template-columns: 1fr !important;
+            padding: 18px !important;
+        }
+    }
 </style>
 
 <div class="premium-wrapper">
@@ -274,7 +320,7 @@
         <div class="quiz-container">
             <main>
                 <div class="question-box">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 35px; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <span id="course_code_display" style="background: #eff6ff; color: #3b82f6; padding: 5px 12px; border-radius: 8px; font-weight: 800; font-size: 0.8rem;"></span>
                             <h2 id="quiz_title_display" style="margin: 5px 0; font-weight: 900;"></h2>
@@ -292,7 +338,7 @@
                         <!-- Options via JS -->
                     </div>
 
-                    <div style="margin-top: 50px; display: flex; justify-content: space-between;">
+                    <div style="margin-top: 50px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                         <button onclick="move(-1)" class="btn-premium" style="background: #f1f5f9; color: #475569;">{{ __('السابق') }}</button>
                         <button onclick="move(1)" class="btn-premium btn-main">السؤال التالي ⬅️</button>
                     </div>
@@ -316,7 +362,7 @@
                         </div>
                     </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;" id="palette">
+                    <div class="question-palette-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;" id="palette">
                         <!-- Dots via JS -->
                     </div>
 
@@ -333,7 +379,7 @@
             <h1 style="font-weight: 900; color: #1e3a8a;">{{ __('اكتمل التقييم بنجاح') }}</h1>
             <p style="color: #64748b; margin-bottom: 30px;">{{ __('لقد تم تحليل أدائك الأكاديمي، إليك النتيجة الرسمية:') }}</p>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f8fafc; padding: 30px; border-radius: 20px; border: 1px dashed #cbd5e1;">
+            <div class="result-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: #f8fafc; padding: 30px; border-radius: 20px; border: 1px dashed #cbd5e1;">
                 <div>
                     <div style="color: #94a3b8; font-weight: 700;">{{ __('النسبة المئوية') }}</div>
                     <div id="final_pct" style="font-size: 3rem; font-weight: 900; color: #1e3a8a;">0%</div>

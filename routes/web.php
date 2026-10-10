@@ -145,6 +145,9 @@ Route::get('/certificates/{id}', [\App\Http\Controllers\SmartLearningController:
 // مسار مركزي لتعيين كافة الإشعارات كمقروءة للمدير والمعلم والطالب
 Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Student\NotificationController::class, 'unifiedMarkAllRead'])->name('notifications.markAllReadUnified');
 
+// مسار موحد للحصول على عدد الإشعارات غير المقروءة لجميع المستخدمين لتحديث شارة أيقونة التطبيق
+Route::get('/notifications/unread-count', [\App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unreadCount');
+
 // مسار فتح التنبيه (تحديد كمقروء والانتقال للوجهة دون تجميد أو تعليق)
 Route::get('/notifications/open/{id}', [\App\Http\Controllers\Student\NotificationController::class, 'openNotification'])->name('notifications.open');
 Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markReadUnified');

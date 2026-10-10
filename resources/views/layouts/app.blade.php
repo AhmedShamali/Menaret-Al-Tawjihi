@@ -17,9 +17,9 @@
     <link rel="apple-touch-icon" sizes="167x167" href="/icons/step-by-step-icon-192.png?v=20261002-v33">
 
     @if(\App\Models\Setting::get('site_favicon'))
-        <link rel="icon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v33">
+        <link rel="icon" id="dynamicSiteFavicon" href="{{ asset(\App\Models\Setting::get('site_favicon')) }}?v=20261002-v33">
     @else
-        <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v33">
+        <link rel="icon" id="dynamicSiteFavicon" type="image/png" sizes="64x64" href="/favicon.png?v=20261002-v33">
         <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261002-v33">
     @endif
     <title>@yield('title', __('المنصة التعليمية')) | {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}</title>
@@ -983,7 +983,19 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
         }
 
-        /* --- شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav) --- */
+        /* --- النظام الشامل لحماية وتجاوب الجداول لجميع الشاشات وتطبيق الجوال --- */
+        .table-responsive,
+        .table-container-clean,
+        .table-responsive-box,
+        .table-responsive-wrapper {
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            position: relative;
+            box-sizing: border-box;
+        }
+
         /* --- شريط التنقل السفلي للهواتف الذكية (Mobile Bottom Nav) --- */
         .mobile-bottom-nav {
             display: none;
@@ -2205,16 +2217,43 @@
 
         @media (max-width: 1024px) {
             .ed-scroll-top-btn {
-                bottom: 76px;
-                left: 16px;
-                width: 38px;
-                height: 38px;
-                font-size: 0.92rem;
+                bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+                left: 14px;
+                width: 36px;
+                height: 36px;
+                font-size: 0.88rem;
                 border-radius: 8px;
             }
             html[dir="ltr"] .ed-scroll-top-btn {
                 left: auto;
-                right: 16px;
+                right: 14px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ed-scroll-top-btn {
+                bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+                left: 10px;
+                width: 34px;
+                height: 34px;
+                font-size: 0.82rem;
+                border-radius: 8px;
+                background: rgba(15, 36, 61, 0.85);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+            }
+            .ed-scroll-top-btn.visible {
+                opacity: 0.72;
+            }
+            .ed-scroll-top-btn.visible:hover,
+            .ed-scroll-top-btn.visible:active {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+            html[dir="ltr"] .ed-scroll-top-btn {
+                left: auto;
+                right: 10px;
             }
         }
 
@@ -3265,6 +3304,11 @@
                     }
                 @endphp
 
+                <script>
+                    window.INITIAL_UNREAD_COUNT = {{ (int)$unreadCount }};
+                    window.APP_UNREAD_COUNT_URL = "{{ route('notifications.unreadCount') }}";
+                </script>
+
                 <!-- زر الدروس المحفوظة أوفلاين بدون نت للطلاب فقط -->
                 @if(auth('student')->check())
                     <button type="button" onclick="openOfflineVault()" class="topbar-offline-vault-btn" title="{{ __('دروسي المحفوظة أوفلاين بدون إنترنت') }}" style="background: var(--ed-surface); border: 1px solid var(--ed-border); padding: 0 12px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 7px; color: #10b981; font-weight: 700; font-size: 0.82rem; transition: var(--transition-smooth);">
@@ -3281,7 +3325,7 @@
                         <span id="navUnreadBadge" style="{{ $unreadCount > 0 ? '' : 'display: none;' }} position: absolute; top: -3px; right: -3px; background: var(--ed-danger); color: white; font-size: 0.62rem; padding: 2px 6px; border-radius: 99px; border: 2px solid var(--ed-surface); font-weight: 700;">{{ $unreadCount }}</span>
                     </button>
                     
-                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 48px; width: 340px; background: var(--ed-surface); border-radius: var(--ed-radius-md); box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); z-index: 1000; overflow: hidden;">
+                    <div id="notificationsMenu" style="display: none; position: absolute; left: 0; top: 48px; width: 340px; max-width: min(340px, calc(100vw - 20px)); box-sizing: border-box; background: var(--ed-surface); border-radius: var(--ed-radius-md); box-shadow: var(--ed-shadow-lg); border: 1px solid var(--ed-border); z-index: 1000; overflow: hidden;">
                         <div style="padding: 12px 16px; background: var(--ed-surface-alt); border-bottom: 1px solid var(--ed-border); display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-weight: 700; font-size: 0.88rem; color: var(--ed-text-main); display: flex; align-items: center; gap: 8px;">
                                 <i class="fa-regular fa-bell" style="color: var(--ed-primary);"></i> {{ __('مركز التنبيهات') }}
@@ -3547,6 +3591,9 @@
             axios.post('{{ route('notifications.markAllReadUnified') }}', {
                 _token: '{{ csrf_token() }}'
             }).then(() => {
+                if (window.updateAppNotificationBadge) {
+                    window.updateAppNotificationBadge(0);
+                }
                 const badge = document.getElementById('navUnreadBadge');
                 if (badge) badge.style.display = 'none';
                 const list = document.getElementById('navNotificationsList');
@@ -3624,13 +3671,28 @@
         window.addEventListener('scroll', function() {
             const btn = document.getElementById('edScrollTopBtn');
             if (btn) {
-                if (window.scrollY > 250) {
+                const threshold = window.innerWidth <= 768 ? 400 : 250;
+                if (window.scrollY > threshold) {
                     btn.classList.add('visible');
                 } else {
                     btn.classList.remove('visible');
                 }
             }
         }, { passive: true });
+
+        // عند النقر على الأيقونة النشطة في شريط التنقل السفلي للهاتف، الصعود لأعلى الصفحة بسلاسة
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.bottom-nav-item.active, .nav-tab.active').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    const currentUrl = window.location.pathname;
+                    const href = this.getAttribute('href');
+                    if (href && (href === currentUrl || href === window.location.href)) {
+                        e.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                });
+            });
+        });
 
         // حماية خصوصية المحتوى التعليمي ومنع تسريب أو نسخ روابط يوتيوب إلى الحافظة
         (function() {
@@ -3771,6 +3833,9 @@
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')
+
+    <!-- محرك شارة أيقونة التطبيق والتبويب الذكي (App Badging Engine) -->
+    <script src="{{ asset('js/app-badging.js') }}?v={{ file_exists(public_path('js/app-badging.js')) ? filemtime(public_path('js/app-badging.js')) : time() }}"></script>
 
 </body>
 </html>

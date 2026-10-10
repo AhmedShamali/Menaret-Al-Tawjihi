@@ -142,7 +142,7 @@
                             <span>{{ __('الجمهور والمنهاج المستهدف') }} <span class="required">*</span></span>
                             <small style="color: #64748b; font-weight: normal;">{{ __('يحدد من يظهر له هذا الدرس من الطلبة المسجلين') }}</small>
                         </label>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 6px;">
+                        <div class="region-select-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 6px;">
                             <label style="cursor: pointer; margin: 0;">
                                 <input type="radio" name="target_region" value="gaza" style="display: none;" onchange="updateCreateRegionUI(this)">
                                 <div id="cre_card_gaza" style="border: 2px solid #e2e8f0; border-radius: 12px; padding: 10px 8px; text-align: center; background: #fff; transition: all 0.2s;">
@@ -663,7 +663,27 @@
     .progress-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 10px; }
     .progress-bar-bg { width: 100%; height: 12px; background: #dbeafe; border-radius: 10px; overflow: hidden; }
     .progress-bar-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.2s; }
-    .btn-submit { background: var(--primary); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; }
-    .btn-secondary-custom { border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 12px; color: var(--text-dark); text-decoration: none; }
+    .btn-submit { background: var(--primary); color: #fff; border: none; padding: 18px; border-radius: 14px; font-weight: 800; cursor: pointer; width: 100%; font-size: 1rem; transition: background 0.2s; }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-secondary-custom { border: 1px solid var(--border-color); padding: 10px 20px; border-radius: 12px; color: var(--text-dark); text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+
+    @media (max-width: 900px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+        .page-header .btn-secondary-custom { width: 100%; text-align: center; }
+    }
+    @media (max-width: 640px) {
+        .content-wrapper { padding: 12px 6px; }
+        .page-title { font-size: 1.5rem; }
+        .page-subtitle { font-size: 0.85rem; }
+        .glass-card { padding: 18px 14px; border-radius: 16px; }
+        .form-row { grid-template-columns: 1fr; gap: 12px; }
+        .attachment-selectors { grid-template-columns: 1fr; }
+        .region-select-grid { grid-template-columns: 1fr !important; }
+        .quick-mode-cards { grid-template-columns: 1fr !important; }
+        .quick-mode-cards > div { flex-direction: column; align-items: stretch; text-align: center; gap: 12px; }
+        .quick-mode-cards > div > div { flex-direction: column; text-align: center; }
+        .quick-mode-cards > div a { width: 100%; text-align: center; }
+    }
 </style>
 @endsection

@@ -153,8 +153,8 @@
         </div>
 
         {{-- جدول الأسعار الأكاديمي الكلاسيكي بنظام القيد المزدوج للمحافظات --}}
-        <div style="overflow-x: auto;">
-            <table id="academicLedgerTable" style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.85rem; font-family: 'Alexandria', 'Cairo', sans-serif;">
+        <div class="table-responsive">
+            <table id="academicLedgerTable" style="width: 100%; min-width: 820px; border-collapse: collapse; text-align: right; font-size: 0.85rem; font-family: 'Alexandria', 'Cairo', sans-serif;">
                 <thead>
                     {{-- الصف الأول من الترويسة --}}
                     <tr style="background: #f1f5f9; border-bottom: 1px solid #cbd5e1; color: #334155; font-weight: 800; font-size: 0.8rem;">
@@ -355,7 +355,7 @@
                     <i class="fa-solid fa-landmark"></i>
                     <span>{{ __('محافظات الضفة الغربية والقدس الشريف (شيكل ₪)') }}</span>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div class="pricing-term-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
                     <div>
                         <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #475569; margin-bottom: 4px;">{{ __('الفصل الأول') }}</label>
                         <input type="number" id="modalPriceTerm1Wb" oninput="calcWbFullPreview()" min="0" required style="width: 100%; height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; font-weight: 700; color: #0f172a;">
@@ -377,7 +377,7 @@
                     <i class="fa-solid fa-location-dot"></i>
                     <span>{{ __('محافظات قطاع غزة (تسعيرة مراعية للظروف ₪)') }}</span>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div class="pricing-term-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
                     <div>
                         <label style="display: block; font-size: 0.74rem; font-weight: 700; color: #475569; margin-bottom: 4px;">{{ __('الفصل الأول') }}</label>
                         <input type="number" id="modalPriceTerm1Gaza" oninput="calcGazaFullPreview()" min="0" required style="width: 100%; height: 36px; padding: 0 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem; font-weight: 700; color: #0f172a;">
@@ -612,4 +612,30 @@
         }
     });
 </script>
+
+<style>
+    .academic-pricing-page .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    @media (max-width: 540px) {
+        .pricing-term-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+        }
+        #editModal > div, #seasonalModal > div {
+            max-width: 100% !important;
+            margin: 10px !important;
+        }
+        .academic-pricing-page {
+            padding: 8px 4px 50px 4px !important;
+        }
+    }
+</style>
 @endsection

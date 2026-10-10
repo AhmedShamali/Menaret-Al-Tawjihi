@@ -8,6 +8,11 @@
     $stageDispName = (app()->getLocale() === 'en' && !empty($student?->stage?->name_en))
         ? $student?->stage?->name_en
         : ($student?->stage?->label_ar ?? $student?->stage?->name_ar ?? __('الثانوية العامة (التوجيهي)'));
+
+    // الأرقام الرسمية المعتمدة للمنصة
+    $transferNumber = '0567897212';
+    $directorWa = '00970597694385';
+    $directorWaClean = '970597694385';
 @endphp
 
 @section('title', $isFrozen ? __('الحساب مجمد مؤقتاً | Step by Step') : __('بانتظار موافقة الإدارة وتفعيل الاشتراك | Step by Step'))
@@ -62,20 +67,15 @@
             <!-- زر التواصل المباشر مع المشرف العام عبر واتساب لفك التجميد -->
             <div class="unfreeze-actions-strip">
                 @php
-                    $rawWa = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
-                    $cleanWa = preg_replace('/[^0-9]/', '', $rawWa) ?: '970597694385';
-                    if (!str_starts_with($cleanWa, '970') && !str_starts_with($cleanWa, '972')) {
-                        $cleanWa = '970' . ltrim($cleanWa, '0');
-                    }
                     $waUnfreeze = urlencode(app()->getLocale() === 'ar'
                         ? ("السلام عليكم م.أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هويتي (" . ($student->nid ?? '-') . ")، حسابي مجمد على المنصة بسبب: [" . ($student->freeze_reason ?: 'عدم سداد الرسوم أو مراجعة الإدارة') . "]. أرجو التكرم بمساعدتي لفك التجميد وإعادة تفعيل الحساب.")
                         : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") ID (" . ($student->nid ?? '-') . "), my account is frozen. Please assist me in unfreezing and reactivating my account."));
                 @endphp
-                <a href="https://wa.me/{{ $cleanWa }}?text={{ $waUnfreeze }}" 
+                <a href="https://wa.me/{{ $directorWaClean }}?text={{ $waUnfreeze }}" 
                    target="_blank" 
                    class="btn-whatsapp-unfreeze">
                     <i class="fa-brands fa-whatsapp"></i>
-                    <span>{{ __('تواصل مباشرة مع المشرف العام لفك التجميد (واتساب: 00970597694385)') }}</span>
+                    <span>{{ __('تواصل مباشرة مع المشرف العام لفك التجميد (واتساب: :num)', ['num' => $directorWa]) }}</span>
                 </a>
             </div>
 
@@ -287,85 +287,117 @@
             </div>
         </div>
 
-        <!-- بطاقة وسائل الدفع الفلسطينية المعتمدة -->
-        <div class="payment-channels-card">
-            <div class="channels-title-row">
-                <i class="fa-solid fa-building-columns" style="color: var(--ed-primary);"></i>
-                <h4>{{ __('وسائل الدفع والتحويل الفلسطينية المعتمدة:') }}</h4>
+        <!-- بطاقة وسائل الدفع والتحويل الفلسطينية المعتمدة (تصميم كلاسيكي رسمي ومؤطر) -->
+        <div class="payment-channels-card classic-framed-section">
+            <div class="classic-section-header">
+                <div class="header-icon-wrap">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div>
+                    <h3 class="classic-section-title">{{ __('وسائل الدفع والتحويل الرسمية المعتمدة') }}</h3>
+                    <p class="classic-section-subtitle">{{ __('المستفيد المعتمد لكافة الحسابات: م. أحمد شمالي | التحويل متاح عبر التطبيقات البنكية والمحافظ الإلكترونية') }}</p>
+                </div>
             </div>
-            <p class="channels-desc">{{ __('يرجى تحويل المبلغ المطلوب (:amount ₪) عبر إحدى القنوات الآتية باسم (م.أحمد شمالي):', ['amount' => number_format($finalAmount ?? 150, 0)]) }}</p>
+
+            <!-- شريط رقم التحويل الموحد البارز والمؤطر -->
+            <div class="unified-transfer-banner">
+                <div class="unified-transfer-content">
+                    <span class="unified-label">
+                        <i class="fa-solid fa-money-bill-transfer"></i>
+                        {{ __('رقم التحويل الموحد لكافة الحسابات (بنك فلسطين، بال باي، جوال باي):') }}
+                    </span>
+                    <strong class="unified-number font-mono" dir="ltr">0567897212</strong>
+                </div>
+                <button type="button" class="btn-copy-unified" onclick="copyNumber('0567897212', '{{ __('رقم التحويل الموحد') }}')">
+                    <i class="fa-regular fa-copy"></i>
+                    <span>{{ __('نسخ رقم التحويل (0567897212)') }}</span>
+                </button>
+            </div>
+
+            <p class="channels-instruction">
+                <i class="fa-solid fa-circle-info"></i>
+                {{ __('يرجى تحويل المبلغ المستحق (:amount ₪) إلى أحد الحسابات الآتية باسم (م. أحمد شمالي):', ['amount' => number_format($finalAmount ?? 150, 0)]) }}
+            </p>
 
             <div class="channels-grid">
                 <!-- بنك فلسطين -->
-                <div class="channel-card">
-                    <div class="channel-icon" style="color: #b91c1c;"><i class="fa-solid fa-building-columns"></i></div>
-                    <div class="channel-details">
-                        <strong>{{ __('بنك فلسطين (Bank of Palestine)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
-                        <div class="number-copy-row">
-                            <span class="account-num" dir="ltr">0567897212</span>
-                            <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم بنك فلسطين') }}')">
-                                <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
-                            </button>
+                <div class="channel-card classic-channel">
+                    <div class="channel-card-top">
+                        <div class="channel-icon bop"><i class="fa-solid fa-building-columns"></i></div>
+                        <div>
+                            <strong class="channel-name">{{ __('بنك فلسطين (Bank of Palestine)') }}</strong>
+                            <span class="account-holder"><i class="fa-solid fa-user-check"></i> {{ __('المستفيد: م. أحمد شمالي') }}</span>
                         </div>
+                    </div>
+                    <div class="number-copy-row">
+                        <span class="account-num font-mono" dir="ltr">0567897212</span>
+                        <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم بنك فلسطين') }}')">
+                            <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
+                        </button>
                     </div>
                 </div>
 
                 <!-- بال باي -->
-                <div class="channel-card">
-                    <div class="channel-icon" style="color: #0284c7;"><i class="fa-solid fa-credit-card"></i></div>
-                    <div class="channel-details">
-                        <strong>{{ __('بال باي (PalPay)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
-                        <div class="number-copy-row">
-                            <span class="account-num" dir="ltr">0567897212</span>
-                            <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم PalPay') }}')">
-                                <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
-                            </button>
+                <div class="channel-card classic-channel">
+                    <div class="channel-card-top">
+                        <div class="channel-icon palpay"><i class="fa-solid fa-credit-card"></i></div>
+                        <div>
+                            <strong class="channel-name">{{ __('بال باي (PalPay)') }}</strong>
+                            <span class="account-holder"><i class="fa-solid fa-user-check"></i> {{ __('المستفيد: م. أحمد شمالي') }}</span>
                         </div>
+                    </div>
+                    <div class="number-copy-row">
+                        <span class="account-num font-mono" dir="ltr">0567897212</span>
+                        <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم PalPay') }}')">
+                            <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
+                        </button>
                     </div>
                 </div>
 
                 <!-- جوال باي -->
-                <div class="channel-card">
-                    <div class="channel-icon" style="color: #16a34a;"><i class="fa-solid fa-mobile-screen-button"></i></div>
-                    <div class="channel-details">
-                        <strong>{{ __('محفظة جوال باي (Jawwal Pay)') }}</strong>
-                        <span class="account-holder">{{ __('المستفيد المعتمد: م.أحمد شمالي') }}</span>
-                        <div class="number-copy-row">
-                            <span class="account-num" dir="ltr">0567897212</span>
-                            <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم جوال باي') }}')">
-                                <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
-                            </button>
+                <div class="channel-card classic-channel">
+                    <div class="channel-card-top">
+                        <div class="channel-icon jawwalpay"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div>
+                            <strong class="channel-name">{{ __('محفظة جوال باي (Jawwal Pay)') }}</strong>
+                            <span class="account-holder"><i class="fa-solid fa-user-check"></i> {{ __('المستفيد: م. أحمد شمالي') }}</span>
                         </div>
+                    </div>
+                    <div class="number-copy-row">
+                        <span class="account-num font-mono" dir="ltr">0567897212</span>
+                        <button type="button" class="copy-btn" onclick="copyNumber('0567897212', '{{ __('رقم جوال باي') }}')">
+                            <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- نموذج إرسال إشعار السداد ورفع الإيصال -->
-        <div class="receipt-submission-card">
-            <div class="receipt-header">
-                <i class="fa-solid fa-receipt text-emerald"></i>
+        <!-- نموذج إرسال إشعار السداد ورفع الإيصال (تصميم كلاسيكي مؤطر ورصين) -->
+        <div class="receipt-submission-card classic-framed-section">
+            <div class="classic-section-header receipt-theme">
+                <div class="header-icon-wrap receipt-icon">
+                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                </div>
                 <div>
-                    <h3>{{ __('إرسال إشعار السداد وإرفاق الإيصال') }}</h3>
-                    <p>{{ __('بعد إتمام التحويل، يرجى ملء النموذج لتقوم الإدارة بتفعيل حسابك مباشرة') }}</p>
+                    <h3 class="classic-section-title">{{ __('نموذج توثيق الحوالة وإرفاق إيصال السداد الأكاديمي') }}</h3>
+                    <p class="classic-section-subtitle">{{ __('بعد إتمام التحويل، يرجى تعبئة النموذج وإرفاق الوصل لتقوم الإدارة باعتماد وتفعيل الحساب فوراً') }}</p>
                 </div>
             </div>
 
             @if(session('payment_success'))
-                <div class="alert-success-box" style="background: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
-                    <i class="fa-solid fa-circle-check"></i>
+                <div class="alert-success-box" style="background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 1.2rem;"></i>
                     <span>{{ session('payment_success') }}</span>
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="alert-danger-box" style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 700; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}; display: flex; align-items: flex-start; gap: 8px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.1rem; color: #dc2626; margin-top: 2px;"></i>
+                <div class="alert-danger-box" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; padding: 14px 18px; border-radius: 8px; margin-bottom: 18px; font-weight: 700; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }}; display: flex; align-items: flex-start; gap: 10px;">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem; color: #dc2626; margin-top: 2px;"></i>
                     <div>
-                        <div style="margin-bottom: 4px;">{{ __('يرجى تصحيح الأخطاء التالية:') }}</div>
-                        <ul style="margin: 0; padding-inline-start: 18px; font-size: 0.85rem; font-weight: 600;">
+                        <div style="margin-bottom: 6px;">{{ __('يرجى تصحيح الأخطاء التالية:') }}</div>
+                        <ul style="margin: 0; padding-inline-start: 18px; font-size: 0.88rem; font-weight: 600;">
                             @foreach($errors->all() as $err)
                                 <li>{{ $err }}</li>
                             @endforeach
@@ -538,63 +570,124 @@
                 </div>
 
                 <div class="form-group-full">
-                    <label class="input-label">{{ __('إرفاق صورة الإيصال أو لقطة الشاشة') }} <span class="required">*</span></label>
-                    <div class="file-upload-box" id="fileUploadBox">
+                    <label class="input-label">{{ __('إرفاق صورة الإيصال أو لقطة الشاشة أو ملف PDF') }} <span class="required">*</span></label>
+                    <div class="file-upload-box classic-upload-box" id="fileUploadBox">
                         <input type="file" name="receipt_photo" id="receiptFileInput" accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf" class="file-input-hidden" onchange="handleFileSelected(this)">
                         <label for="receiptFileInput" class="file-upload-label">
-                            <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
-                            <span id="uploadLabelText">{{ __('اضغط هنا لرفع صورة الإيصال أو ملف PDF') }}</span>
-                            <small>{{ __('يقبل صور JPG, PNG أو ملف PDF بحجم أقصى 8 ميجابايت') }}</small>
+                            <div class="upload-icon-circle">
+                                <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                            </div>
+                            <span id="uploadLabelText" class="upload-main-text">{{ __('اضغط هنا لاختيار صورة إيصال التحويل أو ملف PDF') }}</span>
+                            <span class="upload-sub-text">{{ __('يقبل صيغ JPG, PNG, WEBP أو ملفات PDF رسمية (حجم أقصى 8 ميجابايت)') }}</span>
+                            <span class="upload-cta-pill"><i class="fa-solid fa-folder-open"></i> {{ __('استعراض الملفات من جهازك') }}</span>
                         </label>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit-receipt" id="btnSubmitReceipt">
+                <button type="submit" class="btn-submit-receipt classic-submit-btn" id="btnSubmitReceipt">
                     <i class="fa-solid fa-paper-plane"></i>
-                    <span id="submitBtnText">{{ __('تأكيد وإرسال إشعار السداد بمبلغ :amt ₪', ['amt' => number_format($finalAmount, 0)]) }}</span>
+                    <span id="submitBtnText">{{ __('تأكيد وإرسال إشعار السداد بمبلغ :amt ₪ للاعتماد', ['amt' => number_format($finalAmount, 0)]) }}</span>
                 </button>
             </form>
         </div>
 
-        <!-- أزرار الإجراء والتواصل المباشر مع المشرف -->
-        <div class="pending-actions-wrap">
-            @php
-                $rawWa = \App\Models\Setting::get('contact_whatsapp', '00970597694385');
-                $cleanWa = preg_replace('/[^0-9]/', '', $rawWa) ?: '970597694385';
-                if (!str_starts_with($cleanWa, '970') && !str_starts_with($cleanWa, '972')) {
-                    $cleanWa = '970' . ltrim($cleanWa, '0');
-                }
-                $waMsg = urlencode(app()->getLocale() === 'ar'
-                    ? ("مرحباً بشمهندس أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة Step by Step وقمت بسداد الرسوم الأكاديمية وأرجو من حضرتك التكرم باعتماد وتفعيل حسابي واشتراكي.")
-                    : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Step by Step platform and paid tuition. Please verify and activate my enrollment."));
-            @endphp
-            <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" class="btn-action-primary whatsapp" id="supervisorWhatsAppBtn">
-                <i class="fa-brands fa-whatsapp"></i> {{ __('تواصل مع المشرف العام (م.أحمد شمالي) عبر واتساب') }}
-            </a>
-
-            <div class="whatsapp-direct-info">
-                <i class="fa-solid fa-phone"></i>
-                <span>{{ __('رقم التواصل المباشر / واتساب:') }}</span>
-                <a href="https://wa.me/{{ $cleanWa }}?text={{ $waMsg }}" target="_blank" dir="ltr" class="phone-link">00970597694385</a>
+        <!-- بطاقة مكتب المشرف العام والمتابعة الأكاديمية (تصميم كلاسيكي مؤطر ورزين - يمنع أي عوم) -->
+        <div class="director-office-classic-card">
+            <div class="director-card-header">
+                <div class="director-header-right">
+                    <div class="director-seal-badge">
+                        <i class="fa-solid fa-building-user"></i>
+                    </div>
+                    <div>
+                        <h3 class="director-card-title">{{ __('مكتب المشرف العام والمتابعة الأكاديمية (م. أحمد شمالي)') }}</h3>
+                        <p class="director-card-subtitle">{{ __('منصة Step by Step التعليمية - دولة فلسطين | المتابعة والاعتماد المباشر') }}</p>
+                    </div>
+                </div>
+                <div class="director-status-pill">
+                    <span class="live-dot"></span>
+                    <span>{{ __('المشرف متاح للمتابعة') }}</span>
+                </div>
             </div>
 
-            <div class="secondary-actions-row">
-                <button type="button" class="btn-action-secondary" onclick="checkStatusRefresh()">
-                    <i class="fa-solid fa-rotate-right"></i> {{ __('فحص حالة الحساب وتحديث الصفحة') }}
+            <!-- أرقام التواصل والتحويل الرسمية المعتمدة بتنسيق كلاسيكي متين وعالي التباين -->
+            <div class="director-numbers-grid">
+                <!-- رقم الواتس الخاص بالمدير -->
+                <div class="official-num-box whatsapp-box">
+                    <div class="num-box-meta">
+                        <i class="fa-brands fa-whatsapp text-emerald"></i>
+                        <span class="num-label">{{ __('رقم الواتس الخاص بالمدير (للمراسلة والاعتماد):') }}</span>
+                    </div>
+                    <div class="num-val-row">
+                        <strong class="num-val font-mono" dir="ltr">00970597694385</strong>
+                        <button type="button" class="btn-box-copy" onclick="copyNumber('00970597694385', '{{ __('رقم واتساب المدير') }}')">
+                            <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- رقم التحويل المعتمد -->
+                <div class="official-num-box transfer-box">
+                    <div class="num-box-meta">
+                        <i class="fa-solid fa-money-bill-transfer text-primary"></i>
+                        <span class="num-label">{{ __('رقم التحويل والسداد المعتمد (جوال باي، بنك فلسطين، بال باي):') }}</span>
+                    </div>
+                    <div class="num-val-row">
+                        <strong class="num-val font-mono" dir="ltr">0567897212</strong>
+                        <button type="button" class="btn-box-copy" onclick="copyNumber('0567897212', '{{ __('رقم التحويل المعتمد') }}')">
+                            <i class="fa-regular fa-copy"></i> {{ __('نسخ') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            @php
+                $waMsg = urlencode(app()->getLocale() === 'ar'
+                    ? ("السلام عليكم بشمهندس أحمد شمالي، أنا الطالب (" . ($student->name_ar ?? $student->name) . ") ورقم هاتفي (" . ($student->phone ?? '') . ")، قمت بإنشاء حسابي في منصة Step by Step وسددت الرسوم الأكاديمية بمبلغ (" . number_format($finalAmount, 0) . " ₪). أرجو التكرم باعتماد وتفعيل حسابي واشتراكي.")
+                    : ("Hello Eng. Ahmed Shamali, I am student (" . ($student->name_en ?? $student->name) . ") phone (" . ($student->phone ?? '') . "), I registered on Step by Step platform and paid tuition. Please verify and activate my enrollment."));
+            @endphp
+
+            <!-- زر المحادثة المباشر عبر واتساب المدير الرسمي -->
+            <div class="director-whatsapp-action-strip">
+                <a href="https://wa.me/{{ $directorWaClean }}?text={{ $waMsg }}" target="_blank" class="classic-whatsapp-btn" id="supervisorWhatsAppBtn">
+                    <div class="wa-btn-icon-wrap">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div class="wa-btn-text-wrap">
+                        <span class="wa-btn-title">{{ __('تواصل مع المشرف العام (م. أحمد شمالي) عبر واتساب') }}</span>
+                        <span class="wa-btn-sub" dir="ltr">00970597694385 (Direct Official WhatsApp)</span>
+                    </div>
+                    <div class="wa-btn-arrow">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- شريط أدوات النظام والتحكم (مؤطر ورصين) -->
+            <div class="classic-system-actions-toolbar">
+                <button type="button" class="btn-classic-action refresh" onclick="checkStatusRefresh()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span>{{ __('فحص حالة الحساب وتحديث الصفحة') }}</span>
                 </button>
 
-                <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                <form action="{{ route('logout') }}" method="POST" style="margin: 0; display: inline;">
                     @csrf
-                    <button type="submit" class="btn-action-logout">
-                        <i class="fa-solid fa-right-from-bracket"></i> {{ __('تسجيل الخروج') }}
+                    <button type="submit" class="btn-classic-action logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>{{ __('تسجيل الخروج') }}</span>
                     </button>
                 </form>
             </div>
-        </div>
 
-        <div class="pending-footer-note">
-            <i class="fa-solid fa-shield-halved" style="color: var(--ed-success);"></i>
-            <span>{{ __('منصة Step by Step - فلسطين | بياناتك ووثائقك محفوظة بأعلى معايير الأمان الأكاديمي.') }}</span>
+            <!-- ختم الأمان الأكاديمي والتوثيق الرسمي داخل الإطار -->
+            <div class="classic-official-seal-footer">
+                <div class="seal-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="seal-text">
+                    <strong>{{ __('منصة Step by Step - فلسطين | نظام التوثيق والاعتماد الأكاديمي المعتمد') }}</strong>
+                    <span>{{ __('كافة بياناتك ووثائقك المالية والدراسية مشفرة ومحفوظة رسمياً بأعلى معايير الحماية والأمان.') }}</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -722,24 +815,36 @@
 
     function updateWhatsAppMessage() {
         const amount = document.getElementById('formActualAmountInput')?.value || baseDueAmount;
-        const method = document.getElementById('paymentMethodSelect')?.value || 'محفظة جوال باي';
+        const method = document.getElementById('paymentMethodSelect')?.value || 'محفظة جوال باي (Jawwal Pay)';
         const notes = document.getElementById('paymentNotesInput')?.value || '';
         
-        let msg = `السلام عليكم م.أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة Step by Step بقيمة [${amount} ₪] عبر وسيلة [${method}].`;
+        let msg = `السلام عليكم م.أحمد شمالي، أنا الطالب (${studentDisplayName}) ورقم هاتفي (${studentPhone})، قمت بسداد رسوم منصة Step by Step بقيمة [${Math.round(amount)} ₪] عبر وسيلة [${method}].`;
         if (notes) {
             msg += ` ملاحظات: [${notes}].`;
         }
-        msg += ` أرجو التكرم باعتماد وتفعيل حسابي.`;
+        msg += ` أرجو التكرم باعتماد وتفعيل حسابي واشتراكي.`;
 
-        const waUrl = `https://wa.me/{{ $cleanWa ?? '970597694385' }}?text=${encodeURIComponent(msg)}`;
+        const waUrl = `https://wa.me/970597694385?text=${encodeURIComponent(msg)}`;
         const waBtn = document.getElementById('supervisorWhatsAppBtn');
         if (waBtn) {
             waBtn.href = waUrl;
         }
     }
 
+    function fallbackCopy(text) {
+        const tempInp = document.createElement('input');
+        tempInp.value = text;
+        tempInp.style.position = 'fixed';
+        tempInp.style.opacity = '0';
+        document.body.appendChild(tempInp);
+        tempInp.focus();
+        tempInp.select();
+        try { document.execCommand('copy'); } catch(e) {}
+        document.body.removeChild(tempInp);
+    }
+
     function copyNumber(text, label) {
-        navigator.clipboard.writeText(text).then(() => {
+        const showToast = () => {
             Swal.fire({
                 toast: true,
                 position: 'top-end',
@@ -748,17 +853,34 @@
                 showConfirmButton: false,
                 timer: 2000
             });
-        });
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(showToast).catch(() => {
+                fallbackCopy(text);
+                showToast();
+            });
+        } else {
+            fallbackCopy(text);
+            showToast();
+        }
     }
 
     function handleFileSelected(input) {
         const labelText = document.getElementById('uploadLabelText');
+        const uploadBox = document.getElementById('fileUploadBox');
         if (input.files && input.files[0]) {
-            labelText.innerText = pendingI18n.fileSelectedText.replace(':file', input.files[0].name);
-            labelText.style.color = '#16a34a';
-            labelText.style.fontWeight = '700';
-            const uploadBox = document.getElementById('fileUploadBox');
-            if (uploadBox) uploadBox.style.borderColor = '#16a34a';
+            const fileName = input.files[0].name;
+            const fileSize = (input.files[0].size / (1024 * 1024)).toFixed(2);
+            if (labelText) {
+                labelText.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #15803d; margin-inline-end: 6px;"></i> ${pendingI18n.fileSelectedText.replace(':file', fileName)} (${fileSize} MB)`;
+                labelText.style.color = '#15803d';
+                labelText.style.fontWeight = '800';
+            }
+            if (uploadBox) {
+                uploadBox.classList.add('file-selected');
+                uploadBox.style.borderColor = '#15803d';
+                uploadBox.style.background = '#f0fdf4';
+            }
         }
     }
 
@@ -850,40 +972,47 @@
 </script>
 
 <style>
+    /* ==========================================================================
+       التصميم الكلاسيكي الملكي الأكاديمي لواجهة اعتماد الطالب وسداد الرسوم
+       Classic Royal Academic Aesthetic (مؤطرة، رصينة، متينة، بدون أي عوم)
+       ========================================================================== */
+
     .pending-approval-wrapper {
-        min-height: calc(100vh - 100px);
+        min-height: calc(100vh - 90px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 30px 20px;
-        background: #f8fafc;
+        padding: 36px 20px;
+        background: #edf2f7; /* خلفية حجرية رزينة وأكاديمية */
     }
 
     .pending-approval-card {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
+        border: 2px solid #cbd5e1;
+        border-top: 6px solid #0f2744; /* ترويسة كحلي ملكي عميق */
         border-radius: 12px;
-        padding: 32px 28px;
-        max-width: 880px;
+        padding: 36px 30px;
+        max-width: 920px;
         width: 100%;
         text-align: center;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
         position: relative;
     }
 
-    /* الأيقونة الأكاديمية الفاتحة */
+    /* الأيقونة الأكاديمية الملكية */
     .pending-icon-bubble {
-        width: 64px;
-        height: 64px;
+        width: 70px;
+        height: 70px;
         border-radius: 12px;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        color: #1d4ed8;
+        background: #0f2744;
+        border: 2px solid #1e3a8a;
+        color: #f8fafc;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        margin-bottom: 14px;
+        font-size: 2rem;
+        margin-bottom: 16px;
+        box-shadow: 0 4px 14px rgba(15, 39, 68, 0.2);
     }
 
     .status-badges-row {
@@ -1339,84 +1468,198 @@
     .text-emerald { color: #16a34a !important; }
     .text-primary-net { color: #1d4ed8 !important; }
 
-    /* وسائل الدفع المعتمدة */
-    .payment-channels-card {
+    /* ==========================================================================
+       الأقسام المؤطرة الرسمية وقنوات التحويل ونموذج الإيصال الكلاسيكي
+       ========================================================================== */
+    .classic-framed-section {
         background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 18px;
+        border: 2px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 22px 22px;
+        margin-bottom: 22px;
+        text-align: right;
+        box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     }
-    html[dir="rtl"] .payment-channels-card { text-align: right; }
-    html[dir="ltr"] .payment-channels-card { text-align: left; }
+    html[dir="rtl"] .classic-framed-section { text-align: right; }
+    html[dir="ltr"] .classic-framed-section { text-align: left; }
 
-    .channels-title-row {
+    .classic-section-header {
         display: flex;
         align-items: center;
-        gap: 6px;
-        margin-bottom: 4px;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e2e8f0;
     }
-    .channels-title-row h4 {
+    .header-icon-wrap {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        background: #0f2744;
+        color: #ffffff;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+    .classic-section-header.receipt-theme .header-icon-wrap {
+        background: #1e3a8a;
+    }
+    .classic-section-title {
         margin: 0;
-        font-size: 13px;
+        font-size: 14.5px;
         font-weight: 800;
         color: #0f172a;
     }
-    .channels-desc {
-        color: #64748b;
+    .classic-section-subtitle {
+        margin: 3px 0 0 0;
         font-size: 12px;
-        margin-bottom: 12px;
+        color: #64748b;
     }
 
+    /* شريط رقم التحويل الموحد */
+    .unified-transfer-banner {
+        background: #0f2744;
+        border: 1.5px solid #1e3a8a;
+        border-radius: 8px;
+        padding: 12px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+        color: #ffffff;
+    }
+    .unified-transfer-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .unified-label {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .unified-number {
+        font-size: 1.35rem;
+        font-weight: 900;
+        color: #38bdf8;
+        background: rgba(15, 23, 42, 0.7);
+        padding: 3px 12px;
+        border-radius: 6px;
+        border: 1px solid #38bdf8;
+        letter-spacing: 0.5px;
+    }
+    .btn-copy-unified {
+        background: #38bdf8;
+        color: #0f172a;
+        border: none;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: 0.2s ease;
+    }
+    .btn-copy-unified:hover {
+        background: #7dd3fc;
+        transform: translateY(-1px);
+    }
+    .channels-instruction {
+        font-size: 12px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .channels-instruction i { color: #0284c7; }
+
+    /* بطاقات القنوات */
     .channels-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-        gap: 10px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
     }
-    .channel-card {
+    @media (max-width: 768px) {
+        .channels-grid { grid-template-columns: 1fr; }
+    }
+    .classic-channel {
         background: #f8fafc;
-        border: 1px solid #e2e8f0;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        padding: 10px 12px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 10px;
+        transition: 0.2s;
+    }
+    .classic-channel:hover {
+        border-color: #0f2744;
+        background: #ffffff;
+    }
+    .channel-card-top {
         display: flex;
         align-items: flex-start;
-        gap: 8px;
+        gap: 10px;
     }
-    html[dir="rtl"] .channel-card { text-align: right; }
-    html[dir="ltr"] .channel-card { text-align: left; }
-
-    .channel-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
-    .channel-details strong {
+    .channel-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+    }
+    .channel-icon.bop { background: #fee2e2; color: #b91c1c; }
+    .channel-icon.palpay { background: #e0f2fe; color: #0284c7; }
+    .channel-icon.jawwalpay { background: #dcfce7; color: #15803d; }
+    .channel-name {
         display: block;
-        font-size: 12.5px;
+        font-size: 13px;
+        font-weight: 800;
         color: #0f172a;
         margin-bottom: 2px;
     }
     .account-holder {
         display: block;
-        font-size: 11px;
+        font-size: 11.5px;
         color: #475569;
-        margin-bottom: 4px;
+        font-weight: 600;
     }
     .number-copy-row {
         display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: space-between;
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #cbd5e1;
     }
     .account-num {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: #1d4ed8;
-        font-family: monospace;
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.5px;
     }
     .copy-btn {
         background: #ffffff;
-        border: 1px solid #cbd5e1;
-        color: #475569;
-        font-size: 11px;
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+        font-size: 11.5px;
         font-weight: 700;
-        padding: 2px 6px;
-        border-radius: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -1424,44 +1667,16 @@
         transition: 0.2s;
     }
     .copy-btn:hover {
-        background: #eff6ff;
-        color: #1d4ed8;
-        border-color: #bfdbfe;
+        background: #0f2744;
+        color: #ffffff;
+        border-color: #0f2744;
     }
 
-    /* نموذج إرسال الإشعار */
-    .receipt-submission-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 18px;
-    }
-    html[dir="rtl"] .receipt-submission-card { text-align: right; }
-    html[dir="ltr"] .receipt-submission-card { text-align: left; }
-
-    .receipt-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
-    }
-    .receipt-header h3 {
-        margin: 0;
-        font-size: 13.5px;
-        font-weight: 800;
-        color: #0f172a;
-    }
-    .receipt-header p {
-        margin: 0;
-        font-size: 11.5px;
-        color: #64748b;
-    }
-
+    /* حقول النموذج */
     .form-grid-row {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 12px;
         margin-bottom: 12px;
     }
     @media (max-width: 580px) { .form-grid-row { grid-template-columns: 1fr; } }
@@ -1470,37 +1685,50 @@
         display: flex;
         flex-direction: column;
         gap: 4px;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
     .input-label {
-        font-size: 12px;
+        font-size: 12.5px;
         font-weight: 700;
         color: #0f172a;
     }
-    .input-label .required { color: #ef4444; }
+    .input-label .required { color: #dc2626; }
 
     .form-select-clean, .form-input-clean {
         width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #cbd5e1;
+        padding: 10px 12px;
+        border: 1.5px solid #cbd5e1;
         border-radius: 6px;
-        font-size: 12.5px;
+        font-size: 13px;
         font-family: inherit;
         background: #ffffff;
+        color: #0f172a;
         outline: none;
+        box-sizing: border-box;
+        transition: 0.2s ease;
     }
     .form-select-clean:focus, .form-input-clean:focus {
-        border-color: #1d4ed8;
+        border-color: #0f2744;
+        box-shadow: 0 0 0 3px rgba(15, 39, 68, 0.12);
     }
 
-    .file-upload-box {
-        border: 2px dashed #bfdbfe;
-        background: #eff6ff;
+    /* صندوق رفع الإيصال الكلاسيكي المعتمد (Structured Deposit Dropzone) */
+    .classic-upload-box {
+        border: 2px dashed #475569;
+        background: #f8fafc;
         border-radius: 8px;
-        padding: 16px 12px;
+        padding: 24px 18px;
         text-align: center;
         cursor: pointer;
-        transition: 0.2s;
+        transition: all 0.2s ease;
+    }
+    .classic-upload-box:hover {
+        border-color: #0f2744;
+        background: #f1f5f9;
+    }
+    .classic-upload-box.file-selected {
+        border: 2px solid #15803d !important;
+        background: #f0fdf4 !important;
     }
     .file-input-hidden { display: none; }
     .file-upload-label {
@@ -1510,127 +1738,361 @@
         gap: 4px;
         cursor: pointer;
     }
-    .upload-icon {
+    .upload-icon-circle {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #0f2744;
+        display: inline-grid;
+        place-items: center;
         font-size: 1.5rem;
-        color: #1d4ed8;
+        margin-bottom: 8px;
+        transition: 0.2s;
     }
-    .file-upload-label span {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: #1e40af;
+    .classic-upload-box:hover .upload-icon-circle {
+        background: #0f2744;
+        color: #ffffff;
     }
-    .file-upload-label small {
-        font-size: 11px;
+    .upload-main-text {
+        display: block;
+        font-size: 13.5px;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 3px;
+    }
+    .upload-sub-text {
+        display: block;
+        font-size: 11.5px;
         color: #64748b;
+        margin-bottom: 8px;
+    }
+    .upload-cta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #0f2744;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        padding: 4px 12px;
+        border-radius: 50px;
     }
 
-    .btn-submit-receipt {
+    /* زر إرسال الإشعار الكلاسيكي الأكاديمي */
+    .classic-submit-btn {
         width: 100%;
-        background: #1d4ed8;
-        color: white;
-        border: none;
-        padding: 10px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 700;
+        background: #0f2744;
+        color: #ffffff;
+        border: 2px solid #1e3a8a;
+        padding: 13px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 800;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        transition: var(--transition);
-        margin-top: 6px;
-    }
-    .btn-submit-receipt:hover { background: #1e40af; }
-
-    /* أزرار الإجراء */
-    .pending-actions-wrap {
-        display: flex;
-        flex-direction: column;
         gap: 8px;
-        margin-bottom: 14px;
+        transition: all 0.2s ease;
+        margin-top: 10px;
+        box-shadow: 0 4px 14px rgba(15, 39, 68, 0.2);
     }
-    .btn-action-primary.whatsapp {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        background: #16a34a;
-        color: white;
-        padding: 9px 14px;
-        border-radius: 6px;
-        font-size: 12.5px;
-        font-weight: 700;
-        text-decoration: none;
+    .classic-submit-btn:hover {
+        background: #1e3a8a;
+        box-shadow: 0 6px 18px rgba(15, 39, 68, 0.28);
+        transform: translateY(-1px);
     }
-    .whatsapp-direct-info {
+
+    /* ==========================================================================
+       بطاقة مكتب المشرف العام والمتابعة الأكاديمية (The Institutional Office Card)
+       تلغي أي أزرار عائمة تماماً وتؤطر بيانات المدير في وعاء ملكي رصين
+       ========================================================================== */
+    .director-office-classic-card {
+        background: #ffffff;
+        border: 2px solid #0f2744;
+        border-top: 5px solid #15803d;
+        border-radius: 10px;
+        padding: 22px 22px 18px 22px;
+        margin-top: 10px;
+        margin-bottom: 16px;
+        text-align: right;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.07);
+    }
+    html[dir="rtl"] .director-office-classic-card { text-align: right; }
+    html[dir="ltr"] .director-office-classic-card { text-align: left; }
+
+    .director-card-header {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 6px;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 14px;
+        border-bottom: 2px solid #e2e8f0;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+    .director-header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .director-seal-badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        background: #0f2744;
+        color: #ffffff;
+        display: grid;
+        place-items: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+    .director-card-title {
+        margin: 0;
+        font-size: 14.5px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .director-card-subtitle {
+        margin: 2px 0 0 0;
         font-size: 11.5px;
         color: #64748b;
     }
-    .phone-link {
+    .director-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f0fdf4;
+        border: 1.5px solid #86efac;
+        color: #166534;
+        font-size: 11px;
         font-weight: 700;
-        color: #16a34a;
+        padding: 4px 10px;
+        border-radius: 50px;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: #16a34a;
+        border-radius: 50%;
+        animation: pulseLive 2s infinite;
+    }
+    @keyframes pulseLive {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(1.25); }
     }
 
-    .secondary-actions-row {
+    .director-numbers-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+    @media (max-width: 640px) {
+        .director-numbers-grid { grid-template-columns: 1fr; }
+    }
+    .official-num-box {
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px 14px;
         display: flex;
-        justify-content: center;
+        flex-direction: column;
+        justify-content: space-between;
         gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 4px;
     }
-    .btn-action-secondary {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+    .official-num-box.whatsapp-box {
+        border-right: 4px solid #16a34a;
+    }
+    html[dir="ltr"] .official-num-box.whatsapp-box {
+        border-right: 1.5px solid #cbd5e1;
+        border-left: 4px solid #16a34a;
+    }
+    .official-num-box.transfer-box {
+        border-right: 4px solid #1e3a8a;
+    }
+    html[dir="ltr"] .official-num-box.transfer-box {
+        border-right: 1.5px solid #cbd5e1;
+        border-left: 4px solid #1e3a8a;
+    }
+    .num-box-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 700;
         color: #475569;
-        padding: 7px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
     }
-    .btn-action-logout {
+    .num-val-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .num-val {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #0f172a;
+        letter-spacing: 0.5px;
+    }
+    .btn-box-copy {
         background: #ffffff;
-        border: 1px solid #fecaca;
-        color: #dc2626;
-        padding: 7px 12px;
+        border: 1.5px solid #cbd5e1;
+        color: #334155;
+        font-size: 11.5px;
+        font-weight: 700;
+        padding: 4px 10px;
         border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
         gap: 4px;
+        transition: 0.2s;
+    }
+    .btn-box-copy:hover {
+        background: #0f2744;
+        color: #ffffff;
+        border-color: #0f2744;
     }
 
-    .pending-footer-note {
+    .director-whatsapp-action-strip {
+        margin-bottom: 14px;
+    }
+    .classic-whatsapp-btn {
+        width: 100%;
+        background: #15803d;
+        color: #ffffff;
+        border: 2px solid #166534;
+        border-radius: 8px;
+        padding: 12px 18px;
         display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        text-decoration: none;
+        box-sizing: border-box;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(21, 128, 61, 0.2);
+    }
+    .classic-whatsapp-btn:hover {
+        background: #166534;
+        box-shadow: 0 6px 18px rgba(21, 128, 61, 0.3);
+        transform: translateY(-1px);
+        color: #ffffff;
+    }
+    .wa-btn-icon-wrap {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+    .wa-btn-text-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        text-align: right;
+    }
+    html[dir="ltr"] .wa-btn-text-wrap { text-align: left; }
+    .wa-btn-title {
+        font-size: 13.5px;
+        font-weight: 800;
+    }
+    .wa-btn-sub {
+        font-size: 11.5px;
+        opacity: 0.9;
+        font-weight: 600;
+    }
+    .wa-btn-arrow {
+        font-size: 1.1rem;
+    }
+    html[dir="rtl"] .wa-btn-arrow i { transform: rotate(0deg); }
+    html[dir="ltr"] .wa-btn-arrow i { transform: rotate(180deg); }
+
+    .classic-system-actions-toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+    @media (max-width: 520px) {
+        .classic-system-actions-toolbar { grid-template-columns: 1fr; }
+    }
+    .btn-classic-action {
+        padding: 10px 14px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 6px;
+        transition: 0.2s ease;
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+    .btn-classic-action.refresh {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        color: #1e293b;
+    }
+    .btn-classic-action.refresh:hover {
+        background: #f1f5f9;
+        border-color: #0f2744;
+    }
+    .btn-classic-action.logout {
+        background: #ffffff;
+        border: 1.5px solid #fca5a5;
+        color: #b91c1c;
+        width: 100%;
+    }
+    .btn-classic-action.logout:hover {
+        background: #fef2f2;
+        border-color: #ef4444;
+    }
+
+    .classic-official-seal-footer {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e8f0;
         font-size: 11px;
         color: #64748b;
-        margin-top: 14px;
-        padding-top: 10px;
-        border-top: 1px solid #e2e8f0;
+        line-height: 1.5;
+    }
+    .classic-official-seal-footer .seal-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        background: #ecfdf5;
+        color: #15803d;
+        display: grid;
+        place-items: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    .classic-official-seal-footer strong {
+        display: block;
+        color: #334155;
+        font-size: 11.5px;
     }
 
     /* ==========================================================================
        أنماط بوابة الدفع الذكية والمتطورة (Smart Flexible Payment Portal)
        ========================================================================== */
     .smart-payment-amount-container {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 8px;
         padding: 16px;
-        margin-bottom: 14px;
+        margin-bottom: 16px;
         text-align: right;
     }
 
@@ -1638,17 +2100,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        padding: 10px 14px;
-        margin-bottom: 12px;
+        padding: 12px 16px;
+        margin-bottom: 14px;
         flex-wrap: wrap;
         gap: 8px;
     }
     .due-lbl {
-        font-size: 0.78rem;
-        color: #1e3a8a;
+        font-size: 12px;
+        color: #334155;
         font-weight: 700;
         display: block;
         margin-bottom: 2px;
@@ -1656,26 +2118,26 @@
     .due-val-wrap {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
     }
     .due-val {
         font-size: 1.35rem;
-        color: #1d4ed8;
+        color: #0f2744;
         font-weight: 900;
     }
     .due-target-badge {
-        background: #dbeafe;
-        color: #1e40af;
-        font-size: 0.74rem;
+        background: #e2e8f0;
+        color: #1e293b;
+        font-size: 11px;
         font-weight: 700;
-        padding: 2px 8px;
+        padding: 3px 8px;
         border-radius: 4px;
     }
     .due-discount-tag {
         background: #ecfdf5;
         border: 1px solid #a7f3d0;
         color: #065f46;
-        font-size: 0.75rem;
+        font-size: 11.5px;
         font-weight: 700;
         padding: 4px 10px;
         border-radius: 6px;
@@ -1685,7 +2147,7 @@
     }
     .due-amount-banner.has-arrears {
         background: #fffbeb;
-        border-color: #fde68a;
+        border-color: #fcd34d;
     }
     .due-amount-banner.has-arrears .due-lbl {
         color: #92400e;
@@ -1701,51 +2163,54 @@
 
     .payment-mode-tabs {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 8px;
-        margin-bottom: 12px;
+        margin-bottom: 14px;
     }
     .payment-mode-tabs.has-arrears-grid {
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     }
     .mode-tab-btn {
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 8px;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 6px;
         padding: 10px 8px;
         cursor: pointer;
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 4px;
-        font-size: 0.78rem;
+        font-size: 11.5px;
         font-weight: 700;
-        color: #475569;
+        color: #334155;
         transition: all 0.2s ease;
     }
     .mode-tab-btn i {
         font-size: 1.05rem;
     }
     .mode-tab-btn.active {
-        background: #eff6ff;
-        border-color: #1d4ed8;
-        color: #1d4ed8;
-        box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.15);
+        background: #0f2744;
+        border-color: #0f2744;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(15, 39, 68, 0.2);
+    }
+    .mode-tab-btn.active i {
+        color: #38bdf8 !important;
     }
 
     .custom-amount-panel {
-        background: #f8fafc;
-        border: 1px dashed #94a3b8;
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
         border-radius: 8px;
-        padding: 12px 14px;
-        margin-bottom: 12px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
         animation: fadeIn 0.2s ease;
     }
     .custom-input-row {
         margin-bottom: 8px;
     }
     .custom-input-label {
-        font-size: 0.8rem;
+        font-size: 12px;
         font-weight: 700;
         color: #334155;
         display: block;
@@ -1760,7 +2225,7 @@
         width: 100%;
         background: #ffffff;
         border: 1.5px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 8px 12px 8px 60px;
         font-size: 1.2rem;
         font-weight: 800;
@@ -1769,14 +2234,14 @@
         outline: none;
     }
     .custom-number-input:focus {
-        border-color: #1d4ed8;
-        box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1);
+        border-color: #0f2744;
+        box-shadow: 0 0 0 3px rgba(15, 39, 68, 0.12);
     }
     .currency-symbol {
         position: absolute;
         left: 12px;
-        font-size: 0.82rem;
-        font-weight: 700;
+        font-size: 12px;
+        font-weight: 800;
         color: #64748b;
     }
 
@@ -1785,28 +2250,29 @@
         align-items: center;
         gap: 6px;
         flex-wrap: wrap;
-        font-size: 0.74rem;
+        font-size: 11px;
         color: #64748b;
     }
     .chip-btn {
-        background: #ffffff;
+        background: #f1f5f9;
         border: 1px solid #cbd5e1;
-        border-radius: 6px;
+        border-radius: 4px;
         padding: 3px 10px;
-        font-size: 0.76rem;
+        font-size: 11.5px;
         font-weight: 700;
-        color: #1e3a8a;
+        color: #0f2744;
         cursor: pointer;
         transition: all 0.15s ease;
     }
     .chip-btn:hover {
-        background: #eff6ff;
-        border-color: #1d4ed8;
+        background: #0f2744;
+        color: #ffffff;
+        border-color: #0f2744;
     }
 
     .multi-panel-title {
         display: block;
-        font-size: 0.8rem;
+        font-size: 12px;
         font-weight: 700;
         color: #334155;
         margin-bottom: 8px;
@@ -1819,7 +2285,7 @@
     .multi-card-btn {
         background: #ffffff;
         border: 1.5px solid #cbd5e1;
-        border-radius: 8px;
+        border-radius: 6px;
         padding: 8px 6px;
         cursor: pointer;
         display: flex;
@@ -1829,21 +2295,21 @@
         transition: all 0.15s ease;
     }
     .multi-card-btn:hover {
-        border-color: #1d4ed8;
-        background: #eff6ff;
+        border-color: #0f2744;
+        background: #f8fafc;
     }
     .multi-card-btn .m-title {
-        font-size: 0.74rem;
+        font-size: 11px;
         color: #0f172a;
         margin-bottom: 2px;
     }
     .multi-card-btn .m-price {
-        font-size: 0.92rem;
-        color: #1d4ed8;
+        font-size: 13.5px;
+        color: #0f2744;
         font-weight: 800;
     }
     .multi-card-btn small {
-        font-size: 0.65rem;
+        font-size: 10px;
         color: #64748b;
         margin-top: 2px;
     }
@@ -1853,9 +2319,9 @@
         grid-template-columns: 1fr 1.2fr 1.8fr;
         gap: 8px;
         background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 10px 12px;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 10px 14px;
         align-items: center;
     }
     .calc-item {
@@ -1863,27 +2329,27 @@
         flex-direction: column;
     }
     .calc-item.highlight .calc-val {
-        color: #1d4ed8;
-        font-size: 1.05rem;
+        color: #0f2744;
+        font-size: 1.15rem;
     }
     .calc-lbl {
-        font-size: 0.7rem;
+        font-size: 11px;
         color: #64748b;
-        font-weight: 600;
+        font-weight: 700;
     }
     .calc-val {
-        font-size: 0.92rem;
+        font-size: 13.5px;
         font-weight: 800;
         color: #0f172a;
     }
     .calc-status {
-        font-size: 0.75rem;
+        font-size: 12px;
         font-weight: 700;
         color: #15803d;
-        line-height: 1.35;
+        line-height: 1.4;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 680px) {
         .payment-mode-tabs {
             grid-template-columns: 1fr;
         }
@@ -1895,5 +2361,12 @@
             gap: 6px;
         }
     }
+
+    /* ألوان وأدوات مساعدة */
+    .text-emerald { color: #15803d !important; }
+    .text-primary { color: #0f2744 !important; }
+    .text-amber { color: #b45309 !important; }
+    .text-blue { color: #1d4ed8 !important; }
+    .font-mono { font-family: monospace, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, sans-serif; }
 </style>
 @endsection

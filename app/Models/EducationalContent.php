@@ -21,7 +21,8 @@ class EducationalContent extends Model
         'is_visible',
         'target_region',
         'url_path',
-        'pdf_path', 
+        'pdf_path',
+        'views_count',
     ];
 
     protected $casts = [

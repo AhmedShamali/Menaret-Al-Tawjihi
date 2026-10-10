@@ -29,8 +29,11 @@
         <span class="nav-tab-label">{{ __('المحملة ⚡') }}</span>
     </a>
     @if(Auth::guard('student')->check() || Auth::check())
-        <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') || request()->is('teacher*') || request()->is('videographer*') ? 'active' : '' }}">
-            <div class="nav-tab-icon"><i class="fa-solid fa-user-circle"></i></div>
+        <a href="{{ route('dashboard') }}" class="nav-tab {{ request()->is('student*') || request()->is('admin*') || request()->is('teacher*') || request()->is('videographer*') ? 'active' : '' }}" style="position: relative;">
+            <div class="nav-tab-icon" style="position: relative;">
+                <i class="fa-solid fa-user-circle"></i>
+                <span class="app-unread-badge" style="display: none; position: absolute; top: -4px; right: -6px; background: #dc2626; color: #fff; font-size: 0.6rem; min-width: 15px; height: 15px; border-radius: 50px; padding: 0 4px; font-weight: 800; border: 1.5px solid #fff; align-items: center; justify-content: center; line-height: 1;">0</span>
+            </div>
             <span class="nav-tab-label">{{ __('حسابي') }}</span>
         </a>
     @else
