@@ -3306,7 +3306,7 @@
 
                 <script>
                     window.INITIAL_UNREAD_COUNT = {{ (int)$unreadCount }};
-                    window.APP_UNREAD_COUNT_URL = "{{ route('notifications.unreadCount') }}";
+                    window.APP_UNREAD_COUNT_URL = "{{ \Illuminate\Support\Facades\Route::has('notifications.unreadCount') ? route('notifications.unreadCount') : url('/notifications/unread-count') }}";
                 </script>
 
                 <!-- زر الدروس المحفوظة أوفلاين بدون نت للطلاب فقط -->
@@ -3339,7 +3339,7 @@
 
                         <div style="max-height: 320px; overflow-y: auto;" id="navNotificationsList">
                             @forelse($unreadItems as $item)
-                                <a href="{{ route('notifications.open', $item->id) }}" class="notif-dropdown-item" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
+                                <a href="{{ \Illuminate\Support\Facades\Route::has('notifications.open') ? route('notifications.open', $item->id) : url('/notifications/open/' . $item->id) }}" class="notif-dropdown-item" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
                                     <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; flex-shrink: 0; font-size: 0.95rem;">
                                         <i class="fa-solid {{ $item->icon }}"></i>
                                     </div>
@@ -3588,7 +3588,7 @@
         }
 
         function markAllReadFromNav() {
-            axios.post('{{ route('notifications.markAllReadUnified') }}', {
+            axios.post('{{ \Illuminate\Support\Facades\Route::has('notifications.markAllReadUnified') ? route('notifications.markAllReadUnified') : url('/notifications/mark-all-read') }}', {
                 _token: '{{ csrf_token() }}'
             }).then(() => {
                 if (window.updateAppNotificationBadge) {

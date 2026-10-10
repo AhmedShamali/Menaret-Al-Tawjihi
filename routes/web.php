@@ -147,6 +147,7 @@ Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Student\Notif
 
 // مسار موحد للحصول على عدد الإشعارات غير المقروءة لجميع المستخدمين لتحديث شارة أيقونة التطبيق
 Route::get('/notifications/unread-count', [\App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unreadCount');
+Route::get('/notifications/unread', [\App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
 
 // مسار فتح التنبيه (تحديد كمقروء والانتقال للوجهة دون تجميد أو تعليق)
 Route::get('/notifications/open/{id}', [\App\Http\Controllers\Student\NotificationController::class, 'openNotification'])->name('notifications.open');
@@ -458,6 +459,8 @@ Route::middleware(['auth:student', 'IsStudent'])->prefix('student')->name('stude
     Route::get('/subjects/{id}', [DashboardController::class, 'studentSubjectShow'])->name('subjects.show');
     Route::get('/notifications', [App\Http\Controllers\Student\NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unread');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\Student\NotificationController::class, 'getUnread'])->name('notifications.unreadCount');
+    Route::get('/notifications/open/{id}', [App\Http\Controllers\Student\NotificationController::class, 'openNotification'])->name('notifications.open');
     Route::post('/notifications/{id}/read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.readDirect');
     Route::post('/notifications/{id}/mark-read', [App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markRead');
     Route::post('/notifications/mark-all-read', [App\Http\Controllers\Student\NotificationController::class, 'markAllAsRead'])->name('notifications.markAllRead');
