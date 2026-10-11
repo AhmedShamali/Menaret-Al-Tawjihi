@@ -123,6 +123,20 @@ class ExamController extends Controller
             $subjects = Subject::orderBy('name_ar')->get();
             $stages = Stage::with('subjects')->orderBy('grade_level', 'asc')->get();
         }
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('questions')) {
+                $driver = \Illuminate\Support\Facades\DB::getDriverName();
+                if (in_array($driver, ['mysql', 'mariadb'])) {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `type` VARCHAR(64) NOT NULL DEFAULT 'mcq'");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `correct_answer` TEXT NULL");
+                } elseif ($driver === 'pgsql') {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN type TYPE VARCHAR(64)");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN correct_answer TYPE TEXT");
+                }
+            }
+        } catch (\Throwable $th) {}
+
         return view('admin.exams.create', compact('subjects', 'stages'));
     }
 
@@ -198,6 +212,16 @@ class ExamController extends Controller
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('exams') && !\Illuminate\Support\Facades\Schema::hasColumn('exams', 'target_region')) {
                 \Illuminate\Support\Facades\DB::statement("ALTER TABLE exams ADD COLUMN IF NOT EXISTS target_region VARCHAR(20) DEFAULT 'all'");
+            }
+            if (\Illuminate\Support\Facades\Schema::hasTable('questions')) {
+                $driver = \Illuminate\Support\Facades\DB::getDriverName();
+                if (in_array($driver, ['mysql', 'mariadb'])) {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `type` VARCHAR(64) NOT NULL DEFAULT 'mcq'");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `correct_answer` TEXT NULL");
+                } elseif ($driver === 'pgsql') {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN type TYPE VARCHAR(64)");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN correct_answer TYPE TEXT");
+                }
             }
         } catch (\Throwable $th) {}
 
@@ -517,6 +541,19 @@ class ExamController extends Controller
         }
 
         $exam->update($updateData);
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('questions')) {
+                $driver = \Illuminate\Support\Facades\DB::getDriverName();
+                if (in_array($driver, ['mysql', 'mariadb'])) {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `type` VARCHAR(64) NOT NULL DEFAULT 'mcq'");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `questions` MODIFY COLUMN `correct_answer` TEXT NULL");
+                } elseif ($driver === 'pgsql') {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN type TYPE VARCHAR(64)");
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE questions ALTER COLUMN correct_answer TYPE TEXT");
+                }
+            }
+        } catch (\Throwable $th) {}
 
         // تحديث ومزامنة أسئلة الاختبار وصورها وصور الخيارات إن تم إرسالها
         if ($request->has('questions') && is_array($request->questions)) {

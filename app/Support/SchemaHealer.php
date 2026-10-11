@@ -226,6 +226,47 @@ class SchemaHealer
                     });
                 }
 
+                // 10. فحص وتحديث جدول أسئلة الامتحانات questions لدعم كافة الأنواع الموسعة وتفادي خطأ Data truncated
+                if (Schema::hasTable('questions')) {
+                    $driver = DB::getDriverName();
+                    if (in_array($driver, ['mysql', 'mariadb'])) {
+                        try {
+                            DB::statement("ALTER TABLE `questions` MODIFY COLUMN `type` VARCHAR(64) NOT NULL DEFAULT 'mcq'");
+                        } catch (\Throwable $e) {}
+                        try {
+                            DB::statement("ALTER TABLE `questions` MODIFY COLUMN `correct_answer` TEXT NULL");
+                        } catch (\Throwable $e) {}
+                    } elseif ($driver === 'pgsql') {
+                        try {
+                            DB::statement("ALTER TABLE questions ALTER COLUMN type TYPE VARCHAR(64)");
+                        } catch (\Throwable $e) {}
+                        try {
+                            DB::statement("ALTER TABLE questions ALTER COLUMN correct_answer TYPE TEXT");
+                        } catch (\Throwable $e) {}
+                    }
+
+                    $missingQuestionCols = [];
+                    if (!Schema::hasColumn('questions', 'matching_pairs')) $missingQuestionCols[] = 'matching_pairs';
+                    if (!Schema::hasColumn('questions', 'options_data')) $missingQuestionCols[] = 'options_data';
+                    if (!Schema::hasColumn('questions', 'is_multiple')) $missingQuestionCols[] = 'is_multiple';
+                    if (!Schema::hasColumn('questions', 'a_image')) $missingQuestionCols[] = 'a_image';
+                    if (!Schema::hasColumn('questions', 'b_image')) $missingQuestionCols[] = 'b_image';
+                    if (!Schema::hasColumn('questions', 'c_image')) $missingQuestionCols[] = 'c_image';
+                    if (!Schema::hasColumn('questions', 'd_image')) $missingQuestionCols[] = 'd_image';
+
+                    if (!empty($missingQuestionCols)) {
+                        Schema::table('questions', function (Blueprint $table) use ($missingQuestionCols) {
+                            if (in_array('matching_pairs', $missingQuestionCols)) $table->text('matching_pairs')->nullable();
+                            if (in_array('options_data', $missingQuestionCols)) $table->text('options_data')->nullable();
+                            if (in_array('is_multiple', $missingQuestionCols)) $table->boolean('is_multiple')->default(false);
+                            if (in_array('a_image', $missingQuestionCols)) $table->string('a_image')->nullable();
+                            if (in_array('b_image', $missingQuestionCols)) $table->string('b_image')->nullable();
+                            if (in_array('c_image', $missingQuestionCols)) $table->string('c_image')->nullable();
+                            if (in_array('d_image', $missingQuestionCols)) $table->string('d_image')->nullable();
+                        });
+                    }
+                }
+
             } catch (\Throwable $e) {
                 Log::warning('SchemaHealer warning: ' . $e->getMessage());
             }

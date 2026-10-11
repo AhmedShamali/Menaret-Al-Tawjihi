@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
 
         // تشغيل المعالج الذاتي للتحقق من سلامة أعمدة وجداول قاعدة البيانات الحيوية تلقائياً مرة واحدة يومياً (Cached)
         try {
-            \Illuminate\Support\Facades\Cache::remember('schema_healed_flag_v1', 86400, function () {
+            \Illuminate\Support\Facades\Cache::remember('schema_healed_flag_v2', 86400, function () {
                 \App\Support\SchemaHealer::heal();
                 return true;
             });
