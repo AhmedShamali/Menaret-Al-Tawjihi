@@ -694,8 +694,16 @@
          */
         notifyPageListeners() {
             this.pageSyncCallbacks.forEach(cb => {
-                try { cb(this.state); } catch (e) {}
+                try { cb(this.state); } catch (e) { console.warn("pageSyncCallback error:", e); }
             });
+
+            // تحديث مباشر للـ DOM كحماية قصوى لضمان تطابق بطاقة الصفحة مع الودجت العائم
+            this.syncVideographerDirectDOM();
+            this.syncEducationalContentPage();
+
+            try {
+                window.dispatchEvent(new CustomEvent('ed:upload-progress', { detail: this.state }));
+            } catch (e) {}
         }
 
         /**
@@ -704,7 +712,7 @@
         onStateChange(callback) {
             this.pageSyncCallbacks.add(callback);
             // إرسال الحالة الحالية فوراً
-            callback(this.state);
+            try { callback(this.state); } catch (e) {}
             return () => this.pageSyncCallbacks.delete(callback);
         }
 
@@ -739,55 +747,93 @@
          * مزامنة خاصة بصفحة المصور
          */
         syncVideographerPage() {
-            // إذا كانت دالة المزامنة المخصصة للصفحة متاحة، نستخدمها مباشرة
+            // تسجيل دالة المزامنة المخصصة للصفحة فوراً في المستمعين الحيّين
             if (typeof window.syncVideographerUploadUI === 'function') {
+                this.pageSyncCallbacks.add(window.syncVideographerUploadUI);
                 try {
                     window.syncVideographerUploadUI(this.state);
-                    return;
                 } catch (e) {
                     console.warn("window.syncVideographerUploadUI error:", e);
                 }
             }
 
+            // مزامنة مباشرة للـ DOM لضمان التزامن التام واللحظي
+            this.syncVideographerDirectDOM();
+        }
+
+        /**
+         * التحديث المباشر لعناصر واجهة رفع المصور (Dual-Sync Fail-safe)
+         */
+        syncVideographerDirectDOM() {
             const progressWrap = document.getElementById('chunkUploadProgressWrap');
+            if (!progressWrap) return;
+
             const fileNameEl = document.getElementById('uploadFileName');
             const fileSizeEl = document.getElementById('uploadFileSize');
             const percentageEl = document.getElementById('uploadPercentage');
             const progressBar = document.getElementById('uploadProgressBar');
             const statusText = document.getElementById('uploadStatusText');
             const completedBadge = document.getElementById('uploadCompletedBadge');
+            const completedActions = document.getElementById('uploadCompletedActions');
             const uploadedVideoPathInput = document.getElementById('uploadedVideoPath');
             const formattedSizeInput = document.getElementById('formattedSize');
             const btnSubmit = document.getElementById('btnSubmitForm');
 
-            if (!progressWrap) return;
-
-            // إذا كان هناك فيديو مكتمل أو قيد الرفع تابع لبوابة المصور
-            if (this.hasActiveUpload() || this.hasCompletedUpload()) {
+            if (this.hasActiveUpload()) {
                 progressWrap.style.display = 'block';
                 if (fileNameEl && this.state.fileName) fileNameEl.textContent = this.state.fileName;
                 if (fileSizeEl && this.state.fileSizeFormatted) fileSizeEl.textContent = this.state.fileSizeFormatted;
-                if (percentageEl) percentageEl.textContent = this.state.progress + '%';
-                if (progressBar) progressBar.style.width = this.state.progress + '%';
+                
+                const currentPct = (this.state.progress || 0) + '%';
+                if (percentageEl) percentageEl.textContent = currentPct;
+                if (progressBar) progressBar.style.width = currentPct;
+                if (completedBadge) completedBadge.style.display = 'none';
+                if (completedActions) completedActions.style.display = 'none';
 
-                if (this.state.status === 'completed' && this.state.result) {
-                    if (uploadedVideoPathInput) uploadedVideoPathInput.value = this.state.result.uploaded_video_path;
-                    if (formattedSizeInput) formattedSizeInput.value = this.state.result.formatted_size;
-                    if (completedBadge) completedBadge.style.display = 'flex';
-                    if (statusText) statusText.textContent = 'اكتمل رفع الفيديو بنجاح! جاهز للنشر والتوزيع.';
-                    if (btnSubmit) {
-                        btnSubmit.disabled = false;
-                        btnSubmit.style.opacity = '1';
-                        btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+                if (statusText) {
+                    if (this.state.status === 'paused') {
+                        statusText.innerHTML = '<span style="color:#d97706;"><i class="fa-solid fa-triangle-exclamation fa-beat"></i> انقطع النت (معلّق).. جاري الاستئناف التلقائي فور العودة</span>';
+                    } else {
+                        statusText.textContent = `جاري رفع أجزاء الفيديو بالخلفية: ${this.state.partText || ''} (${this.state.speed || ''}) متبقي: ${this.state.eta || ''}`;
                     }
-                } else if (this.state.status === 'uploading') {
-                    if (completedBadge) completedBadge.style.display = 'none';
-                    if (statusText) statusText.textContent = `جاري رفع أجزاء الفيديو في الخلفية (${this.state.partText})...`;
-                    if (btnSubmit) {
-                        btnSubmit.disabled = true;
-                        btnSubmit.style.opacity = '0.6';
-                        btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${this.state.progress}%)...</span>`;
-                    }
+                }
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.style.opacity = '0.6';
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${this.state.progress || 0}%)...</span>`;
+                }
+            } else if (this.hasCompletedUpload()) {
+                progressWrap.style.display = 'block';
+                if (fileNameEl && this.state.fileName) fileNameEl.textContent = this.state.fileName;
+                if (fileSizeEl && this.state.fileSizeFormatted) fileSizeEl.textContent = this.state.fileSizeFormatted;
+                if (percentageEl) percentageEl.textContent = '100%';
+                if (progressBar) progressBar.style.width = '100%';
+                if (completedBadge) completedBadge.style.display = 'flex';
+                if (completedActions) completedActions.style.display = 'inline-flex';
+                if (statusText) statusText.textContent = 'تم رفع ومعالجة ملف الفيديو بنجاح! جاهز للتثبيت والنشر والتوزيع.';
+
+                if (uploadedVideoPathInput && this.state.result) {
+                    uploadedVideoPathInput.value = this.state.result.uploaded_video_path;
+                }
+                if (formattedSizeInput && this.state.result) {
+                    formattedSizeInput.value = this.state.result.formatted_size;
+                }
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
+                }
+            } else if (this.state.status === 'error') {
+                progressWrap.style.display = 'block';
+                if (completedBadge) completedBadge.style.display = 'none';
+                if (completedActions) completedActions.style.display = 'none';
+                if (statusText) statusText.textContent = this.state.error || 'حدث خطأ أثناء الرفع.';
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.style.opacity = '1';
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>نشر وتوزيع المحاضرة فوراً</span>`;
                 }
             }
         }
@@ -800,9 +846,16 @@
             const progressBarFill = document.querySelector('.progress-bar-fill');
             const progressPercentText = document.querySelector('.progress-percent');
             const progressStatusText = document.querySelector('.progress-status');
+            const chunkProgressWrap = document.getElementById('chunkUploadProgress') || document.querySelector('.chunk-progress-container');
 
-            if (this.hasCompletedUpload() && uploadedVideoPathInput) {
+            if (this.hasActiveUpload()) {
+                if (chunkProgressWrap) chunkProgressWrap.style.display = 'block';
+                if (progressBarFill) progressBarFill.style.width = this.state.progress + '%';
+                if (progressPercentText) progressPercentText.textContent = this.state.progress + '%';
+                if (progressStatusText) progressStatusText.textContent = `جاري رفع الفيديو في الخلفية (${this.state.progress}%)...`;
+            } else if (this.hasCompletedUpload() && uploadedVideoPathInput && this.state.result) {
                 uploadedVideoPathInput.value = this.state.result.uploaded_video_path;
+                if (chunkProgressWrap) chunkProgressWrap.style.display = 'block';
                 if (progressBarFill) progressBarFill.style.width = '100%';
                 if (progressPercentText) progressPercentText.textContent = '100%';
                 if (progressStatusText) progressStatusText.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> تم رفع الفيديو مسبقاً بنجاح في الخلفية!';
@@ -830,13 +883,12 @@
         }
 
         /**
-         * حماية الملاحة أثناء الرفع النشط بالخلفية
-         * في الوضع الطبيعي: لا يتدخل إطلاقاً في ملاحة المتصفح لضمان تنفيذ كافة السكربتات والأزرار بشكل طبيعي 100%.
-         * أثناء الرفع النشط: يحمي الرفع من الانقطاع عبر تنبيه المستخدم وإتاحة فتح الرابط في تبويب جديد.
+         * التنقل السلس التلقائي بين الواجهات أثناء الرفع بالخلفية
+         * يتيح للمستخدم التنقل الطبيعي والحر عبر كافة روابط المنصة دون أن ينقطع أو يتوقف الرفع
          */
         initSeamlessNavigation() {
             document.addEventListener('click', (e) => {
-                // إذا لم يكن هناك رفع نشط في الخلفية، لا نتدخل إطلاقاً ونترك المتصفح ينفذ الملاحة الطبيعية
+                // إذا لم يكن هناك رفع نشط في الخلفية، نترك المتصفح ينفذ الملاحة الطبيعية
                 if (!this.hasActiveUpload()) {
                     return;
                 }
@@ -864,35 +916,18 @@
                     targetUrl.pathname.endsWith('.pdf') ||
                     targetUrl.pathname.endsWith('.zip')) return;
 
-                // حماية الرفع النشط: منع فقدان الرفع وتخيير المستخدم لفتح الصفحة في تبويب جديد
+                // تنفيذ الانتقال السلس بالخلفية دون أي مقاطعة لرفع الفيديو
                 e.preventDefault();
-
-                if (window.Swal && typeof window.Swal.fire === 'function') {
-                    window.Swal.fire({
-                        title: 'يوجد رفع فيديو نشط في الخلفية',
-                        text: 'مغادرة هذه الصفحة ستؤدي لإيقاف عملية رفع الفيديو الجارية. هل ترغب في فتح الصفحة في تبويب جديد لمتابعة التصفح دون إيقاف الرفع؟',
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonText: '<i class="fa-solid fa-arrow-up-right-from-square"></i> فتح في تبويب جديد',
-                        cancelButtonText: 'البقاء هنا ومتابعة الرفع',
-                        confirmButtonColor: '#2563eb',
-                        cancelButtonColor: '#64748b'
-                    }).then(res => {
-                        if (res.isConfirmed) {
-                            window.open(targetUrl.href, '_blank');
-                        }
-                    });
-                } else if (confirm('يوجد رفع فيديو نشط في الخلفية. الانتقال المباشر سيوقف الرفع. هل ترغب في فتح الرابط في تبويب جديد؟')) {
-                    window.open(targetUrl.href, '_blank');
-                }
+                this.navigate(targetUrl.href);
             });
 
-            // دعم أزرار التقدم والرجوع عند وجود رفع نشط فقط
+            // دعم أزرار التقدم والرجوع في المتصفح بسلاسة تامة دون مقاطعة الرفع
             window.addEventListener('popstate', (e) => {
                 if (this.hasActiveUpload()) {
-                    if (!confirm('يوجد رفع فيديو نشط في الخلفية. هل أنت متأكد من الانتقال بالمتصفح؟')) {
-                        history.pushState(null, '', window.location.href);
-                    }
+                    this.navigate(window.location.href, false);
+                }
+            });
+        }
                 }
             });
         }
@@ -958,7 +993,7 @@
                             if (oldScript.src) {
                                 newScript.src = oldScript.src;
                             } else {
-                                newScript.textContent = `(function(){\ntry {\n${oldScript.textContent}\n} catch(err) { console.warn("Page script execution:", err); }\n})();`;
+                                newScript.textContent = oldScript.textContent;
                             }
                             oldScript.parentNode.replaceChild(newScript, oldScript);
                         });

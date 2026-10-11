@@ -126,6 +126,12 @@
     
     <script src="{{ asset('js/axios.min.js') }}?v={{ file_exists(public_path('js/axios.min.js')) ? filemtime(public_path('js/axios.min.js')) : '1' }}"></script>
     <script src="{{ asset('js/native-dialogs.js') }}?v={{ file_exists(public_path('js/native-dialogs.js')) ? filemtime(public_path('js/native-dialogs.js')) : '1' }}"></script>
+
+    <!-- محرك الرفع المستمر للفيديوهات بالخلفية للمصرح لهم بالرفع فقط -->
+    @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher', 'videographer']))
+        <script src="{{ asset('js/resumable-uploader.js') }}?v={{ file_exists(public_path('js/resumable-uploader.js')) ? filemtime(public_path('js/resumable-uploader.js')) : time() }}"></script>
+        <script src="{{ asset('js/background-uploader.js') }}?v={{ file_exists(public_path('js/background-uploader.js')) ? filemtime(public_path('js/background-uploader.js')) : time() }}"></script>
+    @endif
     <script>
         if (window.axios) {
             window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -3825,11 +3831,7 @@
         <i class="fa-solid fa-chevron-up"></i>
     </button>
 
-    <!-- محرك الرفع المستمر للفيديوهات بالخلفية للمصرح لهم بالرفع فقط -->
-    @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher', 'videographer']))
-        <script src="{{ asset('js/resumable-uploader.js') }}?v={{ file_exists(public_path('js/resumable-uploader.js')) ? filemtime(public_path('js/resumable-uploader.js')) : time() }}"></script>
-        <script src="{{ asset('js/background-uploader.js') }}?v={{ file_exists(public_path('js/background-uploader.js')) ? filemtime(public_path('js/background-uploader.js')) : time() }}"></script>
-    @endif
+
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')

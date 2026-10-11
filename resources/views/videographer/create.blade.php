@@ -727,8 +727,12 @@
             window.handleStageChange();
 
             // استعادة بيانات الفيديو إذا كان هناك فيديو مكتمل محفوظ
-            const uploadedPath = draft.uploaded_video_path || 
+            let uploadedPath = draft.uploaded_video_path || 
                 (window.EdBackgroundUploader && window.EdBackgroundUploader.state?.result?.uploaded_video_path);
+
+            if (!uploadedPath && window.EdBackgroundUploader && window.EdBackgroundUploader.hasCompletedUpload()) {
+                uploadedPath = window.EdBackgroundUploader.state?.result?.uploaded_video_path;
+            }
 
             if (uploadedPath) {
                 const uploadedPathInput = document.getElementById('uploadedVideoPath');
@@ -808,12 +812,22 @@
         const fileNameEl = document.getElementById('uploadFileName');
         const fileSizeEl = document.getElementById('uploadFileSize');
         const formattedSizeHidden = document.getElementById('formattedSize');
+        const percentageEl = document.getElementById('uploadPercentage');
+        const progressBar = document.getElementById('uploadProgressBar');
+        const statusText = document.getElementById('uploadStatusText');
+        const completedBadge = document.getElementById('uploadCompletedBadge');
+        const completedActions = document.getElementById('uploadCompletedActions');
 
         const mbSize = (window.selectedFile.size / 1048576).toFixed(1) + ' MB';
         if (fileNameEl) fileNameEl.textContent = window.selectedFile.name;
         if (fileSizeEl) fileSizeEl.textContent = mbSize;
         if (formattedSizeHidden) formattedSizeHidden.value = mbSize;
         if (progressWrap) progressWrap.style.display = 'block';
+        if (percentageEl) percentageEl.textContent = '0%';
+        if (progressBar) progressBar.style.width = '0%';
+        if (completedBadge) completedBadge.style.display = 'none';
+        if (completedActions) completedActions.style.display = 'none';
+        if (statusText) statusText.textContent = 'جاري تهيئة أجزاء الرفع بالخلفية...';
 
         // ملء عنوان المحاضرة تلقائياً من اسم الملف إذا كان حقل العنوان فارغاً
         const titleInput = document.querySelector('input[name="title"]');
@@ -823,8 +837,9 @@
             if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
         }
 
-        // بدء الرفع بالخلفية عبر محرك المنصة العام
+        // بدء الرفع بالخلفية عبر محرك المنصة العام مع ضمان تسجيل مستمع المزامنة
         if (window.EdBackgroundUploader) {
+            window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
             window.EdBackgroundUploader.start({
                 file: window.selectedFile,
                 portal: 'videographer',
@@ -857,9 +872,12 @@
             progressWrap.style.display = 'block';
             if (fileNameEl && state.fileName) fileNameEl.textContent = state.fileName;
             if (fileSizeEl && state.fileSizeFormatted) fileSizeEl.textContent = state.fileSizeFormatted;
-            if (percentageEl) percentageEl.textContent = state.progress + '%';
-            if (progressBar) progressBar.style.width = state.progress + '%';
+            const currentPct = (state.progress !== undefined ? state.progress : 0) + '%';
+            if (percentageEl) percentageEl.textContent = currentPct;
+            if (progressBar) progressBar.style.width = currentPct;
             if (completedBadge) completedBadge.style.display = 'none';
+            const completedActions = document.getElementById('uploadCompletedActions');
+            if (completedActions) completedActions.style.display = 'none';
 
             if (statusText) {
                 if (state.status === 'paused') {
@@ -872,7 +890,7 @@
             if (btnSubmit) {
                 btnSubmit.disabled = true;
                 btnSubmit.style.opacity = '0.6';
-                btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${state.progress}%)...</span>`;
+                btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>جاري رفع أجزاء الفيديو (${state.progress || 0}%)...</span>`;
             }
         } else if (state.status === 'completed' && state.result) {
             window.isUploadingChunks = false;
@@ -906,10 +924,22 @@
         }
     };
 
-    // ربط مستمع الحالة مع EdBackgroundUploader
-    if (window.EdBackgroundUploader) {
-        window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
+    // ربط مستمع الحالة مع EdBackgroundUploader وتحديث الواجهة فوراً
+    function registerVideographerUploaderSync() {
+        if (window.EdBackgroundUploader) {
+            window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
+            if (window.EdBackgroundUploader.hasActiveUpload() || window.EdBackgroundUploader.hasCompletedUpload()) {
+                window.syncVideographerUploadUI(window.EdBackgroundUploader.state);
+            }
+        }
     }
+    registerVideographerUploaderSync();
+    document.addEventListener('DOMContentLoaded', registerVideographerUploaderSync);
+    window.addEventListener('load', registerVideographerUploaderSync);
+    window.addEventListener('ed:page-loaded', registerVideographerUploaderSync);
+    window.addEventListener('ed:upload-progress', function(e) {
+        if (e.detail) window.syncVideographerUploadUI(e.detail);
+    });
 
     // اعتماد فيديو مرفوع مسبقاً (استرداد بعد انقطاع الجلسة)
     window.applyRecoveredVideo = function(path, size, filename) {
