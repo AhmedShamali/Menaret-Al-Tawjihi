@@ -111,10 +111,29 @@
             {{-- إذا كانت هناك إجابات مسجلة مسبقاً --}}
             @if($submission->answers && $submission->answers->isNotEmpty())
                 @foreach($submission->answers as $index => $ans)
-                <div class="glass-card" style="padding: 30px; border-right: 6px solid {{ $ans->question->type == 'mcq' ? '#10b981' : '#3b82f6' }}; border-radius: 18px; background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
+                @php
+                    $qType = $ans->question->type ?? 'essay';
+                    $typeLabels = [
+                        'mcq' => 'اختيار من متعدد',
+                        'true_false' => 'صح أو خطأ',
+                        'short_answer' => 'إجابة قصيرة / إكمال فراغ',
+                        'matching' => 'توصيل وسحب المربعات',
+                        'essay' => 'سؤال مقالي / كتابي',
+                        'text' => 'سؤال إنشائي'
+                    ];
+                    $borderColors = [
+                        'mcq' => '#10b981',
+                        'true_false' => '#059669',
+                        'short_answer' => '#0284c7',
+                        'matching' => '#7c3aed',
+                        'essay' => '#3b82f6',
+                        'text' => '#3b82f6'
+                    ];
+                @endphp
+                <div class="glass-card" style="padding: 30px; border-right: 6px solid {{ $borderColors[$qType] ?? '#3b82f6' }}; border-radius: 18px; background: white; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.02);">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
                         <span style="font-weight: 800; color: #64748b; font-size: 0.9rem;">
-                            سؤال #{{ $index + 1 }} ({{ $ans->question->type == 'mcq' ? 'اختيار من متعدد' : 'سؤال مقالي / كتابي' }})
+                            سؤال #{{ $index + 1 }} ({{ $typeLabels[$qType] ?? 'سؤال' }})
                         </span>
                         <span style="background: #f1f5f9; font-weight: 800; color: #1e293b; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">
                             الدرجة المقررة: {{ $ans->question->points }} علامة
@@ -138,23 +157,79 @@
                     @endif
 
                     <div style="background: #f8fafc; padding: 20px; border-radius: 14px; border: 1px solid #e2e8f0;">
-                        @if($ans->question->type == 'mcq')
+                        @if($qType == 'true_false')
+                            {{-- 1. سؤال صح أو خطأ --}}
                             @php
-                                $isCorrect = strtolower(trim((string)$ans->answer_text)) === strtolower(trim((string)$ans->question->correct_answer));
+                                $rawCorr = strtolower(trim((string)($ans->question->correct_answer ?? '')));
+                                $corrBool = ($rawCorr === 'true' || $rawCorr === '1');
+                                $rawUser = strtolower(trim((string)($ans->answer_text ?? '')));
+                                $userBool = ($rawUser === 'true' || $rawUser === '1') ? true : (($rawUser === 'false' || $rawUser === '0') ? false : null);
+                                $isTFCorrect = ($userBool !== null && $userBool === $corrBool);
                             @endphp
-                            <div style="font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="font-weight: 700; font-size: 1.02rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
                                 <div>
                                     إجابة الطالب: 
-                                    <span style="color: {{ $isCorrect ? '#059669' : '#dc2626' }}; font-weight: 800;">
-                                        ({{ strtoupper($ans->answer_text ?? 'لا توجد إجابة') }}) {{ $ans->question->{$ans->answer_text} ?? '' }}
+                                    <span style="color: {{ $isTFCorrect ? '#059669' : '#dc2626' }}; font-weight: 800;">
+                                        {{ $userBool === true ? 'صحيح (True)' : ($userBool === false ? 'خطأ (False)' : 'لم يجب') }}
                                     </span>
+                                    {!! $isTFCorrect ? ' <span style="margin-inline-start: 8px;">✅ (صحيحة)</span>' : ' <span style="margin-inline-start: 8px;">❌ (خاطئة)</span>' !!}
+                                </div>
+                                <div style="font-size: 0.88rem; color: #475569;">
+                                    الإجابة النموذجية المعتمدة: <b style="color: #059669;">{{ $corrBool ? 'صحيح (True)' : 'خطأ (False)' }}</b>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+                                <label style="font-weight: 700; font-size: 0.9rem; color: #334155;">الدرجة المرصودة:</label>
+                                <input type="number" name="grades[{{ $ans->id }}]" 
+                                       value="{{ $ans->points_awarded ?? ($isTFCorrect ? $ans->question->points : 0) }}" 
+                                       max="{{ $ans->question->points }}" min="0" step="0.5"
+                                       class="f-input question-score-input" 
+                                       oninput="recalcLiveScore()"
+                                       style="width: 100px; text-align: center; font-weight: 800; font-size: 1.1rem; color: #059669;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">من {{ $ans->question->points }}</span>
+                            </div>
+
+                        @elseif($qType == 'mcq')
+                            {{-- 2. سؤال اختيار من متعدد --}}
+                            @php
+                                $isMulti = !empty($ans->question->is_multiple);
+                                if ($isMulti) {
+                                    $rawDecodedCorr = json_decode((string)$ans->question->correct_answer, true);
+                                    $correctOptLetters = is_array($rawDecodedCorr) ? array_map('strtolower', array_map('trim', $rawDecodedCorr)) : [strtolower(trim((string)$ans->question->correct_answer))];
+                                    $rawDecodedUser = json_decode((string)$ans->answer_text, true);
+                                    $studentOptLetters = is_array($rawDecodedUser) ? array_map('strtolower', array_map('trim', $rawDecodedUser)) : [strtolower(trim((string)$ans->answer_text))];
+                                    $isCorrect = (count(array_diff($studentOptLetters, $correctOptLetters)) === 0 && count(array_diff($correctOptLetters, $studentOptLetters)) === 0 && !empty($studentOptLetters));
+                                } else {
+                                    $studentAnsStr = strtolower(trim((string)$ans->answer_text));
+                                    $corrAnsStr = strtolower(trim((string)$ans->question->correct_answer));
+                                    $isCorrect = ($studentAnsStr === $corrAnsStr && !empty($studentAnsStr));
+                                }
+                            @endphp
+                            <div style="font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 14px;">
+                                <div>
+                                    إجابة الطالب: 
+                                    @if($isMulti)
+                                        <span style="color: {{ $isCorrect ? '#059669' : '#dc2626' }}; font-weight: 800;">
+                                            {{ strtoupper(implode(', ', $studentOptLetters)) }}
+                                        </span>
+                                    @else
+                                        <span style="color: {{ $isCorrect ? '#059669' : '#dc2626' }}; font-weight: 800;">
+                                            ({{ strtoupper($ans->answer_text ?? 'لا توجد إجابة') }}) {{ $ans->question->{$ans->answer_text} ?? '' }}
+                                        </span>
+                                    @endif
                                     {!! $isCorrect ? ' <span style="margin-inline-start: 8px;">✅ (صحيحة)</span>' : ' <span style="margin-inline-start: 8px;">❌ (خاطئة)</span>' !!}
                                 </div>
                                 <div style="font-size: 0.85rem; color: #64748b;">
-                                    الإجابة النموذجية: <b style="color: #059669;">({{ strtoupper($ans->question->correct_answer) }}) {{ $ans->question->{$ans->question->correct_answer} ?? '' }}</b>
+                                    الإجابة النموذجية: 
+                                    @if($isMulti)
+                                        <b style="color: #059669;">{{ strtoupper(implode(', ', $correctOptLetters)) }}</b>
+                                    @else
+                                        <b style="color: #059669;">({{ strtoupper($ans->question->correct_answer) }}) {{ $ans->question->{$ans->question->correct_answer} ?? '' }}</b>
+                                    @endif
                                 </div>
                             </div>
-                            <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px;">
+                            <div style="margin-top: 12px; display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
                                 <label style="font-weight: 700; font-size: 0.9rem; color: #334155;">الدرجة المرصودة:</label>
                                 <input type="number" name="grades[{{ $ans->id }}]" 
                                        value="{{ $ans->points_awarded ?? ($isCorrect ? $ans->question->points : 0) }}" 
@@ -164,7 +239,94 @@
                                        style="width: 100px; text-align: center; font-weight: 800; font-size: 1.1rem; color: #1e40af;">
                                 <span style="color: #94a3b8; font-size: 0.85rem;">من {{ $ans->question->points }}</span>
                             </div>
+
+                        @elseif($qType == 'short_answer')
+                            {{-- 3. سؤال إجابة قصيرة وإكمال فراغ --}}
+                            @php
+                                $userText = trim((string)($ans->answer_text ?? ''));
+                                $corrText = trim((string)($ans->question->correct_answer ?? ''));
+                                $isShortAuto = ((float)$ans->points_awarded >= (float)$ans->question->points && (float)$ans->question->points > 0);
+                            @endphp
+                            <div style="margin-bottom: 14px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                    <strong style="color: #475569; font-size: 0.88rem;">إجابة الطالب النصية:</strong>
+                                    <span style="font-size: 0.8rem; font-weight: 800; color: {{ $isShortAuto ? '#059669' : '#dc2626' }};">
+                                        {{ $isShortAuto ? 'مطابقة للنموذج آلياً ✅' : 'غير مطابقة آلياً ❌' }}
+                                    </span>
+                                </div>
+                                <div style="line-height: 1.6; font-size: 1rem; color: #0f172a; background: white; padding: 12px 16px; border-radius: 10px; border: 1.5px solid {{ $isShortAuto ? '#86efac' : '#fca5a5' }};">
+                                    {{ !empty($userText) ? $userText : 'لم يتم إدخال إجابة' }}
+                                </div>
+                                <div style="margin-top: 8px; font-size: 0.82rem; color: #64748b;">
+                                    <strong>الإجابة النموذجية أو البدائل:</strong> <span style="color: #0284c7; font-weight: 700;">{{ $corrText }}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+                                <label style="font-weight: 700; font-size: 0.9rem; color: #334155;">الدرجة المرصودة:</label>
+                                <input type="number" name="grades[{{ $ans->id }}]" 
+                                       value="{{ $ans->points_awarded ?? ($isShortAuto ? $ans->question->points : 0) }}" 
+                                       max="{{ $ans->question->points }}" min="0" step="0.5"
+                                       class="f-input question-score-input" 
+                                       oninput="recalcLiveScore()"
+                                       style="width: 100px; text-align: center; font-weight: 800; font-size: 1.1rem; color: #0284c7;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">من {{ $ans->question->points }}</span>
+                            </div>
+
+                        @elseif($qType == 'matching')
+                            {{-- 4. سؤال توصيل ومطابقة المربعات --}}
+                            @php
+                                $pairs = $ans->question->getParsedMatchingPairs();
+                                $rawAns = $ans->answer_text;
+                                $studentMap = is_array($rawAns) ? $rawAns : (json_decode((string)$rawAns, true) ?? []);
+                            @endphp
+                            <div style="margin-bottom: 14px;">
+                                <strong style="display: block; margin-bottom: 8px; color: #475569; font-size: 0.88rem;">جدول مطابقة الطالب مقابل النموذج المعتمد:</strong>
+                                <div style="background: white; border-radius: 10px; border: 1px solid #e2e8f0; overflow: hidden;">
+                                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: right;">
+                                        <thead>
+                                            <tr style="background: #f1f5f9; color: #334155;">
+                                                <th style="padding: 8px 12px;">المفهوم</th>
+                                                <th style="padding: 8px 12px;">إجابة الطالب</th>
+                                                <th style="padding: 8px 12px;">المطابق الصحيح</th>
+                                                <th style="padding: 8px 12px;">الحالة</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pairs as $pIdx => $pair)
+                                            @php
+                                                $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                                $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
+                                                $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
+                                                $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
+                                            @endphp
+                                            <tr style="border-bottom: 1px solid #f1f5f9; background: {{ $isPairMatch ? '#f0fdf4' : '#fef2f2' }};">
+                                                <td style="padding: 8px 12px; font-weight: 700;">{{ $leftItem }}</td>
+                                                <td style="padding: 8px 12px; color: {{ $isPairMatch ? '#15803d' : '#b91c1c' }}; font-weight: 700;">
+                                                    {{ !empty($rightGiven) ? $rightGiven : '(لم يربط)' }}
+                                                </td>
+                                                <td style="padding: 8px 12px; color: #1e40af; font-weight: 700;">{{ $rightExpected }}</td>
+                                                <td style="padding: 8px 12px;">
+                                                    {!! $isPairMatch ? '<span style="color:#15803d; font-weight:800;">✅ صحيح</span>' : '<span style="color:#b91c1c; font-weight:800;">❌ خاطئ</span>' !!}
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; padding-top: 12px; border-top: 1px dashed #cbd5e1;">
+                                <label style="font-weight: 700; font-size: 0.9rem; color: #334155;">الدرجة المرصودة:</label>
+                                <input type="number" name="grades[{{ $ans->id }}]" 
+                                       value="{{ $ans->points_awarded ?? 0 }}" 
+                                       max="{{ $ans->question->points }}" min="0" step="0.5"
+                                       class="f-input question-score-input" 
+                                       oninput="recalcLiveScore()"
+                                       style="width: 100px; text-align: center; font-weight: 800; font-size: 1.1rem; color: #7c3aed;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">من {{ $ans->question->points }}</span>
+                            </div>
+
                         @else
+                            {{-- 5. الأسئلة المقالية والإنشائية --}}
                             <div style="margin-bottom: 15px;">
                                 <strong style="display: block; margin-bottom: 8px; color: #64748b; font-size: 0.88rem;">نص إجابة الطالب:</strong>
                                 <div style="line-height: 1.8; font-size: 1rem; color: #0f172a; background: white; padding: 14px; border-radius: 10px; border: 1px solid #e2e8f0; white-space: pre-wrap;">{{ $ans->answer_text ?? 'لم يتم تدوين نص إجابة من قبل الطالب' }}</div>

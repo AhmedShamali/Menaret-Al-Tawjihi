@@ -257,7 +257,7 @@
                                         class="classic-short-input" 
                                         placeholder="{{ __('أدخل الكلمة أو الرقم أو الإجابة هنا...') }}"
                                         autocomplete="off"
-                                        oninput="markAsAnswered({{ $index }}, {{ $q->id }})"
+                                        oninput="markAsTextAnswered(this, {{ $index }}, {{ $q->id }})"
                                     >
                                     <span class="short-input-badge"><i class="fa-solid fa-pen-clip"></i></span>
                                 </div>
@@ -349,8 +349,13 @@
                                     rows="5" 
                                     placeholder="{{ __('اكتب إجابتك هنا بدقة ووضوح...') }}" 
                                     class="classic-essay-textarea" 
-                                    oninput="markAsAnswered({{ $index }}, {{ $q->id }})"
+                                    oninput="markAsTextAnswered(this, {{ $index }}, {{ $q->id }})"
                                 ></textarea>
+                                <div class="essay-counter-pill" id="counter_wrap_{{ $q->id }}">
+                                    <span><i class="fa-solid fa-align-left"></i> <span id="word_count_{{ $q->id }}">0 {{ __('كلمة') }}</span></span>
+                                    <span class="counter-sep">•</span>
+                                    <span><span id="char_count_{{ $q->id }}">0 {{ __('حرف') }}</span></span>
+                                </div>
 
                                 @if($q->require_file)
                                 <div class="classic-file-dropzone">
@@ -1256,6 +1261,25 @@
     .classic-essay-textarea:focus {
         border-color: var(--ac-navy-light);
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .essay-counter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.78rem;
+        color: var(--ac-text-secondary);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 4px 12px;
+        border-radius: 6px;
+        margin-top: 6px;
+        font-weight: 700;
+        align-self: flex-start;
+    }
+
+    .counter-sep {
+        color: #cbd5e1;
     }
 
     /* منطقة إرفاق الملفات */
@@ -2972,6 +2996,46 @@
         saveExamProgressToStorage();
     }
 
+    function markAsTextAnswered(inputOrTextarea, index, qId) {
+        const val = inputOrTextarea ? inputOrTextarea.value.trim() : '';
+        const wordCountEl = document.getElementById('word_count_' + qId);
+        const charCountEl = document.getElementById('char_count_' + qId);
+        if (wordCountEl) {
+            const words = val.length > 0 ? val.split(/\s+/).filter(Boolean).length : 0;
+            wordCountEl.textContent = `${words} {{ __('كلمة') }}`;
+        }
+        if (charCountEl) {
+            charCountEl.textContent = `${val.length} {{ __('حرف') }}`;
+        }
+
+        const fileInput = document.querySelector(`input[name="files[${qId}]"]`);
+        const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+        if (val.length > 0 || hasFile) {
+            answeredSet.add(qId);
+            const navBtn = document.getElementById('nav_btn_' + index);
+            if (navBtn) navBtn.classList.add('is-answered');
+            const stateLbl = document.getElementById('state_q_' + qId);
+            if (stateLbl) {
+                stateLbl.innerHTML = '<i class="fa-solid fa-check"></i> <span class="status-txt">{{ __("تمت الإجابة") }}</span>';
+                stateLbl.classList.remove('unanswered');
+                stateLbl.classList.add('answered');
+            }
+        } else {
+            answeredSet.delete(qId);
+            const navBtn = document.getElementById('nav_btn_' + index);
+            if (navBtn) navBtn.classList.remove('is-answered');
+            const stateLbl = document.getElementById('state_q_' + qId);
+            if (stateLbl) {
+                stateLbl.innerHTML = '<i class="fa-regular fa-circle-dot"></i> <span class="status-txt">{{ __("لم تتم الإجابة بعد") }}</span>';
+                stateLbl.classList.remove('answered');
+                stateLbl.classList.add('unanswered');
+            }
+        }
+        updateProgressMetrics();
+        saveExamProgressToStorage();
+    }
+
     function updateProgressMetrics() {
         const answeredCount = answeredSet.size;
         const percent = Math.round((answeredCount / totalQuestions) * 100);
@@ -3337,7 +3401,7 @@
                         const txt = card.querySelector('input[type="text"], textarea');
                         if (txt && !card.querySelector('.classic-matching-container')) {
                             txt.value = val;
-                            markAsAnswered(index, qId);
+                            markAsTextAnswered(txt, index, qId);
                         }
                         const matchInput = document.getElementById('matching_answer_' + qId);
                         if (matchInput && val) {

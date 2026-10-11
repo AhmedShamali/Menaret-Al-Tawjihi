@@ -184,12 +184,14 @@
                 @php
                     $awarded = (float)$ans->points_awarded;
                     $max = (float)($ans->question ? $ans->question->points : 0);
+                    $qType = $ans->question->type ?? 'essay';
 
-                    if($ans->question && $ans->question->type == 'mcq') {
-                        $isCorrect = ($awarded >= $max && $max > 0);
-                        $statusClass = $isCorrect ? 'is-correct' : 'is-wrong';
-                        $statusText = $isCorrect ? __('صحيح') : __('غير صحيح');
-                        $statusIcon = $isCorrect ? 'fa-circle-check' : 'fa-circle-xmark';
+                    if(in_array($qType, ['mcq', 'true_false', 'short_answer', 'matching'])) {
+                        $isFull = ($awarded >= $max && $max > 0);
+                        $isPartial = ($awarded > 0 && $awarded < $max);
+                        $statusClass = $isFull ? 'is-correct' : ($isPartial ? 'is-partial' : 'is-wrong');
+                        $statusText = $isFull ? __('صحيح') : ($isPartial ? __('صحيح جزئياً') : __('غير صحيح'));
+                        $statusIcon = $isFull ? 'fa-circle-check' : ($isPartial ? 'fa-circle-half-stroke' : 'fa-circle-xmark');
                     } else {
                         $isCorrect = ($awarded >= $max && $max > 0);
                         $statusClass = $awarded > 0 ? 'is-correct' : 'is-pending';
@@ -245,11 +247,163 @@
                         </div>
                         @endif
 
-                        @if($ans->question && $ans->question->type == 'mcq')
+                        @if($ans->question && $ans->question->type == 'true_false')
+                            {{-- 1. سؤال صح أو خطأ (True / False) --}}
+                            @php
+                                $rawCorr = strtolower(trim((string)($ans->question->correct_answer ?? '')));
+                                $corrBool = ($rawCorr === 'true' || $rawCorr === '1');
+                                $rawUser = strtolower(trim((string)($ans->answer_text ?? '')));
+                                $userBool = ($rawUser === 'true' || $rawUser === '1') ? true : (($rawUser === 'false' || $rawUser === '0') ? false : null);
+                            @endphp
+                            <div class="classic-review-tf-grid">
+                                {{-- كرت صحيح --}}
+                                <div class="review-tf-card {{ $userBool === true ? ($corrBool === true ? 'tf-student-correct' : 'tf-student-wrong') : ($corrBool === true ? 'tf-is-model-answer' : '') }}">
+                                    <div class="tf-icon-wrap true-icon">
+                                        <i class="fa-solid fa-check"></i>
+                                    </div>
+                                    <div class="tf-content-wrap">
+                                        <span class="tf-main-text">{{ __('صحيح / صواب (True)') }}</span>
+                                        @if($userBool === true && $corrBool === true)
+                                            <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('إجابتك المختارة (صحيحة)') }}</span>
+                                        @elseif($userBool === true && $corrBool !== true)
+                                            <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('إجابتك المختارة (خاطئة)') }}</span>
+                                        @elseif($corrBool === true)
+                                            <span class="badge-flag model"><i class="fa-solid fa-check-double"></i> {{ __('الإجابة النموذجية المعتمدة') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                {{-- كرت خطأ --}}
+                                <div class="review-tf-card {{ $userBool === false ? ($corrBool === false ? 'tf-student-correct' : 'tf-student-wrong') : ($corrBool === false ? 'tf-is-model-answer' : '') }}">
+                                    <div class="tf-icon-wrap false-icon">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </div>
+                                    <div class="tf-content-wrap">
+                                        <span class="tf-main-text">{{ __('خطأ (False)') }}</span>
+                                        @if($userBool === false && $corrBool === false)
+                                            <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('إجابتك المختارة (صحيحة)') }}</span>
+                                        @elseif($userBool === false && $corrBool !== false)
+                                            <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('إجابتك المختارة (خاطئة)') }}</span>
+                                        @elseif($corrBool === false)
+                                            <span class="badge-flag model"><i class="fa-solid fa-check-double"></i> {{ __('الإجابة النموذجية المعتمدة') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="classic-outcome-box">
+                                <div class="outcome-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                                <div class="outcome-text">
+                                    <span class="outcome-label">{{ __('الإجابة الصحيحة المعتمدة:') }}</span>
+                                    <strong class="outcome-val">{{ $corrBool ? __('صحيح / صواب (True)') : __('خطأ (False)') }}</strong>
+                                </div>
+                            </div>
+
+                        @elseif($ans->question && $ans->question->type == 'short_answer')
+                            {{-- 2. سؤال إجابة قصيرة وإكمال فراغ (Short Answer) --}}
+                            @php
+                                $userText = trim((string)($ans->answer_text ?? ''));
+                                $corrText = trim((string)($ans->question->correct_answer ?? ''));
+                                $isShortCorrect = ($awarded >= $max && $max > 0);
+                            @endphp
+                            <div class="classic-review-short-zone">
+                                <div class="short-answer-display-box {{ $isShortCorrect ? 'short-correct' : 'short-wrong' }}">
+                                    <div class="short-box-header">
+                                        <span class="short-hdr-lbl"><i class="fa-solid fa-pen-nib"></i> {{ __('إجابتك المسجلة للاختبار:') }}</span>
+                                        @if($isShortCorrect)
+                                            <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('مطابقة وصحيحة') }}</span>
+                                        @else
+                                            <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('غير مطابقة') }}</span>
+                                        @endif
+                                    </div>
+                                    <div class="short-box-text">
+                                        {{ !empty($userText) ? $userText : __('(لم يتم تدوين إجابة)') }}
+                                    </div>
+                                </div>
+
+                                <div class="classic-outcome-box">
+                                    <div class="outcome-icon"><i class="fa-solid fa-lightbulb"></i></div>
+                                    <div class="outcome-text">
+                                        <span class="outcome-label">{{ __('الإجابة الصحيحة أو البدائل المقبولة:') }}</span>
+                                        <strong class="outcome-val">{{ $corrText }}</strong>
+                                        <span class="short-algo-hint">
+                                            <i class="fa-solid fa-circle-info"></i> {{ __('يحتسب التصحيح الذكي الفروق الطفيفة في الهمزات والتاء المربوطة والمسافات تلقائياً.') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        @elseif($ans->question && $ans->question->type == 'matching')
+                            {{-- 3. سؤال توصيل وسحب وإفلات المربعات (Matching) --}}
+                            @php
+                                $pairs = $ans->question->getParsedMatchingPairs();
+                                $rawAns = $ans->answer_text;
+                                $studentMap = is_array($rawAns) ? $rawAns : (json_decode((string)$rawAns, true) ?? []);
+                            @endphp
+                            <div class="classic-review-matching-zone">
+                                <div class="matching-review-table-wrap">
+                                    <table class="matching-review-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:40px;">#</th>
+                                                <th>{{ __('المفهوم / السؤال') }}</th>
+                                                <th>{{ __('إجابتك وتوصيلك') }}</th>
+                                                <th>{{ __('المطابق النموذجي المعتمد') }}</th>
+                                                <th style="width:110px;">{{ __('النتيجة') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach($pairs as $pIdx => $pair)
+                                            @php
+                                                $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                                $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
+                                                $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
+                                                $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
+                                            @endphp
+                                            <tr class="{{ $isPairMatch ? 'pair-match-correct' : 'pair-match-wrong' }}">
+                                                <td><strong>{{ $pIdx + 1 }}</strong></td>
+                                                <td><span class="matching-prompt-pill">{{ $leftItem }}</span></td>
+                                                <td>
+                                                    @if(!empty($rightGiven))
+                                                        <span class="matching-chip {{ $isPairMatch ? 'given-correct' : 'given-wrong' }}">
+                                                            {{ $rightGiven }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted" style="font-size:0.85rem; color:#94a3b8;">{{ __('(لم يتم التوصيل)') }}</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    <span class="matching-chip model-chip">{{ $rightExpected }}</span>
+                                                </td>
+                                                <td>
+                                                    @if($isPairMatch)
+                                                        <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('صحيح') }}</span>
+                                                    @else
+                                                        <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('خاطئ') }}</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        @elseif($ans->question && $ans->question->type == 'mcq')
+                            {{-- 4. سؤال اختيار من متعدد (MCQ) --}}
                             @php
                                 $arLetters = ['a' => 'أ', 'b' => 'ب', 'c' => 'ج', 'd' => 'د'];
-                                $correctOptLetter = strtolower(trim((string)($ans->question->correct_answer ?? '')));
-                                $studentOptLetter = strtolower(trim((string)($ans->answer_text ?? '')));
+                                $isMulti = !empty($ans->question->is_multiple);
+                                
+                                if ($isMulti) {
+                                    $rawDecodedCorr = json_decode((string)$ans->question->correct_answer, true);
+                                    $correctOptLetters = is_array($rawDecodedCorr) ? array_map('strtolower', array_map('trim', $rawDecodedCorr)) : [strtolower(trim((string)$ans->question->correct_answer))];
+                                    $rawDecodedUser = json_decode((string)$ans->answer_text, true);
+                                    $studentOptLetters = is_array($rawDecodedUser) ? array_map('strtolower', array_map('trim', $rawDecodedUser)) : [strtolower(trim((string)$ans->answer_text))];
+                                } else {
+                                    $correctOptLetter = strtolower(trim((string)($ans->question->correct_answer ?? '')));
+                                    $studentOptLetter = strtolower(trim((string)($ans->answer_text ?? '')));
+                                }
                             @endphp
                             <div class="classic-review-choices-grid">
                                 @foreach(['a', 'b', 'c', 'd'] as $opt)
@@ -261,8 +415,13 @@
                                     @endphp
                                     @if($hasOptText || $hasOptImg)
                                         @php
-                                            $isThisCorrect = ($correctOptLetter === $opt);
-                                            $isThisStudentChoice = ($studentOptLetter === $opt);
+                                            if ($isMulti) {
+                                                $isThisCorrect = in_array($opt, $correctOptLetters);
+                                                $isThisStudentChoice = in_array($opt, $studentOptLetters);
+                                            } else {
+                                                $isThisCorrect = ($correctOptLetter === $opt);
+                                                $isThisStudentChoice = ($studentOptLetter === $opt);
+                                            }
                                         @endphp
                                         <div class="review-choice-card {{ $isThisStudentChoice ? ($isThisCorrect ? 'choice-student-correct' : 'choice-student-wrong') : ($isThisCorrect ? 'choice-is-model-answer' : '') }}">
                                             
@@ -306,22 +465,28 @@
                             </div>
 
                             <!-- صندوق الإجابة النموذجية المعتمدة -->
-                            @php
-                                $correctOptText = $ans->question->$correctOptLetter ?? '';
-                            @endphp
                             <div class="classic-outcome-box">
                                 <div class="outcome-icon"><i class="fa-solid fa-lightbulb"></i></div>
                                 <div class="outcome-text">
                                     <span class="outcome-label">{{ __('الإجابة الصحيحة المعتمدة:') }}</span>
-                                    <strong class="outcome-val">
-                                        {{ $arLetters[$correctOptLetter] ?? strtoupper($correctOptLetter) }}
-                                        @if(!empty($correctOptText)) - {{ $correctOptText }} @endif
-                                    </strong>
+                                    @if($isMulti)
+                                        <strong class="outcome-val">
+                                            @foreach($correctOptLetters as $cOpt)
+                                                {{ $arLetters[$cOpt] ?? strtoupper($cOpt) }} ({{ $ans->question->$cOpt ?? '' }})@if(!$loop->last) - @endif
+                                            @endforeach
+                                        </strong>
+                                    @else
+                                        @php $correctOptText = $ans->question->$correctOptLetter ?? ''; @endphp
+                                        <strong class="outcome-val">
+                                            {{ $arLetters[$correctOptLetter] ?? strtoupper($correctOptLetter) }}
+                                            @if(!empty($correctOptText)) - {{ $correctOptText }} @endif
+                                        </strong>
+                                    @endif
                                 </div>
                             </div>
 
                         @else
-                            <!-- الأسئلة المقالية والإنشائية -->
+                            {{-- 5. الأسئلة المقالية والإنشائية (Essay / Text) --}}
                             <div class="classic-review-essay-zone">
                                 <div class="essay-heading">
                                     <i class="fa-solid fa-pen-fancy"></i>
@@ -798,6 +963,12 @@
         border: 1px solid #fde68a;
     }
 
+    .review-status-chip.is-partial {
+        background: #e0f2fe;
+        color: #0369a1;
+        border: 1px solid #bae6fd;
+    }
+
     .card-q-body {
         padding: 22px 24px;
     }
@@ -974,6 +1145,203 @@
     .review-choice-card.choice-is-model-answer {
         background: #f8fafc;
         border-color: #a7f3d0;
+    }
+
+    /* كروت مراجعة صح أو خطأ */
+    .classic-review-tf-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 18px;
+    }
+
+    .review-tf-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 18px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        background: #ffffff;
+        transition: all 0.2s ease;
+    }
+
+    .tf-icon-wrap {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .tf-icon-wrap.true-icon { background: #dcfce7; color: #15803d; }
+    .tf-icon-wrap.false-icon { background: #fee2e2; color: #b91c1c; }
+
+    .tf-content-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .tf-main-text {
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--rc-navy-dark);
+    }
+
+    .review-tf-card.tf-student-correct {
+        background: #f0fdf4 !important;
+        border-color: #86efac !important;
+    }
+
+    .review-tf-card.tf-student-wrong {
+        background: #fef2f2 !important;
+        border-color: #fca5a5 !important;
+    }
+
+    .review-tf-card.tf-is-model-answer {
+        background: #f8fafc;
+        border-color: #a7f3d0;
+    }
+
+    /* منطقة مراجعة الإجابة القصيرة */
+    .classic-review-short-zone {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .short-answer-display-box {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 14px 18px;
+    }
+
+    .short-answer-display-box.short-correct {
+        border-color: #86efac;
+        background: #f0fdf4;
+    }
+
+    .short-answer-display-box.short-wrong {
+        border-color: #fca5a5;
+        background: #fef2f2;
+    }
+
+    .short-box-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .short-hdr-lbl {
+        font-size: 0.84rem;
+        font-weight: 700;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .short-box-text {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .short-algo-hint {
+        display: block;
+        font-size: 0.76rem;
+        color: #64748b;
+        margin-top: 4px;
+        line-height: 1.4;
+    }
+
+    /* منطقة مراجعة التوصيل والمطابقة */
+    .classic-review-matching-zone {
+        margin-bottom: 18px;
+    }
+
+    .matching-review-table-wrap {
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    .matching-review-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.88rem;
+        text-align: right;
+    }
+
+    .matching-review-table th {
+        background: #f8fafc;
+        padding: 10px 14px;
+        font-weight: 800;
+        color: #475569;
+        border-bottom: 1.5px solid #e2e8f0;
+    }
+
+    .matching-review-table td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .matching-review-table tr.pair-match-correct {
+        background: #f0fdf4;
+    }
+
+    .matching-review-table tr.pair-match-wrong {
+        background: #fef2f2;
+    }
+
+    .matching-prompt-pill {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .matching-chip {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+
+    .matching-chip.given-correct {
+        background: #dcfce7;
+        color: #15803d;
+        border: 1px solid #86efac;
+    }
+
+    .matching-chip.given-wrong {
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fca5a5;
+    }
+
+    .matching-chip.model-chip {
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+    }
+
+    @media (max-width: 768px) {
+        .classic-review-tf-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* صندوق الإجابة النموذجية المعتمدة */
