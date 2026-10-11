@@ -17,6 +17,11 @@
                     <span>{{ $exam->subject?->name_ar ?? $exam->subject?->name ?? __('مادة دراسية') }}</span>
                 </div>
                 <h1 class="topbar-exam-title">{{ $exam->title }}</h1>
+                <div class="topbar-schedule-pill" style="display:inline-flex; align-items:center; gap:6px; font-size:0.75rem; color:#64748b; margin-top:2px;">
+                    <i class="fa-regular fa-calendar-check" style="color:#0284c7;"></i>
+                    <span>{{ __('ساعات وموعد فتح الاختبار الأكاديمي:') }}</span>
+                    <strong style="color:#1e293b;">{{ $exam->formatted_timing_text }}</strong>
+                </div>
             </div>
 
             <!-- كبسولة التوقيت الأكاديمي الرقمية (Academic Chronometer) -->
@@ -147,7 +152,7 @@
                                             <span class="choice-text-content">{{ $q->$option }}</span>
                                         @endif
                                         @if($hasOptImg)
-                                            <div class="choice-thumb-wrap" onclick="event.stopPropagation(); openImageModal('{{ $firstOptImg }}')">
+                                            <div class="choice-thumb-wrap ed-opt-img-wrapper" onclick="event.stopPropagation(); openImageModal('{{ $firstOptImg }}')">
                                                 <img src="{{ $firstOptImg }}" alt="خيار {{ $arLetters[$option] ?? $option }}" class="choice-thumb-img" onerror="this.closest('.choice-thumb-wrap').style.display='none'">
                                                 <span class="thumb-zoom-hint"><i class="fa-solid fa-expand"></i></span>
                                             </div>

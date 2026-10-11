@@ -122,6 +122,7 @@
                 <div class="score-number-badge {{ $scoreColorClass }}">
                     <span class="earned-digit">{{ number_format($earned, 2) }}</span>
                     <span class="max-digit">/ {{ number_format($totalMax, 2) }}</span>
+                    <span class="score-label-sub" style="display:block; font-size:0.75rem; font-weight:600; margin-top:4px; opacity:0.85;">{{ __('الدرجة المحققة') }}</span>
                 </div>
                 <div class="score-percent-pod {{ $scoreColorClass }}">
                     <i class="fa-solid fa-percent"></i>
@@ -154,7 +155,7 @@
         <div class="classic-deduction-banner">
             <div class="banner-head">
                 <i class="fa-solid fa-triangle-exclamation"></i>
-                <h4>{{ __('تم تطبيق خصم درجات:') }} {{ $submission->deduction_amount }} {{ __('علامات') }}</h4>
+                <h4>{{ __('تنبيه أكاديمي: تم تطبيق خصم درجات على هذا الاختبار') }} ({{ $submission->deduction_amount }} {{ __('علامات') }})</h4>
             </div>
             @if($submission->deduction_reason)
                 <p class="banner-body"><strong>{{ __('السبب:') }}</strong> {{ $submission->deduction_reason }}</p>
@@ -175,6 +176,10 @@
 
         <!-- مسار مراجعة الأسئلة بتصميم أكاديمي ملكي فاخر -->
         <main class="classic-review-questions-stream">
+            <div class="review-stream-header" style="display:flex; align-items:center; gap:8px; margin-bottom:1rem; padding-bottom:0.75rem; border-bottom:1px solid #e2e8f0;">
+                <i class="fa-solid fa-list-check" style="color:#0284c7; font-size:1.2rem;"></i>
+                <h3 style="margin:0; font-size:1.15rem; font-weight:700; color:#0f172a;">{{ __('مراجعة الإجابات') }}</h3>
+            </div>
             @foreach($submission->answers as $idx => $ans)
                 @php
                     $awarded = (float)$ans->points_awarded;

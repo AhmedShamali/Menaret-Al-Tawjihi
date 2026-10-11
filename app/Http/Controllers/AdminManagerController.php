@@ -404,7 +404,7 @@ class AdminManagerController extends Controller {
             'password' => 'required|min:6',
             'nid'      => 'required|digits:9|unique:students,nid',
             'stage_id' => 'required',
-            'whatsapp' => 'required|string|min:9|max:20',
+            'whatsapp' => 'nullable|string|min:9|max:20',
             'phone'    => 'nullable|string|max:20',
             'photo'    => 'nullable|file|mimes:jpeg,png,jpg,webp|max:10240',
             'id_photo' => 'nullable|file|mimes:jpeg,png,jpg,webp,pdf|max:10240'

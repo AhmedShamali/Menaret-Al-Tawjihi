@@ -275,6 +275,11 @@
                                                 <span onclick="openLessonModal({{ $encodedLesson }})" style="display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 1px 7px; border-radius: 6px; font-weight: 700; cursor: pointer;" title="{{ __('الأماكن التي نزل فيها الدرس بالفروع') }}">
                                                     <i class="fa-solid fa-layer-group"></i> <span id="row_branch_count_{{ $item->id }}">{{ $item->branches_count }}</span> {{ __('فروع') }}
                                                 </span>
+                                                @if(!empty($item->target_region_badge))
+                                                    <span style="display: inline-flex; align-items: center; gap: 4px; background: {{ $item->target_region_badge['bg'] }}; color: {{ $item->target_region_badge['color'] }}; border: 1px solid {{ $item->target_region_badge['border'] }}; padding: 1px 7px; border-radius: 6px; font-weight: 700; font-size: 0.72rem;">
+                                                        <i class="{{ $item->target_region_badge['icon'] }}"></i> {{ $item->target_region_badge['label'] }}
+                                                    </span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
