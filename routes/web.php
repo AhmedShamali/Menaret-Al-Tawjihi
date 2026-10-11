@@ -559,6 +559,13 @@ Route::match(['get', 'post', 'patch'], '/videographer/contents/{id}/toggle_visib
 Route::match(['get', 'post', 'patch'], '/videographer/visibility/toggle/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
 Route::match(['get', 'post', 'patch'], '/videographer/educational-contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
 
+// مسارات مزامنة الفروع للأدمن والمعلم والمصور لتوحيد القدرات
+Route::post('/admin/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('admin.contents.sync_branches')->middleware(['auth']);
+Route::post('/teacher/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('teacher.contents.sync_branches')->middleware(['auth']);
+Route::match(['get', 'post', 'patch'], '/admin/contents/{id}/toggle-visibility', [\App\Http\Controllers\EducationalContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+Route::match(['get', 'post', 'patch'], '/teacher/contents/{id}/toggle-visibility', [\App\Http\Controllers\EducationalContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+
+
 // مسار فوري لمسح كاش المسارات والتطبيق للإدارة في حال وجود أي تحديث عالق في الاستضافة
 Route::get('/admin/clear-cache', function () {
     if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'super_admin'])) {

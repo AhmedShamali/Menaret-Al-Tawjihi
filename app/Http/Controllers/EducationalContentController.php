@@ -841,24 +841,29 @@ class EducationalContentController extends Controller
             $urlPath = $content->url_path;
             $pdfPath = $content->pdf_path;
 
-            // حذف هذه المحاضرة وجميع النسخ الموزعة منها في الفروع الشقيقة لضمان مسحها من قاعدة البيانات نهائياً
-            $allIdsToDelete = EducationalContent::where('id', $content->id)
-                ->orWhere(function($q) use ($content, $urlPath, $pdfPath) {
-                    if (!empty($urlPath)) {
-                        $q->where('url_path', $urlPath);
-                    }
-                    if (!empty($pdfPath)) {
-                        $q->orWhere('pdf_path', $pdfPath);
-                    }
-                    if (!empty($content->title)) {
-                        $q->orWhere(function($subQ) use ($content) {
-                            $subQ->where('title', $content->title)
-                                 ->where('uploaded_by', $content->uploaded_by);
-                        });
-                    }
-                })
-                ->pluck('id')
-                ->toArray();
+            // حذف هذه المحاضرة وجميع النسخ الموزعة منها في الفروع الشقيقة إذا طُلب ذلك (scope=all)
+            $scope = $req->input('scope', ($req->filled('scope') ? $req->input('scope') : 'single'));
+            if ($scope === 'all') {
+                $allIdsToDelete = EducationalContent::where('id', $content->id)
+                    ->orWhere(function($q) use ($content, $urlPath, $pdfPath) {
+                        if (!empty($urlPath)) {
+                            $q->where('url_path', $urlPath);
+                        }
+                        if (!empty($pdfPath)) {
+                            $q->orWhere('pdf_path', $pdfPath);
+                        }
+                        if (!empty($content->title)) {
+                            $q->orWhere(function($subQ) use ($content) {
+                                $subQ->where('title', $content->title)
+                                     ->where('uploaded_by', $content->uploaded_by);
+                            });
+                        }
+                    })
+                    ->pluck('id')
+                    ->toArray();
+            } else {
+                $allIdsToDelete = [(int)$content->id];
+            }
 
             if (empty($allIdsToDelete)) {
                 $allIdsToDelete = [(int)$content->id];
@@ -1394,7 +1399,7 @@ class EducationalContentController extends Controller
             $stages = Stage::with('subjects')->orderBy('grade_level')->get();
         }
 
-        $query = EducationalContent::with('subject.stage')
+        $query = EducationalContent::with('subject.stage', 'uploader')
             ->where(function($q) {
                 $q->whereNotNull('url_path')->where('url_path', '!=', '')
                   ->orWhereIn('type', ['video', 'both']);
@@ -1420,23 +1425,116 @@ class EducationalContentController extends Controller
             });
         }
 
+        if ($request->filled('search')) {
+            $s = trim($request->search);
+            $query->where(function($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")
+                  ->orWhere('channel_name', 'like', "%{$s}%")
+                  ->orWhereHas('subject', function($sq) use ($s) {
+                      $sq->where('name_ar', 'like', "%{$s}%");
+                  });
+            });
+        }
+
+        if ($request->filled('visibility')) {
+            if ($request->visibility === 'visible') {
+                $query->where('is_visible', true);
+            } elseif ($request->visibility === 'hidden') {
+                $query->where(function($q) {
+                    $q->where('is_visible', false)->orWhereNull('is_visible');
+                });
+            }
+        }
+
         if ($request->filled('target_region') && in_array($request->target_region, ['all', 'gaza', 'west_bank'])) {
             $query->where('target_region', $request->target_region);
         }
 
+        $rawContents = $query->latest('id')->get();
+
+        // تجميع المحاضرات المتطابقة والموزعة على عدة فروع في سجل موحد لكل درس (تماماً كصفحة المصور)
+        $grouped = $rawContents->groupBy(function($item) {
+            if (!empty($item->url_path)) {
+                return 'v_' . $item->url_path;
+            }
+            if (!empty($item->pdf_path)) {
+                return 'p_' . $item->pdf_path;
+            }
+            return 't_' . trim($item->title) . '_' . $item->uploaded_by;
+        });
+
+        $lessons = $grouped->map(function($group) {
+            $primary = $group->first();
+            $branches = $group->map(function($item) {
+                $stageName = $item->subject?->stage?->label_ar ?? $item->subject?->stage?->name_ar ?? $item->subject?->stage?->name ?? 'الفرع الأكاديمي';
+                $stageBadge = $item->subject?->stage?->name ?? $stageName;
+
+                $cleanBadge = $stageBadge;
+                if (str_contains($stageBadge, 'علمي')) $cleanBadge = 'علمي 📐';
+                elseif (str_contains($stageBadge, 'أدبي')) $cleanBadge = 'أدبي 📚';
+                elseif (str_contains($stageBadge, 'ريادة') || str_contains($stageBadge, 'أعمال') || str_contains($stageBadge, 'تجاري')) $cleanBadge = 'ريادة 💼';
+                elseif (str_contains($stageBadge, 'شرعي')) $cleanBadge = 'شرعي ⚖️';
+                elseif (str_contains($stageBadge, 'صناعي')) $cleanBadge = 'صناعي ⚙️';
+                elseif (str_contains($stageBadge, 'زراعي')) $cleanBadge = 'زراعي 🌾';
+
+                return [
+                    'id'           => (int) $item->id,
+                    'stage_id'     => $item->subject?->stage_id,
+                    'stage_name'   => $stageName,
+                    'stage_badge'  => $cleanBadge,
+                    'subject_id'   => $item->subject_id,
+                    'subject_name' => $item->subject?->name_ar ?? $item->subject?->name ?? '-',
+                    'is_visible'   => (bool) ($item->is_visible ?? true),
+                    'views_count'  => (int) ($item->views_count ?? 0),
+                    'created_at'   => $item->created_at ? $item->created_at->format('Y/m/d') : '-',
+                ];
+            })->values();
+
+            return (object) [
+                'id'             => (int) $primary->id,
+                'title'          => $primary->title,
+                'channel_name'   => $primary->channel_name,
+                'file_size'      => $primary->file_size,
+                'url_path'       => $primary->url_path,
+                'pdf_path'       => $primary->pdf_path,
+                'type'           => $primary->type,
+                'order'          => $primary->order,
+                'youtube_embed_url' => $primary->youtube_embed_url,
+                'created_at'     => $primary->created_at,
+                'uploader'       => $primary->uploader,
+                'target_region'  => $primary->target_region,
+                'target_region_badge' => $primary->target_region_badge,
+                'total_views'    => (int) $group->sum('views_count'),
+                'all_visible'    => $group->every(fn($i) => (bool)($i->is_visible ?? true)),
+                'any_visible'    => $group->some(fn($i) => (bool)($i->is_visible ?? true)),
+                'branches_count' => $branches->count(),
+                'branches'       => $branches,
+                'all_ids'        => $group->pluck('id')->toArray(),
+            ];
+        })->values();
+
         $stats = [
-            'total'   => (clone $query)->count(),
-            'visible' => (clone $query)->where('is_visible', true)->count(),
-            'hidden'  => (clone $query)->where('is_visible', false)->count(),
+            'total'   => $lessons->count(),
+            'visible' => $lessons->filter(fn($l) => $l->all_visible)->count(),
+            'hidden'  => $lessons->filter(fn($l) => !$l->any_visible)->count(),
         ];
 
-        // عند تحديد مادة معينة يتم الترتيب حسب ترتيب الدروس، وعند العرض العام يتم إظهار أحدث الفيديوهات المرفوعة أولاً
-        if ($request->filled('subject_id')) {
-            $videos = $query->orderBy('order')->latest('id')->paginate(20);
-        } else {
-            $videos = $query->latest('id')->paginate(20);
-        }
+        $perPage = 20;
+        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage('page');
+        $currentPageItems = $lessons->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $videos = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentPageItems,
+            $lessons->count(),
+            $perPage,
+            $currentPage,
+            ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(), 'query' => $request->query()]
+        );
+
         $subjectId = $request->get('subject_id') ?: ($isTeacher && count($teacherSubjectIds) === 1 ? $teacherSubjectIds[0] : null);
+
+        $uniqueSubjects = $subjects->unique(function($s) {
+            return trim(preg_replace('/\s*\(.*?\)\s*/u', '', $s->name_ar ?? $s->name));
+        })->values();
 
         // فحص أي ملف فيديو مكتمل تم رفعه مؤخراً على السيرفر ولم يُسجل في قاعدة البيانات بعد
         $recentUnlinkedVideo = null;
@@ -1470,7 +1568,7 @@ class EducationalContentController extends Controller
             } catch (\Throwable $e) {}
         }
 
-        return view('teacher.videos.index', compact('videos', 'subjects', 'subjectId', 'stats', 'stages', 'recentUnlinkedVideo'));
+        return view('teacher.videos.index', compact('videos', 'subjects', 'uniqueSubjects', 'subjectId', 'stats', 'stages', 'recentUnlinkedVideo', 'isTeacher'));
     }
 
     /**
@@ -1597,8 +1695,9 @@ class EducationalContentController extends Controller
     /**
      * تبديل حالة ظهور المحتوى بلمسة واحدة
      */
-    public function toggleVisibility($id)
+    public function toggleVisibility($id, Request $request = null)
     {
+        $req = $request instanceof Request ? $request : request();
         $content = EducationalContent::findOrFail($id);
         $user = auth()->user();
         if (!$user || !in_array($user->role, ['admin', 'super_admin', 'teacher', 'videographer'])) {
@@ -1615,24 +1714,32 @@ class EducationalContentController extends Controller
         $newVisible = $content->is_visible ? 0 : 1;
         $content->update(['is_visible' => $newVisible]);
 
-        // مزامنة حالة الظهور مع النسخ الموزعة في الفروع الشقيقة وتحديث تعيينات الطلبة فورياً
-        try {
-            $sisterQuery = EducationalContent::where('id', '!=', $content->id);
-            if (!empty($content->url_path)) {
-                $sisterQuery->where('url_path', $content->url_path);
-            } elseif (!empty($content->pdf_path)) {
-                $sisterQuery->where('pdf_path', $content->pdf_path);
-            } elseif (!empty($content->title)) {
-                $sisterQuery->where('title', $content->title);
-            }
-            $sisterIds = $sisterQuery->pluck('id')->toArray();
-            $sisterQuery->update(['is_visible' => $newVisible]);
+        $scope = $req->input('scope', 'all');
+        if ($scope !== 'single') {
+            // مزامنة حالة الظهور مع النسخ الموزعة في الفروع الشقيقة وتحديث تعيينات الطلبة فورياً
+            try {
+                $sisterQuery = EducationalContent::where('id', '!=', $content->id);
+                if (!empty($content->url_path)) {
+                    $sisterQuery->where('url_path', $content->url_path);
+                } elseif (!empty($content->pdf_path)) {
+                    $sisterQuery->where('pdf_path', $content->pdf_path);
+                } elseif (!empty($content->title)) {
+                    $sisterQuery->where('title', $content->title);
+                }
+                $sisterIds = $sisterQuery->pluck('id')->toArray();
+                $sisterQuery->update(['is_visible' => $newVisible]);
 
-            // تحديث تعيينات وصول الطلبة في ContentAssignment لضمان الحجب الفوري أو الإتاحة الفورية
-            $allAffectedIds = array_merge([(int)$content->id], $sisterIds);
-            \App\Models\ContentAssignment::whereIn('educational_content_id', $allAffectedIds)
-                ->update(['is_visible' => (bool)$newVisible]);
-        } catch (\Throwable $e) {}
+                // تحديث تعيينات وصول الطلبة في ContentAssignment لضمان الحجب الفوري أو الإتاحة الفورية
+                $allAffectedIds = array_merge([(int)$content->id], $sisterIds);
+                \App\Models\ContentAssignment::whereIn('educational_content_id', $allAffectedIds)
+                    ->update(['is_visible' => (bool)$newVisible]);
+            } catch (\Throwable $e) {}
+        } else {
+            try {
+                \App\Models\ContentAssignment::where('educational_content_id', $content->id)
+                    ->update(['is_visible' => (bool)$newVisible]);
+            } catch (\Throwable $e) {}
+        }
 
         return response()->json([
             'success'    => true,

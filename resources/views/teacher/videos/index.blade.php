@@ -3,143 +3,53 @@
 @section('title', __('إدارة ورفع الفيديوهات والشروحات') . ' | ' . config('app.name', 'Step by Step'))
 
 @section('content')
-<div class="ed-teacher-videos-container">
+<div class="videographer-library-wrapper" style="max-width: 1300px; margin: 0 auto; padding: 10px 0 60px 0;">
 
-    <!-- الهيدر الأكاديمي الرسمي -->
-    <header class="ed-teacher-header">
+    {{-- 1. رأس الصفحة والمسار الأكاديمي --}}
+    <div style="background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: var(--ed-radius-lg); padding: 22px 28px; margin-bottom: 24px; box-shadow: var(--ed-shadow-sm); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
         <div>
-            <div class="ed-teacher-breadcrumbs">
-                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('teacher.dashboard') }}">
+            <div style="font-size: 0.82rem; color: var(--ed-text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+                <a href="{{ auth()->user()->role === 'admin' ? route('admin.dashboard') : route('teacher.dashboard') }}" style="color: #1d4ed8; text-decoration: none; font-weight: 700;">
                     {{ auth()->user()->role === 'admin' ? __('لوحة الإدارة') : __('بوابة المعلم المعتمد') }}
                 </a>
-                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
-                <span class="active">{{ __('المحتوى المرئي والفيديوهات') }}</span>
+                <i class="fa-solid fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}" style="font-size: 0.7rem;"></i>
+                <span>{{ __('إدارة ورفع الفيديوهات والشروحات') }}</span>
             </div>
-            <h1>
-                <i class="fa-solid fa-video" style="color: #1e3a8a;"></i>
+            <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--ed-text-main); margin: 0; font-family: 'Alexandria', sans-serif; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-video" style="color: #1d4ed8;"></i>
                 {{ __('إدارة ورفع الفيديوهات والشروحات المرئية') }}
             </h1>
-            <p>
-                {{ __('رفع وإدارة حصص وشروحات المنهاج الفلسطيني عبر رفع ملفات الفيديو المباشرة عالية الدقة، مع تنظيم ترتيب الدروس والتحكم بظهورها ودعم المشاهدة الأوفلاين للطلبة.') }}
+            <p style="margin: 4px 0 0 0; font-size: 0.84rem; color: #64748b;">
+                {{ __('يظهر كل درس بسجل أكاديمي مستقل ومرتب، مع إمكانية عرض تفاصيل فروعه وحالة نشره ومعاينته بنقرة واحدة دون تكرار أو بطء.') }}
             </p>
         </div>
 
-        <div class="header-actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             @if(in_array(auth()->user()->role, ['admin', 'teacher']))
-                <button type="button" onclick="purgeAllContents()" class="ed-btn-purge" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.08);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                <button type="button" onclick="purgeAllContents()" style="display: inline-flex; align-items: center; gap: 8px; background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; padding: 10px 18px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.08);" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'" title="{{ auth()->user()->role === 'admin' ? __('حذف وتصفير كافة المحتويات دفعة واحدة') : __('حذف وتصفير فيديوهاتي دفعة واحدة') }}">
                     <i class="fa-solid fa-trash-can"></i>
-                    <span>{{ auth()->user()->role === 'admin' ? __('حذف وتصفير كافة المحتويات دفعة واحدة') : __('حذف وتصفير كافة فيديوهاتي دفعة واحدة') }}</span>
+                    <span>{{ auth()->user()->role === 'admin' ? __('تصفير كافة الفيديوهات') : __('تصفير فيديوهاتي') }}</span>
                 </button>
             @endif
-            <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload">
+
+            <button type="button" onclick="openUploadVideoModal()" style="display: inline-flex; align-items: center; gap: 8px; background: #1d4ed8; color: #ffffff; padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: none; cursor: pointer; transition: background 0.15s; box-shadow: 0 2px 6px rgba(29, 78, 216, 0.2);">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <span>{{ __('إضافة فيديو / شرح جديد') }}</span>
             </button>
         </div>
-    </header>
-
-    <!-- شريط الإحصائيات والمؤشرات السريعة -->
-    <div class="ed-stats-strip">
-        <div class="stat-box">
-            <div class="stat-icon-wrap" style="background: #eff6ff; color: #1e40af;">
-                <i class="fa-solid fa-film"></i>
-            </div>
-            <div>
-                <span class="stat-num">{{ $stats['total'] ?? $videos->total() }}</span>
-                <span class="stat-label">{{ __('إجمالي الفيديوهات والشروحات') }}</span>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-icon-wrap" style="background: #ecfdf5; color: #059669;">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <div>
-                <span class="stat-num">{{ $stats['visible'] ?? 0 }}</span>
-                <span class="stat-label">{{ __('شروحات مفعلة ومتاحة للطلبة') }}</span>
-            </div>
-        </div>
-
-        <div class="stat-box">
-            <div class="stat-icon-wrap" style="background: #fffbeb; color: #d97706;">
-                <i class="fa-solid fa-eye-slash"></i>
-            </div>
-            <div>
-                <span class="stat-num">{{ $stats['hidden'] ?? 0 }}</span>
-                <span class="stat-label">{{ __('شروحات محجوبة مؤقتاً') }}</span>
-            </div>
-        </div>
     </div>
 
-    <!-- شريط تصفية الفروع للمدير العام -->
-    @if(auth()->user()->role === 'admin' && isset($stages) && count($stages) > 1)
-        <div class="ed-filter-bar" style="margin-bottom: 8px;">
-            <div class="filter-label">
-                <i class="fa-solid fa-code-branch"></i>
-                <span>{{ __('تصفية حسب الفرع الدراسي:') }}</span>
-            </div>
-            <div class="filter-pills">
-                <a href="{{ route('admin.videos', request()->except(['stage_id', 'page'])) }}" class="filter-chip {{ empty(request('stage_id')) ? 'active' : '' }}">
-                    {{ __('كافة الفروع 🏫') }}
-                </a>
-                @foreach($stages as $stg)
-                    <a href="{{ route('admin.videos', array_merge(request()->except(['stage_id', 'page']), ['stage_id' => $stg->id])) }}" class="filter-chip {{ request('stage_id') == $stg->id ? 'active' : '' }}">
-                        {{ $stg->label_ar }}
-                    </a>
-                @endforeach
-            </div>
+    {{-- رسائل التنبيه والنجاح --}}
+    @if(session('success'))
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; border-radius: 12px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; font-weight: 600;">
+            <i class="fa-solid fa-circle-check" style="font-size: 1.2rem; color: #059669;"></i>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 
-    <!-- شريط التصفية حسب المادة -->
-    @if(auth()->user()->role === 'admin' || count($subjects) > 1)
-        <div class="ed-filter-bar">
-            <div class="filter-label">
-                <i class="fa-solid fa-filter"></i>
-                <span>{{ __('تصفية حسب المادة الدراسية:') }}</span>
-            </div>
-            <div class="filter-pills">
-                <a href="{{ auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos') }}" class="filter-chip {{ empty(request('subject_id')) ? 'active' : '' }}">
-                    {{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}
-                </a>
-                @foreach($subjects as $sub)
-                    <a href="{{ (auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos')) . '?subject_id=' . $sub->id . (request('target_region') ? '&target_region=' . request('target_region') : '') }}" class="filter-chip {{ request('subject_id') == $sub->id ? 'active' : '' }}">
-                        {{ $sub->name_ar ?? $sub->name }}
-                    </a>
-                @endforeach
-            </div>
-        </div>
-    @endif
-
-    <!-- شريط تصفية الجمهور والمنطقة (غزة / الضفة) -->
-    <div class="ed-filter-bar" style="margin-top: {{ (auth()->user()->role === 'admin' || count($subjects) > 1) ? '10px' : '0' }};">
-        <div class="filter-label">
-            <i class="fa-solid fa-map-location-dot"></i>
-            <span>{{ __('الجمهور المستهدف:') }}</span>
-        </div>
-        <div class="filter-pills">
-            @php
-                $baseRoute = auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos');
-                $subQuery = request('subject_id') ? '&subject_id=' . request('subject_id') : '';
-            @endphp
-            <a href="{{ $baseRoute . '?' . ltrim($subQuery, '&') }}" class="filter-chip {{ empty(request('target_region')) ? 'active' : '' }}">
-                {{ __('كافة الشروحات 🌐') }}
-            </a>
-            <a href="{{ $baseRoute . '?target_region=gaza' . $subQuery }}" class="filter-chip {{ request('target_region') === 'gaza' ? 'active' : '' }}" style="{{ request('target_region') === 'gaza' ? 'background: #059669; border-color: #059669; color: #fff;' : '' }}">
-                🌿 {{ __('قطاع غزة') }}
-            </a>
-            <a href="{{ $baseRoute . '?target_region=west_bank' . $subQuery }}" class="filter-chip {{ request('target_region') === 'west_bank' ? 'active' : '' }}" style="{{ request('target_region') === 'west_bank' ? 'background: #1e40af; border-color: #1e40af; color: #fff;' : '' }}">
-                🏛️ {{ __('الضفة والقدس') }}
-            </a>
-            <a href="{{ $baseRoute . '?target_region=all' . $subQuery }}" class="filter-chip {{ request('target_region') === 'all' ? 'active' : '' }}">
-                🌐 {{ __('منهاج مشترك') }}
-            </a>
-        </div>
-    </div>
-
-    {{-- تنبيه ذكي للمدير في حال وجود فيديو مرفوع على السيرفر ولم يستكمل نشره بعد --}}
+    {{-- تنبيه ذكي في حال وجود فيديو مكتمل الرفع على الخادم بانتظار النشر --}}
     @if(!empty($recentUnlinkedVideo))
-        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 16px 22px; margin-bottom: 22px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+        <div style="background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); border: 1.5px solid #86efac; border-radius: 14px; padding: 16px 22px; margin-bottom: 24px; box-shadow: 0 4px 14px rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <div style="width: 44px; height: 44px; border-radius: 12px; background: #22c55e; color: #ffffff; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(34, 197, 94, 0.3);">
                     <i class="fa-solid fa-cloud-arrow-down"></i>
@@ -147,10 +57,10 @@
                 <div>
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <strong style="font-size: 0.96rem; color: #14532d; font-family: 'Alexandria', sans-serif;">
-                            {{ __('تم اكتشاف فيديو مكتمل الرفع على الخادم بحجم ') }} ({{ $recentUnlinkedVideo['size'] }}) {{ __('بانتظار إكمال النشر!') }}
+                            {{ __('تم اكتشاف فيديو مكتمل الرفع بحجم ') }} ({{ $recentUnlinkedVideo['size'] }}) {{ __('بانتظار إكمال النشر!') }}
                         </strong>
                         <span style="background: #dcfce7; color: #15803d; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; border: 1px solid #bbf7d0;">
-                            {{ __('جاهز للنشر فوراً') }}
+                            {{ __('جاهز للنشر') }}
                         </span>
                     </div>
                     <span style="font-size: 0.8rem; color: #166534; display: block; margin-top: 3px;">
@@ -159,160 +69,439 @@
                 </div>
             </div>
 
-            <a href="{{ route('videographer.contents.create') }}" style="background: #16a34a; color: #ffffff; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25); transition: transform 0.15s ease;">
-                <i class="fa-solid fa-bolt"></i> {{ __('إكمال نشر وتوزيع المحاضرة الآن') }}
-            </a>
+            <button type="button" onclick="openUploadVideoModal()" style="background: #16a34a; color: #ffffff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(22, 163, 74, 0.25);">
+                <i class="fa-solid fa-bolt"></i> {{ __('إكمال النشر والتوزيع الآن') }}
+            </button>
         </div>
     @endif
 
-    <!-- شبكة بطاقات الفيديوهات -->
-    <div class="ed-videos-grid">
-        @forelse($videos as $vid)
-            @php
-                $isDirectVid = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $vid->url_path ?? '') 
-                    || str_contains($vid->url_path ?? '', 'educational/videos')
-                    || ($vid->type === 'video' && !empty($vid->url_path) && !str_contains($vid->url_path ?? '', 'youtube') && !str_contains($vid->url_path ?? '', 'youtu.be'));
-                $directVidUrl = $isDirectVid ? \App\Support\MediaHelper::videoStreamUrl($vid->url_path) : null;
-                $directVidFallback = $isDirectVid ? \App\Support\MediaHelper::url($vid->url_path) : null;
-                $embedUrl = $vid->youtube_embed_url ?? ($directVidUrl ?? \App\Support\MediaHelper::url($vid->url_path));
-            @endphp
-            <div class="ed-video-card">
-                <div>
-                    <div class="video-frame-wrap" id="wrap_vid_{{ $vid->id }}" oncontextmenu="event.preventDefault(); return false;">
-                        @if($isDirectVid && $directVidUrl)
-                            <video id="vid_direct_{{ $vid->id }}" controls preload="metadata" playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000;">
-                                <source src="{{ $directVidUrl }}" type="video/mp4">
-                                @if($directVidFallback && $directVidFallback !== $directVidUrl)
-                                    <source src="{{ $directVidFallback }}" type="video/mp4">
-                                @endif
-                                {{ __('متصفحك لا يدعم مشغل هذا الفيديو المباشر.') }}
-                            </video>
-                        @else
-                            @php
-                                $ytTargetUrl = $vid->youtube_embed_url ?? $embedUrl;
-                                if (!empty($ytTargetUrl)) {
-                                    $ytTargetUrl = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytTargetUrl);
-                                    if (!str_contains($ytTargetUrl, 'enablejsapi=1')) {
-                                        $ytTargetUrl .= (str_contains($ytTargetUrl, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1';
-                                    } else {
-                                        $ytTargetUrl = str_replace(['controls=1', 'fs=1'], ['controls=0', 'fs=0'], $ytTargetUrl);
-                                    }
-                                }
-                            @endphp
-
-                            <iframe id="iframe_teacher_{{ $vid->id }}" 
-                                    src="{{ $ytTargetUrl }}" 
-                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
-                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-                                    loading="lazy">
-                            </iframe>
-
-                            <!-- واجهة التشغيل المركزية التفاعلية للمنصة -->
-                            <div class="ed-screen-shield" id="shield_vid_{{ $vid->id }}" onclick="toggleTeacherPlayback('{{ $vid->id }}')" style="z-index: 20;">
-                                <button type="button" class="ed-center-play-btn" id="center_play_{{ $vid->id }}" aria-label="{{ __('تشغيل') }}">
-                                    <i class="fa-solid fa-play"></i>
-                                </button>
-                            </div>
-
-                            <!-- دروع إضافية للأركان والعنوان لمنع أي تسريب تفاعلي للروابط -->
-                            <div class="ed-shield-corner-bl" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
-                            <div class="ed-shield-corner-br" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
-                            <div class="ed-shield-top-band" onclick="toggleTeacherPlayback('{{ $vid->id }}')"></div>
-
-                            <!-- شريط التحكم السفلي المدمج الخاص بالمنصة -->
-                            <div class="ed-inline-player-bar" onclick="event.stopPropagation();" oncontextmenu="event.preventDefault(); return false;">
-                                <button type="button" class="btn-ctrl-action" onclick="toggleTeacherPlayback('{{ $vid->id }}')" id="bar_btn_{{ $vid->id }}" title="{{ __('تشغيل / إيقاف') }}">
-                                    <i class="fa-solid fa-play"></i>
-                                </button>
-                                <span class="ctrl-time-text" id="time_txt_{{ $vid->id }}">00:00 / --:--</span>
-                                <input type="range" class="ctrl-seek-range" id="seek_range_{{ $vid->id }}" min="0" max="100" value="0" step="0.1" oninput="seekTeacherPlayback('{{ $vid->id }}', this.value)">
-                                <button type="button" class="btn-ctrl-action" onclick="toggleTeacherFullscreen('wrap_vid_{{ $vid->id }}')" title="{{ __('ملء الشاشة') }}">
-                                    <i class="fa-solid fa-expand"></i>
-                                </button>
-                            </div>
-                        @endif
-                    </div>
-                    <div class="video-info-box">
-                        <div class="video-meta-row">
-                            <span class="subject-badge">
-                                <i class="fa-solid fa-graduation-cap"></i>
-                                {{ $vid->subject?->name_ar ?? __('عام') }}
-                            </span>
-                            <span class="order-badge">
-                                <i class="fa-solid fa-arrow-down-1-9"></i>
-                                {{ __('ترتيب الدرس:') }} #{{ $vid->order }}
-                            </span>
-                            @php
-                                $rBadge = $vid->target_region_badge;
-                            @endphp
-                            <span style="background: {{ $rBadge['bg'] }}; color: {{ $rBadge['color'] }}; border: 1px solid {{ $rBadge['border'] }}; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
-                                <i class="{{ $rBadge['icon'] }}"></i>
-                                <span>{{ $rBadge['label'] }}</span>
-                            </span>
-                        </div>
-                        <h3 class="video-title">{{ $vid->title }}</h3>
-                        <p class="video-channel">
-                            @if($isDirectVid)
-                                <i class="fa-solid fa-file-video" style="color: #2563eb;"></i>
-                                <span style="color: #1e40af; font-weight: 700;">{{ __('ملف فيديو محلي مرفوع على المنصة') }}</span>
-                            @else
-                                <i class="fa-solid fa-circle-play" style="color: #2563eb;"></i>
-                                <span style="color: #1e3a8a; font-weight: 700;">{{ __('مشغل الفيديو الآمن للمنصة') }}</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                <div class="video-card-footer">
-                    <button type="button" onclick="toggleVisibility({{ $vid->id }}, this)" class="visibility-toggle-btn {{ $vid->is_visible ? 'is-visible' : 'is-hidden' }}" title="{{ __('انقر لتبديل الظهور للطلبة') }}">
-                        <i class="fa-solid {{ $vid->is_visible ? 'fa-eye' : 'fa-eye-slash' }}"></i>
-                        <span>{{ $vid->is_visible ? __('متاح للطلبة') : __('محجوب') }}</span>
-                    </button>
-
-                    <div class="action-btns">
-                        @if($isDirectVid && $directVidUrl)
-                            <a href="{{ route('content.downloadVideo', $vid->id) }}" class="btn-edit" title="{{ __('تحميل ملف الفيديو') }}" style="background: #f0fdf4; color: #166534; border-color: #bbf7d0;">
-                                <i class="fa-solid fa-cloud-arrow-down"></i>
-                            </a>
-                        @endif
-
-                        @if(auth()->user()->role === 'admin')
-                            <a href="{{ route('admin.educational_contents.edit', $vid->id) }}" class="btn-edit" title="{{ __('تعديل') }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
-                        @else
-                            <a href="{{ route('teacher.educational_contents.edit', $vid->id) }}" class="btn-edit" title="{{ __('تعديل') }}">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
-                        @endif
-
-                        <button type="button" onclick="deleteVideoItem({{ $vid->id }})" class="btn-delete" title="{{ __('حذف') }}">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        @empty
-            <div class="ed-empty-videos">
+    {{-- شريط الإحصائيات والمؤشرات السريعة --}}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #eff6ff; color: #1e40af; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
                 <i class="fa-solid fa-film"></i>
-                <h3>{{ __('لا توجد شروحات فيديو مسجلة حالياً') }}</h3>
-                <p>{{ __('انقر على زر "إضافة فيديو / شرح جديد" لإضافة أول درس مرئي لطلبتك في هذه المادة.') }}</p>
-                <button type="button" onclick="openUploadVideoModal()" class="ed-btn-upload" style="margin: 0 auto;">
-                    <i class="fa-solid fa-cloud-arrow-up"></i>
-                    <span>{{ __('إضافة فيديو / شرح جديد الآن') }}</span>
-                </button>
             </div>
-        @endforelse
+            <div>
+                <span style="display: block; font-size: 1.45rem; font-weight: 900; color: #0f172a; line-height: 1.2;">{{ $stats['total'] ?? $videos->total() }}</span>
+                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">{{ __('إجمالي الدروس المستقلة') }}</span>
+            </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #ecfdf5; color: #059669; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div>
+                <span style="display: block; font-size: 1.45rem; font-weight: 900; color: #059669; line-height: 1.2;">{{ $stats['visible'] ?? 0 }}</span>
+                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">{{ __('شروحات معروضة للطلبة') }}</span>
+            </div>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);">
+            <div style="width: 48px; height: 48px; border-radius: 10px; background: #fffbeb; color: #d97706; display: grid; place-items: center; font-size: 1.35rem; flex-shrink: 0;">
+                <i class="fa-solid fa-eye-slash"></i>
+            </div>
+            <div>
+                <span style="display: block; font-size: 1.45rem; font-weight: 900; color: #d97706; line-height: 1.2;">{{ $stats['hidden'] ?? 0 }}</span>
+                <span style="font-size: 0.78rem; font-weight: 700; color: #64748b;">{{ __('شروحات محجوبة أو جزئية') }}</span>
+            </div>
+        </div>
     </div>
 
-    <div style="margin-top: 30px;">
-        {{ $videos->links() }}
+    {{-- 2. شريط البحث والتصفية المنظم الموحد (مثل صفحة المصور تماماً وبدون أزرار عائمة مبعثرة) --}}
+    <div style="background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: var(--ed-radius-lg); padding: 18px 24px; margin-bottom: 24px; box-shadow: var(--ed-shadow-sm);">
+        @php
+            $filterRoute = auth()->user()->role === 'admin' ? route('admin.videos') : route('teacher.videos');
+        @endphp
+        <form action="{{ $filterRoute }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 14px; align-items: end;">
+            
+            {{-- تصفية بالفرع الأكاديمي --}}
+            @if(isset($stages) && count($stages) > 0)
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                        <i class="fa-solid fa-graduation-cap" style="color: #2563eb; margin-left: 4px;"></i> {{ __('الفرع الأكاديمي') }}
+                    </label>
+                    <select name="stage_id" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                        <option value="">{{ __('كافة الفروع') }}</option>
+                        @foreach($stages as $stage)
+                            <option value="{{ $stage->id }}" {{ request('stage_id') == $stage->id ? 'selected' : '' }}>
+                                {{ $stage->short_label ?? $stage->label_ar ?? $stage->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
+
+            {{-- تصفية بالمادة الدراسية بقائمة منسقة ومنظمة بدون تكرار --}}
+            <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-book-open" style="color: #2563eb; margin-left: 4px;"></i> {{ __('المادة الدراسية') }}
+                </label>
+                <select name="subject_id" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                    <option value="">{{ auth()->user()->role === 'admin' ? __('جميع المواد') : __('جميع موادي') }}</option>
+                    @if(isset($uniqueSubjects))
+                        @foreach($uniqueSubjects as $sub)
+                            @php
+                                $cleanSubTitle = $sub->clean_name ?? trim(preg_replace('/\s*\(.*?\)\s*/u', '', $sub->name_ar ?? $sub->name));
+                            @endphp
+                            <option value="{{ $sub->id }}" {{ request('subject_id') == $sub->id ? 'selected' : '' }}>
+                                {{ $cleanSubTitle }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+
+            {{-- البحث بالنص --}}
+            <div style="min-width: 220px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: #64748b; margin-left: 4px;"></i> {{ __('بحث بعنوان المحاضرة أو المعلم') }}
+                </label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث عن عنوان الدرس أو اسم المعلم...') }}" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; box-sizing: border-box;">
+            </div>
+
+            {{-- تصفية بحالة الظهور للطلاب --}}
+            <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-eye" style="color: #64748b; margin-left: 4px;"></i> {{ __('حالة العرض للطلاب') }}
+                </label>
+                <select name="visibility" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                    <option value="">{{ __('كافة الحالات') }}</option>
+                    <option value="visible" {{ request('visibility') == 'visible' ? 'selected' : '' }}>🟢 {{ __('متاح ومعروض للطلاب') }}</option>
+                    <option value="hidden" {{ request('visibility') == 'hidden' ? 'selected' : '' }}>🔒 {{ __('محجوب ومقفل عن الطلاب') }}</option>
+                </select>
+            </div>
+
+            {{-- تصفية الجمهور والمنطقة --}}
+            <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-map-location-dot" style="color: #64748b; margin-left: 4px;"></i> {{ __('الجمهور المستهدف') }}
+                </label>
+                <select name="target_region" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                    <option value="">{{ __('كافة الشروحات 🌐') }}</option>
+                    <option value="gaza" {{ request('target_region') == 'gaza' ? 'selected' : '' }}>🌿 {{ __('قطاع غزة') }}</option>
+                    <option value="west_bank" {{ request('target_region') == 'west_bank' ? 'selected' : '' }}>🏛️ {{ __('الضفة والقدس') }}</option>
+                    <option value="all" {{ request('target_region') == 'all' ? 'selected' : '' }}>🌐 {{ __('منهاج مشترك') }}</option>
+                </select>
+            </div>
+
+            {{-- أزرار التصفية وإعادة الضبط --}}
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" style="background: #1d4ed8; color: #ffffff; border: none; height: 42px; padding: 0 18px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>{{ __('تصفية') }}</span>
+                </button>
+                @if(request()->hasAny(['stage_id', 'subject_id', 'search', 'visibility', 'target_region']))
+                    <a href="{{ $filterRoute }}" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; height: 42px; padding: 0 14px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('إلغاء الفلتر') }}">
+                        <i class="fa-solid fa-xmark"></i>
+                    </a>
+                @endif
+            </div>
+
+        </form>
+    </div>
+
+    {{-- 3. قائمة المحاضرات المجمعة في جدول أكاديمي موحد --}}
+    <div style="background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: var(--ed-radius-lg); box-shadow: var(--ed-shadow-sm); overflow: hidden;">
+        
+        <div style="padding: 16px 24px; border-bottom: 1px solid var(--ed-border); background: #fafafa; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <strong style="color: var(--ed-text-main); font-size: 0.95rem;">
+                <i class="fa-solid fa-folder-tree" style="color: #1d4ed8; margin-left: 6px;"></i>
+                {{ __('إجمالي الدروس المسجلة:') }} <span style="color: #1d4ed8; font-weight: 800;">{{ $videos->total() }}</span> {{ __('درس مستقل') }}
+            </strong>
+            <span style="font-size: 0.82rem; color: #64748b; background: #f1f5f9; padding: 4px 12px; border-radius: 20px; font-weight: 600;">
+                <i class="fa-solid fa-sparkles text-primary" style="margin-left: 4px;"></i>{{ __('منظمة ومجمعة حسب المحاضرة دون تكرار أو كروت عائمة') }}
+            </span>
+        </div>
+
+        @if($videos->isEmpty())
+            <div style="padding: 56px 20px; text-align: center; color: var(--ed-text-muted);">
+                <div style="width: 68px; height: 68px; border-radius: 50%; background: #f1f5f9; display: grid; place-items: center; margin: 0 auto 16px auto; font-size: 2rem; color: #94a3b8;">
+                    <i class="fa-solid fa-film"></i>
+                </div>
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--ed-text-main); margin: 0 0 6px 0;">{{ __('لم يتم العثور على أي محاضرات أو فيديوهات مطابقة') }}</h3>
+                <p style="font-size: 0.86rem; color: var(--ed-text-muted); margin: 0 0 18px 0;">{{ __('جرّب تغيير معايير البحث أو ابدأ برفع درس مرئي جديد الآن') }}</p>
+                <button type="button" onclick="openUploadVideoModal()" style="display: inline-flex; align-items: center; gap: 8px; background: #1d4ed8; color: #ffffff; padding: 10px 22px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; border: none; cursor: pointer;">
+                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                    <span>{{ __('إضافة درس جديد') }}</span>
+                </button>
+            </div>
+        @else
+            <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <table style="width: 100%; min-width: 840px; border-collapse: collapse; text-align: right; font-size: 0.88rem;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 1px solid var(--ed-border); color: #475569; font-weight: 700; font-size: 0.8rem;">
+                            <th style="padding: 14px 20px; width: 50px;">#</th>
+                            <th style="padding: 14px 16px;">{{ __('الدرس / المحاضرة') }}</th>
+                            <th style="padding: 14px 16px;">{{ __('الفروع والمواد المنشور بها') }}</th>
+                            <th style="padding: 14px 16px;">{{ __('الملفات والمرفقات') }}</th>
+                            <th style="padding: 14px 16px; text-align: center;">{{ __('حالة العرض للطلاب') }}</th>
+                            <th style="padding: 14px 16px;">{{ __('إجمالي المشاهدات') }}</th>
+                            <th style="padding: 14px 16px;">{{ __('تاريخ الرفع') }}</th>
+                            <th style="padding: 14px 20px; text-align: center;">{{ __('معاينة / إدارة') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($videos as $index => $item)
+                            @php
+                                $isAllVis = $item->all_visible;
+                                $isAnyVis = $item->any_visible;
+                                $encodedLesson = htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8');
+                                $streamUrl = $item->url_path ? \App\Support\MediaHelper::videoStreamUrl($item->url_path) : ($item->youtube_embed_url ?? null);
+                            @endphp
+                            <tr id="lesson_row_{{ $item->id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                                <td style="padding: 14px 20px; color: #94a3b8; font-weight: 700; font-size: 0.8rem;">
+                                    {{ $videos->firstItem() + $index }}
+                                </td>
+                                
+                                {{-- اسم الدرس وعنوانه مع قابلية النقر لفتح نافذة الفروع --}}
+                                <td style="padding: 14px 16px;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <div onclick="openLessonModal({{ $encodedLesson }})" style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1d4ed8'; this.style.color='#ffffff';" onmouseout="this.style.background='#eff6ff'; this.style.color='#1d4ed8';" title="{{ __('انقر لفتح تفاصيل توزيع الفروع') }}">
+                                            <i class="fa-solid fa-play"></i>
+                                        </div>
+                                        <div>
+                                            <a href="javascript:void(0)" onclick="openLessonModal({{ $encodedLesson }})" style="color: var(--ed-text-main); font-weight: 800; font-size: 0.92rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: color 0.15s; line-height: 1.4;" onmouseover="this.style.color='#1d4ed8'" onmouseout="this.style.color='var(--ed-text-main)'">
+                                                <span>{{ $item->title }}</span>
+                                                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.72rem; color: #94a3b8;"></i>
+                                            </a>
+                                            <div style="display: flex; gap: 8px; align-items: center; font-size: 0.74rem; color: #64748b; margin-top: 4px; flex-wrap: wrap;">
+                                                @if($item->channel_name)
+                                                    <span><i class="fa-solid fa-chalkboard-user"></i> {{ $item->channel_name }}</span>
+                                                @endif
+                                                @if($item->file_size)
+                                                    <span>• <i class="fa-solid fa-hard-drive"></i> {{ $item->file_size }}</span>
+                                                @endif
+                                                <span onclick="openLessonModal({{ $encodedLesson }})" style="display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; padding: 1px 7px; border-radius: 6px; font-weight: 700; cursor: pointer;" title="{{ __('الأماكن التي نزل فيها الدرس بالفروع') }}">
+                                                    <i class="fa-solid fa-layer-group"></i> <span id="row_branch_count_{{ $item->id }}">{{ $item->branches_count }}</span> {{ __('فروع') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                {{-- الفروع والمواد المنشور بها الدرس --}}
+                                <td style="padding: 14px 16px;">
+                                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                                        <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+                                            @foreach(collect($item->branches)->take(3) as $br)
+                                                <span onclick="openLessonModal({{ $encodedLesson }})" style="cursor: pointer; display: inline-flex; align-items: center; gap: 5px; background: #f8fafc; border: 1px solid #e2e8f0; color: #334155; padding: 3px 8px; border-radius: 6px; font-size: 0.76rem; font-weight: 600; transition: all 0.15s;" onmouseover="this.style.borderColor='#1d4ed8'; this.style.color='#1d4ed8';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.color='#334155';">
+                                                    <span style="font-weight: 700; color: #1d4ed8;">{{ $br['stage_badge'] }}</span>: {{ $br['subject_name'] }}
+                                                </span>
+                                            @endforeach
+                                            @if($item->branches_count > 3)
+                                                <span onclick="openLessonModal({{ $encodedLesson }})" style="cursor: pointer; background: #eff6ff; color: #1d4ed8; padding: 3px 8px; border-radius: 6px; font-size: 0.74rem; font-weight: 700;">
+                                                    +{{ $item->branches_count - 3 }} {{ __('فروع أخرى') }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <button type="button" onclick="openLessonModal({{ $encodedLesson }})" style="background: none; border: none; padding: 0; color: #2563eb; font-size: 0.76rem; font-weight: 700; cursor: pointer; text-align: right; display: inline-flex; align-items: center; gap: 4px;">
+                                            <i class="fa-solid fa-circle-nodes"></i>
+                                            <span>{{ __('عرض تفاصيل أماكن التوزيع...') }}</span>
+                                        </button>
+                                    </div>
+                                </td>
+
+                                {{-- الملف والمرفقات ومعاينة الفيديو السريعة بدون تشغيل تلقائي --}}
+                                <td style="padding: 14px 16px;">
+                                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                        @if($streamUrl)
+                                            <button type="button" 
+                                                    data-title="{{ $item->title }}" 
+                                                    data-url="{{ $streamUrl }}" 
+                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'))" 
+                                                    style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="fa-solid fa-eye"></i> {{ __('معاينة') }}
+                                            </button>
+                                        @endif
+                                        @if($item->pdf_path)
+                                            <a href="{{ \App\Support\MediaHelper::url($item->pdf_path) }}" target="_blank" style="background: #ecfdf5; border: 1px solid #a7f3d0; color: #059669; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                                                <i class="fa-solid fa-file-pdf"></i> {{ __('دوسية') }}
+                                            </a>
+                                        @endif
+                                    </div>
+                                </td>
+
+                                {{-- حالة العرض للطلاب عبر كل الفروع --}}
+                                <td style="padding: 14px 16px; text-align: center;">
+                                    <button type="button" 
+                                            id="vis_btn_{{ $item->id }}" 
+                                            onclick="toggleUnifiedVisibility({{ $item->id }}, this)" 
+                                            class="vis-toggle-pill {{ $isAllVis ? 'is-visible' : ($isAnyVis ? 'is-partial' : 'is-hidden') }}" 
+                                            title="{{ $isAllVis ? __('انقر لقفل وحجب المحاضرة عن كافة الفروع') : __('انقر لإتاحة وعرض المحاضرة لكافة الفروع') }}">
+                                        <i class="fa-solid {{ $isAllVis ? 'fa-eye' : ($isAnyVis ? 'fa-eye-slash' : 'fa-lock') }}"></i>
+                                        <span id="vis_txt_{{ $item->id }}">
+                                            @if($isAllVis)
+                                                {{ __('متاح للطلبة') }}
+                                            @elseif($isAnyVis)
+                                                {{ __('متاح جزئياً') }}
+                                            @else
+                                                {{ __('محجوب عن الطلبة') }}
+                                            @endif
+                                        </span>
+                                    </button>
+                                </td>
+
+                                {{-- إجمالي المشاهدات في كل الفروع --}}
+                                <td style="padding: 14px 16px; color: #64748b; font-weight: 600; font-size: 0.84rem;">
+                                    <i class="fa-regular fa-eye" style="margin-left: 4px;"></i> {{ number_format($item->total_views) }}
+                                </td>
+
+                                {{-- تاريخ الرفع --}}
+                                <td style="padding: 14px 16px; color: #64748b; font-size: 0.8rem;">
+                                    {{ $item->created_at ? $item->created_at->format('Y/m/d') : '-' }}
+                                </td>
+
+                                {{-- الإجراءات الموحدة --}}
+                                <td style="padding: 14px 20px; text-align: center;">
+                                    <div style="display: inline-flex; align-items: center; gap: 6px;">
+                                        <!-- زر فتح نافذة تفاصيل الفروع والتوزيع -->
+                                        <button type="button" 
+                                                onclick="openLessonModal({{ $encodedLesson }})" 
+                                                style="background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" 
+                                                title="{{ __('فتح تفاصيل أماكن التوزيع بالفروع') }}">
+                                            <i class="fa-solid fa-layer-group" style="font-size: 0.9rem;"></i>
+                                        </button>
+
+                                        <!-- زر تعديل المحاضرة والملفات -->
+                                        @php
+                                            $editRoute = auth()->user()->role === 'admin' 
+                                                ? route('admin.educational_contents.edit', $item->id) 
+                                                : route('teacher.educational_contents.edit', $item->id);
+                                        @endphp
+                                        <a href="{{ $editRoute }}" style="background: #f8fafc; border: 1px solid #cbd5e1; color: #0284c7; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; text-decoration: none; transition: all 0.15s;" title="{{ __('تعديل المحاضرة والملفات') }}">
+                                            <i class="fa-regular fa-pen-to-square" style="font-size: 0.9rem;"></i>
+                                        </a>
+
+                                        <!-- زر مزامنة وتوزيع إضافي لكافة الفروع -->
+                                        <form action="{{ auth()->user()->role === 'admin' ? route('admin.contents.sync_branches', $item->id) : route('teacher.contents.sync_branches', $item->id) }}" method="POST" style="display: inline-block; margin: 0;" title="{{ __('توزيع ومزامنة هذه المحاضرة تلقائياً على كافة الفروع الأكاديمية الشقيقة') }}">
+                                            @csrf
+                                            <button type="submit" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" title="{{ __('مزامنة وتوزيع لكافة الفروع') }}">
+                                                <i class="fa-solid fa-arrows-rotate" style="font-size: 0.85rem;"></i>
+                                            </button>
+                                        </form>
+
+                                        <!-- زر حذف الدرس بالكامل من كافة الفروع -->
+                                        <button type="button" onclick="deleteUnifiedContent({{ $item->id }}, '{{ addslashes($item->title) }}', 'all')" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف الدرس بالكامل من كافة الفروع') }}">
+                                            <i class="fa-regular fa-trash-can" style="font-size: 0.9rem;"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- الترقيم والتنقل بين الصفحات --}}
+            @if($videos->hasPages())
+                <div style="padding: 18px 24px; border-top: 1px solid var(--ed-border); background: #fafafa; display: flex; justify-content: center;">
+                    {{ $videos->links() }}
+                </div>
+            @endif
+        @endif
+
     </div>
 
 </div>
 
-<!-- نافذة Modal إضافة فيديو جديد -->
+{{-- 4. النافذة المنبثقة لتفاصيل أماكن نشر وتوزيع الدرس بالفروع --}}
+<div id="lessonDistributionModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 99990; place-items: center; padding: 20px; overflow-y: auto;">
+    <div style="background: #ffffff; border-radius: 20px; max-width: 780px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(226, 232, 240, 0.8); animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);">
+        
+        <div style="padding: 24px 28px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; position: relative;">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0;">
+                        <i class="fa-solid fa-film"></i>
+                    </div>
+                    <div>
+                        <span style="display: inline-block; background: rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 2px 10px; border-radius: 20px; font-size: 0.74rem; font-weight: 700; margin-bottom: 6px;">
+                            {{ __('تفاصيل الدرس وتوزيع الفروع') }}
+                        </span>
+                        <h2 id="dist_modal_title" style="font-size: 1.25rem; font-weight: 800; color: #ffffff; margin: 0; font-family: 'Alexandria', sans-serif; line-height: 1.4;">
+                            {{ __('عنوان الدرس') }}
+                        </h2>
+                    </div>
+                </div>
+
+                <button type="button" onclick="closeLessonModal()" style="background: rgba(255, 255, 255, 0.1); border: none; color: #94a3b8; width: 36px; height: 36px; border-radius: 10px; font-size: 1.1rem; cursor: pointer; display: grid; place-items: center; transition: all 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.color='#fff';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='#94a3b8';">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 18px; font-size: 0.8rem; color: #cbd5e1; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 14px;">
+                <span id="dist_modal_channel"><i class="fa-solid fa-chalkboard-user text-primary" style="margin-left: 5px;"></i> <span>-</span></span>
+                <span>•</span>
+                <span id="dist_modal_size"><i class="fa-solid fa-hard-drive text-success" style="margin-left: 5px;"></i> <span>-</span></span>
+                <span>•</span>
+                <span id="dist_modal_date"><i class="fa-regular fa-calendar" style="margin-left: 5px;"></i> <span>-</span></span>
+                <span>•</span>
+                <span id="dist_modal_views"><i class="fa-regular fa-eye text-warning" style="margin-left: 5px;"></i> <span>0 مشاهدة</span></span>
+                <span style="margin-inline-start: auto; background: #2563eb; color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: 700; font-size: 0.76rem;" id="dist_modal_branches_badge">
+                    <i class="fa-solid fa-layer-group"></i> 0 فروع أكاديمية
+                </span>
+            </div>
+        </div>
+
+        <div style="padding: 24px 28px; max-height: 52vh; overflow-y: auto;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                <h4 style="font-size: 0.92rem; font-weight: 700; color: #334155; margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-diagram-project" style="color: #2563eb;"></i>
+                    {{ __('قائمة الفروع الأكاديمية التي يظهر بها هذا الدرس:') }}
+                </h4>
+                <span style="font-size: 0.75rem; color: #64748b;">
+                    {{ __('يمكنك إتاحة أو حجب الدرس لكل فرع على حدة') }}
+                </span>
+            </div>
+
+            <div id="dist_modal_branches_list" style="display: flex; flex-direction: column; gap: 12px;"></div>
+        </div>
+
+        <div style="padding: 18px 28px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" id="dist_modal_preview_btn" style="background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1d4ed8; padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-circle-play"></i> {{ __('معاينة الفيديو') }}
+                </button>
+                <a id="dist_modal_pdf_link" href="#" target="_blank" style="display: none; background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #059669; padding: 8px 16px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; text-decoration: none; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-file-pdf"></i> {{ __('تحميل الدوسية PDF') }}
+                </a>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" id="dist_modal_delete_all_btn" style="background: #fef2f2; border: 1.5px solid #fecaca; color: #dc2626; padding: 8px 18px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-trash-can"></i> {{ __('حذف من كافة الفروع') }}
+                </button>
+                <button type="button" onclick="closeLessonModal()" style="background: #ffffff; border: 1px solid #cbd5e1; color: #475569; padding: 8px 20px; border-radius: 10px; font-weight: 700; font-size: 0.84rem; cursor: pointer;">
+                    {{ __('إغلاق') }}
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{{-- 5. نافذة معاينة الفيديو السريعة بدون استهلاك مسبق للبيانات --}}
+<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 99999; place-items: center; padding: 20px;">
+    <div style="background: #0f172a; border-radius: 18px; max-width: 900px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1);">
+        <div style="padding: 14px 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 700;">
+                <i class="fa-solid fa-play" style="color: #60a5fa;"></i>
+                <span id="preview_video_title">{{ __('معاينة الفيديو') }}</span>
+            </div>
+            <button type="button" onclick="closeVideoPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div style="position: relative; padding-top: 56.25%; background: #000;">
+            <video id="preview_video_player" controls playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
+                <source id="preview_video_source" src="" type="video/mp4">
+            </video>
+        </div>
+    </div>
+</div>
+
+{{-- 6. نافذة Modal إضافة فيديو جديد بتقنية التجزئة وفروع المواد المتعددة --}}
 <div id="uploadVideoModal" class="modal-overlay">
     <div class="modal-card">
         <div class="modal-head">
@@ -368,9 +557,9 @@
                             <select id="video_admin_subject_select" name="subject_id" class="f-control" required onchange="onVideoModalSelectionChange()" style="min-height: 48px; line-height: 1.6;">
                                 <option value="">{{ __('اختر المادة الدراسية (مثال: اللغة العربية، اللغة الإنجليزية...)...') }}</option>
                                 @php
-                                    $uniqueSubjects = collect($subjects)->unique('clean_name');
+                                    $uniqueSubjectsList = collect($subjects)->unique('clean_name');
                                 @endphp
-                                @foreach($uniqueSubjects as $uSub)
+                                @foreach($uniqueSubjectsList as $uSub)
                                     <option value="{{ $uSub->id }}" data-clean-name="{{ $uSub->clean_name }}" data-key="{{ $uSub->subject_key }}">
                                         {{ $uSub->clean_name }}
                                     </option>
@@ -387,7 +576,7 @@
                             </select>
                         </div>
 
-                        <!-- تنبيه الفروع والمواد المستهدفة بالتوازي بتصميم نقي -->
+                        <!-- تنبيه الفروع والمواد المستهدفة بالتوازي -->
                         <div id="videoPublishTargetAlert" style="display: none; margin-top: 12px; padding: 12px 14px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px;">
                             <div style="color: #166534; font-size: 0.84rem; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                                 <i class="fa-solid fa-check-double" style="color: #15803d;"></i>
@@ -467,7 +656,7 @@
                             {{ __('ملف الفيديو للدرس (MP4 / WebM) *') }}
                         </span>
                         <span style="font-size: 0.78rem; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px;">
-                            ⚡ {{ __('رفع محلي سريع + يدعم الأوفلاين للطلبة') }}
+                            ⚡ {{ __('رفع محلي فائق السرعة + يدعم الأوفلاين للطلبة') }}
                         </span>
                     </label>
 
@@ -479,12 +668,12 @@
                             </div>
                             <div class="dropzone-text">
                                 <strong id="dropzoneTitle">{{ __('اسحب ملف الفيديو وأفلته هنا، أو اضغط للاختيار') }}</strong>
-                                <span id="dropzoneSubtitle">{{ __('يدعم ملفات الفيديو بأي حجم مهما كانت ضخمة بالجيجاوات (1GB, 5GB, 10GB+) مع التجزئة والاستئناف التلقائي.') }}</span>
+                                <span id="dropzoneSubtitle">{{ __('يدعم ملفات الفيديو بأي حجم مهما كانت ضخمة بالجيجاوات مع التجزئة والاستئناف التلقائي.') }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- شريط تقدم الرفع المباشر بالأجزاء للملفات الضخمة بالجيجابايت -->
+                    <!-- شريط تقدم الرفع المباشر بالأجزاء للملفات الضخمة -->
                     <div id="chunkProgressWrap" style="display: none; margin-top: 14px; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <span id="chunkProgressStatus" style="font-size: 0.85rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 8px;">
@@ -505,7 +694,7 @@
                     </div>
                 </div>
 
-                <div class="f-row" style="margin-top: 14px;">
+                <div class="f-row" style="margin-top: 14px; display: flex; gap: 14px;">
                     <div class="f-group" style="flex: 1;">
                         <label class="f-label">{{ __('اسم المعلم / مقدم الشرح') }}</label>
                         <input type="text" name="channel_name" value="{{ auth()->user()->name_ar ?? auth()->user()->name }}" placeholder="{{ __('مثال: م.أحمد شمالي') }}" class="f-control">
@@ -531,957 +720,274 @@
 
 <style>
 /* ==========================================================
-   ACADEMIC VIDEO MANAGEMENT STYLES
+   ACADEMIC VIDEO MANAGEMENT & LIBRARY STYLES
    ========================================================== */
-.ed-teacher-videos-container {
-    width: 100%;
-    margin: 0 auto;
-    padding: 0 0 60px;
-    box-sizing: border-box;
-}
-
-.ed-teacher-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 20px;
-}
-
-.ed-teacher-breadcrumbs {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.82rem;
-    color: #64748b;
-    margin-bottom: 6px;
-}
-
-.ed-teacher-breadcrumbs a {
-    color: inherit;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.ed-teacher-breadcrumbs a:hover {
-    color: #1e3a8a;
-}
-
-.ed-teacher-breadcrumbs .active {
-    color: #1e3a8a;
-    font-weight: 800;
-}
-
-.ed-teacher-header h1 {
-    margin: 0 0 6px;
-    font-size: 1.55rem;
-    font-weight: 800;
-    color: #0f172a;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.ed-teacher-header p {
-    margin: 0;
-    color: #64748b;
-    font-size: 0.88rem;
-    max-width: 780px;
-    line-height: 1.6;
-}
-
-.ed-btn-upload {
-    background: #1e3a8a;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-weight: 800;
-    font-size: 0.88rem;
+.vis-toggle-pill {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+    border: none;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.ed-btn-upload:hover {
-    background: #0f172a;
+.vis-toggle-pill.is-visible {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1.5px solid #a7f3d0;
+}
+.vis-toggle-pill.is-visible:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
     transform: translateY(-1px);
 }
 
-/* Stats Strip */
-.ed-stats-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+.vis-toggle-pill.is-partial {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1.5px solid #fde68a;
+}
+.vis-toggle-pill.is-partial:hover {
+    background: #fef3c7;
+    border-color: #fcd34d;
+    transform: translateY(-1px);
 }
 
-.stat-box {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-}
-
-.stat-icon-wrap {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: grid;
-    place-items: center;
-    font-size: 1.35rem;
-    flex-shrink: 0;
-}
-
-.stat-num {
-    display: block;
-    font-size: 1.45rem;
-    font-weight: 900;
-    color: #0f172a;
-    font-family: inherit;
-    line-height: 1.2;
-}
-
-.stat-label {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #64748b;
-}
-
-/* Filter Bar */
-.ed-filter-bar {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 12px 18px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.filter-label {
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: #334155;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-pills {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.filter-chip {
-    text-decoration: none;
-    font-size: 0.78rem;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 6px;
-    background: #f1f5f9;
-    color: #475569;
-    transition: all 0.15s ease;
-}
-
-.filter-chip.active {
-    background: #1e3a8a;
-    color: #ffffff;
-}
-
-.filter-chip:hover:not(.active) {
-    background: #e2e8f0;
-    color: #0f172a;
-}
-
-/* Videos Grid */
-.ed-videos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 22px;
-}
-
-.ed-video-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.ed-video-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
-}
-
-.video-frame-wrap {
-    position: relative;
-    padding-top: 56.25%;
-    background: #0f172a;
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-/* واجهة المشغل الآمن والمخصص للمنصة */
-.ed-screen-shield {
-    position: absolute;
-    inset: 0;
-    z-index: 20;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    transition: background 0.2s ease;
-}
-
-.ed-center-play-btn {
-    width: 62px;
-    height: 62px;
-    border-radius: 50%;
-    background: rgba(15, 23, 42, 0.85);
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    color: #ffffff;
-    font-size: 1.35rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-}
-
-.ed-screen-shield:hover .ed-center-play-btn {
-    transform: scale(1.1);
-    background: #2563eb;
-    border-color: #60a5fa;
-}
-
-/* دروع حماية إضافية للأركان والعنوان لمنع أي تسريب لأزرار يوتيوب */
-.ed-shield-corner-bl {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 140px;
-    height: 100px;
-    z-index: 25;
-    background: transparent;
-    cursor: pointer;
-}
-
-.ed-shield-corner-br {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 140px;
-    height: 70px;
-    z-index: 25;
-    background: transparent;
-    cursor: pointer;
-}
-
-.ed-shield-top-band {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
-    z-index: 25;
-    background: transparent;
-    cursor: pointer;
-}
-
-.ed-inline-player-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 44px;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.95) 100%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 0 12px;
-    z-index: 30;
-    user-select: none;
-}
-
-.btn-ctrl-action {
-    background: none;
-    border: none;
-    color: #ffffff;
-    font-size: 0.95rem;
-    cursor: pointer;
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    transition: background 0.15s;
-}
-
-.btn-ctrl-action:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.ctrl-time-text {
-    font-family: monospace;
-    font-size: 0.76rem;
-    font-weight: 700;
-    color: #cbd5e1;
-    white-space: nowrap;
-    direction: ltr;
-}
-
-.ctrl-seek-range {
-    flex: 1;
-    accent-color: #38bdf8;
-    cursor: pointer;
-    height: 5px;
-    border-radius: 3px;
-}
-
-.video-frame-wrap:fullscreen {
-    width: 100vw !important;
-    height: 100vh !important;
-    padding-top: 0 !important;
-    background: #000 !important;
-}
-
-.video-frame-wrap:fullscreen iframe {
-    width: 100% !important;
-    height: 100% !important;
-}
-
-.video-frame-wrap:fullscreen .ed-inline-player-bar {
-    position: fixed;
-    bottom: 24px;
-    left: 40px;
-    right: 40px;
-    height: 52px;
-    padding: 0 20px;
-    border-radius: 14px;
-    background: rgba(15, 23, 42, 0.88);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.video-info-box {
-    padding: 16px;
-}
-
-.video-meta-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-}
-
-.subject-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: #eff6ff;
-    color: #1e3a8a;
-    border: 1px solid #bfdbfe;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 0.72rem;
-    font-weight: 700;
-}
-
-.order-badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #64748b;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-
-.video-title {
-    font-size: 0.98rem;
-    font-weight: 800;
-    color: #0f172a;
-    margin: 0 0 6px;
-    line-height: 1.5;
-}
-
-.video-channel {
-    font-size: 0.78rem;
-    color: #64748b;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.video-card-footer {
-    border-top: 1px solid #f1f5f9;
-    padding: 12px 16px;
-    background: #fafafa;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.visibility-toggle-btn {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 0.76rem;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: 0.15s;
-}
-
-.visibility-toggle-btn.is-visible {
-    background: #ecfdf5;
-    color: #059669;
-}
-
-.visibility-toggle-btn.is-hidden {
+.vis-toggle-pill.is-hidden {
     background: #fef2f2;
-    color: #dc2626;
+    color: #991b1b;
+    border: 1.5px solid #fecaca;
 }
-
-.action-btns {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-
-.btn-edit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    background: #eff6ff;
-    color: #1d4ed8;
-    text-decoration: none;
-    font-size: 0.85rem;
-    transition: 0.15s;
-    position: relative;
-    z-index: 10;
-    pointer-events: auto !important;
-    cursor: pointer;
-}
-
-.btn-edit:hover {
-    background: #dbeafe;
-}
-
-.btn-delete {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: none;
-    background: #fef2f2;
-    color: #dc2626;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.15s;
-    position: relative;
-    z-index: 10;
-    pointer-events: auto !important;
-}
-
-.btn-delete:hover {
+.vis-toggle-pill.is-hidden:hover {
     background: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
 }
 
-/* Empty State */
-.ed-empty-videos {
-    grid-column: 1 / -1;
-    background: #ffffff;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    padding: 60px 20px;
-    text-align: center;
+@keyframes modalScaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
-.ed-empty-videos i {
-    font-size: 3rem;
-    color: #94a3b8;
-    margin-bottom: 12px;
-}
-
-.ed-empty-videos h3 {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: #1e293b;
-    margin-bottom: 6px;
-}
-
-.ed-empty-videos p {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin-bottom: 20px;
-}
-
-/* ==========================================================
-   CLASSIC ROYAL ACADEMIC UPLOAD MODAL & DROPZONE (OPTIMIZED)
-   ========================================================== */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.72);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 99999;
-    display: none;
-    align-items: flex-start;
-    justify-content: center;
-    overflow-y: auto;
-    padding: 24px 16px;
-    box-sizing: border-box;
-}
-
-.modal-card {
-    background: #ffffff;
-    border-radius: 18px;
-    max-width: 720px;
-    width: 100%;
-    margin: 16px auto;
-    box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.3), 0 0 0 1px rgba(226, 232, 240, 0.8);
-    border: 1px solid #cbd5e1;
-    border-top: 4px solid #1e40af;
-    animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 50px);
-    overflow: hidden;
-}
-
-@keyframes modalScale {
-    from { opacity: 0; transform: scale(0.96) translateY(6px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-.modal-head {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 18px 24px;
-    background: #f8fafc;
-    border-bottom: 1.5px solid #e2e8f0;
-}
-
-.modal-head h3 {
-    margin: 0;
-    font-size: 1.18rem;
-    font-weight: 800;
-    color: #1e3a8a;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    letter-spacing: -0.01em;
-}
-
-.modal-head-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: #eff6ff;
-    color: #1e40af;
-    border: 1px solid #bfdbfe;
-    display: grid;
-    place-items: center;
-    font-size: 1.2rem;
-    flex-shrink: 0;
-}
-
-.btn-close-modal {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    font-size: 1.3rem;
-    color: #64748b;
-    cursor: pointer;
-    line-height: 1;
-    display: grid;
-    place-items: center;
-    transition: all 0.2s ease;
-}
-
-.btn-close-modal:hover {
-    background: #fee2e2;
-    color: #dc2626;
-    border-color: #fecaca;
-    transform: rotate(90deg);
-}
-
-.modal-form-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    padding: 22px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    max-height: 100%;
-}
-
-.modal-form-body::-webkit-scrollbar {
-    width: 6px;
-}
-.modal-form-body::-webkit-scrollbar-track {
-    background: #f1f5f9;
-}
-.modal-form-body::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 4px;
-}
-.modal-form-body::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-}
-
-.f-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.f-label {
-    font-size: 0.86rem;
-    font-weight: 700;
-    color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.f-control {
-    width: 100%;
-    min-height: 48px;
-    padding: 10px 14px;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 0.92rem;
-    line-height: 1.6;
-    outline: none;
-    background: #ffffff;
-    color: #1e293b;
-    box-sizing: border-box;
-    transition: all 0.2s ease;
-}
-
-select.f-control {
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: left 14px center;
-    background-size: 16px;
-    padding-left: 38px;
-}
-
-.f-control:focus {
-    border-color: #1d4ed8;
-    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
-    background: #ffffff;
-}
-
-/* بطاقات اختيار الفروع الأكاديمية الأنيقة */
+/* Branch selector in Upload Modal */
 .branch-selector-box {
     background: #f8fafc;
-    border: 1.5px solid #cbd5e1;
+    border: 1.5px solid #e2e8f0;
     border-radius: 12px;
     padding: 16px;
-    box-sizing: border-box;
+    margin-bottom: 18px;
 }
-
 .btn-branch-util {
-    background: #e2e8f0;
+    background: #ffffff;
     border: 1px solid #cbd5e1;
-    border-radius: 6px;
+    color: #475569;
     padding: 4px 10px;
-    font-size: 0.76rem;
+    border-radius: 6px;
+    font-size: 0.74rem;
     font-weight: 700;
-    color: #1e293b;
     cursor: pointer;
-    transition: all 0.2s;
-}
-.btn-branch-util:hover {
-    background: #cbd5e1;
-    color: #0f172a;
 }
 .btn-branch-util-clear {
-    background: #ffffff;
-    color: #64748b;
-}
-.btn-branch-util-clear:hover {
-    background: #fee2e2;
     color: #dc2626;
     border-color: #fecaca;
 }
-
 .branch-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 8px;
-    margin-top: 8px;
 }
-
 .branch-select-card {
-    position: relative;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 10px;
     cursor: pointer;
-    margin: 0;
-    user-select: none;
     display: block;
+    transition: all 0.15s;
 }
-.branch-select-card input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
+.branch-select-card input {
+    display: none;
 }
 .branch-card-content {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: #ffffff;
-    border: 1.5px solid #cbd5e1;
-    border-radius: 8px;
-    font-size: 0.84rem;
+    gap: 6px;
+    font-size: 0.78rem;
     font-weight: 700;
-    color: #334155;
-    transition: all 0.2s ease;
 }
-.branch-select-card:hover .branch-card-content {
-    border-color: #94a3b8;
-    background: #f8fafc;
+.branch-select-card input:checked + .branch-card-content {
+    color: #1d4ed8;
 }
-.branch-select-card input:checked ~ .branch-card-content {
-    border-color: #1e40af;
+.branch-select-card:has(input:checked) {
+    border-color: #1d4ed8;
     background: #eff6ff;
-    color: #1e3a8a;
-    box-shadow: 0 1px 3px rgba(30, 64, 175, 0.12);
 }
 .branch-check-icon {
-    margin-right: auto;
+    margin-inline-start: auto;
     font-size: 0.85rem;
     color: #cbd5e1;
-    transition: all 0.2s;
 }
 .branch-select-card input:checked ~ .branch-card-content .branch-check-icon {
-    color: #1e40af;
+    color: #1d4ed8;
 }
 
-.f-row {
+/* Modal Form Controls */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 99990;
+    place-items: center;
+    padding: 20px;
+    overflow-y: auto;
+}
+.modal-card {
+    background: #ffffff;
+    border-radius: 18px;
+    max-width: 680px;
+    width: 100%;
+    padding: 24px 28px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border: 1px solid #e2e8f0;
+}
+.modal-head {
     display: flex;
-    gap: 14px;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 18px;
 }
-
-/* صندوق سحب وإفلات الفيديو الملكي الكلاسيكي الفاخر */
-.ed-video-dropzone {
-    border: 2px dashed #93c5fd;
-    background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
-    border-radius: 14px;
-    padding: 26px 18px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-sizing: border-box;
-    position: relative;
-}
-
-.ed-video-dropzone:hover, .ed-video-dropzone.dragover {
-    border-color: #0b3b6f;
-    background: #e0f2fe;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(11, 59, 111, 0.1);
-}
-
-.dropzone-inner {
+.modal-head h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 10px;
 }
-
-.dropzone-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1.5px solid #bfdbfe;
-    color: #0b3b6f;
+.modal-head-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1d4ed8;
     display: grid;
     place-items: center;
-    font-size: 1.55rem;
-    box-shadow: 0 4px 14px rgba(11, 59, 111, 0.08);
-    transition: all 0.2s ease;
+    font-size: 1.1rem;
 }
-
-.ed-video-dropzone:hover .dropzone-icon {
-    transform: scale(1.08);
-    color: #1e40af;
-    border-color: #93c5fd;
+.btn-close-modal {
+    background: #f1f5f9;
+    border: none;
+    color: #64748b;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
 }
-
+.f-group {
+    margin-bottom: 16px;
+}
+.f-label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+}
+.f-control {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #0f172a;
+    box-sizing: border-box;
+}
+.f-control:focus {
+    border-color: #2563eb;
+    outline: none;
+}
+.ed-video-dropzone {
+    border: 2px dashed #93c5fd;
+    border-radius: 12px;
+    padding: 26px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #f8fafc;
+    transition: all 0.2s;
+}
+.ed-video-dropzone:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+}
+.dropzone-icon {
+    font-size: 2rem;
+    color: #2563eb;
+    margin-bottom: 8px;
+}
 .dropzone-text strong {
     display: block;
-    color: #0b3b6f;
-    font-size: 0.96rem;
-    font-weight: 800;
+    font-size: 0.92rem;
+    color: #1e3a8a;
     margin-bottom: 4px;
 }
-
 .dropzone-text span {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: #64748b;
-    line-height: 1.5;
-    max-width: 480px;
-    display: block;
-    margin: 0 auto;
 }
-
 .modal-foot {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 22px;
+    gap: 10px;
     padding-top: 18px;
     border-top: 1px solid #f1f5f9;
+    margin-top: 20px;
 }
-
 .btn-modal-cancel {
-    padding: 11px 22px;
-    border-radius: 10px;
     background: #f1f5f9;
     color: #475569;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #cbd5e1;
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 700;
     font-size: 0.88rem;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
-
-.btn-modal-cancel:hover {
-    background: #e2e8f0;
-    color: #0f172a;
-}
-
 .btn-modal-submit {
-    padding: 11px 28px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #0b3b6f 0%, #1e40af 100%);
+    background: #1d4ed8;
     color: #ffffff;
-    border: 1px solid #1e40af;
-    font-weight: 800;
-    font-size: 0.92rem;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.88rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 14px rgba(11, 59, 111, 0.25);
-    transition: all 0.2s ease;
 }
-
-.btn-modal-submit:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(11, 59, 111, 0.35);
-    background: linear-gradient(135deg, #072547 0%, #0b3b6f 100%);
-}
-
 @media (max-width: 768px) {
-    .ed-teacher-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 14px;
-    }
-    .header-actions {
-        width: 100%;
-    }
-    .ed-btn-upload {
-        width: 100%;
-        justify-content: center;
-    }
-    .ed-stats-strip {
-        grid-template-columns: 1fr;
-        gap: 10px;
-    }
-    .ed-videos-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    .ed-filter-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-    }
-    .filter-pills {
-        overflow-x: auto;
-        flex-wrap: nowrap;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 4px;
-    }
-    .filter-chip {
-        white-space: nowrap;
-        flex-shrink: 0;
-    }
-    .modal-overlay {
-        padding: 10px !important;
-        align-items: flex-start !important;
-    }
     .modal-card {
-        width: 100% !important;
-        max-width: 100% !important;
-        max-height: calc(100dvh - 24px) !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 20px 16px;
-        border-radius: 14px;
-        box-sizing: border-box;
-    }
-    .f-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .modal-foot {
-        flex-direction: column;
-        gap: 8px;
-    }
-    .btn-modal-cancel, .btn-modal-submit {
-        width: 100%;
-        justify-content: center;
-        box-sizing: border-box;
+        padding: 18px 16px;
     }
 }
 </style>
@@ -1489,20 +995,468 @@ select.f-control {
 <script src="{{ asset('js/resumable-uploader.js') }}"></script>
 
 <script>
+let activeLessonData = null;
+
+// 1. فتح نافذة تفاصيل توزيع الفروع للمحاضرة
+function openLessonModal(lessonData) {
+    activeLessonData = lessonData;
+    const modal = document.getElementById('lessonDistributionModal');
+    if (!modal) return;
+
+    document.getElementById('dist_modal_title').textContent = lessonData.title || '{{ __("عنوان الدرس") }}';
+    document.getElementById('dist_modal_channel').innerHTML = `<i class="fa-solid fa-chalkboard-user text-primary" style="margin-left: 5px;"></i> <span>${escapeHtml(lessonData.channel_name || 'عام')}</span>`;
+    document.getElementById('dist_modal_size').innerHTML = `<i class="fa-solid fa-hard-drive text-success" style="margin-left: 5px;"></i> <span>${escapeHtml(lessonData.file_size || '--')}</span>`;
+    
+    let dateStr = '--';
+    if (lessonData.created_at) {
+        dateStr = lessonData.created_at.substring(0, 10);
+    }
+    document.getElementById('dist_modal_date').innerHTML = `<i class="fa-regular fa-calendar" style="margin-left: 5px;"></i> <span>${dateStr}</span>`;
+    document.getElementById('dist_modal_views').innerHTML = `<i class="fa-regular fa-eye text-warning" style="margin-left: 5px;"></i> <span>${(lessonData.total_views || 0).toLocaleString()} {{ __("مشاهدة") }}</span>`;
+    
+    const count = (lessonData.branches || []).length;
+    document.getElementById('dist_modal_branches_badge').innerHTML = `<i class="fa-solid fa-layer-group"></i> ${count} {{ __("فروع أكاديمية") }}`;
+
+    // زر معاينة الفيديو المباشر
+    const prevBtn = document.getElementById('dist_modal_preview_btn');
+    if (lessonData.url_path) {
+        prevBtn.style.display = 'inline-flex';
+        let streamUrl = '/storage/' + lessonData.url_path;
+        if (lessonData.url_path.startsWith('http')) streamUrl = lessonData.url_path;
+        prevBtn.onclick = () => openVideoPreview(lessonData.title, streamUrl);
+    } else if (lessonData.youtube_embed_url) {
+        prevBtn.style.display = 'inline-flex';
+        prevBtn.onclick = () => openVideoPreview(lessonData.title, lessonData.youtube_embed_url);
+    } else {
+        prevBtn.style.display = 'none';
+    }
+
+    // زر تحميل الدوسية PDF
+    const pdfLink = document.getElementById('dist_modal_pdf_link');
+    if (lessonData.pdf_path) {
+        pdfLink.style.display = 'inline-flex';
+        pdfLink.href = lessonData.pdf_path.startsWith('http') ? lessonData.pdf_path : '/storage/' + lessonData.pdf_path;
+    } else {
+        pdfLink.style.display = 'none';
+    }
+
+    // زر حذف المحاضرة بالكامل
+    document.getElementById('dist_modal_delete_all_btn').onclick = () => {
+        deleteUnifiedContent(lessonData.id, lessonData.title, 'all');
+    };
+
+    // تعبئة بطاقات الفروع الموزع بها الدرس
+    renderModalBranchesList(lessonData.branches || []);
+
+    modal.style.display = 'grid';
+    document.body.style.overflow = 'hidden';
+}
+
+function renderModalBranchesList(branches) {
+    const container = document.getElementById('dist_modal_branches_list');
+    container.innerHTML = '';
+
+    if (branches.length === 0) {
+        container.innerHTML = `<div style="text-align: center; padding: 24px; color: #94a3b8;">{{ __("لا توجد فروع مسجلة لهذا الدرس.") }}</div>`;
+        return;
+    }
+
+    branches.forEach(branch => {
+        const isVis = Boolean(branch.is_visible);
+        let branchIcon = 'fa-graduation-cap';
+        let branchBg = '#eff6ff';
+        let branchColor = '#1d4ed8';
+
+        if (branch.stage_name.includes('علمي')) {
+            branchIcon = 'fa-atom';
+            branchBg = '#e0f2fe';
+            branchColor = '#0284c7';
+        } else if (branch.stage_name.includes('أدبي')) {
+            branchIcon = 'fa-book';
+            branchBg = '#f0fdf4';
+            branchColor = '#16a34a';
+        } else if (branch.stage_name.includes('ريادة') || branch.stage_name.includes('أعمال') || branch.stage_name.includes('تجاري')) {
+            branchIcon = 'fa-briefcase';
+            branchBg = '#fff7ed';
+            branchColor = '#ea580c';
+        } else if (branch.stage_name.includes('شرعي')) {
+            branchIcon = 'fa-scale-balanced';
+            branchBg = '#faf5ff';
+            branchColor = '#9333ea';
+        } else if (branch.stage_name.includes('صناعي')) {
+            branchIcon = 'fa-gears';
+            branchBg = '#f1f5f9';
+            branchColor = '#475569';
+        }
+
+        const card = document.createElement('div');
+        card.id = `modal_branch_card_${branch.id}`;
+        card.style.cssText = 'background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; transition: all 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.03);';
+        card.onmouseover = () => { card.style.borderColor = '#93c5fd'; card.style.boxShadow = '0 4px 12px rgba(37,99,235,0.08)'; };
+        card.onmouseout = () => { card.style.borderColor = '#e2e8f0'; card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.03)'; };
+
+        card.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 14px; min-width: 0;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: ${branchBg}; color: ${branchColor}; display: grid; place-items: center; font-size: 1.2rem; flex-shrink: 0;">
+                    <i class="fa-solid ${branchIcon}"></i>
+                </div>
+                <div style="min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <strong style="font-size: 0.95rem; color: #0f172a; font-weight: 800; font-family: 'Alexandria', sans-serif;">
+                            ${escapeHtml(branch.stage_name)}
+                        </strong>
+                        <span style="background: ${branchBg}; color: ${branchColor}; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">
+                            ${escapeHtml(branch.stage_badge)}
+                        </span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <span><i class="fa-solid fa-book-open" style="color: #3b82f6; margin-left: 4px;"></i> {{ __('المادة:') }} <b style="color: #1e293b;">${escapeHtml(branch.subject_name)}</b></span>
+                        <span>•</span>
+                        <span><i class="fa-regular fa-eye" style="margin-left: 4px;"></i> ${branch.views_count} {{ __('مشاهدة') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <button type="button" 
+                        id="branch_vis_btn_${branch.id}"
+                        onclick="toggleSingleBranchVisibility(${branch.id}, this)"
+                        class="vis-toggle-pill ${isVis ? 'is-visible' : 'is-hidden'}"
+                        title="${isVis ? '{{ __("انقر لقفل وحجب المحاضرة عن هذا الفرع") }}' : '{{ __("انقر لإتاحة وعرض المحاضرة لهذا الفرع") }}'}">
+                    <i class="fa-solid ${isVis ? 'fa-eye' : 'fa-lock'}"></i>
+                    <span>${isVis ? '{{ __("متاح للفرع") }}' : '{{ __("محجوب عن الفرع") }}'}</span>
+                </button>
+
+                <button type="button" 
+                        onclick="deleteSingleBranch(${branch.id}, '${escapeJsString(branch.stage_name)}')"
+                        style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" 
+                        title="{{ __('إزالة الدرس من هذا الفرع فقط') }}">
+                    <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function escapeJsString(str) {
+    return (str || '').replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function closeLessonModal() {
+    const modal = document.getElementById('lessonDistributionModal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('lessonDistributionModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeLessonModal();
+});
+
+// 2. تبديل حالة العرض لفرع واحد فقط
+async function toggleSingleBranchVisibility(branchId, btn) {
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const toggleUrl = (isUserAdmin ? '/admin/contents/' : '/teacher/contents/') + branchId + '/toggle-visibility?scope=single';
+
+    try {
+        const response = await fetch(toggleUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const isVis = Boolean(data.is_visible);
+            btn.className = 'vis-toggle-pill ' + (isVis ? 'is-visible' : 'is-hidden');
+            btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-lock'}"></i><span>${isVis ? '{{ __("متاح للفرع") }}' : '{{ __("محجوب عن الفرع") }}'}</span>`;
+            btn.disabled = false;
+
+            if (activeLessonData && activeLessonData.branches) {
+                const br = activeLessonData.branches.find(b => b.id == branchId);
+                if (br) br.is_visible = isVis;
+            }
+
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+                    icon: 'success',
+                    title: data.message || '{{ __("تم تحديث حالة الفرع بنجاح") }}',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
+        } else {
+            throw new Error(data.error || 'حدث خطأ');
+        }
+    } catch (err) {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        if (window.Swal) {
+            Swal.fire({ icon: 'error', title: 'خطأ', text: err.message || 'تعذر التحديث.' });
+        }
+    }
+}
+
+// 3. تبديل حالة العرض لكافة الفروع بلمسة واحدة
+async function toggleUnifiedVisibility(id, btn) {
+    if (!id) return;
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const toggleUrl = (isUserAdmin ? '/admin/visibility/toggle/' : '/teacher/visibility/toggle/') + id;
+    const token = '{{ csrf_token() }}';
+
+    btn.disabled = true;
+    const origHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+    try {
+        const res = await fetch(toggleUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await res.json();
+        if (data && data.success) {
+            const isVis = Boolean(data.is_visible);
+            btn.className = 'vis-toggle-pill ' + (isVis ? 'is-visible' : 'is-hidden');
+            btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-lock'}"></i> <span>${isVis ? '{{ __("متاح للطلبة") }}' : '{{ __("محجوب عن الطلبة") }}'}</span>`;
+            if (window.Swal) {
+                Swal.fire({
+                    toast: true,
+                    position: '{{ app()->getLocale() == "ar" ? "top-start" : "top-end" }}',
+                    icon: 'success',
+                    title: data.message || 'تم تحديث حالة الظهور لجميع الفروع',
+                    showConfirmButton: false,
+                    timer: 1800
+                });
+            }
+        } else {
+            throw new Error(data.error || 'تعذر تحديث الظهور');
+        }
+    } catch (e) {
+        btn.innerHTML = origHtml;
+        if (window.Swal) {
+            Swal.fire({ icon: 'error', title: 'خطأ', text: e.message || 'تعذر تحديث الظهور.' });
+        }
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// 4. حذف الدرس من فرع واحد فقط
+function deleteSingleBranch(branchId, stageName) {
+    if (!window.Swal) {
+        if (!confirm(`هل تريد إزالة هذا الدرس من (${stageName}) فقط؟`)) return;
+    }
+
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const deleteUrl = (isUserAdmin ? '/admin/educational-contents/' : '/teacher/educational-contents/') + branchId + '?scope=single';
+
+    Swal.fire({
+        title: '{{ __("إزالة من هذا الفرع فقط؟") }}',
+        text: `{{ __("سيتم حذف الدرس من فرع") }} (${stageName}) {{ __("فقط، وسيبقى متاحاً للطلاب في باقي الفروع.") }}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '{{ __("نعم، احذفه من هذا الفرع") }}',
+        cancelButtonText: '{{ __("تراجع") }}'
+    }).then(result => {
+        if (result.isConfirmed) {
+            fetch(deleteUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-HTTP-Method-Override': 'DELETE',
+                    'Accept': 'application/json'
+                }
+            }).then(res => res.json().catch(() => ({})))
+            .then(data => {
+                const card = document.getElementById(`modal_branch_card_${branchId}`);
+                if (card) card.remove();
+
+                if (activeLessonData && activeLessonData.branches) {
+                    activeLessonData.branches = activeLessonData.branches.filter(b => b.id != branchId);
+                    activeLessonData.branches_count = activeLessonData.branches.length;
+                    
+                    const badge = document.getElementById('dist_modal_branches_badge');
+                    if (badge) badge.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${activeLessonData.branches_count} {{ __("فروع أكاديمية") }}`;
+
+                    const rowCount = document.getElementById(`row_branch_count_${activeLessonData.id}`);
+                    if (rowCount) rowCount.textContent = activeLessonData.branches_count;
+
+                    if (activeLessonData.branches_count === 0) {
+                        const row = document.getElementById(`lesson_row_${activeLessonData.id}`);
+                        if (row) row.remove();
+                        closeLessonModal();
+                    }
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '{{ __("تمت الإزالة بنجاح") }}',
+                    text: `{{ __("تمت إزالة الدرس من فرع") }} (${stageName}) {{ __("بنجاح.") }}`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
+        }
+    });
+}
+
+// 5. حذف الدرس بالكامل من كافة الفروع
+function deleteUnifiedContent(id, title, scope = 'all') {
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const deleteUrl = (isUserAdmin ? '/admin/educational-contents/' : '/teacher/educational-contents/') + id + '?scope=all';
+
+    Swal.fire({
+        title: '{{ __("حذف المحاضرة بالكامل؟") }}',
+        text: `{{ __("هل أنت متأكد من حذف") }} "${title}" {{ __("ونهائياً من كافة الفروع الأكاديمية الشقيقة وقاعدة البيانات؟") }}`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '{{ __("نعم، احذف المحاضرة بالكامل") }}',
+        cancelButtonText: '{{ __("إلغاء") }}'
+    }).then(result => {
+        if (result.isConfirmed) {
+            const row = document.getElementById('lesson_row_' + id);
+            if (row) {
+                row.style.transition = 'all 0.3s ease';
+                row.style.opacity = '0.3';
+            }
+            closeLessonModal();
+
+            fetch(deleteUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-HTTP-Method-Override': 'DELETE',
+                    'Accept': 'application/json'
+                }
+            }).then(res => res.json().catch(() => ({})))
+            .then(data => {
+                if (row) row.remove();
+                Swal.fire({
+                    icon: 'success',
+                    title: '{{ __("تم الحذف بنجاح") }}',
+                    text: data.message || '{{ __("تم حذف المحاضرة من كافة الفروع بنجاح.") }}',
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+            }).catch(err => {
+                if (row) row.style.opacity = '1';
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر الحذف.' });
+            });
+        }
+    });
+}
+
+// 6. معاينة الفيديو المنبثقة السريعة
+function openVideoPreview(title, url) {
+    if (!url) return;
+    const modal = document.getElementById('videoPreviewModal');
+    const player = document.getElementById('preview_video_player');
+    const titleEl = document.getElementById('preview_video_title');
+
+    titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
+    player.src = url;
+    modal.style.display = 'grid';
+    document.body.style.overflow = 'hidden';
+    player.play().catch(() => {});
+}
+
+function closeVideoPreview() {
+    const modal = document.getElementById('videoPreviewModal');
+    const player = document.getElementById('preview_video_player');
+    if (player) {
+        player.pause();
+        player.removeAttribute('src');
+        player.load();
+    }
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('videoPreviewModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeVideoPreview();
+});
+
+// 7. تصفير كافة المحتويات دفعة واحدة
+window.purgeAllContents = async function() {
+    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    const purgeUrl = isUserAdmin 
+        ? '/admin/educational-contents/purge-all' 
+        : '/teacher/educational-contents/purge-all';
+    const token = '{{ csrf_token() }}';
+
+    Swal.fire({
+        title: '{{ __("هل أنت متأكد من التصفير الشامل؟") }}',
+        text: '{{ __("سيتم حذف ومسح كافة الفيديوهات والشروحات نهائياً من قاعدة البيانات والسيرفر!") }}',
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: '{{ __("نعم، تصفير وحذف الكل") }}',
+        cancelButtonText: '{{ __("إلغاء") }}'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'جاري الحذف والتصفير...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                const formData = new FormData();
+                formData.append('_token', token);
+                formData.append('_method', 'DELETE');
+
+                const res = await axios.post(purgeUrl, formData, {
+                    headers: { 'X-CSRF-TOKEN': token, 'Accept': 'application/json' }
+                });
+
+                if (res.data && (res.data.success || res.status === 200)) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'تم التصفير بنجاح! 🗑️',
+                        text: res.data.message || 'تم حذف وتصفير جميع الفيديوهات.',
+                        confirmButtonText: 'حسناً'
+                    });
+                    location.reload();
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'خطأ', text: 'تعذر إتمام عملية التصفير.' });
+            }
+        }
+    });
+};
+
+// 8. منطق رفع الفيديوهات وتوزيعها بالأجزاء (Upload Modal Scripts)
 const allModalSubjects = @json($subjects ?? []);
 const isModalAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
 
 function selectAllModalBranches(prefix, checked) {
     document.querySelectorAll('.' + prefix + '-modal-stage-check').forEach(cb => {
         cb.checked = checked;
-        const lbl = document.getElementById(prefix === 'video' ? 'v_stage_lbl_' + cb.value : 'f_stage_lbl_' + cb.value);
-        if (lbl) {
-            lbl.style.borderColor = checked ? '#1e40af' : '#cbd5e1';
-            lbl.style.background = checked ? '#eff6ff' : '#ffffff';
-        }
     });
     if (prefix === 'video') onVideoModalSelectionChange();
-    else if (typeof onFileModalSelectionChange === 'function') onFileModalSelectionChange();
 }
 
 function onVideoModalSelectionChange() {
@@ -1515,7 +1469,6 @@ function onVideoModalSelectionChange() {
     const listDiv = document.getElementById('videoSelectedSubjectsList');
 
     if (!hiddenWrap || !alertBox || !listDiv) return;
-
     hiddenWrap.innerHTML = '';
     listDiv.innerHTML = '';
 
@@ -1560,30 +1513,19 @@ function onVideoModalSelectionChange() {
 window.openUploadVideoModal = function() {
     const m = document.getElementById('uploadVideoModal');
     if (m) {
-        m.style.display = 'flex';
+        m.style.display = 'grid';
         document.body.style.overflow = 'hidden';
-        if (typeof onVideoModalSelectionChange === 'function') {
-            try { onVideoModalSelectionChange(); } catch (e) {}
-        }
+        try { onVideoModalSelectionChange(); } catch (e) {}
     }
 };
 
 window.closeUploadVideoModal = function() {
-    const chunkWrap = document.getElementById('chunkProgressWrap');
-    if (chunkWrap && chunkWrap.style.display !== 'none' && !chunkWrap.dataset.completed) {
-        if (!confirm('{{ __("هناك عملية رفع فيديو جارية حالياً، هل أنت متأكد من الإلغاء؟") }}')) {
-            return;
-        }
-    }
     const m = document.getElementById('uploadVideoModal');
     if (m) {
         m.style.display = 'none';
         document.body.style.overflow = '';
     }
 };
-
-function openUploadVideoModal() { window.openUploadVideoModal(); }
-function closeUploadVideoModal() { window.closeUploadVideoModal(); }
 
 function updateVideoRegionSelect(radio) {
     ['v_card_gaza', 'v_card_west_bank', 'v_card_all'].forEach(id => {
@@ -1645,67 +1587,13 @@ function handleVideoFileSelection(input) {
     }
     if (iconEl) {
         iconEl.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #16a34a;"></i>';
-        iconEl.style.borderColor = '#86efac';
-        iconEl.style.background = '#f0fdf4';
     }
 }
 
-// دعم السحب والإفلات
-const dropArea = document.getElementById('videoDropzone');
-if (dropArea) {
-    ['dragenter', 'dragover'].forEach(name => {
-        dropArea.addEventListener(name, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropArea.classList.add('dragover');
-        }, false);
-    });
-    ['dragleave', 'drop'].forEach(name => {
-        dropArea.addEventListener(name, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dropArea.classList.remove('dragover');
-        }, false);
-    });
-    dropArea.addEventListener('drop', (e) => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        if (files && files.length > 0) {
-            const fileInput = document.getElementById('videoFileInput');
-            fileInput.files = files;
-            handleVideoFileSelection(fileInput);
-        }
-    }, false);
-}
-
-// دالة تنسيق السرعة ومعدل النقل
-function formatUploadSpeed(bytesPerSec) {
-    if (bytesPerSec <= 0) return '-- MB/s';
-    const mbps = bytesPerSec / (1024 * 1024);
-    if (mbps >= 1) return mbps.toFixed(1) + ' MB/s';
-    return (bytesPerSec / 1024).toFixed(0) + ' KB/s';
-}
-
-// دالة حساب وتنسيق الوقت المتبقي
-function formatEtaTime(seconds) {
-    if (!seconds || seconds <= 0 || !isFinite(seconds)) return '--';
-    if (seconds < 60) return seconds + ' {{ __("ثانية") }}';
-    const minutes = Math.floor(seconds / 60);
-    const remSec = seconds % 60;
-    if (minutes < 60) {
-        return `${minutes} {{ __("د") }} ${remSec > 0 ? remSec + ' {{ __("ث") }}' : ''}`;
-    }
-    const hours = Math.floor(minutes / 60);
-    const remMin = minutes % 60;
-    return `${hours} {{ __("ساعة") }} ${remMin > 0 ? remMin + ' {{ __("د") }}' : ''}`;
-}
-
-// نظام الرفع فائق السرعة والموثوقية للملفات الضخمة بالجيجابايت (Gigabyte Chunked & Resumable Upload)
 async function submitVideoForm(e) {
     if (e) e.preventDefault();
     const btn = document.getElementById('btnSubmitVideo');
     const btnCancel = document.getElementById('btnCancelUpload');
-    const originalText = btn.innerHTML;
     const form = document.getElementById('uploadVideoForm');
     const fileInput = document.getElementById('videoFileInput');
 
@@ -1721,8 +1609,6 @@ async function submitVideoForm(e) {
     }
 
     const file = fileInput.files[0];
-
-    // عناصر واجهة التقدم
     const progressWrap = document.getElementById('chunkProgressWrap');
     const progressBar = document.getElementById('chunkProgressBar');
     const progressPct = document.getElementById('chunkProgressPct');
@@ -1733,38 +1619,12 @@ async function submitVideoForm(e) {
     const partMeta = document.getElementById('chunkPartMeta');
 
     progressWrap.style.display = 'block';
-    progressWrap.dataset.completed = '';
     btn.disabled = true;
     if (btnCancel) btnCancel.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري فحص وتجهيز الرفع بالجيجاوات...") }}';
-
-    // حماية من إغلاق الصفحة بالخطأ أثناء رفع ملفات الجيجابايت
-    const preventTabClose = (ev) => {
-        ev.preventDefault();
-        ev.returnValue = '{{ __("جاري رفع فيديو بالخلفية، هل أنت متأكد من مغادرة الصفحة وإلغاء الرفع؟") }}';
-    };
-    window.addEventListener('beforeunload', preventTabClose);
-
-    // التحقق من وجود مسار مرفوع مسبقاً لنفس الملف لتجنب إعادة رفع الجيجابايت عند أي خطأ في الحفظ
-    const fileKey = file.name + '_' + file.size;
-    let uploadedPath = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.path : null;
-    let formattedSize = (window._cachedUpload && window._cachedUpload.key === fileKey) ? window._cachedUpload.size : null;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري فحص وتجهيز الرفع...") }}';
 
     try {
-        if (!uploadedPath) {
-            if (window.EdBackgroundUploader) {
-                window.EdBackgroundUploader.state.status = 'uploading';
-                window.EdBackgroundUploader.state.file = file;
-                window.EdBackgroundUploader.state.fileName = file.name;
-                window.EdBackgroundUploader.state.fileSize = file.size;
-                window.EdBackgroundUploader.state.fileSizeFormatted = (file.size / 1048576).toFixed(1) + ' MB';
-                window.EdBackgroundUploader.state.portal = 'teacher';
-                window.EdBackgroundUploader.state.originUrl = window.location.href;
-                window.EdBackgroundUploader.showWidget();
-                window.EdBackgroundUploader.updateWidgetUI();
-            }
-
-            const uploader = new ResumableUploader({
+        const uploader = new ResumableUploader({
             chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
             checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
             pingUrl: "{{ route('system.ping') }}",
@@ -1772,91 +1632,36 @@ async function submitVideoForm(e) {
             onProgress: (pct) => {
                 progressBar.style.width = pct + '%';
                 progressPct.textContent = pct + '%';
-                if (window.EdBackgroundUploader) {
-                    window.EdBackgroundUploader.state.progress = pct;
-                    window.EdBackgroundUploader.updateWidgetUI();
-                }
             },
             onStatus: (status) => {
                 progressStatus.innerHTML = status.html;
             },
             onSpeed: (speed) => {
                 if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
-                if (window.EdBackgroundUploader) {
-                    window.EdBackgroundUploader.state.speed = speed;
-                    window.EdBackgroundUploader.updateWidgetUI();
-                }
             },
             onEta: (eta) => {
                 if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
-                if (window.EdBackgroundUploader) {
-                    window.EdBackgroundUploader.state.eta = eta;
-                    window.EdBackgroundUploader.updateWidgetUI();
-                }
             },
             onMeta: (meta) => {
                 if (fileMeta) fileMeta.textContent = meta;
             },
             onPart: (part) => {
                 if (partMeta) partMeta.textContent = part;
-                if (window.EdBackgroundUploader) {
-                    window.EdBackgroundUploader.state.partText = part;
-                    window.EdBackgroundUploader.updateWidgetUI();
-                }
-            },
-            onNetworkStateChange: (isOnline, pct) => {
-                if (!isOnline) {
-                    progressBar.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
-                    btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> {{ __("الرفع معلّق (بانتظار النت)...") }}';
-                    if (window.EdBackgroundUploader) {
-                        window.EdBackgroundUploader.state.status = 'paused';
-                        window.EdBackgroundUploader.updateWidgetUI();
-                    }
-                } else {
-                    progressBar.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
-                    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري استئناف الرفع...") }}';
-                    if (window.EdBackgroundUploader) {
-                        window.EdBackgroundUploader.state.status = 'uploading';
-                        window.EdBackgroundUploader.updateWidgetUI();
-                    }
-                }
             }
         });
 
-            const uploadRes = await uploader.upload(file);
-            uploadedPath = uploadRes.uploaded_video_path;
-            formattedSize = uploadRes.formatted_size;
+        const uploadRes = await uploader.upload(file);
+        const uploadedPath = uploadRes.uploaded_video_path;
+        const formattedSize = uploadRes.formatted_size;
 
-            if (!uploadedPath) {
-                throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من السيرفر.") }}');
-            }
-
-            if (window.EdBackgroundUploader) {
-                window.EdBackgroundUploader.state.status = 'completed';
-                window.EdBackgroundUploader.state.progress = 100;
-                window.EdBackgroundUploader.state.result = {
-                    uploaded_video_path: uploadedPath,
-                    formatted_size: formattedSize
-                };
-                window.EdBackgroundUploader.saveSessionState();
-                window.EdBackgroundUploader.updateWidgetUI();
-            }
-
-            window._cachedUpload = { key: fileKey, path: uploadedPath, size: formattedSize };
-        } else {
-            progressBar.style.width = '100%';
-            progressPct.textContent = '100%';
-            progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("تم العثور على الفيديو المرفوع مسبقاً! جاري إتمام الحفظ والنشر...") }}';
-            if (etaMeta) etaMeta.innerHTML = '<i class="fa-solid fa-check"></i> {{ __("مكتمل") }}';
+        if (!uploadedPath) {
+            throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من الخادم.") }}');
         }
 
-        // إرسال بيانات الدرس النهائية وحفظه بالمنصة
-        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل دمج وحفظ الفيديو بالجيجاوات بنجاح! جاري النشر...") }}';
-        if (etaMeta) etaMeta.innerHTML = '<i class="fa-solid fa-check"></i> {{ __("مكتمل") }}';
+        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل الرفع بنجاح! جاري حفظ بيانات الدرس...") }}';
 
         const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
         const contentFormData = new FormData(form);
-        // استبدال حقل الملف المباشر بالمسار المرفوع لتفادي إعادة إرساله
         contentFormData.delete('video_file');
         contentFormData.append('uploaded_video_path', uploadedPath);
         if (formattedSize) {
@@ -1870,444 +1675,29 @@ async function submitVideoForm(e) {
             }
         });
 
-        window.removeEventListener('beforeunload', preventTabClose);
-        progressWrap.dataset.completed = '1';
-        window._cachedUpload = null;
         Swal.fire({
             icon: 'success',
             title: saveRes.data.title || '{{ __("تم رفع ونشر درس الفيديو بنجاح 🎉") }}',
-            text: '{{ __("أصبح الفيديو متاحاً لجميع الطلبة ومفعلاً للبث والمشاهدة والتحميل أوفلاين!") }}',
+            text: '{{ __("أصبح الفيديو متاحاً ومنظماً ضمن سجل المحاضرات الموحد!") }}',
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#1e3a8a'
         }).then(() => location.reload());
 
     } catch (err) {
-        window.removeEventListener('beforeunload', preventTabClose);
         btn.disabled = false;
         if (btnCancel) btnCancel.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';
 
-        let msg = '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
-        if (err.response && err.response.data) {
-            if (err.response.data.title) {
-                msg = err.response.data.title;
-            } else if (err.response.data.message) {
-                msg = err.response.data.message;
-            } else if (err.response.data.error) {
-                msg = err.response.data.error;
-            } else if (err.response.data.errors) {
-                msg = Object.values(err.response.data.errors).flat().join('<br>');
-            }
-        } else if (err.message) {
-            msg = err.message;
-        }
-
+        let msg = err.response?.data?.message || err.message || '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
         progressStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> ${msg}`;
         Swal.fire({
             icon: 'error',
             title: '{{ __("خطأ في رفع الفيديو") }}',
-            html: msg + '<br><small style="color: #64748b; display: block; margin-top: 8px;">{{ __("ملاحظة: يمكنك إعادة الضغط على زر الرفع وسيتم استئناف الأجزاء المتبقية تلقائياً دون إعادة رفع الأجزاء السابقة.") }}</small>',
-            confirmButtonText: '{{ __("حسناً") }}',
-            confirmButtonColor: '#ef4444'
+            text: msg,
+            confirmButtonText: '{{ __("حسناً") }}'
         });
     }
 }
 window.submitVideoForm = submitVideoForm;
-
-async function toggleVisibility(id, btn) {
-    if (!id) return;
-    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const toggleUrl = (isUserAdmin ? '/admin/visibility/toggle/' : '/teacher/visibility/toggle/') + id;
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-
-    if (btn) btn.disabled = true;
-    try {
-        const res = await axios.post(toggleUrl, { _token: token });
-        if (res.data && res.data.success) {
-            const isVis = !!res.data.is_visible;
-            if (btn) {
-                btn.className = 'visibility-toggle-btn ' + (isVis ? 'is-visible' : 'is-hidden');
-                btn.innerHTML = `<i class="fa-solid ${isVis ? 'fa-eye' : 'fa-eye-slash'}"></i> <span>${isVis ? '{{ __("متاح للطلبة") }}' : '{{ __("محجوب") }}'}</span>`;
-            }
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: res.data.message || 'تم تحديث حالة الظهور', timer: 1200, showConfirmButton: false });
-            }
-        } else {
-            const errMsg = (res.data && res.data.error) ? res.data.error : '{{ __("تعذر تعديل حالة الظهور.") }}';
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: errMsg });
-            } else {
-                alert(errMsg);
-            }
-        }
-    } catch (e) {
-        console.error('Toggle visibility error:', e);
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({ icon: 'error', title: '{{ __("خطأ") }}', text: '{{ __("تعذر تعديل حالة الظهور.") }}' });
-        } else {
-            alert('تعذر تعديل حالة الظهور.');
-        }
-    } finally {
-        if (btn) btn.disabled = false;
-    }
-}
-
-window.deleteVideoItem = async function(id) {
-    if (!id) return;
-    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const deleteUrl = (isUserAdmin ? "{{ url('admin/educational-contents') }}/" : "{{ url('teacher/educational-contents') }}/") + id;
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-
-    const executeDelete = async () => {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'جاري الحذف...',
-                text: 'يرجى الانتظار لحظات...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('_method', 'DELETE');
-            formData.append('_token', token);
-            formData.append('sync_sisters', '1');
-
-            const res = await axios.post(deleteUrl, formData, {
-                headers: {
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = res.data;
-            if (data && (data.success || res.status === 200)) {
-                if (typeof Swal !== 'undefined') {
-                    await Swal.fire({ 
-                        icon: 'success', 
-                        title: 'تم الحذف بنجاح ✅', 
-                        text: data.message || 'تم حذف المحاضرة بنجاح.',
-                        timer: 1500, 
-                        showConfirmButton: false 
-                    });
-                } else {
-                    alert(data.message || 'تم حذف المحاضرة بنجاح.');
-                }
-                location.reload();
-            } else {
-                const errMsg = data?.message || 'تعذر حذف المحتوى. يرجى مراجعة الصلاحيات أو المحاولة مرة أخرى.';
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({ 
-                        icon: 'error', 
-                        title: 'خطأ', 
-                        text: errMsg 
-                    });
-                } else {
-                    alert('خطأ: ' + errMsg);
-                }
-            }
-        } catch (e) {
-            console.error("Delete error:", e);
-            const errMsg = e.response?.data?.message || e.message || 'تعذر الاتصال بالخادم لإتمام عملية الحذف.';
-            if (e.response?.status === 404 || errMsg.includes('غير موجودة') || errMsg.includes('تم حذفها')) {
-                if (typeof Swal !== 'undefined') {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'تمت إزالة المحاضرة ✅',
-                        text: 'المحاضرة تم مسحها بالفعل من السيرفر.',
-                        timer: 1400,
-                        showConfirmButton: false
-                    });
-                }
-                location.reload();
-                return;
-            }
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({ 
-                    icon: 'error', 
-                    title: 'خطأ في عملية الحذف', 
-                    text: errMsg 
-                });
-            } else {
-                alert('تعذر الاتصال بالخادم لإتمام عملية الحذف: ' + errMsg);
-            }
-        }
-    };
-
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: '{{ __("حذف هذا الشرح المرئي؟") }}',
-            text: '{{ __("هل أنت متأكد من حذف هذا الدرس؟ سيتم حذفه من جميع الفروع الأكاديمية الشقيقة أيضاً لنفس المحاضرة.") }}',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: '{{ __("نعم، احذف المحاضرة") }}',
-            cancelButtonText: '{{ __("إلغاء") }}'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                executeDelete();
-            }
-        });
-    } else {
-        if (confirm('{{ __("هل أنت متأكد من حذف هذا الدرس؟ سيتم حذفه من جميع الفروع الأكاديمية الشقيقة أيضاً لنفس المحاضرة.") }}')) {
-            executeDelete();
-        }
-    }
-};
-function deleteVideoItem(id) { return window.deleteVideoItem(id); }
-
-window.purgeAllContents = async function() {
-    const isUserAdmin = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
-    const purgeUrl = isUserAdmin 
-        ? '/admin/educational-contents/purge-all' 
-        : '/teacher/educational-contents/purge-all';
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
-
-    const executePurge = async () => {
-        if (typeof Swal !== 'undefined') {
-            Swal.fire({
-                title: 'جاري الحذف والتصفير الشامل...',
-                text: 'يرجى الانتظار لحظات حتى إتمام مسح السجلات بالكامل...',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-        }
-
-        try {
-            const formData = new FormData();
-            formData.append('_token', token);
-            formData.append('_method', 'DELETE');
-
-            const res = await axios.post(purgeUrl, formData, {
-                headers: {
-                    'X-CSRF-TOKEN': token,
-                    'Accept': 'application/json'
-                }
-            });
-
-            const data = res.data;
-            if (data && (data.success || res.status === 200)) {
-                if (typeof Swal !== 'undefined') {
-                    await Swal.fire({
-                        icon: 'success',
-                        title: 'تم التصفير الشامل بنجاح! 🗑️',
-                        text: data.message || 'تم حذف وتصفير جميع المحتويات من المنصة بالكامل.',
-                        confirmButtonText: 'حسناً'
-                    });
-                } else {
-                    alert(data.message || 'تم حذف وتصفير جميع المحتويات من المنصة بالكامل.');
-                }
-                location.reload();
-            } else {
-                const errMsg = data?.message || 'حدث خطأ أثناء محاولة التصفير الشامل للمحتويات.';
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'تعذر الحذف الشامل',
-                        text: errMsg
-                    });
-                } else {
-                    alert('تعذر الحذف الشامل: ' + errMsg);
-                }
-            }
-        } catch (err) {
-            console.error("Purge error:", err);
-            const errMsg = err.response?.data?.message || 'حدث خطأ في الاتصال بالخادم أثناء تنفيذ الحذف الشامل.';
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'خطأ في الاتصال',
-                    text: errMsg
-                });
-            } else {
-                alert('حدث خطأ في الاتصال بالخادم أثناء تنفيذ الحذف الشامل.');
-            }
-        }
-    };
-
-    if (typeof Swal !== 'undefined') {
-        Swal.fire({
-            title: '⚠️ تحذير فائق الخطورة!',
-            html: `
-                <div style="text-align: right; line-height: 1.6; font-size: 0.9rem;">
-                    <p style="color: #dc2626; font-weight: 800; font-size: 1rem; margin-bottom: 8px;">
-                        هل أنت متأكد تماماً من رغبتك في حذف وتصفير جميع الفيديوهات والمحاضرات والملازم على المنصة بالكامل؟
-                    </p>
-                    <p style="color: #475569; margin-bottom: 12px;">
-                        ⚠️ سيؤدي هذا الإجراء إلى <strong>مسح شامل لجميع المحتويات والشروحات المرئية والملفات</strong> من حسابات كافة المستخدمين (المدير، المدرسين، والطلاب) في جميع الفروع.
-                    </p>
-                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 10px; margin-bottom: 8px; color: #991b1b; font-weight: 600;">
-                        لن يمكن التراجع عن هذا الإجراء إطلاقاً بعد تنفيذه!
-                    </div>
-                </div>
-            `,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#64748b',
-            confirmButtonText: 'نعم، احذف جميع المحتويات الآن 🗑️',
-            cancelButtonText: 'إلغاء التراجع',
-            focusCancel: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                executePurge();
-            }
-        });
-    } else {
-        if (confirm("⚠️ تحذير فائق الخطورة!\n\nهل أنت متأكد تماماً من رغبتك في حذف وتصفير جميع الفيديوهات والمحاضرات والملازم على المنصة بالكامل لجميع المستخدمين؟\n\nلن يمكن التراجع عن هذا الإجراء إطلاقاً!")) {
-            executePurge();
-        }
-    }
-};
-
-// نظام مشغل الفيديو الآمن الداخلي المخصص للمنصة (منع الوصول إلى YouTube كلياً)
-let teacherPlayers = {};
-let teacherIntervals = {};
-
-function onYouTubeIframeAPIReady() {
-    document.querySelectorAll('iframe[id^="iframe_teacher_"]').forEach(iframe => {
-        initTeacherPlayer(iframe.id);
-    });
-}
-
-function initTeacherPlayer(iframeId) {
-    const vidId = iframeId.replace('iframe_teacher_', '');
-    if (teacherPlayers[vidId]) return teacherPlayers[vidId];
-    if (window.YT && window.YT.Player) {
-        try {
-            teacherPlayers[vidId] = new YT.Player(iframeId, {
-                events: {
-                    'onStateChange': function(e) {
-                        handleTeacherStateChange(vidId, e.data);
-                    }
-                }
-            });
-            return teacherPlayers[vidId];
-        } catch(e) {}
-    }
-    return null;
-}
-
-function handleTeacherStateChange(vidId, state) {
-    const centerBtn = document.getElementById(`center_play_${vidId}`);
-    const barBtn = document.getElementById(`bar_btn_${vidId}`);
-    if (state === 1) { // مشتغل
-        if (centerBtn) centerBtn.style.opacity = '0';
-        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        startTeacherProgressTracking(vidId);
-    } else { // متوقف
-        if (centerBtn) {
-            centerBtn.style.opacity = '1';
-            centerBtn.innerHTML = (state === 0) ? '<i class="fa-solid fa-rotate-right"></i>' : '<i class="fa-solid fa-play"></i>';
-        }
-        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        stopTeacherProgressTracking(vidId);
-    }
-}
-
-function toggleTeacherPlayback(vidId) {
-    const yt = teacherPlayers[vidId] || initTeacherPlayer(`iframe_teacher_${vidId}`);
-    if (yt && typeof yt.getPlayerState === 'function') {
-        const state = yt.getPlayerState();
-        if (state === 1) {
-            yt.pauseVideo();
-        } else {
-            yt.playVideo();
-        }
-        return;
-    }
-    const iframe = document.getElementById(`iframe_teacher_${vidId}`);
-    if (iframe && iframe.contentWindow) {
-        const centerBtn = document.getElementById(`center_play_${vidId}`);
-        const isPlaying = centerBtn && centerBtn.style.opacity === '0';
-        iframe.contentWindow.postMessage(JSON.stringify({
-            event: 'command',
-            func: isPlaying ? 'pauseVideo' : 'playVideo',
-            args: []
-        }), '*');
-        if (centerBtn) centerBtn.style.opacity = isPlaying ? '1' : '0';
-        const barBtn = document.getElementById(`bar_btn_${vidId}`);
-        if (barBtn) barBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
-        if (!isPlaying) startTeacherProgressTracking(vidId); else stopTeacherProgressTracking(vidId);
-    }
-}
-
-function formatDuration(sec) {
-    if (!sec || isNaN(sec)) return '00:00';
-    sec = Math.floor(sec);
-    const m = Math.floor(sec / 60);
-    const s = sec % 60;
-    return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
-}
-
-function startTeacherProgressTracking(vidId) {
-    stopTeacherProgressTracking(vidId);
-    teacherIntervals[vidId] = setInterval(() => {
-        const yt = teacherPlayers[vidId];
-        if (yt && typeof yt.getCurrentTime === 'function') {
-            const cur = yt.getCurrentTime() || 0;
-            const dur = yt.getDuration() || 0;
-            const timeTxt = document.getElementById(`time_txt_${vidId}`);
-            const seekRange = document.getElementById(`seek_range_${vidId}`);
-            if (timeTxt) timeTxt.textContent = `${formatDuration(cur)} / ${formatDuration(dur)}`;
-            if (seekRange && dur > 0) {
-                seekRange.value = (cur / dur) * 100;
-            }
-        }
-    }, 500);
-}
-
-function stopTeacherProgressTracking(vidId) {
-    if (teacherIntervals[vidId]) {
-        clearInterval(teacherIntervals[vidId]);
-        delete teacherIntervals[vidId];
-    }
-}
-
-function seekTeacherPlayback(vidId, pct) {
-    const yt = teacherPlayers[vidId] || initTeacherPlayer(`iframe_teacher_${vidId}`);
-    if (yt && typeof yt.getDuration === 'function') {
-        const dur = yt.getDuration() || 0;
-        const targetSec = (pct / 100) * dur;
-        yt.seekTo(targetSec, true);
-    } else {
-        const iframe = document.getElementById(`iframe_teacher_${vidId}`);
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage(JSON.stringify({
-                event: 'command',
-                func: 'seekTo',
-                args: [parseFloat(pct), true]
-            }), '*');
-        }
-    }
-}
-
-function toggleTeacherFullscreen(containerId) {
-    const el = document.getElementById(containerId);
-    if (!el) return;
-    if (document.fullscreenElement) {
-        document.exitFullscreen();
-    } else {
-        if (el.requestFullscreen) {
-            el.requestFullscreen();
-        } else if (el.webkitRequestFullscreen) {
-            el.webkitRequestFullscreen();
-        } else if (el.mozRequestFullScreen) {
-            el.mozRequestFullScreen();
-        }
-    }
-}
-
-// تعطيل القائمة المنبثقة بالزر الأيمن لمنع أي وصول لروابط يوتيوب
-document.addEventListener('contextmenu', function(e) {
-    if (e.target.closest('.video-frame-wrap')) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-}, true);
 </script>
-<script src="https://www.youtube.com/iframe_api"></script>
 @endsection

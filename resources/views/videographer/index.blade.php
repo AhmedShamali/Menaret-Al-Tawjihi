@@ -45,32 +45,49 @@
 
     {{-- 2. شريط البحث والتصفية --}}
     <div style="background: var(--ed-surface); border: 1px solid var(--ed-border); border-radius: var(--ed-radius-lg); padding: 18px 24px; margin-bottom: 24px; box-shadow: var(--ed-shadow-sm);">
-        <form action="{{ route('videographer.contents.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) auto; gap: 14px; align-items: end;">
+        <form action="{{ route('videographer.contents.index') }}" method="GET" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 14px; align-items: end;">
             
             {{-- تصفية بالفرع الأكاديمي --}}
             <div>
                 <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                    {{ __('الفرع الأكاديمي') }}
+                    <i class="fa-solid fa-graduation-cap" style="color: #2563eb; margin-left: 4px;"></i> {{ __('الفرع الأكاديمي') }}
                 </label>
                 <select name="stage_id" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
                     <option value="">{{ __('كافة الفروع') }}</option>
                     @foreach($stages as $stage)
                         <option value="{{ $stage->id }}" {{ request('stage_id') == $stage->id ? 'selected' : '' }}>
-                            {{ $stage->name }}
+                            {{ $stage->short_label ?? $stage->label_ar ?? $stage->name }}
                         </option>
                     @endforeach
                 </select>
             </div>
 
-            {{-- البحث بالنص --}}
-            <div style="grid-column: span 2;">
+            {{-- تصفية بالمادة الدراسية --}}
+            <div>
                 <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
-                    {{ __('بحث باسم المحاضرة أو المادة') }}
+                    <i class="fa-solid fa-book-open" style="color: #2563eb; margin-left: 4px;"></i> {{ __('المادة الدراسية') }}
                 </label>
-                <div style="position: relative;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 12px; top: 13px; color: #94a3b8; font-size: 0.9rem;"></i>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث عن عنوان المحاضرة أو اسم المادة...') }}" class="uni-input" style="width: 100%; height: 42px; padding: 0 36px 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a;">
-                </div>
+                <select name="subject_id" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                    <option value="">{{ __('جميع المواد') }}</option>
+                    @if(isset($uniqueSubjects))
+                        @foreach($uniqueSubjects as $sub)
+                            @php
+                                $cleanSubTitle = $sub->clean_name ?? trim(preg_replace('/\s*\(.*?\)\s*/u', '', $sub->name_ar ?? $sub->name));
+                            @endphp
+                            <option value="{{ $sub->id }}" {{ request('subject_id') == $sub->id ? 'selected' : '' }}>
+                                {{ $cleanSubTitle }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+
+            {{-- البحث بالنص --}}
+            <div style="min-width: 200px;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: #64748b; margin-left: 4px;"></i> {{ __('بحث باسم المحاضرة أو المادة') }}
+                </label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('ابحث عن عنوان المحاضرة أو اسم المادة...') }}" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; box-sizing: border-box;">
             </div>
 
             {{-- تصفية بحالة الظهور للطلاب --}}
@@ -85,14 +102,27 @@
                 </select>
             </div>
 
+            {{-- تصفية الجمهور والمنطقة --}}
+            <div>
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 6px;">
+                    <i class="fa-solid fa-map-location-dot" style="color: #64748b; margin-left: 4px;"></i> {{ __('الجمهور المستهدف') }}
+                </label>
+                <select name="target_region" class="uni-input" style="width: 100%; height: 42px; padding: 0 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.86rem; color: #0f172a; background: #fff;" onchange="this.form.submit()">
+                    <option value="">{{ __('كافة الشروحات 🌐') }}</option>
+                    <option value="gaza" {{ request('target_region') == 'gaza' ? 'selected' : '' }}>🌿 {{ __('قطاع غزة') }}</option>
+                    <option value="west_bank" {{ request('target_region') == 'west_bank' ? 'selected' : '' }}>🏛️ {{ __('الضفة والقدس') }}</option>
+                    <option value="all" {{ request('target_region') == 'all' ? 'selected' : '' }}>🌐 {{ __('منهاج مشترك') }}</option>
+                </select>
+            </div>
+
             {{-- أزرار التصفية وإعادة الضبط --}}
             <div style="display: flex; gap: 8px;">
-                <button type="submit" style="background: #1d4ed8; color: #ffffff; border: none; height: 42px; padding: 0 18px; border-radius: 8px; font-weight: 600; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                <button type="submit" style="background: #1d4ed8; color: #ffffff; border: none; height: 42px; padding: 0 18px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                     <i class="fa-solid fa-filter"></i>
                     <span>{{ __('تصفية') }}</span>
                 </button>
-                @if(request()->hasAny(['stage_id', 'subject_id', 'search', 'visibility']))
-                    <a href="{{ route('videographer.contents.index') }}" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; height: 42px; padding: 0 14px; border-radius: 8px; font-weight: 600; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('إلغاء الفلتر') }}">
+                @if(request()->hasAny(['stage_id', 'subject_id', 'search', 'visibility', 'target_region']))
+                    <a href="{{ route('videographer.contents.index') }}" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; height: 42px; padding: 0 14px; border-radius: 8px; font-weight: 700; font-size: 0.86rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('إلغاء الفلتر') }}">
                         <i class="fa-solid fa-xmark"></i>
                     </a>
                 @endif

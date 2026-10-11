@@ -124,6 +124,10 @@ class VideographerContentController extends Controller
             }
         }
 
+        if ($request->filled('target_region') && in_array($request->target_region, ['all', 'gaza', 'west_bank'])) {
+            $query->where('target_region', $request->target_region);
+        }
+
         $rawContents = $query->latest()->get();
 
         // تجميع المحاضرات المتطابقة والموزعة على عدة فروع في سجل موحد لكل درس
@@ -196,8 +200,10 @@ class VideographerContentController extends Controller
         );
 
         $stages = Stage::with('subjects')->orderBy('grade_level')->get();
+        $allSubjects = Subject::with('stage')->orderBy('name_ar')->get();
+        $uniqueSubjects = $allSubjects->unique(fn($s) => trim(preg_replace('/\s*\(.*?\)\s*/u', '', $s->name_ar ?? $s->name)))->values();
 
-        return view('videographer.index', compact('contents', 'stages'));
+        return view('videographer.index', compact('contents', 'stages', 'uniqueSubjects'));
     }
 
     /**
