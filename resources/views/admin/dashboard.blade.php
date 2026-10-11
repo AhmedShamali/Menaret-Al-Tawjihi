@@ -450,7 +450,7 @@
         max-width: 100%;
         margin: 0 auto;
         box-sizing: border-box;
-        padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px));
     }
 
     /* 1. ترويسة الصفحة البسيطة والواضحة */
@@ -707,7 +707,7 @@
         background: #f8fafc;
     }
 
-    /* تحويل جدول السجلات إلى بطاقات مرنة ذكية على الهواتف والشاشات الصغيرة (100% Mobile Responsive) */
+    /* تجاوب أنيق ومرن للجداول على الهواتف مع الحفاظ على التنسيق الأكاديمي النظيف */
     @media (max-width: 768px) {
         .dash-header-bar {
             flex-direction: column !important;
@@ -721,107 +721,82 @@
             gap: 6px !important;
         }
         .table-responsive {
-            overflow-x: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            display: block !important;
+            scrollbar-width: thin;
+            border-radius: 0 0 8px 8px;
         }
         .academic-simple-table {
-            min-width: 0 !important;
+            min-width: 540px !important;
             width: 100% !important;
-            display: block !important;
+            border-collapse: collapse !important;
+            display: table !important;
         }
         .academic-simple-table thead {
-            display: none !important;
+            display: table-header-group !important;
         }
-        .academic-simple-table tbody {
-            display: flex !important;
-            flex-direction: column !important;
-            gap: 10px !important;
-            padding: 10px !important;
+        .academic-simple-table thead th {
+            display: table-cell !important;
+            padding: 10px 14px !important;
+            font-size: 0.78rem !important;
+            white-space: nowrap !important;
             background: #f8fafc !important;
         }
-        .academic-simple-table tr {
-            display: grid !important;
-            grid-template-columns: 1fr auto auto !important;
-            grid-template-areas:
-                "entity entity entity"
-                "count status action" !important;
-            align-items: center !important;
-            gap: 10px 8px !important;
-            padding: 12px 14px !important;
+        .academic-simple-table tbody {
+            display: table-row-group !important;
+            padding: 0 !important;
             background: #ffffff !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 8px !important;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03) !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
         }
-        .academic-simple-table tr:hover {
+        .academic-simple-table tr {
+            display: table-row !important;
+            border-bottom: 1px solid #e2e8f0 !important;
             background: #ffffff !important;
-            border-color: #cbd5e1 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
         }
         .academic-simple-table td {
-            padding: 0 !important;
-            border: none !important;
-        }
-        .academic-simple-table td:nth-child(1) {
-            grid-area: entity !important;
-            text-align: right !important;
-            width: 100% !important;
-        }
-        .academic-simple-table td:nth-child(2) {
-            grid-area: count !important;
-            text-align: right !important;
-            justify-self: start !important;
-        }
-        .academic-simple-table td:nth-child(3) {
-            grid-area: status !important;
-            text-align: center !important;
-            justify-self: center !important;
-        }
-        .academic-simple-table td:nth-child(4) {
-            grid-area: action !important;
-            text-align: left !important;
-            justify-self: end !important;
+            display: table-cell !important;
+            padding: 11px 14px !important;
+            font-size: 0.82rem !important;
+            white-space: nowrap !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            vertical-align: middle !important;
+            width: auto !important;
         }
         .academic-simple-table .cell-entity {
             gap: 10px !important;
         }
         .academic-simple-table .cell-entity strong {
-            font-size: 0.86rem !important;
+            font-size: 0.84rem !important;
             line-height: 1.3 !important;
+            display: block !important;
         }
         .academic-simple-table .cell-entity small {
-            font-size: 0.73rem !important;
+            font-size: 0.72rem !important;
             line-height: 1.3 !important;
+            display: block !important;
+            color: #64748b !important;
         }
         .btn-action-view {
-            padding: 4px 10px !important;
+            padding: 5px 12px !important;
             font-size: 0.78rem !important;
+            border-radius: 6px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            white-space: nowrap !important;
+            width: auto !important;
+            background: #eff6ff !important;
+            color: #1d4ed8 !important;
+            border: 1px solid #bfdbfe !important;
+            font-weight: 700 !important;
         }
     }
 
     @media (max-width: 440px) {
-        .academic-simple-table tr {
-            grid-template-columns: 1fr 1fr !important;
-            grid-template-areas:
-                "entity entity"
-                "count status"
-                "action action" !important;
-            gap: 10px 8px !important;
-            padding: 11px 12px !important;
-        }
-        .academic-simple-table td:nth-child(4) {
-            justify-self: stretch !important;
-        }
-        .academic-simple-table td:nth-child(4) .btn-action-view {
-            width: 100% !important;
-            justify-content: center !important;
-            padding: 6px 10px !important;
-            border-radius: 6px !important;
-            background: #eff6ff !important;
-            color: #1d4ed8 !important;
-            border-color: #bfdbfe !important;
-            font-weight: 700 !important;
-        }
         .dash-kpi-row {
             grid-template-columns: 1fr 1fr !important;
             gap: 8px !important;

@@ -2232,8 +2232,8 @@
 
         @media (max-width: 768px) {
             .ed-scroll-top-btn {
-                bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-                left: 10px;
+                bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+                left: 14px;
                 width: 34px;
                 height: 34px;
                 font-size: 0.82rem;
@@ -2253,7 +2253,7 @@
             }
             html[dir="ltr"] .ed-scroll-top-btn {
                 left: auto;
-                right: 10px;
+                right: 14px;
             }
         }
 
@@ -3671,7 +3671,7 @@
         window.addEventListener('scroll', function() {
             const btn = document.getElementById('edScrollTopBtn');
             if (btn) {
-                const threshold = window.innerWidth <= 768 ? 400 : 250;
+                const threshold = window.innerWidth <= 768 ? 500 : 250;
                 if (window.scrollY > threshold) {
                     btn.classList.add('visible');
                 } else {
