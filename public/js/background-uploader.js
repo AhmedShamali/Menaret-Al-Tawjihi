@@ -306,6 +306,13 @@
         initWidgetDOM() {
             if (document.getElementById('ed-bg-uploader-widget')) return;
 
+            if (!document.body) {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', () => this.initWidgetDOM());
+                }
+                return;
+            }
+
             const widget = document.createElement('div');
             widget.id = 'ed-bg-uploader-widget';
             widget.className = 'ed-bg-widget-collapsed-hidden';
@@ -607,17 +614,29 @@
                 }
             `;
 
-            document.head.appendChild(style);
-            document.body.appendChild(widget);
+            if (document.head && !document.getElementById('ed-bg-uploader-styles')) {
+                style.id = 'ed-bg-uploader-styles';
+                document.head.appendChild(style);
+            }
+            if (document.body) {
+                document.body.appendChild(widget);
+            }
 
             // إضافة الأحداث
-            document.getElementById('edBgToggleMinBtn').addEventListener('click', () => this.toggleMinimize());
-            document.getElementById('edBgMiniExpand').addEventListener('click', () => this.toggleMinimize());
-            document.getElementById('edBgCloseBtn').addEventListener('click', () => this.cancel());
-            document.getElementById('edBgReturnBtn').addEventListener('click', () => this.returnToUploadPage());
+            const toggleMin = document.getElementById('edBgToggleMinBtn');
+            if (toggleMin) toggleMin.addEventListener('click', () => this.toggleMinimize());
+            const miniExpand = document.getElementById('edBgMiniExpand');
+            if (miniExpand) miniExpand.addEventListener('click', () => this.toggleMinimize());
+            const closeBtn = document.getElementById('edBgCloseBtn');
+            if (closeBtn) closeBtn.addEventListener('click', () => this.cancel());
+            const returnBtn = document.getElementById('edBgReturnBtn');
+            if (returnBtn) returnBtn.addEventListener('click', () => this.returnToUploadPage());
         }
 
         showWidget() {
+            if (!document.getElementById('ed-bg-uploader-widget')) {
+                this.initWidgetDOM();
+            }
             const w = document.getElementById('ed-bg-uploader-widget');
             if (w) w.classList.remove('ed-bg-widget-collapsed-hidden');
         }

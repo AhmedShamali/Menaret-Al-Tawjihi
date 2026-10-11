@@ -837,18 +837,40 @@
             if (typeof window.saveVideographerDraft === 'function') window.saveVideographerDraft();
         }
 
-        // بدء الرفع بالخلفية عبر محرك المنصة العام مع ضمان تسجيل مستمع المزامنة
-        if (window.EdBackgroundUploader) {
-            window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
-            window.EdBackgroundUploader.start({
-                file: window.selectedFile,
-                portal: 'videographer',
-                chunkUrl: "{{ Route::has('videographer.contents.upload_chunk') ? route('videographer.contents.upload_chunk') : url('/videographer/contents/upload-chunk') }}",
-                checkStatusUrl: "{{ Route::has('videographer.contents.check_chunk_status') ? route('videographer.contents.check_chunk_status') : url('/videographer/contents/check-chunk-status') }}",
-                originUrl: window.location.href,
-                chunkSize: 3 * 1024 * 1024
-            });
-        }
+        // بدء الرفع بالخلفية عبر محرك المنصة العام مع ضمان تسجيل مستمع المزامنة وموثوقية البدء الفوري
+        const triggerUpload = () => {
+            if (window.EdBackgroundUploader) {
+                window.EdBackgroundUploader.onStateChange(window.syncVideographerUploadUI);
+                window.EdBackgroundUploader.start({
+                    file: window.selectedFile,
+                    portal: 'videographer',
+                    chunkUrl: "{{ Route::has('videographer.contents.upload_chunk') ? route('videographer.contents.upload_chunk') : url('/videographer/contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('videographer.contents.check_chunk_status') ? route('videographer.contents.check_chunk_status') : url('/videographer/contents/check-chunk-status') }}",
+                    originUrl: window.location.href,
+                    chunkSize: 3 * 1024 * 1024
+                });
+            } else if (window.ResumableUploader) {
+                const uploader = new window.ResumableUploader({
+                    chunkUrl: "{{ Route::has('videographer.contents.upload_chunk') ? route('videographer.contents.upload_chunk') : url('/videographer/contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('videographer.contents.check_chunk_status') ? route('videographer.contents.check_chunk_status') : url('/videographer/contents/check-chunk-status') }}",
+                    pingUrl: '/ping',
+                    onProgress: (pct) => {
+                        window.syncVideographerUploadUI({ status: 'uploading', progress: pct, fileName: window.selectedFile.name, fileSizeFormatted: mbSize });
+                    },
+                    onSpeed: (spd) => {
+                        const st = document.getElementById('uploadStatusText');
+                        if (st) st.textContent = `جاري رفع أجزاء الفيديو: ${spd}`;
+                    }
+                });
+                uploader.upload(window.selectedFile).then(res => {
+                    window.syncVideographerUploadUI({ status: 'completed', result: res, fileName: window.selectedFile.name, fileSizeFormatted: mbSize });
+                }).catch(err => {
+                    window.syncVideographerUploadUI({ status: 'error', error: err.message });
+                });
+            }
+        };
+
+        triggerUpload();
     };
 
     // مزامنة عناصر شاشة الرفع مع حالة الرفع في الخلفية
