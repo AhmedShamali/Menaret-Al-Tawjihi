@@ -696,6 +696,16 @@
                             <span id="chunkEtaMeta" style="font-weight: 700; color: #d97706;"><i class="fa-solid fa-clock"></i> --</span>
                             <span id="chunkPartMeta" style="font-weight: 700; color: #64748b;">--</span>
                         </div>
+                        <div style="margin-top: 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+                            <span style="font-size: 0.76rem; color: #475569;">
+                                <i class="fa-solid fa-circle-info" style="color: #2563eb;"></i>
+                                {{ __('يمكنك إغلاق هذه النافذة أو تصفح باقي الواجهات بأمان تام دون انقطاع التحميل.') }}
+                            </span>
+                            <button type="button" onclick="minimizeModalAndBrowse()" style="background: #eff6ff; border: 1.5px solid #93c5fd; color: #1d4ed8; padding: 6px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-window-minimize"></i>
+                                <span>{{ __('متابعة الرفع في الخلفية وتصفح المنصة 🚀') }}</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1515,11 +1525,88 @@ function onVideoModalSelectionChange() {
     alertBox.style.display = 'block';
 }
 
+window.minimizeModalAndBrowse = function() {
+    window.closeUploadVideoModal();
+    if (window.EdBackgroundUploader) {
+        window.EdBackgroundUploader.showWidget();
+    }
+    if (window.Swal) {
+        Swal.fire({
+            toast: true,
+            position: 'bottom-start',
+            icon: 'info',
+            title: '🚀 الرفع مستمر بالخلفية',
+            text: 'يمكنك الآن الانتقال بين الواجهات وتصفح المنصة بحرية تامة دون توقف التحميل.',
+            showConfirmButton: false,
+            timer: 4500
+        });
+    }
+};
+
+window.saveTeacherVideoDraft = function() {
+    try {
+        const form = document.getElementById('uploadVideoForm');
+        if (!form) return;
+        const data = {
+            title: form.querySelector('[name="title"]')?.value || '',
+            target_region: form.querySelector('[name="target_region"]:checked')?.value || 'all',
+            channel_name: form.querySelector('[name="channel_name"]')?.value || '',
+            order: form.querySelector('[name="order"]')?.value || '1',
+            subject_id: form.querySelector('[name="subject_id"]')?.value || '',
+            stage_ids: Array.from(form.querySelectorAll('[name="stage_ids[]"]:checked')).map(cb => cb.value)
+        };
+        localStorage.setItem('ed_teacher_video_form_draft', JSON.stringify(data));
+    } catch (e) {}
+};
+
+window.restoreTeacherVideoDraft = function() {
+    try {
+        const raw = localStorage.getItem('ed_teacher_video_form_draft');
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const form = document.getElementById('uploadVideoForm');
+        if (!form) return;
+
+        if (data.title && form.querySelector('[name="title"]') && !form.querySelector('[name="title"]').value) {
+            form.querySelector('[name="title"]').value = data.title;
+        }
+        if (data.channel_name && form.querySelector('[name="channel_name"]') && !form.querySelector('[name="channel_name"]').value) {
+            form.querySelector('[name="channel_name"]').value = data.channel_name;
+        }
+        if (data.order && form.querySelector('[name="order"]')) {
+            form.querySelector('[name="order"]').value = data.order;
+        }
+        if (data.subject_id && form.querySelector('[name="subject_id"]') && !form.querySelector('[name="subject_id"]').value) {
+            form.querySelector('[name="subject_id"]').value = data.subject_id;
+        }
+        if (data.target_region) {
+            const rad = form.querySelector(`[name="target_region"][value="${data.target_region}"]`);
+            if (rad) {
+                rad.checked = true;
+                updateVideoRegionSelect(rad);
+            }
+        }
+        if (Array.isArray(data.stage_ids) && data.stage_ids.length > 0) {
+            form.querySelectorAll('[name="stage_ids[]"]').forEach(cb => {
+                cb.checked = data.stage_ids.includes(cb.value);
+            });
+        }
+        try { onVideoModalSelectionChange(); } catch (e) {}
+    } catch (e) {}
+};
+
+window.clearTeacherVideoDraft = function() {
+    try {
+        localStorage.removeItem('ed_teacher_video_form_draft');
+    } catch (e) {}
+};
+
 window.openUploadVideoModal = function() {
     const m = document.getElementById('uploadVideoModal');
     if (m) {
         m.style.display = 'grid';
         document.body.style.overflow = 'hidden';
+        try { window.restoreTeacherVideoDraft(); } catch (e) {}
         try { onVideoModalSelectionChange(); } catch (e) {}
         if (window.EdBackgroundUploader) {
             window.EdBackgroundUploader.syncTeacherVideosPage();
@@ -1605,6 +1692,9 @@ async function submitVideoForm(e) {
     const form = document.getElementById('uploadVideoForm');
     const fileInput = document.getElementById('videoFileInput');
 
+    // حفظ مسودة الحقول
+    try { window.saveTeacherVideoDraft(); } catch (err) {}
+
     // 1. إذا كان الفيديو مرفوعاً ومكتملاً مسبقاً في الخلفية
     let uploadedPath = null;
     let formattedSize = null;
@@ -1629,7 +1719,13 @@ async function submitVideoForm(e) {
     const progressWrap = document.getElementById('chunkProgressWrap');
     if (progressWrap) progressWrap.style.display = 'block';
     if (btn) btn.disabled = true;
-    if (btnCancel) btnCancel.disabled = true;
+
+    // تمكين زر التصغير والمتابعة بالخلفية بدلاً من تعطيله
+    if (btnCancel) {
+        btnCancel.disabled = false;
+        btnCancel.innerHTML = `<i class="fa-solid fa-window-minimize"></i> {{ __("تصغير وتصفح المنصة بالخلفية") }}`;
+        btnCancel.onclick = function() { window.minimizeModalAndBrowse(); };
+    }
 
     try {
         if (!uploadedPath && fileInput && fileInput.files.length > 0) {
@@ -1691,6 +1787,8 @@ async function submitVideoForm(e) {
             }
         });
 
+        // مسح المسودة وإعادة تعيين الودجت
+        window.clearTeacherVideoDraft();
         if (window.EdBackgroundUploader) {
             window.EdBackgroundUploader.reset();
         }
@@ -1708,7 +1806,11 @@ async function submitVideoForm(e) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';
         }
-        if (btnCancel) btnCancel.disabled = false;
+        if (btnCancel) {
+            btnCancel.disabled = false;
+            btnCancel.innerHTML = `{{ __("إلغاء") }}`;
+            btnCancel.onclick = function() { window.closeUploadVideoModal(); };
+        }
 
         let msg = err.response?.data?.message || err.message || '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
         const progressStatus = document.getElementById('chunkProgressStatus');
@@ -1724,5 +1826,10 @@ async function submitVideoForm(e) {
     }
 }
 window.submitVideoForm = submitVideoForm;
+
+// استعادة المسودة تلقائياً إن وجدت عند تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    window.restoreTeacherVideoDraft();
+});
 </script>
 @endsection

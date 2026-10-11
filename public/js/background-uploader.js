@@ -278,8 +278,25 @@
          * العودة لصفحة الرفع ونشر المحاضرة
          */
         returnToUploadPage() {
-            if (this.state.originUrl) {
-                this.navigate(this.state.originUrl);
+            if (!this.state.originUrl) return;
+
+            const currentClean = window.location.href.split('#')[0].split('?')[0];
+            const originClean = this.state.originUrl.split('#')[0].split('?')[0];
+
+            if (currentClean === originClean) {
+                if (typeof window.openUploadVideoModal === 'function') {
+                    window.openUploadVideoModal();
+                }
+                this.syncWithCurrentPage();
+            } else {
+                this.navigate(this.state.originUrl).then(() => {
+                    setTimeout(() => {
+                        if (typeof window.openUploadVideoModal === 'function') {
+                            window.openUploadVideoModal();
+                        }
+                        this.syncWithCurrentPage();
+                    }, 250);
+                });
             }
         }
 
@@ -866,6 +883,9 @@
         /**
          * مزامنة صفحة مكتبة فيديوهات المعلم والمدير (مودال الرفع الموحد)
          */
+        /**
+         * مزامنة صفحة مكتبة فيديوهات المعلم والمدير (مودال الرفع الموحد)
+         */
         syncTeacherVideosPage() {
             const progressWrap = document.getElementById('chunkProgressWrap');
             if (!progressWrap) return;
@@ -901,7 +921,10 @@
                     btnSubmit.disabled = true;
                     btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الفيديو بالخلفية (${this.state.progress || 0}%)...`;
                 }
-                if (btnCancel) btnCancel.disabled = true;
+                if (btnCancel) {
+                    btnCancel.disabled = false;
+                    btnCancel.innerHTML = `<i class="fa-solid fa-window-minimize"></i> تصغير وتصفح المنصة`;
+                }
             } else if (this.hasCompletedUpload()) {
                 progressWrap.style.display = 'block';
                 if (progressBar) progressBar.style.width = '100%';
@@ -916,7 +939,10 @@
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> حفظ ونشر درس الفيديو الآن`;
                 }
-                if (btnCancel) btnCancel.disabled = false;
+                if (btnCancel) {
+                    btnCancel.disabled = false;
+                    btnCancel.innerHTML = `إغلاق النافذة`;
+                }
             } else if (this.state.status === 'error') {
                 progressWrap.style.display = 'block';
                 if (progressStatus) {
@@ -926,7 +952,10 @@
                     btnSubmit.disabled = false;
                     btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> إعادة محاولة الحفظ`;
                 }
-                if (btnCancel) btnCancel.disabled = false;
+                if (btnCancel) {
+                    btnCancel.disabled = false;
+                    btnCancel.innerHTML = `إلغاء`;
+                }
             }
         }
 
@@ -944,10 +973,28 @@
         }
 
         /**
+         * إغلاق أي نافذة Modal مفتوحة بشكل آمن قبل أو أثناء التنقل
+         */
+        closeAnyOpenModals() {
+            try {
+                if (typeof window.closeUploadVideoModal === 'function') {
+                    window.closeUploadVideoModal();
+                }
+                const uploadModal = document.getElementById('uploadVideoModal');
+                if (uploadModal) {
+                    uploadModal.style.display = 'none';
+                }
+                document.body.style.overflow = '';
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            } catch (e) {}
+        }
+
+        /**
          * التنقل السلس التلقائي بين الواجهات أثناء الرفع بالخلفية
          * يتيح للمستخدم التنقل الطبيعي والحر عبر كافة روابط المنصة دون أن ينقطع أو يتوقف الرفع
          */
         initSeamlessNavigation() {
+            // 1. اعتراض النقر على الروابط الداخلية
             document.addEventListener('click', (e) => {
                 // إذا لم يكن هناك رفع نشط في الخلفية، نترك المتصفح ينفذ الملاحة الطبيعية
                 if (!this.hasActiveUpload()) {
@@ -971,18 +1018,49 @@
                 // الروابط الداخلية فقط على نفس الدومين
                 if (targetUrl.origin !== window.location.origin) return;
 
-                // استثناء روابط الخروج أو التحميل المباشر
+                // استثناء روابط الخروج أو التحميل المباشر للملفات
                 if (targetUrl.pathname.includes('/logout') || 
                     targetUrl.pathname.includes('/download') ||
                     targetUrl.pathname.endsWith('.pdf') ||
-                    targetUrl.pathname.endsWith('.zip')) return;
+                    targetUrl.pathname.endsWith('.zip') ||
+                    targetUrl.pathname.endsWith('.xlsx')) return;
+
+                // إغلاق أي مودال قبل الانتقال
+                this.closeAnyOpenModals();
+
+                // إغلاق القائمة الجانبية في الجوال إن كانت مفتوحة
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                }
+                const overlay = document.querySelector('.sidebar-overlay');
+                if (overlay && overlay.classList.contains('active')) {
+                    overlay.classList.remove('active');
+                }
 
                 // تنفيذ الانتقال السلس بالخلفية دون أي مقاطعة لرفع الفيديو
                 e.preventDefault();
                 this.navigate(targetUrl.href);
             });
 
-            // دعم أزرار التقدم والرجوع في المتصفح بسلاسة تامة دون مقاطعة الرفع
+            // 2. اعتراض نماذج البحث والتصفية (GET Forms) لتحديث البيانات دون إعادة تحميل كامل الصفحة
+            document.addEventListener('submit', (e) => {
+                if (!this.hasActiveUpload()) return;
+                const form = e.target;
+                if (form && form.method && form.method.toLowerCase() === 'get') {
+                    const action = form.action || window.location.href.split('?')[0];
+                    const formData = new FormData(form);
+                    const params = new URLSearchParams();
+                    for (const [k, v] of formData.entries()) {
+                        if (v !== '') params.append(k, v);
+                    }
+                    const targetUrl = action + (params.toString() ? ('?' + params.toString()) : '');
+                    e.preventDefault();
+                    this.navigate(targetUrl);
+                }
+            });
+
+            // 3. دعم أزرار التقدم والرجوع في المتصفح بسلاسة تامة دون مقاطعة الرفع
             window.addEventListener('popstate', (e) => {
                 if (this.hasActiveUpload()) {
                     this.navigate(window.location.href, false);
@@ -994,58 +1072,98 @@
          * تحميل الصفحة الجديدة واستبدال المحتوى بسلاسة دون إيقاف الرفع
          */
         async navigate(url, pushState = true) {
-            // حفظ مسودة النموذج الحالي قبل المغادرة إن وجدت
+            // 1. حفظ مسودة النماذج المفتوحة قبل المغادرة
             try {
                 if (typeof window.saveVideographerDraft === 'function') {
                     window.saveVideographerDraft();
                 }
+                if (typeof window.saveTeacherVideoDraft === 'function') {
+                    window.saveTeacherVideoDraft();
+                }
             } catch (e) {}
 
-            // شريط تحميل علوي نحيف مثل يوتيوب
+            // إغلاق أي نافذة منبثقة واستعادة حركة الصفحة
+            this.closeAnyOpenModals();
+
+            // 2. شريط تحميل علوي رشيق ونحيف
             let topLoader = document.getElementById('ed-top-loader');
             if (!topLoader) {
                 topLoader = document.createElement('div');
                 topLoader.id = 'ed-top-loader';
-                topLoader.style.cssText = 'position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#3b82f6,#10b981);z-index:999999;transition:width 0.2s;width:0%;';
+                topLoader.style.cssText = 'position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#2563eb,#3b82f6,#10b981);z-index:999999;transition:width 0.2s ease;width:0%;pointer-events:none;';
                 document.body.appendChild(topLoader);
             }
-            topLoader.style.width = '35%';
             topLoader.style.display = 'block';
+            topLoader.style.width = '30%';
 
             try {
+                // إرسال الطلب مع ترويسة HTML صريحة بدون X-Requested-With لضمان إرجاع صفحة Blade View كاملة
                 const response = await fetch(url, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html, application/xhtml+xml, application/xml;q=0.9, */*;q=0.8',
+                        'X-Seamless-Navigation': '1'
+                    },
+                    credentials: 'same-origin'
                 });
 
                 topLoader.style.width = '75%';
 
                 if (!response.ok) {
-                    if (!this.hasActiveUpload()) {
+                    topLoader.style.width = '100%';
+                    setTimeout(() => { topLoader.style.display = 'none'; topLoader.style.width = '0%'; }, 200);
+
+                    if (response.status === 401 || response.status === 419) {
+                        if (window.Swal) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'انتهت الجلسة',
+                                text: 'يرجى تسجيل الدخول مجدداً لمتابعة الاستخدام.',
+                                confirmButtonText: 'تسجيل الدخول'
+                            }).then(() => { window.location.href = '/login'; });
+                        }
+                    } else if (!this.hasActiveUpload()) {
                         window.location.href = url;
                     }
                     return;
                 }
 
+                const finalUrl = response.url || url;
                 const htmlText = await response.text();
                 const parser = new DOMParser();
                 const newDoc = parser.parseFromString(htmlText, 'text/html');
 
-                const newContentBody = newDoc.querySelector('.content-body');
-                const currentContentBody = document.querySelector('.content-body');
+                // البحث عن الحاوية الأساسية للمحتوى في الصفحة الجديدة والحالية
+                let newContent = newDoc.querySelector('.content-body');
+                let currentContent = document.querySelector('.content-body');
 
-                if (newContentBody && currentContentBody) {
-                    // تحديث عنوان الصفحة
+                if (!newContent || !currentContent) {
+                    newContent = newDoc.querySelector('main.main-content') || newDoc.querySelector('main') || newDoc.querySelector('#main-content');
+                    currentContent = document.querySelector('main.main-content') || document.querySelector('main') || document.querySelector('#main-content');
+                }
+
+                if (newContent && currentContent) {
+                    // تحديث عنوان التبويب
                     if (newDoc.title) {
                         document.title = newDoc.title;
                     }
 
-                    // استبدال المحتوى
-                    currentContentBody.innerHTML = newContentBody.innerHTML;
+                    // تحديث فئات الجسم (body classes) إن تغيرت
+                    if (newDoc.body && newDoc.body.className) {
+                        document.body.className = newDoc.body.className;
+                    }
 
-                    // إعادة تنفيذ السكربتات المضمنة بأمان تام دون تضارب المتغيرات العامة
+                    // استبدال محتوى الواجهة بسلاسة تامة دون مقاطعة رفع الفيديو
+                    currentContent.innerHTML = newContent.innerHTML;
+                    if (newContent.className) {
+                        currentContent.className = newContent.className;
+                    }
+
+                    // إعادة تنفيذ السكربتات المضمنة في المحتوى الجديد بأمان
                     try {
-                        const scripts = currentContentBody.querySelectorAll('script');
+                        const scripts = currentContent.querySelectorAll('script');
                         scripts.forEach(oldScript => {
+                            if (oldScript.type && oldScript.type.toLowerCase().includes('json')) return;
                             const newScript = document.createElement('script');
                             Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
                             if (oldScript.src) {
@@ -1056,23 +1174,30 @@
                             oldScript.parentNode.replaceChild(newScript, oldScript);
                         });
                     } catch (e) {
-                        console.warn("Script execution warning:", e);
+                        console.warn("Script evaluation warning:", e);
                     }
 
-                    // تحديث رابط المتصفح
+                    // تحديث رابط المتصفح وسجل التنقل
                     if (pushState) {
-                        window.history.pushState({ edPjaxUrl: url }, '', url);
+                        window.history.pushState({ edSeamlessUrl: finalUrl }, '', finalUrl);
                     }
 
-                    // تحديث الحالة النشطة في القائمة الجانبية وشريط الجوال
+                    // تحديث مؤشرات القائمة الجانبية والشريط السفلي
                     try {
-                        this.updateActiveNavLinks(url);
+                        this.updateActiveNavLinks(finalUrl);
                     } catch (e) {}
 
-                    // الصعود لأعلى الصفحة بسلاسة
+                    // إعادة التمرير لأعلى الصفحة بنعومة
                     try {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     } catch (e) {}
+
+                    // إطلاق أحداث دورة الحياة لمحاكاة اكتمال تحميل الصفحة للسكربتات التفاعلية
+                    try { window.dispatchEvent(new Event('DOMContentLoaded')); } catch (e) {}
+                    try { window.dispatchEvent(new Event('load')); } catch (e) {}
+                    if (window.jQuery) {
+                        try { window.jQuery(document).ready(); } catch (e) {}
+                    }
 
                     // إعادة مزامنة الرفع المستمر ومسودة النموذج مع الصفحة الجديدة
                     try {
@@ -1083,19 +1208,23 @@
 
                     // إرسال حدث مخصص للإشعار بتغير الصفحة
                     try {
-                        window.dispatchEvent(new CustomEvent('ed:page-loaded', { detail: { url: url } }));
+                        window.dispatchEvent(new CustomEvent('ed:page-loaded', { detail: { url: finalUrl } }));
                     } catch (e) {}
 
                     topLoader.style.width = '100%';
                     setTimeout(() => { topLoader.style.display = 'none'; topLoader.style.width = '0%'; }, 250);
                 } else {
-                    // إذا لم نجد محتوى متوافق نذهب بالمتصفح بشكل طبيعي فقط إذا لم يكن هناك رفع جاري
+                    topLoader.style.width = '100%';
+                    setTimeout(() => { topLoader.style.display = 'none'; topLoader.style.width = '0%'; }, 200);
+                    // إذا لم نجد محتوى متوافق نذهب بالمتصفح فقط إذا لم يكن هناك رفع جاري
                     if (!this.hasActiveUpload()) {
-                        window.location.href = url;
+                        window.location.href = finalUrl;
                     }
                 }
             } catch (err) {
-                console.error("PJAX navigation error:", err);
+                console.error("Seamless navigation error:", err);
+                topLoader.style.width = '100%';
+                setTimeout(() => { topLoader.style.display = 'none'; topLoader.style.width = '0%'; }, 200);
                 if (!this.hasActiveUpload()) {
                     window.location.href = url;
                 }
@@ -1106,20 +1235,24 @@
          * تحديث تمييز الرابط النشط في القوائم
          */
         updateActiveNavLinks(currentUrl) {
-            const path = new URL(currentUrl, window.location.origin).pathname;
-            document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(el => {
-                const href = el.getAttribute('href');
-                if (href) {
-                    try {
-                        const linkPath = new URL(href, window.location.origin).pathname;
-                        if (linkPath === path || (path.length > 2 && linkPath.startsWith(path))) {
-                            el.classList.add('active');
-                        } else {
-                            el.classList.remove('active');
-                        }
-                    } catch (e) {}
-                }
-            });
+            try {
+                const urlObj = new URL(currentUrl, window.location.origin);
+                const path = urlObj.pathname.replace(/\/$/, '');
+
+                document.querySelectorAll('.nav-item, .bottom-nav-item, .sidebar-nav a, .mobile-bottom-nav a').forEach(el => {
+                    const href = el.getAttribute('href');
+                    if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
+                        try {
+                            const linkPath = new URL(href, window.location.origin).pathname.replace(/\/$/, '');
+                            if (linkPath === path || (linkPath.length > 3 && path.startsWith(linkPath))) {
+                                el.classList.add('active');
+                            } else {
+                                el.classList.remove('active');
+                            }
+                        } catch (e) {}
+                    }
+                });
+            } catch (e) {}
         }
     }
 
