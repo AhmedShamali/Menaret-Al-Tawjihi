@@ -275,9 +275,43 @@ class ExamController extends Controller
                     $qText = 'انظر الصورة المرفقة';
                 }
 
-                $matchingPairs = isset($q['matching_pairs']) 
-                    ? (is_array($q['matching_pairs']) ? json_encode($q['matching_pairs'], JSON_UNESCAPED_UNICODE) : $q['matching_pairs']) 
-                    : null;
+                $matchingPairs = null;
+                $matchingPointsSum = 0;
+                $hasCustomMatchingPoints = false;
+                if (!empty($q['matching_pairs'])) {
+                    $rawPairs = $q['matching_pairs'];
+                    if (is_string($rawPairs)) {
+                        $rawPairs = json_decode($rawPairs, true) ?? [];
+                    }
+                    if (is_array($rawPairs)) {
+                        $cleanPairs = [];
+                        foreach ($rawPairs as $p) {
+                            $left = trim((string)($p['left'] ?? $p['term'] ?? ''));
+                            $right = trim((string)($p['right'] ?? $p['match'] ?? ''));
+                            $pairPts = isset($p['points']) && is_numeric($p['points']) ? (float)$p['points'] : null;
+                            if ($left !== '' || $right !== '') {
+                                $entry = [
+                                    'left'  => $left,
+                                    'right' => $right,
+                                ];
+                                if ($pairPts !== null && $pairPts > 0) {
+                                    $entry['points'] = $pairPts;
+                                    $matchingPointsSum += $pairPts;
+                                    $hasCustomMatchingPoints = true;
+                                }
+                                $cleanPairs[] = $entry;
+                            }
+                        }
+                        if (!empty($cleanPairs)) {
+                            $matchingPairs = json_encode(array_values($cleanPairs), JSON_UNESCAPED_UNICODE);
+                        }
+                    }
+                }
+
+                $qPoints = !empty($q['points']) ? (float)$q['points'] : 5;
+                if ($q['type'] === 'matching' && $hasCustomMatchingPoints && $matchingPointsSum > 0) {
+                    $qPoints = $matchingPointsSum;
+                }
 
                 Question::create([
                     'exam_id' => $exam->id,
@@ -293,7 +327,7 @@ class ExamController extends Controller
                     'd' => $q['d'] ?? null,
                     'd_image' => $optImages['d'],
                     'correct_answer' => $correctAnswer,
-                    'points' => $q['points'],
+                    'points' => $qPoints,
                     'require_file' => $requireFileValue ? 1 : 0,
                     'is_multiple' => $isMultipleValue,
                     'matching_pairs' => $matchingPairs,
@@ -509,9 +543,43 @@ class ExamController extends Controller
                     $correctAnswer = json_encode($correctAnswer);
                 }
 
-                $matchingPairs = isset($qData['matching_pairs']) 
-                    ? (is_array($qData['matching_pairs']) ? json_encode($qData['matching_pairs'], JSON_UNESCAPED_UNICODE) : $qData['matching_pairs']) 
-                    : ($existingQ->matching_pairs ?? null);
+                $matchingPairs = null;
+                $matchingPointsSum = 0;
+                $hasCustomMatchingPoints = false;
+                $rawPairs = $qData['matching_pairs'] ?? ($existingQ->matching_pairs ?? null);
+                if (!empty($rawPairs)) {
+                    if (is_string($rawPairs)) {
+                        $rawPairs = json_decode($rawPairs, true) ?? [];
+                    }
+                    if (is_array($rawPairs)) {
+                        $cleanPairs = [];
+                        foreach ($rawPairs as $p) {
+                            $left = trim((string)($p['left'] ?? $p['term'] ?? ''));
+                            $right = trim((string)($p['right'] ?? $p['match'] ?? ''));
+                            $pairPts = isset($p['points']) && is_numeric($p['points']) ? (float)$p['points'] : null;
+                            if ($left !== '' || $right !== '') {
+                                $entry = [
+                                    'left'  => $left,
+                                    'right' => $right,
+                                ];
+                                if ($pairPts !== null && $pairPts > 0) {
+                                    $entry['points'] = $pairPts;
+                                    $matchingPointsSum += $pairPts;
+                                    $hasCustomMatchingPoints = true;
+                                }
+                                $cleanPairs[] = $entry;
+                            }
+                        }
+                        if (!empty($cleanPairs)) {
+                            $matchingPairs = json_encode(array_values($cleanPairs), JSON_UNESCAPED_UNICODE);
+                        }
+                    }
+                }
+
+                $qPoints = !empty($qData['points']) ? (float)$qData['points'] : ($existingQ->points ?? 5);
+                if (($qData['type'] ?? $existingQ->type ?? '') === 'matching' && $hasCustomMatchingPoints && $matchingPointsSum > 0) {
+                    $qPoints = $matchingPointsSum;
+                }
 
                 $dataToSave = [
                     'exam_id'        => $exam->id,
@@ -527,7 +595,7 @@ class ExamController extends Controller
                     'd'              => $qData['d'] ?? null,
                     'd_image'        => $optImages['d_image'],
                     'correct_answer' => $correctAnswer,
-                    'points'         => !empty($qData['points']) ? (int)$qData['points'] : ($existingQ->points ?? 5),
+                    'points'         => $qPoints,
                     'require_file'   => $requireFileValue ? 1 : 0,
                     'is_multiple'    => $isMultipleValue,
                     'matching_pairs' => $matchingPairs,
@@ -1048,16 +1116,37 @@ class ExamController extends Controller
                         if ($totalPairs > 0 && !empty($studentAns)) {
                             $studentMap = is_array($studentAns) ? $studentAns : (json_decode((string)$studentAns, true) ?? []);
                             $correctMatches = 0;
-                            foreach ($pairs as $pIdx => $p) {
-                                $pairId = (string)($p['left'] ?? $p['id'] ?? $p['term'] ?? '');
-                                $expectedMatch = trim((string)($p['right'] ?? $p['match'] ?? $p['definition'] ?? ''));
-                                $givenMatch = trim((string)($studentMap[$pairId] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
-                                if (!empty($givenMatch) && $this->normalizeArabicText($expectedMatch) === $this->normalizeArabicText($givenMatch)) {
-                                    $correctMatches++;
+                            $calculatedPoints = 0;
+                            $hasCustomPoints = false;
+
+                            foreach ($pairs as $p) {
+                                if (isset($p['points']) && is_numeric($p['points']) && (float)$p['points'] > 0) {
+                                    $hasCustomPoints = true;
+                                    break;
                                 }
                             }
-                            if ($correctMatches > 0) {
-                                $points = round(($correctMatches / $totalPairs) * $q->points, 2);
+
+                            foreach ($pairs as $pIdx => $p) {
+                                $pairId = trim((string)($p['left'] ?? $p['id'] ?? $p['term'] ?? ''));
+                                $expectedMatch = trim((string)($p['right'] ?? $p['match'] ?? $p['definition'] ?? ''));
+                                $givenMatch = trim((string)($studentMap[$pairId] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
+                                
+                                $isMatch = (!empty($givenMatch) && $this->normalizeArabicText($expectedMatch) === $this->normalizeArabicText($givenMatch));
+                                if ($isMatch) {
+                                    $correctMatches++;
+                                    if ($hasCustomPoints) {
+                                        $pairPts = isset($p['points']) && is_numeric($p['points']) ? (float)$p['points'] : 0;
+                                        $calculatedPoints += $pairPts;
+                                    }
+                                }
+                            }
+
+                            if ($hasCustomPoints) {
+                                $points = round($calculatedPoints, 2);
+                            } else {
+                                if ($correctMatches > 0) {
+                                    $points = round(($correctMatches / $totalPairs) * $q->points, 2);
+                                }
                             }
                         }
                     } elseif ($q->type == 'essay' || $q->type == 'text') {

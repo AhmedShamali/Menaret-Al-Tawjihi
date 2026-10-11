@@ -288,6 +288,7 @@
                                                 <th style="padding: 8px 12px;">المفهوم</th>
                                                 <th style="padding: 8px 12px;">إجابة الطالب</th>
                                                 <th style="padding: 8px 12px;">المطابق الصحيح</th>
+                                                <th style="padding: 8px 12px; text-align: center;">الدرجة المخصصة</th>
                                                 <th style="padding: 8px 12px;">الحالة</th>
                                             </tr>
                                         </thead>
@@ -298,6 +299,7 @@
                                                 $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
                                                 $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
                                                 $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
+                                                $pairPts = (isset($pair['points']) && is_numeric($pair['points'])) ? (float)$pair['points'] : round($ans->question->points / max(1, count($pairs)), 2);
                                             @endphp
                                             <tr style="border-bottom: 1px solid #f1f5f9; background: {{ $isPairMatch ? '#f0fdf4' : '#fef2f2' }};">
                                                 <td style="padding: 8px 12px; font-weight: 700;">{{ $leftItem }}</td>
@@ -305,6 +307,9 @@
                                                     {{ !empty($rightGiven) ? $rightGiven : '(لم يربط)' }}
                                                 </td>
                                                 <td style="padding: 8px 12px; color: #1e40af; font-weight: 700;">{{ $rightExpected }}</td>
+                                                <td style="padding: 8px 12px; text-align: center; font-weight: 800; color: {{ $isPairMatch ? '#15803d' : '#b91c1c' }};">
+                                                    {{ $isPairMatch ? $pairPts : 0 }} / {{ $pairPts }}
+                                                </td>
                                                 <td style="padding: 8px 12px;">
                                                     {!! $isPairMatch ? '<span style="color:#15803d; font-weight:800;">✅ صحيح</span>' : '<span style="color:#b91c1c; font-weight:800;">❌ خاطئ</span>' !!}
                                                 </td>

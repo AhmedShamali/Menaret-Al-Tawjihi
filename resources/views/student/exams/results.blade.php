@@ -349,6 +349,7 @@
                                                 <th>{{ __('المفهوم / السؤال') }}</th>
                                                 <th>{{ __('إجابتك وتوصيلك') }}</th>
                                                 <th>{{ __('المطابق النموذجي المعتمد') }}</th>
+                                                <th style="width:90px; text-align:center;">{{ __('الدرجة') }}</th>
                                                 <th style="width:110px;">{{ __('النتيجة') }}</th>
                                             </tr>
                                         </thead>
@@ -359,28 +360,35 @@
                                                 $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
                                                 $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
                                                 $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
+                                                $pairPts = (isset($pair['points']) && is_numeric($pair['points'])) ? (float)$pair['points'] : round($ans->question->points / max(1, count($pairs)), 2);
+                                                $earnedPts = $isPairMatch ? $pairPts : 0;
                                             @endphp
                                             <tr class="{{ $isPairMatch ? 'pair-match-correct' : 'pair-match-wrong' }}">
                                                 <td><strong>{{ $pIdx + 1 }}</strong></td>
                                                 <td><span class="matching-prompt-pill">{{ $leftItem }}</span></td>
                                                 <td>
-                                                    @if(!empty($rightGiven))
-                                                        <span class="matching-chip {{ $isPairMatch ? 'given-correct' : 'given-wrong' }}">
-                                                            {{ $rightGiven }}
-                                                        </span>
-                                                    @else
-                                                        <span class="text-muted" style="font-size:0.85rem; color:#94a3b8;">{{ __('(لم يتم التوصيل)') }}</span>
-                                                    @endif
+                                                     @if(!empty($rightGiven))
+                                                         <span class="matching-chip {{ $isPairMatch ? 'given-correct' : 'given-wrong' }}">
+                                                             {{ $rightGiven }}
+                                                         </span>
+                                                     @else
+                                                         <span class="text-muted" style="font-size:0.85rem; color:#94a3b8;">{{ __('(لم يتم التوصيل)') }}</span>
+                                                     @endif
                                                 </td>
                                                 <td>
-                                                    <span class="matching-chip model-chip">{{ $rightExpected }}</span>
+                                                     <span class="matching-chip model-chip">{{ $rightExpected }}</span>
+                                                </td>
+                                                <td style="text-align: center;">
+                                                    <span style="font-weight: 800; font-size: 0.88rem; color: {{ $isPairMatch ? '#059669' : '#dc2626' }};">
+                                                        {{ $earnedPts }} / {{ $pairPts }}
+                                                    </span>
                                                 </td>
                                                 <td>
-                                                    @if($isPairMatch)
-                                                        <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('صحيح') }}</span>
-                                                    @else
-                                                        <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('خاطئ') }}</span>
-                                                    @endif
+                                                     @if($isPairMatch)
+                                                         <span class="badge-flag success"><i class="fa-solid fa-check"></i> {{ __('صحيح') }}</span>
+                                                     @else
+                                                         <span class="badge-flag danger"><i class="fa-solid fa-xmark"></i> {{ __('خاطئ') }}</span>
+                                                     @endif
                                                 </td>
                                             </tr>
                                             @endforeach

@@ -1080,11 +1080,11 @@
 
             const ptsInput = card.querySelector('input[type="number"][name*="[points]"]');
             if (ptsInput) {
-                totalPts += parseInt(ptsInput.value) || 0;
+                totalPts += parseFloat(ptsInput.value) || 0;
             }
         });
 
-        if (pointsElem) pointsElem.innerText = totalPts;
+        if (pointsElem) pointsElem.innerText = totalPts % 1 === 0 ? totalPts : totalPts.toFixed(1);
     }
 
     function handleQuestionImage(input, index) {
@@ -1203,16 +1203,30 @@
             </div>`;
         } else if (type === 'matching') {
             mcqHtml = `
-            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
-                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-diagram-project"></i> {{ __('أزواج التوصيل والمطابقة (المفهوم مقابل ما يناسبه)') }}</label>
-                <div id="matching_pairs_wrap_${qIndex}" style="display: flex; flex-direction: column; gap: 8px;">
-                    ${[0, 1, 2].map(pIdx => `
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" name="questions[${qIndex}][matching_pairs][${pIdx}][left]" class="f-input" placeholder="الطرف الأول (المفهوم/السؤال)">
-                            <i class="fa-solid fa-arrow-left" style="color: #94a3b8;"></i>
-                            <input type="text" name="questions[${qIndex}][matching_pairs][${pIdx}][right]" class="f-input" placeholder="الطرف الثاني (المطابق الصحيح)">
-                        </div>
-                    `).join('')}
+            <div class="f-group mb-20 matching-card-container" id="matching_box_${qIndex}" style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1.5px solid #cbd5e1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <label class="f-label-sm" style="margin: 0; font-weight: 800; color: #1e3a8a; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-diagram-project"></i> {{ __('أزواج التوصيل والمطابقة (المفهوم مقابل ما يناسبه)') }}
+                        </label>
+                        <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">
+                            <i class="fa-solid fa-shuffle"></i> {{ __('أضف الخيارات وحدد درجة كل خيار كما تريد. يتم خلط الخيارات عشوائياً للطالب تلقائياً.') }}
+                        </small>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.78rem; font-weight: 700; color: #475569;">{{ __('مجموع درجات الأزواج:') }}</span>
+                        <span class="matching-total-pill" id="matching_sum_${qIndex}" style="background: #e0e7ff; color: #3730a3; font-weight: 900; padding: 3px 10px; border-radius: 8px; font-size: 0.85rem;">3</span>
+                    </div>
+                </div>
+
+                <div id="matching_pairs_wrap_${qIndex}" class="matching-pairs-list" style="display: flex; flex-direction: column; gap: 10px;">
+                </div>
+
+                <div style="margin-top: 14px; text-align: start;">
+                    <button type="button" class="btn-add-matching-row" onclick="addMatchingPairRow(${qIndex})" style="background: #eff6ff; color: #1d4ed8; border: 1.5px dashed #93c5fd; padding: 9px 18px; border-radius: 8px; font-weight: 700; font-size: 0.84rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>{{ __('إضافة خيار / زوج مطابقة جديد (+)') }}</span>
+                    </button>
                 </div>
             </div>`;
         } else if (type === 'mcq') {
@@ -1300,9 +1314,120 @@
         `;
 
         container.appendChild(newCard);
+
+        if (type === 'matching') {
+            addMatchingPairRow(qIndex, '', '', 1);
+            addMatchingPairRow(qIndex, '', '', 1);
+            addMatchingPairRow(qIndex, '', '', 1);
+            recalcMatchingPoints(qIndex);
+        }
+
         qIndex++;
         updateQuestionsUI();
         newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function addMatchingPairRow(qIdx, leftVal = '', rightVal = '', ptsVal = 1) {
+        const wrap = document.getElementById(`matching_pairs_wrap_${qIdx}`);
+        if (!wrap) return;
+        const pIdx = wrap.children.length;
+        const row = document.createElement('div');
+        row.className = 'matching-pair-row';
+        row.style.cssText = 'display: flex; gap: 10px; align-items: center; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; transition: all 0.2s;';
+        
+        row.innerHTML = `
+            <span class="pair-idx-badge" style="background: #e0e7ff; color: #3730a3; font-weight: 800; font-size: 0.78rem; padding: 4px 8px; border-radius: 6px; min-width: 28px; text-align: center;">#${pIdx + 1}</span>
+            <div style="flex: 1;">
+                <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][left]" value="${escapeHtml(leftVal)}" class="f-input" placeholder="{{ __('الطرف الأول (المفهوم/السؤال)') }}" style="font-size: 0.88rem;" required>
+            </div>
+            <i class="fa-solid fa-arrow-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
+            <div style="flex: 1;">
+                <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][right]" value="${escapeHtml(rightVal)}" class="f-input" placeholder="{{ __('الطرف الثاني (المطابق الصحيح)') }}" style="font-size: 0.88rem;" required>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <input type="number" step="0.5" min="0.5" name="questions[${qIdx}][matching_pairs][${pIdx}][points]" value="${ptsVal}" class="f-input matching-pair-pts" placeholder="1" style="width: 55px; padding: 4px; text-align: center; font-weight: 700; font-size: 0.88rem;" oninput="recalcMatchingPoints(${qIdx})">
+                <span style="font-size: 0.74rem; color: #475569; font-weight: 700;">{{ __('علامة') }}</span>
+            </div>
+            <button type="button" class="btn-remove-matching-row" onclick="removeMatchingPairRow(this, ${qIdx})" style="color: #ef4444; background: #fee2e2; border: none; border-radius: 6px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="{{ __('حذف هذا الزوج') }}">
+                <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
+            </button>
+        `;
+        wrap.appendChild(row);
+        renumberMatchingPairs(qIdx);
+        recalcMatchingPoints(qIdx);
+    }
+
+    function removeMatchingPairRow(btn, qIdx) {
+        const wrap = document.getElementById(`matching_pairs_wrap_${qIdx}`);
+        if (!wrap) return;
+        if (wrap.children.length <= 2) {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("تنبيه") }}',
+                text: '{{ __("يجب أن يحتوي سؤال المطابقة على خيارين على الأقل!") }}'
+            });
+            return;
+        }
+        const row = btn.closest('.matching-pair-row');
+        if (row) {
+            row.remove();
+            renumberMatchingPairs(qIdx);
+            recalcMatchingPoints(qIdx);
+        }
+    }
+
+    function renumberMatchingPairs(qIdx) {
+        const wrap = document.getElementById(`matching_pairs_wrap_${qIdx}`);
+        if (!wrap) return;
+        const rows = wrap.querySelectorAll('.matching-pair-row');
+        rows.forEach((row, idx) => {
+            const badge = row.querySelector('.pair-idx-badge');
+            if (badge) badge.innerText = '#' + (idx + 1);
+            
+            const leftInput = row.querySelector('input[name*="[left]"]');
+            if (leftInput) leftInput.name = `questions[${qIdx}][matching_pairs][${idx}][left]`;
+            
+            const rightInput = row.querySelector('input[name*="[right]"]');
+            if (rightInput) rightInput.name = `questions[${qIdx}][matching_pairs][${idx}][right]`;
+            
+            const ptsInput = row.querySelector('input[name*="[points]"]');
+            if (ptsInput) ptsInput.name = `questions[${qIdx}][matching_pairs][${idx}][points]`;
+        });
+    }
+
+    function recalcMatchingPoints(qIdx) {
+        const wrap = document.getElementById(`matching_pairs_wrap_${qIdx}`);
+        if (!wrap) return;
+        const ptsInputs = wrap.querySelectorAll('.matching-pair-pts');
+        let sum = 0;
+        ptsInputs.forEach(inp => {
+            const val = parseFloat(inp.value);
+            if (!isNaN(val) && val > 0) sum += val;
+        });
+        const sumBadge = document.getElementById(`matching_sum_${qIdx}`);
+        if (sumBadge) sumBadge.innerText = sum % 1 === 0 ? sum : sum.toFixed(1);
+        
+        // مزامنة الدرجة الكلية للسؤال تلقائياً مع مجموع علامات الخيارات
+        const qCard = document.getElementById(`q_card_${qIdx}`);
+        if (qCard) {
+            const qPointsInput = qCard.querySelector('input[type="number"][name*="[points]"]');
+            if (qPointsInput && sum > 0) {
+                qPointsInput.value = sum % 1 === 0 ? sum : sum.toFixed(1);
+                if (typeof updateQuestionsUI === 'function') {
+                    updateQuestionsUI();
+                }
+            }
+        }
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     function removeQuestionCard(btn) {

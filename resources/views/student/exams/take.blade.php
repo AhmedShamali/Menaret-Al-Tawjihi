@@ -267,6 +267,9 @@
                             {{-- 4. سؤال توصيل وسحب وإفلات المربعات (Matching & Drag-and-Drop) --}}
                             @php
                                 $pairs = $q->getParsedMatchingPairs();
+                                // خلط أزواج الطرف الأول (المفاهيم/الأسئلة) عشوائياً للطالب لمنع التخمين والغش
+                                $shuffledPairs = collect($pairs)->shuffle()->values();
+                                // خلط بنك الخيارات المتاحة للمطابقة في الطرف الثاني عشوائياً
                                 $rightOptions = collect($pairs)->pluck('right')->filter()->shuffle()->values();
                             @endphp
                             <div class="classic-matching-container" id="matching_container_{{ $q->id }}" data-qid="{{ $q->id }}" data-idx="{{ $index }}">
@@ -278,14 +281,22 @@
                                 <input type="hidden" name="answers[{{ $q->id }}]" id="matching_answer_{{ $q->id }}" value="">
 
                                 <div class="matching-workbench-grid">
-                                    <!-- عمود الأسئلة أو المفاهيم مع مناطق الإفلات -->
+                                    <!-- عمود الأسئلة أو المفاهيم مع مناطق الإفلات (مخلوطة عشوائياً للطالب) -->
                                     <div class="matching-prompts-col">
-                                        @foreach($pairs as $pIdx => $pair)
-                                        @php $leftItem = $pair['left'] ?? ''; @endphp
+                                        @foreach($shuffledPairs as $pIdx => $pair)
+                                        @php
+                                            $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                            $pairScore = isset($pair['points']) && is_numeric($pair['points']) ? (float)$pair['points'] : null;
+                                        @endphp
                                         <div class="matching-target-row" data-prompt="{{ $leftItem }}">
                                             <div class="prompt-text-pill">
                                                 <span class="prompt-num">{{ $pIdx + 1 }}</span>
                                                 <span class="prompt-val">{{ $leftItem }}</span>
+                                                @if($pairScore !== null && $pairScore > 0)
+                                                    <span class="prompt-pair-pts" style="font-size: 0.72rem; color: #4338ca; background: #e0e7ff; padding: 2px 7px; border-radius: 6px; font-weight: 800; margin-inline-start: 6px;" title="{{ __('درجة هذا الخيار') }}">
+                                                        {{ $pairScore }} {{ __('علامة') }}
+                                                    </span>
+                                                @endif
                                             </div>
                                             <div class="prompt-connector-arrow">
                                                 <i class="fa-solid fa-arrow-left"></i>
