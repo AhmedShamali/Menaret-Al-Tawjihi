@@ -357,7 +357,9 @@
                                             @foreach($pairs as $pIdx => $pair)
                                             @php
                                                 $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                                $leftImg = $pair['left_image_url'] ?? $pair['left_image'] ?? null;
                                                 $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
+                                                $rightImg = $pair['right_image_url'] ?? $pair['right_image'] ?? null;
                                                 $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
                                                 $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
                                                 $pairPts = (isset($pair['points']) && is_numeric($pair['points'])) ? (float)$pair['points'] : round($ans->question->points / max(1, count($pairs)), 2);
@@ -365,7 +367,16 @@
                                             @endphp
                                             <tr class="{{ $isPairMatch ? 'pair-match-correct' : 'pair-match-wrong' }}">
                                                 <td><strong>{{ $pIdx + 1 }}</strong></td>
-                                                <td><span class="matching-prompt-pill">{{ $leftItem }}</span></td>
+                                                <td>
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        @if(!empty($leftImg))
+                                                            <img src="{{ $leftImg }}" alt="صورة المفهوم" onclick="window.open(this.src, '_blank')" style="height: 36px; max-width: 55px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; cursor: zoom-in; background: #fff;">
+                                                        @endif
+                                                        @if(!empty($leftItem))
+                                                            <span class="matching-prompt-pill">{{ $leftItem }}</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td>
                                                      @if(!empty($rightGiven))
                                                          <span class="matching-chip {{ $isPairMatch ? 'given-correct' : 'given-wrong' }}">
@@ -376,7 +387,14 @@
                                                      @endif
                                                 </td>
                                                 <td>
-                                                     <span class="matching-chip model-chip">{{ $rightExpected }}</span>
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        @if(!empty($rightImg))
+                                                            <img src="{{ $rightImg }}" alt="صورة المطابق" onclick="window.open(this.src, '_blank')" style="height: 36px; max-width: 55px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; cursor: zoom-in; background: #fff;">
+                                                        @endif
+                                                        @if(!empty($rightExpected))
+                                                            <span class="matching-chip model-chip">{{ $rightExpected }}</span>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                                 <td style="text-align: center;">
                                                     <span style="font-weight: 800; font-size: 0.88rem; color: {{ $isPairMatch ? '#059669' : '#dc2626' }};">

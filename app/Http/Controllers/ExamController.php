@@ -285,14 +285,49 @@ class ExamController extends Controller
                     }
                     if (is_array($rawPairs)) {
                         $cleanPairs = [];
-                        foreach ($rawPairs as $p) {
+                        foreach ($rawPairs as $pIdx => $p) {
                             $left = trim((string)($p['left'] ?? $p['term'] ?? ''));
                             $right = trim((string)($p['right'] ?? $p['match'] ?? ''));
                             $pairPts = isset($p['points']) && is_numeric($p['points']) ? (float)$p['points'] : null;
-                            if ($left !== '' || $right !== '') {
+
+                            // معالجة ورفع صورة الطرف الأول
+                            $leftImgPath = null;
+                            $leftImgFile = $request->file("questions.{$index}.matching_pairs.{$pIdx}.left_image") ?? ($p['left_image'] ?? null);
+                            if ($leftImgFile instanceof \Illuminate\Http\UploadedFile && $leftImgFile->isValid()) {
+                                if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                                    try {
+                                        $path = $leftImgFile->store('question_matching', 'supabase');
+                                        $leftImgPath = Storage::disk('supabase')->url($path);
+                                    } catch (\Throwable $e) {
+                                        $leftImgPath = $leftImgFile->store('question_matching', 'public');
+                                    }
+                                } else {
+                                    $leftImgPath = $leftImgFile->store('question_matching', 'public');
+                                }
+                            }
+
+                            // معالجة ورفع صورة الطرف الثاني
+                            $rightImgPath = null;
+                            $rightImgFile = $request->file("questions.{$index}.matching_pairs.{$pIdx}.right_image") ?? ($p['right_image'] ?? null);
+                            if ($rightImgFile instanceof \Illuminate\Http\UploadedFile && $rightImgFile->isValid()) {
+                                if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                                    try {
+                                        $path = $rightImgFile->store('question_matching', 'supabase');
+                                        $rightImgPath = Storage::disk('supabase')->url($path);
+                                    } catch (\Throwable $e) {
+                                        $rightImgPath = $rightImgFile->store('question_matching', 'public');
+                                    }
+                                } else {
+                                    $rightImgPath = $rightImgFile->store('question_matching', 'public');
+                                }
+                            }
+
+                            if ($left !== '' || $right !== '' || !empty($leftImgPath) || !empty($rightImgPath)) {
                                 $entry = [
-                                    'left'  => $left,
-                                    'right' => $right,
+                                    'left'        => $left,
+                                    'left_image'  => $leftImgPath,
+                                    'right'       => $right,
+                                    'right_image' => $rightImgPath,
                                 ];
                                 if ($pairPts !== null && $pairPts > 0) {
                                     $entry['points'] = $pairPts;
@@ -487,7 +522,12 @@ class ExamController extends Controller
         if ($request->has('questions') && is_array($request->questions)) {
             $submittedQuestionIds = [];
             foreach ($request->questions as $index => $qData) {
-                if (empty($qData['question_text'])) continue;
+                $qText = trim($qData['question_text'] ?? '');
+                $hasImage = $request->hasFile("questions.{$index}.image") || !empty($qData['existing_image']);
+                if (empty($qText) && !$hasImage && empty($qData['type'])) continue;
+                if (empty($qText) && $hasImage) {
+                    $qText = 'انظر الصورة المرفقة';
+                }
 
                 $qId = $qData['id'] ?? null;
                 $existingQ = $qId ? Question::where('exam_id', $exam->id)->find($qId) : null;
@@ -553,14 +593,57 @@ class ExamController extends Controller
                     }
                     if (is_array($rawPairs)) {
                         $cleanPairs = [];
-                        foreach ($rawPairs as $p) {
+                        foreach ($rawPairs as $pIdx => $p) {
                             $left = trim((string)($p['left'] ?? $p['term'] ?? ''));
                             $right = trim((string)($p['right'] ?? $p['match'] ?? ''));
                             $pairPts = isset($p['points']) && is_numeric($p['points']) ? (float)$p['points'] : null;
-                            if ($left !== '' || $right !== '') {
+
+                            // صورة الطرف الأول
+                            $leftImgPath = $p['existing_left_image'] ?? ($p['left_image'] ?? null);
+                            if ($request->hasFile("questions.{$index}.matching_pairs.{$pIdx}.left_image")) {
+                                $leftImgFile = $request->file("questions.{$index}.matching_pairs.{$pIdx}.left_image");
+                                if ($leftImgFile->isValid()) {
+                                    if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                                        try {
+                                            $path = $leftImgFile->store('question_matching', 'supabase');
+                                            $leftImgPath = Storage::disk('supabase')->url($path);
+                                        } catch (\Throwable $e) {
+                                            $leftImgPath = $leftImgFile->store('question_matching', 'public');
+                                        }
+                                    } else {
+                                        $leftImgPath = $leftImgFile->store('question_matching', 'public');
+                                    }
+                                }
+                            } elseif (!empty($p['remove_left_image']) && $p['remove_left_image'] == '1') {
+                                $leftImgPath = null;
+                            }
+
+                            // صورة الطرف الثاني
+                            $rightImgPath = $p['existing_right_image'] ?? ($p['right_image'] ?? null);
+                            if ($request->hasFile("questions.{$index}.matching_pairs.{$pIdx}.right_image")) {
+                                $rightImgFile = $request->file("questions.{$index}.matching_pairs.{$pIdx}.right_image");
+                                if ($rightImgFile->isValid()) {
+                                    if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                                        try {
+                                            $path = $rightImgFile->store('question_matching', 'supabase');
+                                            $rightImgPath = Storage::disk('supabase')->url($path);
+                                        } catch (\Throwable $e) {
+                                            $rightImgPath = $rightImgFile->store('question_matching', 'public');
+                                        }
+                                    } else {
+                                        $rightImgPath = $rightImgFile->store('question_matching', 'public');
+                                    }
+                                }
+                            } elseif (!empty($p['remove_right_image']) && $p['remove_right_image'] == '1') {
+                                $rightImgPath = null;
+                            }
+
+                            if ($left !== '' || $right !== '' || !empty($leftImgPath) || !empty($rightImgPath)) {
                                 $entry = [
-                                    'left'  => $left,
-                                    'right' => $right,
+                                    'left'        => $left,
+                                    'left_image'  => $leftImgPath,
+                                    'right'       => $right,
+                                    'right_image' => $rightImgPath,
                                 ];
                                 if ($pairPts !== null && $pairPts > 0) {
                                     $entry['points'] = $pairPts;
@@ -584,7 +667,7 @@ class ExamController extends Controller
                 $dataToSave = [
                     'exam_id'        => $exam->id,
                     'type'           => $qData['type'] ?? 'mcq',
-                    'question_text'  => $qData['question_text'],
+                    'question_text'  => $qText,
                     'image'          => $imagePath,
                     'a'              => $qData['a'] ?? null,
                     'a_image'        => $optImages['a_image'],

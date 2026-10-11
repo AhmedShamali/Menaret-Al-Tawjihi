@@ -217,6 +217,9 @@
                                         <span style="color: {{ $isCorrect ? '#059669' : '#dc2626' }}; font-weight: 800;">
                                             ({{ strtoupper($ans->answer_text ?? 'لا توجد إجابة') }}) {{ $ans->question->{$ans->answer_text} ?? '' }}
                                         </span>
+                                        @if(!empty($ans->answer_text) && $ans->question->getOptionImageUrl($ans->answer_text))
+                                            <img src="{{ $ans->question->getOptionImageUrl($ans->answer_text) }}" alt="صورة خيار الطالب" onclick="openZoomModal(this.src)" style="height: 30px; max-width: 50px; object-fit: contain; vertical-align: middle; cursor: zoom-in; margin-inline-start: 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff;">
+                                        @endif
                                     @endif
                                     {!! $isCorrect ? ' <span style="margin-inline-start: 8px;">✅ (صحيحة)</span>' : ' <span style="margin-inline-start: 8px;">❌ (خاطئة)</span>' !!}
                                 </div>
@@ -226,6 +229,9 @@
                                         <b style="color: #059669;">{{ strtoupper(implode(', ', $correctOptLetters)) }}</b>
                                     @else
                                         <b style="color: #059669;">({{ strtoupper($ans->question->correct_answer) }}) {{ $ans->question->{$ans->question->correct_answer} ?? '' }}</b>
+                                        @if(!empty($ans->question->correct_answer) && $ans->question->getOptionImageUrl($ans->question->correct_answer))
+                                            <img src="{{ $ans->question->getOptionImageUrl($ans->question->correct_answer) }}" alt="صورة النموذج" onclick="openZoomModal(this.src)" style="height: 30px; max-width: 50px; object-fit: contain; vertical-align: middle; cursor: zoom-in; margin-inline-start: 6px; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff;">
+                                        @endif
                                     @endif
                                 </div>
                             </div>
@@ -296,17 +302,37 @@
                                             @foreach($pairs as $pIdx => $pair)
                                             @php
                                                 $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                                $leftImg = $pair['left_image_url'] ?? $pair['left_image'] ?? null;
                                                 $rightExpected = trim((string)($pair['right'] ?? $pair['match'] ?? ''));
+                                                $rightImg = $pair['right_image_url'] ?? $pair['right_image'] ?? null;
                                                 $rightGiven = trim((string)($studentMap[$leftItem] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
                                                 $isPairMatch = (!empty($rightGiven) && mb_strtolower($rightExpected) === mb_strtolower($rightGiven));
                                                 $pairPts = (isset($pair['points']) && is_numeric($pair['points'])) ? (float)$pair['points'] : round($ans->question->points / max(1, count($pairs)), 2);
                                             @endphp
                                             <tr style="border-bottom: 1px solid #f1f5f9; background: {{ $isPairMatch ? '#f0fdf4' : '#fef2f2' }};">
-                                                <td style="padding: 8px 12px; font-weight: 700;">{{ $leftItem }}</td>
+                                                <td style="padding: 8px 12px; font-weight: 700;">
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        @if(!empty($leftImg))
+                                                            <img src="{{ $leftImg }}" alt="صورة المفهوم" onclick="openZoomModal(this.src)" style="height: 34px; max-width: 50px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; cursor: zoom-in; background: #fff;">
+                                                        @endif
+                                                        @if(!empty($leftItem))
+                                                            <span>{{ $leftItem }}</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td style="padding: 8px 12px; color: {{ $isPairMatch ? '#15803d' : '#b91c1c' }}; font-weight: 700;">
                                                     {{ !empty($rightGiven) ? $rightGiven : '(لم يربط)' }}
                                                 </td>
-                                                <td style="padding: 8px 12px; color: #1e40af; font-weight: 700;">{{ $rightExpected }}</td>
+                                                <td style="padding: 8px 12px; color: #1e40af; font-weight: 700;">
+                                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                                        @if(!empty($rightImg))
+                                                            <img src="{{ $rightImg }}" alt="صورة المطابق" onclick="openZoomModal(this.src)" style="height: 34px; max-width: 50px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; cursor: zoom-in; background: #fff;">
+                                                        @endif
+                                                        @if(!empty($rightExpected))
+                                                            <span>{{ $rightExpected }}</span>
+                                                        @endif
+                                                    </div>
+                                                </td>
                                                 <td style="padding: 8px 12px; text-align: center; font-weight: 800; color: {{ $isPairMatch ? '#15803d' : '#b91c1c' }};">
                                                     {{ $isPairMatch ? $pairPts : 0 }} / {{ $pairPts }}
                                                 </td>

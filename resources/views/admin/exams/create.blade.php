@@ -1327,34 +1327,103 @@
         newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function addMatchingPairRow(qIdx, leftVal = '', rightVal = '', ptsVal = 1) {
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function addMatchingPairRow(qIdx, leftVal = '', rightVal = '', ptsVal = 1, leftImg = '', rightImg = '') {
         const wrap = document.getElementById(`matching_pairs_wrap_${qIdx}`);
         if (!wrap) return;
         const pIdx = wrap.children.length;
         const row = document.createElement('div');
         row.className = 'matching-pair-row';
-        row.style.cssText = 'display: flex; gap: 10px; align-items: center; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; transition: all 0.2s;';
+        row.style.cssText = 'display: flex; gap: 10px; align-items: flex-start; background: #ffffff; padding: 12px; border-radius: 10px; border: 1.5px solid #e2e8f0; transition: all 0.2s;';
         
         row.innerHTML = `
-            <span class="pair-idx-badge" style="background: #e0e7ff; color: #3730a3; font-weight: 800; font-size: 0.78rem; padding: 4px 8px; border-radius: 6px; min-width: 28px; text-align: center;">#${pIdx + 1}</span>
-            <div style="flex: 1;">
-                <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][left]" value="${escapeHtml(leftVal)}" class="f-input" placeholder="{{ __('الطرف الأول (المفهوم/السؤال)') }}" style="font-size: 0.88rem;" required>
+            <span class="pair-idx-badge" style="background: #e0e7ff; color: #3730a3; font-weight: 800; font-size: 0.78rem; padding: 6px 10px; border-radius: 6px; min-width: 28px; text-align: center; margin-top: 4px;">#${pIdx + 1}</span>
+            
+            {{-- الطرف الأول (المفهوم / السؤال) --}}
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][left]" value="${escapeHtml(leftVal)}" class="f-input" placeholder="{{ __('الطرف الأول (المفهوم/السؤال)') }}" style="font-size: 0.88rem; flex: 1;">
+                    <label for="q_match_left_img_${qIdx}_${pIdx}" class="btn-opt-img-trigger" title="{{ __('إرفاق صورة للطرف الأول') }}" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 0.78rem; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; transition: all 0.2s;">
+                        <i class="fa-solid fa-image" style="color: #0284c7;"></i>
+                        <span>{{ __('صورة') }}</span>
+                    </label>
+                    <input type="file" name="questions[${qIdx}][matching_pairs][${pIdx}][left_image]" id="q_match_left_img_${qIdx}_${pIdx}" accept="image/*" hidden onchange="handleMatchingPairImage(this, ${qIdx}, ${pIdx}, 'left')">
+                    <input type="hidden" name="questions[${qIdx}][matching_pairs][${pIdx}][existing_left_image]" value="${escapeHtml(leftImg)}">
+                    <input type="hidden" name="questions[${qIdx}][matching_pairs][${pIdx}][remove_left_image]" id="remove_match_left_img_${qIdx}_${pIdx}" value="0">
+                </div>
+                <div class="match-img-preview" id="match_preview_left_${qIdx}_${pIdx}" style="${leftImg ? 'display: inline-flex;' : 'display: none;'} align-items: center; gap: 8px; background: #eff6ff; border: 1px solid #bfdbfe; padding: 4px 8px; border-radius: 6px; width: fit-content;">
+                    <img id="match_target_left_${qIdx}_${pIdx}" src="${leftImg || ''}" alt="صورة الطرف الأول" style="height: 36px; max-width: 60px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff;">
+                    <span style="font-size: 0.72rem; color: #1e40af; font-weight: 700;">{{ __('صورة السؤال') }}</span>
+                    <button type="button" onclick="removeMatchingPairImage(${qIdx}, ${pIdx}, 'left')" style="border: none; background: #ef4444; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem;" title="{{ __('حذف الصورة') }}">&times;</button>
+                </div>
             </div>
-            <i class="fa-solid fa-arrow-left" style="color: #94a3b8; font-size: 0.85rem;"></i>
-            <div style="flex: 1;">
-                <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][right]" value="${escapeHtml(rightVal)}" class="f-input" placeholder="{{ __('الطرف الثاني (المطابق الصحيح)') }}" style="font-size: 0.88rem;" required>
+
+            <i class="fa-solid fa-arrow-left" style="color: #94a3b8; font-size: 0.95rem; margin-top: 10px; flex-shrink: 0;"></i>
+
+            {{-- الطرف الثاني (المطابق الصحيح / الجواب) --}}
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <input type="text" name="questions[${qIdx}][matching_pairs][${pIdx}][right]" value="${escapeHtml(rightVal)}" class="f-input" placeholder="{{ __('الطرف الثاني (المطابق الصحيح)') }}" style="font-size: 0.88rem; flex: 1;">
+                    <label for="q_match_right_img_${qIdx}_${pIdx}" class="btn-opt-img-trigger" title="{{ __('إرفاق صورة للطرف الثاني') }}" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 8px; padding: 7px 11px; cursor: pointer; font-size: 0.78rem; font-weight: 700; color: #475569; display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; transition: all 0.2s;">
+                        <i class="fa-solid fa-image" style="color: #059669;"></i>
+                        <span>{{ __('صورة') }}</span>
+                    </label>
+                    <input type="file" name="questions[${qIdx}][matching_pairs][${pIdx}][right_image]" id="q_match_right_img_${qIdx}_${pIdx}" accept="image/*" hidden onchange="handleMatchingPairImage(this, ${qIdx}, ${pIdx}, 'right')">
+                    <input type="hidden" name="questions[${qIdx}][matching_pairs][${pIdx}][existing_right_image]" value="${escapeHtml(rightImg)}">
+                    <input type="hidden" name="questions[${qIdx}][matching_pairs][${pIdx}][remove_right_image]" id="remove_match_right_img_${qIdx}_${pIdx}" value="0">
+                </div>
+                <div class="match-img-preview" id="match_preview_right_${qIdx}_${pIdx}" style="${rightImg ? 'display: inline-flex;' : 'display: none;'} align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 4px 8px; border-radius: 6px; width: fit-content;">
+                    <img id="match_target_right_${qIdx}_${pIdx}" src="${rightImg || ''}" alt="صورة الطرف الثاني" style="height: 36px; max-width: 60px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff;">
+                    <span style="font-size: 0.72rem; color: #166534; font-weight: 700;">{{ __('صورة الجواب') }}</span>
+                    <button type="button" onclick="removeMatchingPairImage(${qIdx}, ${pIdx}, 'right')" style="border: none; background: #ef4444; color: #fff; border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.7rem;" title="{{ __('حذف الصورة') }}">&times;</button>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 4px; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+
+            {{-- علامة هذا الخيار --}}
+            <div style="display: flex; align-items: center; gap: 4px; background: #f8fafc; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 4px; flex-shrink: 0;">
                 <input type="number" step="0.5" min="0.5" name="questions[${qIdx}][matching_pairs][${pIdx}][points]" value="${ptsVal}" class="f-input matching-pair-pts" placeholder="1" style="width: 55px; padding: 4px; text-align: center; font-weight: 700; font-size: 0.88rem;" oninput="recalcMatchingPoints(${qIdx})">
                 <span style="font-size: 0.74rem; color: #475569; font-weight: 700;">{{ __('علامة') }}</span>
             </div>
-            <button type="button" class="btn-remove-matching-row" onclick="removeMatchingPairRow(this, ${qIdx})" style="color: #ef4444; background: #fee2e2; border: none; border-radius: 6px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="{{ __('حذف هذا الزوج') }}">
+
+            <button type="button" class="btn-remove-matching-row" onclick="removeMatchingPairRow(this, ${qIdx})" style="color: #ef4444; background: #fee2e2; border: none; border-radius: 6px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; margin-top: 4px; flex-shrink: 0;" title="{{ __('حذف هذا الزوج') }}">
                 <i class="fa-solid fa-trash-can" style="font-size: 0.85rem;"></i>
             </button>
         `;
         wrap.appendChild(row);
         renumberMatchingPairs(qIdx);
         recalcMatchingPoints(qIdx);
+    }
+
+    function handleMatchingPairImage(input, qIdx, pIdx, side) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById(`match_preview_${side}_${qIdx}_${pIdx}`);
+                const target = document.getElementById(`match_target_${side}_${qIdx}_${pIdx}`);
+                if (target && preview) {
+                    target.src = e.target.result;
+                    preview.style.display = 'inline-flex';
+                }
+                const removeInput = document.getElementById(`remove_match_${side}_img_${qIdx}_${pIdx}`);
+                if (removeInput) removeInput.value = '0';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeMatchingPairImage(qIdx, pIdx, side) {
+        const input = document.getElementById(`q_match_${side}_img_${qIdx}_${pIdx}`);
+        const preview = document.getElementById(`match_preview_${side}_${qIdx}_${pIdx}`);
+        const target = document.getElementById(`match_target_${side}_${qIdx}_${pIdx}`);
+        const removeInput = document.getElementById(`remove_match_${side}_img_${qIdx}_${pIdx}`);
+        if (input) input.value = '';
+        if (target) target.src = '';
+        if (preview) preview.style.display = 'none';
+        if (removeInput) removeInput.value = '1';
     }
 
     function removeMatchingPairRow(btn, qIdx) {
@@ -1384,12 +1453,65 @@
             const badge = row.querySelector('.pair-idx-badge');
             if (badge) badge.innerText = '#' + (idx + 1);
             
+            // تحديث حقول الطرف الأول
             const leftInput = row.querySelector('input[name*="[left]"]');
             if (leftInput) leftInput.name = `questions[${qIdx}][matching_pairs][${idx}][left]`;
             
+            const leftImgInput = row.querySelector('input[type="file"][name*="[left_image]"]');
+            if (leftImgInput) {
+                leftImgInput.name = `questions[${qIdx}][matching_pairs][${idx}][left_image]`;
+                leftImgInput.id = `q_match_left_img_${qIdx}_${idx}`;
+                leftImgInput.setAttribute('onchange', `handleMatchingPairImage(this, ${qIdx}, ${idx}, 'left')`);
+            }
+            const leftImgLabel = row.querySelector('label[for*="q_match_left_img_"]');
+            if (leftImgLabel) leftImgLabel.setAttribute('for', `q_match_left_img_${qIdx}_${idx}`);
+            
+            const leftExistImg = row.querySelector('input[name*="[existing_left_image]"]');
+            if (leftExistImg) leftExistImg.name = `questions[${qIdx}][matching_pairs][${idx}][existing_left_image]`;
+            
+            const leftRemImg = row.querySelector('input[name*="[remove_left_image]"]');
+            if (leftRemImg) {
+                leftRemImg.name = `questions[${qIdx}][matching_pairs][${idx}][remove_left_image]`;
+                leftRemImg.id = `remove_match_left_img_${qIdx}_${idx}`;
+            }
+            
+            const leftPreview = row.querySelector('[id*="match_preview_left_"]');
+            if (leftPreview) leftPreview.id = `match_preview_left_${qIdx}_${idx}`;
+            const leftTarget = row.querySelector('[id*="match_target_left_"]');
+            if (leftTarget) leftTarget.id = `match_target_left_${qIdx}_${idx}`;
+            const leftRemBtn = leftPreview ? leftPreview.querySelector('button') : null;
+            if (leftRemBtn) leftRemBtn.setAttribute('onclick', `removeMatchingPairImage(${qIdx}, ${idx}, 'left')`);
+
+            // تحديث حقول الطرف الثاني
             const rightInput = row.querySelector('input[name*="[right]"]');
             if (rightInput) rightInput.name = `questions[${qIdx}][matching_pairs][${idx}][right]`;
             
+            const rightImgInput = row.querySelector('input[type="file"][name*="[right_image]"]');
+            if (rightImgInput) {
+                rightImgInput.name = `questions[${qIdx}][matching_pairs][${idx}][right_image]`;
+                rightImgInput.id = `q_match_right_img_${qIdx}_${idx}`;
+                rightImgInput.setAttribute('onchange', `handleMatchingPairImage(this, ${qIdx}, ${idx}, 'right')`);
+            }
+            const rightImgLabel = row.querySelector('label[for*="q_match_right_img_"]');
+            if (rightImgLabel) rightImgLabel.setAttribute('for', `q_match_right_img_${qIdx}_${idx}`);
+            
+            const rightExistImg = row.querySelector('input[name*="[existing_right_image]"]');
+            if (rightExistImg) rightExistImg.name = `questions[${qIdx}][matching_pairs][${idx}][existing_right_image]`;
+            
+            const rightRemImg = row.querySelector('input[name*="[remove_right_image]"]');
+            if (rightRemImg) {
+                rightRemImg.name = `questions[${qIdx}][matching_pairs][${idx}][remove_right_image]`;
+                rightRemImg.id = `remove_match_right_img_${qIdx}_${idx}`;
+            }
+            
+            const rightPreview = row.querySelector('[id*="match_preview_right_"]');
+            if (rightPreview) rightPreview.id = `match_preview_right_${qIdx}_${idx}`;
+            const rightTarget = row.querySelector('[id*="match_target_right_"]');
+            if (rightTarget) rightTarget.id = `match_target_right_${qIdx}_${idx}`;
+            const rightRemBtn = rightPreview ? rightPreview.querySelector('button') : null;
+            if (rightRemBtn) rightRemBtn.setAttribute('onclick', `removeMatchingPairImage(${qIdx}, ${idx}, 'right')`);
+
+            // تحديث النقاط
             const ptsInput = row.querySelector('input[name*="[points]"]');
             if (ptsInput) ptsInput.name = `questions[${qIdx}][matching_pairs][${idx}][points]`;
         });

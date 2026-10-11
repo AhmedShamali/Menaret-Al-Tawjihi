@@ -269,8 +269,15 @@
                                 $pairs = $q->getParsedMatchingPairs();
                                 // خلط أزواج الطرف الأول (المفاهيم/الأسئلة) عشوائياً للطالب لمنع التخمين والغش
                                 $shuffledPairs = collect($pairs)->shuffle()->values();
-                                // خلط بنك الخيارات المتاحة للمطابقة في الطرف الثاني عشوائياً
-                                $rightOptions = collect($pairs)->pluck('right')->filter()->shuffle()->values();
+                                // إعداد بنك الخيارات المتاحة للمطابقة في الطرف الثاني مع نصوصها وصورها
+                                $rightOptions = collect($pairs)->map(function($p) {
+                                    return [
+                                        'val'   => trim((string)($p['right'] ?? $p['match'] ?? '')),
+                                        'image' => $p['right_image_url'] ?? $p['right_image'] ?? null,
+                                    ];
+                                })->filter(function($p) {
+                                    return !empty($p['val']) || !empty($p['image']);
+                                })->shuffle()->values();
                             @endphp
                             <div class="classic-matching-container" id="matching_container_{{ $q->id }}" data-qid="{{ $q->id }}" data-idx="{{ $index }}">
                                 <div class="matching-guide-bar">
@@ -286,14 +293,22 @@
                                         @foreach($shuffledPairs as $pIdx => $pair)
                                         @php
                                             $leftItem = $pair['left'] ?? $pair['term'] ?? '';
+                                            $leftImg = $pair['left_image_url'] ?? $pair['left_image'] ?? null;
                                             $pairScore = isset($pair['points']) && is_numeric($pair['points']) ? (float)$pair['points'] : null;
                                         @endphp
                                         <div class="matching-target-row" data-prompt="{{ $leftItem }}">
-                                            <div class="prompt-text-pill">
+                                            <div class="prompt-text-pill" style="display: flex; align-items: center; gap: 8px;">
                                                 <span class="prompt-num">{{ $pIdx + 1 }}</span>
-                                                <span class="prompt-val">{{ $leftItem }}</span>
+                                                @if(!empty($leftImg))
+                                                    <div class="match-prompt-thumb" onclick="openImageModal('{{ $leftImg }}')" title="{{ __('انقر لتكبير صورة السؤال') }}" style="cursor: zoom-in; display: inline-flex; align-items: center; flex-shrink: 0;">
+                                                        <img src="{{ $leftImg }}" alt="صورة الطرف الأول" style="height: 38px; max-width: 60px; object-fit: contain; border-radius: 6px; border: 1.5px solid #cbd5e1; background: #fff;">
+                                                    </div>
+                                                @endif
+                                                @if(!empty($leftItem))
+                                                    <span class="prompt-val">{{ $leftItem }}</span>
+                                                @endif
                                                 @if($pairScore !== null && $pairScore > 0)
-                                                    <span class="prompt-pair-pts" style="font-size: 0.72rem; color: #4338ca; background: #e0e7ff; padding: 2px 7px; border-radius: 6px; font-weight: 800; margin-inline-start: 6px;" title="{{ __('درجة هذا الخيار') }}">
+                                                    <span class="prompt-pair-pts" style="font-size: 0.72rem; color: #4338ca; background: #e0e7ff; padding: 2px 7px; border-radius: 6px; font-weight: 800; margin-inline-start: auto;" title="{{ __('درجة هذا الخيار') }}">
                                                         {{ $pairScore }} {{ __('علامة') }}
                                                     </span>
                                                 @endif
@@ -308,7 +323,8 @@
                                                  ondrop="handleMatchingDrop(event, {{ $q->id }}, '{{ addslashes($leftItem) }}', {{ $index }})"
                                                  onclick="handleDropzoneClick(this, {{ $q->id }}, '{{ addslashes($leftItem) }}', {{ $index }})">
                                                 <span class="dropzone-placeholder">{{ __('اسحب الخيار أو انقر للربط...') }}</span>
-                                                <div class="dropped-chip" style="display: none;">
+                                                <div class="dropped-chip" style="display: none; align-items: center; gap: 6px;">
+                                                    <img class="chip-img" src="" alt="" style="height: 28px; max-width: 44px; object-fit: contain; border-radius: 4px; display: none; background: #fff; border: 1px solid #cbd5e1;" onclick="event.stopPropagation(); openImageModal(this.src);">
                                                     <span class="chip-text"></span>
                                                     <button type="button" class="btn-clear-match" onclick="clearMatchPair(event, {{ $q->id }}, '{{ addslashes($leftItem) }}', {{ $index }})">&times;</button>
                                                 </div>
@@ -317,7 +333,7 @@
                                             <select class="matching-fallback-select" onchange="handleMatchingSelect(this, {{ $q->id }}, '{{ addslashes($leftItem) }}', {{ $index }})">
                                                 <option value="">{{ __('-- اختر المقابل --') }}</option>
                                                 @foreach($rightOptions as $rOpt)
-                                                    <option value="{{ $rOpt }}">{{ $rOpt }}</option>
+                                                    <option value="{{ $rOpt['val'] }}">{{ $rOpt['val'] }}</option>
                                                 @endforeach
                                             </select>
                                         </div>
@@ -335,11 +351,20 @@
                                             <div class="draggable-match-tile" 
                                                  id="tile_{{ $q->id }}_{{ $rIdx }}"
                                                  draggable="true" 
-                                                 data-val="{{ $rOpt }}" 
-                                                 ondragstart="handleMatchingDragStart(event, {{ $q->id }}, '{{ addslashes($rOpt) }}')"
-                                                 onclick="handleMatchingTileClick(this, {{ $q->id }})">
+                                                 data-val="{{ $rOpt['val'] }}" 
+                                                 data-img="{{ $rOpt['image'] ?? '' }}"
+                                                 ondragstart="handleMatchingDragStart(event, {{ $q->id }}, '{{ addslashes($rOpt['val']) }}', '{{ addslashes($rOpt['image'] ?? '') }}')"
+                                                 onclick="handleMatchingTileClick(this, {{ $q->id }})"
+                                                 style="display: inline-flex; align-items: center; gap: 8px;">
                                                 <i class="fa-solid fa-grip-vertical drag-handle"></i>
-                                                <span class="tile-label">{{ $rOpt }}</span>
+                                                @if(!empty($rOpt['image']))
+                                                    <div class="match-tile-thumb" onclick="event.stopPropagation(); openImageModal('{{ $rOpt['image'] }}')" title="{{ __('انقر لتكبير صورة الخيار') }}" style="cursor: zoom-in; display: inline-flex; align-items: center;">
+                                                        <img src="{{ $rOpt['image'] }}" alt="صورة الخيار" style="height: 32px; max-width: 48px; object-fit: contain; border-radius: 4px; border: 1px solid #cbd5e1; background: #fff;">
+                                                    </div>
+                                                @endif
+                                                @if(!empty($rOpt['val']))
+                                                    <span class="tile-label">{{ $rOpt['val'] }}</span>
+                                                @endif
                                             </div>
                                             @endforeach
                                         </div>
@@ -3103,9 +3128,9 @@
     let currentDraggedMatchTile = null;
     let currentSelectedMatchTile = null;
 
-    function handleMatchingDragStart(e, qId, val) {
-        currentDraggedMatchTile = { qId, val };
-        e.dataTransfer.setData('text/plain', JSON.stringify({ qId, val }));
+    function handleMatchingDragStart(e, qId, val, img = '') {
+        currentDraggedMatchTile = { qId, val, img };
+        e.dataTransfer.setData('text/plain', JSON.stringify({ qId, val, img }));
         e.dataTransfer.effectAllowed = 'copyMove';
     }
 
@@ -3122,16 +3147,21 @@
         if (dz) dz.classList.remove('drag-over');
 
         let val = '';
+        let img = '';
         try {
             const data = JSON.parse(e.dataTransfer.getData('text/plain'));
-            if (data.qId === qId) val = data.val;
+            if (data.qId === qId) {
+                val = data.val;
+                img = data.img || '';
+            }
         } catch(err) {
             if (currentDraggedMatchTile && currentDraggedMatchTile.qId === qId) {
                 val = currentDraggedMatchTile.val;
+                img = currentDraggedMatchTile.img || '';
             }
         }
 
-        if (val) assignMatchPair(qId, leftItem, val, index, dz);
+        if (val) assignMatchPair(qId, leftItem, val, index, dz, img);
     }
 
     function handleMatchingTileClick(tile, qId) {
@@ -3145,13 +3175,17 @@
         } else {
             pool.querySelectorAll('.draggable-match-tile').forEach(t => t.classList.remove('is-selected-tile'));
             tile.classList.add('is-selected-tile');
-            currentSelectedMatchTile = { qId, val: tile.getAttribute('data-val') };
+            currentSelectedMatchTile = { 
+                qId, 
+                val: tile.getAttribute('data-val'),
+                img: tile.getAttribute('data-img') || '' 
+            };
         }
     }
 
     function handleDropzoneClick(dz, qId, leftItem, index) {
         if (currentSelectedMatchTile && currentSelectedMatchTile.qId === qId) {
-            assignMatchPair(qId, leftItem, currentSelectedMatchTile.val, index, dz);
+            assignMatchPair(qId, leftItem, currentSelectedMatchTile.val, index, dz, currentSelectedMatchTile.img);
             const pool = document.getElementById('pool_' + qId);
             if (pool) pool.querySelectorAll('.draggable-match-tile').forEach(t => t.classList.remove('is-selected-tile'));
             currentSelectedMatchTile = null;
@@ -3163,13 +3197,16 @@
         const row = selectElem.closest('.matching-target-row');
         const dz = row ? row.querySelector('.matching-dropzone') : null;
         if (val) {
-            assignMatchPair(qId, leftItem, val, index, dz);
+            const container = selectElem.closest('.classic-matching-container');
+            const tile = container ? container.querySelector(`.draggable-match-tile[data-val="${CSS.escape(val)}"]`) : null;
+            const img = tile ? (tile.getAttribute('data-img') || '') : '';
+            assignMatchPair(qId, leftItem, val, index, dz, img);
         } else {
             clearMatchPair(null, qId, leftItem, index);
         }
     }
 
-    function assignMatchPair(qId, leftItem, val, index, dz) {
+    function assignMatchPair(qId, leftItem, val, index, dz, img = '') {
         let map = {};
         const input = document.getElementById('matching_answer_' + qId);
         if (input && input.value) {
@@ -3188,6 +3225,16 @@
                 chip.style.display = 'flex';
                 const chipTxt = chip.querySelector('.chip-text');
                 if (chipTxt) chipTxt.textContent = val;
+                const chipImg = chip.querySelector('.chip-img');
+                if (chipImg) {
+                    if (img) {
+                        chipImg.src = img;
+                        chipImg.style.display = 'inline-block';
+                    } else {
+                        chipImg.style.display = 'none';
+                        chipImg.src = '';
+                    }
+                }
             }
         }
 
@@ -3220,7 +3267,14 @@
                     const ph = dz.querySelector('.dropzone-placeholder');
                     if (ph) ph.style.display = 'block';
                     const chip = dz.querySelector('.dropped-chip');
-                    if (chip) chip.style.display = 'none';
+                    if (chip) {
+                        chip.style.display = 'none';
+                        const chipImg = chip.querySelector('.chip-img');
+                        if (chipImg) {
+                            chipImg.src = '';
+                            chipImg.style.display = 'none';
+                        }
+                    }
                 }
                 const sel = row.querySelector('.matching-fallback-select');
                 if (sel) sel.value = '';
@@ -3433,6 +3487,13 @@
                                                 chip.style.display = 'flex';
                                                 const chipTxt = chip.querySelector('.chip-text');
                                                 if (chipTxt) chipTxt.textContent = rightVal;
+                                                const tile = card.querySelector(`.draggable-match-tile[data-val="${CSS.escape(rightVal)}"]`);
+                                                const tileImg = tile ? (tile.getAttribute('data-img') || '') : '';
+                                                const chipImg = chip.querySelector('.chip-img');
+                                                if (chipImg && tileImg) {
+                                                    chipImg.src = tileImg;
+                                                    chipImg.style.display = 'inline-block';
+                                                }
                                             }
                                         }
                                         const sel = row.querySelector('.matching-fallback-select');

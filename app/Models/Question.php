@@ -39,6 +39,28 @@ class Question extends Model
     ];
 
     /**
+     * حل وتأكيد الرابط الصحيح للصورة (سواء كانت محلية أو سحابية أو مسار تخزين)
+     */
+    public static function resolveImageUrl(?string $raw, string $defaultFolder = 'questions'): ?string
+    {
+        if (empty($raw)) return null;
+        $raw = trim($raw);
+        if (str_starts_with($raw, 'http://') || str_starts_with($raw, 'https://')) {
+            return $raw;
+        }
+        $cleanPath = ltrim(str_replace(['storage/', 'public/', 'app/public/'], '', $raw), '/');
+        $filename = basename($raw);
+        if ($filename) {
+            foreach ([$defaultFolder . '/' . $filename, 'question_matching/' . $filename, 'question_options/' . $filename, 'questions/' . $filename] as $tryPath) {
+                if (file_exists(public_path('storage/' . $tryPath)) || file_exists(storage_path('app/public/' . $tryPath))) {
+                    return asset('storage/' . $tryPath);
+                }
+            }
+        }
+        return asset('storage/' . $cleanPath);
+    }
+
+    /**
      * الحصول على مصفوفة أزواج المطابقة المفككة (سحب وإفلات وتوصيل المربعات)
      */
     public function getParsedMatchingPairs(): array
@@ -46,11 +68,22 @@ class Question extends Model
         if (empty($this->matching_pairs)) {
             return [];
         }
-        if (is_array($this->matching_pairs)) {
-            return $this->matching_pairs;
+        $pairs = is_array($this->matching_pairs) ? $this->matching_pairs : json_decode((string)$this->matching_pairs, true);
+        if (!is_array($pairs)) {
+            return [];
         }
-        $decoded = json_decode((string)$this->matching_pairs, true);
-        return is_array($decoded) ? $decoded : [];
+
+        foreach ($pairs as &$p) {
+            if (!empty($p['left_image'])) {
+                $p['left_image_url'] = self::resolveImageUrl($p['left_image'], 'question_matching');
+            }
+            if (!empty($p['right_image'])) {
+                $p['right_image_url'] = self::resolveImageUrl($p['right_image'], 'question_matching');
+            }
+        }
+        unset($p);
+
+        return $pairs;
     }
 
     /**
