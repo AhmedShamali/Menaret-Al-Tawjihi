@@ -14,7 +14,7 @@ class Question extends Model
         'exam_id',
         'type',
         'question_text',
-        'image', // ⬅️ تمت إضافته للسماح بالحفظ الشامل عبر الـ Eloquent
+        'image',
         'a',
         'a_image',
         'b',
@@ -26,8 +26,32 @@ class Question extends Model
         'correct_answer',
         'require_file',
         'points',
-        'is_placement'
+        'is_placement',
+        'matching_pairs',
+        'options_data',
+        'is_multiple'
     ];
+
+    protected $casts = [
+        'require_file' => 'boolean',
+        'is_multiple' => 'boolean',
+        'is_placement' => 'boolean',
+    ];
+
+    /**
+     * الحصول على مصفوفة أزواج المطابقة المفككة (سحب وإفلات وتوصيل المربعات)
+     */
+    public function getParsedMatchingPairs(): array
+    {
+        if (empty($this->matching_pairs)) {
+            return [];
+        }
+        if (is_array($this->matching_pairs)) {
+            return $this->matching_pairs;
+        }
+        $decoded = json_decode((string)$this->matching_pairs, true);
+        return is_array($decoded) ? $decoded : [];
+    }
 
     /**
      * الحصول على مصفوفة بكافة روابط الصورة الممكنة (محلياً وسحابياً)
@@ -126,9 +150,6 @@ class Question extends Model
         return !empty($candidates) ? $candidates[0] : null;
     }
 
-    protected $casts = [
-        'require_file' => 'boolean',
-    ];
 
     /**
      * الحصول على الرابط المباشر الصحيح لصورة السؤال

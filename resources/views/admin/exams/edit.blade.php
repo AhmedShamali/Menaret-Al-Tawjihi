@@ -209,11 +209,21 @@
                     <h3><i class="fa-solid fa-list-check"></i>{{ __('أسئلة الاختبار') }}</h3>
 
                     {{-- أزرار إضافة الأسئلة --}}
-                    <div class="add-q-btns">
+                    <div class="add-q-btns" style="display: flex; gap: 8px; flex-wrap: wrap;">
                         <button type="button" onclick="addQuestion('mcq')" class="btn-add-q mcq">
-                            <i class="fa-solid fa-plus"></i>{{ __('سؤال اختيار من متعدد') }}</button>
-                        <button type="button" onclick="addQuestion('text')" class="btn-add-q text">
-                            <i class="fa-solid fa-plus"></i> سؤال مقالي/نصي
+                            <i class="fa-solid fa-plus"></i>{{ __('اختيار من متعدد') }}
+                        </button>
+                        <button type="button" onclick="addQuestion('true_false')" class="btn-add-q" style="background:#059669; color:#fff;">
+                            <i class="fa-solid fa-check-double"></i>{{ __('صح أو خطأ') }}
+                        </button>
+                        <button type="button" onclick="addQuestion('short_answer')" class="btn-add-q" style="background:#0284c7; color:#fff;">
+                            <i class="fa-solid fa-i-cursor"></i>{{ __('إجابة قصيرة') }}
+                        </button>
+                        <button type="button" onclick="addQuestion('matching')" class="btn-add-q" style="background:#7c3aed; color:#fff;">
+                            <i class="fa-solid fa-diagram-project"></i>{{ __('توصيل وسحب') }}
+                        </button>
+                        <button type="button" onclick="addQuestion('essay')" class="btn-add-q text">
+                            <i class="fa-solid fa-plus"></i>{{ __('سؤال مقالي') }}
                         </button>
                     </div>
                 </div>
@@ -261,7 +271,45 @@
                                 </div>
                             </div>
 
-                            @if($q->type == 'mcq')
+                            @if($q->type == 'true_false')
+                            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-check-double"></i> {{ __('الإجابة الصحيحة المعتمدة') }}</label>
+                                <div style="display: flex; gap: 24px;">
+                                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="radio" name="questions[{{ $index }}][correct_answer]" value="true" {{ in_array(strtolower($q->correct_answer), ['true', '1']) ? 'checked' : '' }}>
+                                        <span style="font-weight: 800; color: #059669;"><i class="fa-solid fa-check"></i> {{ __('صحيح / صواب (True)') }}</span>
+                                    </label>
+                                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                                        <input type="radio" name="questions[{{ $index }}][correct_answer]" value="false" {{ in_array(strtolower($q->correct_answer), ['false', '0']) ? 'checked' : '' }}>
+                                        <span style="font-weight: 800; color: #dc2626;"><i class="fa-solid fa-xmark"></i> {{ __('خطأ (False)') }}</span>
+                                    </label>
+                                </div>
+                            </div>
+                            @elseif($q->type == 'short_answer')
+                            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-i-cursor"></i> {{ __('الإجابة الصحيحة أو الإجابات المقبولة (افصل بينها بفواصل ,)') }}</label>
+                                <input type="text" name="questions[{{ $index }}][correct_answer]" value="{{ $q->correct_answer }}" class="f-input" placeholder="{{ __('مثال: غزة, مدينة غزة') }}">
+                            </div>
+                            @elseif($q->type == 'matching')
+                            @php
+                                $pairs = $q->getParsedMatchingPairs();
+                                if(empty($pairs)) {
+                                    $pairs = [['left' => '', 'right' => ''], ['left' => '', 'right' => '']];
+                                }
+                            @endphp
+                            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-diagram-project"></i> {{ __('أزواج التوصيل والمطابقة (المفهوم مقابل ما يناسبه)') }}</label>
+                                <div id="matching_pairs_wrap_{{ $index }}" style="display: flex; flex-direction: column; gap: 8px;">
+                                    @foreach($pairs as $pIdx => $p)
+                                    <div style="display: flex; gap: 10px; align-items: center;">
+                                        <input type="text" name="questions[{{ $index }}][matching_pairs][{{ $pIdx }}][left]" value="{{ $p['left'] ?? $p['term'] ?? '' }}" class="f-input" placeholder="الطرف الأول (المفهوم/السؤال)">
+                                        <i class="fa-solid fa-arrow-left" style="color: #94a3b8;"></i>
+                                        <input type="text" name="questions[{{ $index }}][matching_pairs][{{ $pIdx }}][right]" value="{{ $p['right'] ?? $p['match'] ?? '' }}" class="f-input" placeholder="الطرف الثاني (المطابق الصحيح)">
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @elseif($q->type == 'mcq')
                             <div class="mcq-options-grid">
                                 @foreach(['a', 'b', 'c', 'd'] as $opt)
                                 @php
@@ -903,7 +951,42 @@
         newCard.id = `q_card_${qIndex}`;
 
         let mcqHtml = '';
-        if (type === 'mcq') {
+        if (type === 'true_false') {
+            mcqHtml = `
+            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-check-double"></i> {{ __('الإجابة الصحيحة المعتمدة') }}</label>
+                <div style="display: flex; gap: 24px;">
+                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="questions[${qIndex}][correct_answer]" value="true" checked>
+                        <span style="font-weight: 800; color: #059669;"><i class="fa-solid fa-check"></i> {{ __('صحيح / صواب (True)') }}</span>
+                    </label>
+                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="questions[${qIndex}][correct_answer]" value="false">
+                        <span style="font-weight: 800; color: #dc2626;"><i class="fa-solid fa-xmark"></i> {{ __('خطأ (False)') }}</span>
+                    </label>
+                </div>
+            </div>`;
+        } else if (type === 'short_answer') {
+            mcqHtml = `
+            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-i-cursor"></i> {{ __('الإجابة الصحيحة أو الإجابات المقبولة (افصل بينها بفواصل ,)') }}</label>
+                <input type="text" name="questions[${qIndex}][correct_answer]" class="f-input" placeholder="{{ __('مثال: غزة, مدينة غزة') }}">
+            </div>`;
+        } else if (type === 'matching') {
+            mcqHtml = `
+            <div class="f-group mb-20" style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1.5px solid #cbd5e1;">
+                <label class="f-label-sm" style="margin-bottom: 8px; font-weight: 800; color: #1e3a8a;"><i class="fa-solid fa-diagram-project"></i> {{ __('أزواج التوصيل والمطابقة (المفهوم مقابل ما يناسبه)') }}</label>
+                <div id="matching_pairs_wrap_${qIndex}" style="display: flex; flex-direction: column; gap: 8px;">
+                    ${[0, 1, 2].map(pIdx => `
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="text" name="questions[${qIndex}][matching_pairs][${pIdx}][left]" class="f-input" placeholder="الطرف الأول (المفهوم/السؤال)">
+                            <i class="fa-solid fa-arrow-left" style="color: #94a3b8;"></i>
+                            <input type="text" name="questions[${qIndex}][matching_pairs][${pIdx}][right]" class="f-input" placeholder="الطرف الثاني (المطابق الصحيح)">
+                        </div>
+                    `).join('')}
+                </div>
+            </div>`;
+        } else if (type === 'mcq') {
             mcqHtml = `
             <div class="mcq-options-grid">
                 ${['a', 'b', 'c', 'd'].map(opt => `

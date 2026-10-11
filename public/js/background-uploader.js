@@ -700,6 +700,7 @@
             // تحديث مباشر للـ DOM كحماية قصوى لضمان تطابق بطاقة الصفحة مع الودجت العائم
             this.syncVideographerDirectDOM();
             this.syncEducationalContentPage();
+            this.syncTeacherVideosPage();
 
             try {
                 window.dispatchEvent(new CustomEvent('ed:upload-progress', { detail: this.state }));
@@ -863,10 +864,70 @@
         }
 
         /**
-         * مزامنة صفحة مكتبة فيديوهات المعلم
+         * مزامنة صفحة مكتبة فيديوهات المعلم والمدير (مودال الرفع الموحد)
          */
         syncTeacherVideosPage() {
-            // يمكن استكمال المزامنة عند الحاجة
+            const progressWrap = document.getElementById('chunkProgressWrap');
+            if (!progressWrap) return;
+
+            const progressBar = document.getElementById('chunkProgressBar');
+            const progressPct = document.getElementById('chunkProgressPct');
+            const progressStatus = document.getElementById('chunkProgressStatus');
+            const fileMeta = document.getElementById('chunkFileMeta');
+            const speedMeta = document.getElementById('chunkSpeedMeta');
+            const etaMeta = document.getElementById('chunkEtaMeta');
+            const partMeta = document.getElementById('chunkPartMeta');
+            const btnSubmit = document.getElementById('btnSubmitVideo');
+            const btnCancel = document.getElementById('btnCancelUpload');
+
+            if (this.hasActiveUpload()) {
+                progressWrap.style.display = 'block';
+                const currentPct = (this.state.progress || 0) + '%';
+                if (progressBar) progressBar.style.width = currentPct;
+                if (progressPct) progressPct.textContent = currentPct;
+                if (progressStatus) {
+                    if (this.state.status === 'paused') {
+                        progressStatus.innerHTML = '<span style="color:#d97706;"><i class="fa-solid fa-triangle-exclamation fa-beat"></i> انقطع الاتصال (معلّق).. جاري الاستئناف التلقائي</span>';
+                    } else {
+                        progressStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up fa-fade"></i> جاري رفع أجزاء الفيديو بالخلفية: ${this.state.partText || ''}`;
+                    }
+                }
+                if (fileMeta) fileMeta.textContent = `${this.state.fileName || ''} (${this.state.fileSizeFormatted || ''})`;
+                if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ${this.state.speed || '--'}`;
+                if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ${this.state.eta || '--'}`;
+                if (partMeta) partMeta.textContent = this.state.partText || '--';
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> جاري رفع الفيديو بالخلفية (${this.state.progress || 0}%)...`;
+                }
+                if (btnCancel) btnCancel.disabled = true;
+            } else if (this.hasCompletedUpload()) {
+                progressWrap.style.display = 'block';
+                if (progressBar) progressBar.style.width = '100%';
+                if (progressPct) progressPct.textContent = '100%';
+                if (progressStatus) {
+                    progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> تم اكتمال رفع ومعالجة الفيديو بنجاح! جاهز لحفظ ونشر المحاضرة.';
+                }
+                if (fileMeta && this.state.fileName) {
+                    fileMeta.textContent = `${this.state.fileName} (${this.state.fileSizeFormatted || ''})`;
+                }
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> حفظ ونشر درس الفيديو الآن`;
+                }
+                if (btnCancel) btnCancel.disabled = false;
+            } else if (this.state.status === 'error') {
+                progressWrap.style.display = 'block';
+                if (progressStatus) {
+                    progressStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> ${this.state.error || 'حدث خطأ أثناء الرفع.'}`;
+                }
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> إعادة محاولة الحفظ`;
+                }
+                if (btnCancel) btnCancel.disabled = false;
+            }
         }
 
         /**
@@ -925,9 +986,6 @@
             window.addEventListener('popstate', (e) => {
                 if (this.hasActiveUpload()) {
                     this.navigate(window.location.href, false);
-                }
-            });
-        }
                 }
             });
         }

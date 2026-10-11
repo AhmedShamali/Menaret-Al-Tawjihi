@@ -537,6 +537,10 @@
                     }
                 });
 
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.uploaderInstance = activeUploader;
+                }
+
                 const uploadRes = await activeUploader.upload(file);
                 uploadedVideoPath = uploadRes.uploaded_video_path;
                 formattedVideoSize = uploadRes.formatted_size;
@@ -581,9 +585,9 @@
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            window.removeEventListener('beforeunload', preventTabClose);
-            progressBarFill.style.width = '100%';
-            progressPercentText.textContent = '100%';
+            if (window.EdBackgroundUploader) {
+                window.EdBackgroundUploader.reset();
+            }
 
             Swal.fire({
                 icon: response.data.icon || 'success',

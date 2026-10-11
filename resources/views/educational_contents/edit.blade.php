@@ -271,6 +271,19 @@
             // إذا اختار المعلم ملف فيديو جديد للتعديل، يتم رفعه بنظام الأجزاء والاستئناف
             if (videoInput && videoInput.files && videoInput.files.length > 0) {
                 const file = videoInput.files[0];
+
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.status = 'uploading';
+                    window.EdBackgroundUploader.state.file = file;
+                    window.EdBackgroundUploader.state.fileName = file.name;
+                    window.EdBackgroundUploader.state.fileSize = file.size;
+                    window.EdBackgroundUploader.state.fileSizeFormatted = (file.size / 1048576).toFixed(1) + ' MB';
+                    window.EdBackgroundUploader.state.portal = '{{ auth()->user()->role }}';
+                    window.EdBackgroundUploader.state.originUrl = window.location.href;
+                    window.EdBackgroundUploader.showWidget();
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
+
                 const uploader = new ResumableUploader({
                     chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
                     checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
@@ -280,36 +293,75 @@
                         const scaledPct = Math.round(pct * 0.90);
                         barFill.style.width = scaledPct + '%';
                         percentText.innerText = scaledPct + '%';
+                        if (window.EdBackgroundUploader) {
+                            window.EdBackgroundUploader.state.progress = pct;
+                            window.EdBackgroundUploader.updateWidgetUI();
+                        }
                     },
                     onStatus: (status) => {
                         if (progressStatusText) progressStatusText.innerHTML = status.html;
                     },
                     onSpeed: (speed) => {
                         if (editSpeedMeta) editSpeedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
+                        if (window.EdBackgroundUploader) {
+                            window.EdBackgroundUploader.state.speed = speed;
+                            window.EdBackgroundUploader.updateWidgetUI();
+                        }
                     },
                     onEta: (eta) => {
                         if (editEtaMeta) editEtaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
+                        if (window.EdBackgroundUploader) {
+                            window.EdBackgroundUploader.state.eta = eta;
+                            window.EdBackgroundUploader.updateWidgetUI();
+                        }
                     },
                     onMeta: (meta) => {
                         if (editFileMeta) editFileMeta.textContent = meta;
                     },
                     onPart: (part) => {
                         if (editPartMeta) editPartMeta.textContent = part;
+                        if (window.EdBackgroundUploader) {
+                            window.EdBackgroundUploader.state.partText = part;
+                            window.EdBackgroundUploader.updateWidgetUI();
+                        }
                     },
                     onNetworkStateChange: (isOnline, pct) => {
                         if (!isOnline) {
                             barFill.style.background = 'linear-gradient(90deg, #d97706, #f59e0b)';
                             btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation fa-beat"></i> {{ __("الرفع معلّق (بانتظار النت)...") }}';
+                            if (window.EdBackgroundUploader) {
+                                window.EdBackgroundUploader.state.status = 'paused';
+                                window.EdBackgroundUploader.updateWidgetUI();
+                            }
                         } else {
                             barFill.style.background = 'linear-gradient(90deg, #2563eb, #3b82f6, #059669)';
                             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري استئناف الرفع...") }}';
+                            if (window.EdBackgroundUploader) {
+                                window.EdBackgroundUploader.state.status = 'uploading';
+                                window.EdBackgroundUploader.updateWidgetUI();
+                            }
                         }
                     }
                 });
 
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.uploaderInstance = uploader;
+                }
+
                 const uploadRes = await uploader.upload(file);
                 uploadedVideoPath = uploadRes.uploaded_video_path;
                 formattedVideoSize = uploadRes.formatted_size;
+
+                if (window.EdBackgroundUploader) {
+                    window.EdBackgroundUploader.state.status = 'completed';
+                    window.EdBackgroundUploader.state.progress = 100;
+                    window.EdBackgroundUploader.state.result = {
+                        uploaded_video_path: uploadedVideoPath,
+                        formatted_size: formattedVideoSize
+                    };
+                    window.EdBackgroundUploader.saveSessionState();
+                    window.EdBackgroundUploader.updateWidgetUI();
+                }
             }
 
             const formData = new FormData(form);
@@ -330,6 +382,10 @@
             const res = await axios.post(updateUrl, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+
+            if (window.EdBackgroundUploader) {
+                window.EdBackgroundUploader.reset();
+            }
 
             window.removeEventListener('beforeunload', preventTabClose);
             barFill.style.width = '100%';

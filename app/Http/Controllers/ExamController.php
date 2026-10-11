@@ -54,6 +54,20 @@ class ExamController extends Controller
         return \App\Models\User::where('role', 'teacher')->where('subject_id', $exam->subject_id)->value('id');
     }
 
+    /**
+     * تطبيع ومطابقة النصوص العربية للأسئلة النصية وإكمال الفراغ
+     */
+    protected function normalizeArabicText(?string $str): string
+    {
+        if (empty($str)) return '';
+        $str = preg_replace('/[\x{064B}-\x{065F}\x{0670}]/u', '', $str);
+        $str = preg_replace('/[إأآا]/u', 'ا', $str);
+        $str = preg_replace('/[ة]/u', 'ه', $str);
+        $str = preg_replace('/[ى]/u', 'ي', $str);
+        $str = preg_replace('/\s+/u', ' ', $str);
+        return trim(mb_strtolower($str, 'UTF-8'));
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
@@ -124,7 +138,7 @@ class ExamController extends Controller
             'show_result_immediately' => ['nullable'],
             'target_region' => ['nullable', 'string', 'in:all,gaza,west_bank'],
             'questions' => ['required', 'array', 'min:1'],
-            'questions.*.type' => ['required', 'in:mcq,essay,text'],
+            'questions.*.type' => ['required', 'in:mcq,essay,text,true_false,short_answer,matching'],
             'questions.*.question_text' => ['nullable', 'string'],
             'questions.*.points' => ['required', 'integer', 'min:1'],
             'questions.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:4096'],
@@ -139,6 +153,7 @@ class ExamController extends Controller
             'questions.*.correct_answer' => ['nullable'],
             'questions.*.require_file' => ['nullable'],
             'questions.*.is_multiple' => ['nullable'],
+            'questions.*.matching_pairs' => ['nullable'],
         ], [
             'title.required' => 'يرجى إدخال عنوان الاختبار.',
             'subject_id.required' => 'يرجى اختيار المادة التعليمية.',
@@ -260,6 +275,10 @@ class ExamController extends Controller
                     $qText = 'انظر الصورة المرفقة';
                 }
 
+                $matchingPairs = isset($q['matching_pairs']) 
+                    ? (is_array($q['matching_pairs']) ? json_encode($q['matching_pairs'], JSON_UNESCAPED_UNICODE) : $q['matching_pairs']) 
+                    : null;
+
                 Question::create([
                     'exam_id' => $exam->id,
                     'type' => $q['type'],
@@ -277,6 +296,7 @@ class ExamController extends Controller
                     'points' => $q['points'],
                     'require_file' => $requireFileValue ? 1 : 0,
                     'is_multiple' => $isMultipleValue,
+                    'matching_pairs' => $matchingPairs,
                 ]);
             }
         });
@@ -489,6 +509,10 @@ class ExamController extends Controller
                     $correctAnswer = json_encode($correctAnswer);
                 }
 
+                $matchingPairs = isset($qData['matching_pairs']) 
+                    ? (is_array($qData['matching_pairs']) ? json_encode($qData['matching_pairs'], JSON_UNESCAPED_UNICODE) : $qData['matching_pairs']) 
+                    : ($existingQ->matching_pairs ?? null);
+
                 $dataToSave = [
                     'exam_id'        => $exam->id,
                     'type'           => $qData['type'] ?? 'mcq',
@@ -506,6 +530,7 @@ class ExamController extends Controller
                     'points'         => !empty($qData['points']) ? (int)$qData['points'] : ($existingQ->points ?? 5),
                     'require_file'   => $requireFileValue ? 1 : 0,
                     'is_multiple'    => $isMultipleValue,
+                    'matching_pairs' => $matchingPairs,
                 ];
 
                 if ($existingQ) {
@@ -976,10 +1001,15 @@ class ExamController extends Controller
                     $points = 0;
                     $filePath = null;
 
-                    if ($q->type == 'mcq') {
+                    if ($q->type == 'true_false') {
+                        $userVal = strtolower(trim((string)$studentAns));
+                        $corrVal = strtolower(trim((string)$q->correct_answer));
+                        if ($userVal === $corrVal || ($userVal === '1' && $corrVal === 'true') || ($userVal === '0' && $corrVal === 'false')) {
+                            $points = $q->points;
+                        }
+                    } elseif ($q->type == 'mcq') {
                         if ($q->is_multiple) {
                             $userAnswers = array_map('strtolower', array_map('trim', (array)$studentAns));
-                            
                             $decodedCorrect = json_decode($q->correct_answer, true);
                             $correctAnswers = is_array($decodedCorrect) 
                                 ? array_map('strtolower', array_map('trim', $decodedCorrect)) 
@@ -999,7 +1029,38 @@ class ExamController extends Controller
                                 $points = $q->points;
                             }
                         }
-                    } elseif ($q->type == 'essay') {
+                    } elseif ($q->type == 'short_answer') {
+                        $userNorm = $this->normalizeArabicText((string)$studentAns);
+                        if (!empty($userNorm)) {
+                            $rawCorrect = (string)($q->correct_answer ?? '');
+                            $acceptable = preg_split('/[,،;|\n]+/u', $rawCorrect);
+                            foreach ($acceptable as $acc) {
+                                $accNorm = $this->normalizeArabicText($acc);
+                                if (!empty($accNorm) && $userNorm === $accNorm) {
+                                    $points = $q->points;
+                                    break;
+                                }
+                            }
+                        }
+                    } elseif ($q->type == 'matching') {
+                        $pairs = $q->getParsedMatchingPairs();
+                        $totalPairs = count($pairs);
+                        if ($totalPairs > 0 && !empty($studentAns)) {
+                            $studentMap = is_array($studentAns) ? $studentAns : (json_decode((string)$studentAns, true) ?? []);
+                            $correctMatches = 0;
+                            foreach ($pairs as $pIdx => $p) {
+                                $pairId = (string)($p['left'] ?? $p['id'] ?? $p['term'] ?? '');
+                                $expectedMatch = trim((string)($p['right'] ?? $p['match'] ?? $p['definition'] ?? ''));
+                                $givenMatch = trim((string)($studentMap[$pairId] ?? $studentMap[(string)$pIdx] ?? $studentMap[$pIdx] ?? ''));
+                                if (!empty($givenMatch) && $this->normalizeArabicText($expectedMatch) === $this->normalizeArabicText($givenMatch)) {
+                                    $correctMatches++;
+                                }
+                            }
+                            if ($correctMatches > 0) {
+                                $points = round(($correctMatches / $totalPairs) * $q->points, 2);
+                            }
+                        }
+                    } elseif ($q->type == 'essay' || $q->type == 'text') {
                         if ($request->hasFile("files.{$q->id}")) {
                             $filePath = $request->file("files.{$q->id}")->store('exams', 'public');
                         }
@@ -1008,9 +1069,9 @@ class ExamController extends Controller
                     SubmissionAnswer::create([
                         'exam_submission_id' => $submission->id,
                         'question_id' => $q->id,
-                        'answer_text' => is_array($studentAns) ? json_encode($studentAns) : $studentAns,
+                        'answer_text' => is_array($studentAns) ? json_encode($studentAns, JSON_UNESCAPED_UNICODE) : $studentAns,
                         'file_path' => $filePath,
-                        'points_awarded' => ($q->type == 'mcq') ? $points : 0,
+                        'points_awarded' => (!in_array($q->type, ['essay', 'text'])) ? $points : 0,
                     ]);
 
                     $autoGrade += $points;
@@ -1042,8 +1103,8 @@ class ExamController extends Controller
 
                 $hasCheatingRisk = ($totalTabSwitches > 0 || $totalScreenshots > 0 || !empty($mergedFlags));
 
-                $allQuestionsMcq = $exam->questions->isNotEmpty() && $exam->questions->every(fn($q) => $q->type === 'mcq');
-                $isPublished = (bool) ($exam->show_result_immediately && $allQuestionsMcq);
+                $isAutoGradableOnly = $exam->questions->isNotEmpty() && $exam->questions->every(fn($q) => in_array($q->type, ['mcq', 'true_false', 'short_answer', 'matching']));
+                $isPublished = (bool) ($exam->show_result_immediately && $isAutoGradableOnly);
 
                 $submission->update([
                     'total_earned_grade' => $autoGrade,

@@ -1521,6 +1521,9 @@ window.openUploadVideoModal = function() {
         m.style.display = 'grid';
         document.body.style.overflow = 'hidden';
         try { onVideoModalSelectionChange(); } catch (e) {}
+        if (window.EdBackgroundUploader) {
+            window.EdBackgroundUploader.syncTeacherVideosPage();
+        }
     }
 };
 
@@ -1602,7 +1605,17 @@ async function submitVideoForm(e) {
     const form = document.getElementById('uploadVideoForm');
     const fileInput = document.getElementById('videoFileInput');
 
-    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+    // 1. إذا كان الفيديو مرفوعاً ومكتملاً مسبقاً في الخلفية
+    let uploadedPath = null;
+    let formattedSize = null;
+
+    if (window.EdBackgroundUploader && window.EdBackgroundUploader.hasCompletedUpload()) {
+        uploadedPath = window.EdBackgroundUploader.state.result.uploaded_video_path;
+        formattedSize = window.EdBackgroundUploader.state.result.formatted_size;
+    }
+
+    // 2. إذا لم يكن مرفوعاً مسبقاً، نتحقق من اختيار ملف
+    if (!uploadedPath && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
         Swal.fire({
             icon: 'warning',
             title: '{{ __("يرجى اختيار ملف الفيديو") }}',
@@ -1613,57 +1626,55 @@ async function submitVideoForm(e) {
         return;
     }
 
-    const file = fileInput.files[0];
     const progressWrap = document.getElementById('chunkProgressWrap');
-    const progressBar = document.getElementById('chunkProgressBar');
-    const progressPct = document.getElementById('chunkProgressPct');
-    const progressStatus = document.getElementById('chunkProgressStatus');
-    const fileMeta = document.getElementById('chunkFileMeta');
-    const speedMeta = document.getElementById('chunkSpeedMeta');
-    const etaMeta = document.getElementById('chunkEtaMeta');
-    const partMeta = document.getElementById('chunkPartMeta');
-
-    progressWrap.style.display = 'block';
-    btn.disabled = true;
+    if (progressWrap) progressWrap.style.display = 'block';
+    if (btn) btn.disabled = true;
     if (btnCancel) btnCancel.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري فحص وتجهيز الرفع...") }}';
 
     try {
-        const uploader = new ResumableUploader({
-            chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
-            checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
-            pingUrl: "{{ route('system.ping') }}",
-            csrfToken: '{{ csrf_token() }}',
-            onProgress: (pct) => {
-                progressBar.style.width = pct + '%';
-                progressPct.textContent = pct + '%';
-            },
-            onStatus: (status) => {
-                progressStatus.innerHTML = status.html;
-            },
-            onSpeed: (speed) => {
-                if (speedMeta) speedMeta.innerHTML = `<i class="fa-solid fa-gauge-high"></i> ` + speed;
-            },
-            onEta: (eta) => {
-                if (etaMeta) etaMeta.innerHTML = `<i class="fa-solid fa-clock"></i> ` + eta;
-            },
-            onMeta: (meta) => {
-                if (fileMeta) fileMeta.textContent = meta;
-            },
-            onPart: (part) => {
-                if (partMeta) partMeta.textContent = part;
-            }
-        });
+        if (!uploadedPath && fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري فحص وتجهيز الرفع بالخلفية...") }}';
 
-        const uploadRes = await uploader.upload(file);
-        const uploadedPath = uploadRes.uploaded_video_path;
-        const formattedSize = uploadRes.formatted_size;
+            if (window.EdBackgroundUploader) {
+                const uploadPromise = window.EdBackgroundUploader.start({
+                    file: file,
+                    portal: '{{ auth()->user()->role ?? "teacher" }}',
+                    chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
+                    originUrl: window.location.href,
+                    chunkSize: 3 * 1024 * 1024
+                });
+
+                await uploadPromise;
+
+                if (window.EdBackgroundUploader.hasCompletedUpload()) {
+                    uploadedPath = window.EdBackgroundUploader.state.result.uploaded_video_path;
+                    formattedSize = window.EdBackgroundUploader.state.result.formatted_size;
+                } else {
+                    throw new Error(window.EdBackgroundUploader.state.error || '{{ __("تعثر استكمال رفع الفيديو.") }}');
+                }
+            } else {
+                const uploader = new ResumableUploader({
+                    chunkUrl: "{{ Route::has('educational_contents.upload_chunk') ? route('educational_contents.upload_chunk') : url('/educational-contents/upload-chunk') }}",
+                    checkStatusUrl: "{{ Route::has('educational_contents.check_chunk_status') ? route('educational_contents.check_chunk_status') : url('/educational-contents/check-chunk-status') }}",
+                    pingUrl: "{{ route('system.ping') }}",
+                    csrfToken: '{{ csrf_token() }}'
+                });
+                const uploadRes = await uploader.upload(file);
+                uploadedPath = uploadRes.uploaded_video_path;
+                formattedSize = uploadRes.formatted_size;
+            }
+        }
 
         if (!uploadedPath) {
             throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من الخادم.") }}');
         }
 
-        progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل الرفع بنجاح! جاري حفظ بيانات الدرس...") }}';
+        const progressStatus = document.getElementById('chunkProgressStatus');
+        if (progressStatus) {
+            progressStatus.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __("اكتمل الرفع بنجاح! جاري حفظ ونشر بيانات الدرس...") }}';
+        }
 
         const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
         const contentFormData = new FormData(form);
@@ -1680,6 +1691,10 @@ async function submitVideoForm(e) {
             }
         });
 
+        if (window.EdBackgroundUploader) {
+            window.EdBackgroundUploader.reset();
+        }
+
         Swal.fire({
             icon: 'success',
             title: saveRes.data.title || '{{ __("تم رفع ونشر درس الفيديو بنجاح 🎉") }}',
@@ -1689,12 +1704,17 @@ async function submitVideoForm(e) {
         }).then(() => location.reload());
 
     } catch (err) {
-        btn.disabled = false;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';
+        }
         if (btnCancel) btnCancel.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';
 
         let msg = err.response?.data?.message || err.message || '{{ __("حدث خطأ أثناء رفع ملف الفيديو أو حفظ الدرس") }}';
-        progressStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> ${msg}`;
+        const progressStatus = document.getElementById('chunkProgressStatus');
+        if (progressStatus) {
+            progressStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> ${msg}`;
+        }
         Swal.fire({
             icon: 'error',
             title: '{{ __("خطأ في رفع الفيديو") }}',
