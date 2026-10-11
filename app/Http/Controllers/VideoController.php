@@ -24,6 +24,11 @@ class VideoController extends Controller
             ]);
         }
 
+        // إذا كان الرابط بالأساس خارجياً (مثل يوتيوب أو تخزين سحابي مباشر)
+        if (filter_var($filename, FILTER_VALIDATE_URL) || str_starts_with($filename, 'http://') || str_starts_with($filename, 'https://')) {
+            return redirect()->away($filename, 302);
+        }
+
         // منع أي محاولات لتخطي المسار (Path Traversal) أو إدخال حروف غير صالحة
         if (str_contains($filename, '..') || str_contains($filename, "\0")) {
             abort(403, 'مسار غير مصرح به.');
@@ -32,14 +37,6 @@ class VideoController extends Controller
         // تنظيف المسار من أي زوائد وبوادئ مكررة
         $filename = ltrim(str_replace(['public/', 'storage/'], '', $filename), '/\\');
         $baseName = basename($filename);
-
-        $allowedBaseDirs = array_filter([
-            realpath(Storage::disk('public')->path('')),
-            realpath(storage_path('app/public')),
-            realpath(storage_path('app')),
-            realpath(public_path('storage')),
-            realpath(public_path('')),
-        ]);
 
         $resolvedPath = null;
         $candidates = [
@@ -52,19 +49,17 @@ class VideoController extends Controller
             Storage::disk('public')->path('educational/videos/' . $baseName),
             storage_path('app/public/educational/videos/' . $baseName),
             public_path('storage/educational/videos/' . $baseName),
+            Storage::disk('public')->path($baseName),
+            storage_path('app/public/' . $baseName),
+            public_path('storage/' . $baseName),
             storage_path('app/' . $filename),
         ];
 
         foreach ($candidates as $cand) {
-            $real = realpath($cand);
             // التأكد من أن الملف موجود وقابل للقراءة وحجمه أكبر من 0 بايت
-            if ($real && is_file($real) && filesize($real) > 0) {
-                foreach ($allowedBaseDirs as $base) {
-                    if (str_starts_with($real, $base)) {
-                        $resolvedPath = $real;
-                        break 2;
-                    }
-                }
+            if (file_exists($cand) && is_file($cand) && filesize($cand) > 0) {
+                $resolvedPath = $cand;
+                break;
             }
         }
 

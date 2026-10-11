@@ -487,21 +487,55 @@
 </div>
 
 {{-- 5. نافذة معاينة الفيديو السريعة بدون استهلاك مسبق للبيانات --}}
-<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 99999; place-items: center; padding: 20px;">
-    <div style="background: #0f172a; border-radius: 18px; max-width: 900px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255,255,255,0.1);">
-        <div style="padding: 14px 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
-            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 700;">
-                <i class="fa-solid fa-play" style="color: #60a5fa;"></i>
-                <span id="preview_video_title">{{ __('معاينة الفيديو') }}</span>
+<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px); z-index: 99999; place-items: center; padding: 20px;">
+    <div style="background: #0f172a; border-radius: 18px; max-width: 920px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255,255,255,0.12);">
+        <div style="padding: 14px 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 700; overflow: hidden; min-width: 0;">
+                <i class="fa-solid fa-play" style="color: #60a5fa; flex-shrink: 0;"></i>
+                <span id="preview_video_title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ __('معاينة الفيديو') }}</span>
             </div>
-            <button type="button" onclick="closeVideoPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <a id="preview_video_external_link" href="#" target="_blank" rel="noopener noreferrer" style="display: none; align-items: center; gap: 6px; color: #93c5fd; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none;" title="{{ __('فتح الفيديو في تبويب خارجي مستقل') }}">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{{ __('فتح في تبويب خارجي') }}</span>
+                </a>
+                <button type="button" onclick="closeVideoPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;" title="{{ __('إغلاق المعاينة') }}">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
         </div>
-        <div style="position: relative; padding-top: 56.25%; background: #000;">
-            <video id="preview_video_player" controls playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
+        <div style="position: relative; padding-top: 56.25%; background: #000; overflow: hidden;">
+            {{-- مشغل الفيديو المباشر لملفات MP4 / WebM وبث الخادم --}}
+            <video id="preview_video_player" controls playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none;">
                 <source id="preview_video_source" src="" type="video/mp4">
             </video>
+
+            {{-- مشغل Iframe لفيديوهات يوتيوب وفيميو والروابط الخارجية المضمنة --}}
+            <iframe id="preview_video_iframe" 
+                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none;" 
+                    allowfullscreen 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+
+            {{-- شاشة بديلة ذكية في حال تعثر التشغيل --}}
+            <div id="preview_video_error" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; color: #fff; z-index: 10;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h4 style="margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر تشغيل الفيديو داخل هذا المشغل المباشر') }}</h4>
+                    <p style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 440px; line-height: 1.5;">{{ __('قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة.') }}</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+                    <a id="preview_video_error_link" href="#" target="_blank" rel="noopener noreferrer" style="background: #2563eb; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>{{ __('فتح الفيديو في تبويب جديد') }}</span>
+                    </a>
+                    <button type="button" onclick="closeVideoPreview()" style="background: rgba(255,255,255,0.1); color: #cbd5e1; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                        {{ __('إغلاق') }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1034,14 +1068,20 @@ function openLessonModal(lessonData) {
 
     // زر معاينة الفيديو المباشر
     const prevBtn = document.getElementById('dist_modal_preview_btn');
-    if (lessonData.url_path) {
+    const rawVideoTarget = lessonData.youtube_embed_url || lessonData.url_path;
+    if (rawVideoTarget) {
         prevBtn.style.display = 'inline-flex';
-        let streamUrl = '/storage/' + lessonData.url_path;
-        if (lessonData.url_path.startsWith('http')) streamUrl = lessonData.url_path;
+        let streamUrl = rawVideoTarget;
+        const cleanTarget = String(rawVideoTarget).trim();
+        if (cleanTarget.includes('youtube.com') || cleanTarget.includes('youtu.be') || cleanTarget.includes('vimeo.com') || cleanTarget.startsWith('http://') || cleanTarget.startsWith('https://')) {
+            streamUrl = cleanTarget;
+        } else if (cleanTarget.startsWith('/video-stream/')) {
+            streamUrl = cleanTarget;
+        } else {
+            const cleanPath = cleanTarget.replace(/^(storage\/|public\/|\/)/, '');
+            streamUrl = '/video-stream/' + cleanPath;
+        }
         prevBtn.onclick = () => openVideoPreview(lessonData.title, streamUrl);
-    } else if (lessonData.youtube_embed_url) {
-        prevBtn.style.display = 'inline-flex';
-        prevBtn.onclick = () => openVideoPreview(lessonData.title, lessonData.youtube_embed_url);
     } else {
         prevBtn.style.display = 'none';
     }
@@ -1383,29 +1423,152 @@ function deleteUnifiedContent(id, title, scope = 'all') {
     });
 }
 
-// 6. معاينة الفيديو المنبثقة السريعة
+// 6. معاينة الفيديو المنبثقة الذكية (تدعم YouTube و Vimeo و MP4 وبث السيرفر)
 function openVideoPreview(title, url) {
-    if (!url) return;
+    if (!url) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'warning',
+                title: '{{ __("تنبيه") }}',
+                text: '{{ __("لا يوجد رابط فيديو مسجل لهذه المحاضرة.") }}'
+            });
+        } else {
+            alert('{{ __("لا يوجد رابط فيديو مسجل لهذه المحاضرة.") }}');
+        }
+        return;
+    }
+
     const modal = document.getElementById('videoPreviewModal');
     const player = document.getElementById('preview_video_player');
+    const source = document.getElementById('preview_video_source');
+    const iframe = document.getElementById('preview_video_iframe');
     const titleEl = document.getElementById('preview_video_title');
+    const extLink = document.getElementById('preview_video_external_link');
+    const errorBox = document.getElementById('preview_video_error');
+    const errorLink = document.getElementById('preview_video_error_link');
 
-    titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
-    player.src = url;
-    modal.style.display = 'grid';
+    if (titleEl) titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
+    if (extLink) {
+        extLink.href = url;
+        extLink.style.display = 'inline-flex';
+    }
+    if (errorLink) {
+        errorLink.href = url;
+    }
+    if (errorBox) {
+        errorBox.style.display = 'none';
+    }
+
+    const trimmedUrl = String(url).trim();
+
+    // فحص ما إذا كان الرابط يوتيوب أو فيميو أو وسائط خارجية تحتاج iframe
+    const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)/i.test(trimmedUrl);
+    const isVimeo = /vimeo\.com/i.test(trimmedUrl);
+
+    if (isYouTube || isVimeo) {
+        // إيقاف وإخفاء مشغل الفيديو المحلي
+        if (player) {
+            player.pause();
+            player.removeAttribute('src');
+            if (source) source.removeAttribute('src');
+            player.style.display = 'none';
+            player.onerror = null;
+        }
+
+        let embedUrl = trimmedUrl;
+        if (isYouTube) {
+            // استخراج معرف فيديو يوتيوب بدقة تامة
+            const ym = trimmedUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/i);
+            if (ym && ym[1]) {
+                embedUrl = 'https://www.youtube.com/embed/' + ym[1] + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+            } else if (trimmedUrl.includes('watch?v=')) {
+                embedUrl = trimmedUrl.replace('watch?v=', 'embed/') + (trimmedUrl.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
+            }
+        } else if (isVimeo) {
+            const vm = trimmedUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+            if (vm && vm[1]) {
+                embedUrl = 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1';
+            }
+        }
+
+        if (iframe) {
+            iframe.src = embedUrl;
+            iframe.style.display = 'block';
+        }
+    } else {
+        // مشغل فيديو HTML5 مباشر للملفات وبث السيرفر المتدفق
+        if (iframe) {
+            iframe.src = 'about:blank';
+            iframe.style.display = 'none';
+        }
+
+        if (player) {
+            player.style.display = 'block';
+            player.pause();
+
+            player.src = trimmedUrl;
+            if (source) {
+                source.src = trimmedUrl;
+            }
+
+            // نظام الاسترداد التلقائي في حال تعثر رابط البث
+            player.onerror = function() {
+                console.warn('Preview video load error on:', trimmedUrl);
+                // محاولة التبديل للمسار المباشر إن كان رابط بث
+                if (trimmedUrl.includes('/video-stream/')) {
+                    const parts = trimmedUrl.split('/video-stream/');
+                    const cleanPath = parts[parts.length - 1];
+                    const directStorageUrl = '/storage/educational/videos/' + cleanPath.replace(/^educational\/videos\//, '');
+                    if (player.src !== window.location.origin + directStorageUrl) {
+                        console.log('Falling back to direct storage URL:', directStorageUrl);
+                        player.src = directStorageUrl;
+                        if (source) source.src = directStorageUrl;
+                        player.load();
+                        player.play().catch(() => {});
+                        return;
+                    }
+                }
+                if (errorBox) {
+                    errorBox.style.display = 'flex';
+                }
+            };
+
+            player.load();
+            player.play().catch(() => {});
+        }
+    }
+
+    if (modal) {
+        modal.style.display = 'grid';
+    }
     document.body.style.overflow = 'hidden';
-    player.play().catch(() => {});
 }
 
 function closeVideoPreview() {
     const modal = document.getElementById('videoPreviewModal');
     const player = document.getElementById('preview_video_player');
+    const source = document.getElementById('preview_video_source');
+    const iframe = document.getElementById('preview_video_iframe');
+    const errorBox = document.getElementById('preview_video_error');
+
     if (player) {
         player.pause();
         player.removeAttribute('src');
+        if (source) source.removeAttribute('src');
         player.load();
+        player.style.display = 'none';
+        player.onerror = null;
     }
-    if (modal) modal.style.display = 'none';
+    if (iframe) {
+        iframe.src = 'about:blank';
+        iframe.style.display = 'none';
+    }
+    if (errorBox) {
+        errorBox.style.display = 'none';
+    }
+    if (modal) {
+        modal.style.display = 'none';
+    }
     document.body.style.overflow = '';
 }
 

@@ -479,7 +479,12 @@
         const btnPreview = document.getElementById('dist_modal_btn_preview');
         if (btnPreview) {
             btnPreview.onclick = () => {
-                const streamUrl = lesson.url_path ? (lesson.url_path.startsWith('http') ? lesson.url_path : '/storage/' + lesson.url_path) : '';
+                const rawUrl = lesson.youtube_embed_url || lesson.url_path || '';
+                let streamUrl = rawUrl;
+                if (rawUrl && !rawUrl.startsWith('http') && !rawUrl.includes('youtube.com') && !rawUrl.includes('youtu.be')) {
+                    const clean = rawUrl.replace(/^(storage\/|public\/|\/)/, '');
+                    streamUrl = '/video-stream/' + clean;
+                }
                 openVideoPreview(lesson.title, streamUrl);
             };
         }
@@ -857,30 +862,58 @@
 
     // 6. مشغل معاينة الفيديو
     function openVideoPreview(title, url) {
+        if (!url) return;
         const modal = document.getElementById('videoPreviewModal');
         const titleEl = document.getElementById('previewModalTitle');
         const videoEl = document.getElementById('previewPlayerVideo');
         const iframeEl = document.getElementById('previewPlayerIframe');
 
-        titleEl.textContent = title;
+        if (titleEl) titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
 
-        if (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com')) {
-            let embedUrl = url;
-            if (url.includes('watch?v=')) {
-                embedUrl = url.replace('watch?v=', 'embed/');
-            } else if (url.includes('youtu.be/')) {
-                embedUrl = url.replace('youtu.be/', 'www.youtube.com/embed/');
+        const trimmedUrl = String(url).trim();
+        const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)/i.test(trimmedUrl);
+        const isVimeo = /vimeo\.com/i.test(trimmedUrl);
+
+        if (isYouTube || isVimeo) {
+            if (videoEl) {
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                videoEl.style.display = 'none';
             }
-            iframeEl.src = embedUrl;
-            iframeEl.style.display = 'block';
-            videoEl.style.display = 'none';
+
+            let embedUrl = trimmedUrl;
+            if (isYouTube) {
+                const ym = trimmedUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/i);
+                if (ym && ym[1]) {
+                    embedUrl = 'https://www.youtube.com/embed/' + ym[1] + '?autoplay=1&rel=0&modestbranding=1';
+                } else if (trimmedUrl.includes('watch?v=')) {
+                    embedUrl = trimmedUrl.replace('watch?v=', 'embed/') + '?autoplay=1&rel=0';
+                }
+            } else if (isVimeo) {
+                const vm = trimmedUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+                if (vm && vm[1]) {
+                    embedUrl = 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1';
+                }
+            }
+
+            if (iframeEl) {
+                iframeEl.src = embedUrl;
+                iframeEl.style.display = 'block';
+            }
         } else {
-            videoEl.src = url;
-            videoEl.style.display = 'block';
-            iframeEl.style.display = 'none';
+            if (iframeEl) {
+                iframeEl.src = 'about:blank';
+                iframeEl.style.display = 'none';
+            }
+            if (videoEl) {
+                videoEl.src = trimmedUrl;
+                videoEl.style.display = 'block';
+                videoEl.load();
+                videoEl.play().catch(() => {});
+            }
         }
 
-        modal.style.display = 'grid';
+        if (modal) modal.style.display = 'grid';
     }
 
     function closeVideoPreview() {
@@ -890,12 +923,15 @@
 
         if (videoEl) {
             videoEl.pause();
-            videoEl.src = '';
+            videoEl.removeAttribute('src');
+            videoEl.load();
+            videoEl.style.display = 'none';
         }
         if (iframeEl) {
-            iframeEl.src = '';
+            iframeEl.src = 'about:blank';
+            iframeEl.style.display = 'none';
         }
-        modal.style.display = 'none';
+        if (modal) modal.style.display = 'none';
     }
 
     document.getElementById('videoPreviewModal').addEventListener('click', function(e) {
