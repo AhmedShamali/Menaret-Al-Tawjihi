@@ -2447,6 +2447,8 @@
             .floating-whatsapp-widget,
             .whatsapp-float-btn,
             .ed-scroll-top-btn,
+            .ai-widget-wrapper,
+            #aiFloatingWidgetContainer,
             .announcement-bar,
             .ticker-container,
             .news-ticker,

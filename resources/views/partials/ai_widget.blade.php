@@ -6,29 +6,50 @@
 @php
     $currentActorStudent = \App\Support\CurrentActor::student() ?? auth('student')->user();
     $currentActorStaff = \App\Support\CurrentActor::staff() ?? auth()->user();
-    $activeActor = $currentActorStudent ? [
-        'name' => (app()->getLocale() === 'en' && !empty($currentActorStudent->name_en)) ? $currentActorStudent->name_en : ($currentActorStudent->name ?? 'طالب توجيهي'),
-        'role' => 'student',
-        'id'   => $currentActorStudent->id,
-    ] : ($currentActorStaff ? [
-        'name' => (app()->getLocale() === 'en' && !empty($currentActorStaff->name_en)) ? $currentActorStaff->name_en : ($currentActorStaff->name ?? 'مستخدم المنصة'),
-        'role' => $currentActorStaff->role ?? 'user',
-        'id'   => $currentActorStaff->id,
-    ] : null);
+
+    // منع ظهور الزر العائم في الواجهات الإدارية، ولوحات المعلمين والمصورين،
+    // وصفحة المعلم الذكي الرئيسية، وشاشات تأدية الاختبارات للطلبة، منعاً لأي تداخل مع الحقول والأزرار
+    $isExcludedRoute = request()->is('admin/*')
+        || request()->is('teacher/*')
+        || request()->is('videographer/*')
+        || request()->is('ai-hub*')
+        || request()->is('*exam*take*')
+        || request()->is('*exam*start*')
+        || request()->is('*exam*attempt*')
+        || request()->routeIs('student.exams.take')
+        || request()->routeIs('student.exams.start');
+
+    $activeActor = null;
+    if (!$isExcludedRoute) {
+        $activeActor = $currentActorStudent ? [
+            'name' => (app()->getLocale() === 'en' && !empty($currentActorStudent->name_en)) ? $currentActorStudent->name_en : ($currentActorStudent->name ?? 'طالب توجيهي'),
+            'role' => 'student',
+            'id'   => $currentActorStudent->id,
+        ] : ($currentActorStaff ? [
+            'name' => (app()->getLocale() === 'en' && !empty($currentActorStaff->name_en)) ? $currentActorStaff->name_en : ($currentActorStaff->name ?? 'مستخدم المنصة'),
+            'role' => $currentActorStaff->role ?? 'user',
+            'id'   => $currentActorStaff->id,
+        ] : null);
+    }
 @endphp
 
 @if($activeActor)
 <div id="aiFloatingWidgetContainer" class="ai-widget-wrapper" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
     <!-- زر الإطلاق العائم الكلاسيكي الفاخر (Launcher Button) -->
-    <button type="button" id="aiWidgetLauncher" class="ai-launcher-btn" aria-label="{{ __('المعلم الذكي AI') }}" title="{{ __('المعلم الذكي - اسأل عن أي شيء') }}">
-        <span class="ai-launcher-pulse"></span>
-        <div class="ai-launcher-icon-wrap">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-        </div>
-        <span class="ai-launcher-label">{{ __('المعلم الذكي') }}</span>
-        <span class="ai-launcher-chip">AI</span>
-    </button>
+    <div id="aiLauncherGroup" class="ai-launcher-group">
+        <button type="button" id="aiWidgetLauncher" class="ai-launcher-btn" aria-label="{{ __('المعلم الذكي AI') }}" title="{{ __('المعلم الذكي - اسأل عن أي شيء') }}">
+            <span class="ai-launcher-pulse"></span>
+            <div class="ai-launcher-icon-wrap">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <span class="ai-launcher-label">{{ __('المعلم الذكي') }}</span>
+            <span class="ai-launcher-chip">AI</span>
+        </button>
+        <button type="button" id="aiWidgetDismissBtn" class="ai-launcher-dismiss-btn" title="{{ __('إخفاء مؤقت للزر العائم') }}" aria-label="{{ __('إخفاء مؤقت') }}">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
 
     <!-- نافذة المحادثة الذكية الفاخرة ذات التصميم الفاتح (Chat Modal/Window) -->
     <div id="aiWidgetPanel" class="ai-widget-panel" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="aiWidgetTitle">
@@ -188,7 +209,7 @@
    ========================================================================= */
 .ai-widget-wrapper {
     position: fixed;
-    bottom: 24px;
+    bottom: 80px;
     {{ app()->getLocale() === 'ar' ? 'left: 24px;' : 'right: 24px;' }}
     z-index: 99998;
     font-family: inherit;
@@ -204,6 +225,76 @@
     --ai-text-main: #0f172a;
     --ai-text-muted: #64748b;
     --ai-shadow: 0 20px 45px -12px rgba(15, 23, 42, 0.18), 0 8px 18px -6px rgba(15, 23, 42, 0.08);
+}
+
+html[dir="ltr"] .ai-widget-wrapper {
+    left: auto !important;
+    right: 24px !important;
+}
+
+@media (max-width: 1024px) {
+    .ai-widget-wrapper {
+        bottom: calc(122px + env(safe-area-inset-bottom, 0px));
+        left: 14px;
+        right: auto;
+    }
+    html[dir="ltr"] .ai-widget-wrapper {
+        left: auto !important;
+        right: 14px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .ai-widget-wrapper {
+        bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+        left: 14px;
+        right: auto;
+    }
+    html[dir="ltr"] .ai-widget-wrapper {
+        left: auto !important;
+        right: 14px !important;
+    }
+}
+
+@media print {
+    .ai-widget-wrapper,
+    #aiFloatingWidgetContainer {
+        display: none !important;
+    }
+}
+
+/* مجموعة زر الإطلاق وزر الإخفاء السريع */
+.ai-launcher-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+}
+.ai-launcher-dismiss-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid var(--ai-border);
+    color: var(--ai-text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    opacity: 0;
+    transform: scale(0.85);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ai-launcher-group:hover .ai-launcher-dismiss-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+.ai-launcher-dismiss-btn:hover {
+    color: #ef4444;
+    border-color: #fca5a5;
+    background: #fef2f2;
 }
 
 /* زر الإطلاق */
@@ -270,12 +361,12 @@
 /* نافذة المحادثة */
 .ai-widget-panel {
     position: absolute;
-    bottom: 64px;
+    bottom: 58px;
     {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }}
     width: 440px;
     max-width: calc(100vw - 32px);
     height: 640px;
-    max-height: calc(100vh - 110px);
+    max-height: calc(100vh - 150px);
     background: #ffffff;
     border: 1px solid var(--ai-border);
     border-radius: 20px;
@@ -284,6 +375,11 @@
     flex-direction: column;
     overflow: hidden;
     animation: aiPanelSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html[dir="ltr"] .ai-widget-panel {
+    left: auto !important;
+    right: 0 !important;
 }
 @keyframes aiPanelSlideUp {
     from { opacity: 0; transform: translateY(14px) scale(0.97); }
@@ -776,21 +872,20 @@
 }
 
 /* شاشات الجوال */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .ai-widget-panel {
-        bottom: 0;
+        position: fixed !important;
+        top: 0 !important;
+        bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        width: 100vw;
-        max-width: 100vw;
-        height: 100vh;
-        max-height: 100vh;
-        border-radius: 0;
-        border: none;
-    }
-    .ai-widget-wrapper {
-        bottom: 16px;
-        left: 16px;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+        z-index: 999999 !important;
     }
 }
 </style>
@@ -826,18 +921,36 @@
     const typingIndicator = document.getElementById('aiTypingIndicator');
     const voiceInputBtn = document.getElementById('aiVoiceInputBtn');
 
+    const launcherGroup = document.getElementById('aiLauncherGroup');
+    const dismissBtn = document.getElementById('aiWidgetDismissBtn');
+
     // 1. فتح وإغلاق النافذة
     launcher.addEventListener('click', () => {
         panel.style.display = 'flex';
-        launcher.style.display = 'none';
+        if (launcherGroup) launcherGroup.style.display = 'none';
+        else launcher.style.display = 'none';
         promptInput.focus();
         scrollToBottom();
     });
 
     closeBtn.addEventListener('click', () => {
         panel.style.display = 'none';
-        launcher.style.display = 'inline-flex';
+        if (launcherGroup) launcherGroup.style.display = 'inline-flex';
+        else launcher.style.display = 'inline-flex';
     });
+
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            container.style.display = 'none';
+            try { sessionStorage.setItem('ai_floating_widget_hidden', '1'); } catch(err){}
+        });
+        try {
+            if (sessionStorage.getItem('ai_floating_widget_hidden') === '1') {
+                container.style.display = 'none';
+            }
+        } catch(err){}
+    }
 
     // 2. تبديل وضع الرموز (عربي / إنجليزي)
     symbolToggleBtn.addEventListener('click', () => {
