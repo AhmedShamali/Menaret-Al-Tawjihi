@@ -1486,13 +1486,32 @@ video::-webkit-media-controls-download-button {
                                             </div>
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
-                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" disableRemotePlayback oncontextmenu="return false;" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
+                                        <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" disableRemotePlayback oncontextmenu="return false;" onerror="handleStudentVideoError(this, '{{ $video->id }}')" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
                                             <source src="{{ $directVideoUrl }}" type="video/mp4">
                                             @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
                                                 <source src="{{ $directVideoFallback }}" type="video/mp4">
                                             @endif
                                             {{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
+                                        <div id="player_err_{{ $video->id }}" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; z-index: 25;">
+                                            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                                <i class="fa-solid fa-triangle-exclamation"></i>
+                                            </div>
+                                            <div>
+                                                <h4 style="margin: 0 0 6px; font-size: 0.98rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر بث الفيديو في المشغل المباشر') }}</h4>
+                                                <p style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 420px; line-height: 1.5;">{{ __('يمكنك إعادة المحاولة أو فتح الفيديو عبر الرابط المباشر.') }}</p>
+                                            </div>
+                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                                <button type="button" onclick="retryStudentVideo('{{ $video->id }}')" style="background: #2563eb; color: #fff; border: none; padding: 7px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                                    <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
+                                                </button>
+                                                @if($directVideoFallback)
+                                                    <a href="{{ $directVideoFallback }}" target="_blank" style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
+                                                        {{ __('فتح الرابط المباشر') }}
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;"></iframe>
                                     @else
@@ -1514,7 +1533,7 @@ video::-webkit-media-controls-download-button {
 
                                 @php
                                     $hasOfflineMp4 = \App\Services\OfflineVideoManager::hasLocalMp4($video);
-                                    $isYt = !empty($video->youtube_id);
+                                    $isYt = !empty($ytEmbed) || !empty($video->youtube_id) || str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be');
                                     $canDownloadOffline = ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) || $isYt || $hasOfflineMp4;
                                 @endphp
 
@@ -1594,7 +1613,7 @@ video::-webkit-media-controls-download-button {
                                                         data-video-title="{{ $video->title }}"
                                                         data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
                                                         data-video-url="{{ route('content.downloadVideo', $video->id) }}"
-                                                        data-is-direct="1"
+                                                        data-is-direct="{{ $isDirectVideo ? '1' : '0' }}"
                                                         @if($isYt && !$hasOfflineMp4)
                                                             data-is-youtube="1"
                                                             data-prepare-url="{{ route('content.prepareOfflineVideo', $video->id) }}"
@@ -2213,6 +2232,40 @@ function seekVideoTo(videoId, seconds) {
         player.currentTime = seconds;
         player.play().catch(() => {});
     }
+
+function handleStudentVideoError(videoEl, videoId) {
+    if (!videoEl) return;
+    console.warn('Student video error:', videoId, videoEl.currentSrc || videoEl.src);
+
+    const curSrc = videoEl.currentSrc || videoEl.src || '';
+    if (curSrc.includes('/video-stream/')) {
+        const parts = curSrc.split('/video-stream/');
+        const cleanPath = parts[parts.length - 1];
+        const directUrl = '/storage/educational/videos/' + cleanPath.replace(/^educational\/videos\//, '');
+        if (videoEl.src !== window.location.origin + directUrl) {
+            console.log('Falling back student video player to direct storage URL:', directUrl);
+            videoEl.src = directUrl;
+            videoEl.load();
+            videoEl.play().catch(() => {});
+            return;
+        }
+    }
+
+    const errBox = document.getElementById(`player_err_${videoId}`);
+    if (errBox) {
+        errBox.style.display = 'flex';
+    }
+}
+
+function retryStudentVideo(videoId) {
+    const errBox = document.getElementById(`player_err_${videoId}`);
+    if (errBox) errBox.style.display = 'none';
+    const player = document.getElementById(`player_${videoId}`);
+    if (player) {
+        player.load();
+        player.play().catch(() => {});
+    }
+}
 
     // 2. YouTube API
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);

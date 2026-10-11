@@ -50,8 +50,17 @@ class MediaHelper
         $supabaseFileUrl = rtrim($supabaseBase, '/') . '/' . $cleanPath;
 
         // 2. إذا كان الملف متوفراً محلياً في مسار التخزين
+        $baseName = basename($cleanPath);
         if (file_exists(public_path('storage/' . $cleanPath)) || file_exists(storage_path('app/public/' . $cleanPath))) {
             return asset('storage/' . $cleanPath);
+        }
+
+        if (file_exists(public_path('storage/educational/videos/' . $baseName)) || file_exists(storage_path('app/public/educational/videos/' . $baseName))) {
+            return asset('storage/educational/videos/' . $baseName);
+        }
+
+        if (file_exists(public_path('storage/educational/files/' . $baseName)) || file_exists(storage_path('app/public/educational/files/' . $baseName))) {
+            return asset('storage/educational/files/' . $baseName);
         }
 
         // 3. إذا كنا في بيئة الإنتاج السحابية أو كان القرص الافتراضي supabase ولم يتوفر محلياً
@@ -80,6 +89,11 @@ class MediaHelper
 
         if (filter_var($cleanPath, FILTER_VALIDATE_URL)) {
             return $cleanPath;
+        }
+
+        $baseName = basename($cleanPath);
+        if (file_exists(storage_path('app/public/educational/videos/' . $baseName)) || file_exists(public_path('storage/educational/videos/' . $baseName))) {
+            $cleanPath = 'educational/videos/' . $baseName;
         }
 
         try {

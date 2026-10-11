@@ -1163,7 +1163,23 @@ class EducationalContentController extends Controller
         }
 
         // 2. إذا كان الفيديو رابط يوتيوب: محاولة التنزيل والتحويل التلقائي أوفلاين
-        if (!empty($content->youtube_id)) {
+        $ytId = $content->youtube_id;
+        if (!$ytId && !empty($content->url_path)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->url_path, $ym)) {
+                $ytId = $ym[1];
+                $content->youtube_id = $ytId;
+                @$content->save();
+            }
+        }
+        if (!$ytId && !empty($content->youtube_embed_url)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->youtube_embed_url, $ym)) {
+                $ytId = $ym[1];
+                $content->youtube_id = $ytId;
+                @$content->save();
+            }
+        }
+
+        if (!empty($ytId)) {
             if (OfflineVideoManager::isEngineAvailable()) {
                 $conversion = OfflineVideoManager::downloadAndCacheYouTube($content);
                 if ($conversion['success'] && !empty($conversion['path']) && file_exists($conversion['path'])) {
@@ -1185,8 +1201,8 @@ class EducationalContentController extends Controller
                 return response()->json([
                     'success' => false,
                     'is_youtube' => true,
-                    'message' => 'جاري تجهيز نسخة الأوفلاين لفيديو اليوتيوب...',
-                ], 422);
+                    'message' => 'هذا الشرح المرئي من YouTube ومتاح للمشاهدة المباشرة والأوفلاين داخل المنصة.',
+                ], 200);
             }
 
             return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube ومتاح للمشاهدة المباشرة والأوفلاين داخل المنصة.');
@@ -1196,10 +1212,24 @@ class EducationalContentController extends Controller
         $rawUrl = $content->url_path;
         $resolvedUrl = (filter_var($rawUrl, FILTER_VALIDATE_URL)) ? $rawUrl : \App\Support\MediaHelper::url($rawUrl);
         if (!empty($resolvedUrl) && filter_var($resolvedUrl, FILTER_VALIDATE_URL)) {
-            if ($isStaff || $isInternalXhr) {
+            if ($isStaff) {
                 return redirect()->away($resolvedUrl);
             }
+            if ($isInternalXhr) {
+                return response()->json([
+                    'success' => true,
+                    'url'     => $resolvedUrl,
+                    'message' => 'تم العثور على رابط المحتوى.',
+                ], 200);
+            }
             return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة وحفظه أوفلاين داخل المنصة.');
+        }
+
+        if ($isInternalXhr) {
+            return response()->json([
+                'success' => false,
+                'message' => 'هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.',
+            ], 200);
         }
 
         return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة داخل المنصة.');
@@ -1229,12 +1259,28 @@ class EducationalContentController extends Controller
             ]);
         }
 
-        if (empty($content->youtube_id)) {
+        $ytId = $content->youtube_id;
+        if (!$ytId && !empty($content->url_path)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->url_path, $ym)) {
+                $ytId = $ym[1];
+                $content->youtube_id = $ytId;
+                @$content->save();
+            }
+        }
+        if (!$ytId && !empty($content->youtube_embed_url)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->youtube_embed_url, $ym)) {
+                $ytId = $ym[1];
+                $content->youtube_id = $ytId;
+                @$content->save();
+            }
+        }
+
+        if (empty($ytId)) {
             return response()->json([
                 'success' => false,
                 'ready'   => false,
-                'message' => 'هذا الدرس لا يحتوي على فيديو يوتيوب أو ملف MP4 صالح.',
-            ], 400);
+                'message' => 'هذا الدرس متاح للمشاهدة المباشرة داخل المنصة.',
+            ], 200);
         }
 
         if (!OfflineVideoManager::isEngineAvailable()) {
@@ -1242,8 +1288,8 @@ class EducationalContentController extends Controller
                 'success' => false,
                 'ready'   => false,
                 'engine_pending' => true,
-                'message' => 'محرك تحميل اليوتيوب قيد التجهيز على الخادم. يمكنك أيضاً رفع ملف الفيديو بصيغة MP4 مباشرة في لوحة التحكم.',
-            ], 503);
+                'message' => 'تم حفظ بيانات وملاحظات الدرس أوفلاين. للمشاهدة بدون إنترنت يمكن رفع ملف الفيديو بصيغة MP4 مباشرة في لوحة التحكم.',
+            ], 200);
         }
 
         $result = OfflineVideoManager::downloadAndCacheYouTube($content);

@@ -428,7 +428,11 @@ const StepvoroVideoDownloader = {
             } else {
                 self.updateButtonUI(id, 'ready', 0, btnElement);
                 if (typeof window.showPwaToast === 'function') {
-                    window.showPwaToast('تعذر تحميل ملف الفيديو (كود: ' + xhr.status + ').', 'error');
+                    if (xhr.status === 400 || xhr.status === 404 || xhr.status === 422) {
+                        window.showPwaToast('هذا الشرح متاح للمشاهدة المباشرة داخل المنصة.', 'info');
+                    } else {
+                        window.showPwaToast('تعذر تحميل ملف الفيديو (كود: ' + xhr.status + ').', 'error');
+                    }
                 }
             }
         };

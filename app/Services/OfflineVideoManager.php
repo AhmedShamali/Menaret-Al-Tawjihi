@@ -70,6 +70,17 @@ class OfflineVideoManager
     {
         // 1. فحص كاش اليوتيوب أولاً إذا كان المحتوى يحتوي على معرف يوتيوب
         $ytId = $content->youtube_id;
+        if (!$ytId && !empty($content->url_path)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->url_path, $ym)) {
+                $ytId = $ym[1];
+            }
+        }
+        if (!$ytId && !empty($content->youtube_embed_url)) {
+            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $content->youtube_embed_url, $ym)) {
+                $ytId = $ym[1];
+            }
+        }
+
         if ($ytId) {
             $cachedYt = self::getCachedYouTubePath($ytId);
             if (file_exists($cachedYt) && filesize($cachedYt) > 10240) {
@@ -85,24 +96,28 @@ class OfflineVideoManager
 
         $isDirect = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos');
         if ($isDirect) {
-            $relativePath = null;
-            if (preg_match('~educational/videos/[^\s?#]+~', $rawUrl, $m)) {
-                $relativePath = $m[0];
-            } elseif (!filter_var($rawUrl, FILTER_VALIDATE_URL)) {
-                $relativePath = ltrim($rawUrl, '/');
-            }
+            $clean = ltrim(str_replace(['public/', 'storage/', 'app/public/'], '', $rawUrl), '/\\');
+            $baseName = basename($clean);
 
-            if ($relativePath) {
-                $candidates = [
-                    Storage::disk('public')->path($relativePath),
-                    public_path('storage/' . $relativePath),
-                    public_path($relativePath),
-                    storage_path('app/public/' . $relativePath),
-                ];
-                foreach ($candidates as $cand) {
-                    if (file_exists($cand) && is_file($cand)) {
-                        return $cand;
-                    }
+            $candidates = [
+                storage_path('app/public/educational/videos/' . $clean),
+                storage_path('app/public/educational/videos/' . $baseName),
+                storage_path('app/public/' . $clean),
+                storage_path('app/public/' . $baseName),
+                public_path('storage/educational/videos/' . $clean),
+                public_path('storage/educational/videos/' . $baseName),
+                public_path('storage/' . $clean),
+                public_path('storage/' . $baseName),
+                Storage::disk('public')->path('educational/videos/' . $clean),
+                Storage::disk('public')->path('educational/videos/' . $baseName),
+                Storage::disk('public')->path($clean),
+                Storage::disk('public')->path($baseName),
+                storage_path('app/' . $clean),
+            ];
+
+            foreach ($candidates as $cand) {
+                if (file_exists($cand) && is_file($cand) && filesize($cand) > 0) {
+                    return $cand;
                 }
             }
         }
