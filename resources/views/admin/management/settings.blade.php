@@ -254,6 +254,52 @@
                                    class="field-input" style="direction: ltr; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }};">
                         </div>
                     </div>
+                <!-- 3.5. بطاقة إعدادات محرك الذكاء الاصطناعي الأكاديمي (Google Gemini API & AI Engine) -->
+                <div class="settings-card">
+                    <div class="settings-card-header" style="background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%); border-bottom: 1px solid #bfdbfe; padding: 18px 25px; display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fa-solid fa-wand-magic-sparkles" style="color: #2563eb; font-size: 1.25rem;"></i>
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('إعدادات محرك الذكاء الاصطناعي الأكاديمي (Tawjihi AI Engine)') }}</h3>
+                                <p style="font-size: 0.76rem; color: #64748b; margin: 2px 0 0;">{{ __('ربط مفاتيح API الخاصة بـ Google Gemini و OpenAI لتفعيل فك رموز الصور والإجابة الفورية.') }}</p>
+                            </div>
+                        </div>
+                        <span style="background: #dbeafe; color: #1e40af; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 999px; border: 1px solid #93c5fd;">
+                            Gemini 1.5 Flash
+                        </span>
+                    </div>
+                    <div style="padding: 25px; display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <label class="field-label" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>{{ __('مفتاح Google Gemini API Key (الموصى به - يدعم تحليل صور المسائل مجاناً وبسرعة فائقة)') }}</span>
+                                <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #2563eb; font-size: 0.75rem; text-decoration: underline; font-weight: 700;">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i> {{ __('الحصول على مفتاح مجاني من Google') }}
+                                </a>
+                            </label>
+                            <input type="password" name="ai_api_key"
+                                   value="{{ \App\Models\Setting::get('ai_api_key', \App\Models\Setting::get('gemini_api_key', '')) }}"
+                                   placeholder="AIzaSy..."
+                                   class="field-input" style="direction: ltr; font-family: monospace;">
+                            <small style="color: #64748b; font-size: 0.75rem; display: block; margin-top: 4px;">{{ __('في حال ترك الحقل فارغاً، ستستخدم المنصة تلقائياً المحرك الذكي المدمج دون توقف.') }}</small>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label class="field-label">{{ __('مفتاح OpenAI API Key (اختياري كبديل إضافي)') }}</label>
+                                <input type="password" name="openai_api_key"
+                                       value="{{ \App\Models\Setting::get('openai_api_key', '') }}"
+                                       placeholder="sk-proj-..."
+                                       class="field-input" style="direction: ltr; font-family: monospace;">
+                            </div>
+                            <div>
+                                <label class="field-label">{{ __('نمط الرموز الافتراضي للطلبة الجدد') }}</label>
+                                <select name="ai_default_symbol_mode" class="field-input">
+                                    <option value="ar" {{ \App\Models\Setting::get('ai_default_symbol_mode', 'ar') === 'ar' ? 'selected' : '' }}>{{ __('الرموز العربية المدرسية (ق = ك × ت)') }}</option>
+                                    <option value="en" {{ \App\Models\Setting::get('ai_default_symbol_mode') === 'en' ? 'selected' : '' }}>{{ __('الرموز الإنجليزية القياسية (F = ma)') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- 4. بطاقة تحسين محركات البحث وأرشفة جوجل (SEO & Webmaster Tools) -->

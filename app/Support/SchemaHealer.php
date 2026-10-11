@@ -199,8 +199,35 @@ class SchemaHealer
                 }
             }
 
-        } catch (\Throwable $e) {
-            Log::warning('SchemaHealer warning: ' . $e->getMessage());
-        }
+            // 9. فحص وإنشاء جداول الذكاء الاصطناعي الأكاديمي الشامل
+            if (!Schema::hasTable('ai_conversations')) {
+                Schema::create('ai_conversations', function (Blueprint $table) {
+                        $table->id();
+                        $table->string('actor_type')->default('student');
+                        $table->unsignedBigInteger('actor_id');
+                        $table->string('title')->default('محادثة جديدة');
+                        $table->string('category')->default('general');
+                        $table->string('symbol_mode')->default('ar');
+                        $table->timestamps();
+                        $table->index(['actor_type', 'actor_id']);
+                    });
+                }
+
+                if (!Schema::hasTable('ai_messages')) {
+                    Schema::create('ai_messages', function (Blueprint $table) {
+                        $table->id();
+                        $table->foreignId('conversation_id')->constrained('ai_conversations')->onDelete('cascade');
+                        $table->string('role')->default('user');
+                        $table->longText('content');
+                        $table->string('image_url')->nullable();
+                        $table->string('notation_mode')->nullable();
+                        $table->timestamps();
+                        $table->index('conversation_id');
+                    });
+                }
+
+            } catch (\Throwable $e) {
+                Log::warning('SchemaHealer warning: ' . $e->getMessage());
+            }
     }
 }

@@ -21,6 +21,12 @@
         <div class="nav-tab-icon pulse-accent"><i class="fa-solid fa-calculator"></i></div>
         <span class="nav-tab-label">{{ __('الحاسبة') }}</span>
     </a>
+    @if(Auth::guard('student')->check() || Auth::check())
+        <a href="{{ route('ai.hub') }}" class="nav-tab {{ request()->is('ai-hub*') ? 'active' : '' }}">
+            <div class="nav-tab-icon" style="color: #2563eb;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <span class="nav-tab-label">{{ __('المعلم AI') }}</span>
+        </a>
+    @endif
     <a href="{{ route('offline.videos') }}" class="nav-tab {{ request()->is('*offline*') ? 'active' : '' }}" id="bottomNavOfflineBtn" title="{{ __('دروسي المحفوظة أوفلاين بدون نت') }}">
         <div class="nav-tab-icon offline-vault-highlight">
             <i class="fa-solid fa-cloud-arrow-down"></i>

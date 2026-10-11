@@ -153,6 +153,16 @@ Route::get('/notifications/unread', [\App\Http\Controllers\Student\NotificationC
 Route::get('/notifications/open/{id}', [\App\Http\Controllers\Student\NotificationController::class, 'openNotification'])->name('notifications.open');
 Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\Student\NotificationController::class, 'markAsRead'])->name('notifications.markReadUnified');
 
+// =========================================================================
+// المساعد والمركز الأكاديمي الشامل للذكاء الاصطناعي (حصرياً للطلبة والمستخدمين)
+// =========================================================================
+Route::get('/ai-hub', [\App\Http\Controllers\AiTutorController::class, 'index'])->name('ai.hub');
+Route::post('/ai/chat', [\App\Http\Controllers\AiTutorController::class, 'chat'])->name('ai.chat');
+Route::get('/ai/conversations', [\App\Http\Controllers\AiTutorController::class, 'getConversations'])->name('ai.conversations');
+Route::get('/ai/conversations/{id}', [\App\Http\Controllers\AiTutorController::class, 'getMessages'])->name('ai.conversation.messages');
+Route::delete('/ai/conversations/{id}', [\App\Http\Controllers\AiTutorController::class, 'deleteConversation'])->name('ai.conversation.delete');
+Route::delete('/ai/conversations', [\App\Http\Controllers\AiTutorController::class, 'clearHistory'])->name('ai.conversations.clear');
+
 
 /*
 |--------------------------------------------------------------------------

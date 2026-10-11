@@ -3081,6 +3081,15 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('ai.hub') }}" class="nav-item {{ Request::is('ai-hub*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge" style="background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #ffffff; box-shadow: 0 3px 8px rgba(29, 78, 216, 0.25);"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span style="font-weight: 700;">{{ __('المعلم الذكي AI') }}</span>
+                        </div>
+                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid #bfdbfe;">جديد</span>
+                    </div>
+                </a>
                 <a href="{{ route('tawjihi.calculator') }}" target="_blank" class="nav-item">
                     <div class="nav-link">
                         <div class="link-main">
@@ -3180,6 +3189,17 @@
                     <i class="fa-solid fa-globe" style="color: var(--ed-primary); font-size: 0.95rem;"></i>
                     <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
+
+                @if(auth('student')->check() || auth()->check())
+                <!-- زر المعلم الأكاديمي الذكي في الترويسة العليا للمستخدمين -->
+                <a href="{{ route('ai.hub') }}" 
+                   title="{{ __('المعلم الأكاديمي الذكي AI') }}" 
+                   style="background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1.5px solid #bfdbfe; color: #1d4ed8; height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 800; transition: var(--transition-smooth); box-shadow: 0 2px 6px rgba(37,99,235,0.08);">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="color: #2563eb;"></i>
+                    <span>{{ __('المعلم الذكي') }}</span>
+                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.65rem; padding: 1px 5px; border-radius: 4px;">AI</span>
+                </a>
+                @endif
                 @php
                     $unreadCount = 0; 
                     $unreadItems = collect();
@@ -3832,6 +3852,9 @@
     </button>
 
 
+
+    <!-- المساعد والمعلم الأكاديمي الذكي العائم الفاخر (متاح حصرياً للمستخدمين والطلبة) -->
+    @include('partials.ai_widget')
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')
