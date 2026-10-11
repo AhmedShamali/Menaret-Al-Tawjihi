@@ -42,7 +42,32 @@ class VideographerContentController extends Controller
 
         $recentContents = $grouped->map(function($g) {
             $primary = $g->first();
-            $primary->branches_count = $g->count();
+            $branches = $g->map(function($item) {
+                $stageName = $item->subject?->stage?->label_ar ?? $item->subject?->stage?->name_ar ?? $item->subject?->stage?->name ?? 'الفرع الأكاديمي';
+                $stageBadge = $item->subject?->stage?->name ?? $stageName;
+
+                $cleanBadge = $stageBadge;
+                if (str_contains($stageBadge, 'علمي')) $cleanBadge = 'علمي 📐';
+                elseif (str_contains($stageBadge, 'أدبي')) $cleanBadge = 'أدبي 📚';
+                elseif (str_contains($stageBadge, 'ريادة') || str_contains($stageBadge, 'أعمال') || str_contains($stageBadge, 'تجاري')) $cleanBadge = 'ريادة 💼';
+                elseif (str_contains($stageBadge, 'شرعي')) $cleanBadge = 'شرعي ⚖️';
+                elseif (str_contains($stageBadge, 'صناعي')) $cleanBadge = 'صناعي ⚙️';
+                elseif (str_contains($stageBadge, 'زراعي')) $cleanBadge = 'زراعي 🌾';
+
+                return [
+                    'id'           => (int) $item->id,
+                    'stage_id'     => $item->subject?->stage_id,
+                    'stage_name'   => $stageName,
+                    'stage_badge'  => $cleanBadge,
+                    'subject_name' => $item->subject?->name_ar ?? $item->subject?->name ?? '-',
+                    'is_visible'   => (bool) ($item->is_visible ?? true),
+                    'views_count'  => (int) ($item->views_count ?? 0),
+                    'created_at'   => $item->created_at ? $item->created_at->format('Y/m/d') : '-',
+                ];
+            })->values();
+
+            $primary->branches_count = $branches->count();
+            $primary->branches = $branches;
             return $primary;
         })->take(10)->values();
 
@@ -385,6 +410,17 @@ class VideographerContentController extends Controller
         foreach ($targetSubjectIds as $subId) {
             $sub = Subject::with(['teacher', 'stage'])->find($subId);
             if (!$sub) continue;
+
+            // التحقق مما إذا كان المحتوى تم إنشاؤه مسبقاً لهذه المادة منعاً للتكرار
+            $alreadyExists = EducationalContent::where('subject_id', $subId)
+                ->where(function($q) use ($videoPath, $pdfPath, $request) {
+                    if (!empty($videoPath)) $q->where('url_path', $videoPath);
+                    if (!empty($pdfPath)) $q->orWhere('pdf_path', $pdfPath);
+                    if (!empty($request->title)) $q->orWhere('title', $request->title);
+                })->exists();
+            if ($alreadyExists) {
+                continue;
+            }
 
             // تحديد اسم مقدم الشرح أو القناة تلقائياً (إسناد للمعلم إن وجد)
             $channelName = $request->channel_name;

@@ -527,9 +527,11 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     Route::get('/educational-contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('educational_contents.edit')->whereNumber('id');
     Route::match(['put', 'post'], '/educational-contents/{id}', [EducationalContentController::class, 'update'])->name('educational_contents.update')->whereNumber('id');
 
-    Route::post('/contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggle_visibility')->whereNumber('id');
-    Route::post('/contents/{id}/toggle-visibility-camel', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggleVisibility')->whereNumber('id');
-    Route::post('/visibility/toggle/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('visibility.toggle')->whereNumber('id');
+    Route::match(['get', 'post', 'patch'], '/contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggle_visibility')->whereNumber('id');
+    Route::match(['get', 'post', 'patch'], '/contents/{id}/toggle_visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggle_visibility_snake')->whereNumber('id');
+    Route::match(['get', 'post', 'patch'], '/contents/{id}/toggle-visibility-camel', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('contents.toggleVisibility')->whereNumber('id');
+    Route::match(['get', 'post', 'patch'], '/visibility/toggle/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('visibility.toggle')->whereNumber('id');
+    Route::match(['get', 'post', 'patch'], '/educational-contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->name('educational_contents.toggle_visibility')->whereNumber('id');
     Route::get('/contents/{id}/edit', [EducationalContentController::class, 'edit'])->name('contents.edit')->whereNumber('id');
     Route::match(['put', 'post'], '/contents/{id}', [EducationalContentController::class, 'update'])->name('contents.update')->whereNumber('id');
     Route::post('/contents/{id}/sync-branches', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'syncBranches'])->name('contents.sync_branches')->whereNumber('id');
@@ -550,3 +552,22 @@ Route::prefix('videographer')->middleware(['auth', 'IsVideographer'])->name('vid
     Route::post('/educational-contents/remove-temp-video', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'removeTempVideo'])->name('educational_contents.remove_temp_video');
     Route::post('/educational-contents/remove-temp-video-camel', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'removeTempVideo'])->name('educational_contents.removeTempVideo');
 });
+
+// مسارات بديلة واحتياطية مباشرة تضمن نجاح تبديل حالة الظهور للمصور من أي رابط
+Route::match(['get', 'post', 'patch'], '/videographer/contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+Route::match(['get', 'post', 'patch'], '/videographer/contents/{id}/toggle_visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+Route::match(['get', 'post', 'patch'], '/videographer/visibility/toggle/{id}', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+Route::match(['get', 'post', 'patch'], '/videographer/educational-contents/{id}/toggle-visibility', [\App\Http\Controllers\Videographer\VideographerContentController::class, 'toggleVisibility'])->middleware(['auth'])->whereNumber('id');
+
+// مسار فوري لمسح كاش المسارات والتطبيق للإدارة في حال وجود أي تحديث عالق في الاستضافة
+Route::get('/admin/clear-cache', function () {
+    if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'super_admin'])) {
+        return response()->json(['error' => 'غير مصرح'], 403);
+    }
+    try {
+        \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+        return response()->json(['success' => true, 'message' => 'تم مسح وتحديث كافة ملفات الكاش والمسارات بنجاح ✅']);
+    } catch (\Throwable $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+})->middleware(['auth']);

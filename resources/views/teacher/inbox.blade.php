@@ -64,7 +64,7 @@
                         $hasUnread = ($student->unread_count ?? 0) > 0;
                         $lastText = $student->last_message ?? '';
                         $lastTime = $student->last_message_time ?? '';
-                        $isMe = ($student->last_sender_type === 'teacher');
+                        $isMe = (($student->last_sender_type ?? null) === 'teacher');
                     @endphp
                     <div onclick="loadTeacherChat({{ $student->id }}, '{{ addslashes($studentName) }}', '{{ addslashes($stageName) }}')"
                          class="student-thread-card {{ $hasUnread ? 'has-unread' : '' }} {{ (isset($selectedStudentId) && $selectedStudentId == $student->id) ? 'active' : '' }}"
@@ -88,7 +88,7 @@
                             </div>
                             <div class="thread-bottom">
                                 <span class="last-snippet-text" id="snippet_{{ $student->id }}">
-                                    @if($student->last_message)
+                                    @if(!empty($lastText))
                                         @if($isMe)
                                             <strong class="me-prefix">{{ __('أنت') }}: </strong>
                                         @endif

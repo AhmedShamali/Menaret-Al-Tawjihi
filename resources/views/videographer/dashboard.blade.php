@@ -194,18 +194,33 @@
                                                     <span><i class="fa-solid fa-camera"></i> {{ $content->channel_name }}</span>
                                                 @endif
                                                 @if(!empty($content->branches_count) && $content->branches_count > 1)
-                                                    <span style="background: #eff6ff; color: #1d4ed8; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                                    <a href="{{ route('videographer.contents.index', ['search' => $content->title]) }}" style="background: #eff6ff; color: #1d4ed8; padding: 2px 7px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="{{ __('عرض تفاصيل كافة الفروع في السجل والمكتبة') }}">
                                                         <i class="fa-solid fa-layer-group"></i> {{ $content->branches_count }} {{ __('فروع') }}
-                                                    </span>
+                                                    </a>
                                                 @endif
                                             </div>
                                         </div>
                                     </div>
                                 </td>
                                 <td style="padding: 14px 16px;">
-                                    <span style="display: inline-block; background: #f1f5f9; color: #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;">
-                                        {{ $content->subject?->stage?->name ?? __('متعدد الفروع') }}
-                                    </span>
+                                    @if(!empty($content->branches) && $content->branches->count() > 1)
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            <div style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center;">
+                                                @foreach($content->branches as $br)
+                                                    <span style="display: inline-flex; align-items: center; gap: 4px; background: #f8fafc; border: 1px solid #e2e8f0; color: #1e293b; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;" title="{{ $br['stage_name'] }} - {{ $br['subject_name'] }}">
+                                                        <span style="color: #1d4ed8;">{{ $br['stage_badge'] }}</span>
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check text-success"></i> {{ __('مشترك وموزع لـ :count فروع', ['count' => $content->branches->count()]) }}
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span style="display: inline-block; background: #f1f5f9; color: #334155; padding: 4px 10px; border-radius: 6px; font-size: 0.78rem; font-weight: 600;">
+                                            {{ $content->subject?->stage?->name ?? __('متعدد الفروع') }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td style="padding: 14px 16px;">
                                     <span style="color: #0f172a; font-weight: 600; font-size: 0.85rem;">
@@ -243,13 +258,14 @@
                                     {{ $content->created_at ? $content->created_at->format('Y-m-d') : '-' }}
                                 </td>
                                 <td style="padding: 14px 20px; text-align: center;">
-                                    <form action="{{ route('videographer.contents.destroy', $content->id) }}" method="POST" onsubmit="return confirm('{{ __('هل أنت متأكد من حذف هذه المحاضرة نهائياً من قاعدة البيانات والسيرفر؟') }}')" style="display: inline-block; margin: 0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف نهائي') }}">
-                                            <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            onclick="confirmDeleteLecture({{ $content->id }}, '{{ addslashes($content->title) }}', {{ $content->branches_count ?? 1 }})" 
+                                            style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" 
+                                            onmouseover="this.style.background='#fee2e2'" 
+                                            onmouseout="this.style.background='none'" 
+                                            title="{{ __('حذف نهائي') }}">
+                                        <i class="fa-regular fa-trash-can" style="font-size: 0.85rem;"></i>
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -315,6 +331,67 @@ async function toggleVideographerVisibility(id, btn) {
                 title: 'خطأ',
                 text: err.message || 'تعذر تحديث حالة العرض حالياً.'
             });
+        }
+    }
+}
+
+function confirmDeleteLecture(id, title, branchesCount) {
+    const branchesMsg = branchesCount > 1 
+        ? `{{ __('هذه المحاضرة موزعة تلقائياً على') }} (${branchesCount}) {{ __('فروع أكاديمية. هل تريد حذفها نهائياً من كافة الفروع ومن قاعدة البيانات والسيرفر؟') }}`
+        : `{{ __('هل أنت متأكد من حذف هذه المحاضرة نهائياً من قاعدة البيانات والسيرفر؟') }}`;
+
+    const doDelete = () => {
+        const row = document.getElementById('content_row_' + id);
+        if (row) {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '0.3';
+        }
+
+        fetch('/videographer/contents/' + id, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'X-HTTP-Method-Override': 'DELETE',
+                'Accept': 'application/json'
+            }
+        }).then(res => res.json().catch(() => ({})))
+        .then(data => {
+            if (row) {
+                row.remove();
+            }
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '{{ __("تم الحذف بنجاح ✅") }}',
+                    text: data.message || '{{ __("تم حذف المحاضرة نهائياً.") }}',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            }
+        }).catch(() => {
+            location.reload();
+        });
+    };
+
+    if (window.Swal) {
+        Swal.fire({
+            title: '{{ __("تأكيد الحذف النهائي") }}',
+            text: branchesMsg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '{{ __("نعم، احذف نهائياً") }}',
+            cancelButtonText: '{{ __("إلغاء") }}',
+            reverseButtons: true
+        }).then(result => {
+            if (result.isConfirmed) {
+                doDelete();
+            }
+        });
+    } else {
+        if (confirm(branchesMsg)) {
+            doDelete();
         }
     }
 }
