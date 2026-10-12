@@ -362,9 +362,6 @@ const StepvoroVideoDownloader = {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', videoUrl, true);
         xhr.responseType = 'blob';
-        try {
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-        } catch(e) {}
 
         self.activeDownloads[id] = xhr;
 
@@ -379,56 +376,61 @@ const StepvoroVideoDownloader = {
             delete self.activeDownloads[id];
             if (xhr.status === 200 || xhr.status === 206) {
                 const blob = xhr.response;
-                if (!blob || blob.size < 1000 || (blob.type && blob.type.includes('text/html'))) {
-                    self.updateButtonUI(id, 'ready', 0, btnElement);
-                    if (typeof window.showPwaToast === 'function') {
-                        window.showPwaToast('تعذر تنزيل ملف الفيديو، يرجى التأكد من اتصالك بالإنترنت والمحاولة مرة أخرى.', 'error');
-                    }
+
+                // فحص ما إذا كانت الاستجابة JSON وليست ملف MP4 ثنائي
+                if (blob && (blob.type.includes('application/json') || (blob.type.includes('text/') && blob.size < 4000) || blob.size < 1000)) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const data = JSON.parse(reader.result);
+                            if (data && data.url) {
+                                self.startDirectBlobDownload(id, title, subject, data.url, btnElement);
+                                return;
+                            }
+                            if (data && data.message) {
+                                self.updateButtonUI(id, 'ready', 0, btnElement);
+                                if (typeof window.showPwaToast === 'function') {
+                                    window.showPwaToast(data.message, data.corrupted ? 'error' : 'info');
+                                }
+                                return;
+                            }
+                        } catch (e) {}
+
+                        self.updateButtonUI(id, 'ready', 0, btnElement);
+                        if (typeof window.showPwaToast === 'function') {
+                            window.showPwaToast('تعذر تنزيل ملف الفيديو (الملف غير مكتمل أو 0 بايت).', 'error');
+                        }
+                    };
+                    reader.readAsText(blob);
                     return;
                 }
 
-                const sizeBytes = blob.size;
-                const sizeFormatted = StepvoroOfflineDB.formatBytes(sizeBytes);
-
-                const record = {
-                    id: id,
-                    title: title || 'درس تعليمي',
-                    subject: subject || 'المنهاج الوزاري',
-                    url: videoUrl,
-                    blob: blob,
-                    hasBlob: true,
-                    sizeBytes: sizeBytes,
-                    sizeFormatted: sizeFormatted,
-                    savedAt: new Date().toLocaleDateString('ar-EG', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })
-                };
-
-                StepvoroOfflineDB.saveVideo(record)
-                    .then(() => {
-                        self.updateButtonUI(id, 'saved', 100, btnElement);
-                        self.attachOfflineBlobToPlayer(id, blob);
-                        StepvoroOfflineDB.updateGlobalOfflineBadge();
-
+                self.saveVideoBlobToDB(id, title, subject, videoUrl, blob, btnElement);
+            } else if (xhr.status === 422) {
+                self.updateButtonUI(id, 'ready', 0, btnElement);
+                const blob = xhr.response;
+                if (blob) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const data = JSON.parse(reader.result);
+                            if (typeof window.showPwaToast === 'function') {
+                                window.showPwaToast(data.message || 'ملف هذا الدرس غير مكتمل (0 بايت). يرجى من المعلم إعادة رفع الفيديو.', 'error');
+                            }
+                            return;
+                        } catch (e) {}
                         if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('تم حفظ الدرس بنجاح في ذاكرة المنصة (' + sizeFormatted + ') ⚡', 'success');
+                            window.showPwaToast('ملف هذا الدرس غير مكتمل (0 بايت). يرجى من المعلم إعادة رفع الفيديو.', 'error');
                         }
-                    })
-                    .catch((err) => {
-                        console.error('Error saving video to DB:', err);
-                        self.updateButtonUI(id, 'ready', 0, btnElement);
-                        if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('حدث خطأ أثناء حفظ الفيديو في ذاكرة المنصة.', 'error');
-                        }
-                    });
+                    };
+                    reader.readAsText(blob);
+                } else if (typeof window.showPwaToast === 'function') {
+                    window.showPwaToast('ملف هذا الدرس غير مكتمل (0 بايت). يرجى من المعلم إعادة رفع الفيديو.', 'error');
+                }
             } else {
                 self.updateButtonUI(id, 'ready', 0, btnElement);
                 if (typeof window.showPwaToast === 'function') {
-                    if (xhr.status === 400 || xhr.status === 404 || xhr.status === 422) {
+                    if (xhr.status === 400 || xhr.status === 404) {
                         window.showPwaToast('هذا الشرح متاح للمشاهدة المباشرة داخل المنصة.', 'info');
                     } else {
                         window.showPwaToast('تعذر تحميل ملف الفيديو (كود: ' + xhr.status + ').', 'error');
@@ -467,6 +469,99 @@ const StepvoroVideoDownloader = {
                 window.showPwaToast('تعذر بدء تحميل الفيديو.', 'error');
             }
         }
+    },
+
+    // تنزيل مباشر للـ Blob من الرابط السحابي عند إرجاع JSON URL
+    startDirectBlobDownload: function (id, title, subject, directUrl, btnElement) {
+        id = String(id);
+        const self = this;
+        self.updateButtonUI(id, 'downloading', 10, btnElement);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', directUrl, true);
+        xhr.responseType = 'blob';
+
+        self.activeDownloads[id] = xhr;
+
+        xhr.onprogress = function (e) {
+            if (e.lengthComputable && e.total > 0) {
+                const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+                self.updateButtonUI(id, 'downloading', percent, btnElement);
+            }
+        };
+
+        xhr.onload = function () {
+            delete self.activeDownloads[id];
+            if (xhr.status === 200 || xhr.status === 206) {
+                const blob = xhr.response;
+                if (!blob || blob.size < 1000) {
+                    self.updateButtonUI(id, 'ready', 0, btnElement);
+                    if (typeof window.showPwaToast === 'function') {
+                        window.showPwaToast('تعذر استلام بيانات الفيديو من التخزين السحابي (0 بايت).', 'error');
+                    }
+                    return;
+                }
+                self.saveVideoBlobToDB(id, title, subject, directUrl, blob, btnElement);
+            } else {
+                self.updateButtonUI(id, 'ready', 0, btnElement);
+                if (typeof window.showPwaToast === 'function') {
+                    window.showPwaToast('تعذر تحميل الفيديو من الرابط السحابي.', 'error');
+                }
+            }
+        };
+
+        xhr.onerror = function () {
+            delete self.activeDownloads[id];
+            self.updateButtonUI(id, 'ready', 0, btnElement);
+            if (typeof window.showPwaToast === 'function') {
+                window.showPwaToast('تعذر استكمال الاتصال بالرابط السحابي.', 'error');
+            }
+        };
+
+        xhr.send();
+    },
+
+    // حفظ الـ Blob في IndexedDB وتحديث الواجهة
+    saveVideoBlobToDB: function (id, title, subject, videoUrl, blob, btnElement) {
+        const self = this;
+        const sizeBytes = blob.size;
+        const sizeFormatted = StepvoroOfflineDB.formatBytes(sizeBytes);
+
+        const record = {
+            id: id,
+            title: title || 'درس تعليمي',
+            subject: subject || 'المنهاج الوزاري',
+            url: videoUrl,
+            blob: blob,
+            hasBlob: true,
+            sizeBytes: sizeBytes,
+            sizeFormatted: sizeFormatted,
+            savedAt: new Date().toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            })
+        };
+
+        StepvoroOfflineDB.saveVideo(record)
+            .then(() => {
+                self.updateButtonUI(id, 'saved', 100, btnElement);
+                self.attachOfflineBlobToPlayer(id, blob);
+                StepvoroOfflineDB.updateGlobalOfflineBadge();
+
+                if (typeof window.showPwaToast === 'function') {
+                    window.showPwaToast('تم حفظ الدرس بنجاح في ذاكرة المنصة (' + sizeFormatted + ') ⚡', 'success');
+                }
+            })
+            .catch((err) => {
+                console.error('Error saving video to DB:', err);
+                self.updateButtonUI(id, 'ready', 0, btnElement);
+                if (typeof window.showPwaToast === 'function') {
+                    window.showPwaToast('حدث خطأ أثناء حفظ الفيديو في ذاكرة المنصة.', 'error');
+                }
+            });
     },
 
     // حذف فيديو محفوظ لتحرير المساحة

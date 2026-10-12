@@ -314,7 +314,9 @@
                                             <button type="button" 
                                                     data-title="{{ $item->title }}" 
                                                     data-url="{{ $streamUrl }}" 
-                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'))" 
+                                                    data-yt="{{ $item->youtube_embed_url ?? '' }}"
+                                                    data-pdf="{{ $item->pdf_path ? \App\Support\MediaHelper::url($item->pdf_path) : '' }}"
+                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'), this.getAttribute('data-yt'), this.getAttribute('data-pdf'))" 
                                                     style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                                 <i class="fa-solid fa-eye"></i> {{ __('معاينة') }}
                                             </button>
@@ -523,13 +525,17 @@
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
                 <div>
-                    <h4 style="margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر تشغيل الفيديو داخل هذا المشغل المباشر') }}</h4>
-                    <p style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 440px; line-height: 1.5;">{{ __('قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة.') }}</p>
+                    <h4 id="preview_error_h4" style="margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر تشغيل الفيديو داخل هذا المشغل المباشر') }}</h4>
+                    <p id="preview_error_p" style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 460px; line-height: 1.5;">{{ __('قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة.') }}</p>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap; justify-content: center;">
                     <a id="preview_video_error_link" href="#" target="_blank" rel="noopener noreferrer" style="background: #2563eb; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fa-solid fa-arrow-up-right-from-square"></i>
                         <span>{{ __('فتح الفيديو في تبويب جديد') }}</span>
+                    </a>
+                    <a id="preview_video_error_pdf" href="#" target="_blank" rel="noopener noreferrer" style="display: none; background: #059669; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>{{ __('عرض دوسية وملزمة الدرس PDF') }}</span>
                     </a>
                     <button type="button" onclick="closeVideoPreview()" style="background: rgba(255,255,255,0.1); color: #cbd5e1; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
                         {{ __('إغلاق') }}
@@ -1424,8 +1430,8 @@ function deleteUnifiedContent(id, title, scope = 'all') {
 }
 
 // 6. معاينة الفيديو المنبثقة الذكية (تدعم YouTube و Vimeo و MP4 وبث السيرفر)
-function openVideoPreview(title, url) {
-    if (!url) {
+function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
+    if (!url && !ytUrl) {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'warning',
@@ -1446,23 +1452,40 @@ function openVideoPreview(title, url) {
     const extLink = document.getElementById('preview_video_external_link');
     const errorBox = document.getElementById('preview_video_error');
     const errorLink = document.getElementById('preview_video_error_link');
+    const errorPdf = document.getElementById('preview_video_error_pdf');
+    const errorH4 = document.getElementById('preview_error_h4');
+    const errorP = document.getElementById('preview_error_p');
 
     if (titleEl) titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
     if (extLink) {
-        extLink.href = url;
+        extLink.href = url || ytUrl || '#';
         extLink.style.display = 'inline-flex';
     }
     if (errorLink) {
-        errorLink.href = url;
+        errorLink.href = url || ytUrl || '#';
+    }
+    if (errorPdf) {
+        if (pdfUrl) {
+            errorPdf.href = pdfUrl;
+            errorPdf.style.display = 'inline-flex';
+        } else {
+            errorPdf.style.display = 'none';
+        }
     }
     if (errorBox) {
         errorBox.style.display = 'none';
     }
+    if (errorH4) {
+        errorH4.textContent = '{{ __("تعذر تشغيل الفيديو داخل هذا المشغل المباشر") }}';
+    }
+    if (errorP) {
+        errorP.textContent = '{{ __("قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة.") }}';
+    }
 
-    const trimmedUrl = String(url).trim();
+    const trimmedUrl = String(url || ytUrl).trim();
 
     // فحص ما إذا كان الرابط يوتيوب أو فيميو أو وسائط خارجية تحتاج iframe
-    const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)/i.test(trimmedUrl);
+    const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/)|youtu\.be\/)/i.test(trimmedUrl);
     const isVimeo = /vimeo\.com/i.test(trimmedUrl);
 
     if (isYouTube || isVimeo) {
@@ -1514,23 +1537,27 @@ function openVideoPreview(title, url) {
             // نظام الاسترداد التلقائي في حال تعثر رابط البث
             player.onerror = function() {
                 console.warn('Preview video load error on:', trimmedUrl);
-                // محاولة التبديل للمسار المباشر إن كان رابط بث
-                if (trimmedUrl.includes('/video-stream/')) {
-                    const parts = trimmedUrl.split('/video-stream/');
-                    const cleanPath = parts[parts.length - 1];
-                    const directStorageUrl = '/storage/educational/videos/' + cleanPath.replace(/^educational\/videos\//, '');
-                    if (player.src !== window.location.origin + directStorageUrl) {
-                        console.log('Falling back to direct storage URL:', directStorageUrl);
-                        player.src = directStorageUrl;
-                        if (source) source.src = directStorageUrl;
-                        player.load();
-                        player.play().catch(() => {});
-                        return;
-                    }
+                // إذا كان متوفراً رابط يوتيوب احتياطي، التبديل التلقائي إلى مشغل يوتيوب فوراً
+                if (ytUrl && ytUrl !== trimmedUrl) {
+                    openVideoPreview(title, ytUrl, null, pdfUrl);
+                    return;
                 }
+
                 if (errorBox) {
                     errorBox.style.display = 'flex';
                 }
+
+                // فحص دقيق للرابط لمعرفة إذا كان ملف تالف أو 0 بايت
+                fetch(trimmedUrl, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                    .then(res => {
+                        if (res.status === 422) {
+                            return res.json().then(data => {
+                                if (errorH4) errorH4.textContent = 'ملف هذا الدرس غير مكتمل في التخزين (حجمه 0 بايت)';
+                                if (errorP) errorP.textContent = data.message || 'هذا الفيديو تم حفظه مسبقاً بحجم 0 بايت أو لم يكتمل دمجه. بإمكانك إعادة رفع الفيديو عبر خيار التعديل.';
+                            });
+                        }
+                    })
+                    .catch(() => {});
             };
 
             player.load();

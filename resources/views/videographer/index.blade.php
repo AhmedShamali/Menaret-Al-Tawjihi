@@ -908,6 +908,17 @@
             if (videoEl) {
                 videoEl.src = trimmedUrl;
                 videoEl.style.display = 'block';
+                videoEl.onerror = function() {
+                    fetch(trimmedUrl, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                        .then(res => {
+                            if (res.status === 422) {
+                                return res.json().then(data => {
+                                    alert(data.message || 'ملف هذا الفيديو غير مكتمل على السيرفر (0 بايت). يرجى إعادة رفع الفيديو.');
+                                });
+                            }
+                        })
+                        .catch(() => {});
+                };
                 videoEl.load();
                 videoEl.play().catch(() => {});
             }

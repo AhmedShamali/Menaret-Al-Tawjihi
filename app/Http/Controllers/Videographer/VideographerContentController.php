@@ -869,6 +869,12 @@ class VideographerContentController extends Controller
         }
 
         $chunk = $request->file('chunk');
+        if (!$chunk || !$chunk->isValid() || $chunk->getSize() <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ملف الجزء المرسل تالف أو فارغ (0 بايت). يرجى إعادة المحاولة.'
+            ], 422);
+        }
         $chunk->move($chunksFolder, 'part_' . $chunkIndex);
 
         // التحقق من اكتمال استلام كافة الأجزاء
@@ -901,22 +907,39 @@ class VideographerContentController extends Controller
                 return response()->json(['success' => false, 'message' => 'تعذر فتح مسار دمج الفيديو على السيرفر.'], 500);
             }
 
+            // الدمج المباشر عبر تدفقات النظام مع التحقق الصارم من سلامة كل جزء
+            clearstatcache(true);
             for ($i = 0; $i < $totalChunks; $i++) {
                 $partPath = $chunksFolder . '/part_' . $i;
-                if (file_exists($partPath)) {
-                    $input = fopen($partPath, 'rb');
-                    if ($input) {
-                        stream_copy_to_stream($input, $output);
-                        fclose($input);
-                    }
-                    @unlink($partPath);
+                if (!file_exists($partPath) || filesize($partPath) <= 0) {
+                    fclose($output);
+                    @unlink($finalPath);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "الجزء رقم {$i} غير مكتمل أو فارغ على السيرفر. يرجى استئناف الرفع."
+                    ], 422);
                 }
+                $input = fopen($partPath, 'rb');
+                if ($input) {
+                    stream_copy_to_stream($input, $output);
+                    fclose($input);
+                }
+                @unlink($partPath);
             }
             fflush($output);
             fclose($output);
             @rmdir($chunksFolder);
 
+            clearstatcache(true, $finalPath);
             $fileSizeBytes = file_exists($finalPath) ? filesize($finalPath) : 0;
+            if ($fileSizeBytes <= 1000) {
+                @unlink($finalPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل دمج أجزاء الفيديو (الحجم النهائي 0 بايت). يرجى إعادة الرفع.'
+                ], 500);
+            }
+
             if ($fileSizeBytes >= 1073741824) {
                 $formattedSize = round($fileSizeBytes / 1073741824, 2) . ' GB';
             } elseif ($fileSizeBytes >= 1048576) {
@@ -925,12 +948,39 @@ class VideographerContentController extends Controller
                 $formattedSize = round($fileSizeBytes / 1024) . ' KB';
             }
 
+            $relativeStoragePath = $relativeDir . '/' . $finalFilename;
+
+            // التخزين السحابي على Supabase عبر Stream آمن لحفظ ملفات المصور
+            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
+                try {
+                    $supabaseKey = $relativeDir . '/' . $finalFilename;
+                    $fp = fopen($finalPath, 'rb');
+                    if ($fp) {
+                        $stored = Storage::disk('supabase')->put($supabaseKey, $fp);
+                        if (is_resource($fp)) {
+                            fclose($fp);
+                        }
+                        if ($stored && Storage::disk('supabase')->exists($supabaseKey)) {
+                            $uploadedSize = Storage::disk('supabase')->size($supabaseKey);
+                            if ($uploadedSize > 100) {
+                                $relativeStoragePath = Storage::disk('supabase')->url($supabaseKey);
+                            } else {
+                                Storage::disk('supabase')->delete($supabaseKey);
+                                \Log::warning("Supabase videographer upload resulted in 0 bytes for {$finalFilename}");
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    \Log::warning('Supabase sync skipped for videographer video: ' . $e->getMessage());
+                }
+            }
+
             return response()->json([
                 'success'             => true,
                 'done'                => true,
                 'completed'           => true,
-                'file_path'           => $relativeDir . '/' . $finalFilename,
-                'uploaded_video_path' => $relativeDir . '/' . $finalFilename,
+                'file_path'           => $relativeStoragePath,
+                'uploaded_video_path' => $relativeStoragePath,
                 'formatted_size'      => $formattedSize,
                 'message'             => 'تم اكتمال رفع ودمج الفيديو بنجاح',
             ]);

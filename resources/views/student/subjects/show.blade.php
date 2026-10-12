@@ -1498,13 +1498,18 @@ video::-webkit-media-controls-download-button {
                                                 <i class="fa-solid fa-triangle-exclamation"></i>
                                             </div>
                                             <div>
-                                                <h4 style="margin: 0 0 6px; font-size: 0.98rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر بث الفيديو في المشغل المباشر') }}</h4>
-                                                <p style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 420px; line-height: 1.5;">{{ __('يمكنك إعادة المحاولة أو فتح الفيديو عبر الرابط المباشر.') }}</p>
+                                                <h4 id="player_err_h4_{{ $video->id }}" style="margin: 0 0 6px; font-size: 0.98rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر بث الفيديو في المشغل المباشر') }}</h4>
+                                                <p id="player_err_p_{{ $video->id }}" style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 420px; line-height: 1.5;">{{ __('يمكنك إعادة المحاولة أو فتح الفيديو عبر الرابط المباشر.') }}</p>
                                             </div>
-                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
                                                 <button type="button" onclick="retryStudentVideo('{{ $video->id }}')" style="background: #2563eb; color: #fff; border: none; padding: 7px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                                                     <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
                                                 </button>
+                                                @if(!empty($video->pdf_path))
+                                                    <a href="{{ route('content.download', $video->id) }}" style="background: #059669; color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                                        <i class="fa-solid fa-file-pdf"></i> {{ __('تحميل ملزمة الدرس PDF') }}
+                                                    </a>
+                                                @endif
                                                 @if($directVideoFallback)
                                                     <a href="{{ $directVideoFallback }}" target="_blank" style="background: rgba(255,255,255,0.1); color: #cbd5e1; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
                                                         {{ __('فتح الرابط المباشر') }}
@@ -2238,22 +2243,25 @@ function handleStudentVideoError(videoEl, videoId) {
     console.warn('Student video error:', videoId, videoEl.currentSrc || videoEl.src);
 
     const curSrc = videoEl.currentSrc || videoEl.src || '';
-    if (curSrc.includes('/video-stream/')) {
-        const parts = curSrc.split('/video-stream/');
-        const cleanPath = parts[parts.length - 1];
-        const directUrl = '/storage/educational/videos/' + cleanPath.replace(/^educational\/videos\//, '');
-        if (videoEl.src !== window.location.origin + directUrl) {
-            console.log('Falling back student video player to direct storage URL:', directUrl);
-            videoEl.src = directUrl;
-            videoEl.load();
-            videoEl.play().catch(() => {});
-            return;
-        }
-    }
-
     const errBox = document.getElementById(`player_err_${videoId}`);
+    const errH4 = document.getElementById(`player_err_h4_${videoId}`);
+    const errP = document.getElementById(`player_err_p_${videoId}`);
+
     if (errBox) {
         errBox.style.display = 'flex';
+    }
+
+    if (curSrc) {
+        fetch(curSrc, { method: 'GET', headers: { 'Accept': 'application/json' } })
+            .then(res => {
+                if (res.status === 422) {
+                    return res.json().then(data => {
+                        if (errH4) errH4.textContent = 'ملف هذا الدرس غير مكتمل على السيرفر (0 بايت)';
+                        if (errP) errP.textContent = data.message || 'عذراً، ملف هذا الدرس غير مكتمل في التخزين (حجمه 0 بايت). بإمكانك تحميل ملزمة الدرس PDF ريثما يقوم المعلم بإعادة رفع الفيديو.';
+                    });
+                }
+            })
+            .catch(() => {});
     }
 }
 

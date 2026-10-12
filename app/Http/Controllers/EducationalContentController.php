@@ -226,6 +226,12 @@ class EducationalContentController extends Controller
         }
 
         $chunk = $request->file('chunk');
+        if (!$chunk || !$chunk->isValid() || $chunk->getSize() <= 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'ملف الجزء المرسل تالف أو فارغ (0 بايت). يرجى إعادة المحاولة.'
+            ], 422);
+        }
         $chunk->move($chunksFolder, 'part_' . $chunkIndex);
 
         // التحقق من اكتمال استلام كافة الأجزاء
@@ -259,23 +265,39 @@ class EducationalContentController extends Controller
                 return response()->json(['success' => false, 'message' => 'تعذر فتح مسار دمج الفيديو على السيرفر.'], 500);
             }
 
-            // الدمج المباشر عبر تدفقات النظام (stream_copy_to_stream) لكفاءة خارقة في ملفات الجيجابايت
+            // الدمج المباشر عبر تدفقات النظام مع التحقق الصارم من سلامة كل جزء
+            clearstatcache(true);
             for ($i = 0; $i < $totalChunks; $i++) {
                 $partPath = $chunksFolder . '/part_' . $i;
-                if (file_exists($partPath)) {
-                    $input = fopen($partPath, 'rb');
-                    if ($input) {
-                        stream_copy_to_stream($input, $output);
-                        fclose($input);
-                    }
-                    @unlink($partPath);
+                if (!file_exists($partPath) || filesize($partPath) <= 0) {
+                    fclose($output);
+                    @unlink($finalPath);
+                    return response()->json([
+                        'success' => false,
+                        'message' => "الجزء رقم {$i} غير مكتمل أو فارغ على السيرفر. يرجى استئناف الرفع."
+                    ], 422);
                 }
+                $input = fopen($partPath, 'rb');
+                if ($input) {
+                    stream_copy_to_stream($input, $output);
+                    fclose($input);
+                }
+                @unlink($partPath);
             }
             fflush($output);
             fclose($output);
             @rmdir($chunksFolder);
 
+            clearstatcache(true, $finalPath);
             $fileSizeBytes = file_exists($finalPath) ? filesize($finalPath) : 0;
+            if ($fileSizeBytes <= 1000) {
+                @unlink($finalPath);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'فشل دمج أجزاء الفيديو (الحجم النهائي 0 بايت). يرجى إعادة الرفع.'
+                ], 500);
+            }
+
             if ($fileSizeBytes >= 1073741824) {
                 $formattedSize = round($fileSizeBytes / 1073741824, 2) . ' GB';
             } elseif ($fileSizeBytes >= 1048576) {
@@ -286,12 +308,25 @@ class EducationalContentController extends Controller
 
             $relativeStoragePath = $relativeDir . '/' . $finalFilename;
 
-            // بالنسبة للتخزين السحابي: لا نرفع الملفات الضخمة بالجيجابايت في نفس الطلب لتفادي مهلة HTTP أو سعة سوبابيز المجانية (50MB)
-            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key')) && $fileSizeBytes < 45 * 1024 * 1024) {
+            // التخزين السحابي على Supabase عبر Stream آمن لمنع الملفات الصفرية
+            if (!app()->environment('testing') && !empty(config('filesystems.disks.supabase.key'))) {
                 try {
-                    $supabasePath = Storage::disk('supabase')->putFileAs($relativeDir, new \Illuminate\Http\File($finalPath), $finalFilename);
-                    if ($supabasePath) {
-                        $relativeStoragePath = Storage::disk('supabase')->url($supabasePath);
+                    $supabaseKey = $relativeDir . '/' . $finalFilename;
+                    $fp = fopen($finalPath, 'rb');
+                    if ($fp) {
+                        $stored = Storage::disk('supabase')->put($supabaseKey, $fp);
+                        if (is_resource($fp)) {
+                            fclose($fp);
+                        }
+                        if ($stored && Storage::disk('supabase')->exists($supabaseKey)) {
+                            $uploadedSize = Storage::disk('supabase')->size($supabaseKey);
+                            if ($uploadedSize > 100) {
+                                $relativeStoragePath = Storage::disk('supabase')->url($supabaseKey);
+                            } else {
+                                Storage::disk('supabase')->delete($supabaseKey);
+                                \Log::warning("Supabase video upload resulted in 0 bytes for {$finalFilename}");
+                            }
+                        }
                     }
                 } catch (\Throwable $e) {
                     \Log::warning('Supabase sync skipped for video: ' . $e->getMessage());
@@ -1208,8 +1243,55 @@ class EducationalContentController extends Controller
             return redirect()->back()->with('info', 'هذا الشرح المرئي من YouTube ومتاح للمشاهدة المباشرة والأوفلاين داخل المنصة.');
         }
 
-        // 3. فحص التخزين السحابي أو الروابط المباشرة
+        // 3. فحص التخزين السحابي Supabase أو الروابط المباشرة
         $rawUrl = $content->url_path;
+        $baseName = basename($rawUrl);
+        $supabaseKey = 'educational/videos/' . $baseName;
+
+        try {
+            if (!empty(config('filesystems.disks.supabase.key')) && Storage::disk('supabase')->exists($supabaseKey)) {
+                $s3Size = Storage::disk('supabase')->size($supabaseKey);
+                if ($s3Size <= 100) {
+                    if ($isInternalXhr) {
+                        return response()->json([
+                            'success'   => false,
+                            'corrupted' => true,
+                            'message'   => 'ملف هذا الدرس غير مكتمل في التخزين السحابي (0 بايت). يرجى من المعلم إعادة رفع الفيديو.'
+                        ], 422, [
+                            'Access-Control-Allow-Origin' => '*',
+                            'Content-Type' => 'application/json'
+                        ]);
+                    }
+                    return redirect()->back()->with('error', 'ملف هذا الدرس غير مكتمل في التخزين السحابي (0 بايت). يرجى من المعلم إعادة رفع الفيديو.');
+                }
+
+                $s3Stream = Storage::disk('supabase')->readStream($supabaseKey);
+                if ($s3Stream && is_resource($s3Stream)) {
+                    $disposition = ($isStaff && request()->query('force_download') === '1')
+                        ? 'attachment; filename="' . $fileName . '"'
+                        : 'inline';
+
+                    return response()->stream(function () use ($s3Stream) {
+                        while (ob_get_level()) {
+                            ob_end_clean();
+                        }
+                        fpassthru($s3Stream);
+                        fclose($s3Stream);
+                    }, 200, [
+                        'Content-Type'                 => 'video/mp4',
+                        'Content-Length'               => $s3Size,
+                        'Accept-Ranges'                => 'bytes',
+                        'Content-Disposition'          => $disposition,
+                        'Access-Control-Allow-Origin'  => '*',
+                        'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                        'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::warning('EducationalContentController downloadVideo Supabase stream failed: ' . $e->getMessage());
+        }
+
         $resolvedUrl = (filter_var($rawUrl, FILTER_VALIDATE_URL)) ? $rawUrl : \App\Support\MediaHelper::url($rawUrl);
         if (!empty($resolvedUrl) && filter_var($resolvedUrl, FILTER_VALIDATE_URL)) {
             if ($isStaff) {
@@ -1222,7 +1304,7 @@ class EducationalContentController extends Controller
                     'message' => 'تم العثور على رابط المحتوى.',
                 ], 200);
             }
-            return redirect()->back()->with('info', 'هذا الشرح المرئي متاح للمشاهدة المباشرة وحفظه أوفلاين داخل المنصة.');
+            return redirect()->away($resolvedUrl);
         }
 
         if ($isInternalXhr) {

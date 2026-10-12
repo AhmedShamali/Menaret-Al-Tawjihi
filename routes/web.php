@@ -102,6 +102,9 @@ Route::match(['get', 'head', 'options'], '/video-stream/{filename}', [VideoContr
     ->where('filename', '.*')
     ->name('video.stream');
 
+Route::match(['get', 'head', 'options'], '/video/stream/{filename}', [VideoController::class, 'stream'])
+    ->where('filename', '.*');
+
 // واجهة الفيديوهات والدروس المحملة أوفلاين بدون نت للتطبيق والمتصفح
 Route::get('/offline-videos', [DashboardController::class, 'offlineVideos'])->name('offline.videos');
 
