@@ -1267,16 +1267,36 @@ html[dir="ltr"] .ai-widget-panel {
     }
 
     // 10. إضافة رد الذكاء الاصطناعي مع دعم Markdown و KaTeX
+    // 10. إضافة رد الذكاء الاصطناعي مع دعم Markdown و KaTeX وتنظيف أي وسوم ميتا
     function appendAssistantMessage(rawText, provider) {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'ai-message ai-message-assistant';
 
+        let cleanText = (rawText || '').trim();
+        // إزالة أي وسوم تفكير داخلية مسربة
+        cleanText = cleanText.replace(/<think>[\s\S]*?<\/think>/gi, '');
+        cleanText = cleanText.replace(/<think>[\s\S]*$/gi, '');
+        // إزالة أي مسودات ميتا في بداية النص
+        cleanText = cleanText.replace(/^[-*•]?\s*المستخدم يسأل[^\n.!?]*[.!?]?\s*/gi, '');
+        cleanText = cleanText.replace(/^[-*•]?\s*الرد يجب أن يكون[^\n.!?]*[.!?]?\s*/gi, '');
+        cleanText = cleanText.replace(/^[-*•]?\s*الرد يجب[^\n.!?]*[.!?]?\s*/gi, '');
+
+        // استخراج أي اقتراحات ذكية إن وجدت لعرضها كأزرار أنيقة، مع إزالة الوسم الخام من النص
+        let suggestions = [];
+        const suggMatch = cleanText.match(/---SUGGESTIONS---\s*(\[[\s\S]*?\])/i);
+        if (suggMatch) {
+            try {
+                suggestions = JSON.parse(suggMatch[1]);
+            } catch (e) {}
+        }
+        cleanText = cleanText.replace(/---SUGGESTIONS---[\s\S]*$/gi, '').trim();
+
         // تنسيق Markdown مع حماية صيغ LaTeX للرياضيات
-        let renderedHtml = rawText;
+        let renderedHtml = cleanText;
         if (typeof marked !== 'undefined') {
             try {
                 const mathTokens = [];
-                let processed = rawText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+                let processed = cleanText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
                     const id = `@@MATH_BLOCK_${mathTokens.length}@@`;
                     mathTokens.push({ id, original: match });
                     return id;
@@ -1303,10 +1323,19 @@ html[dir="ltr"] .ai-widget-panel {
                 });
                 renderedHtml = parsedHtml;
             } catch (e) {
-                renderedHtml = escapeHtml(rawText).replace(/\n/g, '<br>');
+                renderedHtml = escapeHtml(cleanText).replace(/\n/g, '<br>');
             }
         } else {
-            renderedHtml = escapeHtml(rawText).replace(/\n/g, '<br>');
+            renderedHtml = escapeHtml(cleanText).replace(/\n/g, '<br>');
+        }
+
+        let suggestionsHtml = '';
+        if (Array.isArray(suggestions) && suggestions.length > 0) {
+            suggestionsHtml = `
+                <div class="ai-widget-suggestions" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">
+                    ${suggestions.map(s => `<button type="button" class="ai-quick-pill" onclick="window.sendAiWidgetSuggestion('${escapeHtml(s).replace(/'/g, "\\'")}')" style="font-size: 0.78rem; padding: 4px 10px;"><i class="fa-regular fa-lightbulb"></i> ${escapeHtml(s)}</button>`).join('')}
+                </div>
+            `;
         }
 
         const msgId = 'aiMsg_' + Date.now();
@@ -1322,6 +1351,7 @@ html[dir="ltr"] .ai-widget-panel {
                 </div>
                 <div class="ai-msg-body" id="${msgId}">
                     ${renderedHtml}
+                    ${suggestionsHtml}
                 </div>
                 <div class="ai-msg-actions">
                     <button type="button" class="ai-msg-action-btn" title="نسخ الإجابة" onclick="copyAiText('${msgId}')">
@@ -1341,6 +1371,13 @@ html[dir="ltr"] .ai-widget-panel {
 
         scrollToBottom();
     }
+
+    window.sendAiWidgetSuggestion = function(text) {
+        if (!promptInput) return;
+        promptInput.value = text;
+        promptInput.focus();
+        handleSendMessage();
+    };
 
     // تصيير KaTeX بأمان بنمط ChatGPT
     function renderMathInElementSafe(element) {
