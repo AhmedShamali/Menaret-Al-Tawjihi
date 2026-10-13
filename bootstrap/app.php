@@ -32,6 +32,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'teacher/educational_contents/*',
             'contents/*',
             'api/*',
+            'ai/*',
+            'ai-hub/*',
         ]);
 
         // ضبط لغة المنصة تلقائياً للمستخدم (عربي / English)

@@ -110,7 +110,7 @@ class VideographerPortalTest extends TestCase
     public function test_multi_branch_auto_distribution_engine()
     {
         $videographer = User::create([
-            'name'     => 'المصور أحمد الشملي',
+            'name'     => 'المصور أحمد شمالي',
             'email'    => 'ahmed.cam@jesr.ps',
             'password' => Hash::make('secret123'),
             'role'     => 'videographer',

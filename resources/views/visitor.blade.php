@@ -172,6 +172,19 @@
             background: var(--primary-light);
         }
 
+        .btn-visitor-app-download {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .btn-visitor-app-download:hover {
+            background: #dcfce7 !important;
+            color: #166534 !important;
+            border-color: #86efac;
+        }
+
         .btn-register-header {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: #fff !important;
@@ -392,7 +405,10 @@
         }
 
         @media (max-width: 520px) {
-            header.visitor-header .btn-header-link:not([href*="login"]) {
+            header.visitor-header .btn-header-link:not([href*="login"]):not(.btn-visitor-app-download) {
+                display: none;
+            }
+            .btn-visitor-app-download span:last-child {
                 display: none;
             }
             .brand-logo { font-size: 1.05rem; gap: 8px; }
@@ -416,6 +432,17 @@
         </a>
 
         <div class="header-actions">
+            <button type="button" 
+                    class="btn-header-link btn-visitor-app-download" 
+                    onclick="triggerPwaInstall()" 
+                    title="{{ __('تحميل وتثبيت تطبيق Step by Step على هاتفك أو حاسوبك') }}"
+                    aria-label="{{ __('تحميل التطبيق') }}">
+                <span style="position: relative; display: inline-flex; align-items: center;">
+                    <i class="fa-solid fa-mobile-screen-button" style="color: #16a34a;"></i>
+                    <span style="position: absolute; bottom: -4px; right: -5px; width: 11px; height: 11px; background: #16a34a; color: #fff; font-size: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid #fff;"><i class="fa-solid fa-arrow-down"></i></span>
+                </span>
+                <span>{{ __('تطبيق المنصة') }}</span>
+            </button>
             <a href="{{ route('tawjihi.calculator') }}" class="btn-header-link">
                 <i class="fa-solid fa-calculator" style="color: #0284c7;"></i>{{ __('حاسبة المعدل') }}</a>
             <a href="{{ route('tawjihi.archive') }}" class="btn-header-link">
@@ -576,6 +603,8 @@
     <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
+    <!-- المعلم الأكاديمي الذكي العائم -->
+    @include('partials.ai_widget')
 
     @include('partials.mobile_app_pwa')
 </body>

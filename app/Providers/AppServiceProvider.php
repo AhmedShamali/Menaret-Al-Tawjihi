@@ -19,7 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('app.env') === 'production' || str_contains(config('app.url'), 'https://') || request()->server('HTTP_X_FORWARDED_PROTO') === 'https') {
+        $host = request()->getHost();
+        $isLocalHost = in_array($host, ['localhost', '127.0.0.1']) || str_starts_with($host, '192.168.') || str_starts_with($host, '10.');
+        if (!$isLocalHost && (config('app.env') === 'production' || str_contains(config('app.url'), 'https://') || request()->server('HTTP_X_FORWARDED_PROTO') === 'https')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 

@@ -507,6 +507,81 @@
             transform: translateY(0);
         }
 
+        /* زر تحميل وتثبيت تطبيق الجوال الملكي */
+        .btn-royal-app-download {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            color: #1d4ed8;
+            border: 1.5px solid #bfdbfe;
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .btn-royal-app-download:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+            border-color: #93c5fd;
+            color: #1e40af;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.16);
+        }
+        .royal-app-icon-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: #2563eb;
+        }
+        .royal-app-arrow-badge {
+            position: absolute;
+            bottom: -3px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 7px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #ffffff;
+            animation: bounceMiniArrow 2s infinite ease-in-out;
+        }
+        @keyframes bounceMiniArrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+        .drawer-app-install-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+            border: 1.5px solid #bbf7d0;
+            color: #15803d;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .drawer-app-install-btn:hover {
+            background: linear-gradient(135deg, #dcfce7 0%, #dbeafe 100%);
+            border-color: #86efac;
+            color: #166534;
+        }
+
         .royal-mobile-toggle {
             display: none;
             background: #ffffff;
@@ -2135,6 +2210,20 @@
             .btn-royal-gold .label-short {
                 display: inline !important;
             }
+            .royal-nav-actions .btn-royal-app-download {
+                display: inline-flex !important;
+                height: 34px !important;
+                width: 34px !important;
+                padding: 0 !important;
+                justify-content: center !important;
+                align-items: center !important;
+                border-radius: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            .royal-nav-actions .btn-royal-app-download .label-full,
+            .royal-nav-actions .btn-royal-app-download .label-short {
+                display: none !important;
+            }
 
             /* 3. شريط الإعلانات والتعاميم: مدمج ومنظم على سطرين */
             .royal-ticker-bar {
@@ -2521,6 +2610,11 @@
                             </a>
                         </div>
                     @endif
+                    <button type="button" class="drawer-app-install-btn" onclick="triggerPwaInstall()">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span>{{ __('تثبيت تطبيق المنصة على هاتفك') }}</span>
+                        <i class="fa-solid fa-cloud-arrow-down" style="margin-right: auto; color: #16a34a;"></i>
+                    </button>
                 </li>
                 <li class="royal-nav-item"><a href="{{ route('home') }}" class="royal-nav-link active"><i class="fa-solid fa-house-chimney"></i> {{ __('الرئيسية') }}</a></li>
                 <li class="royal-nav-item"><a href="#branches" class="royal-nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
@@ -2534,6 +2628,19 @@
             </ul>
 
             <div class="royal-nav-actions">
+                <!-- زر تحميل وتثبيت تطبيق الجوال -->
+                <button type="button" 
+                        class="btn-royal-app-download" 
+                        onclick="triggerPwaInstall()" 
+                        title="{{ __('تحميل وتثبيت تطبيق Step by Step على هاتفك أو حاسوبك') }}"
+                        aria-label="{{ __('تحميل التطبيق') }}">
+                    <span class="royal-app-icon-wrap">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span class="royal-app-arrow-badge"><i class="fa-solid fa-arrow-down"></i></span>
+                    </span>
+                    <span class="label-full">{{ __('تطبيق الجوال') }}</span>
+                    <span class="label-short" style="display: none;">{{ __('التطبيق') }}</span>
+                </button>
                 @if(Auth::guard('student')->check() || Auth::check())
                     <a href="{{ route('dashboard') }}" class="btn-royal-gold" title="{{ __('لوحة التحكم') }}">
                         <i class="fa-solid fa-gauge-high"></i>
@@ -3755,6 +3862,9 @@
     <button type="button" class="ed-scroll-top-btn" id="edScrollTopBtn" aria-label="{{ __('العودة إلى بداية الصفحة') }}" title="{{ __('العودة للأعلى') }}" onclick="scrollToPageTop()">
         <i class="fa-solid fa-chevron-up"></i>
     </button>
+
+    <!-- المعلم الأكاديمي الذكي العائم -->
+    @include('partials.ai_widget')
 
     <!-- شريط التنقل السفلي وبانر التثبيت لتطبيق الجوال (PWA) -->
     @include('partials.mobile_app_pwa')

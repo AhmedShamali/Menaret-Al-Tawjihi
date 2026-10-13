@@ -725,6 +725,20 @@
                     <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
 
+                <!-- زر تحميل وتثبيت تطبيق المنصة -->
+                <button type="button" 
+                        onclick="triggerPwaInstall()" 
+                        class="nav-link-btn" 
+                        style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; cursor: pointer; font-family: inherit;"
+                        title="{{ __('تحميل وتثبيت تطبيق Step by Step على هاتفك أو حاسوبك') }}"
+                        aria-label="{{ __('تحميل التطبيق') }}">
+                    <span style="position: relative; display: inline-flex; align-items: center;">
+                        <i class="fa-solid fa-mobile-screen-button" style="color: #16a34a;"></i>
+                        <span style="position: absolute; bottom: -3px; right: -5px; width: 11px; height: 11px; background: #16a34a; color: #fff; font-size: 6px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid #fff;"><i class="fa-solid fa-arrow-down"></i></span>
+                    </span>
+                    <span>{{ __('تطبيق المنصة') }}</span>
+                </button>
+
                 <a href="/" class="nav-link-btn"><i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i> {{ __('الرئيسية') }}</a>
                 <a href="{{ route('login') }}" class="nav-link-btn primary"><i class="fas fa-arrow-right-to-bracket"></i> {{ __('تسجيل الدخول') }}</a>
             </div>

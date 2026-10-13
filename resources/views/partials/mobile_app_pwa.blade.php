@@ -24,7 +24,7 @@
     @if(Auth::guard('student')->check() || Auth::check())
         <a href="{{ route('ai.hub') }}" class="nav-tab {{ request()->is('ai-hub*') ? 'active' : '' }}">
             <div class="nav-tab-icon" style="color: #2563eb;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-            <span class="nav-tab-label">{{ __('المعلم AI') }}</span>
+            <span class="nav-tab-label">{{ __('Step AI') }}</span>
         </a>
     @endif
     <a href="{{ route('offline.videos') }}" class="nav-tab {{ request()->is('*offline*') ? 'active' : '' }}" id="bottomNavOfflineBtn" title="{{ __('دروسي المحفوظة أوفلاين بدون نت') }}">
@@ -71,6 +71,22 @@
             </button>
         </div>
     </div>
+</aside>
+
+<!-- 2.1 الأيقونة العائمة الصغيرة لتحميل وتثبيت التطبيق (Floating App Download Quick FAB) -->
+<aside class="stepvoro-app-fab-wrap" id="stepvoroGlobalAppFabWrap" style="display: none;" aria-label="{{ __('تحميل تطبيق Step by Step') }}">
+    <button type="button" 
+            class="stepvoro-app-fab-btn" 
+            id="stepvoroGlobalAppFab" 
+            onclick="triggerPwaInstall()" 
+            title="{{ __('تحميل وتثبيت تطبيق المنصة على هاتفك أو حاسوبك') }}" 
+            aria-label="{{ __('تحميل التطبيق') }}">
+        <div class="fab-icon-core">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+            <span class="fab-download-arrow"><i class="fa-solid fa-arrow-down"></i></span>
+        </div>
+        <span class="fab-text-chip">{{ __('تحميل التطبيق') }}</span>
+    </button>
 </aside>
 
 <!-- 3. نافذة التثبيت الشاملة لجميع الأجهزة (Universal App Install Modal) -->
@@ -1224,6 +1240,124 @@ body.in-chat-mode .stepvoro-bottom-nav,
     transform: translateX(-50%) translateY(0);
     pointer-events: auto;
 }
+
+/* ==========================================================================
+   الأيقونة العائمة لتحميل وتثبيت التطبيق (Floating App Download FAB)
+   ========================================================================== */
+.stepvoro-app-fab-wrap {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 996;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+html[dir="ltr"] .stepvoro-app-fab-wrap {
+    right: auto;
+    left: 24px;
+}
+.stepvoro-app-fab-btn {
+    background: linear-gradient(135deg, #0b3b6f 0%, #1e40af 100%);
+    color: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50px;
+    padding: 6px 14px 6px 9px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 18px rgba(11, 59, 111, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.15);
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+html[dir="ltr"] .stepvoro-app-fab-btn {
+    padding: 6px 9px 6px 14px;
+}
+.stepvoro-app-fab-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(30, 64, 175, 0.45);
+    background: linear-gradient(135deg, #092c55 0%, #2563eb 100%);
+}
+.stepvoro-app-fab-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+.fab-icon-core {
+    position: relative;
+    width: 28px;
+    height: 28px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    color: #ffffff;
+    flex-shrink: 0;
+}
+.fab-download-arrow {
+    position: absolute;
+    bottom: -3px;
+    right: -4px;
+    width: 13px;
+    height: 13px;
+    background: #10b981;
+    color: #ffffff;
+    font-size: 7px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #0b3b6f;
+    animation: fabBounceArrow 2s infinite ease-in-out;
+}
+@keyframes fabBounceArrow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+.fab-text-chip {
+    font-size: 0.8rem;
+    font-weight: 800;
+    white-space: nowrap;
+    letter-spacing: -0.1px;
+}
+
+/* إخفاء عناصر التحميل الترويجي عند تشغيل التطبيق في وضع Standalone */
+body.in-standalone-app .stepvoro-app-fab-wrap,
+body.in-standalone-app .topbar-app-download-btn,
+body.in-standalone-app .sidebar-app-promo,
+body.in-standalone-app .btn-royal-app-download,
+body.in-standalone-app .drawer-app-install-btn,
+body.in-standalone-app .btn-visitor-app-download,
+body.in-standalone-app .stepvoro-install-banner {
+    display: none !important;
+}
+
+/* توافق الشاشات الصغيرة للهواتف مع شريط التنقل السفلي */
+@media (max-width: 768px) {
+    .stepvoro-app-fab-wrap {
+        bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+        right: 14px;
+    }
+    html[dir="ltr"] .stepvoro-app-fab-wrap {
+        right: auto;
+        left: 14px;
+    }
+    .stepvoro-app-fab-btn {
+        padding: 6px 11px 6px 7px;
+        box-shadow: 0 4px 14px rgba(11, 59, 111, 0.3);
+    }
+    html[dir="ltr"] .stepvoro-app-fab-btn {
+        padding: 6px 7px 6px 11px;
+    }
+    .fab-icon-core {
+        width: 25px;
+        height: 25px;
+        font-size: 0.85rem;
+    }
+    .fab-text-chip {
+        font-size: 0.75rem;
+    }
+}
 </style>
 
 <!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
@@ -1400,15 +1534,18 @@ body.in-chat-mode .stepvoro-bottom-nav,
 
     // تشغيل طلب التثبيت الرسمي عند الضغط على زر التثبيت المباشر
     function executeNativeInstallPrompt() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
+        const activePrompt = deferredPrompt || window.deferredPwaPrompt || window.deferredPrompt;
+        if (activePrompt) {
+            activePrompt.prompt();
+            activePrompt.userChoice.then((choiceResult) => {
+                if (choiceResult && choiceResult.outcome === 'accepted') {
                     dismissPwaBanner();
                     closeInstallModal();
                     showPwaToast('جاري تثبيت تطبيق Step by Step على جهازك...', 'success');
                 }
                 deferredPrompt = null;
+                window.deferredPwaPrompt = null;
+                window.deferredPrompt = null;
             });
         } else {
             showPwaToast('يرجى اتباع الخطوات الموضحة في النافذة لإكمال التثبيت على متصفحك.', 'info');
@@ -1422,14 +1559,17 @@ body.in-chat-mode .stepvoro-bottom-nav,
             return;
         }
 
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
+        const activePrompt = deferredPrompt || window.deferredPwaPrompt || window.deferredPrompt;
+        if (activePrompt) {
+            activePrompt.prompt();
+            activePrompt.userChoice.then((choiceResult) => {
+                if (choiceResult && choiceResult.outcome === 'accepted') {
                     dismissPwaBanner();
                     showPwaToast('جاري تثبيت تطبيق Step by Step على جهازك...', 'success');
                 }
                 deferredPrompt = null;
+                window.deferredPwaPrompt = null;
+                window.deferredPrompt = null;
             });
         } else {
             openInstallModal();
@@ -1859,6 +1999,8 @@ body.in-chat-mode .stepvoro-bottom-nav,
     // إخفاء خيارات التثبيت تلقائياً عند تشغيل التطبيق في وضع Standalone
     window.addEventListener('appinstalled', () => {
         dismissPwaBanner();
+        const fab = document.getElementById('stepvoroGlobalAppFabWrap');
+        if (fab) fab.style.display = 'none';
     });
 
     if (isStandalone) {
@@ -1867,6 +2009,11 @@ body.in-chat-mode .stepvoro-bottom-nav,
         if (b) b.style.display = 'none';
         const installBtn = document.getElementById('bottomNavInstallBtn');
         if (installBtn) installBtn.style.display = 'none';
+        const fab = document.getElementById('stepvoroGlobalAppFabWrap');
+        if (fab) fab.style.display = 'none';
+    } else {
+        const fab = document.getElementById('stepvoroGlobalAppFabWrap');
+        if (fab) fab.style.display = 'block';
     }
 
     function dismissOfflineNotice() {

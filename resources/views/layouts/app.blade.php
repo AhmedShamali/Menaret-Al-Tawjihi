@@ -221,6 +221,139 @@
             box-shadow: 0 3px 8px rgba(16, 185, 129, 0.12);
         }
 
+        /* زر تحميل وتثبيت تطبيق المنصة في الترويسة العلوية */
+        .topbar-app-download-btn {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            border: 1.5px solid #86efac;
+            color: #15803d;
+            height: 38px;
+            padding: 0 12px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.08);
+            font-family: inherit;
+        }
+        .topbar-app-download-btn:hover {
+            background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+            border-color: #4ade80;
+            color: #166534;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.16);
+        }
+        .topbar-app-download-btn .topbar-app-icon-badge {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            color: #16a34a;
+        }
+        .topbar-app-download-btn .app-download-mini-arrow {
+            position: absolute;
+            bottom: -3px;
+            right: -5px;
+            width: 12px;
+            height: 12px;
+            background: #16a34a;
+            color: #ffffff;
+            font-size: 7px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #ffffff;
+            animation: bounceMiniArrow 2s infinite ease-in-out;
+        }
+        @keyframes bounceMiniArrow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-2px); }
+        }
+
+        /* بطاقة تطبيق المنصة في الشريط الجانبي */
+        .sidebar-app-promo-card {
+            width: 100%;
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 9px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-align: right;
+            transition: all 0.25s ease;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);
+            font-family: inherit;
+        }
+        .sidebar-app-promo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.16);
+            border-color: #86efac;
+        }
+        .sidebar-app-promo-icon {
+            position: relative;
+            width: 32px;
+            height: 32px;
+            background: #ffffff;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #16a34a;
+            font-size: 1rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            flex-shrink: 0;
+        }
+        .app-promo-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            border: 1.5px solid #ffffff;
+            animation: pulseDot 2s infinite;
+        }
+        @keyframes pulseDot {
+            0% { transform: scale(0.9); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.6; }
+            100% { transform: scale(0.9); opacity: 1; }
+        }
+        .sidebar-app-promo-text {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            text-align: right;
+        }
+        .app-promo-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .app-promo-desc {
+            font-size: 0.68rem;
+            color: #15803d;
+            font-weight: 700;
+        }
+        .sidebar-app-promo-arrow {
+            color: #16a34a;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .sidebar-app-promo-card:hover .sidebar-app-promo-arrow {
+            transform: translateY(2px);
+        }
+
         .swal2-container {
             z-index: 1000000 !important;
             font-family: 'Tajawal', 'Alexandria', sans-serif !important;
@@ -1193,6 +1326,17 @@
                 font-size: 0.78rem !important;
                 border-radius: 8px !important;
                 gap: 5px !important;
+            }
+            .topbar-app-download-btn {
+                height: 36px !important;
+                width: 36px !important;
+                padding: 0 !important;
+                justify-content: center !important;
+                border-radius: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            .topbar-app-download-btn .topbar-app-text {
+                display: none !important;
             }
             #notificationsToggle {
                 width: 36px !important;
@@ -2886,6 +3030,14 @@
                             <span>{{ __('نبض وسجل النظام') }}</span>
                         </div>
                     </div>
+                <a href="{{ route('ai.hub') }}" class="nav-item {{ Request::is('ai-hub*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge" style="background: linear-gradient(135deg, #004b93, #2563eb); color: #ffffff;"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span style="font-weight: 700;">{{ __('Step by Step Ai (الإدارة)') }}</span>
+                        </div>
+                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid #bfdbfe;">AI Pro</span>
+                    </div>
                 </a>
             @endif
 
@@ -2897,6 +3049,15 @@
                             <span class="nav-icon-badge badge-blue"><i class="fa-solid fa-gauge-high"></i></span>
                             <span>{{ __('لوحة التحكم الأكاديمية') }}</span>
                         </div>
+                    </div>
+                </a>
+                <a href="{{ route('ai.hub') }}" class="nav-item {{ Request::is('ai-hub*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge" style="background: linear-gradient(135deg, #004b93, #2563eb); color: #ffffff;"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span style="font-weight: 700;">{{ __('Step by Step Ai (المعلم)') }}</span>
+                        </div>
+                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid #bfdbfe;">AI Pro</span>
                     </div>
                 </a>
 
@@ -3013,6 +3174,15 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('ai.hub') }}" class="nav-item {{ Request::is('ai-hub*') ? 'active' : '' }}">
+                    <div class="nav-link">
+                        <div class="link-main">
+                            <span class="nav-icon-badge" style="background: linear-gradient(135deg, #004b93, #2563eb); color: #ffffff;"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                            <span style="font-weight: 700;">{{ __('Step by Step Ai (المصور)') }}</span>
+                        </div>
+                        <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid #bfdbfe;">AI Pro</span>
+                    </div>
+                </a>
             @endif
 
             @if(auth('student')->check() || (auth()->check() && auth()->user()->role === 'student'))
@@ -3087,7 +3257,7 @@
                     <div class="nav-link">
                         <div class="link-main">
                             <span class="nav-icon-badge" style="background: linear-gradient(135deg, #1d4ed8, #2563eb); color: #ffffff; box-shadow: 0 3px 8px rgba(29, 78, 216, 0.25);"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-                            <span style="font-weight: 700;">{{ __('المعلم الذكي AI') }}</span>
+                            <span style="font-weight: 700;">{{ __('Step by Step Ai') }}</span>
                         </div>
                         <span style="background: #eff6ff; color: #1d4ed8; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; border: 1px solid #bfdbfe;">جديد</span>
                     </div>
@@ -3127,6 +3297,26 @@
                     </div>
                 </a>
             @endif
+
+            <!-- رابط تثبيت تطبيق المنصة في القائمة الجانبية -->
+            <div class="sidebar-app-promo-wrap" style="padding: 10px 14px 6px;">
+                <button type="button" 
+                        class="sidebar-app-promo-card" 
+                        onclick="triggerPwaInstall()" 
+                        title="{{ __('تثبيت تطبيق Step by Step على هاتفك أو حاسوبك') }}">
+                    <div class="sidebar-app-promo-icon">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span class="app-promo-pulse"></span>
+                    </div>
+                    <div class="sidebar-app-promo-text">
+                        <strong class="app-promo-title">{{ __('تطبيق المنصة') }}</strong>
+                        <small class="app-promo-desc">{{ __('تثبيت مباشر وسريع ⚡') }}</small>
+                    </div>
+                    <div class="sidebar-app-promo-arrow">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                </button>
+            </div>
         </div>
 
         <div class="sidebar-footer">
@@ -3192,13 +3382,27 @@
                     <span>{{ $currentLocale === 'ar' ? 'EN' : 'AR' }}</span>
                 </a>
 
+                <!-- زر تحميل وتثبيت تطبيق المنصة -->
+                <button type="button" 
+                        onclick="triggerPwaInstall()" 
+                        class="topbar-app-download-btn" 
+                        id="topbarAppDownloadBtn"
+                        title="{{ __('تحميل وتثبيت تطبيق المنصة على هاتفك أو حاسوبك') }}"
+                        aria-label="{{ __('تحميل التطبيق') }}">
+                    <span class="topbar-app-icon-badge">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span class="app-download-mini-arrow"><i class="fa-solid fa-arrow-down"></i></span>
+                    </span>
+                    <span class="topbar-app-text">{{ __('تطبيق المنصة') }}</span>
+                </button>
+
                 @if(auth('student')->check() || auth()->check())
                 <!-- زر المعلم الأكاديمي الذكي في الترويسة العليا للمستخدمين -->
                 <a href="{{ route('ai.hub') }}" 
-                   title="{{ __('المعلم الأكاديمي الذكي AI') }}" 
+                   title="{{ __('Step by Step Ai | المساعد الذكي') }}" 
                    style="background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1.5px solid #bfdbfe; color: #1d4ed8; height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 800; transition: var(--transition-smooth); box-shadow: 0 2px 6px rgba(37,99,235,0.08);">
                     <i class="fa-solid fa-wand-magic-sparkles" style="color: #2563eb;"></i>
-                    <span>{{ __('المعلم الذكي') }}</span>
+                    <span>{{ __('Step by Step Ai') }}</span>
                     <span style="background: #dbeafe; color: #1e40af; font-size: 0.65rem; padding: 1px 5px; border-radius: 4px;">AI</span>
                 </a>
                 @endif

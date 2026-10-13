@@ -161,10 +161,15 @@ Route::post('/notifications/{id}/mark-read', [\App\Http\Controllers\Student\Noti
 // =========================================================================
 Route::get('/ai-hub', [\App\Http\Controllers\AiTutorController::class, 'index'])->name('ai.hub');
 Route::post('/ai/chat', [\App\Http\Controllers\AiTutorController::class, 'chat'])->name('ai.chat');
+Route::post('/ai/chat/stream', [\App\Http\Controllers\AiTutorController::class, 'chatStream'])->name('ai.chat.stream');
 Route::get('/ai/conversations', [\App\Http\Controllers\AiTutorController::class, 'getConversations'])->name('ai.conversations');
+Route::post('/ai/conversations', [\App\Http\Controllers\AiTutorController::class, 'createConversation'])->name('ai.conversation.create');
 Route::get('/ai/conversations/{id}', [\App\Http\Controllers\AiTutorController::class, 'getMessages'])->name('ai.conversation.messages');
+Route::post('/ai/conversations/{id}/rename', [\App\Http\Controllers\AiTutorController::class, 'renameConversation'])->name('ai.conversation.rename');
 Route::delete('/ai/conversations/{id}', [\App\Http\Controllers\AiTutorController::class, 'deleteConversation'])->name('ai.conversation.delete');
 Route::delete('/ai/conversations', [\App\Http\Controllers\AiTutorController::class, 'clearHistory'])->name('ai.conversations.clear');
+Route::post('/ai/feedback', [\App\Http\Controllers\AiTutorController::class, 'feedback'])->name('ai.feedback');
+
 
 
 /*

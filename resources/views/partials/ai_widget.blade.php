@@ -29,7 +29,11 @@
             'name' => (app()->getLocale() === 'en' && !empty($currentActorStaff->name_en)) ? $currentActorStaff->name_en : ($currentActorStaff->name ?? 'مستخدم المنصة'),
             'role' => $currentActorStaff->role ?? 'user',
             'id'   => $currentActorStaff->id,
-        ] : null);
+        ] : [
+            'name' => __('طالب / زائر المنصة'),
+            'role' => 'guest',
+            'id'   => 0,
+        ]);
     }
 @endphp
 
@@ -43,7 +47,7 @@
             <div class="ai-launcher-icon-wrap">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
             </div>
-            <span class="ai-launcher-label">{{ __('المعلم الذكي') }}</span>
+            <span class="ai-launcher-label">{{ __('Step by Step Ai') }}</span>
             <span class="ai-launcher-chip">AI</span>
         </button>
         <button type="button" id="aiWidgetDismissBtn" class="ai-launcher-dismiss-btn" title="{{ __('إخفاء مؤقت للزر العائم') }}" aria-label="{{ __('إخفاء مؤقت') }}">
@@ -62,10 +66,10 @@
                 </div>
                 <div class="ai-header-text">
                     <div class="ai-header-title-row">
-                        <h3 id="aiWidgetTitle" class="ai-header-title">{{ __('المعلم الأكاديمي الذكي') }}</h3>
-                        <span class="ai-badge-pro">Tawjihi AI</span>
+                        <h3 id="aiWidgetTitle" class="ai-header-title">Step by Step Ai</h3>
+                        <span class="ai-badge-pro">Smart AI</span>
                     </div>
-                    <p class="ai-header-subtitle">{{ __('يجيب على أي سؤال بالرموز العربية والإنجليزية') }}</p>
+                    <p class="ai-header-subtitle">{{ __('المساعد الأكاديمي الذكي لمنصة Step by Step') }}</p>
                 </div>
             </div>
 
@@ -122,7 +126,7 @@
                 </div>
                 <div class="ai-msg-content">
                     <div class="ai-msg-author">
-                        <span>المعلم الذكي</span>
+                        <span>Step by Step Ai</span>
                         <span class="ai-msg-time">{{ __('الآن') }}</span>
                     </div>
                     <div class="ai-msg-body">
@@ -199,9 +203,9 @@
 
 <!-- تضمين مكتبات KaTeX للرموز الرياضية والعلمية و marked.js لتنسيق النصوص -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
 /* =========================================================================
@@ -635,26 +639,92 @@ html[dir="ltr"] .ai-widget-panel {
 }
 .ai-msg-body code {
     background: #f1f5f9;
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-family: monospace;
-    font-size: 0.82rem;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.85rem;
     color: #0369a1;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    display: inline-block;
+    vertical-align: baseline;
 }
 .ai-message-user .ai-msg-body code {
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    display: inline-block;
 }
 .ai-msg-body pre {
     background: #0f172a;
     color: #f8fafc;
-    padding: 10px 12px;
-    border-radius: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
     overflow-x: auto;
-    font-size: 0.8rem;
-    margin: 8px 0;
-    direction: ltr;
-    text-align: left;
+    font-size: 0.84rem;
+    margin: 10px 0;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    text-align: left !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.ai-msg-body .katex, .ai-msg-body .katex-display, .ai-msg-body .katex *, .ai-msg-body .katex-display * {
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+}
+.ai-msg-body .katex-display {
+    display: block !important;
+    margin: 16px auto !important;
+    padding: 14px 18px !important;
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    overflow-x: auto !important;
+    text-align: center !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    max-width: 100% !important;
+    clear: both !important;
+}
+.ai-msg-body .katex-display > .katex {
+    display: inline-block !important;
+    font-size: 1.25rem !important;
+    color: #0f172a !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+    text-align: center !important;
+}
+.ai-msg-body .katex {
+    font-size: 1.12em !important;
+    display: inline-block !important;
+    padding: 0 3px !important;
+    vertical-align: -0.12em !important;
+    text-align: left !important;
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
+}
+.ai-msg-body .katex .mord.text,
+.ai-msg-body .katex .text,
+.ai-msg-body .katex .text * {
+    direction: rtl !important;
+    unicode-bidi: isolate !important;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif !important;
+}
+.ai-msg-body .katex .base,
+.ai-msg-body .katex .strut,
+.ai-msg-body .katex .mord,
+.ai-msg-body .katex .mbin,
+.ai-msg-body .katex .mrel,
+.ai-msg-body .katex .mopen,
+.ai-msg-body .katex .mclose,
+.ai-msg-body .katex .mpunct,
+.ai-msg-body .katex .minner,
+.ai-msg-body .katex .mfrac,
+.ai-msg-body .katex .msupsub,
+.ai-msg-body .katex .sqrt {
+    direction: ltr !important;
+    unicode-bidi: isolate !important;
 }
 .ai-msg-body pre code {
     background: transparent;
@@ -899,6 +969,13 @@ html[dir="ltr"] .ai-widget-panel {
     let isWaitingResponse = false;
     let speechRecognition = null;
 
+    function resolveApiUrl(path) {
+        const cleanPath = path.startsWith('/') ? path : '/' + path;
+        const subfolderMatch = window.location.pathname.match(/^(\/[^\/]+\/public|\/public)?/);
+        const prefix = (subfolderMatch && subfolderMatch[0]) ? subfolderMatch[0] : '';
+        return prefix + cleanPath;
+    }
+
     // عناصر الواجهة
     const container = document.getElementById('aiFloatingWidgetContainer');
     if (!container) return;
@@ -1091,6 +1168,18 @@ html[dir="ltr"] .ai-widget-panel {
 
         if (!text && !image) return;
 
+        // فحص هل هذه الرسالة الأولى في محادثة الويدجت وتجميع السجل
+        const existingMessages = Array.from(messagesArea.querySelectorAll('.ai-message')).map(msg => {
+            const isUser = msg.classList.contains('ai-message-user');
+            const body = msg.querySelector('.ai-msg-body');
+            return {
+                role: isUser ? 'user' : 'assistant',
+                content: body ? body.innerText.slice(0, 600) : ''
+            };
+        }).filter(m => m.content.length > 0);
+
+        const isFirstMessage = (existingMessages.length === 0);
+
         // إضافة رسالة المستخدم إلى الواجهة
         appendUserMessage(text, image);
 
@@ -1106,7 +1195,7 @@ html[dir="ltr"] .ai-widget-panel {
 
         try {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const res = await fetch("{{ route('ai.chat') }}", {
+            const res = await fetch(resolveApiUrl('/ai/chat'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1117,7 +1206,9 @@ html[dir="ltr"] .ai-widget-panel {
                     prompt: text,
                     conversation_id: currentConversationId,
                     symbol_mode: currentSymbolMode,
-                    image_base64: image
+                    image_base64: image,
+                    is_first_message: isFirstMessage,
+                    history: existingMessages.slice(-6)
                 })
             });
 
@@ -1180,11 +1271,37 @@ html[dir="ltr"] .ai-widget-panel {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'ai-message ai-message-assistant';
 
-        // تنسيق Markdown
+        // تنسيق Markdown مع حماية صيغ LaTeX للرياضيات
         let renderedHtml = rawText;
         if (typeof marked !== 'undefined') {
             try {
-                renderedHtml = marked.parse(rawText);
+                const mathTokens = [];
+                let processed = rawText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+                    const id = `@@MATH_BLOCK_${mathTokens.length}@@`;
+                    mathTokens.push({ id, original: match });
+                    return id;
+                });
+                processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (match) => {
+                    const id = `@@MATH_BLOCK_${mathTokens.length}@@`;
+                    mathTokens.push({ id, original: match });
+                    return id;
+                });
+                processed = processed.replace(/\$([^\$\n]+?)\$/g, (match) => {
+                    const id = `@@MATH_INLINE_${mathTokens.length}@@`;
+                    mathTokens.push({ id, original: match });
+                    return id;
+                });
+                processed = processed.replace(/\\\(([^\(\n]+?)\\\)/g, (match) => {
+                    const id = `@@MATH_INLINE_${mathTokens.length}@@`;
+                    mathTokens.push({ id, original: match });
+                    return id;
+                });
+
+                let parsedHtml = marked.parse(processed);
+                mathTokens.forEach(item => {
+                    parsedHtml = parsedHtml.replace(item.id, item.original);
+                });
+                renderedHtml = parsedHtml;
             } catch (e) {
                 renderedHtml = escapeHtml(rawText).replace(/\n/g, '<br>');
             }
@@ -1200,7 +1317,7 @@ html[dir="ltr"] .ai-widget-panel {
             </div>
             <div class="ai-msg-content">
                 <div class="ai-msg-author">
-                    <span>المعلم الذكي</span>
+                    <span>Step by Step Ai</span>
                     <span class="ai-msg-time">${getTimeString()}</span>
                 </div>
                 <div class="ai-msg-body" id="${msgId}">
@@ -1225,22 +1342,41 @@ html[dir="ltr"] .ai-widget-panel {
         scrollToBottom();
     }
 
-    // تصيير KaTeX بأمان
+    // تصيير KaTeX بأمان بنمط ChatGPT
     function renderMathInElementSafe(element) {
-        if (typeof renderMathInElement !== 'undefined' && element) {
-            try {
-                renderMathInElement(element, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false },
-                        { left: '\\(', right: '\\)', display: false },
-                        { left: '\\[', right: '\\]', display: true }
-                    ],
-                    throwOnError: false
-                });
-            } catch (err) {
-                console.warn('KaTeX render note:', err);
+        if (!element) return;
+
+        function runKaTeX() {
+            if (typeof renderMathInElement !== 'undefined') {
+                try {
+                    renderMathInElement(element, {
+                        delimiters: [
+                            { left: '$$', right: '$$', display: true },
+                            { left: '$', right: '$', display: false },
+                            { left: '\\(', right: '\\)', display: false },
+                            { left: '\\[', right: '\\]', display: true }
+                        ],
+                        throwOnError: false
+                    });
+                } catch (err) {
+                    console.warn('KaTeX render note:', err);
+                }
             }
+        }
+
+        if (typeof renderMathInElement !== 'undefined') {
+            runKaTeX();
+        } else {
+            let tries = 0;
+            const timer = setInterval(() => {
+                tries++;
+                if (typeof renderMathInElement !== 'undefined') {
+                    clearInterval(timer);
+                    runKaTeX();
+                } else if (tries > 30) {
+                    clearInterval(timer);
+                }
+            }, 100);
         }
     }
 
