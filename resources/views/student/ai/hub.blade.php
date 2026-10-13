@@ -823,7 +823,7 @@
 <!-- ========================================================================= -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 
 <!-- KaTeX للرياضيات و Marked للـ Markdown و Mermaid للمخططات الذهنية -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
@@ -837,8 +837,8 @@
 <!-- ========================================================================= -->
 <style>
 :root {
-    --ai-font-main: 'Cairo', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --ai-font-en: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --ai-font-main: 'Noto Sans Arabic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --ai-font-en: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --ai-font-mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
     /* ألوان المنصة المستوحاة من الشعار */
@@ -1893,24 +1893,26 @@ body.dark-theme :root,
     border-radius: 0;
     padding: 2px 0 6px;
     color: var(--ai-text-primary);
-    font-size: 1rem;
-    line-height: 1.9;
+    font-size: 0.98rem;
+    line-height: 1.75;
+    font-weight: 400;
+    letter-spacing: normal;
     box-shadow: none;
     word-break: break-word;
 }
 
-/* تنسيقات Markdown داخل ردود الذكاء */
+/* تنسيقات Markdown داخل ردود الذكاء بنمط ChatGPT الأنيق */
 .chat-msg-assistant .msg-bubble h1,
 .chat-msg-assistant .msg-bubble h2,
 .chat-msg-assistant .msg-bubble h3,
 .chat-msg-assistant .msg-bubble h4 {
     color: var(--ai-text-primary);
     margin: 18px 0 8px;
-    font-weight: 850;
-    line-height: 1.35;
+    font-weight: 650;
+    line-height: 1.4;
 }
 
-.chat-msg-assistant .msg-bubble h1 { font-size: 1.3rem; border-bottom: 1px solid var(--ai-border); padding-bottom: 6px; }
+.chat-msg-assistant .msg-bubble h1 { font-size: 1.25rem; border-bottom: 1px solid var(--ai-border); padding-bottom: 6px; }
 .chat-msg-assistant .msg-bubble h2 { font-size: 1.15rem; }
 .chat-msg-assistant .msg-bubble h3 { font-size: 1.05rem; }
 .chat-msg-assistant .msg-bubble h4 { font-size: 0.95rem; }
@@ -1934,12 +1936,12 @@ body.dark-theme :root,
 }
 
 .chat-msg-assistant .msg-bubble strong {
-    font-weight: 800;
-    color: var(--brand-navy);
+    font-weight: 650;
+    color: var(--ai-text-primary);
 }
 
 .dark-theme .chat-msg-assistant .msg-bubble strong {
-    color: #93c5fd;
+    color: var(--ai-text-primary);
 }
 
 .chat-msg-assistant .msg-bubble blockquote {
@@ -3932,7 +3934,7 @@ body.dark-theme :root,
                 startOnLoad: false,
                 theme: 'default',
                 securityLevel: 'loose',
-                fontFamily: 'Cairo, sans-serif'
+                fontFamily: 'Noto Sans Arabic, Inter, sans-serif'
             });
         } catch (mErr) {
             console.warn('Mermaid init notice:', mErr);
@@ -4074,7 +4076,16 @@ body.dark-theme :root,
             // ضبط marked لتوليد بطاقات الأكواد والمخططات مع زر تشغيل تفاعلي
             const renderer = new marked.Renderer();
             renderer.code = function(code, language) {
-                const lang = (language || '').toLowerCase().trim();
+                let codeText = '';
+                let lang = '';
+                if (typeof code === 'object' && code !== null) {
+                    codeText = code.text || '';
+                    lang = (code.lang || '').toLowerCase().trim();
+                } else {
+                    codeText = typeof code === 'string' ? code : '';
+                    lang = (language || '').toLowerCase().trim();
+                }
+
                 const codeId = 'code_' + Math.random().toString(36).substring(2, 9);
 
                 // مخططات ذكية عبر Mermaid
@@ -4088,8 +4099,8 @@ body.dark-theme :root,
                                     <i class="fa-regular fa-copy"></i> كود المخطط
                                 </button>
                             </div>
-                            <div class="mermaid-render-area" id="${mmdId}">${escapeHtml(code)}</div>
-                            <textarea id="${codeId}" style="display:none;">${escapeHtml(code)}</textarea>
+                            <div class="mermaid-render-area" id="${mmdId}">${escapeHtml(codeText)}</div>
+                            <textarea id="${codeId}" style="display:none;">${escapeHtml(codeText)}</textarea>
                         </div>
                     `;
                 }
@@ -4113,7 +4124,7 @@ body.dark-theme :root,
                                 </button>
                             </div>
                         </div>
-                        <pre><code id="${codeId}" class="language-${escapeHtml(lang)}">${escapeHtml(code)}</code></pre>
+                        <pre><code id="${codeId}" class="language-${escapeHtml(lang)}">${escapeHtml(codeText)}</code></pre>
                     </div>
                 `;
             };
@@ -4376,7 +4387,7 @@ body.dark-theme :root,
                     <meta charset="utf-8">
                     <title>Live Preview</title>
                     <style>
-                        body { font-family: 'Cairo', sans-serif, system-ui; padding: 20px; background: #0f172a; color: #f8fafc; margin: 0; }
+                        body { font-family: 'Noto Sans Arabic', 'Inter', -apple-system, sans-serif; padding: 20px; background: #0f172a; color: #f8fafc; margin: 0; }
                         h4 { margin-top: 0; color: #38bdf8; display: flex; align-items: center; gap: 8px; font-size: 1rem; }
                         #consoleOutput { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-family: monospace; white-space: pre-wrap; color: #10b981; line-height: 1.6; min-height: 120px; }
                     </style>

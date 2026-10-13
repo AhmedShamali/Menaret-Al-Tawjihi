@@ -709,7 +709,7 @@ html[dir="ltr"] .ai-widget-panel {
 .ai-msg-body .katex .text * {
     direction: rtl !important;
     unicode-bidi: isolate !important;
-    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif !important;
+    font-family: 'Noto Sans Arabic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 .ai-msg-body .katex .base,
 .ai-msg-body .katex .strut,
