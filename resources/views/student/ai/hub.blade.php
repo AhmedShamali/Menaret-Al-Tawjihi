@@ -719,21 +719,118 @@
     </div>
 </div>
 
+<!-- ========================================================================= -->
+<!-- نافذة تشغيل ومعاينة الكود البرمجي تفاعلياً (Interactive Code Sandbox Modal) -->
+<!-- ========================================================================= -->
+<div class="ai-modal-overlay" id="stepLiveCodeModalOverlay">
+    <div class="ai-modal-card modal-card-code-preview">
+        <div class="ai-modal-header">
+            <div class="modal-header-title">
+                <div class="modal-icon-badge badge-code">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <div>
+                    <h3>{{ __('معاينة حية وتنفيذ الكود البرمجي (Live Sandbox)') }}</h3>
+                    <p class="modal-subtitle">{{ __('بيئة تجريبية معزولة لتشغيل أكواد HTML / CSS / JS المكتوبة بالذكاء الاصطناعي') }}</p>
+                </div>
+            </div>
+            <div class="modal-header-actions-group">
+                <button type="button" class="btn-modal-tool" onclick="refreshLiveCodePreview()" title="{{ __('إعادة تشغيل') }}">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+                <button type="button" class="btn-modal-close" onclick="closeLiveCodePreview()">&times;</button>
+            </div>
+        </div>
+        <div class="ai-modal-body code-preview-modal-body">
+            <div class="code-preview-frame-wrap">
+                <iframe id="liveCodePreviewIframe" sandbox="allow-scripts allow-modals" title="Live Preview"></iframe>
+            </div>
+        </div>
+        <div class="ai-modal-footer">
+            <button type="button" class="btn-modal-cancel" onclick="closeLiveCodePreview()">{{ __('إغلاق المعاينة') }}</button>
+            <button type="button" class="btn-modal-save" onclick="copyCurrentPreviewCode()">
+                <i class="fa-regular fa-copy"></i>
+                <span>{{ __('نسخ الكود بالكامل') }}</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- نافذة بطاقة الاستذكار ثلاثية الأبعاد (3D Interactive Study Flashcard Modal) -->
+<!-- ========================================================================= -->
+<div class="ai-modal-overlay" id="stepFlashcardModalOverlay">
+    <div class="ai-modal-card modal-card-flashcard">
+        <div class="ai-modal-header">
+            <div class="modal-header-title">
+                <div class="modal-icon-badge badge-flashcard">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <h3>{{ __('بطاقة استذكار ثلاثية الأبعاد (3D Flashcard)') }}</h3>
+                    <p class="modal-subtitle">{{ __('انقر على البطاقة لقلبها واختبار سرعة استحضار المعلومات والقوانين!') }}</p>
+                </div>
+            </div>
+            <button type="button" class="btn-modal-close" onclick="closeFlashcardModal()">&times;</button>
+        </div>
+        <div class="ai-modal-body flashcard-modal-body">
+            <div class="flashcard-3d-scene" onclick="flipFlashcard()">
+                <div class="flashcard-3d-card" id="flashcard3DElement">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="flashcard-top-tag">
+                            <span class="flashcard-badge"><i class="fa-solid fa-circle-question"></i> السؤال / المفهوم</span>
+                            <span class="flashcard-flip-hint"><i class="fa-solid fa-arrows-rotate"></i> اضغط للقلب 🔄</span>
+                        </div>
+                        <div class="flashcard-body-text" id="flashcardFrontText">...</div>
+                        <div class="flashcard-bottom-bar">
+                            <span>Step by Step Ai Flashcards</span>
+                            <span class="flip-prompt-indicator">وجه البطاقة (Front)</span>
+                        </div>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div class="flashcard-top-tag">
+                            <span class="flashcard-badge badge-answer"><i class="fa-solid fa-lightbulb"></i> الحل النموذجي والمفتاح</span>
+                            <span class="flashcard-flip-hint"><i class="fa-solid fa-arrows-rotate"></i> اضغط للقلب 🔄</span>
+                        </div>
+                        <div class="flashcard-body-text" id="flashcardBackText">...</div>
+                        <div class="flashcard-bottom-bar">
+                            <span>Step by Step Ai Flashcards</span>
+                            <span class="flip-prompt-indicator">ظهر البطاقة (Back)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ai-modal-footer">
+            <button type="button" class="btn-modal-cancel" onclick="closeFlashcardModal()">{{ __('إغلاق') }}</button>
+            <button type="button" class="btn-modal-tool-btn" onclick="flipFlashcard()">
+                <i class="fa-solid fa-arrows-rotate"></i>
+                <span>{{ __('اقلب البطاقة 🔄') }}</span>
+            </button>
+            <button type="button" class="btn-modal-save" onclick="copyFlashcardText()">
+                <i class="fa-regular fa-copy"></i>
+                <span>{{ __('نسخ محتوى البطاقة') }}</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- حاوية التنبيهات العائمة (Toasts) -->
 <div id="stepToastContainer" class="step-toast-container"></div>
 
 <!-- ========================================================================= -->
-<!-- تضمين الخطوط والمكتبات الخارجية (KaTeX, Marked)                          -->
+<!-- تضمين الخطوط والمكتبات الخارجية (KaTeX, Marked, Mermaid)                 -->
 <!-- ========================================================================= -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- KaTeX للرياضيات و Marked للـ Markdown -->
+<!-- KaTeX للرياضيات و Marked للـ Markdown و Mermaid للمخططات الذهنية -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 
 <!-- ========================================================================= -->
 <!-- تنسيقات CSS الفاخرة لمنظومة Step by Step Ai (Light & Dark Mode)          -->
@@ -2775,6 +2872,401 @@ body.dark-theme :root,
         border-radius: 20px;
     }
 }
+
+/* ========================================================================= */
+/* تصميم بطاقة التفكير العميق والتحليل المنطقي (Deep Reasoning Drawer)       */
+/* ========================================================================= */
+.ai-reasoning-card {
+    background: rgba(241, 245, 249, 0.7);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+}
+.dark-theme .ai-reasoning-card {
+    background: rgba(30, 41, 59, 0.6);
+    border-color: rgba(51, 65, 85, 0.9);
+}
+.ai-reasoning-card.active-thinking {
+    border-color: #3b82f6;
+    background: rgba(239, 246, 255, 0.8);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+}
+.dark-theme .ai-reasoning-card.active-thinking {
+    background: rgba(30, 58, 138, 0.25);
+    border-color: #60a5fa;
+}
+.reasoning-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.88rem;
+    transition: background 0.2s ease;
+}
+.reasoning-header:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+.dark-theme .reasoning-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+.reasoning-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.reasoning-brain-icon {
+    color: var(--brand-blue);
+    font-size: 0.95rem;
+}
+.reasoning-brain-pulse {
+    color: #2563eb;
+    animation: brainPulse 1.2s infinite alternate;
+}
+@keyframes brainPulse {
+    0% { transform: scale(0.95); opacity: 0.7; }
+    100% { transform: scale(1.15); opacity: 1; }
+}
+.reasoning-title {
+    font-weight: 600;
+    color: var(--ai-text-primary);
+}
+.reasoning-badge-done {
+    font-size: 0.76rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    font-weight: 600;
+}
+.reasoning-badge-pulse {
+    font-size: 0.76rem;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(37, 99, 235, 0.12);
+    color: #2563eb;
+    font-weight: 600;
+}
+.reasoning-arrow {
+    color: var(--ai-text-secondary);
+    font-size: 0.8rem;
+    transition: transform 0.25s ease;
+}
+.reasoning-arrow.open {
+    transform: rotate(180deg);
+}
+.reasoning-body {
+    padding: 12px 16px 14px;
+    border-top: 1px dashed rgba(203, 213, 225, 0.6);
+    font-size: 0.86rem;
+    line-height: 1.65;
+    color: var(--ai-text-secondary);
+}
+.dark-theme .reasoning-body {
+    border-top-color: rgba(51, 65, 85, 0.7);
+}
+.reasoning-content-inner {
+    opacity: 0.92;
+}
+
+/* ========================================================================= */
+/* تصميم بطاقة المخططات الذهنية والتوضيحية (Mermaid Diagrams)                */
+/* ========================================================================= */
+.mermaid-diagram-card {
+    background: rgba(248, 250, 252, 0.95);
+    border: 1px solid var(--ai-border);
+    border-radius: 12px;
+    margin: 14px 0;
+    padding: 14px;
+    overflow: hidden;
+}
+.dark-theme .mermaid-diagram-card {
+    background: rgba(15, 23, 42, 0.7);
+}
+.diagram-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+    color: var(--ai-text-secondary);
+}
+.diagram-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: var(--brand-blue);
+}
+.mermaid-render-area {
+    display: flex;
+    justify-content: center;
+    overflow-x: auto;
+    padding: 10px 0;
+}
+.mermaid-render-area svg {
+    max-width: 100%;
+    height: auto;
+}
+.mermaid-fallback-code {
+    background: #0f172a;
+    color: #38bdf8;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+}
+
+/* ========================================================================= */
+/* أزرار الاقتراحات الذكية للمتابعة (Interactive Follow-up Chips)            */
+/* ========================================================================= */
+.ai-suggestions-container {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(226, 232, 240, 0.7);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.dark-theme .ai-suggestions-container {
+    border-top-color: rgba(51, 65, 85, 0.6);
+}
+.suggestions-header-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ai-text-secondary);
+}
+.suggestions-chips-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.smart-suggestion-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(203, 213, 225, 0.9);
+    border-radius: 20px;
+    padding: 7px 14px;
+    font-size: 0.84rem;
+    font-family: inherit;
+    color: var(--ai-text-primary);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.dark-theme .smart-suggestion-pill {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: rgba(71, 85, 105, 0.8);
+    color: #f1f5f9;
+}
+.smart-suggestion-pill:hover {
+    background: var(--brand-blue);
+    border-color: var(--brand-blue);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+.smart-suggestion-pill:hover .pill-icon,
+.smart-suggestion-pill:hover .pill-arrow {
+    color: #ffffff;
+}
+.pill-icon {
+    color: #f59e0b;
+    font-size: 0.78rem;
+}
+.pill-arrow {
+    color: var(--ai-text-secondary);
+    font-size: 0.72rem;
+    transition: transform 0.2s;
+}
+.smart-suggestion-pill:hover .pill-arrow {
+    transform: translateX(-2px);
+}
+
+/* ========================================================================= */
+/* أزرار تشغيل الكود البرمجي ومعاينته الحية                                    */
+/* ========================================================================= */
+.code-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-live-preview-run {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+.btn-live-preview-run:hover {
+    background: linear-gradient(135deg, #047857, #059669);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* نافذة المعاينة الحية للكود البرمجي */
+.modal-card-code-preview {
+    max-width: 900px;
+    width: 95%;
+}
+.code-preview-modal-body {
+    padding: 0;
+    background: #0f172a;
+}
+.code-preview-frame-wrap {
+    width: 100%;
+    height: 480px;
+    background: #ffffff;
+}
+.code-preview-frame-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* ========================================================================= */
+/* بطاقات الاستذكار ثلاثية الأبعاد (3D Interactive Flashcards)               */
+/* ========================================================================= */
+.modal-card-flashcard {
+    max-width: 580px;
+    width: 95%;
+}
+.flashcard-modal-body {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+}
+.flashcard-3d-scene {
+    perspective: 1000px;
+    width: 100%;
+    height: 320px;
+    cursor: pointer;
+}
+.flashcard-3d-card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.flashcard-3d-card.is-flipped {
+    transform: rotateY(180deg);
+}
+.flashcard-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 18px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+.flashcard-front {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.flashcard-back {
+    background: linear-gradient(135deg, #065f46, #059669);
+    color: #ffffff;
+    transform: rotateY(180deg);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.flashcard-top-tag {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+.flashcard-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.flashcard-badge.badge-answer {
+    background: rgba(255, 255, 255, 0.25);
+}
+.flashcard-flip-hint {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+.flashcard-body-text {
+    font-size: 1.12rem;
+    line-height: 1.6;
+    font-weight: 500;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 6px 0;
+}
+.flashcard-bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    opacity: 0.8;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    padding-top: 10px;
+}
+.btn-modal-tool-btn {
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px solid var(--brand-blue);
+    color: var(--brand-blue);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+.btn-modal-tool-btn:hover {
+    background: var(--brand-blue);
+    color: #ffffff;
+}
+
+/* ========================================================================= */
+/* مؤشر نبضات الصوت المتفاعل (Speech Equalizer Waveform)                      */
+/* ========================================================================= */
+.audio-waves-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    height: 12px;
+    margin-inline-end: 4px;
+    vertical-align: middle;
+}
+.audio-waves-icon span {
+    display: block;
+    width: 2px;
+    height: 100%;
+    background: currentColor;
+    border-radius: 1px;
+    animation: audioWave 0.8s ease-in-out infinite alternate;
+}
+.audio-waves-icon span:nth-child(2) { animation-delay: 0.15s; }
+.audio-waves-icon span:nth-child(3) { animation-delay: 0.3s; }
+.audio-waves-icon span:nth-child(4) { animation-delay: 0.45s; }
+@keyframes audioWave {
+    0% { height: 3px; }
+    100% { height: 12px; }
+}
 </style>
 
 <!-- ========================================================================= -->
@@ -3433,7 +3925,21 @@ body.dark-theme :root,
         } catch (_) {}
     }
 
-    // 16. تنسيق نصوص Markdown ومعادلات LaTeX باحترافية
+    // تهيئة محرك Mermaid للمخططات الذهنية والتوضيحية
+    if (window.mermaid) {
+        try {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'default',
+                securityLevel: 'loose',
+                fontFamily: 'Cairo, sans-serif'
+            });
+        } catch (mErr) {
+            console.warn('Mermaid init notice:', mErr);
+        }
+    }
+
+    // 16. تنسيق نصوص Markdown ومعادلات LaTeX باحترافية وتوليد المخططات والتفكير العميق
     function formatMd(text) {
         if (!text) return '';
 
@@ -3442,13 +3948,109 @@ body.dark-theme :root,
         text = text.replace(/\$([\u0600-\u06FF\s\u064B-\u065F\(\)\.\،\-]+)\$/g, '$1');
         text = text.replace(/\(\s*([\u0600-\u06FF])\s*\)/g, '($1)');
 
+        let thinkingHtml = '';
+        let suggestionsHtml = '';
+        let workingText = text;
+
+        // 1. معالجة وتجزئة التفكير العميق (Deep Reasoning / Chain-of-Thought)
+        const thinkClosedMatch = workingText.match(/<think>([\s\S]*?)<\/think>/i);
+        if (thinkClosedMatch) {
+            const thinkContent = thinkClosedMatch[1].trim();
+            workingText = workingText.replace(/<think>[\s\S]*?<\/think>/i, '').trim();
+            if (thinkContent) {
+                thinkingHtml = `
+                    <div class="ai-reasoning-card completed-thinking">
+                        <div class="reasoning-header" onclick="toggleReasoningCard(this)">
+                            <div class="reasoning-meta">
+                                <span class="reasoning-brain-icon"><i class="fa-solid fa-brain"></i></span>
+                                <span class="reasoning-title">التفكير والتحليل المنطقي (Deep Reasoning)</span>
+                                <span class="reasoning-badge-done"><i class="fa-solid fa-bolt"></i> اكتمل التحليل المنطقي (انقر للتفاصيل)</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down reasoning-arrow"></i>
+                        </div>
+                        <div class="reasoning-body" style="display: none;">
+                            <div class="reasoning-content-inner">${renderMiniMd(thinkContent)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        } else {
+            const thinkOpenMatch = workingText.match(/<think>([\s\S]*)$/i);
+            if (thinkOpenMatch) {
+                const thinkContent = thinkOpenMatch[1].trim();
+                workingText = ''; // لم يبدأ الرد النهائي بعد
+                thinkingHtml = `
+                    <div class="ai-reasoning-card active-thinking">
+                        <div class="reasoning-header" onclick="toggleReasoningCard(this)">
+                            <div class="reasoning-meta">
+                                <span class="reasoning-brain-pulse"><i class="fa-solid fa-brain"></i></span>
+                                <span class="reasoning-title">تفكير وتحليل عميق (Deep Reasoning)</span>
+                                <span class="reasoning-badge-pulse"><i class="fa-solid fa-circle-notch fa-spin"></i> جارٍ التحليل المنطقي...</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down reasoning-arrow open"></i>
+                        </div>
+                        <div class="reasoning-body" style="display: block;">
+                            <div class="reasoning-content-inner">${renderMiniMd(thinkContent)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 2. معالجة وتجزئة الاقتراحات الذكية للمتابعة (Smart Suggestions Chips)
+        const suggestionsMatch = workingText.match(/---SUGGESTIONS---([\s\S]*)$/i);
+        if (suggestionsMatch) {
+            const rawSugg = suggestionsMatch[1].trim();
+            workingText = workingText.replace(/---SUGGESTIONS---[\s\S]*$/i, '').trim();
+
+            let suggestions = [];
+            const jsonArrayMatch = rawSugg.match(/\[[\s\S]*?\]/);
+            if (jsonArrayMatch) {
+                try {
+                    suggestions = JSON.parse(jsonArrayMatch[0]);
+                } catch (_) {}
+            }
+
+            if (!suggestions || suggestions.length === 0) {
+                suggestions = rawSugg.split('\n')
+                    .map(l => l.replace(/^[-*•\d\.\)"]+\s*/, '').replace(/"\s*,\s*$/, '').replace(/^"/, '').replace(/"$/, '').trim())
+                    .filter(l => l.length > 3 && !l.startsWith('[') && !l.startsWith(']'));
+            }
+
+            if (Array.isArray(suggestions) && suggestions.length > 0) {
+                const chips = suggestions.slice(0, 3).map(s => {
+                    const cleanS = typeof s === 'string' ? s.trim() : JSON.stringify(s);
+                    const escapedAttr = escapeHtml(cleanS).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    return `
+                        <button type="button" class="smart-suggestion-pill" onclick="sendQuickPrompt('${escapedAttr}')">
+                            <i class="fa-solid fa-wand-magic-sparkles pill-icon"></i>
+                            <span class="pill-text">${escapeHtml(cleanS)}</span>
+                            <i class="fa-solid fa-arrow-left pill-arrow"></i>
+                        </button>
+                    `;
+                }).join('');
+
+                suggestionsHtml = `
+                    <div class="ai-suggestions-container">
+                        <div class="suggestions-header-label">
+                            <i class="fa-regular fa-lightbulb"></i>
+                            <span>اقتراحات ذكية للمتابعة:</span>
+                        </div>
+                        <div class="suggestions-chips-grid">
+                            ${chips}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
         if (typeof marked === 'undefined') {
-            return escapeHtml(text).replace(/\n/g, '<br>');
+            return thinkingHtml + escapeHtml(workingText).replace(/\n/g, '<br>') + suggestionsHtml;
         }
 
         try {
             const mathTokens = [];
-            let processed = text.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
+            let processed = workingText.replace(/\$\$([\s\S]*?)\$\$/g, (match) => {
                 const id = `@@MATH_BLOCK_${mathTokens.length}@@`;
                 mathTokens.push({ id, original: match });
                 return id;
@@ -3469,18 +4071,47 @@ body.dark-theme :root,
                 return id;
             });
 
-            // ضبط marked لتوليد بطاقات الأكواد مع زر نسخ مستقل
+            // ضبط marked لتوليد بطاقات الأكواد والمخططات مع زر تشغيل تفاعلي
             const renderer = new marked.Renderer();
             renderer.code = function(code, language) {
-                const lang = language || 'code';
+                const lang = (language || '').toLowerCase().trim();
                 const codeId = 'code_' + Math.random().toString(36).substring(2, 9);
+
+                // مخططات ذكية عبر Mermaid
+                if (lang === 'mermaid') {
+                    const mmdId = 'mmd_' + Math.random().toString(36).substring(2, 9);
+                    return `
+                        <div class="mermaid-diagram-card">
+                            <div class="diagram-toolbar">
+                                <span class="diagram-tag"><i class="fa-solid fa-diagram-project"></i> مخطط ذكي تفاعلي</span>
+                                <button type="button" class="btn-copy-code" onclick="copyDiagramSource('${codeId}')">
+                                    <i class="fa-regular fa-copy"></i> كود المخطط
+                                </button>
+                            </div>
+                            <div class="mermaid-render-area" id="${mmdId}">${escapeHtml(code)}</div>
+                            <textarea id="${codeId}" style="display:none;">${escapeHtml(code)}</textarea>
+                        </div>
+                    `;
+                }
+
+                // زر المعاينة الحية لأكواد الويب
+                const isWebCode = ['html', 'htm', 'javascript', 'js', 'css', 'svg'].includes(lang);
+                const livePreviewBtn = isWebCode ? `
+                    <button type="button" class="btn-live-preview-run" onclick="openLiveCodePreview('${codeId}', '${escapeHtml(lang)}')">
+                        <i class="fa-solid fa-play"></i> تشغيل / معاينة حية
+                    </button>
+                ` : '';
+
                 return `
                     <div class="code-block-wrapper">
                         <div class="code-header-bar">
-                            <span class="code-lang-label">${escapeHtml(lang)}</span>
-                            <button type="button" class="btn-copy-code" onclick="copyCodeSnippet('${codeId}')">
-                                <i class="fa-regular fa-copy"></i> نسخ الكود
-                            </button>
+                            <span class="code-lang-label">${escapeHtml(lang || 'code')}</span>
+                            <div class="code-header-actions">
+                                ${livePreviewBtn}
+                                <button type="button" class="btn-copy-code" onclick="copyCodeSnippet('${codeId}')">
+                                    <i class="fa-regular fa-copy"></i> نسخ الكود
+                                </button>
+                            </div>
                         </div>
                         <pre><code id="${codeId}" class="language-${escapeHtml(lang)}">${escapeHtml(code)}</code></pre>
                     </div>
@@ -3494,10 +4125,16 @@ body.dark-theme :root,
                 parsedHtml = parsedHtml.replace(item.id, item.original);
             });
 
-            return parsedHtml;
+            return thinkingHtml + parsedHtml + suggestionsHtml;
         } catch (e) {
-            return escapeHtml(text).replace(/\n/g, '<br>');
+            return thinkingHtml + escapeHtml(workingText).replace(/\n/g, '<br>') + suggestionsHtml;
         }
+    }
+
+    // تصيير مصغر ومبسط لفقرات التفكير الداخلي
+    function renderMiniMd(text) {
+        if (!text) return '';
+        return escapeHtml(text).replace(/\n/g, '<br>');
     }
 
     // 17. بطاقة بث الرد في الوقت الفعلي
@@ -3523,14 +4160,17 @@ body.dark-theme :root,
                     <button type="button" class="btn-msg-action" title="إعادة التوليد" onclick="regenerateLastReply()">
                         <i class="fa-solid fa-rotate-right"></i> إعادة التوليد
                     </button>
+                    <button type="button" class="btn-msg-action" title="بطاقة استذكار 3D" onclick="generate3DFlashcard('${msgId}')">
+                        <i class="fa-solid fa-layer-group"></i> بطاقة 3D
+                    </button>
                     <button type="button" class="btn-msg-action" title="إعجاب" onclick="rateAiReply('${msgId}', 'like', this)">
                         <i class="fa-regular fa-thumbs-up"></i>
                     </button>
                     <button type="button" class="btn-msg-action" title="لم يعجبني" onclick="rateAiReply('${msgId}', 'dislike', this)">
                         <i class="fa-regular fa-thumbs-down"></i>
                     </button>
-                    <button type="button" class="btn-msg-action" title="استماع صوتي" onclick="speakAiReply('${msgId}')">
-                        <i class="fa-solid fa-volume-high"></i> استماع
+                    <button type="button" class="btn-msg-action" title="استماع صوتي" onclick="speakAiReply('${msgId}', this)">
+                        <i class="fa-solid fa-volume-high"></i> <span class="speak-label">استماع</span>
                     </button>
                 </div>
             </div>
@@ -3635,14 +4275,17 @@ body.dark-theme :root,
                     <button type="button" class="btn-msg-action" title="إعادة التوليد" onclick="regenerateLastReply()">
                         <i class="fa-solid fa-rotate-right"></i> إعادة التوليد
                     </button>
+                    <button type="button" class="btn-msg-action" title="بطاقة استذكار 3D" onclick="generate3DFlashcard('${msgId}')">
+                        <i class="fa-solid fa-layer-group"></i> بطاقة 3D
+                    </button>
                     <button type="button" class="btn-msg-action" title="إعجاب" onclick="rateAiReply('${msgId}', 'like', this)">
                         <i class="fa-regular fa-thumbs-up"></i>
                     </button>
                     <button type="button" class="btn-msg-action" title="لم يعجبني" onclick="rateAiReply('${msgId}', 'dislike', this)">
                         <i class="fa-regular fa-thumbs-down"></i>
                     </button>
-                    <button type="button" class="btn-msg-action" title="استماع صوتي" onclick="speakAiReply('${msgId}')">
-                        <i class="fa-solid fa-volume-high"></i> استماع
+                    <button type="button" class="btn-msg-action" title="استماع صوتي" onclick="speakAiReply('${msgId}', this)">
+                        <i class="fa-solid fa-volume-high"></i> <span class="speak-label">استماع</span>
                     </button>
                 </div>
             </div>
@@ -3657,25 +4300,270 @@ body.dark-theme :root,
         scrollFeedToBottom();
     }
 
-    // 20. تصيير معادلات KaTeX
+    // 20. تصيير معادلات KaTeX والمخططات الذهنية
     function renderMathInBubble(element) {
-        if (!element || typeof renderMathInElement === 'undefined') return;
-        try {
-            renderMathInElement(element, {
-                delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '$', right: '$', display: false },
-                    { left: '\\(', right: '\\)', display: false },
-                    { left: '\\[', right: '\\]', display: true }
-                ],
-                throwOnError: false
+        if (!element) return;
+
+        // تصيير معادلات KaTeX
+        if (typeof renderMathInElement !== 'undefined') {
+            try {
+                renderMathInElement(element, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false
+                });
+            } catch (err) {
+                console.warn('KaTeX render note:', err);
+            }
+        }
+
+        // تصيير مخططات Mermaid الذهنية
+        if (window.mermaid) {
+            const areas = element.querySelectorAll('.mermaid-render-area:not([data-processed="true"])');
+            areas.forEach((area, i) => {
+                try {
+                    const rawGraph = area.textContent.trim();
+                    const tempId = 'mmd_render_' + Date.now() + '_' + i;
+                    mermaid.render(tempId, rawGraph).then(({ svg }) => {
+                        area.innerHTML = svg;
+                        area.setAttribute('data-processed', 'true');
+                    }).catch(err => {
+                        console.warn('Mermaid render issue:', err);
+                        area.innerHTML = `<pre class="mermaid-fallback-code">${escapeHtml(rawGraph)}</pre>`;
+                        area.setAttribute('data-processed', 'true');
+                    });
+                } catch (_) {}
             });
-        } catch (err) {
-            console.warn('KaTeX render note:', err);
         }
     }
 
-    // 21. أدوات التفاعل مع الرسائل (Copy, TTS, Feedback, Edit, Regenerate)
+    // 21. دوال التفاعل المتطورة (Reasoning, Live Preview, 3D Flashcard, TTS Equalizer)
+
+    // طي وفتح بطاقة التفكير العميق
+    window.toggleReasoningCard = function(headerEl) {
+        const card = headerEl.closest('.ai-reasoning-card');
+        if (!card) return;
+        const body = card.querySelector('.reasoning-body');
+        const arrow = card.querySelector('.reasoning-arrow');
+        if (!body) return;
+        const isHidden = (body.style.display === 'none' || !body.style.display);
+        body.style.display = isHidden ? 'block' : 'none';
+        if (arrow) arrow.classList.toggle('open', isHidden);
+    };
+
+    // المعاينة الحية للكود البرمجي (Live Sandbox Modal)
+    let currentPreviewCodeText = '';
+    window.openLiveCodePreview = function(codeId, lang) {
+        const codeEl = document.getElementById(codeId);
+        if (!codeEl) return;
+        const codeText = codeEl.innerText || codeEl.textContent;
+        currentPreviewCodeText = codeText;
+
+        const modal = document.getElementById('stepLiveCodeModalOverlay');
+        const iframe = document.getElementById('liveCodePreviewIframe');
+        if (!modal || !iframe) return;
+
+        let fullHtml = codeText;
+        if (lang === 'javascript' || lang === 'js') {
+            fullHtml = `
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="utf-8">
+                    <title>Live Preview</title>
+                    <style>
+                        body { font-family: 'Cairo', sans-serif, system-ui; padding: 20px; background: #0f172a; color: #f8fafc; margin: 0; }
+                        h4 { margin-top: 0; color: #38bdf8; display: flex; align-items: center; gap: 8px; font-size: 1rem; }
+                        #consoleOutput { background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 14px; font-family: monospace; white-space: pre-wrap; color: #10b981; line-height: 1.6; min-height: 120px; }
+                    </style>
+                </head>
+                <body>
+                    <h4>▶️ مخرجات وحدة التحكم (Console Output):</h4>
+                    <div id="consoleOutput"></div>
+                    <script>
+                        const out = document.getElementById('consoleOutput');
+                        const origLog = console.log;
+                        console.log = function(...args) {
+                            out.textContent += args.map(a => typeof a === 'object' ? JSON.stringify(a, null, 2) : a).join(' ') + '\\n';
+                            origLog.apply(console, args);
+                        };
+                        try {
+                            ${codeText}
+                        } catch (err) {
+                            out.innerHTML += '<span style="color: #ef4444;">⚠️ خطأ تشغيل: ' + err.message + '</span>\\n';
+                        }
+                    <\/script>
+                </body>
+                </html>
+            `;
+        } else if (lang === 'css') {
+            fullHtml = `
+                <!DOCTYPE html>
+                <html lang="ar" dir="rtl">
+                <head>
+                    <meta charset="utf-8">
+                    <style>
+                        body { font-family: sans-serif; padding: 30px; display: flex; justify-content: center; align-items: center; min-height: 80vh; background: #f8fafc; }
+                        ${codeText}
+                    </style>
+                </head>
+                <body>
+                    <div class="demo-box" style="padding: 24px; border-radius: 12px; text-align: center;">
+                        <h2>عنصر تجريبي لمعاينة استايل CSS</h2>
+                        <p>يتم تطبيق القواعد المعرفة أعلاه مباشرة على هذه المساحة.</p>
+                        <button style="padding: 10px 20px; cursor: pointer;">زر تجريبي</button>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        iframe.srcdoc = fullHtml;
+        modal.classList.add('active');
+    };
+
+    window.closeLiveCodePreview = function() {
+        const modal = document.getElementById('stepLiveCodeModalOverlay');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.refreshLiveCodePreview = function() {
+        const iframe = document.getElementById('liveCodePreviewIframe');
+        if (iframe && iframe.srcdoc) {
+            const current = iframe.srcdoc;
+            iframe.srcdoc = '';
+            setTimeout(() => { iframe.srcdoc = current; }, 50);
+            showToast('تمت إعادة تحميل المعاينة 🔄', 'success');
+        }
+    };
+
+    window.copyCurrentPreviewCode = function() {
+        if (!currentPreviewCodeText) return;
+        navigator.clipboard.writeText(currentPreviewCodeText).then(() => {
+            showToast('تم نسخ الكود بالكامل 📋', 'success');
+        });
+    };
+
+    // بطاقات الاستذكار ثلاثية الأبعاد (3D Interactive Flashcards)
+    let currentFlashcardFullText = '';
+    window.generate3DFlashcard = function(msgId) {
+        const assistantBubble = document.getElementById(msgId);
+        if (!assistantBubble) return;
+
+        // استخراج السؤال الأخير من المستخدم إن وجد
+        const currentMsgRow = assistantBubble.closest('.chat-msg-row');
+        let questionText = 'سؤال واستذكار الدرس';
+        let prev = currentMsgRow ? currentMsgRow.previousElementSibling : null;
+        while (prev) {
+            if (prev.classList.contains('chat-msg-user')) {
+                const uBubble = prev.querySelector('.msg-bubble');
+                if (uBubble) questionText = uBubble.innerText.trim();
+                break;
+            }
+            prev = prev.previousElementSibling;
+        }
+
+        // استخراج الإجابة المختصرة
+        let answerText = assistantBubble.innerText.replace(/---SUGGESTIONS---[\s\S]*$/i, '').trim();
+        // إزالة تفاصيل التفكير من البطاقة إن وجدت
+        answerText = answerText.replace(/التفكير والتحليل المنطقي[\s\S]*?(اكتمل التحليل المنطقي|جارٍ التحليل)/g, '').trim();
+        if (answerText.length > 340) {
+            answerText = answerText.substring(0, 340) + '...';
+        }
+
+        currentFlashcardFullText = `السؤال: ${questionText}\n\nالإجابة والمفتاح:\n${answerText}`;
+
+        const frontEl = document.getElementById('flashcardFrontText');
+        const backEl = document.getElementById('flashcardBackText');
+        const cardEl = document.getElementById('flashcard3DElement');
+        const modal = document.getElementById('stepFlashcardModalOverlay');
+
+        if (frontEl) frontEl.textContent = questionText;
+        if (backEl) backEl.textContent = answerText;
+        if (cardEl) cardEl.classList.remove('is-flipped');
+        if (modal) modal.classList.add('active');
+    };
+
+    window.flipFlashcard = function() {
+        const cardEl = document.getElementById('flashcard3DElement');
+        if (cardEl) cardEl.classList.toggle('is-flipped');
+    };
+
+    window.closeFlashcardModal = function() {
+        const modal = document.getElementById('stepFlashcardModalOverlay');
+        if (modal) modal.classList.remove('active');
+    };
+
+    window.copyFlashcardText = function() {
+        if (!currentFlashcardFullText) return;
+        navigator.clipboard.writeText(currentFlashcardFullText).then(() => {
+            showToast('تم نسخ محتوى بطاقة الاستذكار 🎴', 'success');
+        });
+    };
+
+    // القراءة الصوتية بالذكاء الاصطناعي مع معادل نبضات صوتي
+    let activeSpeakingButton = null;
+    window.speakAiReply = function(id, btnEl) {
+        const el = document.getElementById(id);
+        if (!el) return;
+
+        if (!('speechSynthesis' in window)) {
+            alert('المتصفح لا يدعم القراءة الصوتية.');
+            return;
+        }
+
+        // إذا كان يقرأ بالفعل، أوقفه
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            if (activeSpeakingButton) {
+                resetSpeakButton(activeSpeakingButton);
+                activeSpeakingButton = null;
+            }
+            showToast('تم إيقاف القراءة الصوتية ⏹️', 'success');
+            return;
+        }
+
+        let cleanText = el.innerText || el.textContent;
+        // إزالة أجزاء التفكير أو الاقتراحات من النطق
+        cleanText = cleanText.replace(/---SUGGESTIONS---[\s\S]*$/i, '').trim();
+        cleanText = cleanText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        utterance.lang = 'ar-SA';
+        utterance.rate = 0.95;
+
+        if (btnEl) {
+            activeSpeakingButton = btnEl;
+            btnEl.classList.add('active-speaking');
+            btnEl.innerHTML = `
+                <span class="audio-waves-icon"><span></span><span></span><span></span><span></span></span>
+                <span class="speak-label">إيقاف</span>
+            `;
+        }
+
+        utterance.onend = () => {
+            if (btnEl) resetSpeakButton(btnEl);
+            activeSpeakingButton = null;
+        };
+
+        utterance.onerror = () => {
+            if (btnEl) resetSpeakButton(btnEl);
+            activeSpeakingButton = null;
+        };
+
+        window.speechSynthesis.speak(utterance);
+        showToast('جارٍ الاستماع للإجابة 🔊', 'success');
+    };
+
+    function resetSpeakButton(btn) {
+        btn.classList.remove('active-speaking');
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> <span class="speak-label">استماع</span>`;
+    }
+
     window.copyAiReply = function(id) {
         const el = document.getElementById(id);
         if (!el) return;
@@ -3696,20 +4584,13 @@ body.dark-theme :root,
         });
     };
 
-    window.speakAiReply = function(id) {
+    window.copyDiagramSource = function(id) {
         const el = document.getElementById(id);
         if (!el) return;
-        const text = el.innerText || el.textContent;
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ar-SA';
-            utterance.rate = 0.95;
-            window.speechSynthesis.speak(utterance);
-            showToast('جارٍ تشغيل القراءة الصوتية للإجابة 🔊', 'success');
-        } else {
-            alert('المتصفح لا يدعم النطق الصوتي.');
-        }
+        const text = el.value || el.innerText || el.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('تم نسخ كود المخطط التوضيحي 📊', 'success');
+        });
     };
 
     window.rateAiReply = async function(id, type, btnEl) {
