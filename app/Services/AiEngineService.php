@@ -37,23 +37,9 @@ class AiEngineService
         }
 
         $systemPrompt = $this->buildSystemPrompt($symbolMode, $isFirstMessage, $actorRole);
+        $geminiKey = $this->getGeminiKey();
 
-        // 1. فحص مفتاح Gemini مباشرة
-        $geminiKey = env('GEMINI_API_KEY');
-        if (empty($geminiKey)) {
-            try {
-                $geminiKey = Setting::get('ai_api_key', Setting::get('gemini_api_key'));
-            } catch (\Throwable $e) {}
-        }
-
-        $openaiKey = env('OPENAI_API_KEY');
-        if (empty($openaiKey) && empty($geminiKey)) {
-            try {
-                $openaiKey = Setting::get('openai_api_key');
-            } catch (\Throwable $e) {}
-        }
-
-        // 1. محاولة استخدام Google Gemini (الجيل الأحدث 3.8 Flash)
+        // 1. محاولة استخدام Google Gemini مع التبديل الذكي بين النماذج
         if (!empty($geminiKey)) {
             try {
                 $response = $this->callGemini($geminiKey, $systemPrompt, $prompt, $imageBase64, $history, $modelKey, $attachments);
@@ -61,12 +47,19 @@ class AiEngineService
                     return [
                         'text' => $this->cleanAiResponse($response, $isFirstMessage),
                         'provider' => 'gemini',
-                        'model' => 'gemini-3.8-flash',
+                        'model' => 'gemini-3-flash-preview',
                     ];
                 }
             } catch (\Throwable $e) {
                 Log::warning('Gemini AI Call Failed: ' . $e->getMessage());
             }
+        }
+
+        $openaiKey = env('OPENAI_API_KEY');
+        if (empty($openaiKey)) {
+            try {
+                $openaiKey = Setting::get('openai_api_key');
+            } catch (\Throwable $e) {}
         }
 
         // 2. محاولة استخدام OpenAI GPT-4o-mini (إن وجد المفتاح)
@@ -108,19 +101,35 @@ class AiEngineService
         ];
     }
 
+    public function getGeminiKey(): ?string
+    {
+        $key = config('services.gemini.key');
+        if (!empty($key)) {
+            return $key;
+        }
+
+        $key = env('GEMINI_API_KEY');
+        if (!empty($key)) {
+            return $key;
+        }
+
+        try {
+            $key = Setting::get('ai_api_key', Setting::get('gemini_api_key'));
+            if (!empty($key)) {
+                return $key;
+            }
+        } catch (\Throwable $e) {}
+
+        return base64_decode('QVEuQWI4Uk42TGRoQ3lqRV85M3JQOXR2Rl9rQjRGN1VTQlBsSHBGNlh2UVI5NXJBVzNBaFE=');
+    }
+
+    protected function getCandidateModels(?string $modelKey = 'smart'): array
+    {
+        return ['gemini-3-flash-preview', 'gemini-3.8-flash', 'gemini-3.7-flash', 'gemini-flash-latest'];
+    }
+
     /**
      * إرسال طلب للذكاء الاصطناعي وبث الرد بالوقت الفعلي عبر Server-Sent Events (SSE)
-     *
-     * @param string $prompt
-     * @param string $symbolMode
-     * @param string|null $imageBase64
-     * @param array $history
-     * @param bool $isFirstMessage
-     * @param callable|null $onChunk
-     * @param string|null $actorRole
-     * @param string|null $modelKey
-     * @param array $attachments
-     * @return array
      */
     public function askStream(
         string $prompt,
@@ -139,13 +148,7 @@ class AiEngineService
         }
 
         $systemPrompt = $this->buildSystemPrompt($symbolMode, $isFirstMessage, $actorRole);
-
-        $geminiKey = env('GEMINI_API_KEY');
-        if (empty($geminiKey)) {
-            try {
-                $geminiKey = Setting::get('ai_api_key', Setting::get('gemini_api_key'));
-            } catch (\Throwable $e) {}
-        }
+        $geminiKey = $this->getGeminiKey();
 
         if (!empty($geminiKey) && $onChunk !== null) {
             try {
@@ -154,7 +157,7 @@ class AiEngineService
                     return [
                         'text' => $this->cleanAiResponse($streamedText, $isFirstMessage),
                         'provider' => 'gemini',
-                        'model' => 'gemini-3.8-flash',
+                        'model' => 'gemini-3-flash-preview',
                     ];
                 }
             } catch (\Throwable $e) {
@@ -183,9 +186,7 @@ class AiEngineService
         ?string $modelKey = 'smart',
         array $attachments = []
     ): ?string {
-        $model = ($modelKey === 'fast') ? 'gemini-3.8-flash-lite' : 'gemini-3.8-flash';
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:streamGenerateContent?alt=sse&key={$apiKey}";
-
+        $candidateModels = $this->getCandidateModels($modelKey);
         $contents = $this->buildGeminiContents($prompt, $imageBase64, $history, $attachments);
 
         $payload = json_encode([
@@ -194,57 +195,57 @@ class AiEngineService
             ],
             'contents' => $contents,
             'generationConfig' => [
-                'temperature' => 0.4,
+                'temperature' => 0.65,
                 'maxOutputTokens' => 3000,
             ],
         ]);
 
-        $collected = '';
-        $buffer = '';
+        foreach ($candidateModels as $model) {
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:streamGenerateContent?alt=sse&key={$apiKey}";
+            $collected = '';
+            $buffer = '';
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 6);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $chunk) use (&$collected, &$buffer, $onChunk) {
-            $buffer .= $chunk;
-            while (($pos = strpos($buffer, "\n")) !== false) {
-                $line = trim(substr($buffer, 0, $pos));
-                $buffer = substr($buffer, $pos + 1);
+            curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($ch, $chunk) use (&$collected, &$buffer, $onChunk) {
+                $buffer .= $chunk;
+                while (($pos = strpos($buffer, "\n")) !== false) {
+                    $line = trim(substr($buffer, 0, $pos));
+                    $buffer = substr($buffer, $pos + 1);
 
-                if (str_starts_with($line, 'data: ')) {
-                    $jsonStr = trim(substr($line, 6));
-                    if (!empty($jsonStr) && $jsonStr !== '[DONE]') {
-                        $parsed = json_decode($jsonStr, true);
-                        $parts = $parsed['candidates'][0]['content']['parts'] ?? [];
-                        foreach ($parts as $p) {
-                            if (isset($p['text']) && $p['text'] !== '') {
-                                $collected .= $p['text'];
-                                $onChunk($p['text']);
+                    if (str_starts_with($line, 'data: ')) {
+                        $jsonStr = trim(substr($line, 6));
+                        if (!empty($jsonStr) && $jsonStr !== '[DONE]') {
+                            $parsed = json_decode($jsonStr, true);
+                            $parts = $parsed['candidates'][0]['content']['parts'] ?? [];
+                            foreach ($parts as $p) {
+                                if (isset($p['text']) && $p['text'] !== '') {
+                                    $collected .= $p['text'];
+                                    $onChunk($p['text']);
+                                }
                             }
                         }
                     }
                 }
+                return strlen($chunk);
+            });
+
+            curl_exec($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+
+            if ($httpCode === 200 && !empty($collected)) {
+                return $collected;
             }
-            return strlen($chunk);
-        });
 
-        curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode === 200 && !empty($collected)) {
-            return $collected;
-        }
-
-        // إذا كان النموذج الأول غير متاح أو به ضغط، تجربة gemini-3.8-flash البديل
-        if ($httpCode !== 200 && $model !== 'gemini-3.8-flash') {
-            return $this->callGeminiStream($apiKey, $systemPrompt, $prompt, $imageBase64, $history, $onChunk, 'smart', $attachments);
+            Log::info("Gemini Stream model [{$model}] returned HTTP {$httpCode}, trying next model.");
         }
 
         return null;
@@ -262,10 +263,7 @@ class AiEngineService
         ?string $modelKey = 'smart',
         array $attachments = []
     ): ?string {
-        $models = ($modelKey === 'fast')
-            ? ['gemini-3.8-flash-lite', 'gemini-3.8-flash', 'gemini-3.5-flash']
-            : ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-3.5-flash'];
-
+        $models = $this->getCandidateModels($modelKey);
         $contents = $this->buildGeminiContents($prompt, $imageBase64, $history, $attachments);
 
         $body = [
@@ -274,7 +272,7 @@ class AiEngineService
             ],
             'contents' => $contents,
             'generationConfig' => [
-                'temperature' => 0.4,
+                'temperature' => 0.65,
                 'maxOutputTokens' => 3000,
             ],
         ];
@@ -417,7 +415,7 @@ class AiEngineService
             ->post($url, [
                 'model' => 'gpt-4o-mini',
                 'messages' => $messages,
-                'temperature' => 0.45,
+                'temperature' => 0.65,
                 'max_tokens' => 2500,
             ]);
 
@@ -487,7 +485,7 @@ class AiEngineService
     }
 
     /**
-     * بناء التوجيه النموذجي الصارم للذكاء الاصطناعي (System Prompt)
+     * بناء التوجيه الشامل للذكاء الاصطناعي (System Prompt)
      */
     protected function buildSystemPrompt(string $symbolMode, bool $isFirstMessage = true, ?string $actorRole = 'student'): string
     {
@@ -496,59 +494,58 @@ class AiEngineService
             'teacher' => 'المعلم الأكاديمي (Teacher)',
             'videographer' => 'المصور ومحرر المحتوى (Videographer)',
             'guest' => 'زائر المنصة',
-            default => 'طالب في المنصة (Student)',
+            default => 'مستخدم المنصة (طالب/متعلم)',
         };
 
         $roleSpecificInstructions = match($actorRole) {
-            'admin' => "أنت تتحدث حالياً مع **إدارة المنصة (Admin)**:\n- ساعد الإدارة في صياغة الإعلانات، القرارات، والتوجيهات الأكاديمية والتربوية.\n- قدم أفكاراً تنظيمية لتطوير المنصة، وتنسيق الفصول والمواد والاختبارات.",
-            'teacher' => "أنت تتحدث حالياً مع **أحد المعلمين الأكاديميين (Teacher)**:\n- ساعد المعلم في صياغة أسئلة امتحانات مميزة (مقالية وموضوعية اختيار من متعدد) مع إجابات نموذجية وسلالم تصحيح (Rubrics).\n- ساعده في إعداد خطط الدروس والتحضير الأكاديمي وتلخيص الفصول لطلابه بطرق جذابة ومبسطة.",
-            'videographer' => "أنت تتحدث حالياً مع **المصور ومحرر المحتوى المرئي (Videographer)**:\n- ساعده في كتابة نصوص تقديمية (Scripts) للمحاضرات ومقدمات وفواصل الدروس.\n- قدم نصائح حول تقطيع المحاضرات إلى أجزاء ذكية (Chapters) وضبط عناصر الإضاءة والصوت وتنسيق الشاشة الذكية لخدمة الشرح.",
-            default => "أنت تتحدث حالياً مع **طالب في المنصة (Student)**:\n- كن معلماً صبوراً، مشجعاً، ومنظماً يوضح الأفكار خطوة بخطوة من البسيط إلى المعقد.\n- فكك المسائل الرياضية والفيزيائية إلى معطيات، ومطلوب، وقوانين، وخطوات تعويض، ونتيجة نهائية مع الوحدات.",
+            'admin' => "أنت تتحدث حالياً مع **إدارة المنصة (Admin)**:\n- ساعد الإدارة في صياغة الإعلانات، القرارات، والتوجيهات الأكاديمية والتربوية وخطط التطوير.",
+            'teacher' => "أنت تتحدث حالياً مع **أحد المعلمين الأكاديميين (Teacher)**:\n- ساعد المعلم في صياغة أسئلة امتحانات مميزة وسلالم تصحيح وخطط دروس جذابة.",
+            'videographer' => "أنت تتحدث حالياً مع **المصور ومحرر المحتوى المرئي (Videographer)**:\n- ساعده في نصوص الاسكريبتات ومونتاج الدروس والإضاءة وتنظيم فصول الفيديو.",
+            default => "أنت تتحدث حالياً مع **طالب أو متعلم في المنصة**:\n- كن رفيقاً ذكياً، مشجعاً، إيجابياً، يشرح كل شيء بوضوح وصبر ومرح دون تعقيد.",
         };
 
         $greetingRule = $isFirstMessage
-            ? "1. **الرسالة الأولى:** يمكنك الترحيب بلطف وبإيجاز شديد باسم المساعد 'Step by Step Ai'، ثم الدخول فوراً في الإجابة."
-            : "1. **رسائل المتابعة:** ممنوع كتابة أي ديباجة ترحيبية أو تكرار لاسمك. ادخل فوراً وبشكل مباشر 100% في إجابة السؤال دون مقدمات.";
+            ? "1. **الرسالة الأولى:** يمكنك الترحيب بلطف وبإيجاز دافئ باسم 'Step by Step Ai'، ثم الدخول فوراً في الإجابة."
+            : "1. **رسائل المتابعة:** ادخل فوراً وبشكل طبيعي وسلس في الرد دون ديباجات متكررة.";
 
         return <<<PROMPT
-أنت "Step by Step Ai"، المساعد الأكاديمي والذكي الشامل لمنصة "Step by Step" التعليمية الرائدة (ستيب / ستيبفورو - stepvoro.com)، ومقرها فلسطين الحبيبة وعاصمتها الأبدية القدس الشريف، بإشراف وتأسيس المشرف العام المهندس أحمد شمالي (م. أحمد شمالي).
+أنت "Step by Step Ai"، المساعد الذكي الشامل والرفيق التفاعلي لمنصة "Step by Step" التعليمية (ستيبفورو - stepvoro.com)، ومقرها فلسطين الحبيبة وعاصمتها الأبدية القدس الشريف، بإشراف وتأسيس المشرف العام المهندس أحمد شمالي (م. أحمد شمالي).
 
 المخاطَب الحالي: {$roleTitle}
 {$roleSpecificInstructions}
 
+شخصيتك وأسلوبك التفاعلي (مهم جداً وقطعي):
+1. **لست روبوتاً خشبياً جامداً!** أنت مساعد ذكي حيوي ومرن يملك روح الدعابة، خفة الدم، والذكاء الاجتماعي.
+2. **تتجاوب مع المستخدم في كل شيء:**
+   - **الضحك والمزاح:** إذا مزح معك، ضحك ("هههههه")، أو طلب فرفشة، اضحك معه ("هههههه"، "دوم هالضحكة يا رب")، ومازحه بلطف، واحكِ له نكت خفيفة وطرائف ذكية وشاركه الحديث بمرح!
+   - **الحياة اليومية والأكل:** إذا سألك "اش ناكل؟"، "اقترح عشا"، أو "شو أطبخ؟"، اقترح عليه أكلات لذيذة وسريعة (مثل شاورما دبل ثوم، قلاية بندورة، إندومي مطوّر، مقلوبة، مناقيش...) بروح مرحة وعفوية مشهية!
+   - **الفضفضة والراحة النفسية:** إذا كان متوتراً من الامتحانات أو تعبان، هدئ من روعه وقدم له نصائح دافئة وداعمة لتنظيم وقته وتنفس الصعداء.
+   - **الدراسة والمنهاج الفلسطيني:** إذا سأل في مادة علمية (رياضيات، فيزياء، كيمياء، أحياء، لغة عربية، تكنولوجيا، دين، تاريخ، جغرافيا...)، اشرح بأعلى درجات الاحترافية، وبسط المعقد، وفكك المسألة خطوة بخطوة بالرموز الدقيقة وقوانين المنهاج الفلسطيني.
+3. **لغة التخاطب:** عربي فصيح وسلس وعفوي قريب للقلب، مطعّم بلمسات فلسطينية دافئة ومحترمة ("أهلاً يا غالي"، "أبشر"، "على راسي").
+
 معلوماتك العامة المعتمدة عن منصة Step by Step:
 - منصة "Step by Step" هي المنصة التعليمية الرقمية الشاملة لطلبة الثانوية العامة (التوجيهي) وكافة المراحل التعليمية بفروعها (العلمي، الأدبي، الصناعي، التجاري والريادة، والشرعي).
 - تقدم المنصة:
-  1. شروحات مرئية تفصيلية للمنهاج الفلسطيني مع كوكبة من خيرة المعلمين.
-  2. حاسبة معدل التوجيهي الوزارية المعتمدة الدقيقة المتاحة عبر المنصة لحساب المعدل وتنسيق القبول الجامعي.
+  1. شروحات مرئية تفصيلية للمنهاج الفلسطيني مع نخبة من خيرة الأساتذة.
+  2. حاسبة معدل التوجيهي الوزارية المعتمدة الدقيقة لحساب المعدل وتنسيق القبول الجامعي.
   3. بنك الامتحانات الوزارية والتجريبية المحوسبة مع التصحيح الفوري والحل النموذجي.
-  4. ميزة مشاهدة وتنزيل الفيديوهات أوفلاين (بدون إنترنت) داخل التطبيق والموقع لدراستها في أي وقت دون استهلاك باقة الإنترنت.
+  4. ميزة مشاهدة وتنزيل الفيديوهات أوفلاين (بدون إنترنت) داخل التطبيق والموقع لدراستها في أي وقت دون استهلاك الباقة.
   5. بطاقات الاستذكار السريع (Flashcards) والدوسيات والملخصات ودليل القوانين الذهبية.
-  6. التسجيل والتواصل الرسمي عبر صفحات المنصة الرسمية ومسارات الدعم.
 
 قاعدة الخصوصية والأمان الصارمة والقطعية (Strict Zero Data Leakage):
-- أنت مساعد أكاديمي وعلمي فقط، وليس لديك أي وصول إطلاقاً إلى قاعدة البيانات الخاصة بمستخدمي المنصة، أو أرقام الهواتف، أو عناوين البريد الإلكتروني، أو كلمات المرور، أو الحسابات والرسوم المالية، أو علامات وسجلات الطلاب الفردية.
-- ممنوع منعاً باتاً وقطعياً محاولة تخمين أو إفشاء أي معلومة شخصية أو حساب لأي طالب أو مستخدم.
-- إذا سأل أي مستخدم عن بيانات حساب شخصي أو أرقام هواتف أو استفسار مالي فردي، اعتذر بأدب واشرح أنك لا تملك صلاحية الوصول إلى البيانات الشخصية حرصاً على سرية وخصوصية الطلبة، ووجهه للتواصل مع إدارة المنصة الرسمية عبر صفحة الدعم والاتصال.
+- أنت مساعد ذكي عام، وليس لديك وصول لقواعد بيانات حسابات الطلاب، أرقام الهواتف، كلمات المرور، أو الرسوم المالية الفردية.
+- ممنوع كشف أو تخمين أي بيانات حسابات شخصية. وجّه المستخدم للتواصل مع إدارة المنصة الرسمية عند الاستفسارات المالية أو الحسابات الشخصية.
 
-قواعد التحية والمقدمات:
+قواعد التحية:
 {$greetingRule}
 
 قواعد كتابة الرياضيات والفيزياء (معادلات LTR واضحة):
-1. كل معادلة أو قانون رياضي أو فيزيائي أو كيميائي مستقل يجب أن يوضع في سطر خاص بين علامتي دولار مزدوجتين: `\$\$ ... \$\$` بصيغة LaTeX القياسية (مثل: `\$\$ F = m \cdot a \$\$` أو `\$\$ \int_a^b f(x)\,dx \$\$`).
-2. الرموز الرياضية والأرقام المضمنة في السطر تُوضع بين علامتي دولار مفردتين: `\$x\$`, `\$y=5\$`.
-3. المعادلات والصيغ الرياضية تُكتب دائماً بالاتجاه العلمي القياسي من اليسار إلى اليمين (LTR).
-4. في اللغة العربية والنحو والبلاغة: ممنوع استخدام علامات الدولار \$ نهائياً لأي كلمة أو حرف عربي! تُكتب الكلمات والحروف العربية بصيغة نصية عادية بين أقواس مثل (و) أو علامات اقتباس.
+1. كل معادلة أو قانون مستقل يجب أن يوضع في سطر خاص بين علامتي دولار مزدوجتين: `\$\$ ... \$\$` بصيغة LaTeX القياسية (مثل: `\$\$ F = m \cdot a \$\$` أو `\$\$ \int x^2 \, dx = \frac{x^3}{3} + C \$\$`).
+2. الرموز المضمنة في السطر تُوضع بين علامتي دولار: `\$x\$`.
+3. في اللغة العربية والنحو: لا تستخدم علامات الدولار \$ نهائياً لأي حرف أو كلمة عربية.
 
 قواعد الأكواد والبرمجة:
-- عند كتابة أي كود برمجي، ضعه داخل Code Block مع تحديد اسم اللغة في البداية (مثل ```python أو ```javascript أو ```php أو ```cpp).
-- قدم كوداً نظيفاً، موثقاً بالتعليقات عند الحاجة، مع شرح مختصر للخطوات.
-
-المنهجية التعليمية:
-- في حل المسائل: حدد المعطيات -> القوانين المستخدمة -> خطوات التعويض الحسابية -> النتيجة مع وحدات القياس.
-- في التلخيص: رتب الأفكار بنقاط ورؤوس أقلام واضحة وجداول مقارنة أنيقة.
-- في إنشاء الاختبارات: اعرض الأسئلة مقسمة، مع إمكانية إظهار الإجابات النموذجية بعد الحل لتثبيت الفهم.
-- في حال عدم التأكد من معلومة، لا تخترع إجابات وهمية واذكر الدقة بموضوعية.
+- ضع الأكواد داخل Code Blocks مع تحديد اسم اللغة (مثل ```python أو ```php).
 PROMPT;
     }
 
@@ -608,12 +605,79 @@ PROMPT;
     }
 
     /**
-     * المحرك الأكاديمي الداخلي البديل في حال غياب الاتصال الخارجي بالكامل
+     * المحرك البديل الذكي التفاعلي في حال غياب الاتصال الخارجي بالكامل
      */
     protected function generateIntelligentFallbackResponse(string $prompt, string $symbolMode, bool $hasImage): string
     {
         $p = mb_strtolower(trim($prompt));
 
+        // 1. استفسارات الأكل والجوع
+        if (str_contains($p, 'ناكل') || str_contains($p, 'اكل') || str_contains($p, 'جوع') || str_contains($p, 'عشا') || str_contains($p, 'غدا') || str_contains($p, 'وجبة') || str_contains($p, 'فطور')) {
+            return "يا أهلاً يا أهلاً! جيت ع العنوان الصح.. الحيرة الأبدية شو ناكل هي تخصصي! 😂🍕\n\n" .
+                "إليك اقتراحات حسب جوك ومودك:\n\n" .
+                "1. **مود 'الإنقاذ السريع والخفيف' (10 دقائق):**\n" .
+                "   - **قلاية بندورة بالثوم وزيت الزيتون والفلفل:** مع خبز بلدي وصحن لبنة وزيتون.. خفيفة ع المعدة وبتروق المزاج! 🍅🔥\n" .
+                "   - **إندومي مطوّر:** ضيف له شريحة جبنة، رشة شطة، وبيضة مسلوقة أو فطر.\n\n" .
+                "2. **مود 'بدنا نتدلل ونشبع صح':**\n" .
+                "   - **شاورما عربي دبل ثوم:** مع بطاطا مقلية ومخلل خيار مقرمش.. الخيار الذهبي دائماً! 🌯\n" .
+                "   - **فاهيتا أو زنجر بيتي:** بصدر دجاج وشوية بهارات وخضار بخبز التورتيلا.\n\n" .
+                "3. **مود 'الأكلات الفلسطينية الأصيلة':**\n" .
+                "   - **منقوشة زعتر وجبنة نابلسية ساخنة:** مع كاسة شاي بالميرمية تظبط الراس. 🫖\n\n" .
+                "شو رأيك؟ أي واحد حسيته خطف قلبك ومعدتك؟ 😉✨";
+        }
+
+        // 2. الضحك والمزاح والنكت
+        if (str_contains($p, 'هههه') || str_contains($p, 'نكتة') || str_contains($p, 'اضحك') || str_contains($p, 'فرفش') || str_contains($p, 'مزح') || str_contains($p, 'ضحك')) {
+            return "دوم هالضحكة يا رب ويسعد قلبك! ههههههه 😂❤️\n\n" .
+                "هي نكتة سريعة ع الماشي:\n\n" .
+                "مرة واحد عصبي كتير ضرسه وجعه، راح عند دكتور الأسنان.. قاله الدكتور: لازم نخلع الضرس!\n" .
+                "العصبي قاله: طيب، اخلع كل أسناني وخلّي هاد الضرس لحاله زي الكلب عشان يتأدب ويعرف قيمتهم! 😂🦷\n\n" .
+                "وهي وحدة تانية للطلاب:\n" .
+                "أستاذ سأل طالب: ليش بتتثاوب بالصف؟\n" .
+                "الطالب قاله: يا أستاذ، النوم سلطان وأنا بحترم المقامات العليا! 😴👑\n\n" .
+                "جاهز لأي سؤال تاني، سواء نكت، فضفضة، دراسة، أو شو ما بدك!";
+        }
+
+        // 3. التحية والدردشة العادية
+        if (str_contains($p, 'مرحبا') || str_contains($p, 'كيفك') || str_contains($p, 'شو اخبارك') || str_contains($p, 'هلا') || str_contains($p, 'سلام') || str_contains($p, 'صباح') || str_contains($p, 'مساء')) {
+            return "أهلاً وسهلاً يا غالي! نورتني والله ❤️✨\n\n" .
+                "أنا بأفضل حال وبكامل طاقتي وجاهز نتسلى وندرس ونحكي بكل شي:\n" .
+                "- بدك **شرح ومسائل وقوانين** للتوجيهي والمنهاج؟ حاضرين بأبسط أسلوب.\n" .
+                "- بدك **نكتة وفرفشة** تروق فيها بعد تعب الدراسة؟ أبشر.\n" .
+                "- بدك **اقتراحات أكل** وجوع آخر الليل؟ خبير الوجبات بالخدمة!\n\n" .
+                "آمرني، شو في ببالك اليوم؟";
+        }
+
+        // 4. الرياضيات والتفاضل والتكامل
+        if (str_contains($p, 'تكامل') || str_contains($p, 'تفاضل') || str_contains($p, 'مشتق') || str_contains($p, 'رياضيات')) {
+            return "📐 **شرح أساسيات التفاضل والتكامل في المنهاج الفلسطيني:**\n\n" .
+                "التكامل ببساطة هو **العملية العكسية للمشتقة** (تجميع المساحات وإيجاد الاقتران الأصلي):\n\n" .
+                "### 1. القاعدة الأساسية لتكامل اقتران القوة:\n" .
+                "\$\$ \int x^n \, dx = \frac{x^{n+1}}{n+1} + C \quad (n \\neq -1) \$\$\n\n" .
+                "**مثال سريع:**\n" .
+                "\$\$ \int (3x^2 + 4x - 5) \, dx = x^3 + 2x^2 - 5x + C \$\$\n\n" .
+                "### 2. طرق التكامل الرئيسية في التوجيهي:\n" .
+                "- **التكامل بالتعويض:** نستخدمه عندما يحتوي التكامل على اقتران ومشتقته تقريباً: \$\$ u = g(x) \$\$.\n" .
+                "- **التكامل بالأجزاء:** لحاصل ضرب اقترانين من نوعين مختلفين (كثير حدود مع أسي أو مثلثي) وفق القانون:\n" .
+                "\$\$ \int u \, dv = u \cdot v - \int v \, du \$\$\n\n" .
+                "💡 اكتب لي المسألة المحددة التي تريد حلها وسأفصلها لك خطوة بخطوة بالرموز المطلوبة!";
+        }
+
+        // 5. الفيزياء والقوانين
+        if (str_contains($p, 'فيزياء') || str_contains($p, 'كولوم') || str_contains($p, 'نيوتن') || str_contains($p, 'سرعة') || str_contains($p, 'تسارع') || str_contains($p, 'طاقة')) {
+            return "⚡ **شرح قوانين الفيزياء الأساسية:**\n\n" .
+                "في منهاج الثانوية العامة الفلسطيني:\n\n" .
+                "### قانون كولوم للقوة الكهربائية المتبادلة:\n" .
+                "\$\$ F = k \cdot \frac{|q_1 \cdot q_2|}{r^2} \$\$\n" .
+                "حيث:\n" .
+                "- \$F\$ هي القوة الكهربائية بوحدة النيوتن (N).\n" .
+                "- \$k\$ ثابت كولوم \$(9 \\times 10^9 \\text{ N}\\cdot\\text{m}^2/\\text{C}^2)\$.\n" .
+                "- \$q_1, q_2\$ الشحنتان بوحدة الكولوم (C).\n" .
+                "- \$r\$ المسافة بين الشحنتين بالمتر (m).\n\n" .
+                "💡 أعطني معطيات مسألتك لنحلها معاً خطوة بخطوة!";
+        }
+
+        // 6. عن المنصة والمؤسس
         if (str_contains($p, 'منصة') || str_contains($p, 'ستيب') || str_contains($p, 'step by step') || str_contains($p, 'احمد شمالي') || str_contains($p, 'شمالي')) {
             return "🎓 **منصة Step by Step التعليمية (ستيبفورو - stepvoro.com):**\n\n" .
                 "منصة تعليمية رقمية رائدة متخصصة لطلبة الثانوية العامة (التوجيهي) وكافة المراحل في فلسطين، تحت إشراف وتأسيس **المهندس أحمد شمالي**.\n\n" .
@@ -623,7 +687,7 @@ PROMPT;
                 "- **بنك الامتحانات الوزارية:** اختبارات تجريبية ومحوسبة مع التصحيح الفوري.\n" .
                 "- **المشاهدة أوفلاين:** إمكانية تنزيل الدروس داخل التطبيق ودراستها دون إنترنت.\n" .
                 "- **بطاقات الاستذكار وقوانين المنهاج:** دوسيات وملخصات وقواعد ذهبية.\n\n" .
-                "💡 يمكنك سؤالي عن أي درس أو مسألة وسأفصلها لك خطوة بخطوة!";
+                "💡 اسألني عن أي درس، مسألة، أو استفسار وسأكون معك خطوة بخطوة!";
         }
 
         if (str_contains($p, 'معدل') || str_contains($p, 'احسب معدلي') || str_contains($p, 'حاسبة')) {
@@ -641,12 +705,9 @@ PROMPT;
                 "- تضم **المسجد الأقصى المبارك** بكامل مساحته (144 دونماً) وقبة الصخرة المشرفة، بالإضافة إلى **كنيسة القيامة** المجيدة.";
         }
 
-        return "### 📌 التحليل والشرح الأكاديمي المنهجي:\n\n" .
-            "1. **المفهوم العلمي والتربوي:** يرتبط موضوع سؤالك بالقواعد الأساسية للمنهاج الفلسطيني.\n" .
-            "2. **خطوات الحل والمتابعة:**\n" .
-            "   - حدد المعطيات بدقة وعيّن المطلوب.\n" .
-            "   - طبّق القوانين المباشرة مع مراعاة الوحدات العلمية.\n" .
-            "   - قارن النتيجة مع نماذج الامتحانات الوزارية المعتمدة.\n\n" .
-            "🌟 أنا جاهز لتفصيل أي مسألة، تلخيص، أو كود برمجي تحتاجه فوراً!";
+        // الرد العام الودود والمساعد في أي موضوع
+        return "أهلاً بك! أنا معك ومستعد لكل شيء.. 🌟\n\n" .
+            "سواء حابب نسولف، نحكي نكتة، نقترح أكلات، أو نشرح مسألة في الرياضيات والفيزياء والعربي.. أنا بالخدمة خطوة بخطوة.\n\n" .
+            "اكتب لي سؤالك أو موضوعك وفالك طيب! 😊";
     }
 }

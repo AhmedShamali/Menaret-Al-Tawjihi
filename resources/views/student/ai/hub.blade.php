@@ -1,6 +1,8 @@
 @extends('layouts.app')
 
-@section('title', __('Step by Step Ai | المساعد الأكاديمي الذكي') . ' - ' . config('app.name', 'Step by Step'))
+@section('no-sidebar', 'true')
+@section('is_chat', 'true')
+@section('title', __('Step by Step Ai | المساعد الذكي الشامل') . ' - ' . config('app.name', 'Step by Step'))
 
 @section('content')
 <div class="step-ai-container" id="stepAiContainer" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
@@ -169,28 +171,28 @@
                             <div class="model-selector-dropdown" id="modelSelectorDropdown">
                                 <button type="button" class="model-badge-btn" id="modelSelectorBtn" title="{{ __('تغيير نموذج الذكاء الاصطناعي') }}">
                                     <i class="fa-solid fa-bolt-lightning model-icon"></i>
-                                    <span id="activeModelLabel">Smart 3.8 Flash</span>
+                                    <span id="activeModelLabel">Smart 3 Flash</span>
                                     <i class="fa-solid fa-chevron-down caret-icon"></i>
                                 </button>
                                 <div class="model-dropdown-menu" id="modelDropdownMenu">
                                     <div class="model-option active" data-model="smart">
                                         <div class="model-option-info">
-                                            <span class="model-name">Step by Step Smart</span>
-                                            <span class="model-desc">Gemini 3.8 Flash • فائق الذكاء والدقة والسرعة (موصى به)</span>
+                                            <span class="model-name">Step by Step Smart 3</span>
+                                            <span class="model-desc">Gemini 3 Flash • فائق الذكاء، سريع ومرح، لكل الأسئلة والدراسة (موصى به)</span>
                                         </div>
                                         <i class="fa-solid fa-check check-icon"></i>
                                     </div>
                                     <div class="model-option" data-model="fast">
                                         <div class="model-option-info">
-                                            <span class="model-name">Fast Lite</span>
-                                            <span class="model-desc">3.8 Flash Lite • سرعة فائقة للاستفسارات السريعة</span>
+                                            <span class="model-name">Turbo Fast</span>
+                                            <span class="model-desc">سرعة قصوى للردود الخفيفة والفرفشة والنكت السريعة</span>
                                         </div>
                                         <i class="fa-solid fa-check check-icon"></i>
                                     </div>
                                     <div class="model-option" data-model="balanced">
                                         <div class="model-option-info">
                                             <span class="model-name">Balanced Core</span>
-                                            <span class="model-desc">Gemini 3.5 Core • متوازن للدراسة العامة والشروحات</span>
+                                            <span class="model-desc">متوازن للدراسة والشروحات المنهجية المتعمقة</span>
                                         </div>
                                         <i class="fa-solid fa-check check-icon"></i>
                                     </div>
@@ -242,11 +244,11 @@
                     @if($actor['role'] === 'teacher')
                         {{ __('أهلاً بك يا أستاذ :name في Step by Step Ai!', ['name' => $actor['name']]) }}
                     @elseif($actor['role'] === 'admin')
-                        {{ __('مرحباً بإدارة المنصة! كيف يمكن لمساعد Step by Step Ai خدمتك؟') }}
+                        {{ __('مرحباً بإدارة المنصة! جاهز للمساعدة في كل شيء 🌟') }}
                     @elseif($actor['role'] === 'videographer')
-                        {{ __('أهلاً بك في استوديو المساعد الذكي لمصوري المنصة!') }}
+                        {{ __('أهلاً بك في استوديو المساعد الذكي لمصوري المنصة! 🎬') }}
                     @else
-                        {{ __('أهلاً بك يا :name في Step by Step Ai!', ['name' => $actor['name']]) }}
+                        {{ __('أهلاً بك يا :name! 👋 جاهز لمساعدتك في أي شيء', ['name' => $actor['name']]) }}
                     @endif
                 </h2>
 
@@ -258,12 +260,18 @@
                     @elseif($actor['role'] === 'videographer')
                         {{ __('مساعدك لكتابة نصوص المحاضرات (Scripts)، تنظيم الدروس في فصول ذكية، وضبط نصائح الإضاءة والمونتاج التعليمي.') }}
                     @else
-                        {{ __('اسأل عن أي مسألة، قانون، إعراب، شرح درس، كود برمجي، أو استفسار عن خدمات المنصة وحاسبة المعدل — خطوة بخطوة بالرموز المطلوبة.') }}
+                        {{ __('رفيقك الذكي للشروحات، حل المسائل، الأفكار اليومية، تنظيم الوقت، أو حتى الفرفشة وسوالف اليوم!') }}
                     @endif
                 </p>
 
-                <!-- شريط الأدوات التعليمية السريعة (Educational Quick Actions) -->
+                <!-- شريط الأدوات التعليمية والسريعة -->
                 <div class="edu-tools-strip">
+                    <button type="button" class="edu-tool-pill pill-food" onclick="sendQuickPrompt('اش ناكل؟ اقترحلي وجبة سريعة ولذيذة للعشا أو الغدا')">
+                        <i class="fa-solid fa-pizza-slice"></i> <span>🍕 شو ناكل؟</span>
+                    </button>
+                    <button type="button" class="edu-tool-pill pill-humor" onclick="sendQuickPrompt('هههههه احكيلي نكتة فلسطينية تفرفشني وتعدل المزاج')">
+                        <i class="fa-solid fa-face-laugh-squint"></i> <span>😂 فرفشة ونكت</span>
+                    </button>
                     <button type="button" class="edu-tool-pill" onclick="triggerQuickAction('explain')">
                         <i class="fa-solid fa-chalkboard-user"></i> <span>اشرح خطوة بخطوة</span>
                     </button>
@@ -273,14 +281,8 @@
                     <button type="button" class="edu-tool-pill" onclick="triggerQuickAction('summarize')">
                         <i class="fa-solid fa-file-lines"></i> <span>تلخيص ونقاط رئيسية</span>
                     </button>
-                    <button type="button" class="edu-tool-pill" onclick="triggerQuickAction('quiz')">
-                        <i class="fa-solid fa-list-check"></i> <span>أنشئ لي اختباراً</span>
-                    </button>
                     <button type="button" class="edu-tool-pill" onclick="triggerQuickAction('code')">
                         <i class="fa-solid fa-code"></i> <span>كتابة وتصحيح كود</span>
-                    </button>
-                    <button type="button" class="edu-tool-pill" onclick="triggerQuickAction('translate')">
-                        <i class="fa-solid fa-language"></i> <span>ترجمة أكاديمية</span>
                     </button>
                 </div>
 
@@ -386,36 +388,36 @@
                             <i class="fa-solid fa-arrow-left prompt-card-arrow"></i>
                         </div>
                     @else
-                        {{-- وضع الطالب والزائر --}}
-                        <div class="prompt-card" onclick="sendQuickPrompt('اشرح لي قانون كولوم والمجال الكهربائي في الفيزياء مع الصيغة بالرموز وحل مسألة عليه')">
-                            <div class="prompt-card-icon icon-blue"><i class="fa-solid fa-atom"></i></div>
+                        {{-- وضع الطالب والزائر: مزيج ممتع بين الفرفشة، الأكل، والدراسة الأكاديمية --}}
+                        <div class="prompt-card prompt-card-food" onclick="sendQuickPrompt('اش ناكل؟ اقترحلي وجبات سريعة وخفيفة للعشا أو الغدا')">
+                            <div class="prompt-card-icon icon-amber"><i class="fa-solid fa-utensils"></i></div>
                             <div class="prompt-card-text">
-                                <h4>{{ __('قانون كولوم والمجال الكهربائي') }}</h4>
-                                <p>{{ __('شرح فيزيائي مع الرموز ووحدات القياس ومسألة تطبيقية.') }}</p>
+                                <h4>{{ __('شو ناكل اليوم؟ 🍕') }}</h4>
+                                <p>{{ __('اقتراحات سريعة ولذيذة للأكل وجوع آخر الليل والدراسة.') }}</p>
                             </div>
                             <i class="fa-solid fa-arrow-left prompt-card-arrow"></i>
                         </div>
-                        <div class="prompt-card" onclick="sendQuickPrompt('اشرح لي قواعد كان وأخواتها وإن وأخواتها مع نماذج إعرابية كاملة لدروس المنهاج')">
-                            <div class="prompt-card-icon icon-emerald"><i class="fa-solid fa-feather-pointed"></i></div>
+                        <div class="prompt-card prompt-card-joke" onclick="sendQuickPrompt('هههههه احكيلي نكتة فلسطينية حلوة تضحكني وتعدل المزاج')">
+                            <div class="prompt-card-icon icon-emerald"><i class="fa-regular fa-face-laugh-beam"></i></div>
                             <div class="prompt-card-text">
-                                <h4>{{ __('قواعد النحو والإعراب') }}</h4>
-                                <p>{{ __('الأفعال والحروف الناسخة، دلالاتها، ونماذج إعرابية تفصيلية.') }}</p>
+                                <h4>{{ __('فرفشة ونكت ع الماشي 😂') }}</h4>
+                                <p>{{ __('نكت وطرائف لطيفة لتغيير جو الدراسة ورفع المعنويات.') }}</p>
                             </div>
                             <i class="fa-solid fa-arrow-left prompt-card-arrow"></i>
                         </div>
-                        <div class="prompt-card" onclick="sendQuickPrompt('ما هي قواعد التكامل بالتعويض والتكامل بالأجزاء مع أمثلة محلولة خطوة بخطوة بالرموز؟')">
-                            <div class="prompt-card-icon icon-amber"><i class="fa-solid fa-infinity"></i></div>
+                        <div class="prompt-card" onclick="sendQuickPrompt('اشرح لي مفهوم وقواعد التكامل وطرق التكامل بالرموز خطوة بخطوة')">
+                            <div class="prompt-card-icon icon-blue"><i class="fa-solid fa-infinity"></i></div>
                             <div class="prompt-card-text">
-                                <h4>{{ __('طرق التفاضل والتكامل') }}</h4>
-                                <p>{{ __('التكامل بالتعويض والأجزاء، مشتقات الاقترانات الدائرية.') }}</p>
+                                <h4>{{ __('شرح التكامل والتفاضل 📐') }}</h4>
+                                <p>{{ __('تبسيط الرياضيات، التكامل بالتعويض والأجزاء مع الأمثلة.') }}</p>
                             </div>
                             <i class="fa-solid fa-arrow-left prompt-card-arrow"></i>
                         </div>
-                        <div class="prompt-card" onclick="sendQuickPrompt('كيف أحسب معدلي التوجيهي الوزاري بدقة وما هي ميزات منصة Step by Step الأكاديمية؟')">
-                            <div class="prompt-card-icon icon-purple"><i class="fa-solid fa-calculator"></i></div>
+                        <div class="prompt-card" onclick="sendQuickPrompt('كيف أنظم وقتي وجدولي الدراسي للامتحانات بدون توتر وضغط نفسي؟')">
+                            <div class="prompt-card-icon icon-purple"><i class="fa-solid fa-calendar-check"></i></div>
                             <div class="prompt-card-text">
-                                <h4>{{ __('حساب المعدل ودليل المنصة') }}</h4>
-                                <p>{{ __('حاسبة المعدل الوزارية، ميزة الأوفلاين، وبنك الامتحانات.') }}</p>
+                                <h4>{{ __('تنظيم الوقت وجدول الدراسة 🎯') }}</h4>
+                                <p>{{ __('خطة مريحة لتوزيع المواد وساعات الراحة والتركيز العالي.') }}</p>
                             </div>
                             <i class="fa-solid fa-arrow-left prompt-card-arrow"></i>
                         </div>
@@ -484,8 +486,7 @@
                     </button>
                 </div>
 
-                <!-- حقل الإدخال النصي الذكي القابل للتمدد -->
-                <textarea id="stepPromptInput" class="dock-textarea" rows="1" placeholder="{{ __('اسأل عن أي شيء، مسألة فيزياء، معادلة، إعراب، شرح درس، كود، أو مستند...') }}" maxlength="8000"></textarea>
+                <textarea id="stepPromptInput" class="dock-textarea" rows="1" placeholder="{{ __('اسأل عن أي شيء... دراسة، أفكار للأكل، فرفشة ونكت، كود، أو سوالف!') }}" maxlength="8000"></textarea>
 
                 <div class="dock-actions-end">
                     <!-- زر الإرسال -->
@@ -797,7 +798,8 @@ body.dark-theme :root,
 /* الهيكل والحاوية الرئيسية */
 .step-ai-container {
     display: flex;
-    height: calc(100vh - 65px);
+    height: 100vh;
+    max-height: 100vh;
     width: 100%;
     background: var(--ai-bg-main);
     font-family: var(--ai-font-main);
@@ -1666,8 +1668,9 @@ body.dark-theme :root,
     width: 100%;
     margin: 0 auto;
     display: flex;
-    gap: 14px;
-    animation: msgFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    gap: 16px;
+    animation: msgFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    padding: 8px 0;
 }
 
 @keyframes msgFadeIn {
@@ -1680,29 +1683,37 @@ body.dark-theme :root,
 }
 
 .msg-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 11px;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
     display: grid;
     place-items: center;
     flex-shrink: 0;
     font-size: 0.95rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .chat-msg-user .msg-avatar {
-    background: #e2e8f0;
-    color: #1e293b;
+    background: #0284c7;
+    color: #ffffff;
 }
 
 .dark-theme .chat-msg-user .msg-avatar {
-    background: #334155;
+    background: #2563eb;
     color: #f8fafc;
 }
 
 .chat-msg-assistant .msg-avatar {
     background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 75, 147, 0.15);
+    box-shadow: 0 3px 12px rgba(0, 75, 147, 0.16);
+    border: 2px solid #e0e7ff;
     overflow: hidden;
+}
+
+.dark-theme .chat-msg-assistant .msg-avatar {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
 }
 
 .msg-avatar-ai-img {
@@ -1727,7 +1738,7 @@ body.dark-theme :root,
     font-size: 0.72rem;
     font-weight: 750;
     color: var(--ai-text-muted);
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -1737,27 +1748,32 @@ body.dark-theme :root,
     justify-content: flex-end;
 }
 
-/* فقاعة رسالة المستخدم */
+/* فقاعة رسالة المستخدم (Modern Pill with Gradient) */
 .chat-msg-user .msg-bubble {
-    background: var(--ai-user-bubble-bg);
-    color: var(--ai-user-bubble-text);
-    border-radius: 18px 18px 4px 18px;
-    padding: 12px 18px;
-    font-size: 0.94rem;
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    color: #ffffff;
+    border-radius: 20px 20px 4px 20px;
+    padding: 12px 20px;
+    font-size: 0.96rem;
     line-height: 1.65;
-    box-shadow: 0 3px 12px rgba(0, 75, 147, 0.2);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22);
     word-break: break-word;
 }
 
 [dir="ltr"] .chat-msg-user .msg-bubble {
-    border-radius: 18px 18px 18px 4px;
+    border-radius: 20px 20px 20px 4px;
+}
+
+.dark-theme .chat-msg-user .msg-bubble {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
 }
 
 .chat-msg-user .msg-bubble img {
     max-width: 280px;
     max-height: 220px;
-    border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
     margin-bottom: 8px;
     display: block;
 }
@@ -1773,16 +1789,16 @@ body.dark-theme :root,
     margin-bottom: 8px;
 }
 
-/* فقاعة رد الذكاء الاصطناعي (Step by Step Ai) */
+/* رد الذكاء الاصطناعي الأنيق الانسيابي (Borderless Clean ChatGPT Flow) */
 .chat-msg-assistant .msg-bubble {
-    background: var(--ai-assistant-bubble-bg);
-    border: 1px solid var(--ai-border);
-    border-radius: 18px;
-    padding: 18px 22px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 2px 0 6px;
     color: var(--ai-text-primary);
-    font-size: 0.96rem;
-    line-height: 1.85;
-    box-shadow: var(--ai-shadow-sm);
+    font-size: 1rem;
+    line-height: 1.9;
+    box-shadow: none;
     word-break: break-word;
 }
 
@@ -2913,9 +2929,9 @@ body.dark-theme :root,
                 opt.classList.add('active');
 
                 if (selectedModel === 'smart') {
-                    activeModelLabel.textContent = 'Smart 3.8 Flash';
+                    activeModelLabel.textContent = 'Smart 3 Flash';
                 } else if (selectedModel === 'fast') {
-                    activeModelLabel.textContent = 'Fast Lite';
+                    activeModelLabel.textContent = 'Turbo Fast';
                 } else {
                     activeModelLabel.textContent = 'Balanced Core';
                 }

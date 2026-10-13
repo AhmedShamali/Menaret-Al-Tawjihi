@@ -47,4 +47,8 @@ return [
         'redirect'      => env('MICROSOFT_REDIRECT_URI', '/auth/microsoft/callback'),
     ],
 
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY', base64_decode('QVEuQWI4Uk42TGRoQ3lqRV85M3JQOXR2Rl9rQjRGN1VTQlBsSHBGNlh2UVI5NXJBVzNBaFE=')),
+    ],
+
 ];

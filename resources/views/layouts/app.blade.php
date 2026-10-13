@@ -2818,7 +2818,7 @@
         || request()->is('*chat*', '*inbox*', '*support*', '*messages*') 
         || View::hasSection('is_chat');
 @endphp
-<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }} {{ $isChatPage ? 'is-chat-page in-chat-mode' : '' }}">
+<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || request()->is('*ai-hub*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }} {{ $isChatPage ? 'is-chat-page in-chat-mode' : '' }}">
 
     <!-- طبقة التعتيم للجوال -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
