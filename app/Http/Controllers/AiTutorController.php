@@ -315,7 +315,7 @@ class AiTutorController extends Controller
                     }
                 }
 
-                $messages = $conversation->messages()->take(10)->get();
+                $messages = $conversation->messages()->latest('id')->take(20)->get()->reverse();
                 if ($messages->isNotEmpty()) {
                     $isFirstMessage = false;
                     foreach ($messages as $msg) {
@@ -370,7 +370,7 @@ class AiTutorController extends Controller
         $sessionHist = $history;
         $sessionHist[] = ['role' => 'user', 'content' => $prompt];
         $sessionHist[] = ['role' => 'assistant', 'content' => $aiReply];
-        session()->put($sessionKey, array_slice($sessionHist, -10));
+        session()->put($sessionKey, array_slice($sessionHist, -20));
 
         // حفظ رد الذكاء بالقاعدة
         if ($conversation && $this->isDbAvailable()) {
@@ -447,7 +447,7 @@ class AiTutorController extends Controller
                     }
                 }
 
-                $messages = $conversation->messages()->take(10)->get();
+                $messages = $conversation->messages()->latest('id')->take(20)->get()->reverse();
                 if ($messages->isNotEmpty()) {
                     $isFirstMessage = false;
                     foreach ($messages as $msg) {
@@ -524,7 +524,7 @@ class AiTutorController extends Controller
             $sessionHist = $history;
             $sessionHist[] = ['role' => 'user', 'content' => $prompt];
             $sessionHist[] = ['role' => 'assistant', 'content' => $finalText];
-            session()->put($sessionKey, array_slice($sessionHist, -10));
+            session()->put($sessionKey, array_slice($sessionHist, -20));
 
             // حفظ رد الذكاء بالقاعدة
             if ($conversation && $this->isDbAvailable()) {
