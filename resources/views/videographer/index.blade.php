@@ -1061,5 +1061,14 @@
     transform: translateY(-1px);
     box-shadow: 0 3px 6px rgba(239, 68, 68, 0.15);
 }
+
+@media (max-width: 768px) {
+    .videographer-library-wrapper {
+        padding: 6px 0 60px 0 !important;
+    }
+    .videographer-library-wrapper form {
+        grid-template-columns: 1fr !important;
+    }
+}
 </style>
 @endsection

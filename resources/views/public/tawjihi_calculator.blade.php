@@ -640,8 +640,82 @@
         }
 
         @media (max-width: 900px) {
-            .calculator-grid { grid-template-columns: 1fr; }
+            .calculator-grid { grid-template-columns: 1fr; gap: 16px; }
             .result-box { position: static; }
+        }
+
+        @media (max-width: 640px) {
+            .page-container {
+                padding: 14px 12px 60px;
+            }
+            .nav-inner {
+                padding: 8px 14px;
+            }
+            .nav-brand span {
+                font-size: 14px;
+            }
+            .nav-links {
+                gap: 6px;
+            }
+            .nav-link-btn {
+                padding: 6px 10px;
+                font-size: 11.5px;
+            }
+            .calc-header {
+                margin-bottom: 20px;
+            }
+            .calc-header h1 {
+                font-size: 18px;
+                line-height: 1.4;
+            }
+            .calc-header p {
+                font-size: 12px;
+            }
+            .branch-nav {
+                flex-wrap: wrap;
+                max-width: 100%;
+                gap: 6px;
+                padding: 6px;
+                margin: 14px auto 20px;
+            }
+            .branch-btn {
+                flex: 1 1 calc(50% - 6px);
+                font-size: 12px;
+                padding: 9px 8px;
+                min-height: 40px;
+                justify-content: center;
+            }
+            .card-panel {
+                padding: 16px 14px;
+                border-radius: var(--radius-md);
+            }
+            .inputs-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .majors-panel {
+                padding: 16px 14px;
+                margin-top: 20px;
+            }
+            .majors-list-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .result-box {
+                padding: 18px 14px;
+            }
+            .percentage-text {
+                font-size: 38px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .branch-btn {
+                flex: 1 1 100%;
+            }
+            .nav-brand span {
+                display: none;
+            }
         }
 
         /* زر العودة للأعلى */

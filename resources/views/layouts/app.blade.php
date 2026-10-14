@@ -1297,6 +1297,9 @@
             body:not(.no-sidebar) {
                 padding-bottom: 0 !important;
             }
+            .content-body {
+                padding-bottom: calc(85px + env(safe-area-inset-bottom, 0px)) !important;
+            }
             .date-info {
                 display: none !important;
             }

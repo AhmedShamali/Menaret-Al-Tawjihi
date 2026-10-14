@@ -249,8 +249,24 @@
         }
 
         @media (max-width: 768px) {
-            .header-section h1 { font-size: 1.8rem; }
+            nav { padding: 12px 16px; }
+            .header-section { padding: 30px 16px 16px; }
+            .header-section h1 { font-size: 1.7rem; }
+            .controls-wrapper { padding: 0 14px; margin-bottom: 24px; }
+            .content-container { padding: 0 14px 50px; }
             .formulas-grid { grid-template-columns: 1fr; }
+            .tab-btn { padding: 8px 14px; font-size: 0.82rem; }
+            .formula-display { font-size: 0.88rem; padding: 10px 12px; }
+        }
+
+        @media (max-width: 480px) {
+            nav { padding: 10px 12px; }
+            .nav-logo span { font-size: 1rem; }
+            .btn-nav-action span { display: none; }
+            .header-section h1 { font-size: 1.4rem; }
+            .subject-tabs { gap: 6px; }
+            .tab-btn { padding: 7px 11px; font-size: 0.76rem; border-radius: 10px; }
+            .formula-card { padding: 16px; border-radius: 14px; }
         }
 
         /* زر العودة للأعلى */
