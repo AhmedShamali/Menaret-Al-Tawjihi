@@ -177,16 +177,25 @@
                                 $isAllVis = $item->all_visible;
                                 $isAnyVis = $item->any_visible;
                                 $encodedLesson = htmlspecialchars(json_encode($item), ENT_QUOTES, 'UTF-8');
+                                $cleanUrl = trim((string)($item->url_path ?? ''));
+                                $isBadUrl = empty($cleanUrl) || in_array(strtolower($cleanUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4']);
+                                $streamUrl = !$isBadUrl ? \App\Support\MediaHelper::videoStreamUrl($cleanUrl) : ($item->youtube_embed_url ?? null);
+                                $ytUrl = $item->youtube_embed_url ?? '';
+                                $pdfUrl = $item->pdf_path ? \App\Support\MediaHelper::url($item->pdf_path) : '';
                             @endphp
                             <tr id="lesson_row_{{ $item->id }}" style="border-bottom: 1px solid #f1f5f9; transition: background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                                 <td style="padding: 14px 20px; color: #94a3b8; font-weight: 600; font-size: 0.8rem;">
                                     {{ $contents->firstItem() + $index }}
                                 </td>
                                 
-                                {{-- اسم الدرس وعنوانه مع قابلية النقر لفتح نافذة الفروع --}}
+                                {{-- اسم الدرس وعنوانه مع قابلية النقر لتشغيل الفيديو --}}
                                 <td style="padding: 14px 16px;">
                                     <div style="display: flex; align-items: center; gap: 12px;">
-                                        <div onclick="openLessonModal({{ $encodedLesson }})" style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1d4ed8'; this.style.color='#ffffff';" onmouseout="this.style.background='#eff6ff'; this.style.color='#1d4ed8';" title="{{ __('انقر لفتح نافذة تفاصيل الفروع') }}">
+                                        <div onclick="openVideoPreview('{{ addslashes($item->title) }}', '{{ $streamUrl }}', '{{ $ytUrl }}', '{{ $pdfUrl }}', {{ $item->id }})" 
+                                             style="width: 40px; height: 40px; border-radius: 10px; background: #eff6ff; color: #1d4ed8; display: grid; place-items: center; font-size: 1rem; flex-shrink: 0; cursor: pointer; transition: all 0.2s;" 
+                                             onmouseover="this.style.background='#1d4ed8'; this.style.color='#ffffff';" 
+                                             onmouseout="this.style.background='#eff6ff'; this.style.color='#1d4ed8';" 
+                                             title="{{ $streamUrl ? __('انقر لتشغيل ومعاينة الفيديو فوراً') : __('انقر لمعاينة حالة الفيديو') }}">
                                             <i class="fa-solid fa-play"></i>
                                         </div>
                                         <div>
@@ -236,19 +245,25 @@
                                     </div>
                                 </td>
 
-                                {{-- الملف والمرفقات --}}
+                                {{-- الملف والمرفقات مع تشغيل مباشر وحالة واضحة --}}
                                 <td style="padding: 14px 16px;">
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                        @if($item->url_path)
-                                            @php
-                                                $streamUrl = \App\Support\MediaHelper::videoStreamUrl($item->url_path);
-                                            @endphp
+                                        @if($streamUrl)
                                             <button type="button" 
                                                     data-title="{{ $item->title }}" 
                                                     data-url="{{ $streamUrl }}" 
-                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'))" 
+                                                    data-yt="{{ $ytUrl }}"
+                                                    data-pdf="{{ $pdfUrl }}"
+                                                    onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'), this.getAttribute('data-yt'), this.getAttribute('data-pdf'), {{ $item->id }})" 
                                                     style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 4px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
                                                 <i class="fa-solid fa-eye"></i> {{ __('معاينة') }}
+                                            </button>
+                                        @else
+                                            <button type="button" 
+                                                    onclick="openVideoPreview('{{ addslashes($item->title) }}', '', '', '{{ $pdfUrl }}', {{ $item->id }})" 
+                                                    style="background: #fff1f2; border: 1px solid #fecdd3; color: #e11d48; padding: 4px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                                                    title="{{ __('لا يوجد فيديو مسجل - انقر للتفاصيل والتعديل') }}">
+                                                <i class="fa-solid fa-video-slash"></i> {{ __('بدون فيديو') }}
                                             </button>
                                         @endif
                                         @if($item->pdf_path)
@@ -301,17 +316,18 @@
                                         </button>
 
                                         <!-- زر تعديل المحاضرة والملفات -->
-                                        <a href="{{ route('educational_contents.edit', $item->id) }}" style="background: #f8fafc; border: 1px solid #cbd5e1; color: #0284c7; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; text-decoration: none; transition: all 0.15s;" title="{{ __('تعديل المحاضرة والملفات') }}">
+                                        <a href="{{ route('videographer.contents.edit', $item->id) }}" style="background: #f8fafc; border: 1px solid #cbd5e1; color: #0284c7; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; text-decoration: none; transition: all 0.15s;" title="{{ __('تعديل المحاضرة والملفات') }}">
                                             <i class="fa-regular fa-pen-to-square" style="font-size: 0.9rem;"></i>
                                         </a>
 
                                         <!-- زر مزامنة وتوزيع إضافي لكافة الفروع -->
-                                        <form action="{{ route('videographer.contents.sync_branches', $item->id) }}" method="POST" style="display: inline-block; margin: 0;" title="{{ __('توزيع ومزامنة هذه المحاضرة تلقائياً على كافة الفروع الأكاديمية الشقيقة') }}">
-                                            @csrf
-                                            <button type="submit" style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" title="{{ __('مزامنة وتوزيع لكافة الفروع') }}">
-                                                <i class="fa-solid fa-arrows-rotate" style="font-size: 0.85rem;"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                id="sync_btn_{{ $item->id }}"
+                                                onclick="syncLessonBranches({{ $item->id }}, this)" 
+                                                style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: all 0.15s;" 
+                                                title="{{ __('مزامنة وتوزيع لكافة الفروع الأكاديمية الشقيقة') }}">
+                                            <i class="fa-solid fa-arrows-rotate" style="font-size: 0.85rem;"></i>
+                                        </button>
 
                                         <!-- زر حذف الدرس بالكامل من كافة الفروع -->
                                         <button type="button" onclick="deleteVideographerContent({{ $item->id }}, '{{ addslashes($item->title) }}', 'all')" style="background: none; border: 1px solid #fee2e2; color: #dc2626; width: 34px; height: 34px; border-radius: 8px; cursor: pointer; display: inline-grid; place-items: center; transition: background 0.15s;" title="{{ __('حذف الدرس بالكامل من كافة الفروع') }}">
@@ -428,23 +444,64 @@
     </div>
 </div>
 
-{{-- نافذة منبثقة لمعاينة الفيديو (Video Preview Modal) --}}
-<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 99999; place-items: center; padding: 20px;">
-    <div style="background: #ffffff; border-radius: 16px; max-width: 800px; width: 100%; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); animation: modalScaleIn 0.2s ease;">
-        <div style="padding: 16px 20px; background: #0f172a; color: #ffffff; display: flex; align-items: center; justify-content: space-between;">
-            <strong id="previewModalTitle" style="font-size: 0.95rem; font-family: 'Alexandria', sans-serif;">{{ __('معاينة المحاضرة') }}</strong>
-            <button type="button" onclick="closeVideoPreview()" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+{{-- نافذة منبثقة لمعاينة الفيديو الذكية (Video Preview Modal) --}}
+<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px); z-index: 99999; place-items: center; padding: 20px;">
+    <div style="background: #0f172a; border-radius: 18px; max-width: 920px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255,255,255,0.12); animation: modalScaleIn 0.2s ease;">
+        <div style="padding: 14px 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 700; overflow: hidden; min-width: 0;">
+                <i class="fa-solid fa-play" style="color: #60a5fa; flex-shrink: 0;"></i>
+                <span id="preview_video_title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ __('معاينة المحاضرة') }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <a id="preview_video_external_link" href="#" target="_blank" rel="noopener noreferrer" style="display: none; align-items: center; gap: 6px; color: #93c5fd; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 5px 12px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; text-decoration: none;" title="{{ __('فتح الفيديو في تبويب خارجي مستقل') }}">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    <span>{{ __('فتح في تبويب خارجي') }}</span>
+                </a>
+                <button type="button" onclick="closeVideoPreview()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;" title="{{ __('إغلاق المعاينة') }}">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
         </div>
-        <div style="background: #000000; position: relative; padding-top: 56.25%; width: 100%;">
-            <video id="previewPlayerVideo" controls style="display: none; position: absolute; top:0; left:0; width: 100%; height: 100%;" src=""></video>
-            <iframe id="previewPlayerIframe" style="display: none; position: absolute; top:0; left:0; width: 100%; height: 100%; border: none;" src="" allowfullscreen></iframe>
-        </div>
-        <div style="padding: 14px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end;">
-            <button type="button" onclick="closeVideoPreview()" style="background: #e2e8f0; color: #334155; border: none; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">
-                {{ __('إغلاق') }}
-            </button>
+        <div style="position: relative; padding-top: 56.25%; background: #000; overflow: hidden;">
+            {{-- مشغل الفيديو المباشر لملفات MP4 / WebM وبث الخادم --}}
+            <video id="preview_video_player" controls playsinline controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: none;">
+                <source id="preview_video_source" src="" type="video/mp4">
+            </video>
+
+            {{-- مشغل Iframe لفيديوهات يوتيوب وفيميو والروابط الخارجية المضمنة --}}
+            <iframe id="preview_video_iframe" 
+                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none;" 
+                    allowfullscreen 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+            </iframe>
+
+            {{-- شاشة بديلة ذكية في حال تعثر التشغيل أو عدم توفر ملف --}}
+            <div id="preview_video_error" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; color: #fff; z-index: 10;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h4 id="preview_error_h4" style="margin: 0 0 6px; font-size: 1rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر تشغيل الفيديو داخل هذا المشغل المباشر') }}</h4>
+                    <p id="preview_error_p" style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 460px; line-height: 1.5;">{{ __('قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة أو تعديل الدرس لإرفاق الفيديو.') }}</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px; flex-wrap: wrap; justify-content: center;">
+                    <a id="preview_video_error_link" href="#" target="_blank" rel="noopener noreferrer" style="display: none; background: #2563eb; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span>{{ __('فتح الفيديو في تبويب جديد') }}</span>
+                    </a>
+                    <a id="preview_video_error_edit" href="#" style="display: inline-flex; background: #3b82f6; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; align-items: center; gap: 6px;">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                        <span>{{ __('تعديل الدرس وإرفاق الفيديو') }}</span>
+                    </a>
+                    <a id="preview_video_error_pdf" href="#" target="_blank" rel="noopener noreferrer" style="display: none; background: #059669; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-file-pdf"></i>
+                        <span>{{ __('عرض دوسية وملزمة الدرس PDF') }}</span>
+                    </a>
+                    <button type="button" onclick="closeVideoPreview()" style="background: rgba(255,255,255,0.1); color: #cbd5e1; border: none; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                        {{ __('إغلاق') }}
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -485,7 +542,7 @@
                     const clean = rawUrl.replace(/^(storage\/|public\/|\/)/, '');
                     streamUrl = '/video-stream/' + clean;
                 }
-                openVideoPreview(lesson.title, streamUrl);
+                openVideoPreview(lesson.title, streamUrl, lesson.youtube_embed_url, lesson.pdf_path ? ('/storage/' + lesson.pdf_path) : null, lesson.id);
             };
         }
 
@@ -501,7 +558,7 @@
 
         const btnEdit = document.getElementById('dist_modal_btn_edit');
         if (btnEdit) {
-            btnEdit.href = '/educational-contents/' + lesson.id + '/edit';
+            btnEdit.href = '/videographer/contents/' + lesson.id + '/edit';
         }
 
         const btnDeleteAll = document.getElementById('dist_modal_btn_delete_all');
@@ -861,33 +918,100 @@
     }
 
     // 6. مشغل معاينة الفيديو
-    function openVideoPreview(title, url) {
-        if (!url) return;
+    function openVideoPreview(title, url, ytUrl = null, pdfUrl = null, lessonId = null) {
         const modal = document.getElementById('videoPreviewModal');
-        const titleEl = document.getElementById('previewModalTitle');
-        const videoEl = document.getElementById('previewPlayerVideo');
-        const iframeEl = document.getElementById('previewPlayerIframe');
+        const player = document.getElementById('preview_video_player');
+        const source = document.getElementById('preview_video_source');
+        const iframe = document.getElementById('preview_video_iframe');
+        const titleEl = document.getElementById('preview_video_title');
+        const extLink = document.getElementById('preview_video_external_link');
+        const errorBox = document.getElementById('preview_video_error');
+        const errorLink = document.getElementById('preview_video_error_link');
+        const errorPdf = document.getElementById('preview_video_error_pdf');
+        const errorEdit = document.getElementById('preview_video_error_edit');
+        const errorH4 = document.getElementById('preview_error_h4');
+        const errorP = document.getElementById('preview_error_p');
 
         if (titleEl) titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
 
-        const trimmedUrl = String(url).trim();
-        const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)/i.test(trimmedUrl);
+        if (errorEdit) {
+            if (lessonId) {
+                errorEdit.href = '/videographer/contents/' + lessonId + '/edit';
+                errorEdit.style.display = 'inline-flex';
+            } else {
+                errorEdit.style.display = 'none';
+            }
+        }
+
+        const trimmedUrl = String(url || ytUrl || '').trim();
+        const invalidTokens = ['undefined', 'null', 'none', 'false', '0', '#', 'undefined.mp4', 'null.mp4'];
+        const isCorrupted = !trimmedUrl || invalidTokens.includes(trimmedUrl.toLowerCase()) || trimmedUrl.endsWith('/undefined') || trimmedUrl.endsWith('/null');
+
+        if (extLink) {
+            if (!isCorrupted) {
+                extLink.href = trimmedUrl;
+                extLink.style.display = 'inline-flex';
+            } else {
+                extLink.style.display = 'none';
+            }
+        }
+        if (errorLink) {
+            if (!isCorrupted) {
+                errorLink.href = trimmedUrl;
+                errorLink.style.display = 'inline-flex';
+            } else {
+                errorLink.style.display = 'none';
+            }
+        }
+        if (errorPdf) {
+            if (pdfUrl) {
+                errorPdf.href = pdfUrl;
+                errorPdf.style.display = 'inline-flex';
+            } else {
+                errorPdf.style.display = 'none';
+            }
+        }
+        if (errorBox) {
+            errorBox.style.display = 'none';
+        }
+
+        if (isCorrupted) {
+            if (player) {
+                player.pause();
+                player.removeAttribute('src');
+                if (source) source.removeAttribute('src');
+                player.style.display = 'none';
+            }
+            if (iframe) {
+                iframe.src = 'about:blank';
+                iframe.style.display = 'none';
+            }
+            if (errorBox) errorBox.style.display = 'flex';
+            if (errorH4) errorH4.textContent = 'لم يتم إرفاق ملف فيديو لهذا الدرس بعد ⚠️';
+            if (errorP) errorP.textContent = 'هذا الدرس مسجل حالياً بدون ملف فيديو مرفوع أو رابط يوتيوب صالح. بإمكانك الضغط على زر تعديل الدرس لإرفاق الفيديو أو وضع رابط يوتيوب.';
+            if (modal) modal.style.display = 'grid';
+            document.body.style.overflow = 'hidden';
+            return;
+        }
+
+        const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/)|youtu\.be\/)/i.test(trimmedUrl);
         const isVimeo = /vimeo\.com/i.test(trimmedUrl);
 
         if (isYouTube || isVimeo) {
-            if (videoEl) {
-                videoEl.pause();
-                videoEl.removeAttribute('src');
-                videoEl.style.display = 'none';
+            if (player) {
+                player.pause();
+                player.removeAttribute('src');
+                if (source) source.removeAttribute('src');
+                player.style.display = 'none';
             }
 
             let embedUrl = trimmedUrl;
             if (isYouTube) {
                 const ym = trimmedUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/i);
                 if (ym && ym[1]) {
-                    embedUrl = 'https://www.youtube.com/embed/' + ym[1] + '?autoplay=1&rel=0&modestbranding=1';
+                    embedUrl = 'https://www.youtube.com/embed/' + ym[1] + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
                 } else if (trimmedUrl.includes('watch?v=')) {
-                    embedUrl = trimmedUrl.replace('watch?v=', 'embed/') + '?autoplay=1&rel=0';
+                    embedUrl = trimmedUrl.replace('watch?v=', 'embed/') + (trimmedUrl.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
                 }
             } else if (isVimeo) {
                 const vm = trimmedUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
@@ -896,53 +1020,130 @@
                 }
             }
 
-            if (iframeEl) {
-                iframeEl.src = embedUrl;
-                iframeEl.style.display = 'block';
+            if (iframe) {
+                iframe.src = embedUrl;
+                iframe.style.display = 'block';
             }
         } else {
-            if (iframeEl) {
-                iframeEl.src = 'about:blank';
-                iframeEl.style.display = 'none';
+            if (iframe) {
+                iframe.src = 'about:blank';
+                iframe.style.display = 'none';
             }
-            if (videoEl) {
-                videoEl.src = trimmedUrl;
-                videoEl.style.display = 'block';
-                videoEl.onerror = function() {
+
+            if (player) {
+                player.style.display = 'block';
+                player.pause();
+                player.src = trimmedUrl;
+                if (source) source.src = trimmedUrl;
+
+                player.onerror = function() {
+                    if (ytUrl && ytUrl !== trimmedUrl) {
+                        openVideoPreview(title, ytUrl, null, pdfUrl, lessonId);
+                        return;
+                    }
+                    if (errorBox) errorBox.style.display = 'flex';
                     fetch(trimmedUrl, { method: 'GET', headers: { 'Accept': 'application/json' } })
                         .then(res => {
                             if (res.status === 422) {
                                 return res.json().then(data => {
-                                    alert(data.message || 'ملف هذا الفيديو غير مكتمل على السيرفر (0 بايت). يرجى إعادة رفع الفيديو.');
+                                    if (errorH4) errorH4.textContent = 'ملف هذا الدرس غير مكتمل في التخزين (0 بايت)';
+                                    if (errorP) errorP.textContent = data.message || 'هذا الفيديو تم حفظه مسبقاً بحجم 0 بايت أو لم يكتمل دمجه. بإمكانك إعادة رفع الفيديو عبر خيار التعديل.';
                                 });
                             }
                         })
                         .catch(() => {});
                 };
-                videoEl.load();
-                videoEl.play().catch(() => {});
+
+                player.load();
+                player.play().catch(() => {});
             }
         }
 
         if (modal) modal.style.display = 'grid';
+        document.body.style.overflow = 'hidden';
     }
 
     function closeVideoPreview() {
         const modal = document.getElementById('videoPreviewModal');
-        const videoEl = document.getElementById('previewPlayerVideo');
-        const iframeEl = document.getElementById('previewPlayerIframe');
+        const player = document.getElementById('preview_video_player');
+        const source = document.getElementById('preview_video_source');
+        const iframe = document.getElementById('preview_video_iframe');
+        const errorBox = document.getElementById('preview_video_error');
 
-        if (videoEl) {
-            videoEl.pause();
-            videoEl.removeAttribute('src');
-            videoEl.load();
-            videoEl.style.display = 'none';
+        if (player) {
+            player.pause();
+            player.removeAttribute('src');
+            if (source) source.removeAttribute('src');
+            player.load();
+            player.style.display = 'none';
         }
-        if (iframeEl) {
-            iframeEl.src = 'about:blank';
-            iframeEl.style.display = 'none';
+        if (iframe) {
+            iframe.src = 'about:blank';
+            iframe.style.display = 'none';
         }
+        if (errorBox) errorBox.style.display = 'none';
         if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // 7. مزامنة وتوزيع المحاضرة على كافة الفروع الأكاديمية الشقيقة بلمسة واحدة
+    async function syncLessonBranches(id, btn) {
+        const targetBtn = btn || document.getElementById('sync_btn_' + id);
+        const origHtml = targetBtn ? targetBtn.innerHTML : '';
+        if (targetBtn) {
+            targetBtn.disabled = true;
+            targetBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="font-size: 0.85rem;"></i>';
+        }
+
+        try {
+            const response = await fetch('/videographer/contents/' + id + '/sync-branches', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await response.json();
+
+            if (targetBtn) {
+                targetBtn.disabled = false;
+                targetBtn.innerHTML = origHtml;
+            }
+
+            if (data.success) {
+                if (window.Swal) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تمت المزامنة بنجاح 🎉',
+                        text: data.message || 'تم توزيع ومزامنة المحاضرة على كافة الفروع الأكاديمية المطابقة.',
+                        timer: 2500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    alert(data.message || 'تمت المزامنة بنجاح');
+                    location.reload();
+                }
+            } else {
+                throw new Error(data.error || 'حدث خطأ أثناء المزامنة');
+            }
+        } catch (err) {
+            if (targetBtn) {
+                targetBtn.disabled = false;
+                targetBtn.innerHTML = origHtml;
+            }
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ في المزامنة',
+                    text: err.message || 'تعذر استكمال المزامنة حالياً.'
+                });
+            } else {
+                alert('خطأ: ' + err.message);
+            }
+        }
     }
 
     document.getElementById('videoPreviewModal').addEventListener('click', function(e) {

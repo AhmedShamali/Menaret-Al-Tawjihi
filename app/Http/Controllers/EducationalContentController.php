@@ -736,6 +736,12 @@ class EducationalContentController extends Controller
                 'title' => 'غير مصرح لك بتعديل هذا المحتوى.'
             ], 403);
         }
+
+        $oldTitle = $content->title;
+        $oldUrlPath = $content->url_path;
+        $oldPdfPath = $content->pdf_path;
+        $baseSubjectId = (int) $content->subject_id;
+
         $content->subject_id   = $request->subject_id;
         $content->title        = $request->title;
         $content->type         = $request->type ?? $content->type;
@@ -845,8 +851,37 @@ class EducationalContentController extends Controller
             ], 500);
         }
 
-        // مزامنة التعديلات على الفروع الشقيقة فوراً
+        // مزامنة التعديلات وتحديث كافة النسخ في الفروع الشقيقة فوراً
         try {
+            $sisterSubjectIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds([$baseSubjectId, (int)$content->subject_id]);
+            
+            // تحديث كافة السجلات الشقيقة التي تشارك هذا الدرس
+            $sisterRecords = EducationalContent::where('id', '!=', $content->id)
+                ->whereIn('subject_id', $sisterSubjectIds)
+                ->where(function($q) use ($oldTitle, $oldUrlPath, $oldPdfPath, $content) {
+                    if (!empty($oldTitle)) {
+                        $q->where('title', $oldTitle);
+                    }
+                    if (!empty($oldUrlPath) && !in_array(strtolower($oldUrlPath), ['undefined', 'null', 'none', 'false', '0'])) {
+                        $q->orWhere('url_path', $oldUrlPath);
+                    }
+                    if (!empty($oldPdfPath)) {
+                        $q->orWhere('pdf_path', $oldPdfPath);
+                    }
+                    $q->orWhere('title', $content->title);
+                })->get();
+
+            foreach ($sisterRecords as $sister) {
+                $sister->title         = $content->title;
+                $sister->type          = $content->type;
+                $sister->url_path      = $content->url_path;
+                $sister->pdf_path      = $content->pdf_path;
+                $sister->file_size     = $content->file_size;
+                $sister->target_region = $content->target_region;
+                $sister->order         = $content->order;
+                $sister->save();
+            }
+
             \App\Services\EducationalContentSyncService::distributeContentToAllBranches($content);
         } catch (\Throwable $e) {
             \Log::warning('EducationalContent distribute on update error: ' . $e->getMessage());

@@ -77,9 +77,9 @@ class EducationalContentSyncService
             }
 
             // فحص هل المحتوى منشور مسبقاً في هذه المادة الشقيقة
-            $exists = EducationalContent::where('subject_id', $sisterSubId)
+            $existing = EducationalContent::where('subject_id', $sisterSubId)
                 ->where(function($q) use ($content) {
-                    if (!empty($content->url_path)) {
+                    if (!empty($content->url_path) && !in_array(strtolower($content->url_path), ['undefined', 'null', 'none', 'false', '0'])) {
                         $q->where('url_path', $content->url_path);
                     }
                     if (!empty($content->pdf_path)) {
@@ -88,9 +88,9 @@ class EducationalContentSyncService
                     if (!empty($content->title)) {
                         $q->orWhere('title', $content->title);
                     }
-                })->exists();
+                })->first();
 
-            if (!$exists) {
+            if (!$existing) {
                 $sisterSub = Subject::with(['teacher'])->find($sisterSubId);
                 $channelName = $content->channel_name;
                 if (!empty($sisterSub?->teacher_name)) {
@@ -116,6 +116,26 @@ class EducationalContentSyncService
 
                 // فتح الوصول التلقائي للطلبة المسجلين باشتراك نشط في المادة الشقيقة
                 self::unlockForActiveEnrollments($replica);
+            } else {
+                $needsUpdate = false;
+                if (!empty($content->url_path) && ($existing->url_path !== $content->url_path || in_array(strtolower((string)$existing->url_path), ['undefined', 'null', 'none', 'false', '0']))) {
+                    $existing->url_path = $content->url_path;
+                    $existing->file_size = $content->file_size;
+                    $existing->type = $content->type ?? 'video';
+                    $needsUpdate = true;
+                }
+                if (!empty($content->pdf_path) && $existing->pdf_path !== $content->pdf_path) {
+                    $existing->pdf_path = $content->pdf_path;
+                    $needsUpdate = true;
+                }
+                if ($existing->title !== $content->title) {
+                    $existing->title = $content->title;
+                    $needsUpdate = true;
+                }
+                if ($needsUpdate) {
+                    $existing->save();
+                    $replicatedCount++;
+                }
             }
         }
 

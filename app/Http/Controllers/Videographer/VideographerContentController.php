@@ -565,10 +565,10 @@ class VideographerContentController extends Controller
             $alreadyExists = EducationalContent::where('subject_id', $sisterSub->id)
                 ->where(function($q) use ($content) {
                     $q->where('title', $content->title);
-                    if (!empty($content->url_path)) {
+                    if (!empty($content->url_path) && !in_array(strtolower($content->url_path), ['undefined', 'null', 'none', 'false', '0'])) {
                         $q->orWhere('url_path', $content->url_path);
                     }
-                })->exists();
+                })->first();
 
             if (!$alreadyExists) {
                 $channelName = $content->channel_name;
@@ -607,12 +607,41 @@ class VideographerContentController extends Controller
                         ]);
                     }
                 } catch (\Throwable $e) {}
+            } else {
+                // إذا كان موجوداً مسبقاً: مزامنة مسار الفيديو والملف وحجمه إذا كان ناقصاً
+                $needsUpdate = false;
+                if (!empty($content->url_path) && ($alreadyExists->url_path !== $content->url_path || in_array(strtolower((string)$alreadyExists->url_path), ['undefined', 'null', 'none', 'false', '0']))) {
+                    $alreadyExists->url_path = $content->url_path;
+                    $alreadyExists->file_size = $content->file_size;
+                    $alreadyExists->type = $content->type ?: 'video';
+                    $needsUpdate = true;
+                }
+                if (!empty($content->pdf_path) && $alreadyExists->pdf_path !== $content->pdf_path) {
+                    $alreadyExists->pdf_path = $content->pdf_path;
+                    $needsUpdate = true;
+                }
+                if ($alreadyExists->title !== $content->title) {
+                    $alreadyExists->title = $content->title;
+                    $needsUpdate = true;
+                }
+                if ($needsUpdate) {
+                    $alreadyExists->save();
+                    $syncedCount++;
+                }
             }
         }
 
         $msg = $syncedCount > 0 
             ? "تم بنجاح توزيع ومزامنة المحاضرة على ({$syncedCount}) فروع أكاديمية إضافية! 🎉" 
-            : "المحاضرة موزعة بالفعل على كافة الفروع الأكاديمية المطابقة.";
+            : "المحاضرة موزعة ومزامنة بالفعل على كافة الفروع الأكاديمية المطابقة.";
+
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success'      => true,
+                'message'      => $msg,
+                'synced_count' => $syncedCount
+            ]);
+        }
 
         return back()->with('success', $msg);
     }

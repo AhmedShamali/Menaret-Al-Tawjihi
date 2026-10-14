@@ -3,6 +3,19 @@
 @section('title', __('تعديل المحتوى التعليمي') . ' - ' . __('إدارة المنصة'))
 
 @section('content')
+@php
+    $userRole = auth()->user()->role ?? '';
+    if (in_array($userRole, ['admin', 'super_admin'])) {
+        $editActionUrl = route('admin.educational_contents.update', $content->id);
+        $editIndexUrl = route('admin.educational_contents.index');
+    } elseif ($userRole === 'videographer') {
+        $editActionUrl = route('videographer.contents.update', $content->id);
+        $editIndexUrl = route('videographer.contents.index');
+    } else {
+        $editActionUrl = route('teacher.educational_contents.update', $content->id);
+        $editIndexUrl = route('teacher.educational_contents.index');
+    }
+@endphp
 <div class="editor-wrapper">
     <div class="academic-header-card">
         <div>
@@ -13,7 +26,7 @@
             <h1 class="header-title">{{ __('تعديل الدرس التعليمي') }}</h1>
             <p class="header-subtitle">{{ __('تحديث تفاصيل المحتوى، روابط الشرح، ومرفقات الدرس الأكاديمي.') }}</p>
         </div>
-        <a href="{{ route('educational_contents.index') }}" class="btn-classic-nav">
+        <a href="{{ $editIndexUrl }}" class="btn-classic-nav">
             <i class="fa-solid fa-arrow-{{ app()->getLocale() == 'ar' ? 'right' : 'left' }}"></i> {{ __('إلغاء والتراجع') }}
         </a>
     </div>
@@ -21,6 +34,17 @@
     <form id="editForm">
         @csrf
         @method('PUT')
+
+        {{-- تنبيه مزامنة الفروع التلقائية --}}
+        <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; color: #1e40af; padding: 12px 18px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <div style="width: 32px; height: 32px; border-radius: 50%; background: #dbeafe; display: grid; place-items: center; color: #1d4ed8; flex-shrink: 0; font-size: 0.95rem;">
+                <i class="fa-solid fa-arrows-rotate"></i>
+            </div>
+            <div style="font-size: 0.86rem; line-height: 1.5;">
+                <strong style="font-weight: 800;">{{ __('مزامنة تلقائية لكافة الفروع:') }}</strong>
+                <span>{{ __('تعديل العنوان أو الفيديو أو الملف هنا سيقوم بتحديث وتوحيد كافة النسخ المشتركة للدرس في جميع الفروع الأكاديمية التابعة (علمي، أدبي، ريادة أعمال... إلخ) فوراً.') }}</span>
+            </div>
+        </div>
 
         <div class="editor-grid">
             <!-- العمود الرئيسي الكبير -->
@@ -424,7 +448,7 @@
                 }
             }
 
-            const updateUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.update', $content->id) : route('teacher.educational_contents.update', $content->id) }}";
+            const updateUrl = "{{ $editActionUrl }}";
             const res = await axios.post(updateUrl, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -442,11 +466,11 @@
             Swal.fire({
                 icon: res.data.icon || 'success',
                 title: res.data.title || '{{ __('تم التحديث بنجاح!') }}',
-                text: res.data.message || '{{ __('تم حفظ التعديلات وتثبيتها بنجاح.') }}',
+                text: res.data.message || '{{ __('تم حفظ التعديلات وتثبيتها وتحديث كافة الفروع الأكاديمية بنجاح.') }}',
                 showConfirmButton: false,
                 timer: 1800
             }).then(() => {
-                window.location.href = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.index') : route('teacher.educational_contents.index') }}";
+                window.location.href = "{{ $editIndexUrl }}";
             });
 
         } catch (err) {
