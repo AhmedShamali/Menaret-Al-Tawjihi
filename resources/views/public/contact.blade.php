@@ -371,5 +371,51 @@
         font-size: 0.88rem;
         font-weight: 700;
     }
+
+    @media (max-width: 768px) {
+        .contact-page-wrapper {
+            margin: 20px auto calc(75px + env(safe-area-inset-bottom, 0px));
+            padding: 0 12px;
+        }
+        .contact-hero-card {
+            gap: 24px;
+        }
+        .hero-title {
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            margin-bottom: 12px;
+        }
+        .hero-desc {
+            font-size: 0.92rem;
+            margin-bottom: 20px;
+        }
+        .form-glass-panel {
+            padding: 24px 16px;
+            border-radius: 18px;
+        }
+        .contact-card-box {
+            padding: 14px 16px;
+        }
+        .submit-complaint-btn {
+            padding: 13px;
+            font-size: 0.95rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .form-glass-panel {
+            padding: 18px 12px;
+        }
+        .contact-icon {
+            width: 42px;
+            height: 42px;
+            font-size: 1.15rem;
+        }
+        .contact-card-box h4 {
+            font-size: 0.86rem;
+        }
+        .contact-card-box p {
+            font-size: 0.8rem;
+        }
+    }
 </style>
 @endsection

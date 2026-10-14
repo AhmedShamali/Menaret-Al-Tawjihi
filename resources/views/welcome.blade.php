@@ -3827,6 +3827,10 @@
         // إدارة تثبيت تطبيق الويب التقدمي (PWA Install Prompt)
         (function() {
             window.triggerPwaInstall = function() {
+                if (typeof openInstallModal === 'function') {
+                    openInstallModal();
+                    return;
+                }
                 if (window.deferredPwaPrompt) {
                     window.deferredPwaPrompt.prompt();
                     window.deferredPwaPrompt.userChoice.then(() => {
