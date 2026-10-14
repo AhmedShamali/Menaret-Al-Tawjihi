@@ -85,8 +85,11 @@
                     <div class="video-card">
                         <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
                             @php
-                                $url = $video->url_path;
-                                $isYoutube = \Illuminate\Support\Str::contains($url, ['youtube.com', 'youtu.be']);
+                                $url = trim((string)$video->url_path);
+                                if (in_array(strtolower($url), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
+                                    $url = '';
+                                }
+                                $isYoutube = !empty($url) && \Illuminate\Support\Str::contains($url, ['youtube.com', 'youtu.be']);
                             @endphp
 
                             @if($isYoutube)
@@ -104,17 +107,29 @@
                                         loading="lazy"
                                         style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
                                 </iframe>
-                            @else
+                            @elseif(!empty($url))
                                 @php
-                                    $directUrl = \App\Support\MediaHelper::videoStreamUrl($video->url_path);
-                                    $directFallback = \App\Support\MediaHelper::url($video->url_path);
+                                    $directUrl = \App\Support\MediaHelper::videoStreamUrl($url);
+                                    $directFallback = \App\Support\MediaHelper::url($url);
                                 @endphp
-                                <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
-                                    <source src="{{ $directUrl }}">
-                                    @if($directFallback && $directFallback !== $directUrl)
-                                        <source src="{{ $directFallback }}">
-                                    @endif
-                                </video>
+                                @if($directUrl)
+                                    <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
+                                        <source src="{{ $directUrl }}">
+                                        @if($directFallback && $directFallback !== $directUrl)
+                                            <source src="{{ $directFallback }}">
+                                        @endif
+                                    </video>
+                                @else
+                                    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #94a3b8; padding: 20px; text-align: center;">
+                                        <i class="fa-solid fa-video-slash" style="font-size: 2rem; color: #64748b; margin-bottom: 8px;"></i>
+                                        <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700;">{{ __('جاري تجهيز بث الفيديو') }}</span>
+                                    </div>
+                                @endif
+                            @else
+                                <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #94a3b8; padding: 20px; text-align: center;">
+                                    <i class="fa-solid fa-video-slash" style="font-size: 2rem; color: #64748b; margin-bottom: 8px;"></i>
+                                    <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700;">{{ __('جاري تجهيز ورفع الفيديو من المعلم') }}</span>
+                                </div>
                             @endif
 
                             <!-- شاشة النقر التفاعلية لتشغيل / إيقاف الفيديو -->

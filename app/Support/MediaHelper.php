@@ -18,7 +18,7 @@ class MediaHelper
      */
     public static function url(?string $path, ?string $fallback = null): ?string
     {
-        if (empty($path)) {
+        if (empty($path) || in_array(strtolower(trim($path)), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
             return $fallback;
         }
 
@@ -72,7 +72,7 @@ class MediaHelper
      */
     public static function videoStreamUrl(?string $path, ?string $fallback = null): ?string
     {
-        if (empty($path)) {
+        if (empty($path) || in_array(strtolower(trim($path)), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
             return $fallback;
         }
 

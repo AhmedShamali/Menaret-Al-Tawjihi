@@ -368,9 +368,12 @@ class VideographerContentController extends Controller
         $videoPath = null;
         $fileSize = null;
 
+        $invalidTokens = ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4', ''];
+        $cleanUploaded = trim((string)$request->input('uploaded_video_path', ''));
+
         // أ) إذا تم رفعه مسبقاً عبر Chunked Upload
-        if ($request->filled('uploaded_video_path')) {
-            $videoPath = trim($request->uploaded_video_path);
+        if (!empty($cleanUploaded) && !in_array(strtolower($cleanUploaded), $invalidTokens)) {
+            $videoPath = $cleanUploaded;
             $fileSize = $request->formatted_size ?? 'فيديو مرفوع';
         }
         // ب) إذا تم رفعه كملف مباشر في الفورم
@@ -383,8 +386,11 @@ class VideographerContentController extends Controller
         }
         // ج) إذا كان رابط يوتيوب أو رابط خارجي
         elseif ($request->filled('video_url')) {
-            $videoPath = trim($request->video_url);
-            $fileSize = 'رابط خارجي';
+            $cleanUrl = trim((string)$request->input('video_url', ''));
+            if (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), $invalidTokens)) {
+                $videoPath = $cleanUrl;
+                $fileSize = 'رابط خارجي';
+            }
         }
 
         if (empty($videoPath)) {

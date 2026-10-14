@@ -107,26 +107,62 @@
                     </div>
 
                     <!-- قسم الفيديو -->
+                    @php
+                        $cleanCurUrl = trim((string)($content->url_path ?? ''));
+                        $isCorrupted = empty($cleanCurUrl) || in_array(strtolower($cleanCurUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4']);
+                        $isYouTube = !$isCorrupted && preg_match('/(?:youtube\.com|youtu\.be)/i', $cleanCurUrl);
+                    @endphp
                     <div class="upload-section">
-                        <div class="upload-header">
-                            <span class="field-label" style="margin:0; color: #1e40af;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i> {{ __('ملف فيديو الدرس (MP4 / WebM)') }}
+                        <div class="upload-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                            <span class="field-label" style="margin:0; color: #1e40af; font-size: 0.95rem;">
+                                <i class="fa-solid fa-film" style="color: #2563eb;"></i> {{ __('فيديو ومصدر المحاضرة') }}
                             </span>
-                            @if($content->url_path)
-                                <span class="badge-present">
-                                    {{ __('يوجد فيديو مسجل للدرس ✅') }}
+                            @if(!$isCorrupted)
+                                <span class="badge-present" style="background: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 700;">
+                                    <i class="fa-solid fa-circle-check"></i> {{ __('يوجد فيديو مسجل للدرس حالياً ✅') }}
+                                </span>
+                            @else
+                                <span style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 6px; font-size: 0.76rem; font-weight: 700;">
+                                    <i class="fa-solid fa-triangle-exclamation"></i> {{ __('لا يوجد فيديو متاح حالياً (يرجى إرفاق فيديو أو رابط)') }}
                                 </span>
                             @endif
                         </div>
 
-                        <div id="edit_box_video">
-                            <input type="file" name="video_file" id="editVideoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="input-style" style="padding: 10px; background: #ffffff;">
-                            <small class="upload-hint" style="color: #166534; font-weight: 600; margin-top: 6px;">
-                                <i class="fa-solid fa-circle-check"></i> {{ __('رفع محلي مباشر بنظام الأجزاء السريع. يدعم الأوفلاين للطلبة بدون إنترنت.') }}
+                        <!-- 1. رابط الفيديو (يوتيوب أو رابط خارجي) -->
+                        <div class="field-group" style="margin-top: 10px;">
+                            <label class="field-label" style="font-weight: 700; color: #334155;">
+                                <i class="fa-brands fa-youtube" style="color: #dc2626;"></i> {{ __('رابط يوتيوب أو رابط فيديو خارجي:') }}
+                            </label>
+                            <input type="text" 
+                                   name="video_url" 
+                                   id="editVideoUrlInput" 
+                                   value="{{ (!$isCorrupted && (str_starts_with($cleanCurUrl, 'http') || $isYouTube)) ? $cleanCurUrl : '' }}" 
+                                   class="input-style" 
+                                   placeholder="https://www.youtube.com/watch?v=... أو رابط مباشر">
+                            <small class="upload-hint" style="color: #64748b; margin-top: 4px; display: block;">
+                                {{ __('إذا كان الشرح على يوتيوب أو Google Drive، الصق الرابط هنا وسيعمل فوراً للمشاهدة المباشرة.') }}
                             </small>
-                            @if($content->url_path)
+                        </div>
+
+                        <!-- فاصل أنيق -->
+                        <div style="display: flex; align-items: center; margin: 14px 0 10px; gap: 10px;">
+                            <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                            <span style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; background: #f8fafc; padding: 2px 10px; border-radius: 12px; border: 1px solid #e2e8f0;">{{ __('أو رفع ملف فيديو جديد من جهازك') }}</span>
+                            <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                        </div>
+
+                        <!-- 2. رفع ملف فيديو MP4 محلي -->
+                        <div id="edit_box_video">
+                            <label class="field-label" style="font-weight: 700; color: #334155;">
+                                <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i> {{ __('اختيار ملف فيديو (MP4 / WebM / MKV):') }}
+                            </label>
+                            <input type="file" name="video_file" id="editVideoFileInput" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="input-style" style="padding: 10px; background: #ffffff;">
+                            <small class="upload-hint" style="color: #166534; font-weight: 600; margin-top: 6px; display: block;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('رفع مباشر بنظام الأجزاء السريع. يدعم التحميل والمشاهدة أوفلاين للطلبة.') }}
+                            </small>
+                            @if(!$isCorrupted)
                                 <div style="margin-top: 8px; font-size: 0.8rem; color: #64748b;">
-                                    <i class="fa-solid fa-link"></i> {{ __('المسار الحالي:') }} <code style="direction: ltr; display: inline-block;">{{ Str::limit($content->url_path, 60) }}</code>
+                                    <i class="fa-solid fa-link"></i> {{ __('المسار الحالي المسجل:') }} <code style="direction: ltr; display: inline-block;">{{ Str::limit($cleanCurUrl, 60) }}</code>
                                 </div>
                             @endif
                         </div>
@@ -254,13 +290,22 @@
         const editPartMeta = document.getElementById('edit_part_meta');
         const videoInput = document.getElementById('editVideoFileInput');
 
+        const hasVideoFile = videoInput && videoInput.files && videoInput.files.length > 0;
+
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري فحص وتجهيز الرفع بالجيجاوات...') }}';
-        progressBox.style.display = 'block';
+        if (hasVideoFile) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري فحص وتجهيز رفع الفيديو...') }}';
+            progressBox.style.display = 'block';
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري حفظ التعديلات...') }}';
+            progressBox.style.display = 'none';
+        }
 
         const preventTabClose = (ev) => {
-            ev.preventDefault();
-            ev.returnValue = '{{ __('جاري رفع وتعديل فيديو ضخم، هل أنت متأكد من مغادرة الصفحة؟') }}';
+            if (hasVideoFile) {
+                ev.preventDefault();
+                ev.returnValue = '{{ __('جاري رفع وتعديل فيديو، هل أنت متأكد من مغادرة الصفحة؟') }}';
+            }
         };
         window.addEventListener('beforeunload', preventTabClose);
 
@@ -269,7 +314,7 @@
 
         try {
             // إذا اختار المعلم ملف فيديو جديد للتعديل، يتم رفعه بنظام الأجزاء والاستئناف
-            if (videoInput && videoInput.files && videoInput.files.length > 0) {
+            if (hasVideoFile) {
                 const file = videoInput.files[0];
 
                 if (window.EdBackgroundUploader) {
@@ -362,20 +407,21 @@
                     window.EdBackgroundUploader.saveSessionState();
                     window.EdBackgroundUploader.updateWidgetUI();
                 }
+
+                if (progressStatusText) {
+                    progressStatusText.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __('اكتمل رفع الفيديو بنجاح! جاري حفظ التعديلات...') }}';
+                }
             }
 
             const formData = new FormData(form);
             formData.delete('video_file');
 
-            if (uploadedVideoPath) {
+            const invalidTokens = ['undefined', 'null', 'none', 'false', '0'];
+            if (uploadedVideoPath && !invalidTokens.includes(String(uploadedVideoPath).trim().toLowerCase())) {
                 formData.append('uploaded_video_path', uploadedVideoPath);
                 if (formattedVideoSize) {
                     formData.append('formatted_size', formattedVideoSize);
                 }
-            }
-
-            if (progressStatusText) {
-                progressStatusText.innerHTML = '<i class="fa-solid fa-circle-check" style="color: #10b981;"></i> {{ __('اكتمل رفع الفيديو بالجيجاوات! جاري حفظ التعديلات...') }}';
             }
 
             const updateUrl = "{{ auth()->user()->role === 'admin' ? route('admin.educational_contents.update', $content->id) : route('teacher.educational_contents.update', $content->id) }}";
@@ -388,13 +434,15 @@
             }
 
             window.removeEventListener('beforeunload', preventTabClose);
-            barFill.style.width = '100%';
-            percentText.innerText = '100%';
+            if (hasVideoFile) {
+                barFill.style.width = '100%';
+                percentText.innerText = '100%';
+            }
 
             Swal.fire({
                 icon: res.data.icon || 'success',
                 title: res.data.title || '{{ __('تم التحديث بنجاح!') }}',
-                text: '{{ __('تم حفظ التعديلات وأصبح الفيديو جاهزاً للبث والمشاهدة أوفلاين.') }}',
+                text: res.data.message || '{{ __('تم حفظ التعديلات وتثبيتها بنجاح.') }}',
                 showConfirmButton: false,
                 timer: 1800
             }).then(() => {

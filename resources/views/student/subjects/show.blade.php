@@ -1415,8 +1415,11 @@ video::-webkit-media-controls-download-button {
                                 <div class="ed-player-frame" id="player_frame_{{ $video->id }}">
                                     @php
                                         $rawUrl = trim($video->url_path ?? '');
+                                        if (in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
+                                            $rawUrl = '';
+                                        }
                                         $ytEmbed = $video->youtube_embed_url;
-                                        $isYt = !empty($ytEmbed) || str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be');
+                                        $isYt = !empty($ytEmbed) || (!empty($rawUrl) && (str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be')));
                                         if ($isYt) {
                                             if (empty($ytEmbed) && !empty($rawUrl)) {
                                                 if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
@@ -1433,7 +1436,11 @@ video::-webkit-media-controls-download-button {
                                                 $ytEmbed = str_replace(['controls=1', 'fs=1'], ['controls=0', 'fs=0'], $ytEmbed);
                                             }
                                         }
-                                        $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $rawUrl) || str_contains($rawUrl, 'educational/videos') || (!empty($rawUrl) && !str_contains($rawUrl, 'youtube') && !str_contains($rawUrl, 'youtu.be'));
+                                        $isDirectVideo = !empty($rawUrl) && (
+                                            (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $rawUrl)
+                                            || str_contains($rawUrl, 'educational/videos')
+                                            || (!str_contains($rawUrl, 'youtube') && !str_contains($rawUrl, 'youtu.be'))
+                                        );
                                         $directVideoUrl = $isDirectVideo 
                                             ? \App\Support\MediaHelper::videoStreamUrl($rawUrl)
                                             : null;
@@ -1487,9 +1494,9 @@ video::-webkit-media-controls-download-button {
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" disableRemotePlayback oncontextmenu="return false;" onerror="handleStudentVideoError(this, '{{ $video->id }}')" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
-                                            <source src="{{ $directVideoUrl }}" type="video/mp4">
+                                            <source src="{{ $directVideoUrl }}" type="video/mp4" onerror="handleStudentVideoError(this.closest('video'), '{{ $video->id }}')">
                                             @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
-                                                <source src="{{ $directVideoFallback }}" type="video/mp4">
+                                                <source src="{{ $directVideoFallback }}" type="video/mp4" onerror="handleStudentVideoError(this.closest('video'), '{{ $video->id }}')">
                                             @endif
                                             {{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
@@ -1520,17 +1527,30 @@ video::-webkit-media-controls-download-button {
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" loading="lazy" style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;"></iframe>
                                     @else
-                                        {{-- في حال كان الدرس مرفقاً بملف أو دوسية بدون فيديو --}}
-                                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; padding: 24px; text-align: center;">
-                                            <i class="fa-solid fa-file-pdf" style="font-size: 3.2rem; color: #ef4444; margin-bottom: 12px;"></i>
-                                            <h4 style="margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #ffffff;">{{ $video->title }}</h4>
-                                            <p style="margin: 0 0 16px; font-size: 0.88rem; color: #94a3b8; max-width: 450px;">
-                                                {{ __('هذا الدرس مخصص كملزمة / دوسية دراسية معتمدة قابلة للتحميل والدراسة المباشرة.') }}
-                                            </p>
+                                        {{-- في حال لم يتم رفع فيديو بعد أو كان الدرس مخصصاً كملزمة ودوسية --}}
+                                        <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%); color: #f8fafc; padding: 24px; text-align: center;">
                                             @if(!empty($video->pdf_path))
+                                                <i class="fa-solid fa-file-pdf" style="font-size: 3rem; color: #ef4444; margin-bottom: 12px;"></i>
+                                                <h4 style="margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #ffffff;">{{ $video->title }}</h4>
+                                                <p style="margin: 0 0 16px; font-size: 0.88rem; color: #94a3b8; max-width: 450px;">
+                                                    {{ __('هذا الدرس متاح حالياً كملزمة / دوسية دراسية معتمدة قابلة للتحميل والمطالعة المباشرة.') }}
+                                                </p>
                                                 <a href="{{ route('content.download', $video->id) }}" class="ed-btn-royal primary" style="font-size: 0.86rem; padding: 10px 22px; text-decoration: none;">
                                                     <i class="fa-solid fa-cloud-arrow-down"></i> {{ __('تحميل ملزمة الدرس الآن') }}
                                                 </a>
+                                            @else
+                                                <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 12px; border: 1px solid rgba(96, 165, 250, 0.3);">
+                                                    <i class="fa-solid fa-video-slash"></i>
+                                                </div>
+                                                <h4 style="margin: 0 0 8px; font-size: 1.15rem; font-weight: 800; color: #ffffff;">{{ $video->title }}</h4>
+                                                <p style="margin: 0 0 14px; font-size: 0.88rem; color: #94a3b8; max-width: 460px; line-height: 1.6;">
+                                                    {{ __('يجري حالياً رفع وتجهيز الفيديو المرئي عالي الدقة لهذه الحصة الدراسية من قِبل الأستاذ المعتمد للمادة.') }}
+                                                </p>
+                                                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'teacher', 'videographer']))
+                                                    <a href="{{ route('educational_contents.edit', $video->id) }}" class="ed-btn-royal secondary" style="font-size: 0.82rem; padding: 7px 16px; text-decoration: none;">
+                                                        <i class="fa-solid fa-pen-to-square"></i> {{ __('إضافة أو تعديل رابط الفيديو (لوحة الإدارة)') }}
+                                                    </a>
+                                                @endif
                                             @endif
                                         </div>
                                     @endif

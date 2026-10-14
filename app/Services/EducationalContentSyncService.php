@@ -63,6 +63,11 @@ class EducationalContentSyncService
             return 0;
         }
 
+        if (!empty($content->url_path) && in_array(strtolower(trim($content->url_path)), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
+            $content->url_path = null;
+            @$content->save();
+        }
+
         $allSisterIds = self::resolveAllSisterSubjectIds($content->subject_id);
         $replicatedCount = 0;
 
@@ -173,6 +178,14 @@ class EducationalContentSyncService
             return 0;
         }
         \Illuminate\Support\Facades\Cache::put('educational_contents_last_synced_at', now()->timestamp, 45);
+
+        // 0. تطهير وتنظيف أي مسارات تالفة أو غير معرّفة (undefined / null) لمنع تجميد المشغل
+        try {
+            EducationalContent::whereIn('url_path', ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])
+                ->orWhere('url_path', 'like', '%undefined%')
+                ->orWhere('url_path', 'like', '%/null%')
+                ->update(['url_path' => null]);
+        } catch (\Throwable $e) {}
 
         // 1. تفعيل المحتويات الجديدة التي لا تمتلك قيمة محددة لـ is_visible (دون تغيير المحجوبة عمداً)
         try {

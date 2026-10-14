@@ -573,7 +573,8 @@
             }
             formData.append('type', contentType);
 
-            if (uploadedVideoPath) {
+            const invalidTokens = ['undefined', 'null', 'none', 'false', '0'];
+            if (uploadedVideoPath && !invalidTokens.includes(String(uploadedVideoPath).trim().toLowerCase())) {
                 formData.append('uploaded_video_path', uploadedVideoPath);
                 if (formattedVideoSize) {
                     formData.append('formatted_size', formattedVideoSize);

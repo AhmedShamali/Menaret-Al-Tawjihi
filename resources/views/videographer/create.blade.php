@@ -1215,14 +1215,21 @@
             const uploadedVideoPath = document.getElementById('uploadedVideoPath');
             const videoUrlInput = document.getElementById('videoUrlInput');
             const videoFileInput = document.getElementById('videoFileInput');
+            const invalidTokens = ['undefined', 'null', 'none', 'false', '0'];
 
             // مزامنة فورية إذا كان الرفع مكتملاً في EdBackgroundUploader ولكن الحقل المخفي فارغ
-            if ((!uploadedVideoPath || !uploadedVideoPath.value) && window.EdBackgroundUploader && window.EdBackgroundUploader.hasCompletedUpload()) {
-                if (uploadedVideoPath) uploadedVideoPath.value = window.EdBackgroundUploader.state.result.uploaded_video_path;
+            if (uploadedVideoPath) {
+                const curVal = (uploadedVideoPath.value || '').trim();
+                if ((!curVal || invalidTokens.includes(curVal.toLowerCase())) && window.EdBackgroundUploader && window.EdBackgroundUploader.hasCompletedUpload()) {
+                    const bgPath = window.EdBackgroundUploader.state?.result?.uploaded_video_path;
+                    uploadedVideoPath.value = (bgPath && !invalidTokens.includes(String(bgPath).toLowerCase())) ? bgPath : '';
+                }
             }
 
-            const hasUploadedPath = uploadedVideoPath && uploadedVideoPath.value.trim().length > 0;
-            const hasUrl = videoUrlInput && videoUrlInput.value.trim().length > 0;
+            const rawUploaded = uploadedVideoPath ? uploadedVideoPath.value.trim() : '';
+            const rawUrl = videoUrlInput ? videoUrlInput.value.trim() : '';
+            const hasUploadedPath = rawUploaded.length > 0 && !invalidTokens.includes(rawUploaded.toLowerCase());
+            const hasUrl = rawUrl.length > 0 && !invalidTokens.includes(rawUrl.toLowerCase());
             const hasRawFile = videoFileInput && videoFileInput.files && videoFileInput.files.length > 0;
 
             if (!hasUploadedPath && !hasUrl && !hasRawFile) {
@@ -1278,6 +1285,8 @@
                 // حتى لا يتم إرسال ملف ضخم (400MB+) عبر HTTP POST عادي ويتسبب بتجميد المتصفح
                 if (hasUploadedPath) {
                     formData.delete('video_file');
+                } else {
+                    formData.delete('uploaded_video_path');
                 }
 
                 let response = await fetch(vgForm.action, {

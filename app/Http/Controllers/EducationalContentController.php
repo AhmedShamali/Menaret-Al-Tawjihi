@@ -505,8 +505,11 @@ class EducationalContentController extends Controller
         $fileSize = $request->file_size ?? 'غير محدد';
 
         // معالجة ملف الفيديو المرفوع مسبقاً بنظام الأجزاء (Chunked Upload)
-        if ($request->filled('uploaded_video_path')) {
-            $urlPath = $request->uploaded_video_path;
+        $cleanUploadedPath = trim((string)$request->input('uploaded_video_path', ''));
+        $invalidTokens = ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4', ''];
+        
+        if (!empty($cleanUploadedPath) && !in_array(strtolower($cleanUploadedPath), $invalidTokens)) {
+            $urlPath = $cleanUploadedPath;
             if ($request->filled('formatted_size')) {
                 $fileSize = $request->formatted_size;
             }
@@ -528,7 +531,10 @@ class EducationalContentController extends Controller
                 }
             }
         } elseif ($request->filled('video_url')) {
-            $urlPath = $request->video_url;
+            $cleanUrl = trim((string)$request->input('video_url', ''));
+            if (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), $invalidTokens)) {
+                $urlPath = $cleanUrl;
+            }
         }
 
         // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي والتوافقية مع بيئة الاختبار ---
@@ -743,8 +749,11 @@ class EducationalContentController extends Controller
             }
         }
 
-        if ($request->filled('uploaded_video_path')) {
-            $content->url_path = $request->uploaded_video_path;
+        $cleanUploadedPath = trim((string)$request->input('uploaded_video_path', ''));
+        $invalidTokens = ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4', ''];
+
+        if (!empty($cleanUploadedPath) && !in_array(strtolower($cleanUploadedPath), $invalidTokens)) {
+            $content->url_path = $cleanUploadedPath;
             if ($request->filled('formatted_size')) {
                 $content->file_size = $request->formatted_size;
             }
@@ -755,7 +764,15 @@ class EducationalContentController extends Controller
             $path = $uploadedVideo->store('educational/videos', 'public');
             $content->url_path = $path;
         } elseif ($request->filled('video_url')) {
-            $content->url_path = $request->video_url;
+            $cleanUrl = trim((string)$request->input('video_url', ''));
+            if (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), $invalidTokens)) {
+                $content->url_path = $cleanUrl;
+            }
+        } else {
+            // إذا كان المسار القديم تالفاً (مثل undefined أو null) ولم يقدم المستخدم فيديو جديد، نقوم بتنظيفه فوراً
+            if (in_array(strtolower(trim((string)$content->url_path)), $invalidTokens)) {
+                $content->url_path = null;
+            }
         }
 
         // --- تحديث الملف وحذف القديم بأمان مع دعم السحابة والتخزين المحلي ---
@@ -826,6 +843,13 @@ class EducationalContentController extends Controller
                 'icon'  => 'error',
                 'title' => 'حدث خطأ أثناء حفظ التعديلات.'
             ], 500);
+        }
+
+        // مزامنة التعديلات على الفروع الشقيقة فوراً
+        try {
+            \App\Services\EducationalContentSyncService::distributeContentToAllBranches($content);
+        } catch (\Throwable $e) {
+            \Log::warning('EducationalContent distribute on update error: ' . $e->getMessage());
         }
 
         return response()->json([

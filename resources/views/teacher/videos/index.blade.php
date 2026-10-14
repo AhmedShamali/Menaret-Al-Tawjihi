@@ -1482,7 +1482,33 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
         errorP.textContent = '{{ __("قد يكون مصدر الفيديو محمي أو غير متوافق مع العرض المضمن. بإمكانك فتح الرابط مباشرة في نافذة جديدة.") }}';
     }
 
-    const trimmedUrl = String(url || ytUrl).trim();
+    const trimmedUrl = String(url || ytUrl || '').trim();
+    const isCorrupted = !trimmedUrl || 
+        ['undefined', 'null', 'none', 'false', '0', '#'].includes(trimmedUrl.toLowerCase()) ||
+        trimmedUrl.endsWith('/undefined') || 
+        trimmedUrl.endsWith('/null');
+
+    if (isCorrupted) {
+        if (player) {
+            player.pause();
+            player.removeAttribute('src');
+            if (source) source.removeAttribute('src');
+            player.style.display = 'none';
+            player.onerror = null;
+        }
+        if (iframe) {
+            iframe.src = 'about:blank';
+            iframe.style.display = 'none';
+        }
+        if (extLink) extLink.style.display = 'none';
+        if (errorBox) errorBox.style.display = 'flex';
+        if (errorH4) errorH4.textContent = 'لم يتم إرفاق ملف فيديو لهذا الدرس بعد ⚠️';
+        if (errorP) errorP.textContent = 'هذا الدرس مسجل حالياً بدون ملف فيديو مرفوع أو رابط يوتيوب صالح. بإمكانك الضغط على زر تعديل الدرس لإرفاق الفيديو أو وضع رابط يوتيوب.';
+        if (errorLink) errorLink.style.display = 'none';
+        if (modal) modal.style.display = 'grid';
+        document.body.style.overflow = 'hidden';
+        return;
+    }
 
     // فحص ما إذا كان الرابط يوتيوب أو فيميو أو وسائط خارجية تحتاج iframe
     const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/)|youtu\.be\/)/i.test(trimmedUrl);
@@ -1953,7 +1979,7 @@ async function submitVideoForm(e) {
             }
         }
 
-        if (!uploadedPath) {
+        if (!uploadedPath || uploadedPath === 'undefined' || uploadedPath === 'null') {
             throw new Error('{{ __("لم يتم استلام مسار الفيديو النهائي من الخادم.") }}');
         }
 
@@ -1965,7 +1991,9 @@ async function submitVideoForm(e) {
         const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
         const contentFormData = new FormData(form);
         contentFormData.delete('video_file');
-        contentFormData.append('uploaded_video_path', uploadedPath);
+        if (uploadedPath && uploadedPath !== 'undefined' && uploadedPath !== 'null') {
+            contentFormData.append('uploaded_video_path', uploadedPath);
+        }
         if (formattedSize) {
             contentFormData.append('formatted_size', formattedSize);
         }

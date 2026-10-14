@@ -29,7 +29,12 @@ class VideoController extends Controller
             return redirect()->away($filename, 302);
         }
 
-        // منع أي محاولات لتخطي المسار (Path Traversal) أو إدخال حروف غير صالحة
+        // التحقق من صحة اسم الملف ومنع أي محاولات لتخطي المسار (Path Traversal) أو القيم غير الصالحة
+        $cleanRawName = strtolower(trim((string)$filename));
+        if (empty($cleanRawName) || in_array($cleanRawName, ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
+            abort(404, 'ملف الفيديو غير موجود أو قيد التجهيز.');
+        }
+
         if (str_contains($filename, '..') || str_contains($filename, "\0")) {
             abort(403, 'مسار غير مصرح به.');
         }
