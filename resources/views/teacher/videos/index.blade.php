@@ -693,12 +693,39 @@
                     </div>
                 </div>
 
+                <!-- خيار 1: إرفاق رابط يوتيوب غير مدرج فوري ومحمي بدون حدود للحجم -->
+                <div class="f-group" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;">
+                    <label class="f-label" style="font-weight: 800; color: #1e3a8a; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                        <span>
+                            <i class="fa-brands fa-youtube" style="color: #dc2626; font-size: 1.15rem;"></i>
+                            {{ __('رابط فيديو YouTube غير مدرج (Unlisted) 🚀') }}
+                        </span>
+                        <span style="font-size: 0.74rem; font-weight: 800; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px;">
+                            {{ __('مساحة غير محدودة وبدون ضغط') }}
+                        </span>
+                    </label>
+                    <input type="text" name="video_url" id="modalYtUrlInput" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." class="f-control" style="border-color: #93c5fd; background: #ffffff; padding: 11px 14px; font-size: 0.9rem;">
+                    <small style="color: #475569; font-weight: 600; display: block; margin-top: 6px; font-size: 0.78rem;">
+                        <i class="fa-solid fa-shield-halved" style="color: #2563eb;"></i> {{ __('يُعرض داخل المنصة بمشغل محمي تلقائياً خالي من الإعلانات، وبدون أزرار مشاركة أو روابط خارجية.') }}
+                    </small>
+                </div>
+
+                <!-- فاصل أنيق بين اليوتيوب والرفع المحلي -->
+                <div style="display: flex; align-items: center; margin: 14px 0; gap: 10px;">
+                    <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                    <span style="font-size: 0.76rem; font-weight: 800; color: #64748b; background: #f8fafc; padding: 3px 12px; border-radius: 999px; border: 1px solid #e2e8f0;">
+                        {{ __('أو رفع ملف فيديو MP4 محلي من جهازك') }}
+                    </span>
+                    <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                </div>
+
                 <!-- رفع ملف الفيديو محلياً بنظام الأجزاء السريع والآمن -->
                 <div class="f-group" id="groupVideoFile">
                     <label class="f-label" style="display: flex; justify-content: space-between; align-items: center;">
                         <span>
                             <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i>
-                            {{ __('ملف الفيديو للدرس (MP4 / WebM) *') }}
+                            {{ __('ملف الفيديو للدرس (MP4 / WebM)') }}
+                            <small style="color: #64748b; font-weight: normal; font-size: 0.76rem;">({{ __('اختياري إذا أضفت رابط يوتيوب') }})</small>
                         </span>
                         <span style="font-size: 0.78rem; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 6px;">
                             ⚡ {{ __('رفع محلي فائق السرعة + يدعم الأوفلاين للطلبة') }}
@@ -1920,16 +1947,71 @@ async function submitVideoForm(e) {
         formattedSize = window.EdBackgroundUploader.state.result.formatted_size;
     }
 
-    // 2. إذا لم يكن مرفوعاً مسبقاً، نتحقق من اختيار ملف
-    if (!uploadedPath && (!fileInput || !fileInput.files || fileInput.files.length === 0)) {
+    const ytUrlInput = document.getElementById('modalYtUrlInput');
+    const hasYtUrl = ytUrlInput && ytUrlInput.value.trim().length > 0;
+    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
+
+    // 2. إذا لم يكن مرفوعاً مسبقاً، ولم يدخل رابط يوتيوب، ولم يختر ملف
+    if (!uploadedPath && !hasYtUrl && !hasFile) {
         Swal.fire({
             icon: 'warning',
-            title: '{{ __("يرجى اختيار ملف الفيديو") }}',
-            text: '{{ __("قم باختيار ملف الفيديو (MP4 / WebM) لرفعه للطلبة.") }}',
+            title: '{{ __("مطلوب إرفاق الفيديو") }}',
+            text: '{{ __("يرجى إدخال رابط فيديو YouTube غير مدرج أو اختيار ملف فيديو من جهازك.") }}',
             confirmButtonText: '{{ __("حسناً") }}',
             confirmButtonColor: '#1e3a8a'
         });
         return;
+    }
+
+    // 3. إذا كان المستخدم أدخل رابط يوتيوب ولا يريد رفع ملف محلي
+    if (hasYtUrl && !hasFile && !uploadedPath) {
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري ربط وحفظ الدرس في الفروع...") }}';
+        }
+        
+        try {
+            const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
+            const contentFormData = new FormData(form);
+            contentFormData.delete('video_file');
+            contentFormData.append('video_url', ytUrlInput.value.trim());
+
+            const saveRes = await axios.post(storeUrl, contentFormData, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            window.clearTeacherVideoDraft();
+            
+            Swal.fire({
+                icon: 'success',
+                title: '{{ __("تم نشر الدرس بنجاح! 🚀") }}',
+                text: saveRes.data.message || '{{ __("تمت إضافة وتفعيل الشرح المرئي بنجاح.") }}',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                window.location.reload();
+            });
+            return;
+        } catch (err) {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("بدء رفع ونشر الفيديو") }}</span>';
+            }
+            const msg = (err.response && err.response.data && (err.response.data.title || err.response.data.message)) 
+                ? (err.response.data.title || err.response.data.message)
+                : '{{ __("حدث خطأ أثناء حفظ بيانات الدرس، يرجى إعادة المحاولة.") }}';
+            Swal.fire({
+                icon: 'error',
+                title: '{{ __("فشل حفظ الدرس") }}',
+                text: msg,
+                confirmButtonText: '{{ __("حسناً") }}',
+                confirmButtonColor: '#dc2626'
+            });
+            return;
+        }
     }
 
     const progressWrap = document.getElementById('chunkProgressWrap');
