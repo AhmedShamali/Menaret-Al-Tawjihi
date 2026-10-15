@@ -1494,9 +1494,9 @@ video::-webkit-media-controls-download-button {
                                         </div>
                                     @elseif($isDirectVideo && $directVideoUrl)
                                         <video id="player_{{ $video->id }}" controls preload="metadata" playsinline controlsList="nodownload noplaybackrate" disableRemotePlayback oncontextmenu="return false;" onerror="handleStudentVideoError(this, '{{ $video->id }}')" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #090d16;">
-                                            <source src="{{ $directVideoUrl }}" type="video/mp4" onerror="handleStudentVideoError(this.closest('video'), '{{ $video->id }}')">
+                                            <source src="{{ $directVideoUrl }}" type="video/mp4">
                                             @if($directVideoFallback && $directVideoFallback !== $directVideoUrl)
-                                                <source src="{{ $directVideoFallback }}" type="video/mp4" onerror="handleStudentVideoError(this.closest('video'), '{{ $video->id }}')">
+                                                <source src="{{ $directVideoFallback }}" type="video/mp4">
                                             @endif
                                             {{ __('متصفحك لا يدعم مشغل الفيديو.') }}
                                         </video>
@@ -2262,27 +2262,32 @@ function handleStudentVideoError(videoEl, videoId) {
     if (!videoEl) return;
     console.warn('Student video error:', videoId, videoEl.currentSrc || videoEl.src);
 
-    const curSrc = videoEl.currentSrc || videoEl.src || '';
-    const errBox = document.getElementById(`player_err_${videoId}`);
-    const errH4 = document.getElementById(`player_err_h4_${videoId}`);
-    const errP = document.getElementById(`player_err_p_${videoId}`);
+    setTimeout(() => {
+        if (!videoEl.error && videoEl.networkState !== 3) {
+            return;
+        }
+        const curSrc = videoEl.currentSrc || videoEl.src || '';
+        const errBox = document.getElementById(`player_err_${videoId}`);
+        const errH4 = document.getElementById(`player_err_h4_${videoId}`);
+        const errP = document.getElementById(`player_err_p_${videoId}`);
 
-    if (errBox) {
-        errBox.style.display = 'flex';
-    }
+        if (errBox) {
+            errBox.style.display = 'flex';
+        }
 
-    if (curSrc) {
-        fetch(curSrc, { method: 'GET', headers: { 'Accept': 'application/json' } })
-            .then(res => {
-                if (res.status === 422) {
-                    return res.json().then(data => {
-                        if (errH4) errH4.textContent = 'ملف هذا الدرس غير مكتمل على السيرفر (0 بايت)';
-                        if (errP) errP.textContent = data.message || 'عذراً، ملف هذا الدرس غير مكتمل في التخزين (حجمه 0 بايت). بإمكانك تحميل ملزمة الدرس PDF ريثما يقوم المعلم بإعادة رفع الفيديو.';
-                    });
-                }
-            })
-            .catch(() => {});
-    }
+        if (curSrc) {
+            fetch(curSrc, { method: 'GET', headers: { 'Accept': 'application/json' } })
+                .then(res => {
+                    if (res.status === 422) {
+                        return res.json().then(data => {
+                            if (errH4) errH4.textContent = 'ملف هذا الدرس غير مكتمل على السيرفر (0 بايت)';
+                            if (errP) errP.textContent = data.message || 'عذراً، ملف هذا الدرس غير مكتمل في التخزين (حجمه 0 بايت). بإمكانك تحميل ملزمة الدرس PDF ريثما يقوم المعلم بإعادة رفع الفيديو.';
+                        });
+                    }
+                })
+                .catch(() => {});
+        }
+    }, 400);
 }
 
 function retryStudentVideo(videoId) {

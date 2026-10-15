@@ -44,6 +44,92 @@ Route::get('/ping', function() {
     ]);
 })->name('system.ping');
 
+Route::match(['get', 'post'], '/system-video-diagnostic', function(\Illuminate\Http\Request $request) {
+    if ($request->input('token') !== 'stepvoro_secure_diag_2026') {
+        abort(403, 'Unauthorized access');
+    }
+
+    if ($request->isMethod('POST') && $request->filled('action')) {
+        $action = $request->input('action');
+        if ($action === 'update_url' && $request->filled('content_id') && $request->filled('new_url')) {
+            $content = \App\Models\EducationalContent::find($request->content_id);
+            if ($content) {
+                $oldUrl = $content->url_path;
+                $content->url_path = $request->new_url;
+                if ($request->filled('file_size')) {
+                    $content->file_size = $request->file_size;
+                }
+                $content->save();
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Updated successfully',
+                    'id' => $content->id,
+                    'old_url' => $oldUrl,
+                    'new_url' => $content->url_path,
+                ]);
+            }
+            return response()->json(['success' => false, 'message' => 'Content not found'], 404);
+        }
+    }
+
+    $all = \App\Models\EducationalContent::with('subject.stage')
+        ->orderBy('id', 'asc')
+        ->get();
+
+    $report = [];
+    foreach ($all as $c) {
+        $cleanKey = ltrim(preg_replace('#^https?://[^/]+/[^/]+/#', '', (string)$c->url_path), '/');
+        $cleanKey = preg_replace('#^(public/|storage/)#', '', $cleanKey);
+        $baseName = basename($cleanKey);
+
+        $supabaseFound = false;
+        $supabaseBytes = 0;
+        if (!empty($cleanKey) && !in_array(strtolower($cleanKey), ['undefined', 'null', 'none', 'false', '0'])) {
+            try {
+                if (\Illuminate\Support\Facades\Storage::disk('supabase')->exists($cleanKey)) {
+                    $supabaseFound = true;
+                    $supabaseBytes = \Illuminate\Support\Facades\Storage::disk('supabase')->size($cleanKey);
+                } elseif (\Illuminate\Support\Facades\Storage::disk('supabase')->exists('educational/videos/' . $baseName)) {
+                    $supabaseFound = true;
+                    $supabaseBytes = \Illuminate\Support\Facades\Storage::disk('supabase')->size('educational/videos/' . $baseName);
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        $localFound = false;
+        $localBytes = 0;
+        if (!empty($baseName)) {
+            $cand = storage_path('app/public/educational/videos/' . $baseName);
+            if (file_exists($cand)) {
+                $localFound = true;
+                $localBytes = filesize($cand);
+            }
+        }
+
+        $report[] = [
+            'id'             => $c->id,
+            'title'          => $c->title,
+            'type'           => $c->type,
+            'subject_id'     => $c->subject_id,
+            'subject_name'   => $c->subject->name_ar ?? $c->subject->name ?? null,
+            'stage_name'     => $c->subject->stage->name_ar ?? $c->subject->stage->name ?? null,
+            'url_path'       => $c->url_path,
+            'pdf_path'       => $c->pdf_path,
+            'file_size'      => $c->file_size,
+            'supabase_found' => $supabaseFound,
+            'supabase_mb'    => round($supabaseBytes / (1024 * 1024), 2),
+            'local_found'    => $localFound,
+            'local_mb'       => round($localBytes / (1024 * 1024), 2),
+            'created_at'     => (string)$c->created_at,
+        ];
+    }
+
+    return response()->json([
+        'total' => count($report),
+        'contents' => $report,
+    ]);
+});
+
 Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], '/educational-contents/upload-chunk', [EducationalContentController::class, 'uploadChunk'])->name('educational_contents.upload_chunk');
     Route::match(['get', 'post'], '/educational-contents/check-chunk-status', [EducationalContentController::class, 'checkChunkStatus'])->name('educational_contents.check_chunk_status');

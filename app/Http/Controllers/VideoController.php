@@ -78,111 +78,37 @@ class VideoController extends Controller
 
         // في حال عدم توفر الملف محلياً، التحقق من التخزين السحابي Supabase وبثه مباشرة
         if (!$resolvedPath) {
-            $supabaseKey = 'educational/videos/' . $baseName;
-            try {
-                if (!empty(config('filesystems.disks.supabase.key')) && Storage::disk('supabase')->exists($supabaseKey)) {
-                    $s3Size = Storage::disk('supabase')->size($supabaseKey);
-                    if ($s3Size <= 100) {
-                        return response()->json([
-                            'error' => true,
-                            'corrupted' => true,
-                            'message' => 'ملف هذا الدرس غير مكتمل في التخزين السحابي (حجمه 0 بايت). يرجى من المعلم إعادة رفع الفيديو.'
-                        ], 422, [
-                            'Content-Type' => 'application/json',
-                            'Access-Control-Allow-Origin' => '*',
-                            'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-                        ]);
-                    }
+            $supabaseCandidates = [
+                'educational/videos/' . $baseName,
+                $filename,
+                'educational/videos/' . $filename,
+                ltrim(str_replace('educational/videos/', '', $filename), '/'),
+            ];
 
-                    $s3Stream = Storage::disk('supabase')->readStream($supabaseKey);
-                    if ($s3Stream && is_resource($s3Stream)) {
-                        $rangeHeader = $request->server('HTTP_RANGE') ?: $request->header('Range');
-                        if ($rangeHeader && str_starts_with($rangeHeader, 'bytes=')) {
-                            $rangeSpec = substr($rangeHeader, 6);
-                            $ranges = explode(',', $rangeSpec);
-                            $range = trim($ranges[0]);
-
-                            if (str_starts_with($range, '-')) {
-                                $suffix = intval(substr($range, 1));
-                                $from = max(0, $s3Size - $suffix);
-                                $to = $s3Size - 1;
-                            } elseif (str_ends_with($range, '-')) {
-                                $from = intval(rtrim($range, '-'));
-                                $to = $s3Size - 1;
-                            } else {
-                                $parts = explode('-', $range, 2);
-                                $from = intval($parts[0]);
-                                $to = !empty($parts[1]) ? intval($parts[1]) : $s3Size - 1;
+            foreach ($supabaseCandidates as $sCandidate) {
+                try {
+                    if (!empty(config('filesystems.disks.supabase.key')) && Storage::disk('supabase')->exists($sCandidate)) {
+                        $s3Size = Storage::disk('supabase')->size($sCandidate);
+                        if ($s3Size > 100) {
+                            $directCdnUrl = MediaHelper::url($sCandidate);
+                            if ($directCdnUrl && filter_var($directCdnUrl, FILTER_VALIDATE_URL)) {
+                                return redirect()->away($directCdnUrl, 302, [
+                                    'Access-Control-Allow-Origin' => '*',
+                                    'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                                    'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
+                                    'Accept-Ranges' => 'bytes',
+                                    'Cache-Control' => 'public, max-age=86400, must-revalidate',
+                                ]);
                             }
-
-                            $from = max(0, min($from, $s3Size - 1));
-                            $to = max($from, min($to, $s3Size - 1));
-                            $length = ($to - $from) + 1;
-
-                            $headers = [
-                                'Content-Type' => 'video/mp4',
-                                'Content-Range' => "bytes {$from}-{$to}/{$s3Size}",
-                                'Content-Length' => $length,
-                                'Accept-Ranges' => 'bytes',
-                                'Access-Control-Allow-Origin' => '*',
-                                'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-                                'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
-                                'Cache-Control' => 'public, max-age=86400, must-revalidate',
-                            ];
-
-                            if ($request->isMethod('HEAD')) {
-                                fclose($s3Stream);
-                                return response('', 206, $headers);
-                            }
-
-                            return response()->stream(function () use ($s3Stream, $from, $to) {
-                                while (ob_get_level()) {
-                                    ob_end_clean();
-                                }
-                                fseek($s3Stream, $from);
-                                $chunkSize = 256 * 1024;
-                                while (!feof($s3Stream) && ($pointer = ftell($s3Stream)) <= $to) {
-                                    if ($pointer + $chunkSize > $to) {
-                                        $chunkSize = $to - $pointer + 1;
-                                    }
-                                    echo fread($s3Stream, $chunkSize);
-                                    flush();
-                                }
-                                fclose($s3Stream);
-                            }, 206, $headers);
                         }
-
-                        $headers = [
-                            'Content-Type' => 'video/mp4',
-                            'Content-Length' => $s3Size,
-                            'Accept-Ranges' => 'bytes',
-                            'Access-Control-Allow-Origin' => '*',
-                            'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-                            'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
-                            'Cache-Control' => 'public, max-age=86400, must-revalidate',
-                        ];
-
-                        if ($request->isMethod('HEAD')) {
-                            fclose($s3Stream);
-                            return response('', 200, $headers);
-                        }
-
-                        return response()->stream(function () use ($s3Stream) {
-                            while (ob_get_level()) {
-                                ob_end_clean();
-                            }
-                            fpassthru($s3Stream);
-                            fclose($s3Stream);
-                        }, 200, $headers);
                     }
+                } catch (\Throwable $e) {
+                    \Log::warning("VideoController Supabase check failed for {$sCandidate}: " . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                \Log::warning('VideoController stream Supabase exception: ' . $e->getMessage());
             }
 
-            $cloudUrl = MediaHelper::url($filename) 
-                ?: MediaHelper::url('educational/videos/' . $baseName);
-
+            // محاولة التحقق عبر MediaHelper العام كخيار أخير
+            $cloudUrl = MediaHelper::url($filename) ?: MediaHelper::url('educational/videos/' . $baseName);
             if ($cloudUrl && filter_var($cloudUrl, FILTER_VALIDATE_URL)) {
                 return redirect()->away($cloudUrl, 302, [
                     'Access-Control-Allow-Origin' => '*',
@@ -191,6 +117,7 @@ class VideoController extends Controller
                     'Accept-Ranges' => 'bytes',
                 ]);
             }
+
             abort(404, 'ملف الفيديو غير موجود.');
         }
 
