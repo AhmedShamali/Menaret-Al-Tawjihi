@@ -482,21 +482,62 @@
     cursor: pointer;
 }
 
-/* شريط التحكم الداخلي الذكي للمنصة */
+/* شريط التحكم الداخلي الذكي للمنصة مع الإخفاء التلقائي النظيف */
 .ed-student-player-bar {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 46px;
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.95) 100%);
+    height: 48px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.88) 100%);
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 12px;
+    padding: 0 14px;
     z-index: 30;
     user-select: none;
     direction: ltr;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+}
+
+/* إخفاء شريط التحكم بالكامل تلقائياً عند التشغيل حتى لا يغطي أي جزء من اللوح نهائياً */
+.ed-player-frame.controls-hidden .ed-student-player-bar {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(12px);
+}
+
+.ed-player-frame.controls-hidden {
+    cursor: none;
+}
+
+/* علامة مائية ذكية متحركة بالاسم ورقم الهاتف لحماية المحتوى الأكاديمي */
+.ed-floating-security-watermark {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    z-index: 22;
+    padding: 3px 9px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.28);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.06);
+    animation: edDriftingWatermark 36s ease-in-out infinite alternate;
+}
+
+@keyframes edDriftingWatermark {
+    0%   { top: 8%; left: 8%; opacity: 0.22; }
+    25%  { top: 78%; left: 12%; opacity: 0.32; }
+    50%  { top: 14%; left: 74%; opacity: 0.24; }
+    75%  { top: 82%; left: 66%; opacity: 0.30; }
+    100% { top: 46%; left: 42%; opacity: 0.26; }
 }
 
 .ed-student-player-bar .btn-ctrl-action {
@@ -1412,7 +1453,7 @@ video::-webkit-media-controls-download-button {
                     @foreach($videos as $video)
                         @if($video->is_unlocked)
                             <article class="ed-video-card" id="card_video_{{ $video->id }}">
-                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}">
+                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                     @php
                                         $rawUrl = trim($video->url_path ?? '');
                                         if (in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
@@ -1451,12 +1492,21 @@ video::-webkit-media-controls-download-button {
 
                                     @if(!empty($ytEmbed))
                                         <div class="ed-yt-shield-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
+                                            @if(auth('student')->check() || auth()->check())
+                                                @php
+                                                    $wmUser = auth('student')->user() ?? auth()->user();
+                                                    $wmText = ($wmUser->name ?? 'طالب') . ' • ' . ($wmUser->phone ?: ($wmUser->email ?: ('ID: ' . $wmUser->id)));
+                                                @endphp
+                                                <div class="ed-floating-security-watermark" aria-hidden="true">
+                                                    <span>{{ $wmText }}</span>
+                                                </div>
+                                            @endif
                                             <iframe id="player_yt_{{ $video->id }}" 
                                                     src="{{ $ytEmbed }}" 
                                                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
                                                     sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                                     loading="lazy"
-                                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;">
+                                                    style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; object-fit: contain; pointer-events: none !important; z-index: 1;">
                                             </iframe>
 
                                             {{-- درع الشاشة التفاعلي: النقر على الفيديو يشغل ويوقف بسلاسة تامة دون أي وصول ليوتيوب --}}
@@ -2049,15 +2099,54 @@ function initSingleYtPlayer(iframeId) {
     return null;
 }
 
+let playerHideTimers = {};
+
+function registerPlayerActivity(videoId) {
+    const frame = document.getElementById(`player_frame_${videoId}`);
+    if (!frame) return;
+    frame.classList.remove('controls-hidden');
+    clearTimeout(playerHideTimers[videoId]);
+    
+    const yt = ytPlayers[videoId];
+    const isPlayingYt = yt && typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 1;
+    const directVideo = document.getElementById(`player_${videoId}`);
+    const isPlayingDirect = directVideo && !directVideo.paused && !directVideo.ended;
+    const centerBtn = document.getElementById(`center_play_${videoId}`);
+    const isPlayingFallback = centerBtn && centerBtn.style.opacity === '0';
+    
+    if (isPlayingYt || isPlayingDirect || isPlayingFallback) {
+        playerHideTimers[videoId] = setTimeout(() => {
+            frame.classList.add('controls-hidden');
+        }, 2600);
+    }
+}
+
+function handlePlayerMouseLeave(videoId) {
+    const frame = document.getElementById(`player_frame_${videoId}`);
+    if (!frame) return;
+    const yt = ytPlayers[videoId];
+    const isPlayingYt = yt && typeof yt.getPlayerState === 'function' && yt.getPlayerState() === 1;
+    const directVideo = document.getElementById(`player_${videoId}`);
+    const isPlayingDirect = directVideo && !directVideo.paused && !directVideo.ended;
+    const centerBtn = document.getElementById(`center_play_${videoId}`);
+    const isPlayingFallback = centerBtn && centerBtn.style.opacity === '0';
+    
+    if (isPlayingYt || isPlayingDirect || isPlayingFallback) {
+        frame.classList.add('controls-hidden');
+    }
+}
+
 function handleYtStateChange(videoId, state) {
     const centerBtn = document.getElementById(`center_play_${videoId}`);
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    const frame = document.getElementById(`player_frame_${videoId}`);
     
     // 1 = PLAYING
     if (state === 1) {
         if (centerBtn) centerBtn.style.opacity = '0';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         startStudentProgressTracking(videoId);
+        registerPlayerActivity(videoId);
     } else { // 2 = PAUSED, 0 = ENDED, etc.
         if (centerBtn) {
             centerBtn.style.opacity = '1';
@@ -2067,6 +2156,8 @@ function handleYtStateChange(videoId, state) {
         }
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         stopStudentProgressTracking(videoId);
+        if (frame) frame.classList.remove('controls-hidden');
+        clearTimeout(playerHideTimers[videoId]);
     }
 }
 
@@ -2079,6 +2170,7 @@ function toggleStudentPlayback(videoId) {
                 yt.pauseVideo();
             } else {
                 yt.playVideo();
+                registerPlayerActivity(videoId);
             }
             return;
         } catch(e) {}
@@ -2096,7 +2188,15 @@ function toggleStudentPlayback(videoId) {
         if (centerBtn) centerBtn.style.opacity = isPlaying ? '1' : '0';
         const barBtn = document.getElementById(`bar_btn_${videoId}`);
         if (barBtn) barBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
-        if (!isPlaying) startStudentProgressTracking(videoId); else stopStudentProgressTracking(videoId);
+        if (!isPlaying) {
+            startStudentProgressTracking(videoId);
+            registerPlayerActivity(videoId);
+        } else {
+            stopStudentProgressTracking(videoId);
+            const frame = document.getElementById(`player_frame_${videoId}`);
+            if (frame) frame.classList.remove('controls-hidden');
+            clearTimeout(playerHideTimers[videoId]);
+        }
     }
 }
 

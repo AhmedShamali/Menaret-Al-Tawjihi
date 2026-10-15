@@ -201,16 +201,35 @@
 
                     <div id="video_section" class="attachment-box" style="display: none;">
                         <h4 class="box-title">
-                            <i class="fa-solid fa-cloud-arrow-up" style="color: #2563eb;"></i> 
-                            {{ __('رفع ملف الفيديو محلياً (MP4 / WebM)') }}
-                            <span style="font-size: 0.75rem; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 6px; margin-inline-start: 8px;">⚡ جاهز للأوفلاين</span>
+                            <i class="fa-solid fa-play-circle" style="color: #2563eb;"></i> 
+                            {{ __('إرفاق الفيديو التعليمي (YouTube أو ملف مباشر)') }}
+                            <span style="font-size: 0.75rem; background: #ecfdf5; color: #059669; padding: 2px 8px; border-radius: 6px; margin-inline-start: 8px;">⚡ مشغل دراسي آمن</span>
                         </h4>
                         
-                        <div class="form-group">
-                            <label class="f-label">{{ __('ملف الفيديو المعتمد') }} *</label>
+                        <!-- خيار 1: رابط يوتيوب فوري ومحمي بدون حدود للمساحة -->
+                        <div class="form-group" style="background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 10px; padding: 14px; margin-bottom: 14px;">
+                            <label class="f-label" style="font-weight: 800; color: #1e3a8a; margin-bottom: 4px;">
+                                <i class="fa-brands fa-youtube" style="color: #dc2626; font-size: 1.1rem;"></i> 
+                                {{ __('رابط فيديو YouTube غير مدرج (مساحة مفتوحة وسرعة فائقة 🚀)') }}
+                            </label>
+                            <input type="text" name="video_url" id="input_yt_url" placeholder="https://www.youtube.com/watch?v=... أو https://youtu.be/..." class="f-input" style="padding: 10px; background: #ffffff; border-color: #93c5fd;">
+                            <small style="color: #047857; font-weight: 600; display: block; margin-top: 6px;">
+                                <i class="fa-solid fa-shield-halved"></i> {{ __('يتم تشغيل الفيديو داخل المنصة بمشغل محمي تلقائياً بدون إعلانات ولا روابط خارجية ولا أزرار مشاركة.') }}
+                            </small>
+                        </div>
+
+                        <!-- فاصل -->
+                        <div style="display: flex; align-items: center; margin: 12px 0; gap: 10px;">
+                            <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                            <span style="font-size: 0.75rem; font-weight: 700; color: #94a3b8;">{{ __('أو رفع ملف فيديو MP4 من جهازك') }}</span>
+                            <hr style="flex: 1; border: none; border-top: 1px dashed #cbd5e1; margin: 0;">
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="f-label">{{ __('ملف الفيديو المعتمد من جهازك (اختياري إذا أضفت رابط يوتيوب)') }}</label>
                             <input type="file" name="video_file" id="input_video_file" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="f-input" style="padding: 10px; background: #ffffff;">
-                            <small style="color: #166534; font-weight: 600; display: block; margin-top: 6px;">
-                                <i class="fa-solid fa-circle-check"></i> {{ __('يتم رفع الملف بنظام التجزئة السريع ودعمه تلقائياً للتحميل والمشاهدة بدون إنترنت للطلبة داخل تطبيق المنصة.') }}
+                            <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">
+                                <i class="fa-solid fa-circle-info"></i> {{ __('الملفات الأقل من 50 ميجابايت تُخزن سحابياً وتدعم الحفظ أوفلاين في تطبيق المنصة.') }}
                             </small>
                         </div>
                     </div>
@@ -424,11 +443,15 @@
             return;
         }
 
-        if (videoChecked && (!videoFileInput || !videoFileInput.files || videoFileInput.files.length === 0)) {
+        const ytUrlInput = document.getElementById('input_yt_url');
+        const hasYtUrl = ytUrlInput && ytUrlInput.value.trim().length > 0;
+        const hasVideoFile = videoFileInput && videoFileInput.files && videoFileInput.files.length > 0;
+
+        if (videoChecked && !hasVideoFile && !hasYtUrl) {
             Swal.fire({
                 icon: 'warning',
-                title: 'ملف الفيديو مطلوب',
-                text: 'يرجى اختيار ملف الفيديو (MP4 / WebM) لرفعه للطلبة.',
+                title: 'الفيديو مطلوب',
+                text: 'يرجى إرفاق رابط فيديو YouTube غير مدرج أو اختيار ملف فيديو من جهازك.',
             });
             return;
         }
@@ -438,7 +461,9 @@
         const form = document.getElementById('createForm');
 
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري فحص وتجهيز الرفع بالجيجاوات...';
+        btn.innerHTML = hasVideoFile 
+            ? '<i class="fa-solid fa-spinner fa-spin"></i> جاري فحص وتجهيز الرفع بالجيجاوات...'
+            : '<i class="fa-solid fa-spinner fa-spin"></i> جاري ربط وحفظ الدرس في الفروع... 🚀';
 
         const progressContainer = document.getElementById('upload_progress_container');
         const progressBarFill = document.getElementById('progress_bar_fill');
@@ -449,7 +474,9 @@
         const progressEtaMeta = document.getElementById('progress_eta_meta');
         const progressPartMeta = document.getElementById('progress_part_meta');
 
-        progressContainer.style.display = 'block';
+        if (hasVideoFile) {
+            progressContainer.style.display = 'block';
+        }
 
         const preventTabClose = (ev) => {
             ev.preventDefault();

@@ -530,8 +530,9 @@ class EducationalContentController extends Controller
                     $urlPath = $uploadedVideo->store('educational/videos', 'public');
                 }
             }
-        } elseif ($request->filled('video_url')) {
-            $cleanUrl = trim((string)$request->input('video_url', ''));
+        } elseif ($request->filled('video_url') || $request->filled('url_path')) {
+            $rawInp = $request->filled('video_url') ? $request->input('video_url') : $request->input('url_path');
+            $cleanUrl = trim((string)$rawInp);
             if (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), $invalidTokens)) {
                 $urlPath = $cleanUrl;
             }
@@ -769,8 +770,9 @@ class EducationalContentController extends Controller
             $content->file_size = $sizeMb > 0 ? $sizeMb . ' MB' : round($uploadedVideo->getSize() / 1024) . ' KB';
             $path = $uploadedVideo->store('educational/videos', 'public');
             $content->url_path = $path;
-        } elseif ($request->filled('video_url')) {
-            $cleanUrl = trim((string)$request->input('video_url', ''));
+        } elseif ($request->filled('video_url') || $request->filled('url_path')) {
+            $rawInp = $request->filled('video_url') ? $request->input('video_url') : $request->input('url_path');
+            $cleanUrl = trim((string)$rawInp);
             if (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), $invalidTokens)) {
                 $content->url_path = $cleanUrl;
             }

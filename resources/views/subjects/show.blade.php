@@ -561,22 +561,36 @@
     .custom-video-element, .custom-iframe {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
     }
 
-    /* Custom Controls Bar */
+    /* Custom Controls Bar مع إخفاء تلقائي نظيف لعدم تغطية أي جزء من الفيديو */
     .custom-player-controls {
         position: absolute;
         bottom: 0;
         left: 0;
         right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 12px;
+        padding: 8px 14px;
         z-index: 10;
         direction: ltr;
+        opacity: 1;
+        visibility: visible;
+        transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+    }
+
+    .custom-video-wrapper.controls-hidden .custom-player-controls {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transform: translateY(10px);
+    }
+
+    .custom-video-wrapper.controls-hidden {
+        cursor: none;
     }
 
     .btn-play-pause, .btn-fullscreen {
