@@ -83,7 +83,7 @@
             <div class="videos-grid">
                 @forelse($videos as $index => $video)
                     <div class="video-card">
-                        <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}" onmousemove="registerPubPlayerActivity('{{ $video->id }}')" ontouchstart="registerPubPlayerActivity('{{ $video->id }}')" onmouseleave="handlePubPlayerMouseLeave('{{ $video->id }}')">
+                        <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}">
                             @php
                                 $url = trim((string)$video->url_path);
                                 if (in_array(strtolower($url), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
@@ -94,97 +94,40 @@
 
                             @if($isYoutube)
                                 @php
-                                    preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
+                                    preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1";
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1";
+                                    $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
-                                <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
-                                    <iframe class="custom-iframe" 
-                                            id="pub_yt_{{ $video->id }}"
-                                            src="{{ $ytSafeSrc }}" 
-                                            frameborder="0" 
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                            allowfullscreen
-                                            referrerpolicy="strict-origin-when-cross-origin"
-                                            loading="lazy">
-                                    </iframe>
-                                </div>
+                                <iframe class="custom-iframe" 
+                                        id="pub_yt_{{ $video->id }}"
+                                        src="{{ $ytSafeSrc }}" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        loading="lazy"
+                                        style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: auto !important;">
+                                </iframe>
 
-                                {{-- درع النقر التفاعلي الصافي --}}
-                                <div class="ed-clean-click-shield" id="click_shield_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}', true)">
-                                    <div class="ed-pulse-icon" id="pulse_{{ $video->id }}">
-                                        <i class="fa-solid fa-play"></i>
+                                {{-- بوستر المنصة الأكاديمي الحصري --}}
+                                <div class="ed-video-poster" id="pub_poster_{{ $video->id }}" onclick="playPubYtVideo('{{ $video->id }}')">
+                                    <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.onerror=null; this.src='https://img.youtube.com/vi/{{ $ytId }}/0.jpg';">
+                                    <div class="ed-poster-overlay"></div>
+                                    <div class="ed-poster-top-bar">
+                                        <span class="ed-poster-badge">
+                                            <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}
+                                        </span>
+                                        <span class="ed-poster-badge hd">
+                                            <i class="fa-solid fa-sparkles"></i> 1080p Full HD
+                                        </span>
                                     </div>
-                                </div>
-
-                                {{-- غلاف البداية الراقي الذي يحجب أي أزرار أو عناوين خارجية قبل التشغيل --}}
-                                <div class="ed-cover-start-banner" id="cover_{{ $video->id }}" onclick="startPubPlaybackFirstTime('{{ $video->id }}')">
-                                    <div class="ed-cover-play-glow">
-                                        <i class="fa-solid fa-play"></i>
-                                    </div>
-                                    <h4 class="ed-cover-title">{{ $video->title }}</h4>
-                                    <span class="ed-cover-sub">
-                                        <i class="fa-solid fa-wand-magic-sparkles" style="color: #60a5fa;"></i>
-                                        {{ __('انقر للمشاهدة بأعلى جودة فائقة الدقة 1080p') }}
-                                    </span>
-                                </div>
-
-                                {{-- شريط تحكم المنصة المدمج والفخم بنظام الاستوديو --}}
-                                <div class="ed-platform-controls-bar" id="controls_bar_{{ $video->id }}">
-                                    <button type="button" class="ed-ctrl-btn" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}', true)" title="{{ __('تشغيل / إيقاف') }}">
-                                        <i class="fa-solid fa-play"></i>
-                                    </button>
-                                    <button type="button" class="ed-ctrl-btn" onclick="seekPubRelative('{{ $video->id }}', -10)" title="{{ __('تأخير 10 ثوانٍ') }}">
-                                        <i class="fa-solid fa-rotate-left"></i>
-                                    </button>
-                                    <button type="button" class="ed-ctrl-btn" onclick="seekPubRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
-                                        <i class="fa-solid fa-rotate-right"></i>
-                                    </button>
-                                    <span class="ed-ctrl-time" id="time_txt_{{ $video->id }}">00:00 / 00:00</span>
-                                    <div class="ed-ctrl-seek-wrap">
-                                        <input type="range" class="ed-ctrl-seeker" id="seek_range_{{ $video->id }}" min="0" max="100" step="0.1" value="0" oninput="seekSubjectVideo('{{ $video->id }}', true, this.value)">
-                                    </div>
-                                    <div class="ed-volume-cluster">
-                                        <button type="button" class="ed-ctrl-btn" id="mute_btn_{{ $video->id }}" onclick="togglePubMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت') }}">
-                                            <i class="fa-solid fa-volume-high"></i>
+                                    <div class="ed-poster-center-content">
+                                        <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
+                                            <i class="fa-solid fa-play"></i>
                                         </button>
-                                        <input type="range" class="ed-volume-range" id="vol_range_{{ $video->id }}" min="0" max="100" value="100" oninput="setPubVolume('{{ $video->id }}', this.value)" title="{{ __('مستوى الصوت') }}">
+                                        <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
                                     </div>
-
-                                    {{-- قائمة الجودات المتعددة --}}
-                                    <div class="ed-quality-dropdown-wrap">
-                                        <button type="button" class="ed-quality-btn" onclick="togglePubQualityMenu('{{ $video->id }}')" title="{{ __('تحديد دقة وجودة العرض') }}">
-                                            <i class="fa-solid fa-gear"></i>
-                                            <span id="active_quality_lbl_{{ $video->id }}">1080p HD</span>
-                                        </button>
-                                        <div class="ed-quality-menu" id="quality_menu_{{ $video->id }}" style="display: none;">
-                                            <div class="ed-quality-title">{{ __('دقة وجودة العرض:') }}</div>
-                                            <button type="button" class="ed-quality-item active" onclick="selectPubVideoQuality('{{ $video->id }}', 'hd1080', '1080p HD', this)">
-                                                <span>1080p Full HD</span>
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                            <button type="button" class="ed-quality-item" onclick="selectPubVideoQuality('{{ $video->id }}', 'hd720', '720p HD', this)">
-                                                <span>720p HD</span>
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                            <button type="button" class="ed-quality-item" onclick="selectPubVideoQuality('{{ $video->id }}', 'large', '480p SD', this)">
-                                                <span>480p SD</span>
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                            <button type="button" class="ed-quality-item" onclick="selectPubVideoQuality('{{ $video->id }}', 'medium', '360p', this)">
-                                                <span>360p (توفير البيانات)</span>
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                            <button type="button" class="ed-quality-item" onclick="selectPubVideoQuality('{{ $video->id }}', 'default', 'تلقائي', this)">
-                                                <span>تلقائي (حسب الاتصال)</span>
-                                                <i class="fa-solid fa-check"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <button type="button" class="ed-ctrl-btn" onclick="toggleSubjectFullscreen(this)" title="{{ __('تكبير العرض بملء الشاشة') }}">
-                                        <i class="fa-solid fa-expand"></i>
-                                    </button>
                                 </div>
                             @elseif(!empty($url))
                                 @php
@@ -222,7 +165,9 @@
                                         🎓 {{ $video->channel_name ?? $subject->name_ar ?? __('شرح معتمد') }}
                                     </span>
                                 </div>
-                                <span class="card-hd-pill" id="card_hd_pill_{{ $video->id }}" style="background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 3px 9px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-circle-check"></i> <span>1080p Full HD</span></span>
+                                <span style="background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 3px 9px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800;">
+                                    1080p HD
+                                </span>
                             </div>
 
                             <h4 class="video-title" style="margin: 0 0 12px; font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ $video->title }}</h4>
@@ -443,9 +388,8 @@
     .custom-video-wrapper {
         position: relative;
         aspect-ratio: 16/9;
-        background-color: #020617;
-        overflow: hidden !important;
-        border-radius: 16px 16px 0 0;
+        background-color: #000;
+        overflow: hidden;
         user-select: none;
         -webkit-user-select: none;
     }
@@ -454,346 +398,123 @@
     .custom-video-wrapper:-webkit-full-screen {
         width: 100vw !important;
         height: 100vh !important;
-        aspect-ratio: auto !important;
         background: #000 !important;
     }
 
-    .ed-yt-frame-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 100%;
-        height: 100%;
-        transform: translate(-50%, -50%) scale(1.36);
-        transform-origin: center center;
-        background: #020617;
-        overflow: hidden;
-        pointer-events: none;
-        z-index: 1;
-    }
-
     .custom-video-element, .custom-iframe {
-        position: absolute;
-        inset: 0;
         width: 100%;
         height: 100%;
         object-fit: contain;
         border: none;
-        pointer-events: none !important;
     }
 
-    .ed-clean-click-shield {
+    /* بوستر الفيديو الأكاديمي */
+    .ed-video-poster {
         position: absolute;
         inset: 0;
-        z-index: 18;
+        width: 100%;
+        height: 100%;
+        z-index: 12;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
+        overflow: hidden;
+        user-select: none;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
     }
 
-    .ed-pulse-icon {
-        width: 66px;
-        height: 66px;
-        border-radius: 50%;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(10px);
-        border: 2px solid rgba(255, 255, 255, 0.4);
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.6rem;
-        opacity: 0;
-        transform: scale(0.7);
-        transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        pointer-events: none;
-    }
-
-    .ed-clean-click-shield.show-pulse .ed-pulse-icon {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    .ed-cover-start-banner {
+    .ed-poster-bg-img {
         position: absolute;
         inset: 0;
-        z-index: 28;
-        background: radial-gradient(circle at center, rgba(15, 23, 42, 0.92) 0%, rgba(2, 6, 23, 0.98) 100%);
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: brightness(0.8);
+        transition: transform 0.4s ease, filter 0.4s ease;
+    }
+
+    .ed-video-poster:hover .ed-poster-bg-img {
+        transform: scale(1.03);
+        filter: brightness(0.9);
+    }
+
+    .ed-poster-overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(15, 23, 42, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+    }
+
+    .ed-poster-center-content {
+        position: absolute;
+        inset: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        padding: 24px;
-        text-align: center;
-        transition: opacity 0.35s ease, visibility 0.35s ease;
+        gap: 12px;
+        z-index: 2;
     }
 
-    .ed-cover-start-banner.is-hidden {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-
-    .ed-cover-play-glow {
-        width: 76px;
-        height: 76px;
+    .ed-poster-play-btn {
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        font-size: 1.8rem;
-        box-shadow: 0 0 35px rgba(37, 99, 235, 0.65);
-        margin-bottom: 14px;
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        border: 2px solid rgba(255, 255, 255, 0.35);
-    }
-
-    .ed-cover-start-banner:hover .ed-cover-play-glow {
-        transform: scale(1.12);
-        box-shadow: 0 0 50px rgba(37, 99, 235, 0.95);
-    }
-
-    .ed-cover-title {
-        color: #ffffff;
-        font-size: 1.15rem;
-        font-weight: 800;
-        margin: 0 0 6px;
-        max-width: 520px;
-        line-height: 1.4;
-    }
-
-    .ed-cover-sub {
-        color: #94a3b8;
-        font-size: 0.82rem;
-        font-weight: 600;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .ed-platform-controls-bar {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(180deg, transparent 0%, rgba(2, 6, 23, 0.75) 25%, rgba(2, 6, 23, 0.95) 100%);
-        padding: 14px 18px 12px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        z-index: 25;
-        direction: ltr;
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    }
-
-    .custom-video-wrapper.is-playing.user-idle .ed-platform-controls-bar {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translateY(8px);
-    }
-
-    .custom-video-wrapper.is-playing.user-idle {
-        cursor: none;
-    }
-
-    .ed-ctrl-btn {
-        background: transparent;
         border: none;
         color: #ffffff;
-        font-size: 0.95rem;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
+        font-size: 1.8rem;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        flex-shrink: 0;
-        transition: background 0.15s, color 0.15s, transform 0.1s;
+        box-shadow: 0 10px 30px rgba(37, 99, 235, 0.55), 0 0 0 8px rgba(255, 255, 255, 0.18);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
     }
 
-    .ed-ctrl-btn:hover {
-        background: rgba(255, 255, 255, 0.18);
-        color: #38bdf8;
+    .ed-video-poster:hover .ed-poster-play-btn {
+        transform: scale(1.1);
+        box-shadow: 0 14px 40px rgba(37, 99, 235, 0.75), 0 0 0 12px rgba(255, 255, 255, 0.28);
     }
 
-    .ed-ctrl-btn:active {
-        transform: scale(0.92);
-    }
-
-    .ed-ctrl-time {
-        font-family: monospace;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #cbd5e1;
-        white-space: nowrap;
-        flex-shrink: 0;
-        user-select: none;
-    }
-
-    .ed-ctrl-seek-wrap {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        position: relative;
-        padding: 4px 0;
-    }
-
-    .ed-ctrl-seeker {
-        width: 100%;
-        height: 5px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: rgba(255, 255, 255, 0.25);
-        border-radius: 4px;
-        outline: none;
-        cursor: pointer;
-        transition: height 0.15s ease;
-    }
-
-    .ed-ctrl-seeker:hover {
-        height: 7px;
-    }
-
-    .ed-ctrl-seeker::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 13px;
-        height: 13px;
-        border-radius: 50%;
-        background: #38bdf8;
-        box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
-        cursor: pointer;
-        transition: transform 0.1s;
-    }
-
-    .ed-volume-cluster {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .ed-volume-range {
-        width: 55px;
-        height: 4px;
-        -webkit-appearance: none;
-        appearance: none;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 3px;
-        outline: none;
-        cursor: pointer;
-    }
-
-    .ed-volume-range::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: #ffffff;
-        cursor: pointer;
-    }
-
-    .ed-quality-dropdown-wrap {
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .ed-quality-btn {
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.25);
+    .ed-poster-play-label {
         color: #ffffff;
-        padding: 4px 10px;
-        border-radius: 7px;
-        font-size: 0.74rem;
+        font-size: 0.88rem;
         font-weight: 800;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.18s;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+        letter-spacing: 0.3px;
+        background: rgba(15, 23, 42, 0.6);
+        padding: 4px 14px;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
-    .ed-quality-btn:hover {
-        background: rgba(37, 99, 235, 0.35);
-        border-color: #38bdf8;
-        color: #38bdf8;
-    }
-
-    .ed-quality-menu {
+    .ed-poster-top-bar {
         position: absolute;
-        bottom: calc(100% + 10px);
-        right: 0;
-        min-width: 180px;
-        background: rgba(15, 23, 42, 0.96);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        border-radius: 12px;
-        padding: 6px;
-        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.65);
-        z-index: 50;
-        direction: rtl;
-        animation: edFadeMenu 0.18s ease;
-    }
-
-    @keyframes edFadeMenu {
-        from { opacity: 0; transform: translateY(6px); }
-        to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .ed-quality-title {
-        font-size: 0.72rem;
-        font-weight: 800;
-        color: #94a3b8;
-        padding: 6px 10px 4px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        margin-bottom: 4px;
-    }
-
-    .ed-quality-item {
-        width: 100%;
+        top: 12px;
+        right: 12px;
+        left: 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 7px 10px;
-        border: none;
-        background: transparent;
-        color: #e2e8f0;
-        font-size: 0.78rem;
-        font-weight: 700;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: all 0.15s;
-        text-align: right;
+        z-index: 3;
     }
 
-    .ed-quality-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #38bdf8;
-    }
-
-    .ed-quality-item.active {
-        background: rgba(37, 99, 235, 0.25);
-        color: #38bdf8;
-        font-weight: 800;
-    }
-
-    .ed-quality-item i {
+    .ed-poster-badge {
+        background: rgba(15, 23, 42, 0.78);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        padding: 4px 10px;
+        border-radius: 9999px;
         font-size: 0.75rem;
-        opacity: 0;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
     }
 
-    .ed-quality-item.active i {
-        opacity: 1;
+    .ed-poster-badge.hd {
+        color: #4ade80;
+        border-color: rgba(74, 222, 128, 0.35);
     }
 
     .video-card-body { padding: 16px; }
@@ -1004,7 +725,6 @@
 <script>
     let pubYtPlayers = {};
     let pubYtIntervals = {};
-    let pubActivityTimers = {};
 
     function onYouTubeIframeAPIReady() {
         document.querySelectorAll('iframe[id^="pub_yt_"]').forEach(iframe => {
@@ -1019,9 +739,6 @@
             try {
                 pubYtPlayers[vidId] = new YT.Player(iframeId, {
                     events: {
-                        'onReady': function() {
-                            updatePubTimeDisplay(vidId);
-                        },
                         'onStateChange': function(e) {
                             handlePubYtStateChange(vidId, e.data);
                         }
@@ -1033,137 +750,103 @@
         return null;
     }
 
-    function startPubPlaybackFirstTime(vidId) {
-        const cover = document.getElementById(`cover_${vidId}`);
-        if (cover) cover.classList.add('is-hidden');
-        toggleSubjectVideo(vidId, true);
-    }
-
-    function registerPubPlayerActivity(vidId) {
-        const wrap = document.getElementById(`custom_wrap_${vidId}`);
-        if (!wrap) return;
-        wrap.classList.remove('user-idle');
-        clearTimeout(pubActivityTimers[vidId]);
-        if (wrap.classList.contains('is-playing')) {
-            pubActivityTimers[vidId] = setTimeout(() => {
-                wrap.classList.add('user-idle');
-            }, 3000);
-        }
-    }
-
-    function handlePubPlayerMouseLeave(vidId) {
-        const wrap = document.getElementById(`custom_wrap_${vidId}`);
-        if (wrap && wrap.classList.contains('is-playing')) {
-            wrap.classList.add('user-idle');
-        }
-    }
-
     function handlePubYtStateChange(vidId, state) {
-        const wrap = document.getElementById(`custom_wrap_${vidId}`);
-        const btn = document.getElementById(`pub_btn_${vidId}`);
-        const pulse = document.getElementById(`pulse_${vidId}`);
-        const shield = document.getElementById(`click_shield_${vidId}`);
-
+        const poster = document.getElementById(`pub_poster_${vidId}`);
         if (state === 1) { // مشتغل
-            if (wrap) {
-                wrap.classList.add('is-playing');
-                wrap.classList.remove('user-idle');
-            }
-            if (btn) btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            if (pulse) {
-                pulse.innerHTML = '<i class="fa-solid fa-play"></i>';
-                if (shield) {
-                    shield.classList.add('show-pulse');
-                    setTimeout(() => shield.classList.remove('show-pulse'), 500);
-                }
+            if (poster) {
+                poster.style.opacity = '0';
+                poster.style.pointerEvents = 'none';
+                setTimeout(() => { poster.style.display = 'none'; }, 300);
             }
             startPubYtTracking(vidId);
-            registerPubPlayerActivity(vidId);
-        } else { // متوقف
-            if (wrap) wrap.classList.remove('is-playing', 'user-idle');
-            if (btn) btn.innerHTML = (state === 0) ? '<i class="fa-solid fa-rotate-right"></i>' : '<i class="fa-solid fa-play"></i>';
-            if (pulse) {
-                pulse.innerHTML = (state === 0) ? '<i class="fa-solid fa-rotate-right"></i>' : '<i class="fa-solid fa-pause"></i>';
-                if (shield) {
-                    shield.classList.add('show-pulse');
-                    setTimeout(() => shield.classList.remove('show-pulse'), 500);
-                }
+        } else if (state === 0) { // انتهى
+            if (poster) {
+                poster.style.display = 'block';
+                poster.style.pointerEvents = 'auto';
+                setTimeout(() => { poster.style.opacity = '1'; }, 50);
+                const playLabel = poster.querySelector('.ed-poster-play-label');
+                if (playLabel) playLabel.textContent = '{{ __("إعادة مشاهدة الحصة") }} ↺';
             }
             stopPubYtTracking(vidId);
-            clearTimeout(pubActivityTimers[vidId]);
+        } else {
+            stopPubYtTracking(vidId);
+        }
+    }
+
+    function playPubYtVideo(vidId) {
+        const poster = document.getElementById(`pub_poster_${vidId}`);
+        if (poster) {
+            poster.style.opacity = '0';
+            poster.style.pointerEvents = 'none';
+            setTimeout(() => { poster.style.display = 'none'; }, 300);
+        }
+        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
+        if (yt && typeof yt.playVideo === 'function') {
+            try { yt.playVideo(); return; } catch(e) {}
+        }
+        const iframe = document.getElementById(`pub_yt_${vidId}`);
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(JSON.stringify({
+                event: 'command',
+                func: 'playVideo',
+                args: []
+            }), '*');
         }
     }
 
     function toggleSubjectVideo(vidId, isYt) {
-        const cover = document.getElementById(`cover_${vidId}`);
-        if (cover && !cover.classList.contains('is-hidden')) {
-            cover.classList.add('is-hidden');
-        }
-
-        const wrap = document.getElementById(`custom_wrap_${vidId}`);
-
         if (isYt) {
             const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
             if (yt && typeof yt.getPlayerState === 'function') {
-                try {
-                    const state = yt.getPlayerState();
-                    if (state === 1) {
-                        yt.pauseVideo();
-                        handlePubYtStateChange(vidId, 2);
-                    } else {
-                        yt.playVideo();
-                        handlePubYtStateChange(vidId, 1);
-                    }
-                    return;
-                } catch(e) {}
+                const state = yt.getPlayerState();
+                if (state === 1) yt.pauseVideo(); else yt.playVideo();
+                return;
             }
             const iframe = document.getElementById(`pub_yt_${vidId}`);
             if (iframe && iframe.contentWindow) {
-                const isPlaying = wrap && wrap.classList.contains('is-playing');
+                const icon = document.getElementById(`pub_play_icon_${vidId}`);
+                const isPlaying = icon && icon.style.opacity === '0';
                 iframe.contentWindow.postMessage(JSON.stringify({
                     event: 'command',
                     func: isPlaying ? 'pauseVideo' : 'playVideo',
                     args: []
                 }), '*');
-                handlePubYtStateChange(vidId, isPlaying ? 2 : 1);
+                if (icon) icon.style.opacity = isPlaying ? '1' : '0';
+                const btn = document.getElementById(`pub_btn_${vidId}`);
+                if (btn) btn.textContent = isPlaying ? '▶' : '❚❚';
+                if (!isPlaying) startPubYtTracking(vidId); else stopPubYtTracking(vidId);
             }
         } else {
             const video = document.getElementById(`pub_vid_${vidId}`);
+            const icon = document.getElementById(`pub_play_icon_${vidId}`);
+            const btn = document.getElementById(`pub_btn_${vidId}`);
             if (!video) return;
             if (video.paused) {
-                video.play().catch(() => {});
-                handlePubYtStateChange(vidId, 1);
+                video.play();
+                if (btn) btn.textContent = '❚❚';
+                if (icon) icon.style.opacity = '0';
             } else {
                 video.pause();
-                handlePubYtStateChange(vidId, 2);
+                if (btn) btn.textContent = '▶';
+                if (icon) icon.style.opacity = '1';
             }
-        }
-    }
-
-    function updatePubTimeDisplay(vidId) {
-        const yt = pubYtPlayers[vidId];
-        const timeTxt = document.getElementById(`time_txt_${vidId}`);
-        const seekRange = document.getElementById(`seek_range_${vidId}`);
-        if (!timeTxt) return;
-
-        let cur = 0;
-        let dur = 0;
-
-        if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
-            cur = yt.getCurrentTime() || 0;
-            dur = yt.getDuration() || 0;
-        }
-
-        timeTxt.textContent = `${formatPubTime(cur)} / ${formatPubTime(dur)}`;
-        if (seekRange && dur > 0) {
-            seekRange.value = (cur / dur) * 100;
         }
     }
 
     function startPubYtTracking(vidId) {
         stopPubYtTracking(vidId);
         pubYtIntervals[vidId] = setInterval(() => {
-            updatePubTimeDisplay(vidId);
+            const yt = pubYtPlayers[vidId];
+            if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
+                const cur = yt.getCurrentTime() || 0;
+                const dur = yt.getDuration() || 0;
+                const curEl = document.getElementById(`pub_cur_time_${vidId}`);
+                const durEl = document.getElementById(`pub_dur_time_${vidId}`);
+                const seekSlider = document.getElementById(`pub_seek_${vidId}`);
+                if (curEl) curEl.textContent = formatPubTime(cur);
+                if (durEl && dur > 0) durEl.textContent = formatPubTime(dur);
+                if (seekSlider && dur > 0) seekSlider.value = (cur / dur) * 100;
+            }
         }, 500);
     }
 
@@ -1174,29 +857,12 @@
         }
     }
 
-    function seekPubRelative(vidId, secondsOffset) {
-        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
-        if (yt && typeof yt.getCurrentTime === 'function') {
-            try {
-                const cur = yt.getCurrentTime() || 0;
-                const dur = yt.getDuration() || 0;
-                const target = Math.max(0, Math.min(dur, cur + secondsOffset));
-                yt.seekTo(target, true);
-                yt.playVideo();
-                handlePubYtStateChange(vidId, 1);
-                return;
-            } catch(e) {}
-        }
-    }
-
     function seekSubjectVideo(vidId, isYt, percentage) {
         if (isYt) {
             const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
             if (yt && typeof yt.getDuration === 'function') {
                 const dur = yt.getDuration() || 0;
                 yt.seekTo((percentage / 100) * dur, true);
-                yt.playVideo();
-                handlePubYtStateChange(vidId, 1);
             } else {
                 const iframe = document.getElementById(`pub_yt_${vidId}`);
                 if (iframe && iframe.contentWindow) {
@@ -1215,84 +881,54 @@
         }
     }
 
-    function togglePubMute(vidId) {
-        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
-        const muteBtn = document.getElementById(`mute_btn_${vidId}`);
-        const volRange = document.getElementById(`vol_range_${vidId}`);
-        if (yt && typeof yt.isMuted === 'function') {
-            try {
-                if (yt.isMuted()) {
-                    yt.unMute();
-                    if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-                    if (volRange) volRange.value = yt.getVolume() || 100;
-                } else {
-                    yt.mute();
-                    if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
-                    if (volRange) volRange.value = 0;
+    function toggleSubjectFullscreen(btn) {
+        const wrap = btn.closest('.custom-video-wrapper');
+        if (!wrap) return;
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            if (wrap.requestFullscreen) wrap.requestFullscreen();
+            else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        }
+    }
+
+    function formatPubTime(seconds) {
+        if (!seconds || isNaN(seconds)) return '00:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.custom-video-element').forEach(video => {
+            const vidId = video.id.replace('pub_vid_', '');
+            const curEl = document.getElementById(`pub_cur_time_${vidId}`);
+            const durEl = document.getElementById(`pub_dur_time_${vidId}`);
+            const seekSlider = document.getElementById(`pub_seek_${vidId}`);
+            
+            video.addEventListener('loadedmetadata', () => {
+                if (durEl) durEl.textContent = formatPubTime(video.duration);
+            });
+            video.addEventListener('timeupdate', () => {
+                if (video.duration) {
+                    if (seekSlider) seekSlider.value = (video.currentTime / video.duration) * 100;
+                    if (curEl) curEl.textContent = formatPubTime(video.currentTime);
                 }
-            } catch(e) {}
-        }
-    }
-
-    function setPubVolume(vidId, value) {
-        const val = parseInt(value, 10);
-        const muteBtn = document.getElementById(`mute_btn_${vidId}`);
-        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
-        if (yt && typeof yt.setVolume === 'function') {
-            try {
-                if (val === 0) yt.mute(); else { yt.unMute(); yt.setVolume(val); }
-            } catch(e) {}
-        }
-        if (muteBtn) {
-            muteBtn.innerHTML = (val === 0) ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>';
-        }
-    }
-
-    function togglePubQualityMenu(vidId) {
-        const menu = document.getElementById(`quality_menu_${vidId}`);
-        if (!menu) return;
-        const isShown = (menu.style.display === 'block');
-        document.querySelectorAll('.ed-quality-menu').forEach(m => m.style.display = 'none');
-        menu.style.display = isShown ? 'none' : 'block';
-    }
-
-    function selectPubVideoQuality(vidId, qCode, qLabel, btnEl) {
-        const menu = document.getElementById(`quality_menu_${vidId}`);
-        if (menu) {
-            menu.querySelectorAll('.ed-quality-item').forEach(b => b.classList.remove('active'));
-            if (btnEl) btnEl.classList.add('active');
-            menu.style.display = 'none';
-        }
-
-        const lbl = document.getElementById(`active_quality_lbl_${vidId}`);
-        if (lbl) lbl.textContent = qLabel;
-
-        const cardBadge = document.getElementById(`card_hd_pill_${vidId}`);
-        if (cardBadge) cardBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${qLabel}</span>`;
-
-        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
-        if (yt && typeof yt.setPlaybackQuality === 'function') {
-            try { yt.setPlaybackQuality(qCode); } catch(e) {}
-        }
-
-        const iframe = document.getElementById(`pub_yt_${vidId}`);
-        if (iframe && iframe.contentWindow) {
-            iframe.contentWindow.postMessage(JSON.stringify({
-                event: 'command',
-                func: 'setPlaybackQuality',
-                args: [qCode]
-            }), '*');
-        }
-    }
-
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.ed-quality-dropdown-wrap')) {
-            document.querySelectorAll('.ed-quality-menu').forEach(m => m.style.display = 'none');
-        }
+            });
+            video.addEventListener('ended', () => {
+                const icon = document.getElementById(`pub_play_icon_${vidId}`);
+                const btn = document.getElementById(`pub_btn_${vidId}`);
+                if (icon) {
+                    icon.style.opacity = '1';
+                    icon.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
+                }
+                if (btn) btn.textContent = '▶';
+            });
+        });
     });
 
-    
-// منع النقر بالزر الأيمن على مشغل الفيديو نهائياً
+    // منع النقر بالزر الأيمن على مشغل الفيديو نهائياً
     document.addEventListener('contextmenu', function(e) {
         if (e.target.closest('.custom-video-wrapper, iframe')) {
             e.preventDefault();
