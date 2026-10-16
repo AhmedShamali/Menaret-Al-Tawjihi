@@ -404,18 +404,407 @@
     inset: 0;
     width: 100%;
     height: 100%;
-    background: #020617;
+    background: #000000;
+    overflow: hidden;
 }
 
-.ed-video-iframe {
+.ed-yt-viewport {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    background: #000000;
+}
+
+/* إخفاء شريط يوتيوب العلوي والسفلي بالكامل عبر الإزاحة العادية والعزل الصارم */
+.ed-video-iframe {
+    position: absolute;
+    top: -65px;
+    left: 0;
+    width: 100%;
+    height: calc(100% + 130px);
     border: 0;
-    pointer-events: auto !important;
+    pointer-events: none !important;
     z-index: 1;
+}
+
+/* طبقة المشغل الأكاديمي الصافي الفاخر */
+.ed-pure-player-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    user-select: none;
+}
+
+.ed-player-frame.controls-hidden .ed-pure-player-layer {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.ed-player-frame.controls-hidden {
+    cursor: none;
+}
+
+.ed-click-surface {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ed-center-pulse-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 1.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+}
+
+.ed-center-pulse-btn.show-pulse {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.ed-player-top-header {
+    position: relative;
+    z-index: 5;
+    padding: 16px 20px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 70%, transparent 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.ed-pth-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.95rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.ed-pth-badge {
+    background: #2563eb;
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.ed-pth-quality-tag {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.ed-player-bottom-panel {
+    position: relative;
+    z-index: 5;
+    padding: 10px 20px 14px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.ed-scrubber-wrapper {
+    position: relative;
+    width: 100%;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.ed-scrub-track {
+    position: relative;
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    overflow: visible;
+    transition: height 0.15s ease;
+}
+
+.ed-scrubber-wrapper:hover .ed-scrub-track {
+    height: 8px;
+}
+
+.ed-scrub-buffer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+    width: 0%;
+}
+
+.ed-scrub-fill {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 4px;
+    width: 0%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.ed-scrub-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    transform: scale(0);
+    transition: transform 0.15s ease;
+    margin-right: -7px;
+}
+
+.ed-scrubber-wrapper:hover .ed-scrub-thumb {
+    transform: scale(1);
+}
+
+.ed-scrub-tooltip {
+    position: absolute;
+    bottom: 22px;
+    background: rgba(15, 23, 42, 0.95);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+    display: none;
+    transform: translateX(50%);
+    white-space: nowrap;
+}
+
+.ed-controls-main-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.ed-ctrl-cluster {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ed-ctrl-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: color 0.2s ease, transform 0.15s ease, background 0.2s ease;
+    line-height: 1;
+}
+
+.ed-ctrl-btn:hover {
+    color: #60a5fa;
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.08);
+}
+
+.ed-ctrl-btn.play {
+    font-size: 1.25rem;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.ed-ctrl-btn.play:hover {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.ed-ctrl-btn.skip {
+    position: relative;
+    font-size: 1.15rem;
+}
+
+.ed-skip-num {
+    font-size: 0.55rem;
+    font-weight: 900;
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: sans-serif;
+}
+
+.ed-time-counter {
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif, system-ui;
+    direction: ltr;
+    letter-spacing: 0.5px;
+    min-width: 95px;
+}
+
+.ed-volume-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ed-volume-slider {
+    width: 55px;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+.ed-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+.ed-speed-dropdown,
+.ed-quality-dropdown {
+    position: relative;
+}
+
+.ed-ctrl-pill {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.ed-ctrl-pill:hover,
+.ed-ctrl-pill.active {
+    background: #2563eb;
+    border-color: #3b82f6;
+    color: #ffffff;
+}
+
+.ed-ctrl-pill.hd {
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.4);
+}
+
+.ed-ctrl-pill.hd:hover {
+    background: #059669;
+    color: #ffffff;
+}
+
+.ed-popover-menu {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6);
+    z-index: 50;
+}
+
+.ed-popover-menu.show {
+    display: flex;
+}
+
+.ed-pop-header {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #94a3b8;
+    padding: 4px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 4px;
+}
+
+.ed-pop-opt {
+    background: none;
+    border: none;
+    color: #e2e8f0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-align: right;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ed-pop-opt:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+}
+
+.ed-pop-opt.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 800;
 }
 
 .ed-native-video {
@@ -1589,17 +1978,14 @@ video::-webkit-media-controls-download-button {
                                         if ($isYt) {
                                             if (empty($ytEmbed) && !empty($rawUrl)) {
                                                 if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
-                                                    $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ym[1] . '?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1';
+                                                    $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ym[1];
                                                 } else {
                                                     $ytEmbed = str_replace(['watch?v=', 'youtube.com/embed/'], ['embed/', 'youtube-nocookie.com/embed/'], $rawUrl);
                                                 }
                                             }
                                             if (!empty($ytEmbed)) {
-                                                $ytEmbed = str_replace('controls=0', 'controls=1', $ytEmbed);
-                                                $ytEmbed = str_replace('fs=0', 'fs=1', $ytEmbed);
-                                                if (!str_contains($ytEmbed, 'enablejsapi=1')) {
-                                                    $ytEmbed .= (str_contains($ytEmbed, '?') ? '&' : '?') . 'enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1';
-                                                }
+                                                $ytBase = explode('?', $ytEmbed)[0];
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&disablekb=1&fs=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&autohide=1&color=white';
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
                                             }
                                         }
@@ -1618,6 +2004,18 @@ video::-webkit-media-controls-download-button {
 
                                     @if(!empty($ytEmbed))
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
+                                            {{-- عرض الفيديو المعزول داخل نافذة مقصوصة تخفي أشرطة يوتيوب تماماً --}}
+                                            <div class="ed-yt-viewport">
+                                                <iframe id="player_yt_{{ $video->id }}" 
+                                                        src="{{ $ytEmbed }}" 
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                        referrerpolicy="strict-origin-when-cross-origin"
+                                                        loading="lazy"
+                                                        class="ed-video-iframe">
+                                                </iframe>
+                                            </div>
+
+                                            {{-- علامة مائية ذكية لحماية الملكية الأكاديمية للمنصة --}}
                                             @if(auth('student')->check() || auth()->check())
                                                 @php
                                                     $wmUser = auth('student')->user() ?? auth()->user();
@@ -1627,16 +2025,105 @@ video::-webkit-media-controls-download-button {
                                                     <span>{{ $wmText }}</span>
                                                 </div>
                                             @endif
-                                            <iframe id="player_yt_{{ $video->id }}" 
-                                                    src="{{ $ytEmbed }}" 
-                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                                                    allowfullscreen
-                                                    referrerpolicy="strict-origin-when-cross-origin"
-                                                    loading="lazy"
-                                                    class="ed-video-iframe">
-                                            </iframe>
 
-                                            {{-- بوستر المنصة الأكاديمي الحصري (يغطي واجهة يوتيوب الأولية واسم القناة والمشتركين وزر يوتيوب بالكامل) --}}
+                                            {{-- طبقة المشغل الأكاديمي المباشر الخاص بالمنصة --}}
+                                            <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
+                                                {{-- سطح النقر للتشغيل والإيقاف --}}
+                                                <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')">
+                                                    <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
+                                                        <i class="fa-solid fa-play"></i>
+                                                    </div>
+                                                </div>
+
+                                                {{-- هيدر المنصة الأكاديمي الفاخر --}}
+                                                <div class="ed-player-top-header">
+                                                    <div class="ed-pth-title">
+                                                        <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
+                                                        <span class="ed-pth-name">{{ $video->title }}</span>
+                                                    </div>
+                                                    <div class="ed-pth-quality-tag" id="top_quality_tag_{{ $video->id }}">
+                                                        <i class="fa-solid fa-circle-check"></i> 1080p Full HD
+                                                    </div>
+                                                </div>
+
+                                                {{-- شريط التحكم السفلي الكامل الخاص بالمنصة --}}
+                                                <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
+                                                    {{-- شريط التقدم الزمني الدقيق --}}
+                                                    <div class="ed-scrubber-wrapper" id="scrubber_wrap_{{ $video->id }}" onclick="handleScrubberClick(event, '{{ $video->id }}')" onmousemove="handleScrubberHover(event, '{{ $video->id }}')" onmouseleave="hideScrubberTooltip('{{ $video->id }}')">
+                                                        <div class="ed-scrub-track">
+                                                            <div class="ed-scrub-buffer" id="buffer_bar_{{ $video->id }}"></div>
+                                                            <div class="ed-scrub-fill" id="progress_bar_{{ $video->id }}">
+                                                                <div class="ed-scrub-thumb"></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="ed-scrub-tooltip" id="scrub_tip_{{ $video->id }}">00:00</div>
+                                                    </div>
+
+                                                    {{-- أزرار وعناصر التحكم --}}
+                                                    <div class="ed-controls-main-row">
+                                                        <div class="ed-ctrl-cluster left">
+                                                            <button type="button" class="ed-ctrl-btn play" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
+                                                                <i class="fa-solid fa-play"></i>
+                                                            </button>
+                                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
+                                                                <i class="fa-solid fa-rotate-left"></i>
+                                                                <span class="ed-skip-num">10</span>
+                                                            </button>
+                                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
+                                                                <i class="fa-solid fa-rotate-right"></i>
+                                                                <span class="ed-skip-num">10</span>
+                                                            </button>
+                                                            <div class="ed-time-counter" id="time_txt_{{ $video->id }}">
+                                                                00:00 / 00:00
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="ed-ctrl-cluster right">
+                                                            <div class="ed-volume-group">
+                                                                <button type="button" class="ed-ctrl-btn vol" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
+                                                                    <i class="fa-solid fa-volume-high"></i>
+                                                                </button>
+                                                                <input type="range" class="ed-volume-slider" id="vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setStudentVolume('{{ $video->id }}', this.value)">
+                                                            </div>
+
+                                                            <div class="ed-speed-dropdown">
+                                                                <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('speed_menu_{{ $video->id }}')">
+                                                                    <span id="active_speed_{{ $video->id }}">1x</span>
+                                                                </button>
+                                                                <div class="ed-popover-menu" id="speed_menu_{{ $video->id }}">
+                                                                    <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
+                                                                    <button type="button" class="ed-pop-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="ed-quality-dropdown">
+                                                                <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')">
+                                                                    <i class="fa-solid fa-sliders"></i>
+                                                                    <span id="active_quality_{{ $video->id }}">1080p</span>
+                                                                </button>
+                                                                <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}">
+                                                                    <div class="ed-pop-header">{{ __('دقة الفيديو') }}</div>
+                                                                    <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', 'hd1080', this, '1080p')">1080p Full HD</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'hd720', this, '720p')">720p HD</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'large', this, '480p')">480p SD</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'medium', this, '360p')">360p</button>
+                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي')">{{ __('تلقائي (Auto)') }}</button>
+                                                                </div>
+                                                            </div>
+
+                                                            <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('ملء الشاشة (F)') }}">
+                                                                <i class="fa-solid fa-expand"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- بوستر المنصة الأكاديمي الحصري --}}
                                             @php
                                                 $ytId = $video->youtube_id;
                                                 $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
@@ -2224,6 +2711,8 @@ function handlePlayerMouseLeave(videoId) {
 function handleYtStateChange(videoId, state) {
     const poster = document.getElementById(`poster_${videoId}`);
     const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    const frame = document.getElementById(`player_frame_${videoId}`);
     
     // 1 = PLAYING
     if (state === 1) {
@@ -2235,11 +2724,22 @@ function handleYtStateChange(videoId, state) {
         if (pauseOverlay) {
             pauseOverlay.style.display = 'none';
         }
+        if (barBtn) {
+            barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        }
         startStudentProgressTracking(videoId);
+        registerPlayerActivity(videoId);
     } else if (state === 2) { // 2 = PAUSED
         if (pauseOverlay) {
             pauseOverlay.style.display = 'flex';
         }
+        if (barBtn) {
+            barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        }
+        if (frame) {
+            frame.classList.remove('controls-hidden');
+        }
+        clearTimeout(playerHideTimers[videoId]);
         stopStudentProgressTracking(videoId);
     } else if (state === 0) { // 0 = ENDED
         if (poster) {
@@ -2252,6 +2752,12 @@ function handleYtStateChange(videoId, state) {
         if (pauseOverlay) {
             pauseOverlay.style.display = 'none';
         }
+        if (barBtn) {
+            barBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
+        }
+        if (frame) {
+            frame.classList.remove('controls-hidden');
+        }
         stopStudentProgressTracking(videoId);
     }
 }
@@ -2262,6 +2768,10 @@ function playPlatformYtVideo(videoId) {
         poster.style.opacity = '0';
         poster.style.pointerEvents = 'none';
         setTimeout(() => { poster.style.display = 'none'; }, 300);
+    }
+    const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
+    if (pauseOverlay) {
+        pauseOverlay.style.display = 'none';
     }
     
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
@@ -2283,15 +2793,50 @@ function playPlatformYtVideo(videoId) {
 }
 
 function resumePlatformYtVideo(videoId) {
-    const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
-    if (pauseOverlay) {
-        pauseOverlay.style.display = 'none';
-    }
     playPlatformYtVideo(videoId);
 }
 
-function setVideoQuality(videoId, quality, btnElement) {
-    // 1. YouTube Iframe API
+function toggleStudentPlayback(videoId) {
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    const pulseBtn = document.getElementById(`center_pulse_${videoId}`);
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    
+    if (yt && typeof yt.getPlayerState === 'function') {
+        try {
+            const state = yt.getPlayerState();
+            if (state === 1) { // Playing -> Pause
+                yt.pauseVideo();
+                if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                if (pulseBtn) {
+                    pulseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                    pulseBtn.classList.add('show-pulse');
+                    setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
+                }
+            } else { // Paused -> Play
+                yt.playVideo();
+                if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+                if (pulseBtn) {
+                    pulseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+                    pulseBtn.classList.add('show-pulse');
+                    setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
+                }
+                registerPlayerActivity(videoId);
+            }
+            return;
+        } catch(e) {}
+    }
+    
+    const iframe = document.getElementById(`player_yt_${videoId}`);
+    if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'playVideo',
+            args: []
+        }), '*');
+    }
+}
+
+function setVideoQuality(videoId, quality, btnElement, label) {
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.setPlaybackQuality === 'function') {
         try {
@@ -2302,7 +2847,6 @@ function setVideoQuality(videoId, quality, btnElement) {
         } catch(e) {}
     }
 
-    // 2. YouTube postMessage Fallback
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     if (ytIframe && ytIframe.contentWindow) {
         ytIframe.contentWindow.postMessage(JSON.stringify({
@@ -2312,61 +2856,128 @@ function setVideoQuality(videoId, quality, btnElement) {
         }), '*');
     }
 
-    // 3. UI Active state
+    const displayLabel = label || quality;
+    const activeBadge = document.getElementById(`active_quality_${videoId}`);
+    if (activeBadge) activeBadge.textContent = displayLabel;
+    
+    const topTag = document.getElementById(`top_quality_tag_${videoId}`);
+    if (topTag) topTag.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${displayLabel}`;
+
     if (btnElement) {
-        const parent = btnElement.closest('.ed-quality-segmented');
+        const parent = btnElement.closest('.ed-popover-menu, .ed-quality-segmented');
         if (parent) {
-            parent.querySelectorAll('.ed-quality-opt').forEach(b => b.classList.remove('active'));
+            parent.querySelectorAll('.ed-pop-opt, .ed-quality-opt').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
     }
-
-    const labels = {
-        'hd1080': '1080p Full HD',
-        'hd720': '720p HD',
-        'large': '480p SD',
-        'medium': '360p',
-        'auto': '{{ __("تلقائي (Auto)") }}'
-    };
-    showPlayerToast(`{{ __("تم ضبط الجودة على") }} ${labels[quality] || quality} 🎬`);
+    document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
+    showPlayerToast(`{{ __("تم ضبط الجودة على") }} ${displayLabel} 🎬`);
 }
 
-function toggleStudentPlayback(videoId) {
+function setStudentVolume(videoId, value) {
+    const val = parseInt(value, 10);
+    const muteBtn = document.getElementById(`mute_btn_${videoId}`);
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
-    if (yt && typeof yt.getPlayerState === 'function') {
+    if (yt && typeof yt.setVolume === 'function') {
         try {
-            const state = yt.getPlayerState();
-            if (state === 1) {
-                yt.pauseVideo();
+            if (val === 0) {
+                yt.mute();
             } else {
-                yt.playVideo();
-                registerPlayerActivity(videoId);
+                yt.unMute();
+                yt.setVolume(val);
             }
-            return;
         } catch(e) {}
     }
-    
-    const iframe = document.getElementById(`player_yt_${videoId}`);
-    if (iframe && iframe.contentWindow) {
-        const centerBtn = document.getElementById(`center_play_${videoId}`);
-        const isPlaying = centerBtn && centerBtn.style.opacity === '0';
-        iframe.contentWindow.postMessage(JSON.stringify({
-            event: 'command',
-            func: isPlaying ? 'pauseVideo' : 'playVideo',
-            args: []
-        }), '*');
-        if (centerBtn) centerBtn.style.opacity = isPlaying ? '1' : '0';
-        const barBtn = document.getElementById(`bar_btn_${videoId}`);
-        if (barBtn) barBtn.innerHTML = isPlaying ? '<i class="fa-solid fa-play"></i>' : '<i class="fa-solid fa-pause"></i>';
-        if (!isPlaying) {
-            startStudentProgressTracking(videoId);
-            registerPlayerActivity(videoId);
+    if (muteBtn) {
+        if (val === 0) {
+            muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+        } else if (val < 50) {
+            muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
         } else {
-            stopStudentProgressTracking(videoId);
-            const frame = document.getElementById(`player_frame_${videoId}`);
-            if (frame) frame.classList.remove('controls-hidden');
-            clearTimeout(playerHideTimers[videoId]);
+            muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
         }
+    }
+}
+
+function toggleDropdownMenu(menuId) {
+    const menu = document.getElementById(menuId);
+    if (!menu) return;
+    const isShown = menu.classList.contains('show');
+    document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
+    if (!isShown) menu.classList.add('show');
+}
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.ed-speed-dropdown') && !e.target.closest('.ed-quality-dropdown')) {
+        document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
+    }
+});
+
+function handleScrubberClick(e, videoId) {
+    const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const isRtl = window.getComputedStyle(wrap).direction === 'rtl';
+    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+    const percentage = isRtl ? (1 - pct) : pct;
+    
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.getDuration === 'function') {
+        const dur = yt.getDuration() || 0;
+        if (dur > 0) {
+            yt.seekTo(percentage * dur, true);
+            yt.playVideo();
+            updateStudentTimeDisplay(videoId);
+        }
+    }
+}
+
+function handleScrubberHover(e, videoId) {
+    const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
+    const tip = document.getElementById(`scrub_tip_${videoId}`);
+    if (!wrap || !tip) return;
+    const rect = wrap.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const isRtl = window.getComputedStyle(wrap).direction === 'rtl';
+    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+    const percentage = isRtl ? (1 - pct) : pct;
+    
+    let yt = ytPlayers[videoId];
+    if (yt && typeof yt.getDuration === 'function') {
+        const dur = yt.getDuration() || 0;
+        tip.textContent = formatDurationSec(percentage * dur);
+        tip.style.display = 'block';
+        tip.style.left = `${clickX}px`;
+    }
+}
+
+function hideScrubberTooltip(videoId) {
+    const tip = document.getElementById(`scrub_tip_${videoId}`);
+    if (tip) tip.style.display = 'none';
+}
+
+function updateStudentTimeDisplay(videoId) {
+    const yt = ytPlayers[videoId];
+    if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
+        try {
+            const cur = yt.getCurrentTime() || 0;
+            const dur = yt.getDuration() || 0;
+            const loaded = typeof yt.getVideoLoadedFraction === 'function' ? yt.getVideoLoadedFraction() : 0;
+            
+            const timeTxt = document.getElementById(`time_txt_${videoId}`);
+            if (timeTxt) timeTxt.textContent = `${formatDurationSec(cur)} / ${formatDurationSec(dur)}`;
+            
+            const progBar = document.getElementById(`progress_bar_${videoId}`);
+            if (progBar && dur > 0) {
+                progBar.style.width = `${(cur / dur) * 100}%`;
+            }
+            
+            const bufBar = document.getElementById(`buffer_bar_${videoId}`);
+            if (bufBar) {
+                bufBar.style.width = `${loaded * 100}%`;
+            }
+        } catch(e) {}
     }
 }
 
