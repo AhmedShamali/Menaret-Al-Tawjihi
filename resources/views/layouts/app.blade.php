@@ -3544,14 +3544,7 @@
                     window.APP_UNREAD_COUNT_URL = "{{ \Illuminate\Support\Facades\Route::has('notifications.unreadCount') ? route('notifications.unreadCount') : url('/notifications/unread-count') }}";
                 </script>
 
-                <!-- زر الدروس المحفوظة أوفلاين بدون نت للطلاب فقط -->
-                @if(auth('student')->check())
-                    <button type="button" onclick="openOfflineVault()" class="topbar-offline-vault-btn" title="{{ __('دروسي المحفوظة أوفلاين بدون إنترنت') }}" style="background: var(--ed-surface); border: 1px solid var(--ed-border); padding: 0 12px; height: 40px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 7px; color: #10b981; font-weight: 700; font-size: 0.82rem; transition: var(--transition-smooth);">
-                        <i class="fa-solid fa-cloud-arrow-down" style="font-size: 1rem;"></i>
-                        <span style="font-size: 0.78rem;">{{ __('أوفلاين') }}</span>
-                        <span class="badge-offline-count" id="topbarOfflineBadge" style="display: none; background: #10b981; color: #fff; border-radius: 10px; font-size: 0.65rem; padding: 1px 6px;">0</span>
-                    </button>
-                @endif
+
 
                 <!-- قائمة الإشعارات والتنبيهات الشاملة -->
                 <div class="notifications-dropdown-container" style="position: relative;">
@@ -3660,10 +3653,7 @@
                 <i class="fa-solid fa-pen-to-square"></i>
                 <span>{{ __('اختباراتي') }}</span>
             </a>
-            <button type="button" class="bottom-nav-item" onclick="openOfflineVault()" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0;" title="{{ __('دروسي المحفوظة بدون إنترنت') }}">
-                <i class="fa-solid fa-cloud-arrow-down" style="color: #10b981;"></i>
-                <span>{{ __('أوفلاين ⚡') }}</span>
-            </button>
+
             <a href="{{ route('student.profile') }}" class="bottom-nav-item {{ Request::is('student/profile*') ? 'active' : '' }}">
                 <i class="fa-solid fa-user"></i>
                 <span>{{ __('حسابي') }}</span>

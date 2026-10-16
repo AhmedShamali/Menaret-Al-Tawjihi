@@ -214,31 +214,12 @@ const StepvoroVideoDownloader = {
     handleAction: function(id, btnElement) {
         id = String(id);
         const btn = btnElement || document.getElementById('btn_offline_' + id);
-        if (!btn) return;
-
-        // في حال كان الفيديو محملاً ومحفوظاً بالفعل:
-        if (btn.classList.contains('is-saved')) {
-            StepvoroOfflineDB.getVideo(id).then((rec) => {
-                if (rec) {
-                    if (rec.blob) {
-                        this.attachOfflineBlobToPlayer(id, rec.blob);
-                        if (typeof window.showPwaToast === 'function') {
-                            window.showPwaToast('يتم الآن تشغيل الدرس مباشرة من ذاكرة المنصة بدون إنترنت ⚡', 'success');
-                        }
-                        const player = document.getElementById('player_' + id);
-                        if (player) {
-                            player.play().catch(() => {});
-                            player.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-                    } else if (typeof window.playOfflineVaultVideo === 'function') {
-                        window.playOfflineVaultVideo(id);
-                    } else {
-                        window.location.href = '/offline-videos';
-                    }
-                }
-            });
-            return;
+        if (btn) btn.remove();
+        if (typeof window.showPwaToast === 'function') {
+            window.showPwaToast('الدروس متاحة للمشاهدة المباشرة فائقة الدقة عبر مشغل المنصة المحمي.', 'info');
         }
+        return;
+    },
 
         const isDirect = btn.getAttribute('data-is-direct') === '1';
         const isYouTube = btn.getAttribute('data-is-youtube') === '1';
@@ -613,129 +594,28 @@ const StepvoroVideoDownloader = {
         }
     },
 
-    // تحديث شكل ومحتوى زر التنزيل بشكل راقٍ ومباشر
+    // إزالة أزرار التنزيل أوفلاين نهائياً
     updateButtonUI: function (id, state, percent, btnElement) {
         const btn = btnElement || document.getElementById('btn_offline_' + id);
+        if (btn) btn.remove();
         const quickLbl = document.getElementById('quick_offline_lbl_' + id);
+        if (quickLbl) quickLbl.remove();
         const quickBtn = document.getElementById('quick_offline_btn_' + id);
-
-        if (state === 'downloading') {
-            if (btn) {
-                btn.classList.add('is-downloading');
-                btn.classList.remove('is-saved');
-                btn.disabled = true;
-                btn.innerHTML = `
-                    <div class="ed-offline-btn-inner">
-                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-spinner fa-spin"></i></span>
-                        <span class="offline-btn-label">جاري الحفظ داخل المنصة (${percent}%)</span>
-                    </div>
-                    <div class="ed-offline-progress-track">
-                        <div class="ed-offline-progress-fill" style="width: ${percent}%;"></div>
-                    </div>
-                `;
-            }
-            if (quickLbl) quickLbl.innerText = `حفظ (${percent}%)`;
-        } else if (state === 'saved') {
-            if (btn) {
-                btn.classList.remove('is-downloading');
-                btn.classList.add('is-saved');
-                btn.disabled = false;
-                btn.title = 'تشغيل الدرس أوفلاين مباشرة من ذاكرة المنصة';
-                btn.innerHTML = `
-                    <div class="ed-offline-btn-inner">
-                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-circle-check" style="color: #10b981;"></i></span>
-                        <span class="offline-btn-label">تشغيل أوفلاين (محفوظ داخل المنصة ⚡)</span>
-                        <span class="btn-remove-offline" onclick="event.stopPropagation(); StepvoroVideoDownloader.removeOfflineVideo('${id}', this.closest('button'))" title="حذف من الذاكرة لتحرير المساحة">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </span>
-                    </div>
-                `;
-            }
-            if (quickLbl) quickLbl.innerText = 'محفوظ أوفلاين ✓';
-            if (quickBtn) {
-                quickBtn.classList.add('is-saved');
-                quickBtn.style.color = '#10b981';
-            }
-        } else {
-            if (btn) {
-                btn.classList.remove('is-downloading', 'is-saved');
-                btn.disabled = false;
-                btn.innerHTML = `
-                    <div class="ed-offline-btn-inner">
-                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                        <span class="offline-btn-label">حفظ وتشغيل أوفلاين (داخل المنصة ⚡)</span>
-                    </div>
-                `;
-            }
-            if (quickLbl) quickLbl.innerText = 'حفظ أوفلاين ⚡';
-            if (quickBtn) {
-                quickBtn.classList.remove('is-saved');
-                quickBtn.style.color = '';
-            }
-        }
+        if (quickBtn) quickBtn.remove();
     },
 
-    // ربط الـ Blob بمشغل الفيديو حتى يشتغل أوفلاين 100%
     attachOfflineBlobToPlayer: function (id, blob) {
-        id = String(id);
-        let player = document.getElementById('player_' + id) || document.getElementById('pub_vid_' + id) || document.getElementById('vid_direct_' + id);
-
-        // إذا كان المشغل الأصلي iframe يوتيوب، ننشئ مشغل فيديو أصلي MP4 أوفلاين فوق الشيلد
-        if (!player) {
-            const frame = document.getElementById('shield_wrap_' + id) || document.getElementById('player_frame_' + id) || document.getElementById('custom_wrap_' + id);
-            if (frame) {
-                const ifr = frame.querySelector('iframe');
-                if (ifr) ifr.style.display = 'none';
-
-                const newVid = document.createElement('video');
-                newVid.id = 'player_' + id;
-                newVid.controls = true;
-                newVid.playsInline = true;
-                newVid.setAttribute('controlsList', 'nodownload noplaybackrate');
-                newVid.setAttribute('oncontextmenu', 'return false;');
-                newVid.style.cssText = 'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #000; z-index: 40;';
-                frame.appendChild(newVid);
-                player = newVid;
-            }
-        }
-
-        if (!player) return;
-
-        const blobUrl = URL.createObjectURL(blob);
-        const oldSources = player.querySelectorAll('source');
-        oldSources.forEach(function (s) { s.remove(); });
-        player.src = blobUrl;
-        try {
-            player.load();
-        } catch (e) {}
-
-        let badge = document.getElementById('offline_badge_' + id);
-        if (!badge) {
-            badge = document.createElement('div');
-            badge.id = 'offline_badge_' + id;
-            badge.className = 'player-offline-badge';
-            badge.innerHTML = `<i class="fa-solid fa-bolt"></i> تشغيل أوفلاين من ذاكرة التطبيق (بدون إنترنت)`;
-            if (player.parentElement) {
-                player.parentElement.appendChild(badge);
-            }
-        }
+        // تم إلغاء التخزين أوفلاين للفيديوهات والاعتماد التام على البث المباشر
+        return;
     },
 
     checkAndInitLessonPlayer: function (id) {
-        id = String(id);
-        const self = this;
-        StepvoroOfflineDB.getVideo(id).then((record) => {
-            if (record) {
-                self.updateButtonUI(id, 'saved', 100);
-                if (record.blob) {
-                    self.attachOfflineBlobToPlayer(id, record.blob);
-                }
-            } else {
-                self.updateButtonUI(id, 'ready', 0);
-            }
-        }).catch((e) => {
-            console.warn('Error checking offline video status:', e);
-        });
+        const btn = document.getElementById('btn_offline_' + id);
+        if (btn) btn.remove();
+        const quickBtn = document.getElementById('quick_offline_btn_' + id);
+        if (quickBtn) quickBtn.remove();
+        const quickLbl = document.getElementById('quick_offline_lbl_' + id);
+        if (quickLbl) quickLbl.remove();
     }
 };
 
@@ -809,19 +689,13 @@ window.forceUpdateApp = async function(btn) {
     }
 };
 
-// تهيئة وفحص حالة التوصيل بالإنترنت وفحص الفيديوهات في الصفحة
+// إزالة أي أزرار تحميل أوفلاين متبقية في الصفحة
 window.addEventListener('DOMContentLoaded', function () {
-    StepvoroOfflineDB.updateGlobalOfflineBadge();
-
-    // الفحص التلقائي لجميع أزرار التحميل
-    setTimeout(function() {
-        document.querySelectorAll('[id^="btn_offline_"]').forEach(function(btn) {
-            const vidId = btn.id.replace('btn_offline_', '');
-            if (vidId && window.StepvoroVideoDownloader) {
-                StepvoroVideoDownloader.checkAndInitLessonPlayer(vidId);
-            }
+    try {
+        document.querySelectorAll('[id^="btn_offline_"], [id^="quick_offline_"], .ed-btn-offline-card, .btn-offline-quick-save, .topbar-offline-vault-btn').forEach(function(el) {
+            el.remove();
         });
-    }, 150);
+    } catch (e) {}
 });
 
 // ضمان الإتاحة العالمية على المتصفح

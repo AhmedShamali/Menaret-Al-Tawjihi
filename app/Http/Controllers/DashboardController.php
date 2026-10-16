@@ -221,7 +221,7 @@ class DashboardController extends Controller {
         }
 
         // جلب المواد مع عدادات المحتوى والاختبارات التابعة لفرعه الأصلي فقط
-        $query = \App\Models\Subject::with(['stage', 'teacher'])->withCount(['educationalContents', 'contents', 'exams'])
+        $query = \App\Models\Subject::with(['stage', 'teacher'])->withCount(['contents', 'exams'])
             ->whereIn('id', $enrolledSubjectIds);
 
         if ($stageId) {
@@ -392,6 +392,7 @@ class DashboardController extends Controller {
      */
     public function offlineVideos()
     {
-        return view('student.offline_videos');
+        return redirect()->route('student.subjects.index')
+            ->with('info', 'كافة الشروحات المرئية أصبحت تعمل بنظام البث المباشر فائق السرعة عبر مشغل المنصة.');
     }
 }

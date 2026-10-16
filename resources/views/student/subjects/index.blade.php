@@ -33,7 +33,7 @@
             </div>
             <div class="ed-cstat-divider"></div>
             <div class="ed-cstat-item">
-                <span class="ed-cstat-num">{{ $subjects->sum('educational_contents_count') + $subjects->sum('contents_count') }}</span>
+                <span class="ed-cstat-num">{{ $subjects->sum('contents_count') ?: $subjects->sum('educational_contents_count') }}</span>
                 <span class="ed-cstat-label">{{ __('إجمالي المحاضرات') }}</span>
             </div>
             <div class="ed-cstat-divider"></div>
@@ -71,7 +71,7 @@
         @forelse($subjects as $index => $subject)
             @php
                 $color = $subject->color ?: '#1e3a8a';
-                $lessonsCount = ($subject->educational_contents_count ?? 0) + ($subject->contents_count ?? 0);
+                $lessonsCount = $subject->contents_count ?? $subject->educational_contents_count ?? 0;
                 $examsCount = $subject->exams_count ?? 0;
                 $subjectName = (app()->getLocale() === 'en' && !empty($subject->name_en)) ? $subject->name_en : ($subject->name_ar ?? $subject->name);
                 $stageLabel = $subject->stage?->label_ar ? __($subject->stage->label_ar) : __('توجيهي عام');
@@ -197,7 +197,7 @@
                     @forelse($subjects as $index => $subject)
                         @php
                             $color = $subject->color ?: '#1e3a8a';
-                            $lessonsCount = ($subject->educational_contents_count ?? 0) + ($subject->contents_count ?? 0);
+                            $lessonsCount = $subject->contents_count ?? $subject->educational_contents_count ?? 0;
                             $examsCount = $subject->exams_count ?? 0;
                             $subjectName = (app()->getLocale() === 'en' && !empty($subject->name_en)) ? $subject->name_en : ($subject->name_ar ?? $subject->name);
                             $stageLabel = $subject->stage?->label_ar ? __($subject->stage->label_ar) : __('توجيهي عام');

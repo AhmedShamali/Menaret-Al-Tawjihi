@@ -448,13 +448,13 @@
     background: #2563eb;
 }
 
-/* دروع حماية إضافية للأركان والعنوان لمنع أي تسريب لأزرار يوتيوب */
+/* دروع حماية إضافية للأركان والعنوان لمنع أي تسريب لأزرار يوتيوب وبيانات القناة الخارجية */
 .ed-shield-corner-bl {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 140px;
-    height: 100px;
+    height: 60px;
     z-index: 25;
     background: transparent;
     cursor: pointer;
@@ -464,11 +464,18 @@
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 140px;
-    height: 70px;
+    width: 185px;
+    height: 60px;
     z-index: 25;
-    background: transparent;
+    background: #090d16;
     cursor: pointer;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.ed-player-frame.controls-hidden .ed-shield-corner-br {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .ed-shield-top-band {
@@ -476,10 +483,73 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 80px;
+    height: 72px;
     z-index: 25;
-    background: transparent;
+    background: linear-gradient(180deg, #090d16 0%, #090d16 80%, rgba(9, 13, 22, 0.88) 92%, transparent 100%);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
+    transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+}
+
+.ed-player-frame.controls-hidden .ed-shield-top-band {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translateY(-8px);
+}
+
+.ed-shield-top-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 90%;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.ed-shield-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(37, 99, 235, 0.25);
+    border: 1px solid rgba(59, 130, 246, 0.45);
+    color: #60a5fa;
+    display: grid;
+    place-items: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.ed-shield-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    text-align: right;
+    line-height: 1.35;
+}
+
+.ed-shield-title {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.ed-shield-sub {
+    color: #94a3b8;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* شريط التحكم الداخلي الذكي للمنصة مع الإخفاء التلقائي النظيف */
@@ -1503,8 +1573,9 @@ video::-webkit-media-controls-download-button {
                                             @endif
                                             <iframe id="player_yt_{{ $video->id }}" 
                                                     src="{{ $ytEmbed }}" 
-                                                    allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" 
-                                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                                    referrerpolicy="strict-origin-when-cross-origin"
+                                                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox"
                                                     loading="lazy"
                                                     style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; object-fit: contain; pointer-events: none !important; z-index: 1;">
                                             </iframe>
@@ -1516,10 +1587,20 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- دروع حماية إضافية تمنع النقر أو استخراج الروابط من الأركان والعنوان --}}
+                                            {{-- دروع حماية إضافية وتعتيم ذكي يحجب عنوان يوتيوب والقناة وشعار Watch on YouTube --}}
                                             <div class="ed-shield-corner-bl" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
-                                            <div class="ed-shield-corner-br" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
-                                            <div class="ed-shield-top-band" onclick="toggleStudentPlayback('{{ $video->id }}')"></div>
+                                            <div class="ed-shield-corner-br" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}"></div>
+                                            <div class="ed-shield-top-band" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
+                                                <div class="ed-shield-top-content">
+                                                    <div class="ed-shield-badge">
+                                                        <i class="fa-solid fa-graduation-cap"></i>
+                                                    </div>
+                                                    <div class="ed-shield-text">
+                                                        <span class="ed-shield-title">{{ $video->title }}</span>
+                                                        <span class="ed-shield-sub">{{ $video->channel_name ?? $subject->name_ar ?? __('شرح تعليمي معتمد') }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
 
                                             {{-- شريط تحكم داخلي أنيق خاص بالمنصة مدمج في مشغل الفيديو --}}
                                             <div class="ed-student-player-bar" id="bar_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
@@ -1606,13 +1687,7 @@ video::-webkit-media-controls-download-button {
                                     @endif
                                 </div>
 
-                                @php
-                                    $hasOfflineMp4 = \App\Services\OfflineVideoManager::hasLocalMp4($video);
-                                    $isYt = !empty($ytEmbed) || !empty($video->youtube_id) || str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be');
-                                    $canDownloadOffline = ($isDirectVideo && ($directVideoUrl || !empty($video->url_path))) || $isYt || $hasOfflineMp4;
-                                @endphp
-
-                                {{-- شريط التحكم بالسرعة والملاحظات والحفظ أوفلاين --}}
+                                {{-- شريط التحكم بالسرعة والملاحظات وملء الشاشة --}}
                                 <div class="ed-smart-player-bar">
                                     <div class="speed-buttons-group">
                                         <span class="speed-control-lbl">
@@ -1628,16 +1703,6 @@ video::-webkit-media-controls-download-button {
                                     </div>
 
                                     <div class="ed-player-action-pills">
-                                        @if($canDownloadOffline)
-                                            <button type="button" 
-                                                    class="btn-toggle-notes btn-download-quick btn-offline-quick-save" 
-                                                    id="quick_offline_btn_{{ $video->id }}"
-                                                    onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}')" 
-                                                    title="{{ __('حفظ الدرس في ذاكرة المنصة لمشاهدته بدون إنترنت') }}">
-                                                <i class="fa-solid fa-cloud-arrow-down"></i>
-                                                <span id="quick_offline_lbl_{{ $video->id }}">{{ __('حفظ أوفلاين ⚡') }}</span>
-                                            </button>
-                                        @endif
                                         <button type="button" class="btn-toggle-notes" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                             <i class="fa-solid fa-expand"></i>
                                             <span>{{ __('ملء الشاشة') }}</span>
@@ -1664,7 +1729,7 @@ video::-webkit-media-controls-download-button {
                                     </div>
                                 </div>
 
-                                {{-- بيانات المحاضرة والمرفقات الدراسية وزر التحميل أوفلاين الفاخر داخل المنصة --}}
+                                {{-- بيانات المحاضرة والمرفقات الدراسية --}}
                                 <div class="ed-video-info-box">
                                     <div>
                                         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px;">
@@ -1679,54 +1744,6 @@ video::-webkit-media-controls-download-button {
                                         <h3 class="ed-vtitle">{{ $video->title }}</h3>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <div class="ed-offline-action-wrapper" id="offline_wrap_{{ $video->id }}">
-                                            @if($canDownloadOffline)
-                                                <button type="button" 
-                                                        class="ed-btn-offline-card" 
-                                                        id="btn_offline_{{ $video->id }}" 
-                                                        data-video-id="{{ $video->id }}"
-                                                        data-video-title="{{ $video->title }}"
-                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                        data-video-url="{{ route('content.downloadVideo', $video->id) }}"
-                                                        data-is-direct="{{ $isDirectVideo ? '1' : '0' }}"
-                                                        @if($isYt && !$hasOfflineMp4)
-                                                            data-is-youtube="1"
-                                                            data-prepare-url="{{ route('content.prepareOfflineVideo', $video->id) }}"
-                                                        @endif
-                                                        data-yt-embed="{{ $ytEmbed ?? '' }}"
-                                                        data-pdf-url="{{ !empty($video->pdf_path) ? route('content.download', $video->id) : '' }}"
-                                                        onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('حفظ وتشغيل الدرس بدون إنترنت داخل المنصة') }}">
-                                                    <div class="ed-offline-btn-inner">
-                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-cloud-arrow-down"></i></span>
-                                                        <span class="offline-btn-label">{{ __('حفظ وتشغيل أوفلاين (داخل المنصة ⚡)') }}</span>
-                                                    </div>
-                                                    <div class="ed-offline-progress-track">
-                                                        <div class="ed-offline-progress-fill" id="progress_fill_{{ $video->id }}"></div>
-                                                    </div>
-                                                </button>
-                                            @elseif(!empty($video->pdf_path))
-                                                <button type="button" 
-                                                        class="ed-btn-offline-card" 
-                                                        id="btn_offline_{{ $video->id }}" 
-                                                        data-video-id="{{ $video->id }}"
-                                                        data-video-title="{{ $video->title }}"
-                                                        data-subject-title="{{ $subject->name_ar ?? ($subject->name ?? 'المنهاج') }}"
-                                                        data-video-url=""
-                                                        data-is-direct="0"
-                                                        data-yt-embed="{{ $ytEmbed ?? '' }}"
-                                                        data-pdf-url="{{ route('content.download', $video->id) }}"
-                                                        onclick="(window.StepvoroVideoDownloader || StepvoroVideoDownloader).handleAction('{{ $video->id }}', this)" 
-                                                        title="{{ __('حفظ ملزمة وأوراق عمل الدرس بدون إنترنت') }}"
-                                                        style="background: #fef2f2; border-color: #fecaca; color: #b91c1c;">
-                                                    <div class="ed-offline-btn-inner">
-                                                        <span class="ed-offline-btn-icon"><i class="fa-solid fa-file-pdf"></i></span>
-                                                        <span class="offline-btn-label">{{ __('حفظ ملزمة الدرس أوفلاين (PDF ⚡)') }}</span>
-                                                    </div>
-                                                </button>
-                                            @endif
-                                        </div>
-
                                         {{-- ملزمة وملازم الدرس PDF المعتمدة للدراسة والطباعة --}}
                                         @if(!empty($video->pdf_path))
                                             <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf" title="{{ __('تحميل ملزمة / أوراق عمل المحاضرة (PDF)') }}">
@@ -2640,21 +2657,7 @@ function purgeExternalDownloadButtons() {
 purgeExternalDownloadButtons();
 document.addEventListener('DOMContentLoaded', purgeExternalDownloadButtons);
 
-// فحص حالة كافة الفيديوهات في الذاكرة المحلية لتفعيل المشغل أوفلاين
-function initSubjectOfflineCheck(attempt = 0) {
-    const downloader = window.StepvoroVideoDownloader || (typeof StepvoroVideoDownloader !== 'undefined' ? StepvoroVideoDownloader : null);
-    if (!downloader) {
-        if (attempt < 10) setTimeout(() => initSubjectOfflineCheck(attempt + 1), 150);
-        return;
-    }
-    document.querySelectorAll('[id^="btn_offline_"]').forEach(function(btn) {
-        var vidId = btn.getAttribute('data-video-id') || btn.id.replace('btn_offline_', '');
-        if (vidId) {
-            downloader.checkAndInitLessonPlayer(vidId);
-        }
-    });
-}
-initSubjectOfflineCheck();
+
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 @endsection

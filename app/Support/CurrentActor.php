@@ -10,12 +10,14 @@ class CurrentActor
 {
     public static function student(): ?Student
     {
-        return Auth::guard('student')->user();
+        $user = Auth::guard('student')->user();
+        return ($user instanceof Student) ? $user : null;
     }
 
     public static function staff(): ?User
     {
-        return Auth::guard('web')->user();
+        $user = Auth::guard('web')->user();
+        return ($user instanceof User) ? $user : null;
     }
 
     public static function examsIndexRoute(): string

@@ -1225,6 +1225,16 @@ class EducationalContentController extends Controller
     {
         $content = EducationalContent::with('subject')->findOrFail($id);
 
+        if (request()->expectsJson() || request()->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الشروحات المرئية مخصصة للمشاهدة المباشرة فائقة الدقة عبر مشغل المنصة المحمي ولا تدعم التحميل.'
+            ], 200);
+        }
+
+        return redirect()->route('student.subjects.show', $content->subject_id ?? 1)
+            ->with('info', 'الشروحات المرئية مخصصة للمشاهدة المباشرة فائقة الدقة عبر مشغل المنصة المحمي.');
+
         if (!$this->checkStudentRegionAccess($content)) {
             return redirect()->back()->with('error', 'عذراً، هذا الدرس مخصص لمنطقة تعليمية أخرى وغير متاح في خطتك الدراسية.');
         }
@@ -1383,7 +1393,11 @@ class EducationalContentController extends Controller
      */
     public function prepareOfflineVideo($id)
     {
-        $content = EducationalContent::with('subject')->findOrFail($id);
+        return response()->json([
+            'success' => false,
+            'ready'   => false,
+            'message' => 'الشروحات المرئية مخصصة للمشاهدة المباشرة فائقة الدقة عبر مشغل المنصة المحمي.'
+        ], 200);
 
         if (!$this->checkStudentRegionAccess($content)) {
             return response()->json([
@@ -1689,6 +1703,8 @@ class EducationalContentController extends Controller
                 'type'           => $primary->type,
                 'order'          => $primary->order,
                 'youtube_embed_url' => $primary->youtube_embed_url,
+                'youtube_watch_url' => $primary->youtube_watch_url,
+                'youtube_id'        => $primary->youtube_id,
                 'created_at'     => $primary->created_at,
                 'uploader'       => $primary->uploader,
                 'target_region'  => $primary->target_region,

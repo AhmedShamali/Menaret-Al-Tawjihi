@@ -134,7 +134,7 @@
                     @php
                         $cleanCurUrl = trim((string)($content->url_path ?? ''));
                         $isCorrupted = empty($cleanCurUrl) || in_array(strtolower($cleanCurUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4']);
-                        $isYouTube = !$isCorrupted && preg_match('/(?:youtube\.com|youtu\.be)/i', $cleanCurUrl);
+                        $isYouTube = !$isCorrupted && (!empty($content->youtube_id) || preg_match('/(?:youtube(?:-nocookie)?\.com|youtu\.be)/i', $cleanCurUrl));
                     @endphp
                     <div class="upload-section">
                         <div class="upload-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">

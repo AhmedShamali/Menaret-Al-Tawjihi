@@ -317,9 +317,9 @@
             </div>
         </div>
         <div class="offline-notice-actions">
-            <a href="{{ route('offline.videos') }}" class="btn-notice-vault">
-                <i class="fa-solid fa-bolt"></i>
-                <span>{{ __('دروسي المحفوظة') }}</span>
+            <a href="{{ route('student.subjects.index') }}" class="btn-notice-vault">
+                <i class="fa-solid fa-book-open"></i>
+                <span>{{ __('تصفح المواد') }}</span>
             </a>
             <button type="button" class="btn-notice-close" onclick="dismissOfflineNotice()" aria-label="إغلاق">
                 <i class="fa-solid fa-xmark"></i>
@@ -1360,8 +1360,7 @@ body.in-standalone-app .stepvoro-install-banner {
 }
 </style>
 
-<!-- تضمين مكتبة الذاكرة المعزولة والتحميل بدون إنترنت -->
-<script src="/js/stepvoro-offline-videos.js?v=20261002-v35"></script>
+<!-- تم تعطيل التحميل أوفلاين والانتقال التام لبث اليوتيوب المباشر -->
 
 <script>
     // دالة ترميز النصوص بأمان لمنع أي أخطاء برمجية
@@ -1589,17 +1588,12 @@ body.in-standalone-app .stepvoro-install-banner {
     // إدارة نافذة الفيديوهات المحفوظة أوفلاين (Offline Video Vault UI)
     // =========================================================================
     function openOfflineVault() {
-        const modal = document.getElementById('stepvoroOfflineVaultModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            renderModalOfflineVaultList();
+        if (typeof window.showPwaToast === 'function') {
+            window.showPwaToast('كافة الشروحات تعمل بنظام البث المباشر فائق الدقة عبر مشغل المنصة.', 'info');
         }
     }
 
     function closeOfflineVault(e) {
-        if (e && e.target && e.target.closest('.offline-vault-sheet') && !e.target.closest('.btn-close-sheet') && !e.target.closest('.btn-ios-done')) {
-            return;
-        }
         const modal = document.getElementById('stepvoroOfflineVaultModal');
         if (modal) modal.style.display = 'none';
     }

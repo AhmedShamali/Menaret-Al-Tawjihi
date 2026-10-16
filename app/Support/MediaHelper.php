@@ -78,8 +78,8 @@ class MediaHelper
 
         $path = trim($path);
 
-        // إذا كان رابط خارجي مباشر مثل يوتيوب
-        if (str_contains($path, 'youtube.com') || str_contains($path, 'youtu.be')) {
+        // إذا كان رابط خارجي مباشر مثل يوتيوب أو فيميو
+        if (str_contains($path, 'youtube.com') || str_contains($path, 'youtube-nocookie.com') || str_contains($path, 'youtu.be') || str_contains($path, 'vimeo.com')) {
             return $path;
         }
 

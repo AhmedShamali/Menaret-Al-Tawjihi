@@ -229,7 +229,7 @@
                             <label class="f-label">{{ __('ملف الفيديو المعتمد من جهازك (اختياري إذا أضفت رابط يوتيوب)') }}</label>
                             <input type="file" name="video_file" id="input_video_file" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-m4v" class="f-input" style="padding: 10px; background: #ffffff;">
                             <small style="color: #64748b; font-size: 0.76rem; display: block; margin-top: 4px;">
-                                <i class="fa-solid fa-circle-info"></i> {{ __('الملفات الأقل من 50 ميجابايت تُخزن سحابياً وتدعم الحفظ أوفلاين في تطبيق المنصة.') }}
+                                <i class="fa-solid fa-circle-info"></i> {{ __('يُفضل استخدام رابط YouTube لتوفير مساحة الاستضافة وسرعة البث الفائقة.') }}
                             </small>
                         </div>
                     </div>

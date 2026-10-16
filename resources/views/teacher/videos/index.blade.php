@@ -310,11 +310,11 @@
                                 {{-- الملف والمرفقات ومعاينة الفيديو السريعة بدون تشغيل تلقائي --}}
                                 <td style="padding: 14px 16px;">
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                        @if($streamUrl)
+                                        @if($streamUrl || !empty($item->youtube_embed_url) || !empty($item->url_path))
                                             <button type="button" 
                                                     data-title="{{ $item->title }}" 
-                                                    data-url="{{ $streamUrl }}" 
-                                                    data-yt="{{ $item->youtube_embed_url ?? '' }}"
+                                                    data-url="{{ $streamUrl ?? $item->url_path ?? '' }}" 
+                                                    data-yt="{{ $item->youtube_watch_url ?? $item->youtube_embed_url ?? '' }}"
                                                     data-pdf="{{ $item->pdf_path ? \App\Support\MediaHelper::url($item->pdf_path) : '' }}"
                                                     onclick="openVideoPreview(this.getAttribute('data-title'), this.getAttribute('data-url'), this.getAttribute('data-yt'), this.getAttribute('data-pdf'))" 
                                                     style="background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
@@ -516,7 +516,8 @@
             <iframe id="preview_video_iframe" 
                     style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; display: none;" 
                     allowfullscreen 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share">
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin">
             </iframe>
 
             {{-- شاشة بديلة ذكية في حال تعثر التشغيل --}}
@@ -1101,12 +1102,13 @@ function openLessonModal(lessonData) {
 
     // زر معاينة الفيديو المباشر
     const prevBtn = document.getElementById('dist_modal_preview_btn');
-    const rawVideoTarget = lessonData.youtube_embed_url || lessonData.url_path;
-    if (rawVideoTarget) {
+    const ytSource = lessonData.youtube_watch_url || lessonData.youtube_embed_url || (lessonData.url_path && (lessonData.url_path.includes('youtube') || lessonData.url_path.includes('youtu.be')) ? lessonData.url_path : null);
+    const rawVideoTarget = lessonData.url_path || lessonData.youtube_embed_url || lessonData.youtube_watch_url;
+    if (rawVideoTarget || ytSource) {
         prevBtn.style.display = 'inline-flex';
-        let streamUrl = rawVideoTarget;
-        const cleanTarget = String(rawVideoTarget).trim();
-        if (cleanTarget.includes('youtube.com') || cleanTarget.includes('youtu.be') || cleanTarget.includes('vimeo.com') || cleanTarget.startsWith('http://') || cleanTarget.startsWith('https://')) {
+        let streamUrl = rawVideoTarget || ytSource;
+        const cleanTarget = String(streamUrl).trim();
+        if (cleanTarget.includes('youtube') || cleanTarget.includes('youtu.be') || cleanTarget.includes('vimeo.com') || cleanTarget.startsWith('http://') || cleanTarget.startsWith('https://')) {
             streamUrl = cleanTarget;
         } else if (cleanTarget.startsWith('/video-stream/')) {
             streamUrl = cleanTarget;
@@ -1114,7 +1116,8 @@ function openLessonModal(lessonData) {
             const cleanPath = cleanTarget.replace(/^(storage\/|public\/|\/)/, '');
             streamUrl = '/video-stream/' + cleanPath;
         }
-        prevBtn.onclick = () => openVideoPreview(lessonData.title, streamUrl);
+        const pdfFullUrl = lessonData.pdf_path ? (lessonData.pdf_path.startsWith('http') ? lessonData.pdf_path : '/storage/' + lessonData.pdf_path) : null;
+        prevBtn.onclick = () => openVideoPreview(lessonData.title, streamUrl, ytSource, pdfFullUrl);
     } else {
         prevBtn.style.display = 'none';
     }
@@ -1456,6 +1459,19 @@ function deleteUnifiedContent(id, title, scope = 'all') {
     });
 }
 
+// دالة ذكية وشاملة لاستخراج معرف يوتيوب YouTube Video ID من أي صيغة رابط
+function extractYouTubeId(str) {
+    if (!str) return null;
+    const s = String(str).trim();
+    if (!s || ['undefined', 'null', 'none', 'false', '0', '#'].includes(s.toLowerCase())) return null;
+    if (/^[a-zA-Z0-9_\-]{11}$/.test(s)) return s;
+    const m = s.match(/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/))([a-zA-Z0-9_\-]{11})/i);
+    if (m && m[1]) return m[1];
+    const m2 = s.match(/[?&]v=([a-zA-Z0-9_\-]{11})/i);
+    if (m2 && m2[1]) return m2[1];
+    return null;
+}
+
 // 6. معاينة الفيديو المنبثقة الذكية (تدعم YouTube و Vimeo و MP4 وبث السيرفر)
 function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
     if (!url && !ytUrl) {
@@ -1484,13 +1500,7 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
     const errorP = document.getElementById('preview_error_p');
 
     if (titleEl) titleEl.textContent = title || '{{ __("معاينة المحاضرة") }}';
-    if (extLink) {
-        extLink.href = url || ytUrl || '#';
-        extLink.style.display = 'inline-flex';
-    }
-    if (errorLink) {
-        errorLink.href = url || ytUrl || '#';
-    }
+
     if (errorPdf) {
         if (pdfUrl) {
             errorPdf.href = pdfUrl;
@@ -1537,12 +1547,11 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
         return;
     }
 
-    // فحص ما إذا كان الرابط يوتيوب أو فيميو أو وسائط خارجية تحتاج iframe
-    const isYouTube = /(?:youtube\.com\/(?:watch\?|embed\/|shorts\/|live\/)|youtu\.be\/)/i.test(trimmedUrl);
-    const isVimeo = /vimeo\.com/i.test(trimmedUrl);
+    // 1. فحص هل المصدر فيديو YouTube من خلال الرابط الأساسي أو الاحتياطي
+    const ytId = extractYouTubeId(trimmedUrl) || extractYouTubeId(url) || extractYouTubeId(ytUrl);
 
-    if (isYouTube || isVimeo) {
-        // إيقاف وإخفاء مشغل الفيديو المحلي
+    if (ytId) {
+        // إيقاف وتفريغ مشغل الفيديو المحلي MP4
         if (player) {
             player.pause();
             player.removeAttribute('src');
@@ -1551,31 +1560,64 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
             player.onerror = null;
         }
 
-        let embedUrl = trimmedUrl;
-        if (isYouTube) {
-            // استخراج معرف فيديو يوتيوب بدقة تامة
-            const ym = trimmedUrl.match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/i);
-            if (ym && ym[1]) {
-                embedUrl = 'https://www.youtube.com/embed/' + ym[1] + '?autoplay=1&rel=0&modestbranding=1&playsinline=1';
-            } else if (trimmedUrl.includes('watch?v=')) {
-                embedUrl = trimmedUrl.replace('watch?v=', 'embed/') + (trimmedUrl.includes('?') ? '&' : '?') + 'autoplay=1&rel=0';
-            }
-        } else if (isVimeo) {
-            const vm = trimmedUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
-            if (vm && vm[1]) {
-                embedUrl = 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1';
-            }
+        const ytWatchUrl = 'https://www.youtube.com/watch?v=' + ytId;
+        const ytEmbedUrl = 'https://www.youtube-nocookie.com/embed/' + ytId + '?autoplay=1&controls=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1';
+
+        if (extLink) {
+            extLink.href = ytWatchUrl;
+            extLink.innerHTML = '<i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 0.95rem;"></i> <span>{{ __("فتح في YouTube") }}</span>';
+            extLink.title = '{{ __("مشاهدة الفيديو مباشرة على موقع YouTube") }}';
+            extLink.style.display = 'inline-flex';
+        }
+        if (errorLink) {
+            errorLink.href = ytWatchUrl;
         }
 
         if (iframe) {
-            iframe.src = embedUrl;
+            iframe.src = ytEmbedUrl;
+            iframe.style.display = 'block';
+        }
+    } else if (/vimeo\.com/i.test(trimmedUrl)) {
+        // 2. فحص مشغل Vimeo
+        if (player) {
+            player.pause();
+            player.removeAttribute('src');
+            if (source) source.removeAttribute('src');
+            player.style.display = 'none';
+            player.onerror = null;
+        }
+
+        const vm = trimmedUrl.match(/vimeo\.com\/(?:video\/)?([0-9]+)/i);
+        const vimeoId = vm && vm[1] ? vm[1] : null;
+        const vimeoEmbed = vimeoId ? ('https://player.vimeo.com/video/' + vimeoId + '?autoplay=1') : trimmedUrl;
+
+        if (extLink) {
+            extLink.href = trimmedUrl;
+            extLink.innerHTML = '<i class="fa-brands fa-vimeo" style="color: #06b6d4; font-size: 0.95rem;"></i> <span>{{ __("فتح في Vimeo") }}</span>';
+            extLink.style.display = 'inline-flex';
+        }
+        if (errorLink) {
+            errorLink.href = trimmedUrl;
+        }
+
+        if (iframe) {
+            iframe.src = vimeoEmbed;
             iframe.style.display = 'block';
         }
     } else {
-        // مشغل فيديو HTML5 مباشر للملفات وبث السيرفر المتدفق
+        // 3. مشغل فيديو HTML5 مباشر لملفات السيرفر (MP4 / WebM وبث السيرفر)
         if (iframe) {
             iframe.src = 'about:blank';
             iframe.style.display = 'none';
+        }
+
+        if (extLink) {
+            extLink.href = trimmedUrl;
+            extLink.innerHTML = '<i class="fa-solid fa-arrow-up-right-from-square"></i> <span>{{ __("فتح في تبويب خارجي") }}</span>';
+            extLink.style.display = 'inline-flex';
+        }
+        if (errorLink) {
+            errorLink.href = trimmedUrl;
         }
 
         if (player) {
@@ -1587,12 +1629,12 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
                 source.src = trimmedUrl;
             }
 
-            // نظام الاسترداد التلقائي في حال تعثر رابط البث
+            // نظام الاسترداد التلقائي في حال تعثر رابط البث المحلي
             player.onerror = function() {
                 console.warn('Preview video load error on:', trimmedUrl);
-                // إذا كان متوفراً رابط يوتيوب احتياطي، التبديل التلقائي إلى مشغل يوتيوب فوراً
-                if (ytUrl && ytUrl !== trimmedUrl) {
-                    openVideoPreview(title, ytUrl, null, pdfUrl);
+                const backupYtId = extractYouTubeId(ytUrl);
+                if (backupYtId) {
+                    openVideoPreview(title, 'https://www.youtube.com/watch?v=' + backupYtId, null, pdfUrl);
                     return;
                 }
 
@@ -1600,7 +1642,6 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
                     errorBox.style.display = 'flex';
                 }
 
-                // فحص دقيق للرابط لمعرفة إذا كان ملف تالف أو 0 بايت
                 fetch(trimmedUrl, { method: 'GET', headers: { 'Accept': 'application/json' } })
                     .then(res => {
                         if (res.status === 422) {
@@ -1973,8 +2014,11 @@ async function submitVideoForm(e) {
         try {
             const storeUrl = "{{ (auth()->check() && auth()->user()->role === 'admin') ? route('admin.educational_contents.store') : route('teacher.educational_contents.store') }}";
             const contentFormData = new FormData(form);
-            contentFormData.delete('video_file');
-            contentFormData.append('video_url', ytUrlInput.value.trim());
+            let cleanedYt = ytUrlInput.value.trim();
+            if (cleanedYt && !cleanedYt.startsWith('http://') && !cleanedYt.startsWith('https://')) {
+                cleanedYt = 'https://' + cleanedYt;
+            }
+            contentFormData.append('video_url', cleanedYt);
 
             const saveRes = await axios.post(storeUrl, contentFormData, {
                 headers: {
