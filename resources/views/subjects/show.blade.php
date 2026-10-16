@@ -83,7 +83,7 @@
             <div class="videos-grid">
                 @forelse($videos as $index => $video)
                     <div class="video-card">
-                        <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}" oncontextmenu="event.preventDefault(); return false;">
+                        <div class="custom-video-wrapper" id="custom_wrap_{{ $video->id }}">
                             @php
                                 $url = trim((string)$video->url_path);
                                 if (in_array(strtolower($url), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
@@ -96,16 +96,17 @@
                                 @php
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1";
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1&controls=1";
                                 @endphp
                                 <iframe class="custom-iframe" 
                                         id="pub_yt_{{ $video->id }}"
                                         src="{{ $ytSafeSrc }}" 
                                         frameborder="0" 
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                                        allowfullscreen
                                         referrerpolicy="strict-origin-when-cross-origin"
                                         loading="lazy"
-                                        style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important;">
+                                        style="position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: auto !important;">
                                 </iframe>
                             @elseif(!empty($url))
                                 @php
@@ -113,7 +114,7 @@
                                     $directFallback = \App\Support\MediaHelper::url($url);
                                 @endphp
                                 @if($directUrl)
-                                    <video class="custom-video-element" id="pub_vid_{{ $video->id }}" preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
+                                    <video class="custom-video-element" id="pub_vid_{{ $video->id }}" controls preload="metadata" controlsList="nodownload" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain;">
                                         <source src="{{ $directUrl }}">
                                         @if($directFallback && $directFallback !== $directUrl)
                                             <source src="{{ $directFallback }}">
@@ -131,76 +132,33 @@
                                     <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 700;">{{ __('جاري تجهيز ورفع الفيديو من المعلم') }}</span>
                                 </div>
                             @endif
-
-                            <!-- شاشة النقر التفاعلية لتشغيل / إيقاف الفيديو -->
-                            <div class="pub-screen-shield" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
-                                <div class="pub-center-play" id="pub_play_icon_{{ $video->id }}">
-                                    <i class="fa-solid fa-play"></i>
-                                </div>
-                            </div>
-
-                            <!-- دروع حماية إضافية للأركان والعنوان لمنع أي تسريب -->
-                            <div class="ed-shield-corner-bl" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})"></div>
-                            <div class="ed-shield-corner-br" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})"></div>
-                            <div class="ed-shield-top-band" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})" title="{{ __('انقر للتشغيل / الإيقاف المؤقت') }}">
-                                <div class="ed-shield-top-content">
-                                    <div class="ed-shield-badge">
-                                        <i class="fa-solid fa-graduation-cap"></i>
-                                    </div>
-                                    <div class="ed-shield-text">
-                                        <span class="ed-shield-title">{{ $video->title }}</span>
-                                        <span class="ed-shield-sub">{{ $video->channel_name ?? $subject->name_ar ?? __('شرح تعليمي معتمد') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- شريط التحكم المخصص للمنصة المانع لأي وصول خارجي -->
-                            <div class="custom-player-controls" oncontextmenu="event.preventDefault(); return false;">
-                                <button type="button" class="btn-play-pause" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }})">▶</button>
-                                <span class="time-display current-time" id="pub_cur_time_{{ $video->id }}">00:00</span>
-                                <input type="range" class="seek-slider" id="pub_seek_{{ $video->id }}" value="0" min="0" max="100" step="0.1" oninput="seekSubjectVideo('{{ $video->id }}', {{ $isYoutube ? 'true' : 'false' }}, this.value)">
-                                <span class="time-display total-duration" id="pub_dur_time_{{ $video->id }}">00:00</span>
-                                <button type="button" class="btn-fullscreen" onclick="toggleSubjectFullscreen(this)">⛶</button>
-                            </div>
                         </div>
 
                         <div class="video-card-body">
-                            <h4 class="video-title">{{ $video->title }}</h4>
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; flex-wrap: wrap; gap: 8px;">
-                                <p class="video-channel" style="margin: 0;">
-                                    <span>🎓</span> {{ __('مشغل دراسي آمن') }}
-                                </p>
-
-                                @php
-                                    $rawVPath = trim($video->url_path ?? '');
-                                    $isYtVid = !empty($video->youtube_id) || str_contains($rawVPath, 'youtube.com') || str_contains($rawVPath, 'youtu.be');
-                                    $directVUrl = null;
-                                    $ytEmbed = null;
-                                    if ($isYtVid) {
-                                        $ytId = $video->youtube_id;
-                                        if (!$ytId) {
-                                            preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $rawVPath, $m);
-                                            $ytId = $m[1] ?? null;
-                                        }
-                                        $ytEmbed = $ytId ? "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&disablekb=1&playsinline=1" : null;
-                                    } elseif (!empty($rawVPath)) {
-                                        if (str_starts_with($rawVPath, 'http://') || str_starts_with($rawVPath, 'https://')) {
-                                            $directVUrl = $rawVPath;
-                                        } else {
-                                            $directVUrl = route('video.stream', ['filename' => ltrim($rawVPath, '/')]);
-                                        }
-                                    }
-                                @endphp
-
-                                @if(!empty($video->pdf_path))
-                                    <div style="margin-top: 8px;">
-                                        <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
-                                            <i class="fa-solid fa-file-pdf"></i>
-                                            <span>{{ __('تحميل الملزمة (PDF)') }}</span>
-                                        </a>
-                                    </div>
-                                @endif
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; padding: 4px 12px; border-radius: 9999px; font-size: 0.78rem; font-weight: 800;">
+                                        <i class="fa-solid fa-play"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}
+                                    </span>
+                                    <span style="background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700;">
+                                        🎓 {{ $video->channel_name ?? $subject->name_ar ?? __('شرح معتمد') }}
+                                    </span>
+                                </div>
+                                <span style="background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; padding: 3px 9px; border-radius: 9999px; font-size: 0.72rem; font-weight: 800;">
+                                    1080p HD
+                                </span>
                             </div>
+
+                            <h4 class="video-title" style="margin: 0 0 12px; font-size: 1.15rem; font-weight: 800; color: #0f172a;">{{ $video->title }}</h4>
+
+                            @if(!empty($video->pdf_path))
+                                <div style="margin-top: 8px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                                    <a href="{{ route('content.download', $video->id) }}" class="ed-btn-lecture-pdf">
+                                        <i class="fa-solid fa-file-pdf"></i>
+                                        <span>{{ __('تحميل الملزمة الدراسية (PDF)') }}</span>
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 @empty
@@ -415,123 +373,6 @@
         -webkit-user-select: none;
     }
 
-    .pub-screen-shield {
-        position: absolute;
-        inset: 0;
-        z-index: 15;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: transparent;
-    }
-
-    .pub-center-play {
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        background: rgba(37, 99, 235, 0.9);
-        border: 2px solid #ffffff;
-        color: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.4rem;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
-        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
-        pointer-events: none;
-    }
-
-    .pub-screen-shield:hover .pub-center-play {
-        transform: scale(1.12);
-        background: #1d4ed8;
-    }
-
-    .ed-shield-corner-bl {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 140px;
-        height: 100px;
-        z-index: 25;
-        background: transparent;
-        cursor: pointer;
-    }
-
-    .ed-shield-corner-br {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 185px;
-        height: 60px;
-        z-index: 25;
-        background: #090d16;
-        cursor: pointer;
-        transition: opacity 0.35s ease, visibility 0.35s ease;
-    }
-
-    .ed-shield-top-band {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 72px;
-        z-index: 25;
-        background: linear-gradient(180deg, #090d16 0%, #090d16 80%, rgba(9, 13, 22, 0.88) 92%, transparent 100%);
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        box-sizing: border-box;
-        transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    }
-
-    .ed-shield-top-content {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        max-width: 90%;
-        overflow: hidden;
-    }
-
-    .ed-shield-badge {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: rgba(37, 99, 235, 0.25);
-        border: 1px solid rgba(59, 130, 246, 0.45);
-        color: #60a5fa;
-        display: grid;
-        place-items: center;
-        font-size: 0.9rem;
-        flex-shrink: 0;
-    }
-
-    .ed-shield-text {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        text-align: right;
-    }
-
-    .ed-shield-title {
-        color: #ffffff;
-        font-weight: 700;
-        font-size: 0.86rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .ed-shield-sub {
-        color: #94a3b8;
-        font-size: 0.72rem;
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
     .custom-video-wrapper:fullscreen,
     .custom-video-wrapper:-webkit-full-screen {
         width: 100vw !important;
@@ -539,107 +380,11 @@
         background: #000 !important;
     }
 
-    .custom-video-wrapper:fullscreen .custom-player-controls,
-    .custom-video-wrapper:-webkit-full-screen .custom-player-controls {
-        position: fixed;
-        bottom: 24px;
-        left: 40px;
-        right: 40px;
-        height: 52px;
-        border-radius: 12px;
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        padding: 0 20px;
-        z-index: 999999;
-    }
-
     .custom-video-element, .custom-iframe {
         width: 100%;
         height: 100%;
         object-fit: contain;
-    }
-
-    /* Custom Controls Bar مع إخفاء تلقائي نظيف لعدم تغطية أي جزء من الفيديو */
-    .custom-player-controls {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 14px;
-        z-index: 10;
-        direction: ltr;
-        opacity: 1;
-        visibility: visible;
-        transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
-    }
-
-    .custom-video-wrapper.controls-hidden .custom-player-controls {
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-        transform: translateY(10px);
-    }
-
-    .custom-video-wrapper.controls-hidden {
-        cursor: none;
-    }
-
-    .btn-play-pause, .btn-fullscreen {
-        background: none;
         border: none;
-        color: #fff;
-        font-size: 1rem;
-        cursor: pointer;
-        padding: 0;
-        width: 26px;
-        height: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .time-display {
-        color: #e2e8f0;
-        font-size: 0.75rem;
-        font-family: monospace;
-    }
-
-    .seek-slider {
-        flex: 1;
-        -webkit-appearance: none;
-        appearance: none;
-        height: 5px;
-        border-radius: 5px;
-        background: rgba(255, 255, 255, 0.3);
-        outline: none;
-        cursor: pointer;
-        transition: height 0.1s ease;
-    }
-
-    .seek-slider:hover { height: 8px; }
-
-    .seek-slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #2563eb;
-        cursor: pointer;
-        box-shadow: 0 0 6px rgba(37, 99, 235, 0.8);
-    }
-
-    .seek-slider::-moz-range-thumb {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: #2563eb;
-        cursor: pointer;
     }
 
     .video-card-body { padding: 16px; }
