@@ -1971,6 +1971,10 @@ function handleVideoFileSelection(input) {
 
 async function submitVideoForm(e) {
     if (e) e.preventDefault();
+    if (window.isTeacherVideoSubmitting) {
+        return false;
+    }
+
     const btn = document.getElementById('btnSubmitVideo');
     const btnCancel = document.getElementById('btnCancelUpload');
     const form = document.getElementById('uploadVideoForm');
@@ -2004,10 +2008,15 @@ async function submitVideoForm(e) {
         return;
     }
 
+    // تفعيل قفل الإرسال الفوري لمنع النقر المزدوج نهائياً
+    window.isTeacherVideoSubmitting = true;
+    if (btn) {
+        btn.disabled = true;
+    }
+
     // 3. إذا كان المستخدم أدخل رابط يوتيوب ولا يريد رفع ملف محلي
     if (hasYtUrl && !hasFile && !uploadedPath) {
         if (btn) {
-            btn.disabled = true;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __("جاري ربط وحفظ الدرس في الفروع...") }}';
         }
         
@@ -2040,6 +2049,7 @@ async function submitVideoForm(e) {
             });
             return;
         } catch (err) {
+            window.isTeacherVideoSubmitting = false;
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("بدء رفع ونشر الفيديو") }}</span>';
@@ -2146,6 +2156,7 @@ async function submitVideoForm(e) {
         }).then(() => location.reload());
 
     } catch (err) {
+        window.isTeacherVideoSubmitting = false;
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> <span>{{ __("إعادة محاولة حفظ الفيديو") }}</span>';

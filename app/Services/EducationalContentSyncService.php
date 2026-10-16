@@ -57,7 +57,7 @@ class EducationalContentSyncService
     /**
      * نشر محتوى تعليمي وتوزيعه تلقائياً على كافة الفروع والمواد المشتركة
      */
-    public static function distributeContentToAllBranches(EducationalContent $content): int
+    public static function distributeContentToAllBranches(EducationalContent $content, array $excludeSubjectIds = []): int
     {
         if (empty($content->subject_id)) {
             return 0;
@@ -70,23 +70,39 @@ class EducationalContentSyncService
 
         $allSisterIds = self::resolveAllSisterSubjectIds($content->subject_id);
         $replicatedCount = 0;
+        $ytId = $content->youtube_id;
 
         foreach ($allSisterIds as $sisterSubId) {
-            if ($sisterSubId === (int)$content->subject_id) {
+            if ($sisterSubId === (int)$content->subject_id || in_array($sisterSubId, $excludeSubjectIds)) {
                 continue;
             }
 
-            // فحص هل المحتوى منشور مسبقاً في هذه المادة الشقيقة
+            // فحص هل المحتوى منشور مسبقاً في هذه المادة الشقيقة لمنع أي تكرار
             $existing = EducationalContent::where('subject_id', $sisterSubId)
-                ->where(function($q) use ($content) {
-                    if (!empty($content->url_path) && !in_array(strtolower($content->url_path), ['undefined', 'null', 'none', 'false', '0'])) {
+                ->where(function($q) use ($content, $ytId) {
+                    $hasCond = false;
+                    if (!empty($ytId)) {
+                        $q->where('url_path', 'like', "%{$ytId}%");
+                        $hasCond = true;
+                    } elseif (!empty($content->url_path) && !in_array(strtolower($content->url_path), ['undefined', 'null', 'none', 'false', '0'])) {
                         $q->where('url_path', $content->url_path);
+                        $hasCond = true;
                     }
                     if (!empty($content->pdf_path)) {
-                        $q->orWhere('pdf_path', $content->pdf_path);
+                        if ($hasCond) {
+                            $q->orWhere('pdf_path', $content->pdf_path);
+                        } else {
+                            $q->where('pdf_path', $content->pdf_path);
+                            $hasCond = true;
+                        }
                     }
                     if (!empty($content->title)) {
-                        $q->orWhere('title', $content->title);
+                        $trimmedTitle = trim($content->title);
+                        if ($hasCond) {
+                            $q->orWhere('title', $trimmedTitle);
+                        } else {
+                            $q->where('title', $trimmedTitle);
+                        }
                     }
                 })->first();
 
@@ -143,6 +159,68 @@ class EducationalContentSyncService
         self::unlockForActiveEnrollments($content);
 
         return $replicatedCount;
+    }
+
+    /**
+     * تطهير وحذف أي دروس أو فيديوهات مكررة تلقائياً للمادة نفسها في قاعدة البيانات
+     */
+    public static function cleanDuplicateContents(): int
+    {
+        $deletedCount = 0;
+        try {
+            $all = EducationalContent::orderBy('id', 'asc')->get();
+            $seen = [];
+            $toDeleteIds = [];
+
+            foreach ($all as $item) {
+                $subId = (int)$item->subject_id;
+                $cleanTitle = trim(preg_replace('/\s+/u', ' ', $item->title ?? ''));
+                $ytId = $item->youtube_id;
+                $cleanUrl = trim($item->url_path ?? '');
+                $cleanPdf = trim($item->pdf_path ?? '');
+
+                // مفتاح تمييز المحتوى الفريد للمادة
+                $keys = [];
+                if (!empty($ytId)) {
+                    $keys[] = "yt_{$subId}_{$ytId}";
+                } elseif (!empty($cleanUrl) && !in_array(strtolower($cleanUrl), ['undefined', 'null', 'none', 'false', '0'])) {
+                    $keys[] = "url_{$subId}_{$cleanUrl}";
+                }
+                if (!empty($cleanPdf)) {
+                    $keys[] = "pdf_{$subId}_{$cleanPdf}";
+                }
+                if (!empty($cleanTitle)) {
+                    $keys[] = "title_{$subId}_{$cleanTitle}";
+                }
+
+                $isDuplicate = false;
+                foreach ($keys as $k) {
+                    if (isset($seen[$k])) {
+                        $isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if ($isDuplicate) {
+                    $toDeleteIds[] = $item->id;
+                } else {
+                    foreach ($keys as $k) {
+                        $seen[$k] = $item->id;
+                    }
+                }
+            }
+
+            if (!empty($toDeleteIds)) {
+                \App\Models\ContentAssignment::whereIn('educational_content_id', $toDeleteIds)->delete();
+                \App\Models\VideoNote::whereIn('educational_content_id', $toDeleteIds)->delete();
+                $deletedCount = EducationalContent::whereIn('id', $toDeleteIds)->delete();
+                Log::info("EducationalContentSyncService: Cleaned {$deletedCount} duplicate contents: " . implode(',', $toDeleteIds));
+            }
+        } catch (\Throwable $e) {
+            Log::warning("cleanDuplicateContents error: " . $e->getMessage());
+        }
+
+        return $deletedCount;
     }
 
     /**
@@ -206,6 +284,9 @@ class EducationalContentSyncService
                 ->orWhere('url_path', 'like', '%/null%')
                 ->update(['url_path' => null]);
         } catch (\Throwable $e) {}
+
+        // 0.1 حذف وتطهير أي دروس مكررة لنفس المادة فوراً
+        self::cleanDuplicateContents();
 
         // 1. تفعيل المحتويات الجديدة التي لا تمتلك قيمة محددة لـ is_visible (دون تغيير المحجوبة عمداً)
         try {

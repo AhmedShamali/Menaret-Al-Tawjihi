@@ -119,6 +119,7 @@ class EducationalContentController extends Controller
     public function index()
     {
         $user = auth()->user();
+        \App\Services\EducationalContentSyncService::cleanDuplicateContents();
         $query = EducationalContent::with('subject.stage')->latest();
         if ($user && $user->role === 'teacher') {
             $teacherSubjectIds = $this->getTeacherSubjectIds($user);
@@ -591,6 +592,41 @@ class EducationalContentController extends Controller
                 $subject->save();
             }
 
+            // منع التكرار تماماً لنفس المادة (Idempotency check)
+            $existing = EducationalContent::where('subject_id', $subId)
+                ->where(function($q) use ($urlPath, $pdfPath, $request) {
+                    $hasCond = false;
+                    if (!empty($urlPath)) {
+                        $q->where('url_path', $urlPath);
+                        if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $urlPath, $m)) {
+                            $q->orWhere('url_path', 'like', "%{$m[1]}%");
+                        }
+                        $hasCond = true;
+                    }
+                    if (!empty($pdfPath)) {
+                        if ($hasCond) {
+                            $q->orWhere('pdf_path', $pdfPath);
+                        } else {
+                            $q->where('pdf_path', $pdfPath);
+                            $hasCond = true;
+                        }
+                    }
+                    if (!empty($request->title)) {
+                        $trimmedTitle = trim($request->title);
+                        if ($hasCond) {
+                            $q->orWhere('title', $trimmedTitle);
+                        } else {
+                            $q->where('title', $trimmedTitle);
+                        }
+                    }
+                })->first();
+
+            if ($existing) {
+                // المحتوى مسجل مسبقاً لهذه المادة، نكتفي به ونمنع أي تكرار
+                $savedContents[] = $existing;
+                continue;
+            }
+
             $content = new EducationalContent();
             $content->subject_id   = $subId;
             $content->uploaded_by  = auth()->id();
@@ -642,11 +678,6 @@ class EducationalContentController extends Controller
                 \Log::error("EducationalContent multi-save error: " . $e->getMessage());
             }
 
-            // نشر وتوزيع تلقائي لكافة الفروع والمواد المشتركة وفتح الوصول التلقائي للطلبة
-            try {
-                \App\Services\EducationalContentSyncService::distributeContentToAllBranches($content);
-            } catch (\Throwable $th) {}
-
             // إرسال إشعارات لطلبة المرحلة
             if ($subject->stage_id) {
                 try {
@@ -661,6 +692,16 @@ class EducationalContentController extends Controller
                 } catch (\Throwable $e) {}
             }
         }
+
+        // نشر وتوزيع تلقائي لكافة الفروع المشتركة غير المشمولة صراحة، مع حماية تامة ضد التكرار
+        if (!empty($savedContents)) {
+            try {
+                \App\Services\EducationalContentSyncService::distributeContentToAllBranches($savedContents[0], $targetSubjectIds);
+            } catch (\Throwable $th) {}
+        }
+
+        // تطهير وحذف أي دروس مكررة تلقائياً لضمان نظافة قاعدة البيانات
+        \App\Services\EducationalContentSyncService::cleanDuplicateContents();
 
         if (empty($savedContents)) {
             return response()->json([
@@ -1583,8 +1624,9 @@ class EducationalContentController extends Controller
      */
     public function teacherVideos(Request $request)
     {
-        // مزامنة ذاتية لكافة الفيديوهات والشروحات وتوزيعها على الفروع
+        // مزامنة ذاتية لكافة الفيديوهات والشروحات وتوزيعها على الفروع وتطهير أي مكررات
         try {
+            \App\Services\EducationalContentSyncService::cleanDuplicateContents();
             \App\Services\EducationalContentSyncService::syncAllExistingVideos();
         } catch (\Throwable $e) {}
 
@@ -1781,8 +1823,9 @@ class EducationalContentController extends Controller
      */
     public function teacherFiles(Request $request)
     {
-        // مزامنة ذاتية وضمان ظهور كافة الملفات وتوزيعها على الفروع
+        // مزامنة ذاتية وضمان ظهور كافة الملفات وتوزيعها على الفروع وتطهير أي مكررات
         try {
+            \App\Services\EducationalContentSyncService::cleanDuplicateContents();
             \App\Services\EducationalContentSyncService::syncAllExistingVideos();
         } catch (\Throwable $e) {}
 

@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <form id="createForm" enctype="multipart/form-data">
+    <form id="createForm" onsubmit="event.preventDefault(); return false;" enctype="multipart/form-data">
         @csrf
         <div class="form-grid">
 
@@ -430,6 +430,8 @@
     let activeUploader = null;
 
     async function submitContent() {
+        if (window.isEduContentSubmitting) return;
+
         const videoChecked = document.getElementById('check_video').checked;
         const pdfChecked = document.getElementById('check_pdf').checked;
         const videoFileInput = document.getElementById('input_video_file');
@@ -456,6 +458,7 @@
             return;
         }
 
+        window.isEduContentSubmitting = true;
         const btn = document.getElementById('saveBtn');
         const originalText = btn.innerHTML;
         const form = document.getElementById('createForm');
@@ -628,6 +631,7 @@
             });
 
         } catch (error) {
+            window.isEduContentSubmitting = false;
             window.removeEventListener('beforeunload', preventTabClose);
             let errorMsg = 'حدث خطأ أثناء حفظ المحتوى أو رفع الفيديو';
             if (error.response && error.response.data) {

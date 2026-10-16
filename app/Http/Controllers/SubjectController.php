@@ -74,14 +74,21 @@ class SubjectController extends Controller
         }
 
         $subject = Subject::with(['stage', 'teacher', 'contents'])->findOrFail($id);
-        // 1. جلب الفيديوهات (أي عنصر يحتوي على رابط فيديو أو مسار فيديو محلي)
+        // 1. جلب الفيديوهات (أي عنصر يحتوي على رابط فيديو أو مسار فيديو محلي) مع منع التكرار
         $videos = $subject->contents->filter(function ($item) {
             return !empty($item->url_path);
+        })->unique(function ($item) {
+            if (!empty($item->youtube_id)) return 'yt_' . $item->youtube_id;
+            if (!empty($item->url_path)) return 'url_' . trim($item->url_path);
+            return 'title_' . trim($item->title);
         })->sortBy('order');
 
-        // 2. جلب الكتب والمطبوعات (أي عنصر يحتوي على مسار ملف PDF)
+        // 2. جلب الكتب والمطبوعات (أي عنصر يحتوي على مسار ملف PDF) مع منع التكرار
         $files = $subject->contents->filter(function ($item) {
             return !empty($item->pdf_path);
+        })->unique(function ($item) {
+            if (!empty($item->pdf_path)) return 'pdf_' . trim($item->pdf_path);
+            return 'title_' . trim($item->title);
         })->sortBy('order');
 
         return view('subjects.show', compact('subject', 'videos', 'files'));

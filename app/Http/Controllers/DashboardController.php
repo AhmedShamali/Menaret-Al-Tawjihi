@@ -65,8 +65,9 @@ class DashboardController extends Controller {
             }
         }
 
-        // مزامنة وضمان توفر كافة الشروحات والمحتويات المنشورة عبر المواد الشقيقة في الفروع
+        // مزامنة وضمان توفر كافة الشروحات والمحتويات المنشورة عبر المواد الشقيقة في الفروع مع تطهير المكررات
         try {
+            \App\Services\EducationalContentSyncService::cleanDuplicateContents();
             \App\Services\EducationalContentSyncService::syncAllExistingVideos();
             $sisterSubjectIds = \App\Services\EducationalContentSyncService::resolveAllSisterSubjectIds((int)$subject->id);
             if (!empty($sisterSubjectIds)) {
@@ -74,7 +75,7 @@ class DashboardController extends Controller {
                     ->where('subject_id', '!=', $subject->id)
                     ->get();
                 foreach ($missingSisterContents as $mContent) {
-                    \App\Services\EducationalContentSyncService::distributeContentToAllBranches($mContent);
+                    \App\Services\EducationalContentSyncService::distributeContentToAllBranches($mContent, [(int)$subject->id]);
                 }
             }
         } catch (\Throwable $e) {}
@@ -123,7 +124,7 @@ class DashboardController extends Controller {
             $item->is_unlocked = $isFullAccess || $hasActiveEnrollment || in_array($item->id, $allowedIds);
         });
 
-        // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط التي رفعها المعلم
+        // 1. جلب الفيديوهات والشروحات المرئية الحقيقية فقط التي رفعها المعلم (مع حماية تامة ضد التكرار)
         $videos = $contents->filter(function ($item) {
             if ($item->type === 'file') {
                 return false;
@@ -135,12 +136,19 @@ class DashboardController extends Controller {
             $isYt = !empty($item->youtube_id) || str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be');
             $isDirectVideo = (bool) preg_match('/\.(mp4|webm|ogg|mov|m4v|mkv)($|\?)/i', $url) || str_contains($url, 'educational/videos');
             return $isYt || $isDirectVideo || $item->type === 'video' || $item->type === 'both';
+        })->unique(function ($item) {
+            if (!empty($item->youtube_id)) return 'yt_' . $item->youtube_id;
+            if (!empty($item->url_path)) return 'url_' . trim($item->url_path);
+            return 'title_' . trim($item->title);
         })->sortBy('order')->values();
 
-        // 2. جلب الملفات والملازم والدوسيات الحقيقية فقط
+        // 2. جلب الملفات والملازم والدوسيات الحقيقية فقط (مع حماية تامة ضد التكرار)
         $files = $contents->filter(function ($item) {
             $pdf = trim($item->pdf_path ?? '');
             return !empty($pdf);
+        })->unique(function ($item) {
+            if (!empty($item->pdf_path)) return 'pdf_' . trim($item->pdf_path);
+            return 'title_' . trim($item->title);
         })->sortBy('order')->values();
 
         // 3. جلب بنك الاختبارات المعتمدة للمادة التابعة لفرع الطالب الأصلي
