@@ -107,14 +107,11 @@
                             <h5 class="fw-bold text-dark mb-3 line-clamp-2">{{ $video->title }}</h5>
 
                             @php
-                                $isYtLink = \Illuminate\Support\Str::contains($video->url_path, ['youtube.com', 'youtu.be']);
-                                $videoUrl = $isYtLink 
-                                    ? route('student.subjects.show', $video->subject_id)
-                                    : ($video->video_url ?? \App\Support\MediaHelper::url($video->url_path));
+                                $videoPlayerUrl = route('student.subjects.show', $video->subject_id) . '#card_video_' . $video->id;
                             @endphp
 
                             <div class="d-grid gap-2">
-                                <a href="{{ $videoUrl }}" class="btn btn-primary rounded-3">
+                                <a href="{{ $videoPlayerUrl }}" class="btn btn-primary rounded-3">
                                     <i class="fas fa-play-circle ms-1"></i> {{ __('مشاهدة في مشغل المنصة الآمن') }}
                                 </a>
 

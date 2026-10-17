@@ -70,7 +70,7 @@ class MediaHelper
     /**
      * الحصول على رابط بث الفيديو المتدفق المخصص للمنصة الداعم لتقسيم البايتات (Byte-Ranges / HTTP 206)
      */
-    public static function videoStreamUrl(?string $path, ?string $fallback = null): ?string
+    public static function videoStreamUrl(?string $path, ?string $fallback = null, ?int $contentId = null): ?string
     {
         if (empty($path) || in_array(strtolower(trim($path)), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
             return $fallback;
@@ -81,6 +81,13 @@ class MediaHelper
         // إذا كان رابط خارجي مباشر مثل يوتيوب أو فيميو
         if (str_contains($path, 'youtube.com') || str_contains($path, 'youtube-nocookie.com') || str_contains($path, 'youtu.be') || str_contains($path, 'vimeo.com')) {
             return $path;
+        }
+
+        // إخفاء اسم الملف والمسار تماماً عبر معرف الدرس إذا توفر
+        if ($contentId) {
+            try {
+                return route('video.stream.content', ['contentId' => $contentId]);
+            } catch (\Throwable $e) {}
         }
 
         // تنظيف المسار

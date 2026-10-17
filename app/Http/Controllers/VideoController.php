@@ -151,6 +151,8 @@ class VideoController extends Controller
             'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
             'Access-Control-Allow-Headers' => 'Range, Content-Type, Accept',
             'Cache-Control' => 'public, max-age=86400, must-revalidate',
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Disposition' => 'inline; filename="lesson_stream.' . $ext . '"',
         ];
 
         // دعم طلبات الأجزاء (HTTP Range Requests 206)
@@ -222,5 +224,43 @@ class VideoController extends Controller
             fpassthru($file);
             fclose($file);
         }, 200, $headers);
+    }
+
+    /**
+     * بث آمن وتدفق محمي للمحتوى التعليمي عبر معرف الدرس (Content ID)
+     * يخفي اسم الملف الأصلي، مسار السيرفر، وسحابة التخزين بشكل تام مع دعم متعدد الجودات
+     */
+    public function streamContent(Request $request, $contentId)
+    {
+        $content = \App\Models\EducationalContent::find($contentId);
+        if (!$content) {
+            abort(404, 'عذراً، الدرس التعليمي غير موجود.');
+        }
+
+        $rawUrl = trim($content->url_path ?? '');
+        if (empty($rawUrl) || in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0'])) {
+            abort(404, 'ملف الفيديو غير متوفر لهذا الدرس.');
+        }
+
+        // إذا كان يوتيوب، يتم إعادة التوجيه
+        if (str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be')) {
+            return redirect()->away($rawUrl, 302);
+        }
+
+        // دعم تعدد الجودات لملفات الفيديو إن توفرت
+        $quality = $request->query('quality');
+        $targetFile = $rawUrl;
+        if ($quality && in_array($quality, ['1080p', '720p', '480p', '360p'])) {
+            $ext = pathinfo($rawUrl, PATHINFO_EXTENSION) ?: 'mp4';
+            $nameWithoutExt = pathinfo($rawUrl, PATHINFO_FILENAME);
+            $dir = dirname($rawUrl);
+            $dir = ($dir === '.' || $dir === '/') ? '' : $dir . '/';
+            $variantName = $dir . $nameWithoutExt . '_' . $quality . '.' . $ext;
+            if (Storage::disk('public')->exists($variantName) || file_exists(storage_path('app/public/' . $variantName))) {
+                $targetFile = $variantName;
+            }
+        }
+
+        return $this->stream($request, $targetFile);
     }
 }

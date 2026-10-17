@@ -130,6 +130,14 @@ class EducationalContent extends Model
     }
 
     /**
+     * رابط البث المشفر والآمن للمشغل عبر Content ID
+     */
+    public function getStreamUrlAttribute(): ?string
+    {
+        return !empty($this->url_path) ? \App\Support\MediaHelper::videoStreamUrl($this->url_path, null, $this->id) : null;
+    }
+
+    /**
      * نص المنطقة المستهدفة بالعربية
      */
     public function getTargetRegionLabelAttribute(): string

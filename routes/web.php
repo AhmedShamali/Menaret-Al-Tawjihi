@@ -184,6 +184,9 @@ Route::get('/subjects', [SubjectController::class, 'index'])->name('subjects.ind
 Route::get('/subject/{id}', [SubjectController::class, 'show'])->name('subject.show');
 Route::get('/subjects/{id}/files', [SubjectController::class, 'files'])->name('subject.files');
 
+Route::match(['get', 'head', 'options'], '/video-stream/content/{contentId}', [VideoController::class, 'streamContent'])
+    ->name('video.stream.content');
+
 Route::match(['get', 'head', 'options'], '/video-stream/{filename}', [VideoController::class, 'stream'])
     ->where('filename', '.*')
     ->name('video.stream');
