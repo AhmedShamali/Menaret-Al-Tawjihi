@@ -392,11 +392,68 @@
 }
 
 .ed-player-frame:fullscreen, 
-.ed-player-frame:-webkit-full-screen {
+.ed-player-frame:-webkit-full-screen,
+.ed-player-frame:-moz-full-screen,
+.ed-player-frame:-ms-fullscreen,
+.ed-player-frame.is-platform-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
     padding-top: 0 !important;
-    background: #000 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    z-index: 9999999 !important;
+    background: #000000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.ed-player-frame:fullscreen .ed-yt-frame-container,
+.ed-player-frame:-webkit-full-screen .ed-yt-frame-container,
+.ed-player-frame.is-platform-fullscreen .ed-yt-frame-container,
+.ed-player-frame:fullscreen .ed-yt-viewport,
+.ed-player-frame:-webkit-full-screen .ed-yt-viewport,
+.ed-player-frame.is-platform-fullscreen .ed-yt-viewport,
+.ed-player-frame:fullscreen iframe,
+.ed-player-frame:-webkit-full-screen iframe,
+.ed-player-frame.is-platform-fullscreen iframe,
+.ed-player-frame:fullscreen video,
+.ed-player-frame:-webkit-full-screen video,
+.ed-player-frame.is-platform-fullscreen video {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
+.ed-fs-exit-floating-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 99999999;
+    background: rgba(15, 23, 42, 0.88);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    transition: all 0.2s ease;
+}
+.ed-fs-exit-floating-btn:hover {
+    background: #dc2626;
+    border-color: #ef4444;
 }
 
 .ed-yt-frame-container {
@@ -417,7 +474,7 @@
     background: #000000;
 }
 
-/* عرض الفيديو بالكامل بدقة 16:9 الطبيعية دون أي قص أو تشويه لملاحظات المعلم */
+/* عرض الفيديو بالكامل بدقة 16:9 الطبيعية مع إتاحة التفاعل المباشر */
 .ed-video-iframe {
     position: absolute;
     inset: 0;
@@ -426,66 +483,25 @@
     border: 0;
     object-fit: contain;
     background: #000000;
-    z-index: 1;
-}
-
-/* درع حماية الهيدر الأكاديمي: يغطي شريط يوتيوب العلوي وعنوانه وبياناته بالكامل */
-.ed-yt-top-shield {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 52px;
-    background: linear-gradient(to bottom, #000000 0%, rgba(0, 0, 0, 0.92) 70%, transparent 100%);
-    z-index: 8;
-    pointer-events: auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    user-select: none;
-    transition: opacity 0.3s ease;
-}
-
-.ed-player-frame.controls-hidden .ed-yt-top-shield {
-    opacity: 0.15;
-}
-.ed-player-frame.controls-hidden .ed-yt-top-shield:hover {
-    opacity: 1;
-}
-
-/* درع زاوية يوتيوب السفلية لحجب أي علامة تجارية خارجية */
-.ed-yt-corner-shield {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    width: 90px;
-    height: 38px;
-    background: #000000;
-    z-index: 6;
-    pointer-events: none;
-    border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.25s ease;
-}
-.ed-player-frame:not(.controls-hidden) .ed-yt-corner-shield {
-    opacity: 1;
+    z-index: 2;
+    pointer-events: auto !important;
 }
 
 /* طبقة المشغل الأكاديمي الصافي الفاخر */
 .ed-pure-player-layer {
     position: absolute;
     inset: 0;
-    z-index: 10;
+    z-index: 16;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    transition: opacity 0.3s ease;
     user-select: none;
     pointer-events: none;
 }
 
-.ed-player-frame.controls-hidden .ed-pure-player-layer {
+.ed-player-frame.controls-hidden .ed-player-top-header,
+.ed-player-frame.controls-hidden .ed-player-bottom-panel {
     opacity: 0;
     pointer-events: none;
 }
@@ -497,12 +513,13 @@
 .ed-click-surface {
     position: absolute;
     inset: 0;
-    z-index: 7;
+    z-index: 8;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: auto;
+    pointer-events: auto !important;
+    background: transparent;
 }
 
 .ed-center-pulse-btn {
@@ -1009,22 +1026,24 @@
 .ed-btn-action-fs {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 34px;
-    height: 34px;
-    background: #f8fafc;
-    color: #64748b;
-    border: 1px solid #e2e8f0;
+    gap: 7px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 7px 15px;
     border-radius: 10px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    font-weight: 800;
     transition: all 0.2s ease;
 }
 
 .ed-btn-action-fs:hover {
-    background: #eff6ff;
-    color: #2563eb;
-    border-color: #bfdbfe;
+    background: #1d4ed8;
+    color: #ffffff;
+    border-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
 }
 
 /* عنوان الحصة المعتمد */
@@ -2013,7 +2032,7 @@ video::-webkit-media-controls-download-button {
                         @if($video->is_unlocked)
                             <article class="ed-video-card" id="card_video_{{ $video->id }}">
                                 {{-- إطار مشغل الفيديو الفاخر --}}
-                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}">
+                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}" oncontextmenu="return false;">
                                     @php
                                         $rawUrl = trim($video->url_path ?? '');
                                         if (in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
@@ -2031,7 +2050,7 @@ video::-webkit-media-controls-download-button {
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&disablekb=1&fs=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&autohide=1&color=white&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
                                             }
                                         }
@@ -2051,13 +2070,15 @@ video::-webkit-media-controls-download-button {
 
                                     @if($hasPlayableVideo)
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
-                                            {{-- منطقة الفيديو: يوتيوب بدون أي قص وتشويه، أو فيديو خادم مباشر --}}
+                                            {{-- منطقة الفيديو: يوتيوب بكامل دقته النظيفة مع إتاحة التحكم والتكبير، أو فيديو سيرفر مباشر --}}
                                             <div class="ed-yt-viewport">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             src="{{ $ytEmbed }}" 
-                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
+                                                            allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
+                                                            tabindex="-1"
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
@@ -2079,23 +2100,7 @@ video::-webkit-media-controls-download-button {
                                                 @endif
                                             </div>
 
-                                            {{-- درع حماية الهيدر الأكاديمي: يغطي شريط يوتيوب العلوي وعنوانه بالكامل بدون أي قص للفيديو --}}
-                                            <div class="ed-yt-top-shield" id="top_shield_{{ $video->id }}">
-                                                <div class="ed-pth-title">
-                                                    <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
-                                                    <span class="ed-pth-name">{{ $video->title }}</span>
-                                                </div>
-                                                <div class="ed-pth-quality-tag" id="top_quality_tag_{{ $video->id }}" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" style="cursor: pointer;">
-                                                    <i class="fa-solid fa-circle-check"></i> <span id="top_quality_text_{{ $video->id }}">1080p Full HD</span>
-                                                </div>
-                                            </div>
-
-                                            {{-- درع زاوية يوتيوب لحجب أي علامة تجارية سفلية --}}
-                                            @if(!empty($ytEmbed))
-                                                <div class="ed-yt-corner-shield" id="corner_shield_{{ $video->id }}"></div>
-                                            @endif
-
-                                            {{-- علامة مائية ذكية لحماية الملكية الأكاديمية للمنصة --}}
+                                            {{-- علامة مائية ذكية متحركة لحماية الملكية الأكاديمية للمنصة --}}
                                             @if(auth('student')->check() || auth()->check())
                                                 @php
                                                     $wmUser = auth('student')->user() ?? auth()->user();
@@ -2106,176 +2111,177 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             @endif
 
-                                            {{-- طبقة المشغل الأكاديمي المباشر الخاص بالمنصة لكافة أنواع الفيديوهات --}}
-                                            <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
-                                                {{-- سطح النقر للتشغيل والإيقاف --}}
-                                                <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')">
-                                                    <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
-                                                        <i class="fa-solid fa-play"></i>
-                                                    </div>
-                                                </div>
-
-                                                {{-- هيدر المنصة الأكاديمي الفاخر --}}
-                                                <div class="ed-player-top-header">
-                                                    <div class="ed-pth-title">
-                                                        <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
-                                                        <span class="ed-pth-name">{{ $video->title }}</span>
-                                                    </div>
-                                                    <div class="ed-pth-quality-tag" id="inner_top_quality_{{ $video->id }}" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" style="cursor: pointer;">
-                                                        <i class="fa-solid fa-circle-check"></i> <span id="inner_quality_text_{{ $video->id }}">1080p Full HD</span>
-                                                    </div>
-                                                </div>
-
-                                                {{-- شريط التحكم السفلي الكامل الخاص بالمنصة --}}
-                                                <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
-                                                    {{-- شريط التقدم الزمني الدقيق --}}
-                                                    <div class="ed-scrubber-wrapper" id="scrubber_wrap_{{ $video->id }}" onclick="handleScrubberClick(event, '{{ $video->id }}')" onmousemove="handleScrubberHover(event, '{{ $video->id }}')" onmouseleave="hideScrubberTooltip('{{ $video->id }}')">
-                                                        <div class="ed-scrub-track">
-                                                            <div class="ed-scrub-buffer" id="buffer_bar_{{ $video->id }}"></div>
-                                                            <div class="ed-scrub-fill" id="progress_bar_{{ $video->id }}">
-                                                                <div class="ed-scrub-thumb"></div>
-                                                            </div>
+                                            {{-- طبقة المشغل الخاص الفاخر: تُفعَّل حصراً للفيديوهات المرفوعة مباشرة على السيرفر تجنباً لأي تعارض --}}
+                                            @if($isDirectVideo)
+                                                <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
+                                                    {{-- سطح النقر للتشغيل والإيقاف --}}
+                                                    <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')">
+                                                        <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
+                                                            <i class="fa-solid fa-play"></i>
                                                         </div>
-                                                        <div class="ed-scrub-tooltip" id="scrub_tip_{{ $video->id }}">00:00</div>
                                                     </div>
 
-                                                    {{-- أزرار وعناصر التحكم --}}
-                                                    <div class="ed-controls-main-row">
-                                                        <div class="ed-ctrl-cluster left">
-                                                            <button type="button" class="ed-ctrl-btn play" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
-                                                                <i class="fa-solid fa-play"></i>
-                                                            </button>
-                                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
-                                                                <i class="fa-solid fa-rotate-left"></i>
-                                                                <span class="ed-skip-num">10</span>
-                                                            </button>
-                                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
-                                                                <i class="fa-solid fa-rotate-right"></i>
-                                                                <span class="ed-skip-num">10</span>
-                                                            </button>
-                                                            <div class="ed-time-counter" id="time_txt_{{ $video->id }}">
-                                                                00:00 / 00:00
+                                                    {{-- هيدر المشغل المباشر الفاخر --}}
+                                                    <div class="ed-player-top-header">
+                                                        <div class="ed-pth-title">
+                                                            <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
+                                                            <span class="ed-pth-name">{{ $video->title }}</span>
+                                                        </div>
+                                                        <div class="ed-pth-quality-tag" id="inner_top_quality_{{ $video->id }}" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" style="cursor: pointer;">
+                                                            <i class="fa-solid fa-circle-check"></i> <span id="inner_quality_text_{{ $video->id }}">1080p Full HD</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- شريط التحكم السفلي الكامل للمشغل المباشر --}}
+                                                    <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
+                                                        {{-- شريط التقدم الزمني الدقيق --}}
+                                                        <div class="ed-scrubber-wrapper" id="scrubber_wrap_{{ $video->id }}" onclick="handleScrubberClick(event, '{{ $video->id }}')" onmousemove="handleScrubberHover(event, '{{ $video->id }}')" onmouseleave="hideScrubberTooltip('{{ $video->id }}')">
+                                                            <div class="ed-scrub-track">
+                                                                <div class="ed-scrub-buffer" id="buffer_bar_{{ $video->id }}"></div>
+                                                                <div class="ed-scrub-fill" id="progress_bar_{{ $video->id }}">
+                                                                    <div class="ed-scrub-thumb"></div>
+                                                                </div>
                                                             </div>
+                                                            <div class="ed-scrub-tooltip" id="scrub_tip_{{ $video->id }}">00:00</div>
                                                         </div>
 
-                                                        <div class="ed-ctrl-cluster right">
-                                                            <div class="ed-volume-group">
-                                                                <button type="button" class="ed-ctrl-btn vol" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
-                                                                    <i class="fa-solid fa-volume-high"></i>
+                                                        {{-- أزرار وعناصر التحكم --}}
+                                                        <div class="ed-controls-main-row">
+                                                            <div class="ed-ctrl-cluster left">
+                                                                <button type="button" class="ed-ctrl-btn play" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
+                                                                    <i class="fa-solid fa-play"></i>
                                                                 </button>
-                                                                <input type="range" class="ed-volume-slider" id="vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setStudentVolume('{{ $video->id }}', this.value)">
-                                                            </div>
-
-                                                            <div class="ed-speed-dropdown">
-                                                                <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('speed_menu_{{ $video->id }}')">
-                                                                    <span id="active_speed_{{ $video->id }}">1x</span>
+                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
+                                                                    <i class="fa-solid fa-rotate-left"></i>
+                                                                    <span class="ed-skip-num">10</span>
                                                                 </button>
-                                                                <div class="ed-popover-menu" id="speed_menu_{{ $video->id }}">
-                                                                    <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
-                                                                    <button type="button" class="ed-pop-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
+                                                                    <i class="fa-solid fa-rotate-right"></i>
+                                                                    <span class="ed-skip-num">10</span>
+                                                                </button>
+                                                                <div class="ed-time-counter" id="time_txt_{{ $video->id }}">
+                                                                    00:00 / 00:00
                                                                 </div>
                                                             </div>
 
-                                                            {{-- قائمة متعدد الجودات للمنصة --}}
-                                                            <div class="ed-quality-dropdown">
-                                                                <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" title="{{ __('دقة وجودة الفيديو') }}">
-                                                                    <i class="fa-solid fa-sliders"></i>
-                                                                    <span id="active_quality_{{ $video->id }}">1080p</span>
-                                                                </button>
-                                                                <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}">
-                                                                    <div class="ed-pop-header"><i class="fa-solid fa-sparkles"></i> {{ __('دقة الفيديو') }}</div>
-                                                                    <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">
-                                                                        <span>1080p Full HD</span>
-                                                                        <span style="font-size: 0.65rem; color: #4ade80;">الأعلى</span>
+                                                            <div class="ed-ctrl-cluster right">
+                                                                <div class="ed-volume-group">
+                                                                    <button type="button" class="ed-ctrl-btn vol" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
+                                                                        <i class="fa-solid fa-volume-high"></i>
                                                                     </button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">
-                                                                        <span>720p HD</span>
-                                                                        <span style="font-size: 0.65rem; color: #60a5fa;">متوازنة</span>
-                                                                    </button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">
-                                                                        <span>480p SD</span>
-                                                                        <span style="font-size: 0.65rem; color: #f59e0b;">توفير</span>
-                                                                    </button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">
-                                                                        <span>360p</span>
-                                                                        <span style="font-size: 0.65rem; color: #94a3b8;">نت ضعيف</span>
-                                                                    </button>
-                                                                    <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)')">
-                                                                        <span>{{ __('تلقائي (Auto)') }}</span>
-                                                                        <span style="font-size: 0.65rem; color: #a855f7;">تكيف</span>
-                                                                    </button>
+                                                                    <input type="range" class="ed-volume-slider" id="vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setStudentVolume('{{ $video->id }}', this.value)">
                                                                 </div>
-                                                            </div>
 
-                                                            <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('ملء الشاشة (F)') }}">
-                                                                <i class="fa-solid fa-expand"></i>
-                                                            </button>
+                                                                <div class="ed-speed-dropdown">
+                                                                    <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('speed_menu_{{ $video->id }}')">
+                                                                        <span id="active_speed_{{ $video->id }}">1x</span>
+                                                                    </button>
+                                                                    <div class="ed-popover-menu" id="speed_menu_{{ $video->id }}">
+                                                                        <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
+                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div class="ed-quality-dropdown">
+                                                                    <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" title="{{ __('دقة وجودة الفيديو') }}">
+                                                                        <i class="fa-solid fa-sliders"></i>
+                                                                        <span id="active_quality_{{ $video->id }}">1080p</span>
+                                                                    </button>
+                                                                    <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}">
+                                                                        <div class="ed-pop-header"><i class="fa-solid fa-sparkles"></i> {{ __('دقة الفيديو') }}</div>
+                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">
+                                                                            <span>1080p Full HD</span>
+                                                                            <span style="font-size: 0.65rem; color: #4ade80;">الأعلى</span>
+                                                                        </button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">
+                                                                            <span>720p HD</span>
+                                                                            <span style="font-size: 0.65rem; color: #60a5fa;">متوازنة</span>
+                                                                        </button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">
+                                                                            <span>480p SD</span>
+                                                                            <span style="font-size: 0.65rem; color: #f59e0b;">توفير</span>
+                                                                        </button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">
+                                                                            <span>360p</span>
+                                                                            <span style="font-size: 0.65rem; color: #94a3b8;">نت ضعيف</span>
+                                                                        </button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)')">
+                                                                            <span>{{ __('تلقائي (Auto)') }}</span>
+                                                                            <span style="font-size: 0.65rem; color: #a855f7;">تكيف</span>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+
+                                                                <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('ملء الشاشة (F)') }}">
+                                                                    <i class="fa-solid fa-expand"></i>
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {{-- بوستر المنصة الأكاديمي الحصري --}}
-                                            @php
-                                                $ytId = $video->youtube_id;
-                                                $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
-                                            @endphp
-                                            <div class="ed-video-poster" id="poster_{{ $video->id }}" onclick="startStudentVideo('{{ $video->id }}')">
-                                                <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.onerror=null; this.src='https://img.youtube.com/vi/{{ $ytId }}/0.jpg';">
-                                                <div class="ed-poster-overlay"></div>
-                                                <div class="ed-poster-top-bar">
-                                                    <span class="ed-poster-badge">
-                                                        <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
-                                                    </span>
-                                                    <span class="ed-poster-badge hd">
-                                                        <i class="fa-solid fa-sparkles"></i> 1080p Full HD
-                                                    </span>
-                                                </div>
-                                                <div class="ed-poster-center-content">
-                                                    <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
-                                                        <i class="fa-solid fa-play"></i>
-                                                    </button>
-                                                    <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
-                                                </div>
-                                            </div>
-
-                                            {{-- شاشة الإيقاف المؤقت الخاصة بالمنصة لمنع ظهور أي فيديوهات مقترحة إطلاقاً --}}
-                                            <div class="ed-video-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeStudentPlayback('{{ $video->id }}')" style="display: none;">
-                                                <div class="ed-pause-content">
-                                                    <button type="button" class="ed-pause-play-btn">
-                                                        <i class="fa-solid fa-play"></i>
-                                                    </button>
-                                                    <div class="ed-pause-meta">
-                                                        <h4 class="ed-pause-title">{{ $video->title }}</h4>
-                                                        <span class="ed-pause-sub">{{ __('الحصة متوقفة مؤقتاً • انقر للاستئناف والمتابعة') }}</span>
+                                                {{-- بوستر المشغل المباشر --}}
+                                                @php
+                                                    $posterThumb = asset('images/video-placeholder.jpg');
+                                                @endphp
+                                                <div class="ed-video-poster" id="poster_{{ $video->id }}" onclick="startStudentVideo('{{ $video->id }}')">
+                                                    <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy">
+                                                    <div class="ed-poster-overlay"></div>
+                                                    <div class="ed-poster-top-bar">
+                                                        <span class="ed-poster-badge">
+                                                            <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
+                                                        </span>
+                                                        <span class="ed-poster-badge hd">
+                                                            <i class="fa-solid fa-sparkles"></i> 1080p Full HD
+                                                        </span>
+                                                    </div>
+                                                    <div class="ed-poster-center-content">
+                                                        <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
+                                                            <i class="fa-solid fa-play"></i>
+                                                        </button>
+                                                        <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {{-- نافذة الخطأ الذكية في حال تعثر البث المباشر --}}
-                                            <div id="player_err_{{ $video->id }}" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; z-index: 25;">
-                                                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                                {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
+                                                <div class="ed-video-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeStudentPlayback('{{ $video->id }}')" style="display: none;">
+                                                    <div class="ed-pause-content">
+                                                        <button type="button" class="ed-pause-play-btn">
+                                                            <i class="fa-solid fa-play"></i>
+                                                        </button>
+                                                        <div class="ed-pause-meta">
+                                                            <h4 class="ed-pause-title">{{ $video->title }}</h4>
+                                                            <span class="ed-pause-sub">{{ __('الحصة متوقفة مؤقتاً • انقر للاستئناف والمتابعة') }}</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <h4 id="player_err_h4_{{ $video->id }}" style="margin: 0 0 6px; font-size: 0.98rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر بث الفيديو في المشغل المباشر') }}</h4>
-                                                    <p id="player_err_p_{{ $video->id }}" style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 420px; line-height: 1.5;">{{ __('يمكنك إعادة المحاولة أو تنزيل ملزمة الدرس PDF.') }}</p>
+
+                                                {{-- نافذة الخطأ الذكية في حال تعثر البث المباشر --}}
+                                                <div id="player_err_{{ $video->id }}" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; z-index: 25;">
+                                                    <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h4 id="player_err_h4_{{ $video->id }}" style="margin: 0 0 6px; font-size: 0.98rem; font-weight: 700; color: #f8fafc;">{{ __('تعذر بث الفيديو في المشغل المباشر') }}</h4>
+                                                        <p id="player_err_p_{{ $video->id }}" style="margin: 0; font-size: 0.82rem; color: #94a3b8; max-width: 420px; line-height: 1.5;">{{ __('يمكنك إعادة المحاولة أو تنزيل ملزمة الدرس PDF.') }}</p>
+                                                    </div>
+                                                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                                                        <button type="button" onclick="retryStudentVideo('{{ $video->id }}')" style="background: #2563eb; color: #fff; border: none; padding: 7px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                                            <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
+                                                        </button>
+                                                        @if(!empty($video->pdf_path))
+                                                            <a href="{{ route('content.download', $video->id) }}" style="background: #059669; color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                                                <i class="fa-solid fa-file-pdf"></i> {{ __('تحميل ملزمة الدرس PDF') }}
+                                                            </a>
+                                                        @endif
+                                                    </div>
                                                 </div>
-                                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                                                    <button type="button" onclick="retryStudentVideo('{{ $video->id }}')" style="background: #2563eb; color: #fff; border: none; padding: 7px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                                        <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة المحاولة') }}
-                                                    </button>
-                                                    @if(!empty($video->pdf_path))
-                                                        <a href="{{ route('content.download', $video->id) }}" style="background: #059669; color: #fff; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                                                            <i class="fa-solid fa-file-pdf"></i> {{ __('تحميل ملزمة الدرس PDF') }}
-                                                        </a>
-                                                    @endif
-                                                </div>
-                                            </div>
+                                            @endif
+                                        </div>
                                         </div>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" class="ed-video-iframe"></iframe>
@@ -2340,6 +2346,7 @@ video::-webkit-media-controls-download-button {
                                             </button>
                                             <button type="button" class="ed-btn-action-fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                                 <i class="fa-solid fa-expand"></i>
+                                                <span>{{ __('تكبير الشاشة') }}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -2740,11 +2747,19 @@ function getPlayerContext(videoId) {
     };
 }
 
-// تهيئة مشغلات يوتيوب
+let ytPlayStates = {};
+
+// تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
+function initAllYouTubePlayers() {
+    if (window.YT && window.YT.Player) {
+        document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
+            initSingleYtPlayer(iframe.id);
+        });
+    }
+}
+
 function onYouTubeIframeAPIReady() {
-    document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
-        initSingleYtPlayer(iframe.id);
-    });
+    initAllYouTubePlayers();
 }
 
 function initSingleYtPlayer(iframeId) {
@@ -2754,6 +2769,13 @@ function initSingleYtPlayer(iframeId) {
     if (window.YT && window.YT.Player) {
         try {
             ytPlayers[videoId] = new YT.Player(iframeId, {
+                playerVars: {
+                    'controls': 1,
+                    'fs': 1,
+                    'rel': 0,
+                    'playsinline': 1,
+                    'modestbranding': 1
+                },
                 events: {
                     'onReady': function(event) {
                         updateStudentTimeDisplay(videoId);
@@ -2780,7 +2802,7 @@ function registerPlayerActivity(videoId) {
     clearTimeout(playerHideTimers[videoId]);
     
     const ctx = getPlayerContext(videoId);
-    const isPlayingYt = ctx.yt && typeof ctx.yt.getPlayerState === 'function' && ctx.yt.getPlayerState() === 1;
+    const isPlayingYt = ytPlayStates[videoId] || (ctx.yt && typeof ctx.yt.getPlayerState === 'function' && ctx.yt.getPlayerState() === 1);
     const isPlayingDirect = ctx.direct && !ctx.direct.paused && !ctx.direct.ended;
     
     if (isPlayingYt || isPlayingDirect) {
@@ -2794,7 +2816,7 @@ function handlePlayerMouseLeave(videoId) {
     const frame = document.getElementById(`player_frame_${videoId}`);
     if (!frame) return;
     const ctx = getPlayerContext(videoId);
-    const isPlayingYt = ctx.yt && typeof ctx.yt.getPlayerState === 'function' && ctx.yt.getPlayerState() === 1;
+    const isPlayingYt = ytPlayStates[videoId] || (ctx.yt && typeof ctx.yt.getPlayerState === 'function' && ctx.yt.getPlayerState() === 1);
     const isPlayingDirect = ctx.direct && !ctx.direct.paused && !ctx.direct.ended;
     
     if (isPlayingYt || isPlayingDirect) {
@@ -2811,22 +2833,25 @@ function handleYtStateChange(videoId, state) {
     
     // 1 = PLAYING
     if (state === 1) {
+        ytPlayStates[videoId] = true;
         if (poster) {
             poster.style.opacity = '0';
             poster.style.pointerEvents = 'none';
-            setTimeout(() => { poster.style.display = 'none'; }, 300);
+            setTimeout(() => { poster.style.display = 'none'; }, 250);
         }
         if (pauseOverlay) pauseOverlay.style.display = 'none';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         startStudentProgressTracking(videoId);
         registerPlayerActivity(videoId);
     } else if (state === 2) { // 2 = PAUSED
+        ytPlayStates[videoId] = false;
         if (pauseOverlay) pauseOverlay.style.display = 'flex';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         if (frame) frame.classList.remove('controls-hidden');
         clearTimeout(playerHideTimers[videoId]);
         stopStudentProgressTracking(videoId);
     } else if (state === 0) { // 0 = ENDED
+        ytPlayStates[videoId] = false;
         if (pauseOverlay) pauseOverlay.style.display = 'flex';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
         if (frame) frame.classList.remove('controls-hidden');
@@ -2840,7 +2865,7 @@ function startStudentVideo(videoId) {
     if (poster) {
         poster.style.opacity = '0';
         poster.style.pointerEvents = 'none';
-        setTimeout(() => { poster.style.display = 'none'; }, 300);
+        setTimeout(() => { poster.style.display = 'none'; }, 250);
     }
     const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
     if (pauseOverlay) pauseOverlay.style.display = 'none';
@@ -2855,14 +2880,17 @@ function startStudentVideo(videoId) {
         return;
     }
 
+    ytPlayStates[videoId] = true;
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.playVideo === 'function') {
-        try { yt.playVideo(); return; } catch(e) {}
+        try { yt.playVideo(); } catch(e) {}
     }
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     if (ytIframe && ytIframe.contentWindow) {
         ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
     }
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startStudentProgressTracking(videoId);
     registerPlayerActivity(videoId);
 }
@@ -2879,14 +2907,18 @@ function resumeStudentPlayback(videoId) {
         registerPlayerActivity(videoId);
         return;
     }
+
+    ytPlayStates[videoId] = true;
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.playVideo === 'function') {
-        try { yt.playVideo(); return; } catch(e) {}
+        try { yt.playVideo(); } catch(e) {}
     }
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     if (ytIframe && ytIframe.contentWindow) {
         ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
     }
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     registerPlayerActivity(videoId);
 }
 
@@ -2930,36 +2962,52 @@ function toggleStudentPlayback(videoId) {
 
     // لليوتيوب
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    let isPlaying = ytPlayStates[videoId];
     if (yt && typeof yt.getPlayerState === 'function') {
         try {
-            const state = yt.getPlayerState();
-            if (state === 1) { // مشتغل -> إيقاف
-                yt.pauseVideo();
-                if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-                if (pauseOverlay) pauseOverlay.style.display = 'flex';
-                if (pulseBtn) {
-                    pulseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                    pulseBtn.classList.add('show-pulse');
-                    setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
-                }
-            } else { // متوقف -> تشغيل
-                yt.playVideo();
-                if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-                if (pauseOverlay) pauseOverlay.style.display = 'none';
-                if (pulseBtn) {
-                    pulseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-                    pulseBtn.classList.add('show-pulse');
-                    setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
-                }
-                registerPlayerActivity(videoId);
-            }
-            return;
+            const st = yt.getPlayerState();
+            if (st === 1) isPlaying = true;
+            else if (st === 2 || st === 0) isPlaying = false;
         } catch(e) {}
     }
 
-    const iframe = document.getElementById(`player_yt_${videoId}`);
-    if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+    if (isPlaying) {
+        // إيقاف مؤقت
+        ytPlayStates[videoId] = false;
+        if (yt && typeof yt.pauseVideo === 'function') {
+            try { yt.pauseVideo(); } catch(e) {}
+        }
+        const iframe = document.getElementById(`player_yt_${videoId}`);
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'pauseVideo', args: [] }), '*');
+        }
+        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+        if (pauseOverlay) pauseOverlay.style.display = 'flex';
+        if (pulseBtn) {
+            pulseBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            pulseBtn.classList.add('show-pulse');
+            setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
+        }
+        stopStudentProgressTracking(videoId);
+    } else {
+        // تشغيل واستئناف
+        ytPlayStates[videoId] = true;
+        if (yt && typeof yt.playVideo === 'function') {
+            try { yt.playVideo(); } catch(e) {}
+        }
+        const iframe = document.getElementById(`player_yt_${videoId}`);
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+        }
+        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        if (pauseOverlay) pauseOverlay.style.display = 'none';
+        if (pulseBtn) {
+            pulseBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
+            pulseBtn.classList.add('show-pulse');
+            setTimeout(() => pulseBtn.classList.remove('show-pulse'), 500);
+        }
+        startStudentProgressTracking(videoId);
+        registerPlayerActivity(videoId);
     }
 }
 
@@ -3295,6 +3343,106 @@ document.addEventListener('click', function(e) {
         document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
     }
 });
+
+// تكبير المشغل الأكاديمي بملء الشاشة الفاخر مع دعم كافة الأجهزة والمتصفحات
+function togglePlatformFullscreen(videoId) {
+    let frame = null;
+    if (typeof videoId === 'string' || typeof videoId === 'number') {
+        frame = document.getElementById(`player_frame_${videoId}`) || document.getElementById(`shield_wrap_${videoId}`) || document.getElementById(`card_video_${videoId}`);
+    } else if (videoId && videoId.closest) {
+        frame = videoId.closest('.ed-player-frame') || videoId.closest('.ed-video-card');
+    }
+    if (!frame) {
+        const activeHover = document.querySelector('.ed-player-frame:hover, .ed-player-frame:fullscreen, .ed-player-frame:-webkit-full-screen, .ed-player-frame.is-platform-fullscreen');
+        if (activeHover) frame = activeHover;
+    }
+    if (!frame) return;
+
+    const actualVidId = frame.id.replace('player_frame_', '').replace('shield_wrap_', '').replace('card_video_', '');
+
+    const isFs = !!(
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement || 
+        frame.classList.contains('is-platform-fullscreen')
+    );
+
+    if (!isFs) {
+        // Enter Fullscreen
+        if (frame.requestFullscreen) {
+            frame.requestFullscreen().catch(() => {
+                enterFallbackFullscreen(frame, actualVidId);
+            });
+        } else if (frame.webkitRequestFullscreen) {
+            frame.webkitRequestFullscreen();
+        } else if (frame.mozRequestFullScreen) {
+            frame.mozRequestFullScreen();
+        } else if (frame.msRequestFullscreen) {
+            frame.msRequestFullscreen();
+        } else {
+            enterFallbackFullscreen(frame, actualVidId);
+        }
+    } else {
+        // Exit Fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        exitFallbackFullscreen(frame, actualVidId);
+    }
+}
+
+function enterFallbackFullscreen(frame, videoId) {
+    const vidEl = document.getElementById(`player_vid_${videoId}`);
+    if (vidEl && vidEl.webkitEnterFullscreen) {
+        vidEl.webkitEnterFullscreen();
+        return;
+    }
+    frame.classList.add('is-platform-fullscreen');
+    document.body.style.overflow = 'hidden';
+    
+    let exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
+    if (!exitBtn) {
+        exitBtn = document.createElement('button');
+        exitBtn.id = `fs_exit_btn_${videoId}`;
+        exitBtn.className = 'ed-fs-exit-floating-btn';
+        exitBtn.innerHTML = '<i class="fa-solid fa-compress"></i> <span>' + '{{ __("إلغاء ملء الشاشة") }}' + '</span>';
+        exitBtn.onclick = function(e) {
+            e.stopPropagation();
+            togglePlatformFullscreen(videoId);
+        };
+        frame.appendChild(exitBtn);
+    }
+    exitBtn.style.display = 'inline-flex';
+}
+
+function exitFallbackFullscreen(frame, videoId) {
+    if (frame) frame.classList.remove('is-platform-fullscreen');
+    document.body.style.overflow = '';
+    const exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
+    if (exitBtn) exitBtn.style.display = 'none';
+}
+
+function syncFullscreenState() {
+    const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    if (!isFs) {
+        document.querySelectorAll('.ed-player-frame.is-platform-fullscreen').forEach(f => {
+            const vidId = f.id.replace('player_frame_', '');
+            exitFallbackFullscreen(f, vidId);
+        });
+    }
+}
+
+document.addEventListener('fullscreenchange', syncFullscreenState);
+document.addEventListener('webkitfullscreenchange', syncFullscreenState);
+document.addEventListener('mozfullscreenchange', syncFullscreenState);
+document.addEventListener('MSFullscreenChange', syncFullscreenState);
 
 // اختصارات لوحة المفاتيح الأكاديمية الذكية
 document.addEventListener('keydown', function(e) {
@@ -3656,14 +3804,58 @@ function showPlayerToast(message) {
     }, 2400);
 }
 
-// منع القائمة المنبثقة بالزر الأيمن على مشغل الفيديو نهائياً
+// منع القائمة المنبثقة بالزر الأيمن على مشغل الفيديو نهائياً لمنع نسخ الروابط
 document.addEventListener('contextmenu', function(e) {
-    if (e.target.closest('.ed-player-frame, .ed-yt-shield-container, .ed-student-player-bar, iframe')) {
+    if (e.target.closest('.ed-player-frame, .ed-yt-frame-container, .ed-yt-viewport, .ed-yt-top-shield, .ed-yt-corner-shield, .ed-pure-player-layer, .ed-video-card, iframe, video')) {
         e.preventDefault();
         e.stopPropagation();
         return false;
     }
 }, true);
+
+// حظر فتح أي روابط لليوتيوب نهائياً لضمان بقاء الطالب داخل بيئة المنصة الأكاديمية
+try {
+    const _origWinOpen = window.open;
+    window.open = function(url, target, features) {
+        if (typeof url === 'string' && (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com'))) {
+            console.warn('[Security] Direct YouTube access blocked.');
+            showPlayerToast('{{ __('التشغيل محمي ومقيد حصرياً داخل المنصة التعليمية') }}');
+            return null;
+        }
+        return _origWinOpen.call(window, url, target, features);
+    };
+} catch(e) {}
+
+// مزامنة حالة مشغل يوتيوب تلقائياً عبر postMessage لضمان حجب أي فيديوهات مقترحة وشاشات خارجية
+window.addEventListener('message', function(event) {
+    if (!event.data) return;
+    try {
+        const payload = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+        if (payload && (payload.event === 'onStateChange' || payload.info !== undefined)) {
+            const state = typeof payload.info === 'number' ? payload.info : payload.data;
+            if (typeof state === 'number') {
+                document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
+                    if (iframe.contentWindow === event.source) {
+                        const vidId = iframe.id.replace('player_yt_', '');
+                        handleYtStateChange(vidId, state);
+                    }
+                });
+            }
+        }
+    } catch(e) {}
+});
+
+// تهيئة المشغلات فوراً عند جاهزية واجهة يوتيوب
+if (window.YT && window.YT.Player) {
+    initAllYouTubePlayers();
+} else {
+    const prevYtReady = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function() {
+        if (typeof prevYtReady === 'function') prevYtReady();
+        initAllYouTubePlayers();
+    };
+}
+document.addEventListener('DOMContentLoaded', initAllYouTubePlayers);
 
 // إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
 function purgeExternalDownloadButtons() {
@@ -3671,7 +3863,6 @@ function purgeExternalDownloadButtons() {
 }
 purgeExternalDownloadButtons();
 document.addEventListener('DOMContentLoaded', purgeExternalDownloadButtons);
-
 
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>

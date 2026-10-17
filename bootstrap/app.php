@@ -89,6 +89,27 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->withInput($request->except(['_token', 'password', 'password_confirmation', 'receipt_photo', 'receipt_file']))
                 ->with('error', 'انتهت صلاحية الجلسة المؤقتة، يرجى إعادة المحاولة.');
         });
+
+        // التعامل المرن والآمن مع انقطاع قاعدة البيانات ومنع انهيار النظام
+        $exceptions->render(function (\Illuminate\Database\QueryException|\PDOException $e, Request $request) {
+            \Illuminate\Support\Facades\Log::error('Database Connection Exception: ' . $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'تعذر الاتصال بقاعدة البيانات حالياً، يرجى المحاولة مجدداً بعد لحظات.',
+                ], 503);
+            }
+        });
+
+        // معالجة الأخطاء غير الموجودة (404) للطلبات البرمجية
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'العنصر أو المسار المطلوب غير موجود.',
+                ], 404);
+            }
+        });
     })->create();
 
 

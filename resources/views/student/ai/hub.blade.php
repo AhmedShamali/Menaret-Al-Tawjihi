@@ -1953,6 +1953,28 @@ body.dark-theme :root,
     color: var(--ai-text-secondary);
 }
 
+/* تنسيقات الصور والمخططات البصرية والمعادلات المتجهية */
+.chat-msg-assistant .msg-bubble img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 12px 0;
+    display: block;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease;
+}
+
+.chat-msg-assistant .msg-bubble img[src*="codecogs.com"] {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 6px 2px;
+    padding: 6px 12px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
 /* الجداول */
 .chat-msg-assistant .msg-bubble table {
     width: 100%;
@@ -4315,7 +4337,7 @@ body.dark-theme :root,
     function renderMathInBubble(element) {
         if (!element) return;
 
-        // تصيير معادلات KaTeX
+        // تصيير معادلات KaTeX مع دعم التحويل التلقائي لـ SVG عبر CodeCogs
         if (typeof renderMathInElement !== 'undefined') {
             try {
                 renderMathInElement(element, {
@@ -4330,6 +4352,38 @@ body.dark-theme :root,
             } catch (err) {
                 console.warn('KaTeX render note:', err);
             }
+        } else {
+            // بديل ذاتي ذكي بالرسم المتجهي (CodeCogs SVG) في حال عدم توفر KaTeX
+            try {
+                const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+                const nodesToReplace = [];
+                let node;
+                while (node = walker.nextNode()) {
+                    if (node.parentElement && ['PRE', 'CODE', 'SCRIPT', 'STYLE', 'TEXTAREA'].includes(node.parentElement.tagName)) continue;
+                    if (node.nodeValue && (node.nodeValue.includes('$$') || node.nodeValue.includes('$'))) {
+                        nodesToReplace.push(node);
+                    }
+                }
+                nodesToReplace.forEach(textNode => {
+                    let val = textNode.nodeValue;
+                    let hasMatch = false;
+                    val = val.replace(/\$\$([\s\S]+?)\$\$/g, (m, eq) => {
+                        hasMatch = true;
+                        const enc = encodeURIComponent(eq.trim());
+                        return `<img class="codecogs-math-svg" src="https://latex.codecogs.com/svg.image?\\dpi{200}${enc}" alt="${escapeHtml(eq.trim())}" style="display:block;margin:8px auto;">`;
+                    });
+                    val = val.replace(/\$([^\$\n]+?)\$/g, (m, eq) => {
+                        hasMatch = true;
+                        const enc = encodeURIComponent(eq.trim());
+                        return `<img class="codecogs-math-svg" src="https://latex.codecogs.com/svg.image?\\dpi{200}${enc}" alt="${escapeHtml(eq.trim())}" style="display:inline-block;vertical-align:middle;margin:0 3px;">`;
+                    });
+                    if (hasMatch) {
+                        const span = document.createElement('span');
+                        span.innerHTML = val;
+                        textNode.parentNode.replaceChild(span, textNode);
+                    }
+                });
+            } catch (_) {}
         }
 
         // تصيير مخططات Mermaid الذهنية

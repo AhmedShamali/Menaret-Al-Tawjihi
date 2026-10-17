@@ -97,30 +97,22 @@
                                 @php
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=0&disablekb=1&fs=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&autohide=1&color=white&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
-                                {{-- عرض يوتيوب بدون قص مشوه ومع درع علوي وسفلي يحجب الروابط والبيانات بالكامل --}}
+                                {{-- عرض يوتيوب بكامل دقته النظيفة مع إتاحة التحكم والتكبير --}}
                                 <div class="ed-yt-viewport">
                                     <iframe class="custom-iframe" 
                                             id="pub_yt_{{ $video->id }}"
                                             src="{{ $ytSafeSrc }}" 
                                             frameborder="0" 
-                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
+                                            allowfullscreen
                                             referrerpolicy="strict-origin-when-cross-origin"
+                                            tabindex="-1"
                                             loading="lazy">
                                     </iframe>
-                                    <div class="ed-yt-top-shield">
-                                        <div class="ed-pth-title">
-                                            <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
-                                            <span class="ed-pth-name">{{ $video->title }}</span>
-                                        </div>
-                                        <div class="ed-pth-quality-tag" id="pub_top_quality_tag_{{ $video->id }}">
-                                            <i class="fa-solid fa-circle-check"></i> 1080p Full HD
-                                        </div>
-                                    </div>
-                                    <div class="ed-yt-corner-shield"></div>
                                 </div>
                             @elseif(!empty($streamUrl))
                                 {{-- فيديو مباشر محمي عبر ستريم مشفر يخفي مسار السيرفر والسحابة بالكامل --}}
@@ -153,7 +145,7 @@
                                 </div>
                             @endif
 
-                            @if($isYoutube || !empty($streamUrl))
+                            @if(!empty($streamUrl))
                                 {{-- شاشة التوقف الأكاديمية لحجب أي اقتراحات خارجية --}}
                                 <div class="ed-video-pause-overlay" id="pub_pause_overlay_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')">
                                     <div class="ed-pause-card">
@@ -522,10 +514,65 @@
     }
 
     .custom-video-wrapper:fullscreen,
-    .custom-video-wrapper:-webkit-full-screen {
+    .custom-video-wrapper:-webkit-full-screen,
+    .custom-video-wrapper:-moz-full-screen,
+    .custom-video-wrapper:-ms-fullscreen,
+    .custom-video-wrapper.is-platform-fullscreen {
+        position: fixed !important;
+        inset: 0 !important;
         width: 100vw !important;
         height: 100vh !important;
-        background: #000 !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        padding-top: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        z-index: 9999999 !important;
+        background: #000000 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    .custom-video-wrapper:fullscreen .ed-yt-viewport,
+    .custom-video-wrapper:-webkit-full-screen .ed-yt-viewport,
+    .custom-video-wrapper.is-platform-fullscreen .ed-yt-viewport,
+    .custom-video-wrapper:fullscreen iframe,
+    .custom-video-wrapper:-webkit-full-screen iframe,
+    .custom-video-wrapper.is-platform-fullscreen iframe,
+    .custom-video-wrapper:fullscreen video,
+    .custom-video-wrapper:-webkit-full-screen video,
+    .custom-video-wrapper.is-platform-fullscreen video {
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+    }
+
+    .ed-fs-exit-floating-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 99999999;
+        background: rgba(15, 23, 42, 0.88);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        font-weight: 800;
+        cursor: pointer;
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: none;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+        transition: all 0.2s ease;
+    }
+    .ed-fs-exit-floating-btn:hover {
+        background: #dc2626;
+        border-color: #ef4444;
     }
 
     .ed-yt-viewport {
@@ -544,33 +591,8 @@
         width: 100%;
         height: 100%;
         border: none;
-        z-index: 1;
-    }
-
-    .ed-yt-top-shield {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 52px;
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.8) 75%, transparent 100%);
-        z-index: 15;
-        pointer-events: auto;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 16px;
-    }
-
-    .ed-yt-corner-shield {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100px;
-        height: 52px;
-        background: transparent;
-        z-index: 15;
-        pointer-events: auto;
+        z-index: 2;
+        pointer-events: auto !important;
     }
 
     .ed-video-pause-overlay {
@@ -1813,16 +1835,72 @@
     });
 
     function toggleSubjectFullscreen(btn) {
-        const wrap = btn.closest('.custom-video-wrapper');
+        let wrap = null;
+        if (typeof btn === 'string' || typeof btn === 'number') {
+            wrap = document.getElementById(`custom_wrap_${btn}`) || document.getElementById(`card_video_${btn}`);
+        } else if (btn && btn.closest) {
+            wrap = btn.closest('.custom-video-wrapper') || btn.closest('.video-card');
+        }
         if (!wrap) return;
-        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-            if (wrap.requestFullscreen) wrap.requestFullscreen();
+
+        const isFs = !!(
+            document.fullscreenElement || 
+            document.webkitFullscreenElement || 
+            document.mozFullScreenElement || 
+            document.msFullscreenElement || 
+            wrap.classList.contains('is-platform-fullscreen')
+        );
+
+        if (!isFs) {
+            if (wrap.requestFullscreen) wrap.requestFullscreen().catch(() => enterFallbackPubFullscreen(wrap));
             else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+            else if (wrap.mozRequestFullScreen) wrap.mozRequestFullScreen();
+            else if (wrap.msRequestFullscreen) wrap.msRequestFullscreen();
+            else enterFallbackPubFullscreen(wrap);
         } else {
-            if (document.exitFullscreen) document.exitFullscreen();
+            if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
             else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+            else if (document.msExitFullscreen) document.msExitFullscreen();
+            exitFallbackPubFullscreen(wrap);
         }
     }
+
+    function enterFallbackPubFullscreen(wrap) {
+        const vid = wrap.querySelector('video');
+        if (vid && vid.webkitEnterFullscreen) {
+            vid.webkitEnterFullscreen();
+            return;
+        }
+        wrap.classList.add('is-platform-fullscreen');
+        document.body.style.overflow = 'hidden';
+
+        let exitBtn = wrap.querySelector('.ed-fs-exit-floating-btn');
+        if (!exitBtn) {
+            exitBtn = document.createElement('button');
+            exitBtn.className = 'ed-fs-exit-floating-btn';
+            exitBtn.innerHTML = '<i class="fa-solid fa-compress"></i> <span>' + '{{ __("إلغاء ملء الشاشة") }}' + '</span>';
+            exitBtn.onclick = function(e) {
+                e.stopPropagation();
+                toggleSubjectFullscreen(wrap);
+            };
+            wrap.appendChild(exitBtn);
+        }
+        exitBtn.style.display = 'inline-flex';
+    }
+
+    function exitFallbackPubFullscreen(wrap) {
+        if (wrap) wrap.classList.remove('is-platform-fullscreen');
+        document.body.style.overflow = '';
+        const exitBtn = wrap ? wrap.querySelector('.ed-fs-exit-floating-btn') : null;
+        if (exitBtn) exitBtn.style.display = 'none';
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+            document.querySelectorAll('.custom-video-wrapper.is-platform-fullscreen').forEach(w => exitFallbackPubFullscreen(w));
+        }
+    });
 
     function formatPubTime(seconds) {
         if (!seconds || isNaN(seconds)) return '00:00';
@@ -1960,6 +2038,27 @@
             box.scrollTop = box.scrollHeight;
         }, 500);
     }
+
+    // منع القائمة المنبثقة بالزر الأيمن على مشغل الفيديو نهائياً
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.custom-video-wrapper, .ed-yt-viewport, .ed-yt-top-shield, .ed-yt-corner-shield, .ed-pure-player-layer, iframe, video')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    // حظر فتح أي روابط لليوتيوب نهائياً
+    try {
+        const _origWinOpenPub = window.open;
+        window.open = function(url, target, features) {
+            if (typeof url === 'string' && (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com'))) {
+                console.warn('[Security] YouTube direct access blocked.');
+                return null;
+            }
+            return _origWinOpenPub.call(window, url, target, features);
+        };
+    } catch(e) {}
 
     // إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
     function purgeExternalDownloadButtons() {

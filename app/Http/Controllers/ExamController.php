@@ -1460,14 +1460,15 @@ class ExamController extends Controller
         $shouldForceSubmit = ($totalViolations >= $maxAllowed);
 
         $studentName = $student->name_ar ?? $student->name ?? 'طالب';
+        $detailsStr = is_array($details) ? (json_encode($details, JSON_UNESCAPED_UNICODE) ?: 'حركة مريبة') : (string)($details ?: 'حركة مريبة أثناء الامتحان');
         $actionText = match($type) {
             'screenshot' => 'محاولة أخذ لقطة شاشة (Screenshot)',
             'tab_switch' => 'مغادرة نافذة/تبويب الاختبار (Tab Switch)',
-            default => $details ?: 'حركة مريبة أثناء الامتحان'
+            default => $detailsStr
         };
 
         try {
-            $teacherId = $exam->teacher_id;
+            $teacherId = $this->getExamTeacherId($exam);
 
             if ($teacherId) {
                 \App\Services\NotificationService::notifyTeacher(
@@ -1490,7 +1491,7 @@ class ExamController extends Controller
                 [
                     'exam_id' => $exam->id,
                     'student_id' => $student->id,
-                    'violation_type' => $type,
+                    'violation_type' => (string)$type,
                     'total_violations' => $totalViolations,
                 ]
             );
