@@ -2617,7 +2617,90 @@ video::-webkit-media-controls-download-button {
             </div>
             <h3 style="margin: 0 0 6px; font-weight: 900; color: #0f172a;">{{ __('تفعيل كود شحن المادة') }}</h3>
             <p style="margin: 0; font-size: 0.85rem; color: #64748b;">
-                {{ __('أدخل كود الشحن من بطاقتك المعتمدة لتفعيل كامل// ==========================================================================
+                {{ __('أدخل كود الشحن من بطاقتك المعتمدة لتفعيل كامل الحصص والامتحانات فوراً.') }}
+            </p>
+        </div>
+
+        <form onsubmit="handleRedeemCode(event)">
+            <input type="hidden" id="redeemSubjectId" value="{{ $subject->id }}">
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="voucherCodeInput" required placeholder="TAW-XXXX-XXXX" style="width: 100%; box-sizing: border-box; padding: 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 1.1rem; font-weight: 800; text-align: center; letter-spacing: 2px; text-transform: uppercase;">
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="button" onclick="closeRedeemModal()" class="ed-btn-royal secondary" style="flex: 1; justify-content: center;">{{ __('إلغاء') }}</button>
+                <button type="submit" id="btnSubmitRedeem" class="ed-btn-royal emerald" style="flex: 2; justify-content: center;">{{ __('تفعيل الآن 🚀') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// تحديث التبويبات الكلاسيكية
+function switchSubjectTab(tab) {
+    const vTab = document.getElementById('tabContentVideos');
+    const eTab = document.getElementById('tabContentExams');
+    const btnV = document.getElementById('tabBtnVideos');
+    const btnE = document.getElementById('tabBtnExams');
+
+    if (tab === 'exams') {
+        if (vTab) vTab.style.display = 'none';
+        if (eTab) eTab.style.display = 'block';
+        if (btnV) btnV.classList.remove('active');
+        if (btnE) btnE.classList.add('active');
+    } else {
+        if (vTab) vTab.style.display = 'block';
+        if (eTab) eTab.style.display = 'none';
+        if (btnV) btnV.classList.add('active');
+        if (btnE) btnE.classList.remove('active');
+    }
+}
+
+function openRedeemModal() {
+    const modal = document.getElementById('redeemModalBackdrop');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeRedeemModal() {
+    const modal = document.getElementById('redeemModalBackdrop');
+    if (modal) modal.style.display = 'none';
+}
+
+async function handleRedeemCode(e) {
+    e.preventDefault();
+    const code = document.getElementById('voucherCodeInput').value.trim();
+    const subjectId = document.getElementById('redeemSubjectId').value;
+    const btn = document.getElementById('btnSubmitRedeem');
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> {{ __('جاري التحقق...') }}';
+
+    try {
+        const res = await fetch('/student/redeem-code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ code: code, subject_id: subjectId, _token: '{{ csrf_token() }}' })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            closeRedeemModal();
+            location.reload();
+        } else {
+            alert(data.message || '{{ __('كود الشحن غير صالح، يرجى إعادة المحاولة.') }}');
+            btn.disabled = false;
+            btn.textContent = '{{ __('تفعيل الآن 🚀') }}';
+        }
+    } catch(err) {
+        btn.disabled = false;
+        btn.textContent = '{{ __('تفعيل الآن 🚀') }}';
+    }
+}
+
+// ==========================================================================
 // UNIFIED PLATFORM SECURE VIDEO PLAYER ENGINE (YOUTUBE & DIRECT STREAM)
 // ==========================================================================
 let ytPlayers = {};
