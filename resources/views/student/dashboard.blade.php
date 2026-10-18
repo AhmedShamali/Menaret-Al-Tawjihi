@@ -523,7 +523,8 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 14px;
-        min-width: 380px;
+        min-width: 0;
+        width: 100%;
     }
 
     .ed-stat-box {
@@ -1127,6 +1128,9 @@
         .ed-clock-unit { min-width: 44px; padding: 6px 6px; }
         .ed-clock-unit .num { font-size: 1.15rem; }
         .ed-section-box { padding: 16px 14px; }
+        .ed-alert-banner { flex-direction: column; align-items: stretch; gap: 12px; }
+        .ed-ab-actions { flex-direction: column; width: 100%; gap: 8px; }
+        .ed-ab-actions a { width: 100%; justify-content: center; }
     }
 
     @media (max-width: 440px) {

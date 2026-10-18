@@ -483,12 +483,12 @@
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
     }
 
-    /* 3. شبكة بطاقات المقررات الأكاديمية (Cards Grid) */
     .ed-subjects-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-        gap: 22px;
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 20px;
         width: 100%;
+        min-width: 0;
     }
 
     .ed-subject-card {
@@ -957,6 +957,17 @@
         .academic-roster-table {
             min-width: 650px;
         }
+    }
+
+    @media (max-width: 480px) {
+        .ed-catalog-header { padding: 14px 14px; gap: 14px; }
+        .ed-catalog-title { font-size: 1.25rem; }
+        .ed-catalog-stats { padding: 10px 12px; gap: 8px; }
+        .ed-cstat-num { font-size: 1.15rem; }
+        .ed-cstat-label { font-size: 0.68rem; }
+        .card-inner-body { padding: 14px 14px; }
+        .card-footer-strip { padding: 10px 14px; }
+        .btn-enter-subject { font-size: 0.8rem; padding: 8px 12px; }
     }
 </style>
 

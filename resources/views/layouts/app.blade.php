@@ -476,8 +476,9 @@
 
         html {
             width: 100%;
-            max-width: 100%;
+            max-width: 100vw;
             overflow-x: hidden;
+            overflow-x: clip;
             font-size: 14px;
         }
 
@@ -486,8 +487,9 @@
             color: var(--ed-text-body);
             min-height: 100vh;
             width: 100%;
-            max-width: 100%;
+            max-width: 100vw;
             overflow-x: hidden;
+            overflow-x: clip;
             display: flex;
             line-height: 1.5;
             font-size: 0.9rem;
@@ -2579,6 +2581,8 @@
                 flex: 1 !important;
                 overflow: hidden !important;
             }
+        }
+
         /* أنماط الطباعة العامة للمنصة: إخفاء أشرطة التنقل والقوائم عند طباعة أي مستند أو تقرير */
         @media print {
             body {
@@ -2617,6 +2621,7 @@
                 padding: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+            }
         }
 
         /* ==========================================================================

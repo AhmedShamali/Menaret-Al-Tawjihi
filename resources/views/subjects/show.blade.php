@@ -1334,6 +1334,8 @@
             width: 95vw;
             max-height: 85vh;
         }
+    }
+
     .ed-btn-lecture-video-download,
     [data-download-video-external] {
         display: none !important;

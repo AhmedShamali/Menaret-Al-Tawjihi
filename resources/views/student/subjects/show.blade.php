@@ -288,14 +288,41 @@
 /* 3. شبكة المحتوى الكلاسيكية (Main + Sidebar) */
 .ed-layout-grid {
     display: grid;
-    grid-template-columns: 1fr 360px;
+    grid-template-columns: minmax(0, 1fr) 360px;
     gap: 28px;
     align-items: start;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.ed-layout-grid > main {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.ed-layout-grid > aside {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 @media (max-width: 1040px) {
     .ed-layout-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+    }
+    .ed-layout-grid > main {
+        order: 1 !important;
+        width: 100% !important;
+    }
+    .ed-layout-grid > aside {
+        order: 2 !important;
+        width: 100% !important;
     }
 }
 
@@ -1570,104 +1597,153 @@ video::-webkit-media-controls-download-button {
 /* ==========================================================
    STUDENT SUBJECT VIEW - COMPREHENSIVE MOBILE RESPONSIVENESS
    ========================================================== */
+@media (max-width: 1040px) {
+    .ed-layout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+    .ed-layout-grid > main {
+        order: 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    .ed-layout-grid > aside {
+        order: 2 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+    .ed-side-widget {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+}
+
 @media (max-width: 768px) {
     .ed-sub-wrap {
-        padding-bottom: 30px;
+        padding-bottom: 30px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
     }
     .ed-top-nav-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        margin-bottom: 14px;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        margin-bottom: 14px !important;
+        width: 100% !important;
     }
     .ed-back-btn {
-        width: 100%;
-        justify-content: center;
-        box-sizing: border-box;
+        width: 100% !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        font-size: 0.84rem !important;
+        padding: 9px 12px !important;
     }
     .ed-academic-tag {
-        width: 100%;
-        justify-content: center;
-        box-sizing: border-box;
+        width: 100% !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        font-size: 0.8rem !important;
+        padding: 7px 12px !important;
     }
     .ed-subject-hero {
-        padding: 18px 14px;
-        border-radius: 14px;
-        margin-bottom: 16px;
+        padding: 18px 14px !important;
+        border-radius: 14px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
     .ed-hero-main {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 16px !important;
     }
     .ed-hero-info {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: 12px;
-        width: 100%;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 12px !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     .ed-sub-icon-box {
-        width: 58px;
-        height: 58px;
-        font-size: 1.8rem;
-        border-radius: 14px;
+        width: 58px !important;
+        height: 58px !important;
+        font-size: 1.8rem !important;
+        border-radius: 14px !important;
+        margin: 0 auto !important;
+    }
+    .ed-hero-title-area {
+        width: 100% !important;
+        text-align: center !important;
     }
     .ed-hero-title-area h1 {
-        font-size: 1.35rem;
+        font-size: 1.35rem !important;
+        text-align: center !important;
+        line-height: 1.3 !important;
     }
     .ed-hero-desc {
-        font-size: 0.85rem;
-        margin-bottom: 12px;
+        font-size: 0.84rem !important;
+        text-align: center !important;
+        line-height: 1.55 !important;
+        margin-bottom: 12px !important;
     }
     .ed-hero-badges-row {
-        justify-content: center;
-        gap: 6px;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 6px !important;
     }
     .ed-hero-stats-panel {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        width: 100%;
-        box-sizing: border-box;
-        padding: 10px 4px;
-        text-align: center;
-        gap: 0;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 10px 4px !important;
+        text-align: center !important;
+        gap: 0 !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 10px !important;
     }
     .ed-hstat-box {
-        padding: 0 4px;
-        border-left: 1px solid #e2e8f0;
+        padding: 0 4px !important;
+        border-left: 1px solid #e2e8f0 !important;
     }
     .ed-hstat-box:last-child {
-        border-left: none;
+        border-left: none !important;
     }
     html[dir="ltr"] .ed-hstat-box {
-        border-left: none;
-        border-right: 1px solid #e2e8f0;
+        border-left: none !important;
+        border-right: 1px solid #e2e8f0 !important;
     }
     html[dir="ltr"] .ed-hstat-box:last-child {
-        border-right: none;
+        border-right: none !important;
     }
     .ed-hstat-num {
-        font-size: 1.15rem;
+        font-size: 1.15rem !important;
     }
     .ed-hstat-lbl {
-        font-size: 0.7rem;
+        font-size: 0.7rem !important;
     }
     .ed-hero-actions-bar {
-        margin-top: 14px;
-        padding-top: 14px;
-        flex-direction: column;
+        margin-top: 14px !important;
+        padding-top: 14px !important;
+        flex-direction: column !important;
+        gap: 8px !important;
     }
-    .ed-btn-royal {
-        width: 100%;
-        justify-content: center;
-        box-sizing: border-box;
+    .ed-hero-actions-bar .ed-btn-royal {
+        width: 100% !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
     }
 
-    /* التبويبات الكلاسيكية للهواتف - ثنائية الأعمدة بنظام Segmented Control متناسق 100% بدون أي خروج عن الشاشة */
+    /* التبويبات الكلاسيكية للهواتف */
     .ed-classic-tabs {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
@@ -1681,9 +1757,6 @@ video::-webkit-media-controls-download-button {
         background: #f1f5f9 !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 12px !important;
-    }
-    .ed-classic-tabs::-webkit-scrollbar {
-        display: none !important;
     }
     .ed-tab-btn {
         width: 100% !important;
@@ -1718,67 +1791,102 @@ video::-webkit-media-controls-download-button {
         flex-shrink: 0 !important;
     }
 
-    /* مشغل الفيديو وشريط التحكم */
-    .ed-smart-player-bar {
+    /* بطاقة المحاضرة والفيديو المتجاوبة */
+    .ed-video-card {
+        border-radius: 14px !important;
+        margin-bottom: 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    .ed-card-content-wrap {
+        padding: 14px 12px !important;
+    }
+    .ed-card-top-row {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 10px !important;
-        padding: 10px 12px !important;
-        box-sizing: border-box !important;
-    }
-    .speed-buttons-group {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
+        margin-bottom: 10px !important;
         width: 100% !important;
-        gap: 6px !important;
-        flex-wrap: nowrap !important;
-        box-sizing: border-box !important;
-        overflow: hidden !important;
     }
-    .speed-control-lbl {
-        font-size: 0.74rem !important;
-        font-weight: 800 !important;
-        color: #64748b !important;
-        white-space: nowrap !important;
-        flex-shrink: 0 !important;
-    }
-    .speed-buttons-cluster {
+    .ed-badges-cluster {
         display: flex !important;
-        align-items: center !important;
-        gap: 4px !important;
-        flex: 1 !important;
-        justify-content: flex-end !important;
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        width: 100% !important;
     }
-    .speed-btn {
-        padding: 5px 6px !important;
-        font-size: 0.72rem !important;
-        flex: 1 1 auto !important;
-        max-width: 48px !important;
-        text-align: center !important;
-        box-sizing: border-box !important;
-        border-radius: 6px !important;
-    }
-    .ed-player-action-pills {
+    .ed-actions-cluster {
         display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important;
         gap: 6px !important;
         width: 100% !important;
-        box-sizing: border-box !important;
     }
-    .ed-player-action-pills .btn-toggle-notes {
+    .ed-actions-cluster a,
+    .ed-actions-cluster button {
         width: 100% !important;
         justify-content: center !important;
-        text-align: center !important;
+        font-size: 0.75rem !important;
+        padding: 7px 6px !important;
         box-sizing: border-box !important;
-        padding: 7px 4px !important;
-        font-size: 0.74rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
+    }
+    .ed-card-lesson-title {
+        font-size: 1.05rem !important;
+        line-height: 1.4 !important;
+        margin: 6px 0 12px !important;
     }
 
-    /* لوحة تدوين الملاحظات بالتوقيت على الموبايل */
+    /* شريط التحكم بالسرعة والجودة على الجوال */
+    .ed-video-controls-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding-top: 10px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .ed-ctrl-group {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+    .ed-ctrl-label {
+        font-size: 0.76rem !important;
+        font-weight: 800 !important;
+        color: #64748b !important;
+    }
+    .ed-speed-segmented,
+    .ed-quality-segmented {
+        display: flex !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        justify-content: space-between !important;
+        gap: 2px !important;
+        padding: 3px !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+    .ed-speed-segmented::-webkit-scrollbar,
+    .ed-quality-segmented::-webkit-scrollbar {
+        display: none !important;
+    }
+    .ed-speed-opt,
+    .ed-quality-opt {
+        flex: 1 1 auto !important;
+        padding: 6px 4px !important;
+        font-size: 0.74rem !important;
+        text-align: center !important;
+        min-width: 0 !important;
+        white-space: nowrap !important;
+        border-radius: 6px !important;
+    }
+
+    /* لوحة تدوين الملاحظات */
+    .video-notes-panel {
+        padding: 12px 10px !important;
+    }
     .video-notes-panel > div:first-child {
         flex-direction: column !important;
         align-items: stretch !important;
@@ -1787,113 +1895,97 @@ video::-webkit-media-controls-download-button {
     .video-notes-panel input {
         width: 100% !important;
         box-sizing: border-box !important;
+        font-size: 0.84rem !important;
     }
     .video-notes-panel button {
         width: 100% !important;
         justify-content: center !important;
     }
 
-    /* معلومات الدرس وزر أوفلاين والملزمة */
-    .ed-video-info-box {
-        padding: 14px 12px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
+    /* السايدبار وبطاقات المعلم والملازم */
+    .ed-side-widget {
+        padding: 16px 14px !important;
+        border-radius: 14px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
-    .ed-vtitle {
-        font-size: 1.05rem;
+    .ed-teacher-avatar-ring {
+        width: 64px !important;
+        height: 64px !important;
+        font-size: 1.5rem !important;
+        margin: 0 auto 10px !important;
     }
-    .ed-video-info-box > div:last-child {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch !important;
-        gap: 8px !important;
+    .ed-teacher-name {
+        font-size: 1.05rem !important;
     }
-    .ed-offline-action-wrapper {
-        width: 100%;
-    }
-    .ed-btn-offline-card {
-        width: 100%;
-        justify-content: center;
-        padding: 10px 14px;
-        box-sizing: border-box;
-    }
-    .ed-btn-lecture-pdf {
-        width: 100%;
-        justify-content: center;
-        padding: 9px 14px;
-        box-sizing: border-box;
-    }
-    .ed-btn-lecture-video-download {
-        width: 100%;
-        justify-content: center;
-        box-sizing: border-box;
+    .ed-file-item {
+        padding: 10px !important;
+        gap: 10px !important;
     }
 
     /* بطاقات الاختبارات */
     .ed-exam-card {
-        padding: 14px 12px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
+        padding: 14px 12px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
     }
     .ed-exam-card > div:first-child {
-        width: 100%;
+        width: 100% !important;
     }
     .ed-exam-card .ed-btn-royal {
-        width: 100%;
-        justify-content: center;
+        width: 100% !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
     }
 
     /* حالة الفراغ */
     .ed-classic-empty-state {
-        padding: 32px 16px;
+        padding: 28px 14px !important;
     }
     .ed-empty-title {
-        font-size: 1.15rem;
+        font-size: 1.1rem !important;
     }
     .ed-empty-desc {
-        font-size: 0.82rem;
+        font-size: 0.82rem !important;
     }
     .ed-empty-cta {
-        flex-direction: column;
-        width: 100%;
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 8px !important;
     }
     .ed-empty-cta .ed-btn-royal {
-        width: 100%;
-        justify-content: center;
-    }
-
-    @media (max-width: 420px) {
-        .ed-tab-btn {
-            font-size: 0.76rem !important;
-            padding: 8px 2px !important;
-            gap: 3px !important;
-        }
-        .ed-tab-btn i {
-            font-size: 0.8rem !important;
-        }
-        .ed-tab-count {
-            padding: 1px 4px !important;
-            font-size: 0.68rem !important;
-        }
-        .speed-control-lbl {
-            font-size: 0.7rem !important;
-        }
-        .speed-btn {
-            padding: 4px 2px !important;
-            font-size: 0.68rem !important;
-        }
-        .ed-player-action-pills .btn-toggle-notes {
-            font-size: 0.7rem !important;
-            padding: 6px 2px !important;
-            gap: 2px !important;
-        }
-        .ed-player-action-pills .btn-toggle-notes i {
-            font-size: 0.72rem !important;
-        }
+        width: 100% !important;
+        justify-content: center !important;
     }
 }
+
+/* الشاشات الضيقة للغاية (<= 420px) */
+@media (max-width: 420px) {
+    .ed-tab-btn {
+        font-size: 0.76rem !important;
+        padding: 8px 2px !important;
+        gap: 3px !important;
+    }
+    .ed-tab-btn i {
+        font-size: 0.8rem !important;
+    }
+    .ed-tab-count {
+        padding: 1px 4px !important;
+        font-size: 0.68rem !important;
+    }
+    .ed-actions-cluster {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .ed-speed-opt,
+    .ed-quality-opt {
+        padding: 5px 2px !important;
+        font-size: 0.7rem !important;
+    }
+}
+
 </style>
 
 <div class="ed-sub-wrap">

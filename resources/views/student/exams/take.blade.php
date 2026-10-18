@@ -1801,7 +1801,39 @@
         }
 
         .topbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 100%;
             justify-content: center;
+        }
+
+        .btn-topbar-calc,
+        .btn-topbar-fs,
+        .btn-topbar-submit {
+            flex: 1 1 auto;
+            justify-content: center;
+            padding: 8px 10px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .classic-tf-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        .classic-choice-card {
+            padding: 10px 12px !important;
+            gap: 10px !important;
+        }
+
+        .choice-letter-badge {
+            width: 30px !important;
+            height: 30px !important;
+            font-size: 0.84rem !important;
+        }
+
+        .choice-text-content {
+            font-size: 0.92rem !important;
         }
 
         .card-meta-ribbon {
