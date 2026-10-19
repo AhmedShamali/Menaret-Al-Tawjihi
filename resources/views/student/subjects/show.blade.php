@@ -425,6 +425,10 @@
 .ed-player-frame.is-platform-fullscreen {
     position: fixed !important;
     inset: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     max-width: 100vw !important;
@@ -432,7 +436,7 @@
     padding-top: 0 !important;
     margin: 0 !important;
     border-radius: 0 !important;
-    z-index: 9999999 !important;
+    z-index: 2147483647 !important;
     background: #000000 !important;
     display: flex !important;
     align-items: center !important;
@@ -441,20 +445,24 @@
 
 .ed-player-frame:fullscreen .ed-yt-frame-container,
 .ed-player-frame:-webkit-full-screen .ed-yt-frame-container,
-.ed-player-frame.is-platform-fullscreen .ed-yt-frame-container,
-.ed-player-frame:fullscreen .ed-yt-viewport,
-.ed-player-frame:-webkit-full-screen .ed-yt-viewport,
-.ed-player-frame.is-platform-fullscreen .ed-yt-viewport,
-.ed-player-frame:fullscreen iframe,
-.ed-player-frame:-webkit-full-screen iframe,
-.ed-player-frame.is-platform-fullscreen iframe,
-.ed-player-frame:fullscreen video,
-.ed-player-frame:-webkit-full-screen video,
-.ed-player-frame.is-platform-fullscreen video {
+.ed-player-frame.is-platform-fullscreen .ed-yt-frame-container {
+    position: absolute !important;
+    inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
     max-width: 100% !important;
     max-height: 100% !important;
+}
+
+.ed-video-card.has-fullscreen-child {
+    overflow: visible !important;
+    transform: none !important;
+    position: static !important;
+    z-index: 2147483647 !important;
+}
+
+body.has-fullscreen-player {
+    overflow: hidden !important;
 }
 
 .ed-fs-exit-floating-btn {
@@ -642,6 +650,7 @@
     border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 800;
+    pointer-events: auto !important;
 }
 
 .ed-player-bottom-panel {
@@ -2212,7 +2221,7 @@ video::-webkit-media-controls-download-button {
                         @if($video->is_unlocked)
                             <article class="ed-video-card" id="card_video_{{ $video->id }}">
                                 {{-- إطار مشغل الفيديو الفاخر --}}
-                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}" oncontextmenu="return false;">
+                                <div class="ed-player-frame" id="player_frame_{{ $video->id }}" oncontextmenu="return false;" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
                                     @php
                                         $rawUrl = trim($video->url_path ?? '');
                                         if (in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0', 'undefined.mp4', 'null.mp4'])) {
@@ -2230,7 +2239,7 @@ video::-webkit-media-controls-download-button {
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
                                             }
                                         }
@@ -2322,7 +2331,7 @@ video::-webkit-media-controls-download-button {
                                             {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف --}}
-                                                    <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')">
+                                                    <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
                                                         <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
                                                             <i class="fa-solid fa-play"></i>
                                                         </div>
@@ -2557,11 +2566,11 @@ video::-webkit-media-controls-download-button {
                                                 <span>{{ __('جودة العرض:') }}</span>
                                             </span>
                                             <div class="ed-quality-segmented">
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'hd1080', this)">1080p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'hd720', this)">720p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'large', this)">480p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'medium', this)">360p</button>
-                                                <button type="button" class="ed-quality-opt active" onclick="setVideoQuality('{{ $video->id }}', 'auto', this)">{{ __('تلقائي') }}</button>
+                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p</button>
+                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p</button>
+                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p</button>
+                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
+                                                <button type="button" class="ed-quality-opt active" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, '{{ __('تلقائي') }}')">{{ __('تلقائي') }}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -3281,13 +3290,15 @@ function setVideoQuality(videoId, quality, btnElement, label) {
         }
     }
 
-    if (btnElement) {
-        const parent = btnElement.closest('.ed-popover-menu') || btnElement.closest('.ed-quality-segmented') || btnElement.parentElement;
-        if (parent) {
-            parent.querySelectorAll('.ed-pop-opt, .ed-quality-opt').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
+    // مزامنة أزرار الجودة عبر بطاقة الدرس وقائمة المشغل الداخلية
+    document.querySelectorAll(`#quality_menu_${videoId} .ed-pop-opt, #card_video_${videoId} .ed-quality-opt`).forEach(b => {
+        const oc = b.getAttribute('onclick') || '';
+        if (oc.includes(`'${quality}'`)) {
+            b.classList.add('active');
+        } else {
+            b.classList.remove('active');
         }
-    }
+    });
     document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
     showPlayerToast(`{{ __("تم ضبط دقة العرض على") }} ${displayLabel} 🎬`);
 }
@@ -3381,13 +3392,15 @@ function setVideoSpeed(videoId, speed, btnElement) {
     const pill = document.getElementById(`active_speed_${videoId}`);
     if (pill) pill.textContent = `${speed}x`;
 
-    if (btnElement) {
-        const parent = btnElement.closest('.ed-popover-menu') || btnElement.closest('.ed-speed-segmented') || btnElement.parentElement;
-        if (parent) {
-            parent.querySelectorAll('.ed-pop-opt, .ed-speed-opt').forEach(b => b.classList.remove('active'));
-            btnElement.classList.add('active');
+    // مزامنة أزرار السرعة عبر بطاقة الدرس وقائمة المشغل الداخلية
+    document.querySelectorAll(`#speed_menu_${videoId} .ed-pop-opt, #card_video_${videoId} .ed-speed-opt`).forEach(b => {
+        const oc = b.getAttribute('onclick') || '';
+        if (oc.includes(`, ${speed},`) || oc.includes(`, ${speed})`)) {
+            b.classList.add('active');
+        } else {
+            b.classList.remove('active');
         }
-    }
+    });
     document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
     showPlayerToast(`{{ __("تم ضبط السرعة على") }} ${speed}x ⚡`);
 }
@@ -3546,6 +3559,24 @@ document.addEventListener('click', function(e) {
     }
 });
 
+// تحديث واجهة أزرار ملء الشاشة المتزامنة
+function updateFullscreenButtonsUI(videoId, isFs) {
+    const cardBtn = document.querySelector(`#card_video_${videoId} .ed-btn-action-fs`);
+    if (cardBtn) {
+        if (isFs) {
+            cardBtn.innerHTML = '<i class="fa-solid fa-compress"></i> <span>' + '{{ __("إلغاء التكبير") }}' + '</span>';
+            cardBtn.title = '{{ __("إلغاء ملء الشاشة (Esc)") }}';
+        } else {
+            cardBtn.innerHTML = '<i class="fa-solid fa-expand"></i> <span>' + '{{ __("تكبير الشاشة") }}' + '</span>';
+            cardBtn.title = '{{ __("تكبير العرض بملء الشاشة") }}';
+        }
+    }
+    const innerFsBtn = document.querySelector(`#player_frame_${videoId} .ed-ctrl-btn.fs i`);
+    if (innerFsBtn) {
+        innerFsBtn.className = isFs ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    }
+}
+
 // تكبير المشغل الأكاديمي بملء الشاشة الفاخر مع دعم كافة الأجهزة والمتصفحات
 function togglePlatformFullscreen(videoId) {
     let frame = null;
@@ -3572,42 +3603,62 @@ function togglePlatformFullscreen(videoId) {
 
     if (!isFs) {
         // Enter Fullscreen
-        if (frame.requestFullscreen) {
-            frame.requestFullscreen().catch(() => {
+        let req = frame.requestFullscreen || 
+                  frame.webkitRequestFullscreen || 
+                  frame.webkitRequestFullScreen || 
+                  frame.mozRequestFullScreen || 
+                  frame.msRequestFullscreen;
+
+        let nativeAttempted = false;
+        if (req) {
+            try {
+                let res = req.call(frame);
+                nativeAttempted = true;
+                if (res && typeof res.catch === 'function') {
+                    res.catch(function() {
+                        enterFallbackFullscreen(frame, actualVidId);
+                    });
+                }
+            } catch (err) {
                 enterFallbackFullscreen(frame, actualVidId);
-            });
-        } else if (frame.webkitRequestFullscreen) {
-            frame.webkitRequestFullscreen();
-        } else if (frame.mozRequestFullScreen) {
-            frame.mozRequestFullScreen();
-        } else if (frame.msRequestFullscreen) {
-            frame.msRequestFullscreen();
-        } else {
+            }
+        }
+        if (!nativeAttempted) {
             enterFallbackFullscreen(frame, actualVidId);
         }
     } else {
         // Exit Fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen().catch(() => {});
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
+        try {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } catch(e) {}
         exitFallbackFullscreen(frame, actualVidId);
     }
 }
 
 function enterFallbackFullscreen(frame, videoId) {
     const vidEl = document.getElementById(`player_vid_${videoId}`);
-    if (vidEl && vidEl.webkitEnterFullscreen) {
-        vidEl.webkitEnterFullscreen();
-        return;
+    if (vidEl && vidEl.webkitEnterFullscreen && !frame.classList.contains('has-youtube-shield')) {
+        try {
+            vidEl.webkitEnterFullscreen();
+            return;
+        } catch(e) {}
     }
+
     frame.classList.add('is-platform-fullscreen');
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('has-fullscreen-player');
+    const card = document.getElementById(`card_video_${videoId}`) || frame.closest('.ed-video-card');
+    if (card) {
+        card.classList.add('has-fullscreen-child');
+    }
+    updateFullscreenButtonsUI(videoId, true);
     
     let exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
     if (!exitBtn) {
@@ -3626,7 +3677,12 @@ function enterFallbackFullscreen(frame, videoId) {
 
 function exitFallbackFullscreen(frame, videoId) {
     if (frame) frame.classList.remove('is-platform-fullscreen');
-    document.body.style.overflow = '';
+    document.body.classList.remove('has-fullscreen-player');
+    const card = document.getElementById(`card_video_${videoId}`) || (frame ? frame.closest('.ed-video-card') : null);
+    if (card) {
+        card.classList.remove('has-fullscreen-child');
+    }
+    updateFullscreenButtonsUI(videoId, false);
     const exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
     if (exitBtn) exitBtn.style.display = 'none';
 }
@@ -3638,6 +3694,25 @@ function syncFullscreenState() {
             const vidId = f.id.replace('player_frame_', '');
             exitFallbackFullscreen(f, vidId);
         });
+        document.querySelectorAll('.ed-video-card.has-fullscreen-child').forEach(c => {
+            c.classList.remove('has-fullscreen-child');
+        });
+        document.body.classList.remove('has-fullscreen-player');
+        document.querySelectorAll('.ed-btn-action-fs').forEach(btn => {
+            btn.innerHTML = '<i class="fa-solid fa-expand"></i> <span>' + '{{ __("تكبير الشاشة") }}' + '</span>';
+            btn.title = '{{ __("تكبير العرض بملء الشاشة") }}';
+        });
+        document.querySelectorAll('.ed-ctrl-btn.fs i').forEach(icon => {
+            icon.className = 'fa-solid fa-expand';
+        });
+    } else {
+        const curFs = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+        if (curFs) {
+            const vidId = curFs.id ? curFs.id.replace('player_frame_', '') : '';
+            if (vidId) {
+                updateFullscreenButtonsUI(vidId, true);
+            }
+        }
     }
 }
 
@@ -3649,7 +3724,17 @@ document.addEventListener('MSFullscreenChange', syncFullscreenState);
 // اختصارات لوحة المفاتيح الأكاديمية الذكية
 document.addEventListener('keydown', function(e) {
     if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
-    const activeFrame = document.querySelector('.ed-player-frame:hover, .ed-player-frame:fullscreen');
+    
+    // الخروج من التكبير عند الضغط على Escape
+    if (e.key === 'Escape' || e.code === 'Escape') {
+        document.querySelectorAll('.ed-player-frame.is-platform-fullscreen').forEach(f => {
+            const vidId = f.id.replace('player_frame_', '');
+            exitFallbackFullscreen(f, vidId);
+        });
+        return;
+    }
+
+    const activeFrame = document.querySelector('.ed-player-frame:hover, .ed-player-frame:fullscreen, .ed-player-frame.is-platform-fullscreen');
     if (!activeFrame) return;
     const videoId = activeFrame.id.replace('player_frame_', '');
     if (!videoId) return;
@@ -3984,23 +4069,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-function showPlayerToast(message) {
-    let toast = document.getElementById('player_speed_toast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'player_speed_toast';
-        toast.style.cssText = 'position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #ffffff; padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; z-index: 99999; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; opacity: 0; pointer-events: none;';
-        document.body.appendChild(toast);
-    }
-    toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #38bdf8;"></i> ${message}`;
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateX(-50%) translateY(0)';
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(10px)';
-    }, 2400);
-}
 
 // منع القائمة المنبثقة بالزر الأيمن على مشغل الفيديو نهائياً لمنع نسخ الروابط
 document.addEventListener('contextmenu', function(e) {
