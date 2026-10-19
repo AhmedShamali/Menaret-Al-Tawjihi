@@ -501,83 +501,45 @@
     background: #000000;
 }
 
-/* عرض الفيديو بالكامل بدقة 16:9 الطبيعية مع إتاحة التفاعل المباشر */
+/* عرض الفيديو بالكامل مع حجب كامل لكافة شعارات وبيانات يوتيوب */
 .ed-video-iframe {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     border: 0;
-    object-fit: contain;
+    object-fit: cover;
     background: #000000;
     z-index: 2;
-    pointer-events: auto !important;
 }
 
-/* دروع حجب يوتيوب الملكية الحصرية (Royal YouTube Shields) */
-.ed-yt-brand-shield-top {
+/* تقنية القص الدقيق لقنوات يوتيوب: إزاحة الشريط العلوي والسفلي خارج إطار الرؤية */
+.ed-yt-viewport.has-youtube-shield {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 56px;
-    z-index: 10;
-    background: linear-gradient(180deg, #020617 0%, rgba(2, 6, 23, 0.94) 65%, transparent 100%);
-    padding: 10px 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    pointer-events: auto;
-    box-sizing: border-box;
-    transition: opacity 0.3s ease;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+    background: #000000;
 }
 
-.ed-yt-brand-shield-top .ed-shield-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #ffffff;
-    font-weight: 800;
-    font-size: 0.92rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
-    max-width: 78%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.ed-yt-brand-shield-corner {
+.ed-yt-viewport.has-youtube-shield .ed-video-iframe {
     position: absolute;
-    z-index: 10;
-    pointer-events: auto;
-    cursor: default;
+    top: -65px !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: calc(100% + 130px) !important;
+    border: 0 !important;
+    background: #000000 !important;
+    pointer-events: none !important;
+    z-index: 2;
 }
 
-.ed-yt-brand-shield-corner.bottom-corner {
-    bottom: 8px;
-    right: 8px;
-}
-
-html[dir="ltr"] .ed-yt-brand-shield-corner.bottom-corner {
-    right: auto;
-    left: 8px;
-}
-
-.ed-shield-watermark-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: #f8fafc;
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-size: 0.74rem;
-    font-weight: 800;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    user-select: none;
+@media (max-width: 640px) {
+    .ed-yt-viewport.has-youtube-shield .ed-video-iframe {
+        top: -46px !important;
+        height: calc(100% + 92px) !important;
+    }
 }
 
 /* طبقة المشغل الأكاديمي الصافي الفاخر */
@@ -642,9 +604,11 @@ html[dir="ltr"] .ed-yt-brand-shield-corner.bottom-corner {
 
 .ed-player-top-header {
     position: relative;
-    z-index: 5;
-    padding: 16px 20px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 70%, transparent 100%);
+    z-index: 18;
+    padding: 14px 20px;
+    background: #020617;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1154,7 +1118,7 @@ html[dir="ltr"] .ed-yt-brand-shield-corner.bottom-corner {
     inset: 0;
     width: 100%;
     height: 100%;
-    z-index: 12;
+    z-index: 25 !important;
     cursor: pointer;
     overflow: hidden;
     user-select: none;
@@ -2266,7 +2230,7 @@ video::-webkit-media-controls-download-button {
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
                                             }
                                         }
@@ -2294,27 +2258,9 @@ video::-webkit-media-controls-download-button {
 
                                     @if($hasPlayableVideo)
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
-                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة مع دروع الحجب الأكاديمية أو فيديو مباشر --}}
+                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة مع تقنية الحجب الأكاديمية أو فيديو مباشر --}}
                                             <div class="ed-yt-viewport {{ !empty($ytEmbed) ? 'has-youtube-shield' : '' }}">
                                                 @if(!empty($ytEmbed))
-                                                    {{-- درع الترويسة الأكاديمي الحصري: يحجب تماماً اسم القناة وشعار يوتيوب وعدد المشتركين وزر المشاركة --}}
-                                                    <div class="ed-yt-brand-shield-top">
-                                                        <div class="ed-shield-title">
-                                                            <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
-                                                            <span class="ed-pth-name">{{ $video->title }}</span>
-                                                        </div>
-                                                        <div class="ed-pth-quality-tag">
-                                                            <i class="fa-solid fa-circle-check"></i> <span>1080p Full HD</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- درع زاوية المشغل: يحجب ويمنع النقر على شعار يوتيوب وزر Watch on YouTube --}}
-                                                    <div class="ed-yt-brand-shield-corner bottom-corner" title="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}">
-                                                        <span class="ed-shield-watermark-pill">
-                                                            <i class="fa-solid fa-shield-halved"></i> {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}
-                                                        </span>
-                                                    </div>
-
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
@@ -2373,9 +2319,8 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- طبقة المشغل الخاص الفاخر: تُفعَّل حصراً للفيديوهات المرفوعة مباشرة على السيرفر تجنباً لأي تعارض --}}
-                                            @if($isDirectVideo)
-                                                <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
+                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
+                                            <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف --}}
                                                     <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')">
                                                         <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
@@ -2518,7 +2463,6 @@ video::-webkit-media-controls-download-button {
                                                         @endif
                                                     </div>
                                                 </div>
-                                            @endif
                                         </div>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" class="ed-video-iframe"></iframe>
@@ -3100,16 +3044,27 @@ function handleYtStateChange(videoId, state) {
 function startStudentVideo(videoId) {
     const poster = document.getElementById(`poster_${videoId}`);
     if (poster) {
-        poster.style.opacity = '0';
-        poster.style.pointerEvents = 'none';
-        setTimeout(() => { poster.style.display = 'none'; }, 250);
+        const btn = poster.querySelector('.ed-poster-play-btn');
+        if (btn) btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     }
     const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
     if (pauseOverlay) pauseOverlay.style.display = 'none';
 
     const ctx = getPlayerContext(videoId);
     if (ctx.isDirect && ctx.direct) {
-        ctx.direct.play().catch(() => {});
+        ctx.direct.play().then(() => {
+            if (poster) {
+                poster.style.opacity = '0';
+                poster.style.pointerEvents = 'none';
+                setTimeout(() => { poster.style.display = 'none'; }, 250);
+            }
+        }).catch(() => {
+            if (poster) {
+                poster.style.opacity = '0';
+                poster.style.pointerEvents = 'none';
+                setTimeout(() => { poster.style.display = 'none'; }, 250);
+            }
+        });
         const barBtn = document.getElementById(`bar_btn_${videoId}`);
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         startStudentProgressTracking(videoId);
@@ -3130,6 +3085,16 @@ function startStudentVideo(videoId) {
     if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startStudentProgressTracking(videoId);
     registerPlayerActivity(videoId);
+
+    // مهلة حماية لضمان إخفاء البوستر بعد بدء البث وعدم تسريب أي زر ليوتيوب
+    setTimeout(() => {
+        const p = document.getElementById(`poster_${videoId}`);
+        if (p && p.style.display !== 'none') {
+            p.style.opacity = '0';
+            p.style.pointerEvents = 'none';
+            setTimeout(() => { p.style.display = 'none'; }, 250);
+        }
+    }, 900);
 }
 
 // استئناف التشغيل من شاشة الإيقاف المؤقت
