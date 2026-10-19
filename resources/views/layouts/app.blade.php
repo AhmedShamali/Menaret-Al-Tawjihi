@@ -1207,6 +1207,12 @@
 
         /* 1. الأجهزة اللوحية والشاشات المتوسطة (Tablets <= 1024px) */
         @media (max-width: 1024px) {
+            body {
+                display: block !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
             aside.sidebar {
                 transform: translateX(105%);
                 box-shadow: -4px 0 25px rgba(15, 23, 42, 0.15);

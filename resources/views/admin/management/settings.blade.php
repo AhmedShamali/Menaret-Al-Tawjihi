@@ -254,6 +254,8 @@
                                    class="field-input" style="direction: ltr; text-align: {{ app()->getLocale() === 'ar' ? 'right' : 'left' }};">
                         </div>
                     </div>
+                </div>
+
                 <!-- 3.5. بطاقة إعدادات محرك الذكاء الاصطناعي الأكاديمي (Google Gemini API & AI Engine) -->
                 <div class="settings-card">
                     <div class="settings-card-header" style="background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%); border-bottom: 1px solid #bfdbfe; padding: 18px 25px; display: flex; align-items: center; justify-content: space-between;">

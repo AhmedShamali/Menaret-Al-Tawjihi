@@ -514,6 +514,72 @@
     pointer-events: auto !important;
 }
 
+/* دروع حجب يوتيوب الملكية الحصرية (Royal YouTube Shields) */
+.ed-yt-brand-shield-top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    z-index: 10;
+    background: linear-gradient(180deg, #020617 0%, rgba(2, 6, 23, 0.94) 65%, transparent 100%);
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: auto;
+    box-sizing: border-box;
+    transition: opacity 0.3s ease;
+}
+
+.ed-yt-brand-shield-top .ed-shield-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 0.92rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    max-width: 78%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.ed-yt-brand-shield-corner {
+    position: absolute;
+    z-index: 10;
+    pointer-events: auto;
+    cursor: default;
+}
+
+.ed-yt-brand-shield-corner.bottom-corner {
+    bottom: 8px;
+    right: 8px;
+}
+
+html[dir="ltr"] .ed-yt-brand-shield-corner.bottom-corner {
+    right: auto;
+    left: 8px;
+}
+
+.ed-shield-watermark-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.74rem;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    user-select: none;
+}
+
 /* طبقة المشغل الأكاديمي الصافي الفاخر */
 .ed-pure-player-layer {
     position: absolute;
@@ -1273,15 +1339,18 @@
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 14px;
-    padding-top: 14px;
-    border-top: 1px dashed #e2e8f0;
+    gap: 12px;
+    padding: 12px 18px;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    margin-top: 14px;
 }
 
 .ed-ctrl-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
@@ -1289,20 +1358,22 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 800;
-    color: #64748b;
+    color: #334155;
+    white-space: nowrap;
 }
 
 .ed-speed-segmented,
 .ed-quality-segmented {
     display: inline-flex;
     align-items: center;
-    background: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
     padding: 3px;
-    gap: 3px;
+    gap: 2px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .ed-speed-opt,
@@ -1310,8 +1381,8 @@
 .speed-btn {
     background: transparent;
     border: none;
-    border-radius: 7px;
-    padding: 5px 11px;
+    border-radius: 6px;
+    padding: 5px 12px;
     font-size: 0.78rem;
     font-weight: 700;
     color: #475569;
@@ -1322,17 +1393,17 @@
 .ed-speed-opt:hover,
 .ed-quality-opt:hover,
 .speed-btn:hover {
-    color: #0f172a;
-    background: rgba(255, 255, 255, 0.7);
+    color: #1e3a8a;
+    background: #f1f5f9;
 }
 
 .ed-speed-opt.active,
 .ed-quality-opt.active,
 .speed-btn.active {
-    background: #2563eb;
-    color: #ffffff;
+    background: #1e3a8a !important;
+    color: #ffffff !important;
     font-weight: 800;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 2px 6px rgba(30, 58, 138, 0.25) !important;
 }
 
 .ed-btn-lecture-video-download,
@@ -1599,8 +1670,12 @@ video::-webkit-media-controls-download-button {
    ========================================================== */
 @media (max-width: 1040px) {
     .ed-layout-grid {
+        display: flex !important;
+        flex-direction: column !important;
         grid-template-columns: 1fr !important;
         gap: 20px !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     .ed-layout-grid > main {
         order: 1 !important;
@@ -2180,14 +2255,14 @@ video::-webkit-media-controls-download-button {
                                             $rawUrl = '';
                                         }
                                         $ytEmbed = $video->youtube_embed_url;
+                                        $ytId = null;
                                         $isYt = !empty($ytEmbed) || (!empty($rawUrl) && (str_contains($rawUrl, 'youtube.com') || str_contains($rawUrl, 'youtu.be')));
                                         if ($isYt) {
-                                            if (empty($ytEmbed) && !empty($rawUrl)) {
-                                                if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl, $ym)) {
-                                                    $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ym[1];
-                                                } else {
-                                                    $ytEmbed = str_replace(['watch?v=', 'youtube.com/embed/'], ['embed/', 'youtube-nocookie.com/embed/'], $rawUrl);
-                                                }
+                                            if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl ?: $ytEmbed, $ym)) {
+                                                $ytId = $ym[1];
+                                                $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ytId;
+                                            } elseif (!empty($ytEmbed)) {
+                                                $ytEmbed = str_replace(['watch?v=', 'youtube.com/embed/'], ['embed/', 'youtube-nocookie.com/embed/'], $ytEmbed);
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
@@ -2207,13 +2282,39 @@ video::-webkit-media-controls-download-button {
                                             ? \App\Support\MediaHelper::url($rawUrl)
                                             : null;
                                         $hasPlayableVideo = !empty($ytEmbed) || ($isDirectVideo && $directVideoUrl);
+
+                                        $posterThumb = null;
+                                        if (!empty($ytId)) {
+                                            $posterThumb = "https://i.ytimg.com/vi/{$ytId}/hqdefault.jpg";
+                                        }
+                                        if (empty($posterThumb)) {
+                                            $posterThumb = asset('images/video-placeholder.jpg');
+                                        }
                                     @endphp
 
                                     @if($hasPlayableVideo)
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
-                                            {{-- منطقة الفيديو: يوتيوب بكامل دقته النظيفة مع إتاحة التحكم والتكبير، أو فيديو سيرفر مباشر --}}
-                                            <div class="ed-yt-viewport">
+                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة مع دروع الحجب الأكاديمية أو فيديو مباشر --}}
+                                            <div class="ed-yt-viewport {{ !empty($ytEmbed) ? 'has-youtube-shield' : '' }}">
                                                 @if(!empty($ytEmbed))
+                                                    {{-- درع الترويسة الأكاديمي الحصري: يحجب تماماً اسم القناة وشعار يوتيوب وعدد المشتركين وزر المشاركة --}}
+                                                    <div class="ed-yt-brand-shield-top">
+                                                        <div class="ed-shield-title">
+                                                            <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
+                                                            <span class="ed-pth-name">{{ $video->title }}</span>
+                                                        </div>
+                                                        <div class="ed-pth-quality-tag">
+                                                            <i class="fa-solid fa-circle-check"></i> <span>1080p Full HD</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- درع زاوية المشغل: يحجب ويمنع النقر على شعار يوتيوب وزر Watch on YouTube --}}
+                                                    <div class="ed-yt-brand-shield-corner bottom-corner" title="{{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}">
+                                                        <span class="ed-shield-watermark-pill">
+                                                            <i class="fa-solid fa-shield-halved"></i> {{ __(\App\Models\Setting::get('site_name', 'Step by Step')) }}
+                                                        </span>
+                                                    </div>
+
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
@@ -2251,6 +2352,26 @@ video::-webkit-media-controls-download-button {
                                                     <span>{{ $wmText }}</span>
                                                 </div>
                                             @endif
+
+                                            {{-- بوستر المشغل الأكاديمي الموحد: يغطي المشغل تماماً ويمنع ظهور شاشات البداية وقنوات يوتيوب --}}
+                                            <div class="ed-video-poster" id="poster_{{ $video->id }}" onclick="startStudentVideo('{{ $video->id }}')">
+                                                <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.src='{{ asset('images/video-placeholder.jpg') }}'">
+                                                <div class="ed-poster-overlay"></div>
+                                                <div class="ed-poster-top-bar">
+                                                    <span class="ed-poster-badge">
+                                                        <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
+                                                    </span>
+                                                    <span class="ed-poster-badge hd">
+                                                        <i class="fa-solid fa-sparkles"></i> 1080p Full HD
+                                                    </span>
+                                                </div>
+                                                <div class="ed-poster-center-content">
+                                                    <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
+                                                        <i class="fa-solid fa-play"></i>
+                                                    </button>
+                                                    <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
+                                                </div>
+                                            </div>
 
                                             {{-- طبقة المشغل الخاص الفاخر: تُفعَّل حصراً للفيديوهات المرفوعة مباشرة على السيرفر تجنباً لأي تعارض --}}
                                             @if($isDirectVideo)
@@ -2362,30 +2483,6 @@ video::-webkit-media-controls-download-button {
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
-
-                                                {{-- بوستر المشغل المباشر --}}
-                                                @php
-                                                    $posterThumb = asset('images/video-placeholder.jpg');
-                                                @endphp
-                                                <div class="ed-video-poster" id="poster_{{ $video->id }}" onclick="startStudentVideo('{{ $video->id }}')">
-                                                    <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy">
-                                                    <div class="ed-poster-overlay"></div>
-                                                    <div class="ed-poster-top-bar">
-                                                        <span class="ed-poster-badge">
-                                                            <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
-                                                        </span>
-                                                        <span class="ed-poster-badge hd">
-                                                            <i class="fa-solid fa-sparkles"></i> 1080p Full HD
-                                                        </span>
-                                                    </div>
-                                                    <div class="ed-poster-center-content">
-                                                        <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
-                                                            <i class="fa-solid fa-play"></i>
-                                                        </button>
-                                                        <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
-                                                    </div>
                                                 </div>
 
                                                 {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
@@ -2422,7 +2519,6 @@ video::-webkit-media-controls-download-button {
                                                     </div>
                                                 </div>
                                             @endif
-                                        </div>
                                         </div>
                                     @elseif(!empty($rawUrl) && filter_var($rawUrl, FILTER_VALIDATE_URL))
                                         <iframe id="player_ext_{{ $video->id }}" src="{{ $rawUrl }}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy" class="ed-video-iframe"></iframe>
@@ -3221,9 +3317,9 @@ function setVideoQuality(videoId, quality, btnElement, label) {
     }
 
     if (btnElement) {
-        const parent = btnElement.closest('.ed-popover-menu');
+        const parent = btnElement.closest('.ed-popover-menu') || btnElement.closest('.ed-quality-segmented') || btnElement.parentElement;
         if (parent) {
-            parent.querySelectorAll('.ed-pop-opt').forEach(b => b.classList.remove('active'));
+            parent.querySelectorAll('.ed-pop-opt, .ed-quality-opt').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
     }
@@ -3321,9 +3417,9 @@ function setVideoSpeed(videoId, speed, btnElement) {
     if (pill) pill.textContent = `${speed}x`;
 
     if (btnElement) {
-        const parent = btnElement.closest('.ed-popover-menu');
+        const parent = btnElement.closest('.ed-popover-menu') || btnElement.closest('.ed-speed-segmented') || btnElement.parentElement;
         if (parent) {
-            parent.querySelectorAll('.ed-pop-opt').forEach(b => b.classList.remove('active'));
+            parent.querySelectorAll('.ed-pop-opt, .ed-speed-opt').forEach(b => b.classList.remove('active'));
             btnElement.classList.add('active');
         }
     }
@@ -3665,10 +3761,6 @@ function getVideoCurrentTime(videoId) {
     }
 
     return 0;
-}
-
-function setVideoSpeed(videoId, speed, btnElement) {
-    setStudentPlaybackRate(videoId, speed, btnElement);
 }
 
 function seekVideoTo(videoId, seconds) {
