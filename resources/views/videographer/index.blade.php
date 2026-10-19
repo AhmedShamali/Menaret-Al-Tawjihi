@@ -354,11 +354,11 @@
 </div>
 
 {{-- 4. النافذة المنبثقة المصممة خصيصاً لتفاصيل أماكن نشر وتوزيع الدرس بالفروع --}}
-<div id="lessonDistributionModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 99990; place-items: center; padding: 20px; overflow-y: auto;">
-    <div style="background: #ffffff; border-radius: 20px; max-width: 780px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(226, 232, 240, 0.8); animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);">
+<div id="lessonDistributionModal" class="ed-video-dist-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); z-index: 99990; place-items: center; padding: 20px; overflow-y: auto;">
+    <div class="ed-dist-modal-card" style="background: #ffffff; border-radius: 20px; max-width: 780px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(226, 232, 240, 0.8); animation: modalScaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);">
         
         {{-- هيدر المودال الأنيق مع البيانات الأساسية --}}
-        <div style="padding: 24px 28px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; position: relative;">
+        <div style="padding: 24px 28px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; position: relative;" class="dist-modal-header">
             <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;">
                 <div style="display: flex; align-items: center; gap: 14px;">
                     <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; display: grid; place-items: center; font-size: 1.3rem; flex-shrink: 0;">
@@ -445,8 +445,8 @@
 </div>
 
 {{-- نافذة منبثقة لمعاينة الفيديو الذكية (Video Preview Modal) --}}
-<div id="videoPreviewModal" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px); z-index: 99999; place-items: center; padding: 20px;">
-    <div style="background: #0f172a; border-radius: 18px; max-width: 920px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255,255,255,0.12); animation: modalScaleIn 0.2s ease;">
+<div id="videoPreviewModal" class="ed-video-preview-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(12px); z-index: 99999; place-items: center; padding: 20px; overflow-y: auto;">
+    <div class="ed-video-preview-modal-card" style="background: #0f172a; border-radius: 18px; max-width: 920px; width: 100%; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); border: 1px solid rgba(255,255,255,0.12); animation: modalScaleIn 0.2s ease;">
         <div style="padding: 14px 20px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 12px;">
             <div style="display: flex; align-items: center; gap: 10px; color: #fff; font-size: 0.95rem; font-weight: 700; overflow: hidden; min-width: 0;">
                 <i class="fa-solid fa-play" style="color: #60a5fa; flex-shrink: 0;"></i>
@@ -1316,10 +1316,43 @@
 
 @media (max-width: 768px) {
     .videographer-library-wrapper {
-        padding: 6px 0 60px 0 !important;
+        padding: 6px 10px calc(80px + env(safe-area-inset-bottom, 0px)) 10px !important;
     }
     .videographer-library-wrapper form {
         grid-template-columns: 1fr !important;
+    }
+    .ed-dist-modal-card {
+        border-radius: 14px !important;
+        max-width: 96vw !important;
+    }
+    .ed-video-dist-modal-overlay,
+    .ed-video-preview-modal-overlay {
+        padding: 10px 8px !important;
+    }
+    .ed-video-preview-modal-card {
+        border-radius: 14px !important;
+        max-width: 98vw !important;
+    }
+    .dist-modal-header {
+        padding: 16px 14px !important;
+    }
+    .dist-modal-body {
+        padding: 16px 14px !important;
+        max-height: 60vh !important;
+    }
+    .dist-modal-footer {
+        padding: 14px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+    .dist-modal-footer > div {
+        width: 100% !important;
+        justify-content: stretch !important;
+    }
+    .dist-modal-footer button,
+    .dist-modal-footer a {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
     }
 }
 </style>

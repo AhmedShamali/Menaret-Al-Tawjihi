@@ -2819,14 +2819,53 @@
                 font-size: 0.88rem !important;
             }
         }
+
+        /* زر المساعد الأكاديمي الذكي في الترويسة العلوية */
+        .topbar-ai-btn {
+            background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+            border: 1.5px solid #bfdbfe;
+            color: #1d4ed8;
+            height: 38px;
+            padding: 0 12px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            font-size: 0.82rem;
+            font-weight: 800;
+            transition: var(--transition-smooth);
+            box-shadow: 0 2px 6px rgba(37,99,235,0.08);
+            flex-shrink: 0;
+        }
+        .topbar-ai-btn:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1e40af;
+            transform: translateY(-1px);
+        }
+        @media (max-width: 640px) {
+            .topbar-ai-btn {
+                padding: 0 !important;
+                width: 38px !important;
+                height: 38px !important;
+                justify-content: center !important;
+                border-radius: 10px !important;
+            }
+            .topbar-ai-btn .topbar-ai-text,
+            .topbar-ai-btn .topbar-ai-badge {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 @php
     $isChatPage = request()->routeIs('*chat*', '*inbox*', '*support*') 
         || request()->is('*chat*', '*inbox*', '*support*', '*messages*') 
         || View::hasSection('is_chat');
+    $isNativeApp = str_contains(request()->header('User-Agent', ''), 'StepvoroNativeApp') || request()->has('native_app');
 @endphp
-<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || request()->is('*ai-hub*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }} {{ $isChatPage ? 'is-chat-page in-chat-mode' : '' }}">
+<body class="{{ request()->is('login') || request()->is('register') || request()->is('*exams/*/take*') || request()->is('*ai-hub*') || View::hasSection('no-sidebar') ? 'no-sidebar' : '' }} {{ $isChatPage ? 'is-chat-page in-chat-mode' : '' }} {{ $isNativeApp ? 'in-standalone-app' : '' }}">
 
     <!-- طبقة التعتيم للجوال -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
@@ -3407,11 +3446,11 @@
                 @if(auth('student')->check() || auth()->check())
                 <!-- زر المعلم الأكاديمي الذكي في الترويسة العليا للمستخدمين -->
                 <a href="{{ route('ai.hub') }}" 
-                   title="{{ __('Step by Step Ai | المساعد الذكي') }}" 
-                   style="background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%); border: 1.5px solid #bfdbfe; color: #1d4ed8; height: 38px; padding: 0 12px; border-radius: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-size: 0.82rem; font-weight: 800; transition: var(--transition-smooth); box-shadow: 0 2px 6px rgba(37,99,235,0.08);">
+                   class="topbar-ai-btn"
+                   title="{{ __('Step by Step Ai | المساعد الذكي') }}">
                     <i class="fa-solid fa-wand-magic-sparkles" style="color: #2563eb;"></i>
-                    <span>{{ __('Step by Step Ai') }}</span>
-                    <span style="background: #dbeafe; color: #1e40af; font-size: 0.65rem; padding: 1px 5px; border-radius: 4px;">AI</span>
+                    <span class="topbar-ai-text">{{ __('Step by Step Ai') }}</span>
+                    <span class="topbar-ai-badge" style="background: #dbeafe; color: #1e40af; font-size: 0.65rem; padding: 1px 5px; border-radius: 4px;">AI</span>
                 </a>
                 @endif
                 @php

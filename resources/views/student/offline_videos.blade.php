@@ -839,20 +839,37 @@
 }
 
 @media (max-width: 768px) {
+    .offline-vault-page-container {
+        padding: 12px 10px calc(80px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    }
     .offline-page-header {
         flex-direction: column;
         align-items: flex-start;
-        padding: 18px;
+        padding: 16px 14px !important;
     }
     .storage-stats-card {
         width: 100%;
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
     }
     .offline-videos-grid {
         grid-template-columns: 1fr;
     }
     .page-title {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
+    }
+    .player-controls-bar {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+    .speed-selector {
+        flex-wrap: wrap !important;
+        gap: 4px !important;
+    }
+    .speed-pill {
+        padding: 4px 8px !important;
+        font-size: 0.72rem !important;
     }
 }
 </style>

@@ -3,14 +3,14 @@
 @section('title', __('بوابة الدفع الإلكتروني الفلسطينية | Step by Step'))
 
 @section('content')
-<div style="max-width: 1140px; margin: 0 auto; padding-bottom: 70px; animation: fadeIn 0.3s ease;">
+<div class="checkout-main-container" style="max-width: 1140px; margin: 0 auto; padding-bottom: calc(90px + env(safe-area-inset-bottom, 0px)); animation: fadeIn 0.3s ease;">
 
     <!-- شريط تقدم الخطوات (Stepped Progress Bar) النظيف الأكاديمي -->
     <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
         <div style="display: flex; justify-content: space-between; align-items: center; position: relative;">
             
             <!-- خط الربط بين الخطوات -->
-            <div style="position: absolute; top: 50%; left: 60px; right: 60px; height: 2px; background: #e2e8f0; z-index: 1; transform: translateY(-50%);">
+            <div class="checkout-steps-line" style="position: absolute; top: 50%; left: 60px; right: 60px; height: 2px; background: #e2e8f0; z-index: 1; transform: translateY(-50%);">
                 <div style="width: 50%; height: 100%; background: #1d4ed8;"></div>
             </div>
 
@@ -98,6 +98,17 @@
     .checkout-layout-grid {
         grid-template-columns: 1fr !important;
         gap: 16px !important;
+    }
+}
+@media (max-width: 640px) {
+    .checkout-main-container {
+        padding-bottom: calc(115px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+    .checkout-steps-line {
+        left: 20px !important;
+        right: 20px !important;
     }
 }
 </style>

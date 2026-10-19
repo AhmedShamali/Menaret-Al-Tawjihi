@@ -1777,44 +1777,75 @@
 
     @media (max-width: 640px) {
         .classic-exam-page {
-            padding: 0 12px 60px;
+            padding: 0 10px calc(75px + env(safe-area-inset-bottom, 0px));
         }
 
         .classic-exam-topbar {
-            padding: 12px 14px;
-            margin-bottom: 18px;
+            padding: 8px 12px;
+            margin-bottom: 12px;
+            border-radius: 12px;
         }
 
         .topbar-inner {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 12px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
         }
 
         .topbar-brand {
-            text-align: center;
-            align-items: center;
+            width: 100%;
+            text-align: right;
+            align-items: flex-start;
+        }
+
+        .topbar-exam-title {
+            font-size: 0.98rem !important;
+            margin: 2px 0 !important;
+            line-height: 1.3 !important;
+        }
+
+        .topbar-schedule-pill {
+            display: none !important; /* إخفاء نص الموعد الطويل في الترويسة المثبتة أثناء الامتحان لتوفير مساحة للأسئلة */
+        }
+
+        .topbar-proctoring-pod {
+            padding: 4px 8px !important;
+            font-size: 0.72rem !important;
         }
 
         .topbar-timer-pod {
-            align-self: center;
+            align-self: auto;
+            padding: 4px 10px !important;
+        }
+
+        .timer-digits {
+            font-size: 0.95rem !important;
         }
 
         .topbar-actions {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            width: 100%;
-            justify-content: center;
+            flex-wrap: nowrap;
+            gap: 6px;
+            width: auto;
+            justify-content: flex-end;
+            margin-inline-start: auto;
         }
 
         .btn-topbar-calc,
         .btn-topbar-fs,
         .btn-topbar-submit {
-            flex: 1 1 auto;
+            flex: 0 1 auto;
             justify-content: center;
-            padding: 8px 10px !important;
-            font-size: 0.8rem !important;
+            padding: 6px 10px !important;
+            font-size: 0.76rem !important;
+            white-space: nowrap;
+        }
+
+        .btn-topbar-fs span {
+            display: none;
         }
 
         .classic-tf-grid {
@@ -2559,6 +2590,21 @@
         background: #10b981;
         color: #ffffff;
         grid-column: span 3;
+    }
+
+    @media (max-width: 640px) {
+        .exam-calc-popup {
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 20px 20px 0 0 !important;
+            border-bottom: none !important;
+            padding: 14px 14px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+            box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.5) !important;
+            box-sizing: border-box !important;
+        }
     }
 </style>
 

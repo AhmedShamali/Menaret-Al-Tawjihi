@@ -284,7 +284,7 @@
             @endif
 
             {{-- تبديل طريقة توفير الفيديو: رفع مباشر / رفع مجزأ / رابط خارجي --}}
-            <div style="display: flex; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;" class="video-source-tabs-row">
                 <button type="button" id="tabBtnUpload" onclick="switchVideoSource('upload')" style="display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 0.85rem; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                     <span>{{ __('رفع ملف فيديو من الجهاز (محرك مجزأ يدعم الملفات الضخمة)') }}</span>
@@ -1421,4 +1421,41 @@
         }
     });
 </script>
+
+<style>
+@media (max-width: 768px) {
+    .videographer-studio-wrapper {
+        padding: 6px 10px calc(85px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    }
+    .videographer-studio-wrapper > div,
+    .videographer-studio-wrapper form > div {
+        padding: 16px 14px !important;
+        border-radius: 14px !important;
+    }
+    .video-source-tabs-row button {
+        width: 100% !important;
+        justify-content: center !important;
+        font-size: 0.8rem !important;
+    }
+    .stage-checkbox-card {
+        padding: 10px 12px !important;
+    }
+    #dropArea {
+        padding: 20px 12px !important;
+    }
+    #chunkUploadProgressWrap {
+        padding: 14px 12px !important;
+    }
+    #chunkUploadProgressWrap > div:first-child {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+    }
+    #chunkUploadProgressWrap > div:first-child > div:last-child {
+        margin-inline-start: 0 !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+    }
+}
+</style>
 @endsection

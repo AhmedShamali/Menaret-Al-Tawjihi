@@ -563,7 +563,45 @@
 
     @media (max-width: 768px) {
         .ed-fc-stage {
-            height: 340px;
+            height: 320px;
+        }
+        .ed-fc-actions-bar {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+        .ed-fc-actions-bar > div {
+            width: 100% !important;
+            justify-content: stretch !important;
+        }
+        .ed-fc-actions-bar button,
+        .ed-fc-actions-bar a {
+            flex: 1 1 auto !important;
+            justify-content: center !important;
+        }
+        .ed-fc-nav-buttons {
+            display: grid !important;
+            grid-template-columns: 1fr 1.4fr 1fr !important;
+            gap: 8px !important;
+            width: 100% !important;
+        }
+        .ed-fc-nav-buttons .ed-btn {
+            padding: 10px 8px !important;
+            font-size: 0.8rem !important;
+            justify-content: center !important;
+            width: 100% !important;
+        }
+        .ed-fc-mastery-buttons {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            width: 100% !important;
+        }
+        .ed-mastery-btn {
+            padding: 8px 10px !important;
+            font-size: 0.75rem !important;
+            justify-content: center !important;
+            width: 100% !important;
         }
     }
 </style>

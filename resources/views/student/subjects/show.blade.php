@@ -1902,6 +1902,55 @@ video::-webkit-media-controls-download-button {
         justify-content: center !important;
     }
 
+    /* مشغل الفيديو الأكاديمي للهواتف والشاشات الصغيرة */
+    .ed-controls-main-row {
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+    }
+    .ed-ctrl-cluster {
+        gap: 6px !important;
+    }
+    .ed-ctrl-cluster.left {
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+    }
+    .ed-ctrl-cluster.right {
+        flex-shrink: 0 !important;
+    }
+    .ed-volume-slider {
+        display: none !important; /* الهواتف تحتوي على أزرار صوت فيزيائية ولا داعي لشغل مساحة الشريط */
+    }
+    .ed-time-counter {
+        min-width: auto !important;
+        font-size: 0.72rem !important;
+        letter-spacing: 0 !important;
+        white-space: nowrap !important;
+    }
+    .ed-ctrl-btn {
+        padding: 4px !important;
+        font-size: 1.05rem !important;
+    }
+    .ed-ctrl-btn.play {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 1.1rem !important;
+    }
+    .ed-ctrl-btn.skip {
+        font-size: 1.05rem !important;
+    }
+    .ed-skip-num {
+        font-size: 0.5rem !important;
+    }
+    .ed-ctrl-pill {
+        padding: 3px 7px !important;
+        font-size: 0.72rem !important;
+    }
+    .ed-popover-menu {
+        max-height: 190px !important;
+        overflow-y: auto !important;
+        z-index: 100 !important;
+    }
+
     /* السايدبار وبطاقات المعلم والملازم */
     .ed-side-widget {
         padding: 16px 14px !important;
@@ -2812,7 +2861,7 @@ function showPlayerToast(msg) {
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'edPlayerGlobalToast';
-        toast.style.cssText = 'position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; padding: 10px 22px; border-radius: 9999px; font-size: 0.86rem; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 12px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 99999; display: flex; align-items: center; gap: 8px;';
+        toast.style.cssText = 'position: fixed; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #fff; padding: 10px 22px; border-radius: 9999px; font-size: 0.86rem; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 12px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 99999; display: flex; align-items: center; gap: 8px;';
         document.body.appendChild(toast);
     }
     toast.innerHTML = msg;

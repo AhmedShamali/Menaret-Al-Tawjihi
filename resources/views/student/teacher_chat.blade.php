@@ -740,6 +740,10 @@ body.dark-theme .composer-textarea {
         padding: 3px 10px !important;
         gap: 8px !important;
     }
+    .academic-teacher-chat-container.is-typing-focus .quick-prompts-bar,
+    .academic-teacher-chat-container.is-typing-focus .quick-emoji-lane {
+        display: none !important;
+    }
     .emoji-tap {
         font-size: 1.05rem !important;
     }
@@ -992,6 +996,20 @@ body.dark-theme .composer-textarea {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
         updateCharCounter();
+    });
+
+    const chatContainer = document.querySelector('.academic-teacher-chat-container');
+    msgInput.addEventListener('focus', function() {
+        if (chatContainer && window.innerWidth <= 768) {
+            chatContainer.classList.add('is-typing-focus');
+            setTimeout(scrollToBottom, 150);
+        }
+    });
+
+    msgInput.addEventListener('blur', function() {
+        if (chatContainer) {
+            chatContainer.classList.remove('is-typing-focus');
+        }
     });
 
     function scrollToBottomSmooth() {

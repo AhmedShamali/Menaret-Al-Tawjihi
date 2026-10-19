@@ -1378,9 +1378,13 @@ body.in-standalone-app .stepvoro-install-banner {
     // =========================================================================
     // محرك تطبيق Stepvoro PWA للتحكم بالتثبيت والخدمة السحابية
     // =========================================================================
-    let deferredPrompt = null;
     const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent.toLowerCase());
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isNativeApp = navigator.userAgent.includes('StepvoroNativeApp') || window.location.search.includes('native_app=1');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true || isNativeApp;
+
+    if (isStandalone) {
+        document.body.classList.add('in-standalone-app');
+    }
 
     // 1. تسجيل ومراقبة تحديثات الـ ServiceWorker التلقائية فوراً
     if ('serviceWorker' in navigator) {
@@ -1997,7 +2001,7 @@ body.in-standalone-app .stepvoro-install-banner {
         if (fab) fab.style.display = 'none';
     });
 
-    if (isStandalone) {
+    if (isStandalone || document.body.classList.contains('in-standalone-app') || document.body.classList.contains('is-chat-page')) {
         document.body.classList.add('in-standalone-app');
         const b = document.getElementById('stepvoroInstallBanner');
         if (b) b.style.display = 'none';

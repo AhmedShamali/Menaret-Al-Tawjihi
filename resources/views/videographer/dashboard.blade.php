@@ -160,8 +160,8 @@
                 </a>
             </div>
         @else
-            <div style="overflow-x: auto;">
-                <table style="width: 100%; border-collapse: collapse; text-align: right; font-size: 0.88rem;">
+            <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                <table style="width: 100%; min-width: 820px; border-collapse: collapse; text-align: right; font-size: 0.88rem;">
                     <thead>
                         <tr style="background: #f8fafc; border-bottom: 1px solid var(--ed-border); color: #475569; font-weight: 600; font-size: 0.8rem;">
                             <th style="padding: 14px 20px;">{{ __('المحاضرة / الدرس') }}</th>
@@ -434,6 +434,12 @@ function confirmDeleteLecture(id, title, branchesCount) {
     border-color: #fca5a5;
     transform: translateY(-1px);
     box-shadow: 0 3px 6px rgba(239, 68, 68, 0.15);
+}
+
+@media (max-width: 768px) {
+    .videographer-dashboard-wrapper {
+        padding: 6px 10px calc(80px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    }
 }
 </style>
 @endsection

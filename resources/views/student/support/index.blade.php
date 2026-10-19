@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', __('مركز الدعم والمساعدة الأكاديمية') . ' | ' . config('app.name', 'Step by Step'))
+@section('is_chat', true)
 
 @section('content')
 <div class="support-classic-container">
@@ -153,6 +154,12 @@
         --sup-text-muted: #64748b;
         --sup-emerald: #10b981;
         --sup-radius: 16px;
+    /* إخفاء أشرطة التنقل السفلية تماماً في شاشة الدعم لضمان عدم حجب حقل الرسائل والإرسال */
+    body .mobile-bottom-nav,
+    body .stepvoro-bottom-nav,
+    body .stepvoro-app-fab-wrap,
+    body .ed-scroll-top-btn {
+        display: none !important;
     }
 
     .support-classic-container {
