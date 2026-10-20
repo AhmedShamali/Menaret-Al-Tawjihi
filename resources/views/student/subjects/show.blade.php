@@ -400,6 +400,46 @@
     border-color: #cbd5e1;
 }
 
+/* وضع المسرح الأكاديمي العريض للتركيز والدقة العالية */
+.ed-video-card.is-theater-mode {
+    position: relative;
+    z-index: 40;
+    margin-left: calc(-50vw + 50%) !important;
+    margin-right: calc(-50vw + 50%) !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    border-radius: 0 !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.3s ease;
+}
+
+.ed-video-card.is-theater-mode .ed-player-frame {
+    max-height: 82vh;
+    padding-top: min(56.25%, 82vh);
+}
+
+.ed-btn-action-theater {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.18s ease;
+}
+
+.ed-btn-action-theater:hover,
+.ed-btn-action-theater.active {
+    background: #0284c7;
+    color: #ffffff;
+    border-color: #0284c7;
+}
+
 .ed-player-frame {
     position: relative;
     width: 100%;
@@ -2276,7 +2316,7 @@ video::-webkit-media-controls-download-button {
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                             }
                                         }
                                         $isDirectVideo = !empty($rawUrl) && (
@@ -2308,8 +2348,8 @@ video::-webkit-media-controls-download-button {
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             data-yt-id="{{ $ytId ?? '' }}"
-                                                            width="100%"
-                                                            height="100%"
+                                                            width="1920"
+                                                            height="1080"
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
@@ -2578,6 +2618,10 @@ video::-webkit-media-controls-download-button {
                                             <button type="button" class="ed-btn-action-notes" onclick="toggleNotesSection('{{ $video->id }}')" title="{{ __('تدوين ومراجعة ملاحظاتي على الدرس') }}">
                                                 <i class="fa-solid fa-bookmark"></i>
                                                 <span>{{ __('ملاحظاتي') }}</span>
+                                            </button>
+                                            <button type="button" class="ed-btn-action-theater" id="theater_btn_{{ $video->id }}" onclick="toggleStudentTheaterMode('{{ $video->id }}')" title="{{ __('توسيع الفيديو لوضع المسرح العريض بدقة عالية') }}">
+                                                <i class="fa-solid fa-table-columns"></i>
+                                                <span>{{ __('وضع المسرح') }}</span>
                                             </button>
                                             <button type="button" class="ed-btn-action-fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
                                                 <i class="fa-solid fa-expand"></i>
@@ -2986,6 +3030,35 @@ function getPlayerContext(videoId) {
 
 let ytPlayStates = {};
 
+try {
+    const defaultYtQuality = JSON.stringify({ data: 'hd1080', expiration: Date.now() + 2592000000 });
+    localStorage.setItem('yt-player-quality', defaultYtQuality);
+} catch(e) {}
+
+// وضع المسرح العريض للتركيز على شرح اللوح بدقة 1080p
+function toggleStudentTheaterMode(videoId) {
+    const card = document.getElementById(`card_video_${videoId}`);
+    if (!card) return;
+    const isTheater = card.classList.toggle('is-theater-mode');
+    const theaterBtn = document.getElementById(`theater_btn_${videoId}`);
+    if (theaterBtn) {
+        if (isTheater) {
+            theaterBtn.classList.add('active');
+            theaterBtn.innerHTML = '<i class="fa-solid fa-compress"></i> <span>' + '{{ __("إلغاء وضع المسرح") }}' + '</span>';
+            theaterBtn.title = '{{ __("العودة للوضع العادي") }}';
+            showPlayerToast('{{ __("تم تفعيل وضع المسرح العريض بأعلى وضوح") }} 🎭');
+        } else {
+            theaterBtn.classList.remove('active');
+            theaterBtn.innerHTML = '<i class="fa-solid fa-table-columns"></i> <span>' + '{{ __("وضع المسرح") }}' + '</span>';
+            theaterBtn.title = '{{ __("توسيع الفيديو لوضع المسرح العريض بدقة عالية") }}';
+            showPlayerToast('{{ __("تمت العودة للوضع العادي") }}');
+        }
+    }
+    setTimeout(() => {
+        setVideoQuality(videoId, '1080p', null, '1080p Full HD');
+    }, 200);
+}
+
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
     if (window.YT && window.YT.Player) {
@@ -3011,6 +3084,9 @@ function initSingleYtPlayer(iframeId) {
                         try {
                             if (event.target && typeof event.target.setPlaybackQuality === 'function') {
                                 event.target.setPlaybackQuality('hd1080');
+                            }
+                            if (event.target && typeof event.target.setPlaybackQualityRange === 'function') {
+                                event.target.setPlaybackQualityRange('hd1080', 'hd1080');
                             }
                         } catch(e) {}
                         updateStudentTimeDisplay(videoId);
@@ -3067,22 +3143,32 @@ function handleYtStateChange(videoId, state) {
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     const frame = document.getElementById(`player_frame_${videoId}`);
     
-    // 1 = PLAYING
-    if (state === 1) {
-        ytPlayStates[videoId] = true;
-        if (poster) {
-            poster.style.opacity = '0';
-            poster.style.pointerEvents = 'none';
-            setTimeout(() => { poster.style.display = 'none'; }, 250);
-        }
+    // 1 = PLAYING or 3 = BUFFERING
+    if (state === 1 || state === 3) {
         let yt = ytPlayers[videoId];
-        if (yt && typeof yt.setPlaybackQuality === 'function') {
-            try { yt.setPlaybackQuality('hd1080'); } catch(e) {}
+        if (yt) {
+            try {
+                if (typeof yt.setPlaybackQuality === 'function') yt.setPlaybackQuality('hd1080');
+                if (typeof yt.setPlaybackQualityRange === 'function') yt.setPlaybackQualityRange('hd1080', 'hd1080');
+            } catch(e) {}
         }
-        if (pauseOverlay) pauseOverlay.style.display = 'none';
-        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-        startStudentProgressTracking(videoId);
-        registerPlayerActivity(videoId);
+        const ytIframe = document.getElementById(`player_yt_${videoId}`);
+        if (ytIframe && ytIframe.contentWindow) {
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'hd1080'] }), '*');
+        }
+        if (state === 1) {
+            ytPlayStates[videoId] = true;
+            if (poster) {
+                poster.style.opacity = '0';
+                poster.style.pointerEvents = 'none';
+                setTimeout(() => { poster.style.display = 'none'; }, 250);
+            }
+            if (pauseOverlay) pauseOverlay.style.display = 'none';
+            if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+            startStudentProgressTracking(videoId);
+            registerPlayerActivity(videoId);
+        }
     } else if (state === 2) { // 2 = PAUSED
         ytPlayStates[videoId] = false;
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
@@ -3331,7 +3417,17 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
             func: 'setPlaybackQuality',
             args: [mapped]
         }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'setPlaybackQualityRange',
+            args: [mapped, mapped]
+        }), '*');
     }
+
+    try {
+        localStorage.setItem('yt-player-quality', JSON.stringify({ data: mapped, expiration: Date.now() + 2592000000 }));
+        localStorage.setItem('step_player_quality', quality);
+    } catch(e) {}
 
     // للفيديو المباشر
     if (ctx.isDirect && ctx.direct) {
