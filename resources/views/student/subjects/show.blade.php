@@ -533,19 +533,19 @@ body.has-fullscreen-player {
 
 .ed-yt-viewport .ed-video-iframe {
     position: absolute;
+    inset: 0;
     top: 0 !important;
     left: 0 !important;
-    width: var(--yt-base-w, 1920px);
-    height: var(--yt-base-h, 1080px);
-    max-width: none !important;
-    max-height: none !important;
+    width: 100% !important;
+    height: 100% !important;
     border: 0 !important;
     background: #000000 !important;
     pointer-events: none !important;
-    transform-origin: 0 0;
-    transform: scale(var(--yt-scale, 1));
+    object-fit: contain;
     z-index: 2;
-    image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
@@ -975,8 +975,6 @@ body.has-fullscreen-player {
     object-fit: contain;
     background: #020617;
     z-index: 1;
-    image-rendering: -webkit-optimize-contrast;
-    image-rendering: crisp-edges;
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
@@ -2309,8 +2307,9 @@ video::-webkit-media-controls-download-button {
                                             <div class="ed-yt-viewport">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
-                                                            width="1920"
-                                                            height="1080"
+                                                            data-yt-id="{{ $ytId ?? '' }}"
+                                                            width="100%"
+                                                            height="100%"
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
@@ -2986,52 +2985,9 @@ function getPlayerContext(videoId) {
 }
 
 let ytPlayStates = {};
-const ytVirtualResolutions = {};
-
-function scaleYtIframe(videoId, baseW, baseH) {
-    const iframe = document.getElementById(`player_yt_${videoId}`);
-    const vp = iframe ? iframe.closest('.ed-yt-viewport') : null;
-    if (!iframe || !vp) return;
-    
-    if (baseW && baseH) {
-        ytVirtualResolutions[videoId] = { w: baseW, h: baseH };
-    }
-    const res = ytVirtualResolutions[videoId] || { w: 1920, h: 1080 };
-    const containerW = vp.clientWidth || vp.offsetWidth;
-    if (containerW > 0) {
-        const scale = containerW / res.w;
-        iframe.style.setProperty('--yt-base-w', `${res.w}px`);
-        iframe.style.setProperty('--yt-base-h', `${res.h}px`);
-        iframe.style.setProperty('--yt-scale', scale);
-        iframe.style.width = `${res.w}px`;
-        iframe.style.height = `${res.h}px`;
-        iframe.style.transform = `scale(${scale})`;
-        iframe.style.transformOrigin = 'top left';
-    }
-}
-
-function scaleAllYtIframes() {
-    document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
-        const vidId = iframe.id.replace('player_yt_', '');
-        scaleYtIframe(vidId);
-    });
-}
-
-window.addEventListener('resize', scaleAllYtIframes);
-window.addEventListener('orientationchange', scaleAllYtIframes);
-
-if (typeof ResizeObserver !== 'undefined') {
-    const ytRo = new ResizeObserver(() => {
-        scaleAllYtIframes();
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.ed-yt-viewport, .ed-player-frame').forEach(el => ytRo.observe(el));
-    });
-}
 
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
-    scaleAllYtIframes();
     if (window.YT && window.YT.Player) {
         document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
             initSingleYtPlayer(iframe.id);
@@ -3046,24 +3002,10 @@ function onYouTubeIframeAPIReady() {
 function initSingleYtPlayer(iframeId) {
     if (!iframeId) return null;
     const videoId = iframeId.replace('player_yt_', '');
-    scaleYtIframe(videoId, 1920, 1080);
     if (ytPlayers[videoId]) return ytPlayers[videoId];
     if (window.YT && window.YT.Player) {
         try {
             ytPlayers[videoId] = new YT.Player(iframeId, {
-                playerVars: {
-                    'controls': 0,
-                    'fs': 0,
-                    'rel': 0,
-                    'playsinline': 1,
-                    'modestbranding': 1,
-                    'disablekb': 1,
-                    'iv_load_policy': 3,
-                    'showinfo': 0,
-                    'autohide': 1,
-                    'vq': 'hd1080',
-                    'highres': 1
-                },
                 events: {
                     'onReady': function(event) {
                         try {
@@ -3363,16 +3305,6 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
     if (innerTag) innerTag.textContent = displayLabel;
 
     // لليوتيوب
-    const ytResMap = {
-        '1080p': { w: 1920, h: 1080 },
-        '720p':  { w: 1280, h: 720 },
-        '480p':  { w: 854,  h: 480 },
-        '360p':  { w: 640,  h: 360 },
-        'auto':  { w: 1920, h: 1080 }
-    };
-    const targetRes = ytResMap[quality] || { w: 1920, h: 1080 };
-    scaleYtIframe(videoId, targetRes.w, targetRes.h);
-
     const ytQualityMap = {
         '1080p': 'hd1080',
         '720p': 'hd720',
