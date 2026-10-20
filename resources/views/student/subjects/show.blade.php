@@ -521,8 +521,8 @@ body.has-fullscreen-player {
     z-index: 2;
 }
 
-/* تقنية القص الدقيق لقنوات يوتيوب: إزاحة الشريط العلوي والسفلي خارج إطار الرؤية */
-.ed-yt-viewport.has-youtube-shield {
+/* فيوبورت الفيديو: عرض كامل بدون قص مع إغلاق منافذ التفاعل المباشر مع يوتيوب */
+.ed-yt-viewport {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -531,30 +531,38 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-.ed-yt-viewport.has-youtube-shield .ed-video-iframe {
+.ed-yt-viewport .ed-video-iframe {
     position: absolute;
-    top: -65px !important;
-    left: 0 !important;
+    inset: 0;
     width: 100% !important;
-    height: calc(100% + 130px) !important;
+    height: 100% !important;
+    top: 0 !important;
+    left: 0 !important;
     border: 0 !important;
     background: #000000 !important;
     pointer-events: none !important;
+    object-fit: contain;
     z-index: 2;
 }
 
-@media (max-width: 640px) {
-    .ed-yt-viewport.has-youtube-shield .ed-video-iframe {
-        top: -46px !important;
-        height: calc(100% + 92px) !important;
-    }
+/* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
+.ed-yt-corner-shield {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 110px;
+    height: 55px;
+    z-index: 6;
+    pointer-events: auto;
+    cursor: default;
+    background: transparent;
 }
 
-/* طبقة المشغل الأكاديمي الصافي الفاخر */
+/* طبقة المشغل الأكاديمي الصافي المتقدم */
 .ed-pure-player-layer {
     position: absolute;
     inset: 0;
-    z-index: 16;
+    z-index: 15;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -573,10 +581,14 @@ body.has-fullscreen-player {
     cursor: none;
 }
 
+/* سطح النقر للتشغيل والإيقاف والتكبير: يغطي وسط الفيديو فقط دون ملامسة الشريط السفلي أو الهيدر */
 .ed-click-surface {
     position: absolute;
-    inset: 0;
-    z-index: 8;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 96px;
+    z-index: 10;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -589,7 +601,7 @@ body.has-fullscreen-player {
     width: 72px;
     height: 72px;
     border-radius: 50%;
-    background: rgba(15, 23, 42, 0.8);
+    background: rgba(15, 23, 42, 0.85);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.25);
@@ -611,16 +623,17 @@ body.has-fullscreen-player {
 }
 
 .ed-player-top-header {
-    position: relative;
-    z-index: 18;
-    padding: 14px 20px;
-    background: #020617;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    padding: 12px 20px;
+    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.7) 65%, transparent 100%);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    pointer-events: none;
+    pointer-events: auto !important;
 }
 
 .ed-pth-title {
@@ -651,26 +664,40 @@ body.has-fullscreen-player {
     font-size: 0.75rem;
     font-weight: 800;
     pointer-events: auto !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.ed-pth-quality-tag:hover {
+    background: rgba(16, 185, 129, 0.35);
+    color: #ffffff;
 }
 
+/* شريط التحكم السفلي الكامل: يعلو كافة الطبقات مع استجابة فورية ونقرات مباشرة */
 .ed-player-bottom-panel {
-    position: relative;
-    z-index: 5;
-    padding: 10px 20px 14px;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 70;
+    padding: 12px 20px 14px;
+    background: linear-gradient(to top, rgba(2, 6, 23, 0.98) 0%, rgba(2, 6, 23, 0.85) 60%, transparent 100%);
     display: flex;
     flex-direction: column;
     gap: 8px;
-    pointer-events: auto;
+    pointer-events: auto !important;
 }
 
 .ed-scrubber-wrapper {
     position: relative;
     width: 100%;
-    height: 18px;
+    height: 20px;
     display: flex;
     align-items: center;
     cursor: pointer;
+    direction: ltr !important;
+    touch-action: none;
+    user-select: none;
+    pointer-events: auto !important;
 }
 
 .ed-scrub-track {
@@ -681,33 +708,38 @@ body.has-fullscreen-player {
     border-radius: 4px;
     overflow: visible;
     transition: height 0.15s ease;
+    direction: ltr !important;
 }
 
-.ed-scrubber-wrapper:hover .ed-scrub-track {
+.ed-scrubber-wrapper:hover .ed-scrub-track,
+.ed-scrubber-wrapper.is-scrubbing .ed-scrub-track {
     height: 8px;
 }
 
 .ed-scrub-buffer {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
+    right: auto;
     height: 100%;
-    background: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.35);
     border-radius: 4px;
     width: 0%;
+    transition: width 0.3s ease;
 }
 
 .ed-scrub-fill {
     position: absolute;
     top: 0;
-    right: 0;
+    left: 0;
+    right: auto;
     height: 100%;
     background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
     border-radius: 4px;
     width: 0%;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: flex-end;
 }
 
 .ed-scrub-thumb {
@@ -715,19 +747,20 @@ body.has-fullscreen-player {
     height: 14px;
     border-radius: 50%;
     background: #ffffff;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
     transform: scale(0);
     transition: transform 0.15s ease;
     margin-right: -7px;
 }
 
-.ed-scrubber-wrapper:hover .ed-scrub-thumb {
+.ed-scrubber-wrapper:hover .ed-scrub-thumb,
+.ed-scrubber-wrapper.is-scrubbing .ed-scrub-thumb {
     transform: scale(1);
 }
 
 .ed-scrub-tooltip {
     position: absolute;
-    bottom: 22px;
+    bottom: 24px;
     background: rgba(15, 23, 42, 0.95);
     color: #ffffff;
     font-size: 0.72rem;
@@ -737,8 +770,11 @@ body.has-fullscreen-player {
     border: 1px solid rgba(255, 255, 255, 0.2);
     pointer-events: none;
     display: none;
-    transform: translateX(50%);
+    transform: translateX(-50%);
     white-space: nowrap;
+    direction: ltr !important;
+    font-family: 'Outfit', sans-serif, system-ui;
+    z-index: 45;
 }
 
 .ed-controls-main-row {
@@ -892,7 +928,8 @@ body.has-fullscreen-player {
     gap: 4px;
     min-width: 140px;
     box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6);
-    z-index: 50;
+    z-index: 120 !important;
+    pointer-events: auto !important;
 }
 
 .ed-popover-menu.show {
@@ -1230,13 +1267,14 @@ body.has-fullscreen-player {
     border-color: rgba(74, 222, 128, 0.35);
 }
 
-/* شاشة الإيقاف المؤقت النظيفة الخاصة بالمنصة */
+/* شاشة الإيقاف المؤقت النظيفة الخاصة بالمنصة: تغطي الفيديو وتبقي شريط التحكم متاحاً */
 .ed-video-pause-overlay {
     position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 22;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 65px;
+    z-index: 20;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2267,8 +2305,8 @@ video::-webkit-media-controls-download-button {
 
                                     @if($hasPlayableVideo)
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
-                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة مع تقنية الحجب الأكاديمية أو فيديو مباشر --}}
-                                            <div class="ed-yt-viewport {{ !empty($ytEmbed) ? 'has-youtube-shield' : '' }}">
+                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة كاملة بدون قص أو فيديو مباشر --}}
+                                            <div class="ed-yt-viewport">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             src="{{ $ytEmbed }}" 
@@ -2276,9 +2314,12 @@ video::-webkit-media-controls-download-button {
                                                             allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
                                                             tabindex="-1"
+                                                            aria-hidden="true"
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
+                                                    {{-- درع زاوية يوتيوب لحجب أي علامة مائية ومنع التفاعل --}}
+                                                    <div class="ed-yt-corner-shield" aria-hidden="true" oncontextmenu="return false;"></div>
                                                 @else
                                                     <video id="player_vid_{{ $video->id }}" 
                                                            class="ed-native-video" 
@@ -2330,28 +2371,28 @@ video::-webkit-media-controls-download-button {
 
                                             {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
-                                                    {{-- سطح النقر للتشغيل والإيقاف --}}
-                                                    <div class="ed-click-surface" onclick="toggleStudentPlayback('{{ $video->id }}')" ondblclick="togglePlatformFullscreen('{{ $video->id }}')" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
+                                                    {{-- سطح النقر للتشغيل والإيقاف والتكبير المزدوج --}}
+                                                    <div class="ed-click-surface" onclick="handleClickSurface('{{ $video->id }}', event)" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
                                                         <div class="ed-center-pulse-btn" id="center_pulse_{{ $video->id }}">
                                                             <i class="fa-solid fa-play"></i>
                                                         </div>
                                                     </div>
 
                                                     {{-- هيدر المشغل المباشر الفاخر --}}
-                                                    <div class="ed-player-top-header">
+                                                    <div class="ed-player-top-header" onclick="event.stopPropagation()">
                                                         <div class="ed-pth-title">
                                                             <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
                                                             <span class="ed-pth-name">{{ $video->title }}</span>
                                                         </div>
-                                                        <div class="ed-pth-quality-tag" id="inner_top_quality_{{ $video->id }}" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" style="cursor: pointer;">
+                                                        <div class="ed-pth-quality-tag" id="inner_top_quality_{{ $video->id }}" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}', event); event.stopPropagation();" style="cursor: pointer;">
                                                             <i class="fa-solid fa-circle-check"></i> <span id="inner_quality_text_{{ $video->id }}">1080p Full HD</span>
                                                         </div>
                                                     </div>
 
                                                     {{-- شريط التحكم السفلي الكامل للمشغل المباشر --}}
-                                                    <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
+                                                    <div class="ed-player-bottom-panel" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" ontouchstart="event.stopPropagation()">
                                                         {{-- شريط التقدم الزمني الدقيق --}}
-                                                        <div class="ed-scrubber-wrapper" id="scrubber_wrap_{{ $video->id }}" onclick="handleScrubberClick(event, '{{ $video->id }}')" onmousemove="handleScrubberHover(event, '{{ $video->id }}')" onmouseleave="hideScrubberTooltip('{{ $video->id }}')">
+                                                        <div class="ed-scrubber-wrapper" id="scrubber_wrap_{{ $video->id }}" onclick="handleScrubberClick(event, '{{ $video->id }}'); event.stopPropagation();" onmousemove="handleScrubberHover(event, '{{ $video->id }}')" onmouseleave="hideScrubberTooltip('{{ $video->id }}')">
                                                             <div class="ed-scrub-track">
                                                                 <div class="ed-scrub-buffer" id="buffer_bar_{{ $video->id }}"></div>
                                                                 <div class="ed-scrub-fill" id="progress_bar_{{ $video->id }}">
@@ -2362,16 +2403,16 @@ video::-webkit-media-controls-download-button {
                                                         </div>
 
                                                         {{-- أزرار وعناصر التحكم --}}
-                                                        <div class="ed-controls-main-row">
-                                                            <div class="ed-ctrl-cluster left">
-                                                                <button type="button" class="ed-ctrl-btn play" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
+                                                        <div class="ed-controls-main-row" onclick="event.stopPropagation()">
+                                                            <div class="ed-ctrl-cluster left" onclick="event.stopPropagation()">
+                                                                <button type="button" class="ed-ctrl-btn play" id="bar_btn_{{ $video->id }}" onclick="toggleStudentPlayback('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
                                                                     <i class="fa-solid fa-play"></i>
                                                                 </button>
-                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
+                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', -10, event); event.stopPropagation();" title="{{ __('تراجع 10 ثوانٍ') }}">
                                                                     <i class="fa-solid fa-rotate-left"></i>
                                                                     <span class="ed-skip-num">10</span>
                                                                 </button>
-                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
+                                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekStudentRelative('{{ $video->id }}', 10, event); event.stopPropagation();" title="{{ __('تقديم 10 ثوانٍ') }}">
                                                                     <i class="fa-solid fa-rotate-right"></i>
                                                                     <span class="ed-skip-num">10</span>
                                                                 </button>
@@ -2380,64 +2421,67 @@ video::-webkit-media-controls-download-button {
                                                                 </div>
                                                             </div>
 
-                                                            <div class="ed-ctrl-cluster right">
-                                                                <div class="ed-volume-group">
-                                                                    <button type="button" class="ed-ctrl-btn vol" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
+                                                            <div class="ed-ctrl-cluster right" onclick="event.stopPropagation()">
+                                                                <div class="ed-volume-group" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+                                                                    <button type="button" class="ed-ctrl-btn vol" id="mute_btn_{{ $video->id }}" onclick="toggleStudentMute('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('كتم / تشغيل الصوت (M)') }}">
                                                                         <i class="fa-solid fa-volume-high"></i>
                                                                     </button>
-                                                                    <input type="range" class="ed-volume-slider" id="vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setStudentVolume('{{ $video->id }}', this.value)">
+                                                                    <input type="range" class="ed-volume-slider" id="vol_slider_{{ $video->id }}" min="0" max="100" value="100" onclick="event.stopPropagation()" oninput="setStudentVolume('{{ $video->id }}', this.value, event)">
                                                                 </div>
 
-                                                                <div class="ed-speed-dropdown">
-                                                                    <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('speed_menu_{{ $video->id }}')">
+                                                                <div class="ed-speed-dropdown" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+                                                                    <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('speed_menu_{{ $video->id }}', event); event.stopPropagation();">
                                                                         <span id="active_speed_{{ $video->id }}">1x</span>
                                                                     </button>
-                                                                    <div class="ed-popover-menu" id="speed_menu_{{ $video->id }}">
-                                                                        <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
-                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                                                    <div class="ed-popover-menu" id="speed_menu_{{ $video->id }}" onclick="event.stopPropagation()">
+                                                                        <div class="ed-pop-header"><i class="fa-solid fa-gauge-high"></i> {{ __('سرعة التشغيل') }}</div>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.5, this, event); event.stopPropagation();">0.5x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this, event); event.stopPropagation();">0.75x</button>
+                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this, event); event.stopPropagation();">1x ({{ __('عادي') }})</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this, event); event.stopPropagation();">1.25x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this, event); event.stopPropagation();">1.5x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.75, this, event); event.stopPropagation();">1.75x</button>
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this, event); event.stopPropagation();">2x</button>
                                                                     </div>
                                                                 </div>
 
-                                                                <div class="ed-quality-dropdown">
-                                                                    <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}')" title="{{ __('دقة وجودة الفيديو') }}">
+                                                                <div class="ed-quality-dropdown" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+                                                                    <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}', event); event.stopPropagation();" title="{{ __('دقة وجودة الفيديو') }}">
                                                                         <i class="fa-solid fa-sliders"></i>
                                                                         <span id="active_quality_{{ $video->id }}">1080p</span>
                                                                     </button>
-                                                                    <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}">
+                                                                    <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}" onclick="event.stopPropagation()">
                                                                         <div class="ed-pop-header"><i class="fa-solid fa-sparkles"></i> {{ __('دقة الفيديو') }}</div>
-                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">
+                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD', event); event.stopPropagation();">
                                                                             <span>1080p Full HD</span>
                                                                             <span style="font-size: 0.65rem; color: #4ade80;">الأعلى</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD', event); event.stopPropagation();">
                                                                             <span>720p HD</span>
                                                                             <span style="font-size: 0.65rem; color: #60a5fa;">متوازنة</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD', event); event.stopPropagation();">
                                                                             <span>480p SD</span>
                                                                             <span style="font-size: 0.65rem; color: #f59e0b;">توفير</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p', event); event.stopPropagation();">
                                                                             <span>360p</span>
                                                                             <span style="font-size: 0.65rem; color: #94a3b8;">نت ضعيف</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)')">
+                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)', event); event.stopPropagation();">
                                                                             <span>{{ __('تلقائي (Auto)') }}</span>
                                                                             <span style="font-size: 0.65rem; color: #a855f7;">تكيف</span>
                                                                         </button>
                                                                     </div>
                                                                 </div>
 
-                                                                <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('ملء الشاشة (F)') }}">
+                                                                <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('ملء الشاشة (F)') }}">
                                                                     <i class="fa-solid fa-expand"></i>
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                </div>
+                                                    </div>
+                                            </div>
 
                                                 {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
                                                 <div class="ed-video-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeStudentPlayback('{{ $video->id }}')" style="display: none;">
@@ -2552,10 +2596,12 @@ video::-webkit-media-controls-download-button {
                                                 <span>{{ __('سرعة العرض:') }}</span>
                                             </span>
                                             <div class="ed-speed-segmented">
+                                                <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.5, this)">0.5x</button>
                                                 <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
                                                 <button type="button" class="ed-speed-opt active" onclick="setVideoSpeed('{{ $video->id }}', 1, this)">1x</button>
                                                 <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
                                                 <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                                <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 1.75, this)">1.75x</button>
                                                 <button type="button" class="ed-speed-opt" onclick="setVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
                                             </div>
                                         </div>
@@ -2970,6 +3016,7 @@ function initSingleYtPlayer(iframeId) {
                     'onReady': function(event) {
                         updateStudentTimeDisplay(videoId);
                         applyStoredQualityPreference(videoId);
+                        applyStoredSpeedPreference(videoId);
                     },
                     'onStateChange': function(event) {
                         handleYtStateChange(videoId, event.data);
@@ -3077,6 +3124,7 @@ function startStudentVideo(videoId) {
         const barBtn = document.getElementById(`bar_btn_${videoId}`);
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         startStudentProgressTracking(videoId);
+        initScrubberEvents(videoId);
         registerPlayerActivity(videoId);
         return;
     }
@@ -3093,6 +3141,7 @@ function startStudentVideo(videoId) {
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startStudentProgressTracking(videoId);
+    initScrubberEvents(videoId);
     registerPlayerActivity(videoId);
 
     // مهلة حماية لضمان إخفاء البوستر بعد بدء البث وعدم تسريب أي زر ليوتيوب
@@ -3115,6 +3164,7 @@ function resumeStudentPlayback(videoId) {
         ctx.direct.play().catch(() => {});
         const barBtn = document.getElementById(`bar_btn_${videoId}`);
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        initScrubberEvents(videoId);
         registerPlayerActivity(videoId);
         return;
     }
@@ -3130,11 +3180,13 @@ function resumeStudentPlayback(videoId) {
     }
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    initScrubberEvents(videoId);
     registerPlayerActivity(videoId);
 }
 
 // تبديل التشغيل والإيقاف (مسافة أو نقر على الشاشة)
-function toggleStudentPlayback(videoId) {
+function toggleStudentPlayback(videoId, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const pulseBtn = document.getElementById(`center_pulse_${videoId}`);
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
@@ -3223,7 +3275,8 @@ function toggleStudentPlayback(videoId) {
 }
 
 // ضبط جودة الفيديو متعدد الجودات
-function setVideoQuality(videoId, quality, btnElement, label) {
+function setVideoQuality(videoId, quality, btnElement, label, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const displayLabel = label || quality;
     const ctx = getPlayerContext(videoId);
     
@@ -3316,7 +3369,8 @@ function applyStoredQualityPreference(videoId) {
 }
 
 // التحكم بالصوت والكتم
-function setStudentVolume(videoId, value) {
+function setStudentVolume(videoId, value, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const val = parseInt(value, 10);
     const muteBtn = document.getElementById(`mute_btn_${videoId}`);
     const ctx = getPlayerContext(videoId);
@@ -3334,6 +3388,16 @@ function setStudentVolume(videoId, value) {
         } catch(e) {}
     }
 
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow) {
+        if (val === 0) {
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
+        } else {
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*');
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [val] }), '*');
+        }
+    }
+
     if (muteBtn) {
         if (val === 0) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
         else if (val < 50) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
@@ -3341,7 +3405,8 @@ function setStudentVolume(videoId, value) {
     }
 }
 
-function toggleStudentMute(videoId) {
+function toggleStudentMute(videoId, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const ctx = getPlayerContext(videoId);
     const muteBtn = document.getElementById(`mute_btn_${videoId}`);
     const slider = document.getElementById(`vol_slider_${videoId}`);
@@ -3353,7 +3418,7 @@ function toggleStudentMute(videoId) {
             if (slider) slider.value = 0;
         } else {
             if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-            if (slider) slider.value = ctx.direct.volume * 100;
+            if (slider) slider.value = (ctx.direct.volume || 1) * 100;
         }
         return;
     }
@@ -3370,15 +3435,33 @@ function toggleStudentMute(videoId) {
                 if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
                 if (slider) slider.value = 0;
             }
+            return;
         } catch(e) {}
+    }
+
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow) {
+        const isMutedNow = slider && slider.value === '0';
+        if (isMutedNow) {
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*');
+            if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+            if (slider) slider.value = 100;
+        } else {
+            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*');
+            if (muteBtn) muteBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+            if (slider) slider.value = 0;
+        }
     }
 }
 
-// التحكم بالسرعة
-function setVideoSpeed(videoId, speed, btnElement) {
+// التحكم بالسرعة ومزامنة التفضيل
+function setVideoSpeed(videoId, speed, btnElement, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    speed = parseFloat(speed) || 1;
     const ctx = getPlayerContext(videoId);
     if (ctx.isDirect && ctx.direct) {
         ctx.direct.playbackRate = speed;
+        ctx.direct.defaultPlaybackRate = speed;
     }
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.setPlaybackRate === 'function') {
@@ -3388,6 +3471,10 @@ function setVideoSpeed(videoId, speed, btnElement) {
     if (ytIframe && ytIframe.contentWindow) {
         ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackRate', args: [speed] }), '*');
     }
+
+    try {
+        localStorage.setItem('step_player_speed', speed);
+    } catch(e) {}
 
     const pill = document.getElementById(`active_speed_${videoId}`);
     if (pill) pill.textContent = `${speed}x`;
@@ -3405,47 +3492,83 @@ function setVideoSpeed(videoId, speed, btnElement) {
     showPlayerToast(`{{ __("تم ضبط السرعة على") }} ${speed}x ⚡`);
 }
 
-// شريط التقدم والتقديم/التأخير
-function handleScrubberClick(e, videoId) {
-    const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
-    if (!wrap) return;
-    const rect = wrap.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const isRtl = window.getComputedStyle(wrap).direction === 'rtl';
-    const pct = Math.max(0, Math.min(1, clickX / rect.width));
-    const percentage = isRtl ? (1 - pct) : pct;
-    
+function applyStoredSpeedPreference(videoId) {
+    try {
+        const pref = localStorage.getItem('step_player_speed');
+        if (pref && parseFloat(pref) > 0) {
+            const speed = parseFloat(pref);
+            const pill = document.getElementById(`active_speed_${videoId}`);
+            if (pill) pill.textContent = `${speed}x`;
+            const ctx = getPlayerContext(videoId);
+            if (ctx.isDirect && ctx.direct) {
+                ctx.direct.playbackRate = speed;
+            }
+            let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+            if (yt && typeof yt.setPlaybackRate === 'function') {
+                try { yt.setPlaybackRate(speed); } catch(e) {}
+            }
+            document.querySelectorAll(`#speed_menu_${videoId} .ed-pop-opt, #card_video_${videoId} .ed-speed-opt`).forEach(b => {
+                const oc = b.getAttribute('onclick') || '';
+                if (oc.includes(`, ${speed},`) || oc.includes(`, ${speed})`)) {
+                    b.classList.add('active');
+                } else {
+                    b.classList.remove('active');
+                }
+            });
+        }
+    } catch(e) {}
+}
+
+// التقديم والتأخير بنسبة مئوية دقيقة (يدعم السحب والنقر)
+let activeScrubVideoId = null;
+
+function seekToPercentage(videoId, percentage) {
+    percentage = Math.max(0, Math.min(1, percentage));
     const ctx = getPlayerContext(videoId);
     if (ctx.isDirect && ctx.direct) {
         const dur = ctx.direct.duration || 0;
         if (dur > 0) {
             ctx.direct.currentTime = percentage * dur;
-            ctx.direct.play().catch(() => {});
             updateStudentTimeDisplay(videoId);
         }
         return;
     }
 
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    let dur = 0;
     if (yt && typeof yt.getDuration === 'function') {
-        const dur = yt.getDuration() || 0;
-        if (dur > 0) {
-            yt.seekTo(percentage * dur, true);
-            yt.playVideo();
-            updateStudentTimeDisplay(videoId);
-        }
+        dur = yt.getDuration() || 0;
     }
+    if (dur > 0 && yt && typeof yt.seekTo === 'function') {
+        try {
+            yt.seekTo(percentage * dur, true);
+        } catch(e) {}
+    }
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow && dur > 0) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [percentage * dur, true] }), '*');
+    }
+    updateStudentTimeDisplay(videoId);
 }
 
+// شريط التقدم: النقر المباشر
+function handleScrubberClick(e, videoId) {
+    const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = Math.max(0, Math.min(1, clickX / rect.width));
+    seekToPercentage(videoId, pct);
+}
+
+// شريط التقدم: التلميح الزمني عند التحويم
 function handleScrubberHover(e, videoId) {
     const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
     const tip = document.getElementById(`scrub_tip_${videoId}`);
     if (!wrap || !tip) return;
     const rect = wrap.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
-    const isRtl = window.getComputedStyle(wrap).direction === 'rtl';
     const pct = Math.max(0, Math.min(1, clickX / rect.width));
-    const percentage = isRtl ? (1 - pct) : pct;
     
     const ctx = getPlayerContext(videoId);
     let dur = 0;
@@ -3453,9 +3576,9 @@ function handleScrubberHover(e, videoId) {
     else if (ctx.yt && typeof ctx.yt.getDuration === 'function') dur = ctx.yt.getDuration() || 0;
 
     if (dur > 0) {
-        tip.textContent = formatDurationSec(percentage * dur);
+        tip.textContent = formatDurationSec(pct * dur);
         tip.style.display = 'block';
-        tip.style.left = `${clickX}px`;
+        tip.style.left = `${Math.max(16, Math.min(rect.width - 16, clickX))}px`;
     }
 }
 
@@ -3464,7 +3587,131 @@ function hideScrubberTooltip(videoId) {
     if (tip) tip.style.display = 'none';
 }
 
-function seekStudentRelative(videoId, secondsOffset) {
+// نظام السحب الذكي للشريط (Drag-to-Seek) للمس والفأرة
+function initScrubberEvents(videoId) {
+    const wrap = document.getElementById(`scrubber_wrap_${videoId}`);
+    if (!wrap || wrap._hasScrubEvents) return;
+    wrap._hasScrubEvents = true;
+
+    function getPercentage(clientX) {
+        const rect = wrap.getBoundingClientRect();
+        return Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    }
+
+    function updateVisual(pct, clientX) {
+        const progBar = document.getElementById(`progress_bar_${videoId}`);
+        if (progBar) progBar.style.width = `${pct * 100}%`;
+        const tip = document.getElementById(`scrub_tip_${videoId}`);
+        if (tip) {
+            const ctx = getPlayerContext(videoId);
+            let dur = 0;
+            if (ctx.isDirect && ctx.direct) dur = ctx.direct.duration || 0;
+            else if (ctx.yt && typeof ctx.yt.getDuration === 'function') dur = ctx.yt.getDuration() || 0;
+            if (dur > 0) {
+                tip.textContent = formatDurationSec(pct * dur);
+                tip.style.display = 'block';
+                const rect = wrap.getBoundingClientRect();
+                const x = clientX - rect.left;
+                tip.style.left = `${Math.max(16, Math.min(rect.width - 16, x))}px`;
+            }
+        }
+    }
+
+    wrap.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        activeScrubVideoId = videoId;
+        wrap.classList.add('is-scrubbing');
+        const pct = getPercentage(e.clientX);
+        updateVisual(pct, e.clientX);
+        seekToPercentage(videoId, pct);
+    });
+
+    wrap.addEventListener('touchstart', function(e) {
+        if (!e.touches || !e.touches[0]) return;
+        activeScrubVideoId = videoId;
+        wrap.classList.add('is-scrubbing');
+        const pct = getPercentage(e.touches[0].clientX);
+        updateVisual(pct, e.touches[0].clientX);
+        seekToPercentage(videoId, pct);
+    }, { passive: true });
+}
+
+document.addEventListener('mousemove', function(e) {
+    if (!activeScrubVideoId) return;
+    const wrap = document.getElementById(`scrubber_wrap_${activeScrubVideoId}`);
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const progBar = document.getElementById(`progress_bar_${activeScrubVideoId}`);
+    if (progBar) progBar.style.width = `${pct * 100}%`;
+    const tip = document.getElementById(`scrub_tip_${activeScrubVideoId}`);
+    if (tip) {
+        const ctx = getPlayerContext(activeScrubVideoId);
+        let dur = 0;
+        if (ctx.isDirect && ctx.direct) dur = ctx.direct.duration || 0;
+        else if (ctx.yt && typeof ctx.yt.getDuration === 'function') dur = ctx.yt.getDuration() || 0;
+        if (dur > 0) {
+            tip.textContent = formatDurationSec(pct * dur);
+            tip.style.display = 'block';
+            tip.style.left = `${Math.max(16, Math.min(rect.width - 16, e.clientX - rect.left))}px`;
+        }
+    }
+});
+
+document.addEventListener('mouseup', function(e) {
+    if (activeScrubVideoId) {
+        const wrap = document.getElementById(`scrubber_wrap_${activeScrubVideoId}`);
+        if (wrap) {
+            wrap.classList.remove('is-scrubbing');
+            const rect = wrap.getBoundingClientRect();
+            const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            seekToPercentage(activeScrubVideoId, pct);
+        }
+        hideScrubberTooltip(activeScrubVideoId);
+        activeScrubVideoId = null;
+    }
+});
+
+document.addEventListener('touchmove', function(e) {
+    if (!activeScrubVideoId || !e.touches || !e.touches[0]) return;
+    const wrap = document.getElementById(`scrubber_wrap_${activeScrubVideoId}`);
+    if (!wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.touches[0].clientX - rect.left) / rect.width));
+    const progBar = document.getElementById(`progress_bar_${activeScrubVideoId}`);
+    if (progBar) progBar.style.width = `${pct * 100}%`;
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+    if (activeScrubVideoId) {
+        const wrap = document.getElementById(`scrubber_wrap_${activeScrubVideoId}`);
+        if (wrap) wrap.classList.remove('is-scrubbing');
+        hideScrubberTooltip(activeScrubVideoId);
+        activeScrubVideoId = null;
+    }
+});
+
+// التعامل الذكي مع نقر سطح المشغل (نقرة واحدة للتشغيل/الإيقاف، نقرتان للتكبير دون تشويش)
+let clickSurfaceTimers = {};
+
+function handleClickSurface(videoId, e) {
+    if (e && e.target && e.target.closest && e.target.closest('.ed-player-bottom-panel, .ed-player-top-header, .ed-popover-menu, .ed-ctrl-btn, .ed-ctrl-pill, .ed-volume-group, .ed-scrubber-wrapper, input, button')) {
+        return;
+    }
+    if (clickSurfaceTimers[videoId]) {
+        clearTimeout(clickSurfaceTimers[videoId]);
+        delete clickSurfaceTimers[videoId];
+        togglePlatformFullscreen(videoId, e);
+        return;
+    }
+    clickSurfaceTimers[videoId] = setTimeout(() => {
+        delete clickSurfaceTimers[videoId];
+        toggleStudentPlayback(videoId);
+    }, 240);
+}
+
+function seekStudentRelative(videoId, secondsOffset, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const ctx = getPlayerContext(videoId);
     if (ctx.isDirect && ctx.direct) {
         const cur = ctx.direct.currentTime || 0;
@@ -3476,15 +3723,32 @@ function seekStudentRelative(videoId, secondsOffset) {
     }
 
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    let cur = 0;
+    let dur = 0;
     if (yt && typeof yt.getCurrentTime === 'function' && typeof yt.getDuration === 'function') {
         try {
-            const cur = yt.getCurrentTime() || 0;
-            const dur = yt.getDuration() || 0;
-            yt.seekTo(Math.max(0, Math.min(dur, cur + secondsOffset)), true);
+            cur = yt.getCurrentTime() || 0;
+            dur = yt.getDuration() || 0;
+            const target = Math.max(0, Math.min(dur, cur + secondsOffset));
+            yt.seekTo(target, true);
             yt.playVideo();
             updateStudentTimeDisplay(videoId);
             return;
         } catch(e) {}
+    }
+
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'seekTo',
+            args: [Math.max(0, cur + secondsOffset), true]
+        }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({
+            event: 'command',
+            func: 'playVideo',
+            args: []
+        }), '*');
     }
 }
 
@@ -3521,7 +3785,7 @@ function updateStudentTimeDisplay(videoId) {
     if (timeTxt) timeTxt.textContent = `${formatDurationSec(cur)} / ${formatDurationSec(dur)}`;
 
     const progBar = document.getElementById(`progress_bar_${videoId}`);
-    if (progBar && dur > 0) {
+    if (progBar && dur > 0 && activeScrubVideoId !== videoId) {
         progBar.style.width = `${(cur / dur) * 100}%`;
     }
 
@@ -3545,7 +3809,8 @@ function stopStudentProgressTracking(videoId) {
     }
 }
 
-function toggleDropdownMenu(menuId) {
+function toggleDropdownMenu(menuId, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const menu = document.getElementById(menuId);
     if (!menu) return;
     const isShown = menu.classList.contains('show');
@@ -3578,7 +3843,8 @@ function updateFullscreenButtonsUI(videoId, isFs) {
 }
 
 // تكبير المشغل الأكاديمي بملء الشاشة الفاخر مع دعم كافة الأجهزة والمتصفحات
-function togglePlatformFullscreen(videoId) {
+function togglePlatformFullscreen(videoId, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     let frame = null;
     if (typeof videoId === 'string' || typeof videoId === 'number') {
         frame = document.getElementById(`player_frame_${videoId}`) || document.getElementById(`shield_wrap_${videoId}`) || document.getElementById(`card_video_${videoId}`);
@@ -3638,18 +3904,19 @@ function togglePlatformFullscreen(videoId) {
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             }
-        } catch(e) {}
+        } catch(err) {}
         exitFallbackFullscreen(frame, actualVidId);
     }
 }
 
 function enterFallbackFullscreen(frame, videoId) {
     const vidEl = document.getElementById(`player_vid_${videoId}`);
-    if (vidEl && vidEl.webkitEnterFullscreen && !frame.classList.contains('has-youtube-shield')) {
+    const isIosPhone = /iPhone|iPod/.test(navigator.userAgent);
+    if (isIosPhone && vidEl && vidEl.webkitEnterFullscreen && !frame.classList.contains('has-youtube-shield')) {
         try {
             vidEl.webkitEnterFullscreen();
             return;
-        } catch(e) {}
+        } catch(err) {}
     }
 
     frame.classList.add('is-platform-fullscreen');
@@ -4111,6 +4378,22 @@ window.addEventListener('message', function(event) {
     } catch(e) {}
 });
 
+// حظر اختصارات فحص العنصر لحماية روابط المحتوى الأكاديمي ومنع استخراج الرابط الأصلي
+document.addEventListener('keydown', function(e) {
+    if (
+        e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) || 
+        (e.ctrlKey && (e.key === 'u' || e.key === 'U'))
+    ) {
+        const activePlayer = document.querySelector('.ed-player-frame:hover, .ed-player-frame.is-platform-fullscreen');
+        if (activePlayer) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }
+}, true);
+
 // تهيئة المشغلات فوراً عند جاهزية واجهة يوتيوب
 if (window.YT && window.YT.Player) {
     initAllYouTubePlayers();
@@ -4121,7 +4404,23 @@ if (window.YT && window.YT.Player) {
         initAllYouTubePlayers();
     };
 }
-document.addEventListener('DOMContentLoaded', initAllYouTubePlayers);
+
+function initAllPlayerComponents() {
+    initAllYouTubePlayers();
+    document.querySelectorAll('.ed-scrubber-wrapper').forEach(wrap => {
+        const vidId = wrap.id.replace('scrubber_wrap_', '');
+        if (vidId) initScrubberEvents(vidId);
+    });
+    document.querySelectorAll('.ed-player-frame').forEach(frame => {
+        const vidId = frame.id.replace('player_frame_', '');
+        if (vidId) {
+            applyStoredQualityPreference(vidId);
+            applyStoredSpeedPreference(vidId);
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initAllPlayerComponents);
 
 // إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
 function purgeExternalDownloadButtons() {
