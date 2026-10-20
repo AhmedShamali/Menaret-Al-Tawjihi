@@ -543,6 +543,8 @@ body.has-fullscreen-player {
     pointer-events: none !important;
     object-fit: contain;
     z-index: 2;
+    image-rendering: -webkit-optimize-contrast;
+    transform: translateZ(0);
 }
 
 /* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
@@ -980,6 +982,11 @@ body.has-fullscreen-player {
     object-fit: contain;
     background: #020617;
     z-index: 1;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 /* علامة مائية ذكية متحركة بالاسم ورقم الهاتف لحماية الملكية الأكاديمية */
@@ -2277,7 +2284,7 @@ video::-webkit-media-controls-download-button {
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&vq=hd1080&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                                 $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
                                             }
                                         }
@@ -3014,6 +3021,11 @@ function initSingleYtPlayer(iframeId) {
                 },
                 events: {
                     'onReady': function(event) {
+                        try {
+                            if (event.target && typeof event.target.setPlaybackQuality === 'function') {
+                                event.target.setPlaybackQuality('hd1080');
+                            }
+                        } catch(e) {}
                         updateStudentTimeDisplay(videoId);
                         applyStoredQualityPreference(videoId);
                         applyStoredSpeedPreference(videoId);

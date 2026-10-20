@@ -197,7 +197,7 @@ class VideoController extends Controller
                     ob_end_clean();
                 }
                 fseek($file, $from);
-                $chunkSize = 256 * 1024; // 256KB chunks for smooth buffering
+                $chunkSize = 512 * 1024; // 512KB chunks for smooth high-bitrate HD buffering
                 while (!feof($file) && ($pointer = ftell($file)) <= $to) {
                     if ($pointer + $chunkSize > $to) {
                         $chunkSize = $to - $pointer + 1;
