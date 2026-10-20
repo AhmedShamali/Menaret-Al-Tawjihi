@@ -540,7 +540,7 @@ body.has-fullscreen-player {
     left: 0 !important;
     border: 0 !important;
     background: #000000 !important;
-    pointer-events: auto !important;
+    pointer-events: none !important;
     object-fit: contain;
     z-index: 2;
     image-rendering: -webkit-optimize-contrast;
@@ -2277,7 +2277,7 @@ video::-webkit-media-controls-download-button {
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                             }
                                         }
                                         $isDirectVideo = !empty($rawUrl) && (
@@ -2308,10 +2308,14 @@ video::-webkit-media-controls-download-button {
                                             <div class="ed-yt-viewport">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
+                                                            width="1920"
+                                                            height="1080"
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
+                                                            tabindex="-1"
+                                                            aria-hidden="true"
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
@@ -2364,8 +2368,7 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة للفيديوهات المباشرة المرفوعة على السيرفر --}}
-                                            @if(!$isYt)
+                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف والتكبير المزدوج --}}
                                                     <div class="ed-click-surface" onclick="handleClickSurface('{{ $video->id }}', event)" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
@@ -2478,7 +2481,6 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                             </div>
-                                            @endif
 
                                             @if(!$isYt)
                                                 {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
@@ -3005,11 +3007,17 @@ function initSingleYtPlayer(iframeId) {
         try {
             ytPlayers[videoId] = new YT.Player(iframeId, {
                 playerVars: {
-                    'controls': 1,
-                    'fs': 1,
+                    'controls': 0,
+                    'fs': 0,
                     'rel': 0,
                     'playsinline': 1,
-                    'modestbranding': 1
+                    'modestbranding': 1,
+                    'disablekb': 1,
+                    'iv_load_policy': 3,
+                    'showinfo': 0,
+                    'autohide': 1,
+                    'vq': 'hd1080',
+                    'highres': 1
                 },
                 events: {
                     'onReady': function(event) {
@@ -3080,6 +3088,10 @@ function handleYtStateChange(videoId, state) {
             poster.style.pointerEvents = 'none';
             setTimeout(() => { poster.style.display = 'none'; }, 250);
         }
+        let yt = ytPlayers[videoId];
+        if (yt && typeof yt.setPlaybackQuality === 'function') {
+            try { yt.setPlaybackQuality('hd1080'); } catch(e) {}
+        }
         if (pauseOverlay) pauseOverlay.style.display = 'none';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
         startStudentProgressTracking(videoId);
@@ -3133,11 +3145,19 @@ function startStudentVideo(videoId) {
 
     ytPlayStates[videoId] = true;
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
-    if (yt && typeof yt.playVideo === 'function') {
-        try { yt.playVideo(); } catch(e) {}
+    if (yt) {
+        try {
+            if (typeof yt.setPlaybackQuality === 'function') {
+                yt.setPlaybackQuality('hd1080');
+            }
+            if (typeof yt.playVideo === 'function') {
+                yt.playVideo();
+            }
+        } catch(e) {}
     }
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     if (ytIframe && ytIframe.contentWindow) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
         ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
     }
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
