@@ -540,7 +540,7 @@ body.has-fullscreen-player {
     left: 0 !important;
     border: 0 !important;
     background: #000000 !important;
-    pointer-events: none !important;
+    pointer-events: auto !important;
     object-fit: contain;
     z-index: 2;
     image-rendering: -webkit-optimize-contrast;
@@ -549,15 +549,7 @@ body.has-fullscreen-player {
 
 /* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
 .ed-yt-corner-shield {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 110px;
-    height: 55px;
-    z-index: 6;
-    pointer-events: auto;
-    cursor: default;
-    background: transparent;
+    display: none !important;
 }
 
 /* طبقة المشغل الأكاديمي الصافي المتقدم */
@@ -2278,14 +2270,14 @@ video::-webkit-media-controls-download-button {
                                         if ($isYt) {
                                             if (preg_match('/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([a-zA-Z0-9_\-]{11})/', $rawUrl ?: $ytEmbed, $ym)) {
                                                 $ytId = $ym[1];
-                                                $ytEmbed = 'https://www.youtube-nocookie.com/embed/' . $ytId;
+                                                $ytEmbed = 'https://www.youtube.com/embed/' . $ytId;
                                             } elseif (!empty($ytEmbed)) {
-                                                $ytEmbed = str_replace(['watch?v=', 'youtube.com/embed/'], ['embed/', 'youtube-nocookie.com/embed/'], $ytEmbed);
+                                                $ytEmbed = str_replace(['watch?v=', 'youtube-nocookie.com/embed/'], ['embed/', 'youtube.com/embed/'], $ytEmbed);
                                             }
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&vq=hd1080&origin=' . urlencode(request()->getSchemeAndHttpHost());
-                                                $ytEmbed = str_replace(['https://www.youtube.com/embed/', 'http://www.youtube.com/embed/'], 'https://www.youtube-nocookie.com/embed/', $ytEmbed);
+                                                $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
+                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
                                             }
                                         }
                                         $isDirectVideo = !empty($rawUrl) && (
@@ -2320,13 +2312,9 @@ video::-webkit-media-controls-download-button {
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
-                                                            tabindex="-1"
-                                                            aria-hidden="true"
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
-                                                    {{-- درع زاوية يوتيوب لحجب أي علامة مائية ومنع التفاعل --}}
-                                                    <div class="ed-yt-corner-shield" aria-hidden="true" oncontextmenu="return false;"></div>
                                                 @else
                                                     <video id="player_vid_{{ $video->id }}" 
                                                            class="ed-native-video" 
@@ -2376,7 +2364,8 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
+                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة للفيديوهات المباشرة المرفوعة على السيرفر --}}
+                                            @if(!$isYt)
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف والتكبير المزدوج --}}
                                                     <div class="ed-click-surface" onclick="handleClickSurface('{{ $video->id }}', event)" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
@@ -2489,7 +2478,9 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                             </div>
+                                            @endif
 
+                                            @if(!$isYt)
                                                 {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
                                                 <div class="ed-video-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeStudentPlayback('{{ $video->id }}')" style="display: none;">
                                                     <div class="ed-pause-content">
@@ -2502,6 +2493,7 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                                 </div>
+                                            @endif
 
                                                 {{-- نافذة الخطأ الذكية في حال تعثر البث المباشر --}}
                                                 <div id="player_err_{{ $video->id }}" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; z-index: 25;">
@@ -2619,11 +2611,11 @@ video::-webkit-media-controls-download-button {
                                                 <span>{{ __('جودة العرض:') }}</span>
                                             </span>
                                             <div class="ed-quality-segmented">
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p</button>
+                                                <button type="button" class="ed-quality-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p</button>
                                                 <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p</button>
                                                 <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p</button>
                                                 <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
-                                                <button type="button" class="ed-quality-opt active" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, '{{ __('تلقائي') }}')">{{ __('تلقائي') }}</button>
+                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, '{{ __('تلقائي') }}')">{{ __('تلقائي') }}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -3094,14 +3086,12 @@ function handleYtStateChange(videoId, state) {
         registerPlayerActivity(videoId);
     } else if (state === 2) { // 2 = PAUSED
         ytPlayStates[videoId] = false;
-        if (pauseOverlay) pauseOverlay.style.display = 'flex';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
         if (frame) frame.classList.remove('controls-hidden');
         clearTimeout(playerHideTimers[videoId]);
         stopStudentProgressTracking(videoId);
     } else if (state === 0) { // 0 = ENDED
         ytPlayStates[videoId] = false;
-        if (pauseOverlay) pauseOverlay.style.display = 'flex';
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
         if (frame) frame.classList.remove('controls-hidden');
         stopStudentProgressTracking(videoId);
@@ -3370,9 +3360,10 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
 
 function applyStoredQualityPreference(videoId) {
     try {
-        const pref = localStorage.getItem('step_player_quality');
+        const pref = localStorage.getItem('step_player_quality') || '1080p';
         if (pref) {
-            const optBtn = document.querySelector(`#quality_menu_${videoId} button[onclick*="'${pref}'"]`);
+            const optBtn = document.querySelector(`#card_video_${videoId} .ed-quality-opt[onclick*="'${pref}'"]`) ||
+                           document.querySelector(`#quality_menu_${videoId} button[onclick*="'${pref}'"]`);
             if (optBtn) {
                 setVideoQuality(videoId, pref, optBtn, optBtn.innerText.trim());
             }
