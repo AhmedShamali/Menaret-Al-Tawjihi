@@ -533,18 +533,19 @@ body.has-fullscreen-player {
 
 .ed-yt-viewport .ed-video-iframe {
     position: absolute;
-    inset: 0;
-    width: 100% !important;
-    height: 100% !important;
     top: 0 !important;
     left: 0 !important;
+    width: var(--yt-base-w, 1920px);
+    height: var(--yt-base-h, 1080px);
+    max-width: none !important;
+    max-height: none !important;
     border: 0 !important;
     background: #000000 !important;
     pointer-events: none !important;
-    object-fit: contain;
+    transform-origin: 0 0;
+    transform: scale(var(--yt-scale, 1));
     z-index: 2;
     image-rendering: -webkit-optimize-contrast;
-    transform: translateZ(0);
 }
 
 /* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
@@ -2985,9 +2986,52 @@ function getPlayerContext(videoId) {
 }
 
 let ytPlayStates = {};
+const ytVirtualResolutions = {};
+
+function scaleYtIframe(videoId, baseW, baseH) {
+    const iframe = document.getElementById(`player_yt_${videoId}`);
+    const vp = iframe ? iframe.closest('.ed-yt-viewport') : null;
+    if (!iframe || !vp) return;
+    
+    if (baseW && baseH) {
+        ytVirtualResolutions[videoId] = { w: baseW, h: baseH };
+    }
+    const res = ytVirtualResolutions[videoId] || { w: 1920, h: 1080 };
+    const containerW = vp.clientWidth || vp.offsetWidth;
+    if (containerW > 0) {
+        const scale = containerW / res.w;
+        iframe.style.setProperty('--yt-base-w', `${res.w}px`);
+        iframe.style.setProperty('--yt-base-h', `${res.h}px`);
+        iframe.style.setProperty('--yt-scale', scale);
+        iframe.style.width = `${res.w}px`;
+        iframe.style.height = `${res.h}px`;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.transformOrigin = 'top left';
+    }
+}
+
+function scaleAllYtIframes() {
+    document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
+        const vidId = iframe.id.replace('player_yt_', '');
+        scaleYtIframe(vidId);
+    });
+}
+
+window.addEventListener('resize', scaleAllYtIframes);
+window.addEventListener('orientationchange', scaleAllYtIframes);
+
+if (typeof ResizeObserver !== 'undefined') {
+    const ytRo = new ResizeObserver(() => {
+        scaleAllYtIframes();
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.ed-yt-viewport, .ed-player-frame').forEach(el => ytRo.observe(el));
+    });
+}
 
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
+    scaleAllYtIframes();
     if (window.YT && window.YT.Player) {
         document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
             initSingleYtPlayer(iframe.id);
@@ -3002,6 +3046,7 @@ function onYouTubeIframeAPIReady() {
 function initSingleYtPlayer(iframeId) {
     if (!iframeId) return null;
     const videoId = iframeId.replace('player_yt_', '');
+    scaleYtIframe(videoId, 1920, 1080);
     if (ytPlayers[videoId]) return ytPlayers[videoId];
     if (window.YT && window.YT.Player) {
         try {
@@ -3318,6 +3363,16 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
     if (innerTag) innerTag.textContent = displayLabel;
 
     // لليوتيوب
+    const ytResMap = {
+        '1080p': { w: 1920, h: 1080 },
+        '720p':  { w: 1280, h: 720 },
+        '480p':  { w: 854,  h: 480 },
+        '360p':  { w: 640,  h: 360 },
+        'auto':  { w: 1920, h: 1080 }
+    };
+    const targetRes = ytResMap[quality] || { w: 1920, h: 1080 };
+    scaleYtIframe(videoId, targetRes.w, targetRes.h);
+
     const ytQualityMap = {
         '1080p': 'hd1080',
         '720p': 'hd720',
