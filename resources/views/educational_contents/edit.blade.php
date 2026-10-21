@@ -190,6 +190,31 @@
                                 </div>
                             @endif
                         </div>
+
+                        <!-- خيار ضبط جودة العرض التلقائية للطلاب (التحكم الإداري الكامل) -->
+                        <div class="field-group" style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 12px 14px; margin-top: 14px;">
+                            <label class="field-label" style="font-weight: 800; color: #166534; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <span>
+                                    <i class="fa-solid fa-sliders" style="color: #16a34a; font-size: 1rem;"></i> 
+                                    {{ __('دقة وجودة الفيديو التلقائية عند الطالب (تحكم المشرف / المعلم)') }}
+                                </span>
+                                <span style="font-size: 0.72rem; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                    ⭐ يفرض الدقة تلقائياً
+                                </span>
+                            </label>
+                            @php
+                                $curDefQuality = $content->default_quality ?? '1080p';
+                            @endphp
+                            <select name="default_quality" id="edit_default_quality_select" class="input-style" style="padding: 9px 12px; background: #ffffff; border-color: #86efac; font-weight: 700; color: #14532d; border-radius: 8px;">
+                                <option value="1080p" {{ $curDefQuality === '1080p' ? 'selected' : '' }}>1080p Full HD (موصى به - دقة فائقة الوضوح تلقائياً عند جميع الطلبة)</option>
+                                <option value="720p" {{ $curDefQuality === '720p' ? 'selected' : '' }}>720p HD (دقة عالية متوازنة)</option>
+                                <option value="480p" {{ $curDefQuality === '480p' ? 'selected' : '' }}>480p SD (توفير البيانات والنت الضعيف)</option>
+                                <option value="auto" {{ $curDefQuality === 'auto' ? 'selected' : '' }}>تلقائي Auto (حسب سرعة إنترنت الطالب)</option>
+                            </select>
+                            <small class="upload-hint" style="color: #15803d; font-size: 0.78rem; display: block; margin-top: 6px; line-height: 1.4;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('عند اختيار 1080p، سيقوم مشغل المنصة بإجبار البث على دقة 1080p Full HD فور بدء التشغيل دون تشويش أو ضبابية.') }}
+                            </small>
+                        </div>
                     </div>
 
                     <!-- قسم الملف -->

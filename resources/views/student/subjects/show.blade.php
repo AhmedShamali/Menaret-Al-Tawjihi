@@ -2316,7 +2316,21 @@ video::-webkit-media-controls-download-button {
                                             if (!empty($ytEmbed)) {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
-                                                $ytEmbed = $ytBase . '?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&vq=hd1080&highres=1&origin=' . urlencode(request()->getSchemeAndHttpHost());
+                                                $targetDefQuality = $video->default_quality ?? '1080p';
+                                                $vqMap = [
+                                                    '2160p' => 'hd2160',
+                                                    '1440p' => 'hd1440',
+                                                    '1080p' => 'hd1080',
+                                                    '720p'  => 'hd720',
+                                                    '480p'  => 'large',
+                                                    '360p'  => 'medium',
+                                                    'auto'  => 'auto',
+                                                ];
+                                                $targetVq = $vqMap[$targetDefQuality] ?? 'hd1080';
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&vq={$targetVq}&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                            } else {
+                                                $targetDefQuality = $video->default_quality ?? '1080p';
+                                                $targetVq = 'hd1080';
                                             }
                                         }
                                         $isDirectVideo = !empty($rawUrl) && (
@@ -2348,6 +2362,8 @@ video::-webkit-media-controls-download-button {
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             data-yt-id="{{ $ytId ?? '' }}"
+                                                            data-default-quality="{{ $targetDefQuality ?? '1080p' }}"
+                                                            data-target-vq="{{ $targetVq ?? 'hd1080' }}"
                                                             width="1920"
                                                             height="1080"
                                                             src="{{ $ytEmbed }}" 
@@ -2487,27 +2503,27 @@ video::-webkit-media-controls-download-button {
                                                                 <div class="ed-quality-dropdown" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
                                                                     <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('quality_menu_{{ $video->id }}', event); event.stopPropagation();" title="{{ __('دقة وجودة الفيديو') }}">
                                                                         <i class="fa-solid fa-sliders"></i>
-                                                                        <span id="active_quality_{{ $video->id }}">1080p</span>
+                                                                        <span id="active_quality_{{ $video->id }}">{{ $targetDefQuality ?? '1080p' }}</span>
                                                                     </button>
                                                                     <div class="ed-popover-menu" id="quality_menu_{{ $video->id }}" onclick="event.stopPropagation()">
                                                                         <div class="ed-pop-header"><i class="fa-solid fa-sparkles"></i> {{ __('دقة الفيديو') }}</div>
-                                                                        <button type="button" class="ed-pop-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD', event); event.stopPropagation();">
+                                                                        <button type="button" class="ed-pop-opt {{ ($targetDefQuality ?? '1080p') === '1080p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD', event); event.stopPropagation();">
                                                                             <span>1080p Full HD</span>
                                                                             <span style="font-size: 0.65rem; color: #4ade80;">الأعلى</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD', event); event.stopPropagation();">
+                                                                        <button type="button" class="ed-pop-opt {{ ($targetDefQuality ?? '1080p') === '720p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD', event); event.stopPropagation();">
                                                                             <span>720p HD</span>
                                                                             <span style="font-size: 0.65rem; color: #60a5fa;">متوازنة</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD', event); event.stopPropagation();">
+                                                                        <button type="button" class="ed-pop-opt {{ ($targetDefQuality ?? '1080p') === '480p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD', event); event.stopPropagation();">
                                                                             <span>480p SD</span>
                                                                             <span style="font-size: 0.65rem; color: #f59e0b;">توفير</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p', event); event.stopPropagation();">
+                                                                        <button type="button" class="ed-pop-opt {{ ($targetDefQuality ?? '1080p') === '360p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p', event); event.stopPropagation();">
                                                                             <span>360p</span>
                                                                             <span style="font-size: 0.65rem; color: #94a3b8;">نت ضعيف</span>
                                                                         </button>
-                                                                        <button type="button" class="ed-pop-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)', event); event.stopPropagation();">
+                                                                        <button type="button" class="ed-pop-opt {{ ($targetDefQuality ?? '1080p') === 'auto' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, 'تلقائي (Auto)', event); event.stopPropagation();">
                                                                             <span>{{ __('تلقائي (Auto)') }}</span>
                                                                             <span style="font-size: 0.65rem; color: #a855f7;">تكيف</span>
                                                                         </button>
@@ -2657,11 +2673,11 @@ video::-webkit-media-controls-download-button {
                                                 <span>{{ __('جودة العرض:') }}</span>
                                             </span>
                                             <div class="ed-quality-segmented">
-                                                <button type="button" class="ed-quality-opt active" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
-                                                <button type="button" class="ed-quality-opt" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, '{{ __('تلقائي') }}')">{{ __('تلقائي') }}</button>
+                                                <button type="button" class="ed-quality-opt {{ ($targetDefQuality ?? '1080p') === '1080p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p</button>
+                                                <button type="button" class="ed-quality-opt {{ ($targetDefQuality ?? '1080p') === '720p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p</button>
+                                                <button type="button" class="ed-quality-opt {{ ($targetDefQuality ?? '1080p') === '480p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p</button>
+                                                <button type="button" class="ed-quality-opt {{ ($targetDefQuality ?? '1080p') === '360p' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
+                                                <button type="button" class="ed-quality-opt {{ ($targetDefQuality ?? '1080p') === 'auto' ? 'active' : '' }}" onclick="setVideoQuality('{{ $video->id }}', 'auto', this, '{{ __('تلقائي') }}')">{{ __('تلقائي') }}</button>
                                             </div>
                                         </div>
                                     </div>
@@ -3136,6 +3152,27 @@ function handlePlayerMouseLeave(videoId) {
     }
 }
 
+// فرض وتثبيت جودة الفيديو المعتمدة لليوتيوب فور بدء البث
+function forceStudentYtQuality(videoId) {
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    const targetVq = ytIframe ? (ytIframe.getAttribute('data-target-vq') || 'hd1080') : 'hd1080';
+    let yt = ytPlayers[videoId];
+    if (yt) {
+        try {
+            if (typeof yt.setPlaybackQuality === 'function') {
+                yt.setPlaybackQuality(targetVq);
+            }
+            if (typeof yt.setPlaybackQualityRange === 'function') {
+                yt.setPlaybackQualityRange(targetVq, targetVq);
+            }
+        } catch(e) {}
+    }
+    if (ytIframe && ytIframe.contentWindow) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: [targetVq] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: [targetVq, targetVq] }), '*');
+    }
+}
+
 // تغيير حالة يوتيوب
 function handleYtStateChange(videoId, state) {
     const poster = document.getElementById(`poster_${videoId}`);
@@ -3145,19 +3182,11 @@ function handleYtStateChange(videoId, state) {
     
     // 1 = PLAYING or 3 = BUFFERING
     if (state === 1 || state === 3) {
-        let yt = ytPlayers[videoId];
-        if (yt) {
-            try {
-                if (typeof yt.setPlaybackQuality === 'function') yt.setPlaybackQuality('hd1080');
-                if (typeof yt.setPlaybackQualityRange === 'function') yt.setPlaybackQualityRange('hd1080', 'hd1080');
-            } catch(e) {}
-        }
-        const ytIframe = document.getElementById(`player_yt_${videoId}`);
-        if (ytIframe && ytIframe.contentWindow) {
-            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
-            ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'hd1080'] }), '*');
-        }
+        forceStudentYtQuality(videoId);
         if (state === 1) {
+            setTimeout(() => forceStudentYtQuality(videoId), 400);
+            setTimeout(() => forceStudentYtQuality(videoId), 1200);
+            setTimeout(() => forceStudentYtQuality(videoId), 2500);
             ytPlayStates[videoId] = true;
             if (poster) {
                 poster.style.opacity = '0';
@@ -3217,12 +3246,10 @@ function startStudentVideo(videoId) {
     }
 
     ytPlayStates[videoId] = true;
+    forceStudentYtQuality(videoId);
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt) {
         try {
-            if (typeof yt.setPlaybackQuality === 'function') {
-                yt.setPlaybackQuality('hd1080');
-            }
             if (typeof yt.playVideo === 'function') {
                 yt.playVideo();
             }
@@ -3230,9 +3257,11 @@ function startStudentVideo(videoId) {
     }
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     if (ytIframe && ytIframe.contentWindow) {
-        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
         ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
     }
+    setTimeout(() => forceStudentYtQuality(videoId), 500);
+    setTimeout(() => forceStudentYtQuality(videoId), 1500);
+
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
     startStudentProgressTracking(videoId);
@@ -3463,13 +3492,13 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
 
 function applyStoredQualityPreference(videoId) {
     try {
-        const pref = localStorage.getItem('step_player_quality') || '1080p';
-        if (pref) {
-            const optBtn = document.querySelector(`#card_video_${videoId} .ed-quality-opt[onclick*="'${pref}'"]`) ||
-                           document.querySelector(`#quality_menu_${videoId} button[onclick*="'${pref}'"]`);
-            if (optBtn) {
-                setVideoQuality(videoId, pref, optBtn, optBtn.innerText.trim());
-            }
+        const iframe = document.getElementById(`player_yt_${videoId}`);
+        const defaultQuality = iframe ? (iframe.getAttribute('data-default-quality') || '1080p') : '1080p';
+        const targetQuality = defaultQuality || '1080p';
+        const optBtn = document.querySelector(`#card_video_${videoId} .ed-quality-opt[onclick*="'${targetQuality}'"]`) ||
+                       document.querySelector(`#quality_menu_${videoId} button[onclick*="'${targetQuality}'"]`);
+        if (optBtn) {
+            setVideoQuality(videoId, targetQuality, optBtn, optBtn.innerText.trim());
         }
     } catch(e) {}
 }

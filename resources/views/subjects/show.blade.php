@@ -97,7 +97,18 @@
                                 @php
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $targetDefQuality = $video->default_quality ?? '1080p';
+                                    $vqMap = [
+                                        '2160p' => 'hd2160',
+                                        '1440p' => 'hd1440',
+                                        '1080p' => 'hd1080',
+                                        '720p'  => 'hd720',
+                                        '480p'  => 'large',
+                                        '360p'  => 'medium',
+                                        'auto'  => 'auto',
+                                    ];
+                                    $targetVq = $vqMap[$targetDefQuality] ?? 'hd1080';
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&hd=1&vq={$targetVq}&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
@@ -105,6 +116,8 @@
                                 <div class="ed-yt-viewport">
                                     <iframe class="custom-iframe" 
                                             id="pub_yt_{{ $video->id }}"
+                                            data-default-quality="{{ $targetDefQuality }}"
+                                            data-target-vq="{{ $targetVq }}"
                                             src="{{ $ytSafeSrc }}" 
                                             frameborder="0" 
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
@@ -1451,6 +1464,26 @@
         }
     }
 
+    function forcePubYtHighQuality(vidId) {
+        const iframe = document.getElementById(`pub_yt_${vidId}`);
+        const targetVq = iframe ? (iframe.getAttribute('data-target-vq') || 'hd1080') : 'hd1080';
+        const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
+        if (yt) {
+            try {
+                if (typeof yt.setPlaybackQuality === 'function') {
+                    yt.setPlaybackQuality(targetVq);
+                }
+                if (typeof yt.setPlaybackQualityRange === 'function') {
+                    yt.setPlaybackQualityRange(targetVq, targetVq);
+                }
+            } catch(e) {}
+        }
+        if (iframe && iframe.contentWindow) {
+            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: [targetVq] }), '*');
+            iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: [targetVq, targetVq] }), '*');
+        }
+    }
+
     function handlePubYtStateChange(vidId, state) {
         const poster = document.getElementById(`pub_poster_${vidId}`);
         const btn = document.getElementById(`pub_btn_${vidId}`);
@@ -1458,6 +1491,11 @@
         const pauseOverlay = document.getElementById(`pub_pause_overlay_${vidId}`);
 
         if (state === 1) { // playing
+            forcePubYtHighQuality(vidId);
+            setTimeout(() => forcePubYtHighQuality(vidId), 400);
+            setTimeout(() => forcePubYtHighQuality(vidId), 1200);
+            setTimeout(() => forcePubYtHighQuality(vidId), 2500);
+
             if (poster) {
                 poster.style.opacity = '0';
                 poster.style.pointerEvents = 'none';

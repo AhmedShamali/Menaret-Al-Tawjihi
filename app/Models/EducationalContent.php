@@ -69,12 +69,49 @@ class EducationalContent extends Model
     }
 
     /**
-     * رابط التضمين المباشر لليوتيوب YouTube Embed URL
+     * الجودة الافتراضية للفيديو المحددة من قبل المشرف/المعلم
+     */
+    public function getDefaultQualityAttribute(): string
+    {
+        $url = $this->url_path ?? '';
+        if (preg_match('/[?&]quality=([a-zA-Z0-9]+)/i', $url, $matches)) {
+            return strtolower($matches[1]);
+        }
+        return '1080p'; // الدقة الافتراضية المعيارية للمنصة
+    }
+
+    /**
+     * المسار النظيف لملف الفيديو دون معلمات الجودة الملحقة
+     */
+    public function getCleanVideoUrlAttribute(): ?string
+    {
+        $url = $this->url_path ?? '';
+        if (empty($url)) return null;
+        $cleaned = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $url);
+        return rtrim($cleaned, '?&');
+    }
+
+    /**
+     * رابط التضمين المباشر لليوتيوب YouTube Embed URL بأعلى دقة
      */
     public function getYoutubeEmbedUrlAttribute()
     {
         $id = $this->youtube_id;
-        return $id ? "https://www.youtube-nocookie.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&playsinline=1" : null;
+        if (!$id) return null;
+
+        $quality = $this->default_quality;
+        $vqMap = [
+            '2160p' => 'hd2160',
+            '1440p' => 'hd1440',
+            '1080p' => 'hd1080',
+            '720p'  => 'hd720',
+            '480p'  => 'large',
+            '360p'  => 'medium',
+            'auto'  => 'auto',
+        ];
+        $vq = $vqMap[$quality] ?? 'hd1080';
+
+        return "https://www.youtube-nocookie.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=1&showinfo=0&fs=1&playsinline=1&hd=1&vq={$vq}&highres=1";
     }
 
     /**

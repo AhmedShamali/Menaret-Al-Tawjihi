@@ -90,6 +90,19 @@ class EducationalContentController extends Controller
     }
 
     /**
+     * إلحاق جودة العرض المحددة من المشرف أو المعلم كمعلمة جودة بالرابط
+     */
+    protected function attachQualityToUrl(?string $url, string $quality = '1080p'): ?string
+    {
+        if (empty($url)) return $url;
+        $quality = in_array(strtolower($quality), ['1080p', '720p', '480p', 'auto']) ? strtolower($quality) : '1080p';
+        $cleaned = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $url);
+        $cleaned = rtrim($cleaned, '?&');
+        $sep = str_contains($cleaned, '?') ? '&' : '?';
+        return $cleaned . $sep . 'quality=' . $quality;
+    }
+
+    /**
      * فحص هل المحتوى مصرح للطالب الحالي وفق المنطقة (غزة / الضفة)
      */
     protected function checkStudentRegionAccess(EducationalContent $content): bool
@@ -539,6 +552,12 @@ class EducationalContentController extends Controller
             }
         }
 
+        // إرفاق جودة الفيديو المختارة من قبل المعلم/المشرف (1080p افتراضياً)
+        if (!empty($urlPath)) {
+            $defaultQuality = $request->input('default_quality', '1080p');
+            $urlPath = $this->attachQualityToUrl($urlPath, $defaultQuality);
+        }
+
         // --- التخزين مع دعم كافة الامتدادات مع الاحتياطي المحلي والتوافقية مع بيئة الاختبار ---
         if ($request->hasFile('file_upload_pdf') && $request->file('file_upload_pdf')->isValid()) {
             $uploaded = $request->file('file_upload_pdf');
@@ -822,6 +841,12 @@ class EducationalContentController extends Controller
             if (in_array(strtolower(trim((string)$content->url_path)), $invalidTokens)) {
                 $content->url_path = null;
             }
+        }
+
+        // تحديث جودة الفيديو الافتراضية المحددة من المشرف / المعلم
+        if (!empty($content->url_path)) {
+            $defaultQuality = $request->input('default_quality', $content->default_quality ?? '1080p');
+            $content->url_path = $this->attachQualityToUrl($content->url_path, $defaultQuality);
         }
 
         // --- تحديث الملف وحذف القديم بأمان مع دعم السحابة والتخزين المحلي ---

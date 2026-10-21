@@ -237,7 +237,8 @@ class VideoController extends Controller
             abort(404, 'عذراً، الدرس التعليمي غير موجود.');
         }
 
-        $rawUrl = trim($content->url_path ?? '');
+        $rawUrl = trim($content->clean_video_url ?? $content->url_path ?? '');
+        $rawUrl = preg_replace('/[?&]quality=[^&]+/', '', $rawUrl);
         if (empty($rawUrl) || in_array(strtolower($rawUrl), ['undefined', 'null', 'none', 'false', '0'])) {
             abort(404, 'ملف الفيديو غير متوفر لهذا الدرس.');
         }

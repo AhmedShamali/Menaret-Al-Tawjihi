@@ -232,6 +232,28 @@
                                 <i class="fa-solid fa-circle-info"></i> {{ __('يُفضل استخدام رابط YouTube لتوفير مساحة الاستضافة وسرعة البث الفائقة.') }}
                             </small>
                         </div>
+
+                        <!-- خيار ضبط جودة العرض التلقائية للطلاب (التحكم الإداري الكامل) -->
+                        <div class="form-group" style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 10px; padding: 12px 14px; margin-top: 14px; margin-bottom: 0;">
+                            <label class="f-label" style="font-weight: 800; color: #166534; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                                <span>
+                                    <i class="fa-solid fa-sliders" style="color: #16a34a; font-size: 1rem;"></i> 
+                                    {{ __('دقة وجودة الفيديو التلقائية عند الطالب (تحكم المشرف / المعلم)') }}
+                                </span>
+                                <span style="font-size: 0.72rem; background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 6px; font-weight: 700;">
+                                    ⭐ يفرض الدقة تلقائياً
+                                </span>
+                            </label>
+                            <select name="default_quality" id="default_quality_select" class="f-input" style="padding: 9px 12px; background: #ffffff; border-color: #86efac; font-weight: 700; color: #14532d; border-radius: 8px;">
+                                <option value="1080p" selected>1080p Full HD (موصى به - دقة فائقة الوضوح تلقائياً عند جميع الطلبة)</option>
+                                <option value="720p">720p HD (دقة عالية متوازنة)</option>
+                                <option value="480p">480p SD (توفير البيانات والنت الضعيف)</option>
+                                <option value="auto">تلقائي Auto (حسب سرعة إنترنت الطالب)</option>
+                            </select>
+                            <small style="color: #15803d; font-size: 0.78rem; display: block; margin-top: 6px; line-height: 1.4;">
+                                <i class="fa-solid fa-circle-check"></i> {{ __('عند اختيار 1080p، سيقوم مشغل المنصة بإجبار البث على دقة 1080p Full HD فور بدء التشغيل دون تشويش أو ضبابية.') }}
+                            </small>
+                        </div>
                     </div>
 
                     <!-- تفاصيل الملف المرفق -->
