@@ -589,89 +589,9 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* دروع حماية أكاديمية متكاملة تمنع وصول الطالب ليوتيوب بأي شكل */
-.ed-yt-top-shield {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 64px;
-    background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.85) 75%, transparent 100%);
-    z-index: 18;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    pointer-events: auto !important;
-    user-select: none;
-}
-
-.ed-yt-top-shield-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #ffffff;
-    font-size: 0.9rem;
-    font-weight: 700;
-    max-width: 75%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.ed-yt-shield-badge {
-    background: #0284c7;
-    color: #ffffff;
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-}
-
-.ed-yt-shield-hd-badge {
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.6);
-    color: #10b981;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    flex-shrink: 0;
-    backdrop-filter: blur(6px);
-}
-
-.ed-yt-shield-br {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 195px;
-    height: 56px;
-    background: #000000;
-    z-index: 18;
-    pointer-events: auto !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: default;
-    border-top-left-radius: 8px;
-}
-
-.ed-yt-shield-brand {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
+/* المشغل الأكاديمي: واجهة سينمائية حديثة بالكامل بدون أي دروع أو مربعات سوداء تشوه الرؤية */
+.ed-yt-top-shield,
+.ed-yt-shield-br,
 .ed-yt-shield-bl {
     display: none !important;
 }
@@ -804,11 +724,12 @@ body.has-fullscreen-player {
     right: 0;
     z-index: 50;
     padding: 12px 20px;
-    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.7) 65%, transparent 100%);
+    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.85) 0%, rgba(2, 6, 23, 0.3) 65%, transparent 100%);
     display: flex;
     align-items: center;
     justify-content: space-between;
     pointer-events: auto !important;
+    transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .ed-pth-title {
@@ -855,11 +776,12 @@ body.has-fullscreen-player {
     right: 0;
     z-index: 70;
     padding: 12px 20px 14px;
-    background: linear-gradient(to top, rgba(2, 6, 23, 0.98) 0%, rgba(2, 6, 23, 0.85) 60%, transparent 100%);
+    background: linear-gradient(to top, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.6) 60%, transparent 100%);
     display: flex;
     flex-direction: column;
     gap: 8px;
     pointer-events: auto !important;
+    transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .ed-scrubber-wrapper {
@@ -2521,21 +2443,7 @@ video::-webkit-media-controls-download-button {
                                                 @endif
                                             </div>
 
-                                            @if(!empty($ytEmbed))
-                                                {{-- دروع حماية تمنع الطالب من الوصول ليوتيوب نهائياً --}}
-                                                <div class="ed-yt-top-shield" onclick="event.stopPropagation();">
-                                                    <div class="ed-yt-top-shield-title">
-                                                        <span class="ed-yt-shield-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
-                                                        <span class="ed-yt-shield-name">{{ $video->title }}</span>
-                                                    </div>
-                                                    <div class="ed-yt-shield-hd-badge">
-                                                        <i class="fa-solid fa-circle-check"></i> 1080p Full HD
-                                                    </div>
-                                                </div>
-                                                <div class="ed-yt-shield-br" onclick="event.stopPropagation();">
-                                                    <span class="ed-yt-shield-brand"><i class="fa-solid fa-shield-halved"></i> {{ config('app.name', 'المنصة التعليمية') }}</span>
-                                                </div>
-                                            @endif
+
 
                                             {{-- علامة مائية ذكية متحركة لحماية الملكية الأكاديمية للمنصة --}}
                                             @if(auth('student')->check() || auth()->check())

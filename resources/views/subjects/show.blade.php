@@ -117,20 +117,7 @@
                                             tabindex="-1"
                                             loading="lazy">
                                     </iframe>
-                                    {{-- دروع حماية تمنع الطالب من الوصول ليوتيوب نهائياً --}}
-                                    <div class="ed-yt-top-shield" onclick="event.stopPropagation();">
-                                        <div class="ed-yt-top-shield-title">
-                                            <span class="ed-yt-shield-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
-                                            <span class="ed-yt-shield-name">{{ $video->title }}</span>
-                                        </div>
-                                        <div class="ed-yt-shield-hd-badge">
-                                            <i class="fa-solid fa-circle-check"></i> 1080p Full HD
-                                        </div>
-                                    </div>
-                                    <div class="ed-yt-shield-br" onclick="event.stopPropagation();">
-                                        <span class="ed-yt-shield-brand"><i class="fa-solid fa-shield-halved"></i> {{ config('app.name', 'المنصة التعليمية') }}</span>
-                                    </div>
-                                    <div class="ed-yt-shield-bl" onclick="event.stopPropagation();"></div>
+
                                 </div>
                             @elseif(!empty($streamUrl))
                                 {{-- فيديو مباشر محمي عبر ستريم مشفر يخفي مسار السيرفر والسحابة بالكامل --}}
@@ -643,98 +630,11 @@
         z-index: 2;
     }
 
-    /* دروع حماية أكاديمية متكاملة تمنع وصول الطالب ليوتيوب بأي شكل */
-    .ed-yt-top-shield {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 64px;
-        background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.85) 75%, transparent 100%);
-        z-index: 18;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 16px;
-        pointer-events: auto !important;
-        user-select: none;
-    }
-
-    .ed-yt-top-shield-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: #ffffff;
-        font-size: 0.9rem;
-        font-weight: 700;
-        max-width: 75%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .ed-yt-shield-badge {
-        background: #0284c7;
-        color: #ffffff;
-        padding: 3px 10px;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        flex-shrink: 0;
-    }
-
-    .ed-yt-shield-hd-badge {
-        background: rgba(16, 185, 129, 0.2);
-        border: 1px solid rgba(16, 185, 129, 0.6);
-        color: #10b981;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        flex-shrink: 0;
-        backdrop-filter: blur(6px);
-    }
-
-    .ed-yt-shield-br {
-        position: absolute;
-        bottom: 0;
-        right: 0;
-        width: 195px;
-        height: 56px;
-        background: #000000;
-        z-index: 18;
-        pointer-events: auto !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: default;
-        border-top-left-radius: 8px;
-    }
-
-    .ed-yt-shield-brand {
-        font-size: 0.75rem;
-        font-weight: 700;
-        color: #94a3b8;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
+    /* المشغل الأكاديمي: واجهة سينمائية حديثة بالكامل بدون أي دروع أو مربعات سوداء تشوه الرؤية */
+    .ed-yt-top-shield,
+    .ed-yt-shield-br,
     .ed-yt-shield-bl {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 70px;
-        height: 56px;
-        background: #000000;
-        z-index: 18;
-        pointer-events: auto !important;
+        display: none !important;
     }
 
     .ed-ended-overlay {
