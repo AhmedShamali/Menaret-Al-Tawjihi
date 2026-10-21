@@ -288,6 +288,20 @@ class EducationalContentSyncService
         // 0.1 حذف وتطهير أي دروس مكررة لنفس المادة فوراً
         self::cleanDuplicateContents();
 
+        // 0.2 ضمان أن كافة الفيديوهات السابقة والمنشورة في قاعدة البيانات تحمل معيار الجودة 1080p
+        try {
+            $existingVideosWithoutQuality = EducationalContent::whereNotNull('url_path')
+                ->where('url_path', '!=', '')
+                ->where('url_path', 'not like', '%quality=%')
+                ->get();
+            foreach ($existingVideosWithoutQuality as $ev) {
+                $clean = trim($ev->url_path);
+                $sep = str_contains($clean, '?') ? '&' : '?';
+                $ev->url_path = $clean . $sep . 'quality=1080p';
+                $ev->saveQuietly();
+            }
+        } catch (\Throwable $e) {}
+
         // 1. تفعيل المحتويات الجديدة التي لا تمتلك قيمة محددة لـ is_visible (دون تغيير المحجوبة عمداً)
         try {
             EducationalContent::whereNull('is_visible')->update(['is_visible' => true]);

@@ -549,19 +549,27 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* عرض الفيديو بالكامل مع حجب كامل لكافة شعارات وبيانات يوتيوب */
-.ed-video-iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    object-fit: cover;
-    background: #000000;
+/* عرض الفيديو بالكامل بدقة 1080p نقية دون تشويه أو تحجيم زائد */
+.ed-video-iframe,
+.ed-native-video,
+.ed-yt-viewport iframe,
+.ed-player-frame iframe,
+.ed-player-frame video {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+    background: #000000 !important;
+    object-fit: contain !important;
     z-index: 2;
+    transform: none !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
 }
 
-/* فيوبورت الفيديو: عرض كامل بدون قص مع إغلاق منافذ التفاعل المباشر مع يوتيوب */
+/* فيوبورت الفيديو: متناسق 16:9 نقي يمنع أي تسريب */
 .ed-yt-viewport {
     position: absolute;
     inset: 0;
@@ -571,26 +579,155 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-.ed-yt-viewport .ed-video-iframe {
+/* دروع حماية أكاديمية متكاملة تمنع وصول الطالب ليوتيوب بأي شكل */
+.ed-yt-top-shield {
     position: absolute;
-    top: 0 !important;
-    left: 0 !important;
-    width: 1920px;
-    height: 1080px;
-    border: 0 !important;
-    background: #000000 !important;
-    pointer-events: none !important;
-    z-index: 2;
-    transform-origin: 0 0 !important;
-    -webkit-transform-origin: 0 0 !important;
-    max-width: none !important;
-    max-height: none !important;
-    will-change: transform;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.85) 75%, transparent 100%);
+    z-index: 18;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    pointer-events: auto !important;
+    user-select: none;
 }
 
-/* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
-.ed-yt-corner-shield {
-    display: none !important;
+.ed-yt-top-shield-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    max-width: 75%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ed-yt-shield-badge {
+    background: #0284c7;
+    color: #ffffff;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.ed-yt-shield-hd-badge {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.6);
+    color: #10b981;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    backdrop-filter: blur(6px);
+}
+
+.ed-yt-shield-br {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 195px;
+    height: 56px;
+    background: #000000;
+    z-index: 18;
+    pointer-events: auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    border-top-left-radius: 8px;
+}
+
+.ed-yt-shield-brand {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ed-yt-shield-bl {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 70px;
+    height: 56px;
+    background: #000000;
+    z-index: 18;
+    pointer-events: auto !important;
+}
+
+.ed-ended-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.96);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 25;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+}
+
+.ed-ended-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 420px;
+}
+
+.ed-ended-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    border: 2px solid #10b981;
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 16px;
+    animation: pulseSlow 2s infinite;
+}
+
+.ed-ended-title {
+    color: #ffffff;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.ed-ended-sub {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.ed-ended-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 /* طبقة المشغل الأكاديمي الصافي المتقدم */
@@ -2317,20 +2454,9 @@ video::-webkit-media-controls-download-button {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $vqMap = [
-                                                    '2160p' => 'hd2160',
-                                                    '1440p' => 'hd1440',
-                                                    '1080p' => 'hd1080',
-                                                    '720p'  => 'hd720',
-                                                    '480p'  => 'large',
-                                                    '360p'  => 'medium',
-                                                    'auto'  => 'auto',
-                                                ];
-                                                $targetVq = $vqMap[$targetDefQuality] ?? 'hd1080';
-                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&vq={$targetVq}&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                             } else {
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $targetVq = 'hd1080';
                                             }
                                         }
                                         $isDirectVideo = !empty($rawUrl) && (
@@ -2363,9 +2489,8 @@ video::-webkit-media-controls-download-button {
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             data-yt-id="{{ $ytId ?? '' }}"
                                                             data-default-quality="{{ $targetDefQuality ?? '1080p' }}"
-                                                            data-target-vq="{{ $targetVq ?? 'hd1080' }}"
-                                                            width="1920"
-                                                            height="1080"
+                                                            width="100%"
+                                                            height="100%"
                                                             src="{{ $ytEmbed }}" 
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
@@ -2392,6 +2517,23 @@ video::-webkit-media-controls-download-button {
                                                     </video>
                                                 @endif
                                             </div>
+
+                                            @if(!empty($ytEmbed))
+                                                {{-- دروع حماية تمنع الطالب من الوصول ليوتيوب نهائياً --}}
+                                                <div class="ed-yt-top-shield" onclick="event.stopPropagation();">
+                                                    <div class="ed-yt-top-shield-title">
+                                                        <span class="ed-yt-shield-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
+                                                        <span class="ed-yt-shield-name">{{ $video->title }}</span>
+                                                    </div>
+                                                    <div class="ed-yt-shield-hd-badge">
+                                                        <i class="fa-solid fa-circle-check"></i> 1080p Full HD
+                                                    </div>
+                                                </div>
+                                                <div class="ed-yt-shield-br" onclick="event.stopPropagation();">
+                                                    <span class="ed-yt-shield-brand"><i class="fa-solid fa-shield-halved"></i> {{ config('app.name', 'المنصة التعليمية') }}</span>
+                                                </div>
+                                                <div class="ed-yt-shield-bl" onclick="event.stopPropagation();"></div>
+                                            @endif
 
                                             {{-- علامة مائية ذكية متحركة لحماية الملكية الأكاديمية للمنصة --}}
                                             @if(auth('student')->check() || auth()->check())
@@ -2538,8 +2680,7 @@ video::-webkit-media-controls-download-button {
                                                     </div>
                                             </div>
 
-                                            @if(!$isYt)
-                                                {{-- شاشة الإيقاف المؤقت للفيديوهات المباشرة --}}
+                                                {{-- شاشة الإيقاف المؤقت لكافة الفيديوهات تحجب أي اقتراحات خارجية --}}
                                                 <div class="ed-video-pause-overlay" id="pause_overlay_{{ $video->id }}" onclick="resumeStudentPlayback('{{ $video->id }}')" style="display: none;">
                                                     <div class="ed-pause-content">
                                                         <button type="button" class="ed-pause-play-btn">
@@ -2551,7 +2692,25 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            @endif
+
+                                                {{-- شاشة انتهاء الدرس الأكاديمية لحجب شبكة اقتراحات يوتيوب --}}
+                                                <div class="ed-ended-overlay" id="ended_overlay_{{ $video->id }}" style="display: none;">
+                                                    <div class="ed-ended-card">
+                                                        <div class="ed-ended-icon"><i class="fa-solid fa-circle-check"></i></div>
+                                                        <h3 class="ed-ended-title">{{ __('اكتملت مشاهدة الدرس بنجاح') }}</h3>
+                                                        <p class="ed-ended-sub">{{ $video->title }}</p>
+                                                        <div class="ed-ended-actions">
+                                                            <button type="button" class="ed-btn-royal" onclick="replayStudentVideo('{{ $video->id }}')">
+                                                                <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة تشغيل الدرس') }}
+                                                            </button>
+                                                            @if(isset($exams) && $exams->count() > 0)
+                                                                <button type="button" class="ed-btn-royal emerald" onclick="switchSubjectTab('exams')">
+                                                                    <i class="fa-solid fa-file-signature"></i> {{ __('الانتقال لبنك الامتحانات') }}
+                                                                </button>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 {{-- نافذة الخطأ الذكية في حال تعثر البث المباشر --}}
                                                 <div id="player_err_{{ $video->id }}" style="display: none; position: absolute; inset: 0; background: rgba(15, 23, 42, 0.95); flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px; text-align: center; color: #fff; z-index: 25;">
@@ -3083,25 +3242,13 @@ const YT_QUALITY_DIMENSIONS = {
     'auto':  { w: 1920, h: 1080 }
 };
 
-// تحجيم إطار يوتيوب لفرض أبعاد 1920x1080 داخلياً لإجبار يوتيوب على جودة 1080p Full HD
+// ضمان ملاءمة إطار يوتيوب الكاملة لأبعاد المشغل
 function applyYtResolutionScaling(videoId, quality) {
     const iframe = document.getElementById(`player_yt_${videoId}`);
     if (!iframe) return;
-    const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
-    if (!viewport) return;
-
-    const q = quality || iframe.getAttribute('data-active-quality') || iframe.getAttribute('data-default-quality') || '1080p';
-    const dims = YT_QUALITY_DIMENSIONS[q] || YT_QUALITY_DIMENSIONS['1080p'];
-    
-    const viewportWidth = viewport.clientWidth || viewport.offsetWidth;
-    if (viewportWidth > 0) {
-        const scale = viewportWidth / dims.w;
-        iframe.style.width = `${dims.w}px`;
-        iframe.style.height = `${dims.h}px`;
-        iframe.style.transform = `scale(${scale})`;
-        iframe.style.transformOrigin = '0 0';
-        iframe.setAttribute('data-active-quality', q);
-    }
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.transform = 'none';
 }
 
 function updateAllYtIframeScaling() {
@@ -3117,8 +3264,6 @@ function updateAllYtIframeScaling() {
 window.addEventListener('resize', updateAllYtIframeScaling);
 window.addEventListener('orientationchange', updateAllYtIframeScaling);
 document.addEventListener('DOMContentLoaded', updateAllYtIframeScaling);
-setTimeout(updateAllYtIframeScaling, 300);
-setTimeout(updateAllYtIframeScaling, 1000);
 
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
@@ -3144,12 +3289,7 @@ function initSingleYtPlayer(iframeId) {
                 events: {
                     'onReady': function(event) {
                         try {
-                            if (event.target && typeof event.target.setPlaybackQuality === 'function') {
-                                event.target.setPlaybackQuality('hd1080');
-                            }
-                            if (event.target && typeof event.target.setPlaybackQualityRange === 'function') {
-                                event.target.setPlaybackQualityRange('hd1080', 'hd1080');
-                            }
+                            forceStudentYtQuality(videoId);
                         } catch(e) {}
                         updateStudentTimeDisplay(videoId);
                         applyStoredQualityPreference(videoId);
@@ -3198,31 +3338,44 @@ function handlePlayerMouseLeave(videoId) {
     }
 }
 
-// فرض وتثبيت جودة الفيديو المعتمدة لليوتيوب فور بدء البث
+// اختيار وفرض أعلى جودة متاحة تلقائياً (1080p Full HD أولاً ثم 720p HD)
 function forceStudentYtQuality(videoId) {
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
-    const targetVq = ytIframe ? (ytIframe.getAttribute('data-target-vq') || 'hd1080') : 'hd1080';
     let yt = ytPlayers[videoId];
     if (yt) {
         try {
+            let targetQ = 'hd1080';
+            if (typeof yt.getAvailableQualityLevels === 'function') {
+                const levels = yt.getAvailableQualityLevels();
+                if (levels && levels.length > 0) {
+                    if (levels.includes('hd1080')) {
+                        targetQ = 'hd1080';
+                    } else if (levels.includes('hd720')) {
+                        targetQ = 'hd720';
+                    } else {
+                        targetQ = levels[0];
+                    }
+                }
+            }
             if (typeof yt.setPlaybackQuality === 'function') {
-                yt.setPlaybackQuality(targetVq);
+                yt.setPlaybackQuality(targetQ);
             }
             if (typeof yt.setPlaybackQualityRange === 'function') {
-                yt.setPlaybackQualityRange(targetVq, targetVq);
+                yt.setPlaybackQualityRange(targetQ, targetQ);
             }
         } catch(e) {}
     }
     if (ytIframe && ytIframe.contentWindow) {
-        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: [targetVq] }), '*');
-        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: [targetVq, targetVq] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'hd1080'] }), '*');
     }
 }
 
-// تغيير حالة يوتيوب
+// تغيير حالة يوتيوب مع حجب كامل لكافة شاشات النهاية والتوقف المؤقت
 function handleYtStateChange(videoId, state) {
     const poster = document.getElementById(`poster_${videoId}`);
     const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
+    const endedOverlay = document.getElementById(`ended_overlay_${videoId}`);
     const barBtn = document.getElementById(`bar_btn_${videoId}`);
     const frame = document.getElementById(`player_frame_${videoId}`);
     
@@ -3230,8 +3383,8 @@ function handleYtStateChange(videoId, state) {
     if (state === 1 || state === 3) {
         forceStudentYtQuality(videoId);
         if (state === 1) {
-            setTimeout(() => forceStudentYtQuality(videoId), 400);
-            setTimeout(() => forceStudentYtQuality(videoId), 1200);
+            setTimeout(() => forceStudentYtQuality(videoId), 300);
+            setTimeout(() => forceStudentYtQuality(videoId), 1000);
             setTimeout(() => forceStudentYtQuality(videoId), 2500);
             ytPlayStates[videoId] = true;
             if (poster) {
@@ -3240,6 +3393,7 @@ function handleYtStateChange(videoId, state) {
                 setTimeout(() => { poster.style.display = 'none'; }, 250);
             }
             if (pauseOverlay) pauseOverlay.style.display = 'none';
+            if (endedOverlay) endedOverlay.style.display = 'none';
             if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
             startStudentProgressTracking(videoId);
             registerPlayerActivity(videoId);
@@ -3250,12 +3404,49 @@ function handleYtStateChange(videoId, state) {
         if (frame) frame.classList.remove('controls-hidden');
         clearTimeout(playerHideTimers[videoId]);
         stopStudentProgressTracking(videoId);
+        if (pauseOverlay) pauseOverlay.style.display = 'flex';
     } else if (state === 0) { // 0 = ENDED
         ytPlayStates[videoId] = false;
         if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-rotate-right"></i>';
         if (frame) frame.classList.remove('controls-hidden');
         stopStudentProgressTracking(videoId);
+        if (endedOverlay) endedOverlay.style.display = 'flex';
     }
+}
+
+// إعادة تشغيل الدرس من البداية
+function replayStudentVideo(videoId) {
+    const endedOverlay = document.getElementById(`ended_overlay_${videoId}`);
+    if (endedOverlay) endedOverlay.style.display = 'none';
+    const pauseOverlay = document.getElementById(`pause_overlay_${videoId}`);
+    if (pauseOverlay) pauseOverlay.style.display = 'none';
+
+    const ctx = getPlayerContext(videoId);
+    if (ctx.isDirect && ctx.direct) {
+        ctx.direct.currentTime = 0;
+        ctx.direct.play().catch(() => {});
+        const barBtn = document.getElementById(`bar_btn_${videoId}`);
+        if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+        startStudentProgressTracking(videoId);
+        return;
+    }
+
+    ytPlayStates[videoId] = true;
+    let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
+    if (yt && typeof yt.seekTo === 'function') {
+        try {
+            yt.seekTo(0);
+            yt.playVideo();
+        } catch(e) {}
+    }
+    const ytIframe = document.getElementById(`player_yt_${videoId}`);
+    if (ytIframe && ytIframe.contentWindow) {
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [0, true] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*');
+    }
+    const barBtn = document.getElementById(`bar_btn_${videoId}`);
+    if (barBtn) barBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    startStudentProgressTracking(videoId);
 }
 
 // بدء تشغيل الدرس من البوستر

@@ -1408,7 +1408,7 @@ body.in-standalone-app .stepvoro-install-banner {
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=20261021-v38', { updateViaCache: 'none' }).then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=20261021-v39', { updateViaCache: 'none' }).then(function(reg) {
                 // تفعيل فوري لأي عامل خدمة في حالة انتظار
                 if (reg.waiting) {
                     try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}
