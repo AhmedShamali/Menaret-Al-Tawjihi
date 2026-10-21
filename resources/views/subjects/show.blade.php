@@ -601,11 +601,16 @@
         position: absolute;
         top: 0;
         left: 0;
-        width: 100%;
-        height: 100%;
+        width: 1920px;
+        height: 1080px;
         border: none;
         z-index: 2;
         pointer-events: auto !important;
+        transform-origin: 0 0 !important;
+        -webkit-transform-origin: 0 0 !important;
+        max-width: none !important;
+        max-height: none !important;
+        will-change: transform;
     }
 
     .ed-video-pause-overlay {
@@ -1386,7 +1391,29 @@
     let pubYtIntervals = {};
     let pubPlayerHideTimers = {};
 
+    function updateAllPubYtScaling() {
+        document.querySelectorAll('.ed-yt-viewport').forEach(vp => {
+            const iframe = vp.querySelector('.custom-iframe');
+            if (!iframe) return;
+            const w = vp.clientWidth || vp.offsetWidth;
+            if (w > 0) {
+                const scale = w / 1920;
+                iframe.style.width = '1920px';
+                iframe.style.height = '1080px';
+                iframe.style.transform = `scale(${scale})`;
+                iframe.style.transformOrigin = '0 0';
+            }
+        });
+    }
+
+    window.addEventListener('resize', updateAllPubYtScaling);
+    window.addEventListener('orientationchange', updateAllPubYtScaling);
+    document.addEventListener('DOMContentLoaded', updateAllPubYtScaling);
+    setTimeout(updateAllPubYtScaling, 300);
+    setTimeout(updateAllPubYtScaling, 1000);
+
     function onYouTubeIframeAPIReady() {
+        updateAllPubYtScaling();
         document.querySelectorAll('iframe[id^="pub_yt_"]').forEach(iframe => {
             initPubYtPlayer(iframe.id);
         });

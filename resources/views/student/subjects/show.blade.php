@@ -573,19 +573,19 @@ body.has-fullscreen-player {
 
 .ed-yt-viewport .ed-video-iframe {
     position: absolute;
-    inset: 0;
     top: 0 !important;
     left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
+    width: 1920px;
+    height: 1080px;
     border: 0 !important;
     background: #000000 !important;
     pointer-events: none !important;
-    object-fit: contain;
     z-index: 2;
-    transform: translateZ(0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
+    transform-origin: 0 0 !important;
+    -webkit-transform-origin: 0 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    will-change: transform;
 }
 
 /* درع حماية زاوية يوتيوب لمنع أي نقرات أو تفاعل مع أي علامة مائية */
@@ -3075,8 +3075,54 @@ function toggleStudentTheaterMode(videoId) {
     }, 200);
 }
 
+const YT_QUALITY_DIMENSIONS = {
+    '1080p': { w: 1920, h: 1080 },
+    '720p':  { w: 1280, h: 720 },
+    '480p':  { w: 854,  h: 480 },
+    '360p':  { w: 640,  h: 360 },
+    'auto':  { w: 1920, h: 1080 }
+};
+
+// تحجيم إطار يوتيوب لفرض أبعاد 1920x1080 داخلياً لإجبار يوتيوب على جودة 1080p Full HD
+function applyYtResolutionScaling(videoId, quality) {
+    const iframe = document.getElementById(`player_yt_${videoId}`);
+    if (!iframe) return;
+    const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
+    if (!viewport) return;
+
+    const q = quality || iframe.getAttribute('data-active-quality') || iframe.getAttribute('data-default-quality') || '1080p';
+    const dims = YT_QUALITY_DIMENSIONS[q] || YT_QUALITY_DIMENSIONS['1080p'];
+    
+    const viewportWidth = viewport.clientWidth || viewport.offsetWidth;
+    if (viewportWidth > 0) {
+        const scale = viewportWidth / dims.w;
+        iframe.style.width = `${dims.w}px`;
+        iframe.style.height = `${dims.h}px`;
+        iframe.style.transform = `scale(${scale})`;
+        iframe.style.transformOrigin = '0 0';
+        iframe.setAttribute('data-active-quality', q);
+    }
+}
+
+function updateAllYtIframeScaling() {
+    document.querySelectorAll('.ed-yt-viewport').forEach(vp => {
+        const iframe = vp.querySelector('.ed-video-iframe');
+        if (iframe && iframe.id) {
+            const vidId = iframe.id.replace('player_yt_', '');
+            applyYtResolutionScaling(vidId);
+        }
+    });
+}
+
+window.addEventListener('resize', updateAllYtIframeScaling);
+window.addEventListener('orientationchange', updateAllYtIframeScaling);
+document.addEventListener('DOMContentLoaded', updateAllYtIframeScaling);
+setTimeout(updateAllYtIframeScaling, 300);
+setTimeout(updateAllYtIframeScaling, 1000);
+
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
+    updateAllYtIframeScaling();
     if (window.YT && window.YT.Player) {
         document.querySelectorAll('iframe[id^="player_yt_"]').forEach(iframe => {
             initSingleYtPlayer(iframe.id);
@@ -3428,6 +3474,7 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
         'auto': 'auto'
     };
     const mapped = ytQualityMap[quality] || quality;
+    applyYtResolutionScaling(videoId, quality);
     
     let yt = ytPlayers[videoId] || initSingleYtPlayer(`player_yt_${videoId}`);
     if (yt && typeof yt.setPlaybackQuality === 'function') {
