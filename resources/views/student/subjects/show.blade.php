@@ -594,39 +594,101 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* المشغل الأكاديمي: دروع حماية شفافة بنسبة 100% تمنع النقر على روابط يوتيوب دون حجب أزرار التحكم أو تشويه الواجهة */
-.ed-yt-block-title {
+/* المشغل الأكاديمي: أقنعة احترافية تخفي بالكامل عناصر يوتيوب (العنوان، الشعار، المشاركة) وتُبقي فقط إعدادات الفيديو وتحكمه */
+.ed-yt-mask-top {
     position: absolute;
     top: 0;
     left: 0;
     width: 65%;
-    height: 65px;
-    background: transparent;
-    z-index: 12;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 75%, transparent 100%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
     pointer-events: auto !important;
-    cursor: default;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
-.ed-yt-block-logo {
-    position: absolute;
-    bottom: 0;
-    right: 44px;
-    width: 100px;
-    height: 50px;
-    background: transparent;
-    z-index: 12;
-    pointer-events: auto !important;
-    cursor: default;
+.ed-yt-mask-top-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-.ed-yt-block-share {
+.ed-yt-mask-badge {
+    background: #0284c7;
+    color: #ffffff;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.ed-yt-mask-title {
+    color: #f8fafc;
+    font-size: 0.88rem;
+    font-weight: 700;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+.ed-yt-mask-br {
     position: absolute;
     bottom: 0;
-    left: 55px;
-    width: 60px;
-    height: 50px;
-    background: transparent;
-    z-index: 12;
+    right: 0;
+    width: 130px;
+    height: 48px;
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 70%, transparent 100%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 12px;
+    pointer-events: auto !important;
+}
+
+.ed-yt-fs-trigger {
+    background: rgba(15, 23, 42, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #f8fafc;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(4px);
+}
+.ed-yt-fs-trigger:hover {
+    background: #0284c7;
+    border-color: #38bdf8;
+    color: #ffffff;
+    transform: scale(1.08);
+}
+
+.ed-yt-mask-bl {
+    position: absolute;
+    bottom: 0;
+    left: 45px;
+    width: 65px;
+    height: 48px;
+    background: linear-gradient(0deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 70%, transparent 100%);
+    z-index: 10;
     pointer-events: auto !important;
     cursor: default;
 }
@@ -2420,7 +2482,7 @@ video::-webkit-media-controls-download-button {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=1&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                             } else {
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
                                             }
@@ -2468,10 +2530,23 @@ video::-webkit-media-controls-download-button {
                                                             class="ed-video-iframe">
                                                     </iframe>
 
-                                                    {{-- دروع حماية شفافة بنسبة 100% تمنع فتح يوتيوب وتترك أزرار التحكم متاحة --}}
-                                                    <div class="ed-yt-block-title" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
-                                                    <div class="ed-yt-block-logo" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
-                                                    <div class="ed-yt-block-share" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                                    {{-- 1. قناع رأس المشغل: يغطي عنوان وقناة يوتيوب ويترك أزرار الإعدادات ⚙ والصوت في اليمين متاحة --}}
+                                                    <div class="ed-yt-mask-top" onclick="event.stopPropagation();">
+                                                        <div class="ed-yt-mask-top-info">
+                                                            <span class="ed-yt-mask-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
+                                                            <span class="ed-yt-mask-title">{{ $video->title }}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- 2. قناع الركن السفلي الأيمن: يخفي شعار يوتيوب بالكامل ويستبدله بزر تكبير الشاشة الموحد للمنصة --}}
+                                                    <div class="ed-yt-mask-br" onclick="event.stopPropagation();">
+                                                        <button type="button" class="ed-yt-fs-trigger" onclick="togglePlatformFullscreen('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('ملء الشاشة') }}">
+                                                            <i class="fa-solid fa-expand" id="yt_mask_fs_icon_{{ $video->id }}"></i>
+                                                        </button>
+                                                    </div>
+
+                                                    {{-- 3. قناع الركن السفلي الأيسر: يخفي زر المشاركة نهائياً --}}
+                                                    <div class="ed-yt-mask-bl" onclick="event.stopPropagation(); event.preventDefault();"></div>
                                                 @else
                                                     <video id="player_vid_{{ $video->id }}" 
                                                            class="ed-native-video" 
@@ -4179,6 +4254,10 @@ function updateFullscreenButtonsUI(videoId, isFs) {
     if (innerFsBtn) {
         innerFsBtn.className = isFs ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
     }
+    const maskFsIcon = document.getElementById(`yt_mask_fs_icon_${videoId}`);
+    if (maskFsIcon) {
+        maskFsIcon.className = isFs ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    }
 }
 
 // تكبير المشغل الأكاديمي بملء الشاشة الفاخر مع دعم كافة الأجهزة والمتصفحات
@@ -4767,6 +4846,18 @@ function purgeExternalDownloadButtons() {
 }
 purgeExternalDownloadButtons();
 document.addEventListener('DOMContentLoaded', purgeExternalDownloadButtons);
+
+// حظر فتح أي روابط لليوتيوب نهائياً
+try {
+    const _origWinOpenStudent = window.open;
+    window.open = function(url, target, features) {
+        if (typeof url === 'string' && (url.includes('youtube.com') || url.includes('youtu.be') || url.includes('youtube-nocookie.com'))) {
+            console.warn('[Security] YouTube direct access blocked.');
+            return null;
+        }
+        return _origWinOpenStudent.call(window, url, target, features);
+    };
+} catch(e) {}
 
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>

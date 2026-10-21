@@ -98,7 +98,7 @@
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
                                     $targetDefQuality = $video->default_quality ?? '1080p';
-                                    $ytSafeSrc = "https://www.youtube.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $ytSafeSrc = "https://www.youtube.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
@@ -119,10 +119,23 @@
                                             loading="lazy">
                                     </iframe>
 
-                                    {{-- دروع حماية شفافة بنسبة 100% تمنع فتح يوتيوب وتترك أزرار التحكم متاحة --}}
-                                    <div class="ed-yt-block-title" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
-                                    <div class="ed-yt-block-logo" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
-                                    <div class="ed-yt-block-share" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                    {{-- 1. قناع رأس المشغل: يغطي عنوان وقناة يوتيوب ويترك أزرار الإعدادات ⚙ والصوت في اليمين متاحة --}}
+                                    <div class="ed-yt-mask-top" onclick="event.stopPropagation();">
+                                        <div class="ed-yt-mask-top-info">
+                                            <span class="ed-yt-mask-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
+                                            <span class="ed-yt-mask-title">{{ $video->title }}</span>
+                                        </div>
+                                    </div>
+
+                                    {{-- 2. قناع الركن السفلي الأيمن: يخفي شعار يوتيوب بالكامل ويستبدله بزر تكبير الشاشة الموحد للمنصة --}}
+                                    <div class="ed-yt-mask-br" onclick="event.stopPropagation();">
+                                        <button type="button" class="ed-yt-fs-trigger" onclick="togglePublicPlatformFullscreen('{{ $video->id }}'); event.stopPropagation();" title="{{ __('ملء الشاشة') }}">
+                                            <i class="fa-solid fa-expand" id="pub_yt_mask_fs_icon_{{ $video->id }}"></i>
+                                        </button>
+                                    </div>
+
+                                    {{-- 3. قناع الركن السفلي الأيسر: يخفي زر المشاركة نهائياً --}}
+                                    <div class="ed-yt-mask-bl" onclick="event.stopPropagation(); event.preventDefault();"></div>
                                 </div>
                             @elseif(!empty($streamUrl))
                                 {{-- فيديو مباشر محمي عبر ستريم مشفر يخفي مسار السيرفر والسحابة بالكامل --}}
@@ -640,39 +653,101 @@
         z-index: 2;
     }
 
-    /* المشغل الأكاديمي: دروع حماية شفافة بنسبة 100% تمنع النقر على روابط يوتيوب دون حجب أزرار التحكم أو تشويه الواجهة */
-    .ed-yt-block-title {
+    /* المشغل الأكاديمي: أقنعة احترافية تخفي بالكامل عناصر يوتيوب (العنوان، الشعار، المشاركة) وتُبقي فقط إعدادات الفيديو وتحكمه */
+    .ed-yt-mask-top {
         position: absolute;
         top: 0;
         left: 0;
         width: 65%;
-        height: 65px;
-        background: transparent;
-        z-index: 12;
+        height: 56px;
+        background: linear-gradient(180deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 75%, transparent 100%);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
         pointer-events: auto !important;
-        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
     }
 
-    .ed-yt-block-logo {
-        position: absolute;
-        bottom: 0;
-        right: 44px;
-        width: 100px;
-        height: 50px;
-        background: transparent;
-        z-index: 12;
-        pointer-events: auto !important;
-        cursor: default;
+    .ed-yt-mask-top-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
     }
 
-    .ed-yt-block-share {
+    .ed-yt-mask-badge {
+        background: #0284c7;
+        color: #ffffff;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .ed-yt-mask-title {
+        color: #f8fafc;
+        font-size: 0.88rem;
+        font-weight: 700;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    }
+
+    .ed-yt-mask-br {
         position: absolute;
         bottom: 0;
-        left: 55px;
-        width: 60px;
-        height: 50px;
-        background: transparent;
-        z-index: 12;
+        right: 0;
+        width: 130px;
+        height: 48px;
+        background: linear-gradient(0deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 70%, transparent 100%);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 0 12px;
+        pointer-events: auto !important;
+    }
+
+    .ed-yt-fs-trigger {
+        background: rgba(15, 23, 42, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        color: #f8fafc;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(4px);
+    }
+    .ed-yt-fs-trigger:hover {
+        background: #0284c7;
+        border-color: #38bdf8;
+        color: #ffffff;
+        transform: scale(1.08);
+    }
+
+    .ed-yt-mask-bl {
+        position: absolute;
+        bottom: 0;
+        left: 45px;
+        width: 65px;
+        height: 48px;
+        background: linear-gradient(0deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 70%, transparent 100%);
+        z-index: 10;
         pointer-events: auto !important;
         cursor: default;
     }
@@ -2298,6 +2373,28 @@
             return _origWinOpenPub.call(window, url, target, features);
         };
     } catch(e) {}
+
+    function togglePublicPlatformFullscreen(videoId) {
+        const el = document.getElementById(`pub_yt_${videoId}`)?.closest('.ed-yt-viewport') || document.querySelector('.ed-yt-viewport');
+        if (!el) return;
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        const icon = document.getElementById(`pub_yt_mask_fs_icon_${videoId}`);
+        if (!isFs) {
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+            if (icon) icon.className = 'fa-solid fa-compress';
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            if (icon) icon.className = 'fa-solid fa-expand';
+        }
+    }
+    document.addEventListener('fullscreenchange', function() {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement);
+        document.querySelectorAll('[id^="pub_yt_mask_fs_icon_"]').forEach(i => {
+            i.className = isFs ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+        });
+    });
 
     // إزالة أي أزرار تحميل خارجي للملفات الخام لضمان الحفظ حصرياً داخل المنصة
     function purgeExternalDownloadButtons() {
