@@ -290,15 +290,20 @@ class EducationalContentSyncService
 
         // 0.2 ضمان أن كافة الفيديوهات السابقة والمنشورة في قاعدة البيانات تحمل معيار الجودة 1080p
         try {
-            $existingVideosWithoutQuality = EducationalContent::whereNotNull('url_path')
+            $existingVideos = EducationalContent::whereNotNull('url_path')
                 ->where('url_path', '!=', '')
-                ->where('url_path', 'not like', '%quality=%')
                 ->get();
-            foreach ($existingVideosWithoutQuality as $ev) {
-                $clean = trim($ev->url_path);
+            foreach ($existingVideos as $ev) {
+                $raw = trim((string)$ev->url_path);
+                if (empty($raw) || in_array(strtolower($raw), ['undefined', 'null', 'none'])) continue;
+                $clean = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $raw);
+                $clean = rtrim($clean, '?&');
                 $sep = str_contains($clean, '?') ? '&' : '?';
-                $ev->url_path = $clean . $sep . 'quality=1080p';
-                $ev->saveQuietly();
+                $target = $clean . $sep . 'quality=1080p';
+                if ($ev->url_path !== $target) {
+                    $ev->url_path = $target;
+                    $ev->saveQuietly();
+                }
             }
         } catch (\Throwable $e) {}
 

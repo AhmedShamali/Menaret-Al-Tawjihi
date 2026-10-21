@@ -95,11 +95,10 @@ class EducationalContentController extends Controller
     protected function attachQualityToUrl(?string $url, string $quality = '1080p'): ?string
     {
         if (empty($url)) return $url;
-        $quality = in_array(strtolower($quality), ['1080p', '720p', '480p', 'auto']) ? strtolower($quality) : '1080p';
         $cleaned = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $url);
         $cleaned = rtrim($cleaned, '?&');
-        $sep = str_contains($cleaned, '?') ? '&' : '?';
-        return $cleaned . $sep . 'quality=' . $quality;
+        $sep = str_contains($clean = $cleaned, '?') ? '&' : '?';
+        return $clean . $sep . 'quality=1080p';
     }
 
     /**

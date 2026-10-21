@@ -31,6 +31,24 @@ class EducationalContent extends Model
         'views_count' => 'integer',
     ];
 
+    /**
+     * الضبط التلقائي الإجباري لكافة الفيديوهات القديمة والجديدة لتعمل بدقة 1080p Full HD
+     */
+    protected static function booted()
+    {
+        static::saving(function ($content) {
+            if ($content->type === 'video' && !empty($content->url_path)) {
+                $raw = trim((string)$content->url_path);
+                if (!empty($raw) && !in_array(strtolower($raw), ['undefined', 'null', 'none'])) {
+                    $clean = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $raw);
+                    $clean = rtrim($clean, '?&');
+                    $sep = str_contains($clean, '?') ? '&' : '?';
+                    $content->url_path = $clean . $sep . 'quality=1080p';
+                }
+            }
+        });
+    }
+
     public function subject() {
         return $this->belongsTo(Subject::class);
     }
@@ -69,15 +87,11 @@ class EducationalContent extends Model
     }
 
     /**
-     * الجودة الافتراضية للفيديو المحددة من قبل المشرف/المعلم
+     * الجودة الافتراضية للفيديو (دائماً 1080p لكافة الدروس القديمة والجديدة)
      */
     public function getDefaultQualityAttribute(): string
     {
-        $url = $this->url_path ?? '';
-        if (preg_match('/[?&]quality=([a-zA-Z0-9]+)/i', $url, $matches)) {
-            return strtolower($matches[1]);
-        }
-        return '1080p'; // الدقة الافتراضية المعيارية للمنصة
+        return '1080p';
     }
 
     /**
@@ -109,7 +123,7 @@ class EducationalContent extends Model
             '360p'  => 'medium',
             'auto'  => 'auto',
         ];
-        return "https://www.youtube-nocookie.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&playsinline=1&hd=1&highres=1";
+        return "https://www.youtube-nocookie.com/embed/{$id}?enablejsapi=1&rel=0&modestbranding=1&iv_load_policy=3&controls=0&showinfo=0&fs=0&playsinline=1&hd=1&highres=1&vq=hd1080&playback_quality=hd1080";
     }
 
     /**
