@@ -594,7 +594,43 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* المشغل الأكاديمي: واجهة سينمائية حديثة بالكامل بدون أي دروع أو مربعات سوداء تشوه الرؤية */
+/* المشغل الأكاديمي: دروع حماية شفافة بنسبة 100% تمنع النقر على روابط يوتيوب دون حجب أزرار التحكم أو تشويه الواجهة */
+.ed-yt-block-title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 65%;
+    height: 65px;
+    background: transparent;
+    z-index: 12;
+    pointer-events: auto !important;
+    cursor: default;
+}
+
+.ed-yt-block-logo {
+    position: absolute;
+    bottom: 0;
+    right: 44px;
+    width: 100px;
+    height: 50px;
+    background: transparent;
+    z-index: 12;
+    pointer-events: auto !important;
+    cursor: default;
+}
+
+.ed-yt-block-share {
+    position: absolute;
+    bottom: 0;
+    left: 55px;
+    width: 60px;
+    height: 50px;
+    background: transparent;
+    z-index: 12;
+    pointer-events: auto !important;
+    cursor: default;
+}
+
 .ed-yt-top-shield,
 .ed-yt-shield-br,
 .ed-yt-shield-bl {
@@ -2412,9 +2448,9 @@ video::-webkit-media-controls-download-button {
                                     @endphp
 
                                     @if($hasPlayableVideo)
-                                        <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}">
+                                        <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="return false;">
                                             {{-- منطقة الفيديو: يوتيوب بدقة نظيفة كاملة بدون قص أو فيديو مباشر --}}
-                                            <div class="ed-yt-viewport">
+                                            <div class="ed-yt-viewport" oncontextmenu="return false;">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
                                                             data-yt-id="{{ $ytId ?? '' }}"
@@ -2422,6 +2458,7 @@ video::-webkit-media-controls-download-button {
                                                             width="100%"
                                                             height="100%"
                                                             src="{{ $ytEmbed }}" 
+                                                            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
@@ -2430,6 +2467,11 @@ video::-webkit-media-controls-download-button {
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
+
+                                                    {{-- دروع حماية شفافة بنسبة 100% تمنع فتح يوتيوب وتترك أزرار التحكم متاحة --}}
+                                                    <div class="ed-yt-block-title" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                                    <div class="ed-yt-block-logo" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                                    <div class="ed-yt-block-share" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
                                                 @else
                                                     <video id="player_vid_{{ $video->id }}" 
                                                            class="ed-native-video" 

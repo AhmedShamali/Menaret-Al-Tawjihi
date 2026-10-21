@@ -103,13 +103,14 @@
                                 @endphp
 
                                 {{-- عرض يوتيوب بكامل دقته النظيفة مع إتاحة التحكم والتكبير --}}
-                                <div class="ed-yt-viewport">
+                                <div class="ed-yt-viewport" oncontextmenu="return false;">
                                     <iframe class="custom-iframe" 
                                             id="pub_yt_{{ $video->id }}"
                                             data-default-quality="{{ $targetDefQuality }}"
                                             width="100%"
                                             height="100%"
                                             src="{{ $ytSafeSrc }}" 
+                                            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                             frameborder="0" 
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                             allowfullscreen
@@ -118,6 +119,10 @@
                                             loading="lazy">
                                     </iframe>
 
+                                    {{-- دروع حماية شفافة بنسبة 100% تمنع فتح يوتيوب وتترك أزرار التحكم متاحة --}}
+                                    <div class="ed-yt-block-title" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                    <div class="ed-yt-block-logo" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
+                                    <div class="ed-yt-block-share" onclick="event.stopPropagation(); event.preventDefault();" title="{{ __('منصة تعليمية محمية') }}"></div>
                                 </div>
                             @elseif(!empty($streamUrl))
                                 {{-- فيديو مباشر محمي عبر ستريم مشفر يخفي مسار السيرفر والسحابة بالكامل --}}
@@ -635,7 +640,43 @@
         z-index: 2;
     }
 
-    /* المشغل الأكاديمي: واجهة سينمائية حديثة بالكامل بدون أي دروع أو مربعات سوداء تشوه الرؤية */
+    /* المشغل الأكاديمي: دروع حماية شفافة بنسبة 100% تمنع النقر على روابط يوتيوب دون حجب أزرار التحكم أو تشويه الواجهة */
+    .ed-yt-block-title {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 65%;
+        height: 65px;
+        background: transparent;
+        z-index: 12;
+        pointer-events: auto !important;
+        cursor: default;
+    }
+
+    .ed-yt-block-logo {
+        position: absolute;
+        bottom: 0;
+        right: 44px;
+        width: 100px;
+        height: 50px;
+        background: transparent;
+        z-index: 12;
+        pointer-events: auto !important;
+        cursor: default;
+    }
+
+    .ed-yt-block-share {
+        position: absolute;
+        bottom: 0;
+        left: 55px;
+        width: 60px;
+        height: 50px;
+        background: transparent;
+        z-index: 12;
+        pointer-events: auto !important;
+        cursor: default;
+    }
+
     .ed-yt-top-shield,
     .ed-yt-shield-br,
     .ed-yt-shield-bl {
