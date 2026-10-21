@@ -1408,7 +1408,7 @@ body.in-standalone-app .stepvoro-install-banner {
         });
 
         window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js?v=20261021-v42', { updateViaCache: 'none' }).then(function(reg) {
+            navigator.serviceWorker.register('/sw.js?v=20261021-v43', { updateViaCache: 'none' }).then(function(reg) {
                 // تفعيل فوري لأي عامل خدمة في حالة انتظار
                 if (reg.waiting) {
                     try { reg.waiting.postMessage({ action: 'skipWaiting' }); } catch(e) {}
@@ -1768,7 +1768,7 @@ body.in-standalone-app .stepvoro-install-banner {
             url = url.replace('https://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/')
                      .replace('http://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/');
         }
-        const params = 'enablejsapi=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&fs=0&disablekb=1&playsinline=1&autoplay=1';
+        const params = 'enablejsapi=1&controls=1&rel=0&modestbranding=1&iv_load_policy=3&showinfo=0&fs=1&playsinline=1&autoplay=1';
         return url + (url.includes('?') ? '&' : '?') + params;
     }
 

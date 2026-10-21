@@ -98,7 +98,7 @@
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
                                     $targetDefQuality = $video->default_quality ?? '1080p';
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&hd=1&highres=1&vq=hd1080&playback_quality=hd1080&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $ytSafeSrc = "https://www.youtube.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
@@ -150,8 +150,8 @@
                                 </div>
                             @endif
 
-                            @if($isYoutube || !empty($streamUrl))
-                                {{-- شاشة التوقف الأكاديمية لحجب أي اقتراحات خارجية --}}
+                            @if(!$isYoutube && !empty($streamUrl))
+                                {{-- شاشة التوقف الأكاديمية للفيديوهات المباشرة --}}
                                 <div class="ed-video-pause-overlay" id="pub_pause_overlay_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')">
                                     <div class="ed-pause-card">
                                         <div class="ed-pause-icon"><i class="fa-solid fa-pause"></i></div>
@@ -162,7 +162,7 @@
                                     </div>
                                 </div>
 
-                                {{-- شاشة انتهاء الدرس الأكاديمية لحجب شبكة اقتراحات يوتيوب --}}
+                                {{-- شاشة انتهاء الدرس الأكاديمية --}}
                                 <div class="ed-ended-overlay" id="pub_ended_overlay_{{ $video->id }}" style="display: none;">
                                     <div class="ed-ended-card">
                                         <div class="ed-ended-icon"><i class="fa-solid fa-circle-check"></i></div>
@@ -177,7 +177,8 @@
                                 </div>
                             @endif
 
-                                {{-- طبقة المشغل الأكاديمي الموحد الخاص بالمنصة --}}
+                            @if(!$isYoutube)
+                                {{-- طبقة المشغل الأكاديمي الموحد الخاص بالمنصة للفيديوهات المباشرة --}}
                                 <div class="ed-pure-player-layer" id="pub_player_layer_{{ $video->id }}" onmousemove="registerPubPlayerActivity('{{ $video->id }}')" onmouseleave="handlePubPlayerMouseLeave('{{ $video->id }}')">
                                     <div class="ed-click-surface" onclick="toggleSubjectVideo('{{ $video->id }}')" ondblclick="toggleSubjectFullscreen(this)">
                                         <div class="ed-center-pulse-btn" id="pub_center_pulse_{{ $video->id }}">
@@ -268,6 +269,7 @@
                                         </div>
                                     </div>
                                 </div>
+                            @endif
 
                                 {{-- بوستر المنصة الأكاديمي الحصري --}}
                                 @php
@@ -606,16 +608,19 @@
 
     .custom-iframe {
         position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
         border: none !important;
         background: #000 !important;
         z-index: 2;
-        transform-origin: 0 0 !important;
-        -webkit-transform-origin: 0 0 !important;
+        transform: none !important;
+        -webkit-transform: none !important;
         max-width: none !important;
         max-height: none !important;
-        will-change: transform, width, height;
+        image-rendering: -webkit-optimize-contrast !important;
+        image-rendering: crisp-edges !important;
+        pointer-events: auto !important;
     }
 
     .custom-video-element {
@@ -1485,31 +1490,12 @@
     function applyPubYtScaling(vidId, quality) {
         const iframe = document.getElementById(`pub_yt_${vidId}`);
         if (!iframe) return;
-        const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
-        if (!viewport) return;
-
-        if (quality) {
-            pubActiveResolutions[vidId] = quality;
-        }
-        const q = pubActiveResolutions[vidId] || iframe.getAttribute('data-default-quality') || '1080p';
-        const config = PUB_YT_DIMENSIONS[q] || PUB_YT_DIMENSIONS['1080p'];
-
-        const vw = viewport.clientWidth || viewport.offsetWidth;
-        const vh = viewport.clientHeight || viewport.offsetHeight;
-        if (!vw || !vh || vw <= 0 || vh <= 0) return;
-
-        const scale = Math.min(vw / config.w, vh / config.h);
-        const offsetX = Math.max(0, (vw - (config.w * scale)) / 2);
-        const offsetY = Math.max(0, (vh - (config.h * scale)) / 2);
-
-        iframe.style.setProperty('width', `${config.w}px`, 'important');
-        iframe.style.setProperty('height', `${config.h}px`, 'important');
-        iframe.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
-        iframe.style.setProperty('transform-origin', '0 0', 'important');
+        iframe.style.setProperty('width', '100%', 'important');
+        iframe.style.setProperty('height', '100%', 'important');
+        iframe.style.setProperty('transform', 'none', 'important');
         iframe.style.setProperty('position', 'absolute', 'important');
-        iframe.style.setProperty('top', '0', 'important');
-        iframe.style.setProperty('left', '0', 'important');
-        iframe.style.pointerEvents = 'none';
+        iframe.style.setProperty('inset', '0', 'important');
+        iframe.style.setProperty('pointer-events', 'auto', 'important');
     }
 
     function updateAllPubYtScaling() {
@@ -1525,20 +1511,6 @@
     window.addEventListener('resize', updateAllPubYtScaling);
     window.addEventListener('orientationchange', updateAllPubYtScaling);
     document.addEventListener('DOMContentLoaded', updateAllPubYtScaling);
-
-    if (window.ResizeObserver) {
-        const pubResizeObserver = new ResizeObserver(entries => {
-            for (let entry of entries) {
-                const vp = entry.target;
-                const iframe = vp.querySelector('.custom-iframe');
-                if (iframe && iframe.id) {
-                    const vidId = iframe.id.replace('pub_yt_', '');
-                    applyPubYtScaling(vidId);
-                }
-            }
-        });
-        document.querySelectorAll('.ed-yt-viewport').forEach(vp => pubResizeObserver.observe(vp));
-    }
 
     function onYouTubeIframeAPIReady() {
         updateAllPubYtScaling();

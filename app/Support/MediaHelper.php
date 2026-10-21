@@ -32,6 +32,8 @@ class MediaHelper
         // تنظيف البوادئ المكررة مثل storage/ أو public/ أو مسارات سوبابيز الجزئية
         $cleanPath = ltrim(preg_replace('/^(storage\/|public\/|app\/public\/)/', '', $path), '/');
         $cleanPath = ltrim(preg_replace('/^storage\/v1\/object\/public\/[^\/]+\//', '', $cleanPath), '/');
+        $cleanPath = explode('?', $cleanPath)[0];
+        $cleanPath = explode('#', $cleanPath)[0];
 
         // رابط Supabase المعتمد بنظافة تامة بدون أي تكرار
         $supabaseBucket = config('filesystems.disks.supabase.bucket') ?? env('SUPABASE_BUCKET', 'educational-files');
@@ -93,6 +95,8 @@ class MediaHelper
         // تنظيف المسار
         $cleanPath = ltrim(preg_replace('/^(storage\/|public\/|app\/public\/)/', '', $path), '/');
         $cleanPath = ltrim(preg_replace('/^storage\/v1\/object\/public\/[^\/]+\//', '', $cleanPath), '/');
+        $cleanPath = explode('?', $cleanPath)[0];
+        $cleanPath = explode('#', $cleanPath)[0];
 
         if (filter_var($cleanPath, FILTER_VALIDATE_URL)) {
             return $cleanPath;

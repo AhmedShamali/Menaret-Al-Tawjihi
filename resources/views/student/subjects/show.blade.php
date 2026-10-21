@@ -549,21 +549,24 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* عرض الفيديو بالكامل بدقة 1080p نقية عبر محرك التحجيم الرياضي الذكي */
+/* عرض الفيديو بالكامل بدقة 1080p نقية عبر شاشة كاملة دون أي تحجيم أو تشويه */
 .ed-video-iframe,
 .ed-yt-viewport iframe,
 .ed-player-frame iframe {
     position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     border: 0 !important;
     background: #000000 !important;
     z-index: 2;
-    transform-origin: 0 0 !important;
-    -webkit-transform-origin: 0 0 !important;
+    transform: none !important;
+    -webkit-transform: none !important;
     max-width: none !important;
     max-height: none !important;
-    will-change: transform, width, height;
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: crisp-edges !important;
+    pointer-events: auto !important;
 }
 
 .ed-native-video,
@@ -576,6 +579,8 @@ body.has-fullscreen-player {
     border: 0 !important;
     background: #000000 !important;
     object-fit: contain !important;
+    image-rendering: -webkit-optimize-contrast !important;
+    image-rendering: crisp-edges !important;
     z-index: 2;
 }
 
@@ -2379,7 +2384,7 @@ video::-webkit-media-controls-download-button {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&highres=1&vq=hd1080&playback_quality=hd1080&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=1&fs=1&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                             } else {
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
                                             }
@@ -2476,7 +2481,8 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة لكافة الفيديوهات التعليمية (يوتيوب ومباشر) --}}
+                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة للفيديوهات المباشرة المرفوعة على السيرفر --}}
+                                            @if(!$isYt)
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف والتكبير المزدوج --}}
                                                     <div class="ed-click-surface" onclick="handleClickSurface('{{ $video->id }}', event)" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
@@ -2602,6 +2608,7 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                                 </div>
+                                            @endif
 
                                                 {{-- شاشة انتهاء الدرس الأكاديمية لحجب شبكة اقتراحات يوتيوب --}}
                                                 <div class="ed-ended-overlay" id="ended_overlay_{{ $video->id }}" style="display: none;">
@@ -3154,37 +3161,16 @@ const YT_QUALITY_DIMENSIONS = {
 
 let ytActiveResolutions = {};
 
-// تحجيم إطار يوتيوب بذكاء لأبعاد 1920x1080 Full HD لإجبار سيرفرات يوتيوب على بث أعلى دقة نقية
+// ضبط إطار يوتيوب ليعمل بكامل الدقة الأصلية الصافية 100% دون أي تشويه أو ضبابية ناتجة عن التحجيم
 function applyYtResolutionScaling(videoId, quality) {
     const iframe = document.getElementById(`player_yt_${videoId}`);
     if (!iframe) return;
-    const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
-    if (!viewport) return;
-
-    if (quality) {
-        ytActiveResolutions[videoId] = quality;
-    }
-    const q = ytActiveResolutions[videoId] || iframe.getAttribute('data-target-quality') || iframe.getAttribute('data-default-quality') || '1080p';
-    const config = YT_QUALITY_DIMENSIONS[q] || YT_QUALITY_DIMENSIONS['1080p'];
-
-    const vw = viewport.clientWidth || viewport.offsetWidth;
-    const vh = viewport.clientHeight || viewport.offsetHeight;
-    if (!vw || !vh || vw <= 0 || vh <= 0) return;
-
-    // حساب نسبة التحجيم الرياضية المطابقة 100% لأبعاد الحاوية دون أي قص أو تشويه
-    const scale = Math.min(vw / config.w, vh / config.h);
-    const offsetX = Math.max(0, (vw - (config.w * scale)) / 2);
-    const offsetY = Math.max(0, (vh - (config.h * scale)) / 2);
-
-    iframe.style.setProperty('width', `${config.w}px`, 'important');
-    iframe.style.setProperty('height', `${config.h}px`, 'important');
-    iframe.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
-    iframe.style.setProperty('transform-origin', '0 0', 'important');
+    iframe.style.setProperty('width', '100%', 'important');
+    iframe.style.setProperty('height', '100%', 'important');
+    iframe.style.setProperty('transform', 'none', 'important');
     iframe.style.setProperty('position', 'absolute', 'important');
-    iframe.style.setProperty('top', '0', 'important');
-    iframe.style.setProperty('left', '0', 'important');
-    iframe.style.pointerEvents = 'none';
-    iframe.setAttribute('data-active-rendered-q', q);
+    iframe.style.setProperty('inset', '0', 'important');
+    iframe.style.setProperty('pointer-events', 'auto', 'important');
 }
 
 function updateAllYtIframeScaling() {
@@ -3200,21 +3186,6 @@ function updateAllYtIframeScaling() {
 window.addEventListener('resize', updateAllYtIframeScaling);
 window.addEventListener('orientationchange', updateAllYtIframeScaling);
 document.addEventListener('DOMContentLoaded', updateAllYtIframeScaling);
-
-// مراقبة أبعاد فيوبورت المشغل لحظياً عبر ResizeObserver لدقة لا نهائية
-if (window.ResizeObserver) {
-    const ytViewObserver = new ResizeObserver(entries => {
-        for (let entry of entries) {
-            const vp = entry.target;
-            const iframe = vp.querySelector('.ed-video-iframe');
-            if (iframe && iframe.id) {
-                const vidId = iframe.id.replace('player_yt_', '');
-                applyYtResolutionScaling(vidId);
-            }
-        }
-    });
-    document.querySelectorAll('.ed-yt-viewport').forEach(vp => ytViewObserver.observe(vp));
-}
 
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
@@ -3674,7 +3645,11 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
         }
     });
     document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
-    showPlayerToast(`{{ __("تم ضبط دقة العرض على") }} ${displayLabel} 🎬`);
+    if (quality === '1080p') {
+        showPlayerToast('تم اختيار 1080p Full HD! يمكنك أيضاً النقر على زر الإعدادات ⚙ داخل الفيديو لتثبيت الدقة دائماً 🎬');
+    } else {
+        showPlayerToast(`{{ __("تم ضبط دقة العرض على") }} ${displayLabel} 🎬`);
+    }
 }
 
 function applyStoredQualityPreference(videoId) {

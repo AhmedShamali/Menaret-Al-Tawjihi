@@ -96,9 +96,7 @@ class EducationalContentController extends Controller
     {
         if (empty($url)) return $url;
         $cleaned = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $url);
-        $cleaned = rtrim($cleaned, '?&');
-        $sep = str_contains($clean = $cleaned, '?') ? '&' : '?';
-        return $clean . $sep . 'quality=1080p';
+        return rtrim($cleaned, '?&');
     }
 
     /**

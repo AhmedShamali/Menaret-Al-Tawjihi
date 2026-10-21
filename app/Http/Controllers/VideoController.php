@@ -49,6 +49,8 @@ class VideoController extends Controller
 
         // تنظيف المسار من أي زوائد وبوادئ مكررة
         $filename = ltrim(str_replace(['public/', 'storage/'], '', $filename), '/\\');
+        $filename = explode('?', $filename)[0];
+        $filename = explode('#', $filename)[0];
         $baseName = basename($filename);
 
         $resolvedPath = null;

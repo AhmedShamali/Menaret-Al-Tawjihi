@@ -395,9 +395,7 @@ class VideographerContentController extends Controller
 
         if (!empty($videoPath)) {
             $cleanV = preg_replace('/([?&])quality=[^&]+(&|$)/i', '$1', $videoPath);
-            $cleanV = rtrim($cleanV, '?&');
-            $sepV = str_contains($cleanV, '?') ? '&' : '?';
-            $videoPath = $cleanV . $sepV . 'quality=1080p';
+            $videoPath = rtrim($cleanV, '?&');
         }
 
         if (empty($videoPath)) {
