@@ -5,14 +5,14 @@
  * - تنقل سلس بدون شبكة مع استرجاع واجهة الفيديوهات المحملة أوفلاين
  */
 
-const CACHE_NAME = 'step-by-step-v20261021-v39';
+const CACHE_NAME = 'step-by-step-v20261021-v40';
 
 // الأصول الأساسية التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_ASSETS = [
   '/',
   '/?source=pwa',
   '/manifest.json',
-  '/manifest.json?v=20261021-v39',
+  '/manifest.json?v=20261021-v40',
   '/offline.html',
   '/offline-videos',
   '/icons/step-by-step-icon-512.png',

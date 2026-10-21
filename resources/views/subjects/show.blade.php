@@ -98,7 +98,7 @@
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
                                     $targetDefQuality = $video->default_quality ?? '1080p';
-                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&hd=1&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $ytSafeSrc = "https://www.youtube-nocookie.com/embed/{$ytId}?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&hd=1&highres=1&vq=hd1080&playback_quality=hd1080&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
@@ -617,7 +617,20 @@
         background: #000;
     }
 
-    .custom-iframe,
+    .custom-iframe {
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        border: none !important;
+        background: #000 !important;
+        z-index: 2;
+        transform-origin: 0 0 !important;
+        -webkit-transform-origin: 0 0 !important;
+        max-width: none !important;
+        max-height: none !important;
+        will-change: transform, width, height;
+    }
+
     .custom-video-element {
         position: absolute !important;
         top: 0 !important;
@@ -628,9 +641,6 @@
         object-fit: contain !important;
         background: #000 !important;
         z-index: 2;
-        transform: none !important;
-        max-width: 100% !important;
-        max-height: 100% !important;
     }
 
     /* دروع حماية أكاديمية متكاملة تمنع وصول الطالب ليوتيوب بأي شكل */
@@ -1562,19 +1572,73 @@
     let pubYtIntervals = {};
     let pubPlayerHideTimers = {};
 
+    const PUB_YT_DIMENSIONS = {
+        '1080p': { w: 1920, h: 1080, mapped: 'hd1080' },
+        '720p':  { w: 1280, h: 720,  mapped: 'hd720' },
+        '480p':  { w: 854,  h: 480,  mapped: 'large' },
+        '360p':  { w: 640,  h: 360,  mapped: 'medium' },
+        'auto':  { w: 1920, h: 1080, mapped: 'hd1080' }
+    };
+
+    let pubActiveResolutions = {};
+
+    function applyPubYtScaling(vidId, quality) {
+        const iframe = document.getElementById(`pub_yt_${vidId}`);
+        if (!iframe) return;
+        const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
+        if (!viewport) return;
+
+        if (quality) {
+            pubActiveResolutions[vidId] = quality;
+        }
+        const q = pubActiveResolutions[vidId] || iframe.getAttribute('data-default-quality') || '1080p';
+        const config = PUB_YT_DIMENSIONS[q] || PUB_YT_DIMENSIONS['1080p'];
+
+        const vw = viewport.clientWidth || viewport.offsetWidth;
+        const vh = viewport.clientHeight || viewport.offsetHeight;
+        if (!vw || !vh || vw <= 0 || vh <= 0) return;
+
+        const scale = Math.min(vw / config.w, vh / config.h);
+        const offsetX = Math.max(0, (vw - (config.w * scale)) / 2);
+        const offsetY = Math.max(0, (vh - (config.h * scale)) / 2);
+
+        iframe.style.setProperty('width', `${config.w}px`, 'important');
+        iframe.style.setProperty('height', `${config.h}px`, 'important');
+        iframe.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
+        iframe.style.setProperty('transform-origin', '0 0', 'important');
+        iframe.style.setProperty('position', 'absolute', 'important');
+        iframe.style.setProperty('top', '0', 'important');
+        iframe.style.setProperty('left', '0', 'important');
+        iframe.style.pointerEvents = 'none';
+    }
+
     function updateAllPubYtScaling() {
         document.querySelectorAll('.ed-yt-viewport').forEach(vp => {
             const iframe = vp.querySelector('.custom-iframe');
-            if (!iframe) return;
-            iframe.style.width = '100%';
-            iframe.style.height = '100%';
-            iframe.style.transform = 'none';
+            if (iframe && iframe.id) {
+                const vidId = iframe.id.replace('pub_yt_', '');
+                applyPubYtScaling(vidId);
+            }
         });
     }
 
     window.addEventListener('resize', updateAllPubYtScaling);
     window.addEventListener('orientationchange', updateAllPubYtScaling);
     document.addEventListener('DOMContentLoaded', updateAllPubYtScaling);
+
+    if (window.ResizeObserver) {
+        const pubResizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                const vp = entry.target;
+                const iframe = vp.querySelector('.custom-iframe');
+                if (iframe && iframe.id) {
+                    const vidId = iframe.id.replace('pub_yt_', '');
+                    applyPubYtScaling(vidId);
+                }
+            }
+        });
+        document.querySelectorAll('.ed-yt-viewport').forEach(vp => pubResizeObserver.observe(vp));
+    }
 
     function onYouTubeIframeAPIReady() {
         updateAllPubYtScaling();
@@ -1661,6 +1725,7 @@
     }
 
     function forcePubYtHighQuality(vidId) {
+        applyPubYtScaling(vidId);
         const iframe = document.getElementById(`pub_yt_${vidId}`);
         const yt = pubYtPlayers[vidId] || initPubYtPlayer(`pub_yt_${vidId}`);
         if (yt) {

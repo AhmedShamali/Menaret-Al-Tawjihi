@@ -549,11 +549,24 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* عرض الفيديو بالكامل بدقة 1080p نقية دون تشويه أو تحجيم زائد */
+/* عرض الفيديو بالكامل بدقة 1080p نقية عبر محرك التحجيم الرياضي الذكي */
 .ed-video-iframe,
-.ed-native-video,
 .ed-yt-viewport iframe,
-.ed-player-frame iframe,
+.ed-player-frame iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    border: 0 !important;
+    background: #000000 !important;
+    z-index: 2;
+    transform-origin: 0 0 !important;
+    -webkit-transform-origin: 0 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    will-change: transform, width, height;
+}
+
+.ed-native-video,
 .ed-player-frame video {
     position: absolute !important;
     top: 0 !important;
@@ -564,9 +577,6 @@ body.has-fullscreen-player {
     background: #000000 !important;
     object-fit: contain !important;
     z-index: 2;
-    transform: none !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
 }
 
 /* فيوبورت الفيديو: متناسق 16:9 نقي يمنع أي تسريب */
@@ -663,14 +673,7 @@ body.has-fullscreen-player {
 }
 
 .ed-yt-shield-bl {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 70px;
-    height: 56px;
-    background: #000000;
-    z-index: 18;
-    pointer-events: auto !important;
+    display: none !important;
 }
 
 .ed-ended-overlay {
@@ -2454,7 +2457,7 @@ video::-webkit-media-controls-download-button {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&highres=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1&showinfo=0&autohide=1&hd=1&highres=1&vq=hd1080&playback_quality=hd1080&origin=" . urlencode(request()->getSchemeAndHttpHost());
                                             } else {
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
                                             }
@@ -2532,7 +2535,6 @@ video::-webkit-media-controls-download-button {
                                                 <div class="ed-yt-shield-br" onclick="event.stopPropagation();">
                                                     <span class="ed-yt-shield-brand"><i class="fa-solid fa-shield-halved"></i> {{ config('app.name', 'المنصة التعليمية') }}</span>
                                                 </div>
-                                                <div class="ed-yt-shield-bl" onclick="event.stopPropagation();"></div>
                                             @endif
 
                                             {{-- علامة مائية ذكية متحركة لحماية الملكية الأكاديمية للمنصة --}}
@@ -3235,20 +3237,46 @@ function toggleStudentTheaterMode(videoId) {
 }
 
 const YT_QUALITY_DIMENSIONS = {
-    '1080p': { w: 1920, h: 1080 },
-    '720p':  { w: 1280, h: 720 },
-    '480p':  { w: 854,  h: 480 },
-    '360p':  { w: 640,  h: 360 },
-    'auto':  { w: 1920, h: 1080 }
+    '1080p': { w: 1920, h: 1080, mapped: 'hd1080' },
+    '720p':  { w: 1280, h: 720,  mapped: 'hd720' },
+    '480p':  { w: 854,  h: 480,  mapped: 'large' },
+    '360p':  { w: 640,  h: 360,  mapped: 'medium' },
+    'auto':  { w: 1920, h: 1080, mapped: 'hd1080' }
 };
 
-// ضمان ملاءمة إطار يوتيوب الكاملة لأبعاد المشغل
+let ytActiveResolutions = {};
+
+// تحجيم إطار يوتيوب بذكاء لأبعاد 1920x1080 Full HD لإجبار سيرفرات يوتيوب على بث أعلى دقة نقية
 function applyYtResolutionScaling(videoId, quality) {
     const iframe = document.getElementById(`player_yt_${videoId}`);
     if (!iframe) return;
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.transform = 'none';
+    const viewport = iframe.closest('.ed-yt-viewport') || iframe.parentElement;
+    if (!viewport) return;
+
+    if (quality) {
+        ytActiveResolutions[videoId] = quality;
+    }
+    const q = ytActiveResolutions[videoId] || iframe.getAttribute('data-target-quality') || iframe.getAttribute('data-default-quality') || '1080p';
+    const config = YT_QUALITY_DIMENSIONS[q] || YT_QUALITY_DIMENSIONS['1080p'];
+
+    const vw = viewport.clientWidth || viewport.offsetWidth;
+    const vh = viewport.clientHeight || viewport.offsetHeight;
+    if (!vw || !vh || vw <= 0 || vh <= 0) return;
+
+    // حساب نسبة التحجيم الرياضية المطابقة 100% لأبعاد الحاوية دون أي قص أو تشويه
+    const scale = Math.min(vw / config.w, vh / config.h);
+    const offsetX = Math.max(0, (vw - (config.w * scale)) / 2);
+    const offsetY = Math.max(0, (vh - (config.h * scale)) / 2);
+
+    iframe.style.setProperty('width', `${config.w}px`, 'important');
+    iframe.style.setProperty('height', `${config.h}px`, 'important');
+    iframe.style.setProperty('transform', `translate(${offsetX}px, ${offsetY}px) scale(${scale})`, 'important');
+    iframe.style.setProperty('transform-origin', '0 0', 'important');
+    iframe.style.setProperty('position', 'absolute', 'important');
+    iframe.style.setProperty('top', '0', 'important');
+    iframe.style.setProperty('left', '0', 'important');
+    iframe.style.pointerEvents = 'none';
+    iframe.setAttribute('data-active-rendered-q', q);
 }
 
 function updateAllYtIframeScaling() {
@@ -3264,6 +3292,21 @@ function updateAllYtIframeScaling() {
 window.addEventListener('resize', updateAllYtIframeScaling);
 window.addEventListener('orientationchange', updateAllYtIframeScaling);
 document.addEventListener('DOMContentLoaded', updateAllYtIframeScaling);
+
+// مراقبة أبعاد فيوبورت المشغل لحظياً عبر ResizeObserver لدقة لا نهائية
+if (window.ResizeObserver) {
+    const ytViewObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+            const vp = entry.target;
+            const iframe = vp.querySelector('.ed-video-iframe');
+            if (iframe && iframe.id) {
+                const vidId = iframe.id.replace('player_yt_', '');
+                applyYtResolutionScaling(vidId);
+            }
+        }
+    });
+    document.querySelectorAll('.ed-yt-viewport').forEach(vp => ytViewObserver.observe(vp));
+}
 
 // تهيئة مشغلات يوتيوب بدقة وموثوقية عالية
 function initAllYouTubePlayers() {
@@ -3340,20 +3383,18 @@ function handlePlayerMouseLeave(videoId) {
 
 // اختيار وفرض أعلى جودة متاحة تلقائياً (1080p Full HD أولاً ثم 720p HD)
 function forceStudentYtQuality(videoId) {
+    const activeQ = ytActiveResolutions[videoId] || '1080p';
+    applyYtResolutionScaling(videoId, activeQ);
     const ytIframe = document.getElementById(`player_yt_${videoId}`);
     let yt = ytPlayers[videoId];
+    let targetQ = activeQ === '720p' ? 'hd720' : (activeQ === '480p' ? 'large' : (activeQ === '360p' ? 'medium' : 'hd1080'));
     if (yt) {
         try {
-            let targetQ = 'hd1080';
             if (typeof yt.getAvailableQualityLevels === 'function') {
                 const levels = yt.getAvailableQualityLevels();
                 if (levels && levels.length > 0) {
-                    if (levels.includes('hd1080')) {
-                        targetQ = 'hd1080';
-                    } else if (levels.includes('hd720')) {
-                        targetQ = 'hd720';
-                    } else {
-                        targetQ = levels[0];
+                    if (targetQ === 'hd1080' && !levels.includes('hd1080')) {
+                        targetQ = levels.includes('hd720') ? 'hd720' : levels[0];
                     }
                 }
             }
@@ -3366,8 +3407,8 @@ function forceStudentYtQuality(videoId) {
         } catch(e) {}
     }
     if (ytIframe && ytIframe.contentWindow) {
-        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: ['hd1080'] }), '*');
-        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: ['hd1080', 'hd1080'] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQuality', args: [targetQ] }), '*');
+        ytIframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setPlaybackQualityRange', args: [targetQ, targetQ] }), '*');
     }
 }
 
