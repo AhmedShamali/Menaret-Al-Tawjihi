@@ -74,7 +74,6 @@
             <div class="video-container" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center;" oncontextmenu="event.preventDefault(); return false;">
                 <video id="offlineActiveVideo" controls playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 14px;"></video>
                 <iframe id="offlineActiveIframe" 
-                        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                         allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                         style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
                         allowfullscreen></iframe>

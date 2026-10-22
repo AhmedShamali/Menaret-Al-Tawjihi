@@ -98,7 +98,7 @@
                                     preg_match('/(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/|live\/|v\/)|[?&]v=)([^"&?\/\s]{11})/i', $url, $matches);
                                     $ytId = $matches[1] ?? $video->youtube_id ?? $url;
                                     $targetDefQuality = $video->default_quality ?? '1080p';
-                                    $ytSafeSrc = "https://www.youtube.com/embed/{$ytId}?enablejsapi=1&controls=1&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                    $ytSafeSrc = "https://www.youtube.com/embed/{$ytId}?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1";
                                     $posterThumb = $ytId ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
                                 @endphp
 
@@ -110,7 +110,6 @@
                                             width="100%"
                                             height="100%"
                                             src="{{ $ytSafeSrc }}" 
-                                            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                             frameborder="0" 
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                             allowfullscreen
@@ -118,24 +117,6 @@
                                             tabindex="-1"
                                             loading="lazy">
                                     </iframe>
-
-                                    {{-- 1. قناع رأس المشغل: يغطي عنوان وقناة يوتيوب ويترك أزرار الإعدادات ⚙ والصوت في اليمين متاحة --}}
-                                    <div class="ed-yt-mask-top" onclick="event.stopPropagation();">
-                                        <div class="ed-yt-mask-top-info">
-                                            <span class="ed-yt-mask-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
-                                            <span class="ed-yt-mask-title">{{ $video->title }}</span>
-                                        </div>
-                                    </div>
-
-                                    {{-- 2. قناع الركن السفلي الأيمن: يخفي شعار يوتيوب بالكامل ويستبدله بزر تكبير الشاشة الموحد للمنصة --}}
-                                    <div class="ed-yt-mask-br" onclick="event.stopPropagation();">
-                                        <button type="button" class="ed-yt-fs-trigger" onclick="togglePublicPlatformFullscreen('{{ $video->id }}'); event.stopPropagation();" title="{{ __('ملء الشاشة') }}">
-                                            <i class="fa-solid fa-expand" id="pub_yt_mask_fs_icon_{{ $video->id }}"></i>
-                                        </button>
-                                    </div>
-
-                                    {{-- 3. قناع الركن السفلي الأيسر: يخفي زر المشاركة نهائياً --}}
-                                    <div class="ed-yt-mask-bl" onclick="event.stopPropagation(); event.preventDefault();"></div>
                                 </div>
                             @elseif(!empty($streamUrl))
                                 {{-- فيديو مباشر محمي عبر ستريم مشفر يخفي مسار السيرفر والسحابة بالكامل --}}
@@ -168,150 +149,151 @@
                                 </div>
                             @endif
 
-                            @if(!$isYoutube && !empty($streamUrl))
-                                {{-- شاشة التوقف الأكاديمية للفيديوهات المباشرة --}}
-                                <div class="ed-video-pause-overlay" id="pub_pause_overlay_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')">
-                                    <div class="ed-pause-card">
-                                        <div class="ed-pause-icon"><i class="fa-solid fa-pause"></i></div>
-                                        <div class="ed-pause-text">{{ __('تم إيقاف الدرس مؤقتاً') }}</div>
-                                        <button type="button" class="ed-pause-resume-btn">
-                                            <i class="fa-solid fa-play"></i> {{ __('متابعة المشاهدة') }}
+                            {{-- شاشة التوقف الأكاديمية للفيديوهات المباشرة واليوتيوب --}}
+                            <div class="ed-video-pause-overlay" id="pub_pause_overlay_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')">
+                                <div class="ed-pause-card">
+                                    <div class="ed-pause-icon"><i class="fa-solid fa-pause"></i></div>
+                                    <div class="ed-pause-text">{{ __('تم إيقاف الدرس مؤقتاً') }}</div>
+                                    <button type="button" class="ed-pause-resume-btn">
+                                        <i class="fa-solid fa-play"></i> {{ __('متابعة المشاهدة') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- شاشة انتهاء الدرس الأكاديمية --}}
+                            <div class="ed-ended-overlay" id="pub_ended_overlay_{{ $video->id }}" style="display: none;">
+                                <div class="ed-ended-card">
+                                    <div class="ed-ended-icon"><i class="fa-solid fa-circle-check"></i></div>
+                                    <h3 class="ed-ended-title">{{ __('اكتملت مشاهدة الدرس بنجاح') }}</h3>
+                                    <p class="ed-ended-sub">{{ $video->title }}</p>
+                                    <div class="ed-ended-actions">
+                                        <button type="button" class="ed-btn-royal" onclick="replayPubVideo('{{ $video->id }}')">
+                                            <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة تشغيل الدرس') }}
                                         </button>
+                                        @if(isset($videos[$index + 1]))
+                                            @php $nextVid = $videos[$index + 1]; @endphp
+                                            <button type="button" class="ed-btn-royal" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);" onclick="startPlayingPubVideo('{{ $nextVid->id }}'); document.getElementById('custom_wrap_{{ $nextVid->id }}')?.scrollIntoView({behavior: 'smooth', block: 'center'});">
+                                                <i class="fa-solid fa-forward-step"></i> {{ __('الانتقال للدرس التالي') }}
+                                            </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- طبقة المشغل الأكاديمي الموحد الخاص بالمنصة --}}
+                            <div class="ed-pure-player-layer" id="pub_player_layer_{{ $video->id }}" onmousemove="registerPubPlayerActivity('{{ $video->id }}')" onmouseleave="handlePubPlayerMouseLeave('{{ $video->id }}')">
+                                <div class="ed-click-surface" onclick="toggleSubjectVideo('{{ $video->id }}')" ondblclick="toggleSubjectFullscreen(this)">
+                                    <div class="ed-center-pulse-btn" id="pub_center_pulse_{{ $video->id }}">
+                                        <i class="fa-solid fa-play"></i>
                                     </div>
                                 </div>
 
-                                {{-- شاشة انتهاء الدرس الأكاديمية --}}
-                                <div class="ed-ended-overlay" id="pub_ended_overlay_{{ $video->id }}" style="display: none;">
-                                    <div class="ed-ended-card">
-                                        <div class="ed-ended-icon"><i class="fa-solid fa-circle-check"></i></div>
-                                        <h3 class="ed-ended-title">{{ __('اكتملت مشاهدة الدرس بنجاح') }}</h3>
-                                        <p class="ed-ended-sub">{{ $video->title }}</p>
-                                        <div class="ed-ended-actions">
-                                            <button type="button" class="ed-btn-royal" onclick="replayPubVideo('{{ $video->id }}')">
-                                                <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة تشغيل الدرس') }}
+                                <div class="ed-player-top-header">
+                                    <div class="ed-pth-title">
+                                        <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
+                                        <span class="ed-pth-name">{{ $video->title }}</span>
+                                    </div>
+                                    <div class="ed-pth-quality-tag" id="pub_top_quality_tag_panel_{{ $video->id }}">
+                                        <i class="fa-solid fa-circle-check"></i> 1080p Full HD
+                                    </div>
+                                </div>
+
+                                <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
+                                    <div class="ed-scrubber-wrapper" id="pub_scrubber_wrap_{{ $video->id }}" onclick="handlePubScrubberClick(event, '{{ $video->id }}')" onmousemove="handlePubScrubberHover(event, '{{ $video->id }}')" onmouseleave="hidePubScrubberTooltip('{{ $video->id }}')">
+                                        <div class="ed-scrub-track">
+                                            <div class="ed-scrub-buffer" id="pub_buffer_bar_{{ $video->id }}"></div>
+                                            <div class="ed-scrub-fill" id="pub_progress_bar_{{ $video->id }}">
+                                                <div class="ed-scrub-thumb"></div>
+                                            </div>
+                                        </div>
+                                        <div class="ed-scrub-tooltip" id="pub_scrub_tip_{{ $video->id }}">00:00</div>
+                                    </div>
+
+                                    <div class="ed-controls-main-row">
+                                        <div class="ed-ctrl-cluster left">
+                                            <button type="button" class="ed-ctrl-btn play" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
+                                                <i class="fa-solid fa-play"></i>
+                                            </button>
+                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekPubRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
+                                                <i class="fa-solid fa-rotate-left"></i>
+                                                <span class="ed-skip-num">10</span>
+                                            </button>
+                                            <button type="button" class="ed-ctrl-btn skip" onclick="seekPubRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
+                                                <i class="fa-solid fa-rotate-right"></i>
+                                                <span class="ed-skip-num">10</span>
+                                            </button>
+                                            <div class="ed-time-counter" id="pub_time_txt_{{ $video->id }}">
+                                                00:00 / 00:00
+                                            </div>
+                                        </div>
+
+                                        <div class="ed-ctrl-cluster right">
+                                            <div class="ed-volume-group">
+                                                <button type="button" class="ed-ctrl-btn vol" id="pub_mute_btn_{{ $video->id }}" onclick="togglePubMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
+                                                    <i class="fa-solid fa-volume-high"></i>
+                                                </button>
+                                                <input type="range" class="ed-volume-slider" id="pub_vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setPubVolume('{{ $video->id }}', this.value)">
+                                            </div>
+
+                                            <div class="ed-speed-dropdown">
+                                                <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('pub_speed_menu_{{ $video->id }}')">
+                                                    <span id="pub_active_speed_{{ $video->id }}">1x</span>
+                                                </button>
+                                                <div class="ed-popover-menu" id="pub_speed_menu_{{ $video->id }}">
+                                                    <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
+                                                    <button type="button" class="ed-pop-opt active" onclick="setPubVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
+                                                </div>
+                                            </div>
+
+                                            <div class="ed-quality-dropdown">
+                                                <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('pub_quality_menu_{{ $video->id }}')">
+                                                    <i class="fa-solid fa-sliders"></i>
+                                                    <span id="pub_active_quality_{{ $video->id }}">1080p</span>
+                                                </button>
+                                                <div class="ed-popover-menu" id="pub_quality_menu_{{ $video->id }}">
+                                                    <div class="ed-pop-header">{{ __('دقة الفيديو') }}</div>
+                                                    <button type="button" class="ed-pop-opt active" onclick="setPubVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p Full HD</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p HD</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p SD</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
+                                                    <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', 'auto', this, '{{ __("تلقائي (Auto)") }}')">{{ __('تلقائي (Auto)') }}</button>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" class="ed-ctrl-btn fs" onclick="toggleSubjectFullscreen(this)" title="{{ __('ملء الشاشة (F)') }}">
+                                                <i class="fa-solid fa-expand"></i>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                            @endif
+                            </div>
 
-                            @if(!$isYoutube)
-                                {{-- طبقة المشغل الأكاديمي الموحد الخاص بالمنصة للفيديوهات المباشرة --}}
-                                <div class="ed-pure-player-layer" id="pub_player_layer_{{ $video->id }}" onmousemove="registerPubPlayerActivity('{{ $video->id }}')" onmouseleave="handlePubPlayerMouseLeave('{{ $video->id }}')">
-                                    <div class="ed-click-surface" onclick="toggleSubjectVideo('{{ $video->id }}')" ondblclick="toggleSubjectFullscreen(this)">
-                                        <div class="ed-center-pulse-btn" id="pub_center_pulse_{{ $video->id }}">
-                                            <i class="fa-solid fa-play"></i>
-                                        </div>
-                                    </div>
-
-                                    <div class="ed-player-top-header">
-                                        <div class="ed-pth-title">
-                                            <span class="ed-pth-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}</span>
-                                            <span class="ed-pth-name">{{ $video->title }}</span>
-                                        </div>
-                                        <div class="ed-pth-quality-tag" id="pub_top_quality_tag_panel_{{ $video->id }}">
-                                            <i class="fa-solid fa-circle-check"></i> 1080p Full HD
-                                        </div>
-                                    </div>
-
-                                    <div class="ed-player-bottom-panel" onclick="event.stopPropagation()">
-                                        <div class="ed-scrubber-wrapper" id="pub_scrubber_wrap_{{ $video->id }}" onclick="handlePubScrubberClick(event, '{{ $video->id }}')" onmousemove="handlePubScrubberHover(event, '{{ $video->id }}')" onmouseleave="hidePubScrubberTooltip('{{ $video->id }}')">
-                                            <div class="ed-scrub-track">
-                                                <div class="ed-scrub-buffer" id="pub_buffer_bar_{{ $video->id }}"></div>
-                                                <div class="ed-scrub-fill" id="pub_progress_bar_{{ $video->id }}">
-                                                    <div class="ed-scrub-thumb"></div>
-                                                </div>
-                                            </div>
-                                            <div class="ed-scrub-tooltip" id="pub_scrub_tip_{{ $video->id }}">00:00</div>
-                                        </div>
-
-                                        <div class="ed-controls-main-row">
-                                            <div class="ed-ctrl-cluster left">
-                                                <button type="button" class="ed-ctrl-btn play" id="pub_btn_{{ $video->id }}" onclick="toggleSubjectVideo('{{ $video->id }}')" title="{{ __('تشغيل / إيقاف (مسافة)') }}">
-                                                    <i class="fa-solid fa-play"></i>
-                                                </button>
-                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekPubRelative('{{ $video->id }}', -10)" title="{{ __('تراجع 10 ثوانٍ') }}">
-                                                    <i class="fa-solid fa-rotate-left"></i>
-                                                    <span class="ed-skip-num">10</span>
-                                                </button>
-                                                <button type="button" class="ed-ctrl-btn skip" onclick="seekPubRelative('{{ $video->id }}', 10)" title="{{ __('تقديم 10 ثوانٍ') }}">
-                                                    <i class="fa-solid fa-rotate-right"></i>
-                                                    <span class="ed-skip-num">10</span>
-                                                </button>
-                                                <div class="ed-time-counter" id="pub_time_txt_{{ $video->id }}">
-                                                    00:00 / 00:00
-                                                </div>
-                                            </div>
-
-                                            <div class="ed-ctrl-cluster right">
-                                                <div class="ed-volume-group">
-                                                    <button type="button" class="ed-ctrl-btn vol" id="pub_mute_btn_{{ $video->id }}" onclick="togglePubMute('{{ $video->id }}')" title="{{ __('كتم / تشغيل الصوت (M)') }}">
-                                                        <i class="fa-solid fa-volume-high"></i>
-                                                    </button>
-                                                    <input type="range" class="ed-volume-slider" id="pub_vol_slider_{{ $video->id }}" min="0" max="100" value="100" oninput="setPubVolume('{{ $video->id }}', this.value)">
-                                                </div>
-
-                                                <div class="ed-speed-dropdown">
-                                                    <button type="button" class="ed-ctrl-pill" onclick="toggleDropdownMenu('pub_speed_menu_{{ $video->id }}')">
-                                                        <span id="pub_active_speed_{{ $video->id }}">1x</span>
-                                                    </button>
-                                                    <div class="ed-popover-menu" id="pub_speed_menu_{{ $video->id }}">
-                                                        <div class="ed-pop-header">{{ __('سرعة التشغيل') }}</div>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 0.75, this)">0.75x</button>
-                                                        <button type="button" class="ed-pop-opt active" onclick="setPubVideoSpeed('{{ $video->id }}', 1, this)">1x ({{ __('عادي') }})</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 1.25, this)">1.25x</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 1.5, this)">1.5x</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoSpeed('{{ $video->id }}', 2, this)">2x</button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="ed-quality-dropdown">
-                                                    <button type="button" class="ed-ctrl-pill hd" onclick="toggleDropdownMenu('pub_quality_menu_{{ $video->id }}')">
-                                                        <i class="fa-solid fa-sliders"></i>
-                                                        <span id="pub_active_quality_{{ $video->id }}">1080p</span>
-                                                    </button>
-                                                    <div class="ed-popover-menu" id="pub_quality_menu_{{ $video->id }}">
-                                                        <div class="ed-pop-header">{{ __('دقة الفيديو') }}</div>
-                                                        <button type="button" class="ed-pop-opt active" onclick="setPubVideoQuality('{{ $video->id }}', '1080p', this, '1080p Full HD')">1080p Full HD</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '720p', this, '720p HD')">720p HD</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '480p', this, '480p SD')">480p SD</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', '360p', this, '360p')">360p</button>
-                                                        <button type="button" class="ed-pop-opt" onclick="setPubVideoQuality('{{ $video->id }}', 'auto', this, '{{ __("تلقائي (Auto)") }}')">{{ __('تلقائي (Auto)') }}</button>
-                                                    </div>
-                                                </div>
-
-                                                <button type="button" class="ed-ctrl-btn fs" onclick="toggleSubjectFullscreen(this)" title="{{ __('ملء الشاشة (F)') }}">
-                                                    <i class="fa-solid fa-expand"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                            {{-- بوستر المنصة الأكاديمي الحصري --}}
+                            @php
+                                $posterThumb = $isYoutube && !empty($ytId) ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
+                            @endphp
+                            <div class="ed-video-poster" id="pub_poster_{{ $video->id }}" onclick="startPlayingPubVideo('{{ $video->id }}')">
+                                <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/video-placeholder.jpg') }}';">
+                                <div class="ed-poster-overlay"></div>
+                                <div class="ed-poster-top-bar">
+                                    <span class="ed-poster-badge">
+                                        <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}
+                                    </span>
+                                    <span class="ed-poster-badge hd">
+                                        <i class="fa-solid fa-sparkles"></i> 1080p Full HD
+                                    </span>
                                 </div>
-                            @endif
-
-                                {{-- بوستر المنصة الأكاديمي الحصري --}}
-                                @php
-                                    $posterThumb = $isYoutube && !empty($ytId) ? "https://img.youtube.com/vi/{$ytId}/hqdefault.jpg" : asset('images/video-placeholder.jpg');
-                                @endphp
-                                <div class="ed-video-poster" id="pub_poster_{{ $video->id }}" onclick="startPlayingPubVideo('{{ $video->id }}')">
-                                    <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.onerror=null; this.src='{{ asset('images/video-placeholder.jpg') }}';">
-                                    <div class="ed-poster-overlay"></div>
-                                    <div class="ed-poster-top-bar">
-                                        <span class="ed-poster-badge">
-                                            <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order ?? ($index + 1) }}
-                                        </span>
-                                        <span class="ed-poster-badge hd">
-                                            <i class="fa-solid fa-sparkles"></i> 1080p Full HD
-                                        </span>
-                                    </div>
-                                    <div class="ed-poster-center-content">
-                                        <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
-                                            <i class="fa-solid fa-play"></i>
-                                        </button>
-                                        <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
-                                    </div>
+                                <div class="ed-poster-center-content">
+                                    <button type="button" class="ed-poster-play-btn" aria-label="{{ __('تشغيل الدرس') }}">
+                                        <i class="fa-solid fa-play"></i>
+                                    </button>
+                                    <span class="ed-poster-play-label">{{ __('انقر لبدء مشاهدة الحصة') }}</span>
                                 </div>
-                            @endif
+                            </div>
                         </div>
 
                         <div class="video-card-body">
@@ -904,19 +886,22 @@
         border: none;
     }
 
-    /* طبقة المشغل الأكاديمي الصافي */
+    /* طبقة المشغل الأكاديمي الصافي المتقدم */
     .ed-pure-player-layer {
         position: absolute;
         inset: 0;
-        z-index: 10;
+        z-index: 15;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         transition: opacity 0.3s ease;
         user-select: none;
+        pointer-events: none;
     }
 
-    .custom-video-wrapper.controls-hidden .ed-pure-player-layer {
+    .custom-video-wrapper.controls-hidden .ed-pure-player-layer,
+    .custom-video-wrapper.controls-hidden .ed-player-top-header,
+    .custom-video-wrapper.controls-hidden .ed-player-bottom-panel {
         opacity: 0;
         pointer-events: none;
     }
@@ -928,11 +913,13 @@
     .ed-click-surface {
         position: absolute;
         inset: 0;
-        z-index: 2;
+        z-index: 10;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        pointer-events: auto !important;
+        background: transparent;
     }
 
     .ed-center-pulse-btn {
@@ -961,13 +948,13 @@
 
     .ed-player-top-header {
         position: relative;
-        z-index: 5;
+        z-index: 50;
         padding: 14px 18px;
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.35) 70%, transparent 100%);
         display: flex;
         align-items: center;
         justify-content: space-between;
-        pointer-events: none;
+        pointer-events: auto !important;
     }
 
     .ed-pth-title {
@@ -1000,13 +987,13 @@
 
     .ed-player-bottom-panel {
         position: relative;
-        z-index: 5;
+        z-index: 70;
         padding: 8px 16px 12px;
         background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.5) 60%, transparent 100%);
         display: flex;
         flex-direction: column;
         gap: 6px;
-        pointer-events: auto;
+        pointer-events: auto !important;
     }
 
     .ed-scrubber-wrapper {
@@ -2037,6 +2024,15 @@
         }
     }
 
+    function adjustPubVolume(vidId, delta) {
+        const slider = document.getElementById(`pub_vol_slider_${vidId}`);
+        let cur = slider ? parseInt(slider.value, 10) : 100;
+        let next = Math.max(0, Math.min(100, cur + delta));
+        if (slider) slider.value = next;
+        setPubVolume(vidId, next);
+        registerPubPlayerActivity(vidId);
+    }
+
     function togglePubMute(vidId) {
         const ctx = getPubPlayerContext(vidId);
         const muteBtn = document.getElementById(`pub_mute_btn_${vidId}`);
@@ -2286,6 +2282,12 @@
         } else if (e.code === 'ArrowLeft') {
             e.preventDefault();
             seekPubRelative(vidId, -10);
+        } else if (e.code === 'ArrowUp') {
+            e.preventDefault();
+            adjustPubVolume(vidId, 10);
+        } else if (e.code === 'ArrowDown') {
+            e.preventDefault();
+            adjustPubVolume(vidId, -10);
         } else if (e.code === 'KeyM') {
             e.preventDefault();
             togglePubMute(vidId);

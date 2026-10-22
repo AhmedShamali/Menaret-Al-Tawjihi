@@ -594,105 +594,10 @@ body.has-fullscreen-player {
     background: #000000;
 }
 
-/* المشغل الأكاديمي: أقنعة احترافية تخفي بالكامل عناصر يوتيوب (العنوان، الشعار، المشاركة) وتُبقي فقط إعدادات الفيديو وتحكمه */
-.ed-yt-mask-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 65%;
-    height: 56px;
-    background: linear-gradient(180deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 75%, transparent 100%);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    pointer-events: auto !important;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-.ed-yt-mask-top-info {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    max-width: 100%;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.ed-yt-mask-badge {
-    background: #0284c7;
-    color: #ffffff;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 0.72rem;
-    font-weight: 800;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-}
-
-.ed-yt-mask-title {
-    color: #f8fafc;
-    font-size: 0.88rem;
-    font-weight: 700;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-}
-
-.ed-yt-mask-br {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 130px;
-    height: 48px;
-    background: linear-gradient(0deg, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.8) 70%, transparent 100%);
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 12px;
-    pointer-events: auto !important;
-}
-
-.ed-yt-fs-trigger {
-    background: rgba(15, 23, 42, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: #f8fafc;
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(4px);
-}
-.ed-yt-fs-trigger:hover {
-    background: #0284c7;
-    border-color: #38bdf8;
-    color: #ffffff;
-    transform: scale(1.08);
-}
-
-.ed-yt-mask-bl {
-    position: absolute;
-    bottom: 0;
-    left: 45px;
-    width: 65px;
-    height: 48px;
-    background: linear-gradient(0deg, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.7) 70%, transparent 100%);
-    z-index: 10;
-    pointer-events: auto !important;
-    cursor: default;
-}
-
+/* إخفاء أي دروع قديمة لضمان نقاء الشاشة 100% وعدم حجب المحتوى */
+.ed-yt-mask-top,
+.ed-yt-mask-br,
+.ed-yt-mask-bl,
 .ed-yt-top-shield,
 .ed-yt-shield-br,
 .ed-yt-shield-bl {
@@ -779,13 +684,10 @@ body.has-fullscreen-player {
     cursor: none;
 }
 
-/* سطح النقر للتشغيل والإيقاف والتكبير: يغطي وسط الفيديو فقط دون ملامسة الشريط السفلي أو الهيدر */
+/* سطح النقر للتشغيل والإيقاف والتكبير: يغطي كامل الفيديو ويمنع أي نقرات خارجية */
 .ed-click-surface {
     position: absolute;
-    top: 56px;
-    left: 0;
-    right: 0;
-    bottom: 96px;
+    inset: 0;
     z-index: 10;
     cursor: pointer;
     display: flex;
@@ -2482,7 +2384,7 @@ video::-webkit-media-controls-download-button {
                                                 $ytBase = explode('?', $ytEmbed)[0];
                                                 $ytBase = str_replace(['https://www.youtube-nocookie.com/embed/', 'http://www.youtube-nocookie.com/embed/'], 'https://www.youtube.com/embed/', $ytBase);
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
-                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=1&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&origin=" . urlencode(request()->getSchemeAndHttpHost());
+                                                $ytEmbed = $ytBase . "?enablejsapi=1&controls=0&fs=0&rel=0&iv_load_policy=3&playsinline=1&modestbranding=1&disablekb=1";
                                             } else {
                                                 $targetDefQuality = $video->default_quality ?? '1080p';
                                             }
@@ -2511,7 +2413,7 @@ video::-webkit-media-controls-download-button {
 
                                     @if($hasPlayableVideo)
                                         <div class="ed-yt-frame-container" id="shield_wrap_{{ $video->id }}" oncontextmenu="return false;">
-                                            {{-- منطقة الفيديو: يوتيوب بدقة نظيفة كاملة بدون قص أو فيديو مباشر --}}
+                                            {{-- منطقة الفيديو النظيفة: متناسقة تماماً دون أي قص أو حجب أو تشويه --}}
                                             <div class="ed-yt-viewport" oncontextmenu="return false;">
                                                 @if(!empty($ytEmbed))
                                                     <iframe id="player_yt_{{ $video->id }}" 
@@ -2520,7 +2422,6 @@ video::-webkit-media-controls-download-button {
                                                             width="100%"
                                                             height="100%"
                                                             src="{{ $ytEmbed }}" 
-                                                            sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" 
                                                             allowfullscreen
                                                             referrerpolicy="strict-origin-when-cross-origin"
@@ -2529,24 +2430,6 @@ video::-webkit-media-controls-download-button {
                                                             loading="lazy"
                                                             class="ed-video-iframe">
                                                     </iframe>
-
-                                                    {{-- 1. قناع رأس المشغل: يغطي عنوان وقناة يوتيوب ويترك أزرار الإعدادات ⚙ والصوت في اليمين متاحة --}}
-                                                    <div class="ed-yt-mask-top" onclick="event.stopPropagation();">
-                                                        <div class="ed-yt-mask-top-info">
-                                                            <span class="ed-yt-mask-badge"><i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}</span>
-                                                            <span class="ed-yt-mask-title">{{ $video->title }}</span>
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- 2. قناع الركن السفلي الأيمن: يخفي شعار يوتيوب بالكامل ويستبدله بزر تكبير الشاشة الموحد للمنصة --}}
-                                                    <div class="ed-yt-mask-br" onclick="event.stopPropagation();">
-                                                        <button type="button" class="ed-yt-fs-trigger" onclick="togglePlatformFullscreen('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('ملء الشاشة') }}">
-                                                            <i class="fa-solid fa-expand" id="yt_mask_fs_icon_{{ $video->id }}"></i>
-                                                        </button>
-                                                    </div>
-
-                                                    {{-- 3. قناع الركن السفلي الأيسر: يخفي زر المشاركة نهائياً --}}
-                                                    <div class="ed-yt-mask-bl" onclick="event.stopPropagation(); event.preventDefault();"></div>
                                                 @else
                                                     <video id="player_vid_{{ $video->id }}" 
                                                            class="ed-native-video" 
@@ -2598,8 +2481,7 @@ video::-webkit-media-controls-download-button {
                                                 </div>
                                             </div>
 
-                                            {{-- طبقة المشغل الخاص الفاخر: مُفعَّلة للفيديوهات المباشرة المرفوعة على السيرفر --}}
-                                            @if(!$isYt)
+                                            {{-- طبقة المشغل الأكاديمي الموحد والفاخر لكافة مصادر الفيديو (مباشر وسحابي ويوتيوب) --}}
                                             <div class="ed-pure-player-layer" id="player_layer_{{ $video->id }}" onmousemove="registerPlayerActivity('{{ $video->id }}')" onmouseleave="handlePlayerMouseLeave('{{ $video->id }}')">
                                                     {{-- سطح النقر للتشغيل والإيقاف والتكبير المزدوج --}}
                                                     <div class="ed-click-surface" onclick="handleClickSurface('{{ $video->id }}', event)" onmousemove="registerPlayerActivity('{{ $video->id }}')" ontouchstart="registerPlayerActivity('{{ $video->id }}')">
@@ -2725,7 +2607,6 @@ video::-webkit-media-controls-download-button {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            @endif
 
                                                 {{-- شاشة انتهاء الدرس الأكاديمية لحجب شبكة اقتراحات يوتيوب --}}
                                                 <div class="ed-ended-overlay" id="ended_overlay_{{ $video->id }}" style="display: none;">
@@ -2737,6 +2618,16 @@ video::-webkit-media-controls-download-button {
                                                             <button type="button" class="ed-btn-royal" onclick="replayStudentVideo('{{ $video->id }}')">
                                                                 <i class="fa-solid fa-rotate-right"></i> {{ __('إعادة تشغيل الدرس') }}
                                                             </button>
+                                                            @php
+                                                                $nextVideo = $videos->first(function($v) use ($video) {
+                                                                    return $v->order > $video->order && $v->is_unlocked;
+                                                                });
+                                                            @endphp
+                                                            @if($nextVideo)
+                                                                <button type="button" class="ed-btn-royal primary" onclick="scrollToVideoLesson('{{ $nextVideo->id }}')">
+                                                                    <i class="fa-solid fa-forward-step"></i> {{ __('الانتقال للدرس التالي') }} (#{{ $nextVideo->order }})
+                                                                </button>
+                                                            @endif
                                                             @if(isset($exams) && $exams->count() > 0)
                                                                 <button type="button" class="ed-btn-royal emerald" onclick="switchSubjectTab('exams')">
                                                                     <i class="fa-solid fa-file-signature"></i> {{ __('الانتقال لبنك الامتحانات') }}
@@ -3762,11 +3653,7 @@ function setVideoQuality(videoId, quality, btnElement, label, e) {
         }
     });
     document.querySelectorAll('.ed-popover-menu').forEach(m => m.classList.remove('show'));
-    if (quality === '1080p') {
-        showPlayerToast('تم اختيار 1080p Full HD! يمكنك أيضاً النقر على زر الإعدادات ⚙ داخل الفيديو لتثبيت الدقة دائماً 🎬');
-    } else {
-        showPlayerToast(`{{ __("تم ضبط دقة العرض على") }} ${displayLabel} 🎬`);
-    }
+    showPlayerToast(`{{ __("تم ضبط دقة الفيديو على") }} ${displayLabel} 🎬`);
 }
 
 function applyStoredQualityPreference(videoId) {
@@ -3817,6 +3704,15 @@ function setStudentVolume(videoId, value, e) {
         else if (val < 50) muteBtn.innerHTML = '<i class="fa-solid fa-volume-low"></i>';
         else muteBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
     }
+}
+
+function adjustStudentVolume(videoId, delta) {
+    const slider = document.getElementById(`vol_slider_${videoId}`);
+    let cur = slider ? parseInt(slider.value, 10) : 100;
+    let next = Math.max(0, Math.min(100, cur + delta));
+    if (slider) slider.value = next;
+    setStudentVolume(videoId, next);
+    registerPlayerActivity(videoId);
 }
 
 function toggleStudentMute(videoId, e) {
@@ -4433,6 +4329,12 @@ document.addEventListener('keydown', function(e) {
     } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
         seekStudentRelative(videoId, -10);
+    } else if (e.code === 'ArrowUp') {
+        e.preventDefault();
+        adjustStudentVolume(videoId, 10);
+    } else if (e.code === 'ArrowDown') {
+        e.preventDefault();
+        adjustStudentVolume(videoId, -10);
     } else if (e.code === 'KeyM') {
         e.preventDefault();
         toggleStudentMute(videoId);
@@ -4532,6 +4434,17 @@ function seekVideoTo(videoId, seconds) {
     const card = document.getElementById(`card_video_${videoId}`);
     if (card) {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// الانتقال التلقائي السلس للدرس التالي عند انتهاء الحصة
+function scrollToVideoLesson(videoId) {
+    const card = document.getElementById(`card_video_${videoId}`);
+    if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            startStudentVideo(videoId);
+        }, 650);
     }
 }
 

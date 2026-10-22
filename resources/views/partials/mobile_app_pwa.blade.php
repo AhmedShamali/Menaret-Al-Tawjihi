@@ -252,7 +252,6 @@
         <div class="offline-player-media-wrap" id="offlinePlayerMediaWrap" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center;" oncontextmenu="event.preventDefault(); return false;">
             <video id="offlineVaultVideoPlayer" controls playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 12px;"></video>
             <iframe id="offlineVaultIframePlayer" 
-                    sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
                     allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                     style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
                     allowfullscreen></iframe>
