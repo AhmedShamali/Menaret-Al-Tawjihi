@@ -1601,17 +1601,13 @@ function openVideoPreview(title, url, ytUrl = null, pdfUrl = null) {
             player.onerror = null;
         }
 
-        const ytWatchUrl = 'https://www.youtube.com/watch?v=' + ytId;
-        const ytEmbedUrl = 'https://www.youtube-nocookie.com/embed/' + ytId + '?autoplay=1&controls=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1';
+        const ytEmbedUrl = 'https://www.youtube.com/embed/' + ytId + '?autoplay=1&controls=1&rel=0&playsinline=1&enablejsapi=1';
 
         if (extLink) {
-            extLink.href = ytWatchUrl;
-            extLink.innerHTML = '<i class="fa-brands fa-youtube" style="color: #ef4444; font-size: 0.95rem;"></i> <span>{{ __("فتح في YouTube") }}</span>';
-            extLink.title = '{{ __("مشاهدة الفيديو مباشرة على موقع YouTube") }}';
-            extLink.style.display = 'inline-flex';
+            extLink.style.display = 'none';
         }
         if (errorLink) {
-            errorLink.href = ytWatchUrl;
+            errorLink.style.display = 'none';
         }
 
         if (iframe) {

@@ -74,36 +74,9 @@
             <div class="video-container" style="position: relative; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; display: flex; align-items: center; justify-content: center;" oncontextmenu="event.preventDefault(); return false;">
                 <video id="offlineActiveVideo" controls playsinline controlsList="nodownload noplaybackrate" oncontextmenu="return false;" style="width: 100%; height: 100%; object-fit: contain; background: #000; border-radius: 14px;"></video>
                 <iframe id="offlineActiveIframe" 
-                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-                        style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; border: none; pointer-events: none !important; z-index: 1;" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                        style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; border: none;" 
                         allowfullscreen></iframe>
-                
-                {{-- دروع حماية تمنع الدخول على يوتيوب نهائياً --}}
-                <div id="offlineActiveYtShield" style="display: none; position: absolute; inset: 0; z-index: 15; pointer-events: auto;">
-                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 80px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
-                    <div style="position: absolute; bottom: 0; right: 0; width: 150px; height: 70px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
-                    <div style="position: absolute; bottom: 0; left: 0; width: 150px; height: 70px; z-index: 25; cursor: pointer;" onclick="toggleOfflineActiveYt()"></div>
-                    <div style="position: absolute; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="toggleOfflineActiveYt()">
-                        <div id="offlineActiveYtCenterPlay" style="width: 58px; height: 58px; border-radius: 50%; background: rgba(15, 23, 42, 0.85); border: 2px solid rgba(255,255,255,0.85); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; box-shadow: 0 4px 15px rgba(0,0,0,0.5); pointer-events: none;">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 2px;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        </div>
-                    </div>
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 30; background: linear-gradient(to top, rgba(15,23,42,0.95), transparent); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-                        <button type="button" onclick="toggleOfflineActiveYt()" id="btnOfflineYtPlay" style="background: none; border: none; color: #fff; font-size: 1.1rem; cursor: pointer; padding: 4px;" title="تشغيل / إيقاف مؤقت">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        </button>
-                        <button type="button" onclick="seekOfflineActiveYt(-10)" style="background: none; border: none; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; padding: 4px;" title="تأخير 10 ثوانٍ">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                        </button>
-                        <button type="button" onclick="seekOfflineActiveYt(10)" style="background: none; border: none; color: #cbd5e1; font-size: 0.9rem; cursor: pointer; padding: 4px;" title="تقديم 10 ثوانٍ">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        </button>
-                        <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">مشغل المنصة المحمي</span>
-                        <button type="button" onclick="toggleOfflinePlayerFullscreen()" style="background: none; border: none; color: #cbd5e1; font-size: 0.95rem; cursor: pointer; padding: 4px;" title="ملء الشاشة">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-                        </button>
-                    </div>
-                </div>
 
                 <div id="offlineFallbackContainer" style="display: none; width: 100%; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 24px 16px; background: #0f172a; color: #fff; text-align: center;">
                     <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" style="margin-bottom: 12px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
