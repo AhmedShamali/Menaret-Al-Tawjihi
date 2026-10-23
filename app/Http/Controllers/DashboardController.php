@@ -54,13 +54,16 @@ class DashboardController extends Controller {
                 return redirect()->route('student.subjects.index')->with('error', 'عذراً، هذه المادة لا تنتمي إلى فرعك الدراسي الأصلي ولا يمكن الوصول إليها.');
             }
 
-            // 2. التحقق الصارم من وجود تسجيل واشتراك نشط معتمد
+            // 2. التحقق من وجود تسجيل واشتراك نشط معتمد، أو السماح بالمعاينة المجانية للدرس الأول لمادتي العربي والإنجليزي
             $enrollment = \App\Models\Enrollment::where('student_id', $student->id)
                 ->where('subject_id', $subject->id)
                 ->where('status', 'active')
                 ->first();
 
-            if (!$enrollment) {
+            $subName = $subject->name_ar ?? '';
+            $isSubjectPreviewAllowed = str_contains($subName, 'عربي') || str_contains($subName, 'عربية') || str_contains($subName, 'إنجليز') || str_contains($subName, 'انجليز') || (bool)$subject->is_free;
+
+            if (!$enrollment && !$isSubjectPreviewAllowed) {
                 return redirect()->route('student.subjects.index')->with('error', 'عذراً، لا يمكنك عرض محتوى هذه المادة لأنك غير مسجل بها باشتراك نشط معتمد.');
             }
         }
@@ -139,8 +142,14 @@ class DashboardController extends Controller {
         })->unique(function ($item) {
             if (!empty($item->youtube_id)) return 'yt_' . $item->youtube_id;
             if (!empty($item->url_path)) return 'url_' . trim($item->url_path);
-            return 'title_' . trim($item->title);
         })->sortBy('order')->values();
+
+        // فتح أول حصة مجاناً لمادتي اللغة العربية واللغة الإنجليزية كمعاينة وتجربة
+        if (!empty($isSubjectPreviewAllowed) && $videos->isNotEmpty()) {
+            $firstVid = $videos->first();
+            $firstVid->is_unlocked = true;
+            $firstVid->is_first_free_lesson = true;
+        }
 
         // 2. جلب الملفات والملازم والدوسيات الحقيقية فقط (مع حماية تامة ضد التكرار)
         $files = $contents->filter(function ($item) {

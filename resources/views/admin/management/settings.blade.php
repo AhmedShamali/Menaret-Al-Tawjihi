@@ -374,6 +374,88 @@
                     </div>
                 </div>
 
+                <!-- 5. بطاقة الحصص المجانية الاستعراضية على الواجهة الرئيسية (Free Preview Lessons) -->
+                <div class="settings-card">
+                    <div class="settings-card-header" style="background: #f8fafc; border-bottom: 1px solid #f1f5f9; padding: 18px 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <i class="fa-solid fa-circle-play" style="color: #ef4444; font-size: 1.3rem;"></i>
+                            <h3 style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0;">{{ __('الحصص المجانية الاستعراضية على الواجهة الرئيسية (Free Preview Lessons)') }}</h3>
+                        </div>
+                        <span style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 800;">
+                            {{ __('تظهر في صدر الصفحة الرئيسية 🎬') }}
+                        </span>
+                    </div>
+                    <div style="padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        
+                        <!-- إعدادات حصة اللغة العربية المجانية -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3px solid #1e3a8a; border-radius: 14px; padding: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                                <i class="fa-solid fa-feather-pointed" style="color: #1e3a8a; font-size: 1.1rem;"></i>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ __('حصة مساق اللغة العربية') }}</h4>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label class="field-label">{{ __('رابط أو معرّف فيديو اليوتيوب (YouTube URL / ID)') }}</label>
+                                <input type="text" name="free_video_arabic_url" 
+                                       value="{{ \App\Models\Setting::get('free_video_arabic_url', '') }}" 
+                                       placeholder="مثال: https://www.youtube.com/watch?v=XXXXX" 
+                                       class="field-input" style="direction: ltr; font-family: monospace;">
+                                <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">{{ __('اتركه فارغاً لجلب أول حصة مضافة للمادة تلقائياً من المنظومة.') }}</small>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <label class="field-label">{{ __('عنوان الدرس المخصص (اختياري)') }}</label>
+                                <input type="text" name="free_video_arabic_title" 
+                                       value="{{ \App\Models\Setting::get('free_video_arabic_title', '') }}" 
+                                       placeholder="مثال: قواعد النحو - أسلوب الشرط وأدواته" 
+                                       class="field-input">
+                            </div>
+
+                            <div>
+                                <label class="field-label">{{ __('اسم المعلم / المحاضر (اختياري)') }}</label>
+                                <input type="text" name="free_video_arabic_teacher" 
+                                       value="{{ \App\Models\Setting::get('free_video_arabic_teacher', '') }}" 
+                                       placeholder="مثال: نخبة معلمي اللغة العربية" 
+                                       class="field-input">
+                            </div>
+                        </div>
+
+                        <!-- إعدادات حصة اللغة الإنجليزية المجانية -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-top: 3px solid #065f46; border-radius: 14px; padding: 18px;">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                                <i class="fa-solid fa-language" style="color: #065f46; font-size: 1.1rem;"></i>
+                                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ __('حصة مساق اللغة الإنجليزية') }}</h4>
+                            </div>
+                            
+                            <div style="margin-bottom: 12px;">
+                                <label class="field-label">{{ __('رابط أو معرّف فيديو اليوتيوب (YouTube URL / ID)') }}</label>
+                                <input type="text" name="free_video_english_url" 
+                                       value="{{ \App\Models\Setting::get('free_video_english_url', '') }}" 
+                                       placeholder="مثال: https://www.youtube.com/watch?v=XXXXX" 
+                                       class="field-input" style="direction: ltr; font-family: monospace;">
+                                <small style="color: #64748b; font-size: 0.74rem; display: block; margin-top: 3px;">{{ __('اتركه فارغاً لجلب أول حصة مضافة للمادة تلقائياً من المنظومة.') }}</small>
+                            </div>
+
+                            <div style="margin-bottom: 12px;">
+                                <label class="field-label">{{ __('عنوان الدرس المخصص (اختياري)') }}</label>
+                                <input type="text" name="free_video_english_title" 
+                                       value="{{ \App\Models\Setting::get('free_video_english_title', '') }}" 
+                                       placeholder="مثال: Unit 1: Reading & Grammar Study" 
+                                       class="field-input">
+                            </div>
+
+                            <div>
+                                <label class="field-label">{{ __('اسم المعلم / المحاضر (اختياري)') }}</label>
+                                <input type="text" name="free_video_english_teacher" 
+                                       value="{{ \App\Models\Setting::get('free_video_english_teacher', '') }}" 
+                                       placeholder="مثال: نخبة معلمي اللغة الإنجليزية" 
+                                       class="field-input">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
 
             <!-- الجانب الأيسر: المعاينة الذكية + زر الحفظ (فاتحة وأنيقة بالكامل) -->

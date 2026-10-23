@@ -2341,6 +2341,31 @@ video::-webkit-media-controls-download-button {
 
         {{-- العمود الرئيسي: التبويبات والمحتوى --}}
         <main>
+            @if(empty($enrollment) && empty($isFullAccess))
+                <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 1px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.05);">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="width: 42px; height: 42px; border-radius: 10px; background: #1e3a8a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+                            <i class="fa-solid fa-gift"></i>
+                        </span>
+                        <div>
+                            <h4 style="margin: 0 0 3px; font-size: 0.95rem; font-weight: 800; color: #1e3a8a;">
+                                {{ __('أنت في وضع المعاينة المجانية | الحصة الأولى مفتوحة ومتاحة للتقييم 🎬') }}
+                            </h4>
+                            <p style="margin: 0; font-size: 0.8rem; color: #475569;">
+                                {{ __('يمكنك مشاهدة الحصة التأسيسية الأولى مجاناً، وتواصل مع الإدارة لتفعيل المساق كاملاً وبنك الامتحانات.') }}
+                            </p>
+                        </div>
+                    </div>
+                    @php
+                        $waDirect = preg_replace('/[^0-9]/', '', \App\Models\Setting::get('contact_whatsapp', '970597694385')) ?: '970597694385';
+                    @endphp
+                    <a href="https://wa.me/{{ $waDirect }}?text={{ urlencode('مرحباً إدارة Step by Step، أود الاشتراك في مساق: ' . ($subject->name_ar ?? $subject->name)) }}" target="_blank" class="ed-btn-royal primary" style="padding: 9px 18px; font-size: 0.84rem; display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="fa-brands fa-whatsapp"></i>
+                        <span>{{ __('طلب تفعيل المساق كاملاً') }}</span>
+                    </a>
+                </div>
+            @endif
+
             {{-- تبويبات التنقل الكلاسيكية --}}
             <div class="ed-classic-tabs">
                 <button type="button" id="tabBtnVideos" class="ed-tab-btn active" onclick="switchSubjectTab('videos')">
@@ -2469,6 +2494,11 @@ video::-webkit-media-controls-download-button {
                                                     <span class="ed-poster-badge">
                                                         <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
                                                     </span>
+                                                    @if(!empty($video->is_first_free_lesson))
+                                                        <span class="ed-poster-badge" style="background: #16a34a; color: #ffffff; font-weight: 800;">
+                                                            <i class="fa-solid fa-gift"></i> {{ __('حصة تجريبية مجانية 100%') }}
+                                                        </span>
+                                                    @endif
                                                     <span class="ed-poster-badge hd">
                                                         <i class="fa-solid fa-sparkles"></i> 1080p Full HD
                                                     </span>

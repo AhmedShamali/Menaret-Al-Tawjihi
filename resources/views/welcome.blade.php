@@ -2534,6 +2534,494 @@
                 right: 16px;
             }
         }
+
+        /* ==========================================================================
+           ROYAL FREE SAMPLE LESSONS SHOWCASE (ARABIC & ENGLISH TRIAL LESSONS)
+           ========================================================================== */
+        .royal-free-samples-section {
+            background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+            margin-bottom: 28px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .free-samples-top-ribbon {
+            background: linear-gradient(90deg, #0f172a 0%, #1e3a8a 50%, #0f172a 100%);
+            padding: 18px 24px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            border-bottom: 2px solid #f59e0b;
+        }
+
+        .free-samples-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .free-samples-badge-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
+        }
+
+        .free-samples-title-wrap h2 {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0 0 4px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .free-samples-title-wrap p {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .free-samples-highlight-tag {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .free-samples-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-x: auto;
+        }
+
+        .sample-tab-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .sample-tab-btn:hover {
+            border-color: #1e3a8a;
+            color: #1e3a8a;
+        }
+
+        .sample-tab-btn.active {
+            background: #1e3a8a;
+            color: #ffffff;
+            border-color: #1e3a8a;
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);
+        }
+
+        .sample-tab-btn.active.tab-english {
+            background: #065f46;
+            border-color: #065f46;
+            box-shadow: 0 4px 12px rgba(6, 95, 70, 0.25);
+        }
+
+        .free-videos-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+            padding: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .free-videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .free-video-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .free-video-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 26px -4px rgba(15, 23, 42, 0.1);
+        }
+
+        .free-video-card.theme-arabic {
+            border-top: 4px solid #1e3a8a;
+        }
+
+        .free-video-card.theme-english {
+            border-top: 4px solid #065f46;
+        }
+
+        .fvc-header {
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            background: #fafafa;
+        }
+
+        .fvc-sub-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fvc-icon-pod {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            color: #ffffff;
+        }
+
+        .fvc-icon-pod.arabic {
+            background: #1e3a8a;
+        }
+
+        .fvc-icon-pod.english {
+            background: #065f46;
+        }
+
+        .fvc-sub-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .fvc-sub-branch {
+            font-size: 0.72rem;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .fvc-free-pill {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-facade-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #020617;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .video-facade-poster {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+        }
+
+        .video-facade-container:hover .video-facade-poster {
+            transform: scale(1.04);
+            opacity: 0.92;
+        }
+
+        .video-facade-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.7) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 12px 14px;
+            pointer-events: none;
+        }
+
+        .vfo-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .vfo-yt-brand {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .vfo-yt-brand i {
+            color: #ef4444;
+            font-size: 0.88rem;
+        }
+
+        .vfo-quality-tag {
+            background: rgba(245, 158, 11, 0.9);
+            color: #0f172a;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 800;
+        }
+
+        .vfo-center-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 68px;
+            height: 48px;
+            background: #ff0000;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.35rem;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+            transition: all 0.25s ease;
+            pointer-events: auto;
+            animation: ytPulseGlow 2.4s infinite;
+        }
+
+        @keyframes ytPulseGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 16px rgba(255, 0, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+
+        .video-facade-container:hover .vfo-center-play {
+            transform: translate(-50%, -50%) scale(1.12);
+            background: #dc2626;
+            box-shadow: 0 6px 24px rgba(239, 68, 68, 0.75);
+        }
+
+        .vfo-bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .vfo-duration-badge {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 3px 8px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-iframe-active {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            position: absolute;
+            inset: 0;
+            z-index: 5;
+        }
+
+        .fvc-body {
+            padding: 18px 20px 14px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .fvc-lesson-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.45;
+            margin: 0 0 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .fvc-meta-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            font-size: 0.78rem;
+            color: #64748b;
+        }
+
+        .fvc-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fvc-meta-item strong {
+            color: #1e293b;
+        }
+
+        .fvc-eval-badge {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #b45309;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .fvc-footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: auto;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-play-facade {
+            flex: 1;
+            min-width: 130px;
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.28);
+        }
+
+        .btn-play-facade:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-enroll-action {
+            flex: 1;
+            min-width: 130px;
+            background: #0f172a;
+            color: #ffffff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-enroll-action:hover {
+            background: #1e3a8a;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .btn-whatsapp-inquire {
+            background: #25d366;
+            color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+        }
+
+        .btn-whatsapp-inquire:hover {
+            background: #1ebd5a;
+            color: #ffffff;
+            transform: scale(1.06);
+        }
     </style>
 </head>
 <body>
@@ -2617,6 +3105,7 @@
                     </button>
                 </li>
                 <li class="royal-nav-item"><a href="{{ route('home') }}" class="royal-nav-link active"><i class="fa-solid fa-house-chimney"></i> {{ __('الرئيسية') }}</a></li>
+                <li class="royal-nav-item"><a href="#free-samples" class="royal-nav-link" style="color: #ef4444; font-weight: 800;"><i class="fa-solid fa-circle-play"></i> {{ __('حصص مجانية 🎬') }}</a></li>
                 <li class="royal-nav-item"><a href="#branches" class="royal-nav-link"><i class="fa-solid fa-book-bookmark"></i> {{ __('فروع التوجيهي') }}</a></li>
                 <li class="royal-nav-item"><a href="#features" class="royal-nav-link"><i class="fa-solid fa-award"></i> {{ __('خدمات المنصة') }}</a></li>
                 <li class="royal-nav-item"><a href="{{ route('courses.catalog') }}" class="royal-nav-link"><i class="fa-solid fa-graduation-cap"></i> {{ __('دليل المقررات') }}</a></li>
@@ -2969,6 +3458,265 @@
                             <i class="fa-solid fa-file-pdf"></i>
                             <span>{{ __('دوسيات وامتحانات وزارية محلولة 100%') }}</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- صرح الحصص النموذجية المجانية لتقييم المنهاج (Free Sample Lessons Showcase) -->
+                @php
+                    $arVideo = $freeVideos['arabic'] ?? null;
+                    $enVideo = $freeVideos['english'] ?? null;
+                    $waNumber = preg_replace('/[^0-9]/', '', \App\Models\Setting::get('contact_whatsapp', '970597694385')) ?: '970597694385';
+                @endphp
+                <div class="royal-free-samples-section" id="free-samples">
+                    <!-- الترويسة الأكاديمية الفاخرة للقسم -->
+                    <div class="free-samples-top-ribbon">
+                        <div class="free-samples-title-wrap">
+                            <div class="free-samples-badge-icon">
+                                <i class="fa-solid fa-circle-play"></i>
+                            </div>
+                            <div>
+                                <h2>
+                                    <span>{{ __('جرّب الشرح بنفسك مجاناً') }}</span>
+                                    <span style="font-size: 0.85rem; font-weight: 600; color: #f59e0b; opacity: 0.95;">| {{ __('الحصة الأولى لمبحثي اللغة العربية واللغة الإنجليزية') }}</span>
+                                </h2>
+                                <p>{{ __('شاهد الحصص التأسيسية الأولى كاملة مجاناً بأعلى جودة وقيم بنفسك أسلوب الشرح وقوة المنهاج الوزاري الفلسطيني قبل الاشتراك.') }}</p>
+                            </div>
+                        </div>
+                        <div class="free-samples-highlight-tag">
+                            <span class="pulse-dot" style="background: #10b981;"></span>
+                            <span>{{ __('مشاهدة فورية مجانية 100% بدون تسجيل') }}</span>
+                        </div>
+                    </div>
+
+                    <!-- أزرار التبديل السريع بين المواد -->
+                    <div class="free-samples-nav-tabs">
+                        <button type="button" class="sample-tab-btn active" id="tabBtnAll" onclick="filterSampleVideos('all')">
+                            <i class="fa-solid fa-layer-group"></i>
+                            <span>{{ __('عرض المادتين معاً') }}</span>
+                        </button>
+                        <button type="button" class="sample-tab-btn" id="tabBtnArabic" onclick="filterSampleVideos('arabic')">
+                            <i class="fa-solid fa-feather-pointed" style="color: #1e3a8a;"></i>
+                            <span>{{ __('اللغة العربية') }}</span>
+                        </button>
+                        <button type="button" class="sample-tab-btn tab-english" id="tabBtnEnglish" onclick="filterSampleVideos('english')">
+                            <i class="fa-solid fa-language" style="color: #065f46;"></i>
+                            <span>{{ __('اللغة الإنجليزية') }}</span>
+                        </button>
+                    </div>
+
+                    <!-- شبكة بطاقات الحصص المجانية -->
+                    <div class="free-videos-grid">
+
+                        <!-- 1. بطاقة مساق اللغة العربية -->
+                        @if($arVideo)
+                        <div class="free-video-card theme-arabic" id="sampleCardArabic">
+                            <div class="fvc-header">
+                                <div class="fvc-sub-title">
+                                    <div class="fvc-icon-pod arabic">
+                                        <i class="fa-solid fa-feather-pointed"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fvc-sub-name">{{ $arVideo['subject_name'] }}</h3>
+                                        <p class="fvc-sub-branch">{{ $arVideo['branch_label'] }}</p>
+                                    </div>
+                                </div>
+                                <span class="fvc-free-pill">
+                                    <i class="fa-solid fa-unlock-keyhole"></i>
+                                    <span>{{ __('حصة مجانية') }}</span>
+                                </span>
+                            </div>
+
+                            <!-- مشغل الفيديو الذكي بواجهة يوتيوب الفاخرة (Facade Player) -->
+                            <div class="video-facade-container" id="facadeArabic" onclick="playFreeSampleVideo('Arabic', '{{ $arVideo['embed_url'] }}')">
+                                <img src="{{ $arVideo['thumb_max'] }}" 
+                                     onerror="this.onerror=null; this.src='{{ $arVideo['thumb_hq'] }}';"
+                                     alt="{{ $arVideo['title'] }}" 
+                                     class="video-facade-poster"
+                                     loading="lazy">
+
+                                <div class="video-facade-overlay">
+                                    <div class="vfo-top-row">
+                                        <span class="vfo-yt-brand">
+                                            <i class="fa-brands fa-youtube"></i>
+                                            <span>YouTube HD</span>
+                                        </span>
+                                        <span class="vfo-quality-tag">{{ $arVideo['quality'] }}</span>
+                                    </div>
+
+                                    <div class="vfo-center-play" title="{{ __('تشغيل الحصة مجاناً') }}">
+                                        <i class="fa-solid fa-play"></i>
+                                    </div>
+
+                                    <div class="vfo-bottom-row">
+                                        <span class="vfo-duration-badge">
+                                            <i class="fa-regular fa-clock"></i>
+                                            <span>{{ $arVideo['duration'] }}</span>
+                                        </span>
+                                        <span><i class="fa-regular fa-eye"></i> {{ number_format($arVideo['views']) }} {{ __('مشاهدة') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fvc-body">
+                                <h4 class="fvc-lesson-title" title="{{ $arVideo['title'] }}">{{ $arVideo['title'] }}</h4>
+                                
+                                <div class="fvc-meta-row">
+                                    <span class="fvc-meta-item">
+                                        <i class="fa-solid fa-chalkboard-user" style="color: #1e3a8a;"></i>
+                                        <span>{{ __('المعلم:') }} <strong>{{ $arVideo['teacher'] }}</strong></span>
+                                    </span>
+                                    <span class="fvc-meta-item">
+                                        <i class="fa-solid fa-certificate" style="color: #f59e0b;"></i>
+                                        <span>{{ __('المنهاج الفلسطيني المعتمد') }}</span>
+                                    </span>
+                                </div>
+
+                                <div class="fvc-eval-badge">
+                                    <i class="fa-solid fa-star" style="color: #f59e0b;"></i>
+                                    <span>{{ __('حصة تأسيسية ونموذجية كاملة بدون أي اقتطاع لتقييم المادة بنفسك') }}</span>
+                                </div>
+
+                                <div class="fvc-footer-actions">
+                                    <button type="button" class="btn-play-facade" onclick="playFreeSampleVideo('Arabic', '{{ $arVideo['embed_url'] }}')">
+                                        <i class="fa-solid fa-play"></i>
+                                        <span>{{ __('تشغيل الحصة') }}</span>
+                                    </button>
+
+                                    @if(Auth::guard('student')->check() || Auth::check())
+                                        @if($arVideo['subject_id'])
+                                            <a href="{{ route('student.subjects.show', $arVideo['subject_id']) }}" class="btn-enroll-action">
+                                                <span>{{ __('فتح مساق المادة') }}</span>
+                                                <i class="fa-solid fa-arrow-left"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('student.subjects.index') }}" class="btn-enroll-action">
+                                                <span>{{ __('متابعة المساقات') }}</span>
+                                                <i class="fa-solid fa-arrow-left"></i>
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('students.create') }}" class="btn-enroll-action" title="{{ __('سجل الآن لفتح المساق كاملاً') }}">
+                                            <span>{{ __('اشترك في المادة') }}</span>
+                                            <i class="fa-solid fa-user-plus"></i>
+                                        </a>
+                                    @endif
+
+                                    @php
+                                        $waArMsg = urlencode("مرحباً أ.أحمد شمالي، شاهدت الحصة التجريبية المجانية لمادة اللغة العربية عبر منصة Step by Step وأود الاستفسار عن الاشتراك في الدورة الكاملة.");
+                                    @endphp
+                                    <a href="https://wa.me/{{ $waNumber }}?text={{ $waArMsg }}" target="_blank" class="btn-whatsapp-inquire" title="{{ __('استفسار وتثبيت عبر واتساب') }}">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- 2. بطاقة مساق اللغة الإنجليزية -->
+                        @if($enVideo)
+                        <div class="free-video-card theme-english" id="sampleCardEnglish">
+                            <div class="fvc-header">
+                                <div class="fvc-sub-title">
+                                    <div class="fvc-icon-pod english">
+                                        <i class="fa-solid fa-language"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="fvc-sub-name">{{ $enVideo['subject_name'] }}</h3>
+                                        <p class="fvc-sub-branch">{{ $enVideo['branch_label'] }}</p>
+                                    </div>
+                                </div>
+                                <span class="fvc-free-pill">
+                                    <i class="fa-solid fa-unlock-keyhole"></i>
+                                    <span>{{ __('حصة مجانية') }}</span>
+                                </span>
+                            </div>
+
+                            <!-- مشغل الفيديو الذكي بواجهة يوتيوب الفاخرة (Facade Player) -->
+                            <div class="video-facade-container" id="facadeEnglish" onclick="playFreeSampleVideo('English', '{{ $enVideo['embed_url'] }}')">
+                                <img src="{{ $enVideo['thumb_max'] }}" 
+                                     onerror="this.onerror=null; this.src='{{ $enVideo['thumb_hq'] }}';"
+                                     alt="{{ $enVideo['title'] }}" 
+                                     class="video-facade-poster"
+                                     loading="lazy">
+
+                                <div class="video-facade-overlay">
+                                    <div class="vfo-top-row">
+                                        <span class="vfo-yt-brand">
+                                            <i class="fa-brands fa-youtube"></i>
+                                            <span>YouTube HD</span>
+                                        </span>
+                                        <span class="vfo-quality-tag">{{ $enVideo['quality'] }}</span>
+                                    </div>
+
+                                    <div class="vfo-center-play" title="{{ __('تشغيل الحصة مجاناً') }}">
+                                        <i class="fa-solid fa-play"></i>
+                                    </div>
+
+                                    <div class="vfo-bottom-row">
+                                        <span class="vfo-duration-badge">
+                                            <i class="fa-regular fa-clock"></i>
+                                            <span>{{ $enVideo['duration'] }}</span>
+                                        </span>
+                                        <span><i class="fa-regular fa-eye"></i> {{ number_format($enVideo['views']) }} {{ __('مشاهدة') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="fvc-body">
+                                <h4 class="fvc-lesson-title" title="{{ $enVideo['title'] }}">{{ $enVideo['title'] }}</h4>
+                                
+                                <div class="fvc-meta-row">
+                                    <span class="fvc-meta-item">
+                                        <i class="fa-solid fa-chalkboard-user" style="color: #065f46;"></i>
+                                        <span>{{ __('المعلم:') }} <strong>{{ $enVideo['teacher'] }}</strong></span>
+                                    </span>
+                                    <span class="fvc-meta-item">
+                                        <i class="fa-solid fa-certificate" style="color: #f59e0b;"></i>
+                                        <span>{{ __('English for Palestine') }}</span>
+                                    </span>
+                                </div>
+
+                                <div class="fvc-eval-badge">
+                                    <i class="fa-solid fa-star" style="color: #f59e0b;"></i>
+                                    <span>{{ __('حصة تأسيسية ونموذجية كاملة بدون أي اقتطاع لتقييم المادة بنفسك') }}</span>
+                                </div>
+
+                                <div class="fvc-footer-actions">
+                                    <button type="button" class="btn-play-facade" onclick="playFreeSampleVideo('English', '{{ $enVideo['embed_url'] }}')">
+                                        <i class="fa-solid fa-play"></i>
+                                        <span>{{ __('تشغيل الحصة') }}</span>
+                                    </button>
+
+                                    @if(Auth::guard('student')->check() || Auth::check())
+                                        @if($enVideo['subject_id'])
+                                            <a href="{{ route('student.subjects.show', $enVideo['subject_id']) }}" class="btn-enroll-action">
+                                                <span>{{ __('فتح مساق المادة') }}</span>
+                                                <i class="fa-solid fa-arrow-left"></i>
+                                            </a>
+                                        @else
+                                            <a href="{{ route('student.subjects.index') }}" class="btn-enroll-action">
+                                                <span>{{ __('متابعة المساقات') }}</span>
+                                                <i class="fa-solid fa-arrow-left"></i>
+                                            </a>
+                                        @endif
+                                    @else
+                                        <a href="{{ route('students.create') }}" class="btn-enroll-action" title="{{ __('سجل الآن لفتح المساق كاملاً') }}">
+                                            <span>{{ __('اشترك في المادة') }}</span>
+                                            <i class="fa-solid fa-user-plus"></i>
+                                        </a>
+                                    @endif
+
+                                    @php
+                                        $waEnMsg = urlencode("مرحباً أ.أحمد شمالي، شاهدت الحصة التجريبية المجانية لمادة اللغة الإنجليزية عبر منصة Step by Step وأود الاستفسار عن الاشتراك في الدورة الكاملة.");
+                                    @endphp
+                                    <a href="https://wa.me/{{ $waNumber }}?text={{ $waEnMsg }}" target="_blank" class="btn-whatsapp-inquire" title="{{ __('استفسار وتثبيت عبر واتساب') }}">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                     </div>
                 </div>
 
@@ -3414,6 +4162,59 @@
                 }
             }
         }, { passive: true });
+
+        // =========================================================
+        // مشغل الحصص المجانية الذكي والتبديل بين المواد (Free Samples Facade Engine)
+        // =========================================================
+        function playFreeSampleVideo(subject, embedUrl) {
+            const container = document.getElementById('facade' + subject);
+            if (!container) return;
+
+            // تجهيز رابط التضمين مع التشغيل التلقائي المباشر
+            let finalUrl = embedUrl;
+            if (!finalUrl.includes('autoplay=1')) {
+                finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'autoplay=1';
+            }
+
+            // إنشاء إطار يوتيوب فائق السرعة
+            const iframe = document.createElement('iframe');
+            iframe.className = 'video-iframe-active';
+            iframe.src = finalUrl;
+            iframe.title = 'حصة تجريبية مجانية - ' + subject;
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            iframe.allowFullscreen = true;
+
+            // تفريغ الحاوية وتضمين المشغل فوراً
+            container.innerHTML = '';
+            container.appendChild(iframe);
+        }
+
+        function filterSampleVideos(type) {
+            const cardAr = document.getElementById('sampleCardArabic');
+            const cardEn = document.getElementById('sampleCardEnglish');
+            const btnAll = document.getElementById('tabBtnAll');
+            const btnAr = document.getElementById('tabBtnArabic');
+            const btnEn = document.getElementById('tabBtnEnglish');
+
+            // إزالة التنشيط من جميع الأزرار
+            [btnAll, btnAr, btnEn].forEach(function(b) {
+                if (b) b.classList.remove('active');
+            });
+
+            if (type === 'arabic') {
+                if (cardAr) cardAr.style.display = 'flex';
+                if (cardEn) cardEn.style.display = 'none';
+                if (btnAr) btnAr.classList.add('active');
+            } else if (type === 'english') {
+                if (cardAr) cardAr.style.display = 'none';
+                if (cardEn) cardEn.style.display = 'flex';
+                if (btnEn) btnEn.classList.add('active');
+            } else {
+                if (cardAr) cardAr.style.display = 'flex';
+                if (cardEn) cardEn.style.display = 'flex';
+                if (btnAll) btnAll.classList.add('active');
+            }
+        }
 
         // =========================================================
         // تدوير وتحريك شريط آخر الأخبار والتعاميم المباشرة فائق السلاسة
