@@ -359,12 +359,14 @@
             width: 100%;
             max-width: 1440px;
             margin: 0 auto;
-            padding: 0 32px;
+            padding: 0 24px;
             height: 72px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
+            gap: 14px;
+            flex-wrap: nowrap;
+            box-sizing: border-box;
         }
         .royal-brand-group {
             display: flex;
@@ -425,14 +427,15 @@
         .royal-nav-link {
             display: flex;
             align-items: center;
-            gap: 7px;
-            padding: 8px 13px;
+            gap: 6px;
+            padding: 7px 11px;
             color: var(--academic-text-body);
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 700;
             border-radius: var(--radius-sm);
             transition: var(--transition);
             position: relative;
+            white-space: nowrap;
         }
         .royal-nav-link i {
             color: var(--royal-gold);
@@ -460,21 +463,24 @@
         .royal-nav-actions {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-shrink: 0;
+            white-space: nowrap;
         }
         .btn-royal-login {
             background-color: #ffffff;
             color: var(--royal-navy);
             border: 1.5px solid var(--royal-navy);
-            padding: 7px 16px;
+            padding: 7px 14px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             transition: var(--transition);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .btn-royal-login:hover {
             background-color: var(--royal-navy-soft);
@@ -486,16 +492,18 @@
             background: linear-gradient(135deg, #c28e2b 0%, #e6be65 50%, #c28e2b 100%);
             color: #061329;
             border: 1px solid #a8781d;
-            padding: 7px 18px;
+            padding: 7px 16px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             box-shadow: var(--shadow-gold);
             transition: var(--transition);
             text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+            white-space: nowrap;
+            flex-shrink: 0;
         }
         .btn-royal-gold:hover {
             background: linear-gradient(135deg, #a8781d 0%, #d4a742 50%, #a8781d 100%);
@@ -512,15 +520,17 @@
             background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
             color: #1d4ed8;
             border: 1.5px solid #bfdbfe;
-            padding: 7px 14px;
+            padding: 7px 12px;
             border-radius: var(--radius-sm);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+            white-space: nowrap;
+            flex-shrink: 0;
             transition: var(--transition);
             font-family: inherit;
         }
@@ -2002,7 +2012,74 @@
             .footer-inner { grid-template-columns: 1fr 1fr; }
         }
 
-        @media (max-width: 860px) {
+        /* شاشات اللابتوب والمتوسطة (1121px إلى 1400px): منع أي تداخل أو تكدس في شريط القوائم نهائياً */
+        @media (max-width: 1400px) {
+            .royal-navbar-inner {
+                padding: 0 16px;
+                gap: 10px;
+                flex-wrap: nowrap;
+            }
+            .royal-brand-group {
+                gap: 8px;
+            }
+            .royal-brand-meta h1 {
+                font-size: 16px;
+            }
+            .royal-brand-meta p {
+                font-size: 11px;
+            }
+            .royal-nav-menu {
+                gap: 2px;
+            }
+            .royal-nav-link {
+                padding: 6px 7px;
+                font-size: 12px;
+                gap: 4px;
+                white-space: nowrap;
+            }
+            .royal-nav-link i {
+                font-size: 11.5px;
+            }
+            .royal-nav-actions {
+                gap: 6px;
+                flex-shrink: 0;
+            }
+            /* إخفاء زر تطبيق الجوال من شريط القوائم على شاشات اللابتوب لمنع أي تداخل نهائياً مع وجوده بالشريط العلوي */
+            .royal-nav-actions .btn-royal-app-download {
+                display: none !important;
+            }
+            .btn-royal-login {
+                padding: 6px 11px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+            .btn-royal-gold {
+                padding: 6px 13px;
+                font-size: 12px;
+                white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .royal-brand-meta p {
+                display: none;
+            }
+            .royal-nav-link {
+                padding: 5px 6px;
+                font-size: 11.5px;
+                gap: 3px;
+            }
+            .btn-royal-login .label-full,
+            .btn-royal-gold .label-full {
+                display: none !important;
+            }
+            .btn-royal-login .label-short,
+            .btn-royal-gold .label-short {
+                display: inline !important;
+            }
+        }
+
+        @media (max-width: 1120px) {
             .royal-top-ribbon,
             .royal-navbar-inner,
             .royal-ticker-bar,
@@ -2410,7 +2487,7 @@
             display: none;
         }
 
-        @media (max-width: 992px) {
+        @media (max-width: 1120px) {
             .mobile-auth-drawer-item {
                 display: block;
                 padding: 12px 16px;
@@ -3355,134 +3432,6 @@
             <!-- العمود الرئيسي للمحتوى الأكاديمي -->
             <main class="main-content-flow">
 
-                <!-- صرح الترحيب الأكاديمي وبوابات الوصول الذكية -->
-                <div class="royal-hero-arch">
-                    <div class="royal-hero-top">
-                        <div class="royal-hero-title-wrap">
-                            <div class="royal-hero-crest-icon">
-                                <i class="fa-solid fa-graduation-cap"></i>
-                            </div>
-                            <div>
-                                <h2>{{ __('منظومة Step by Step | المنهاج الفلسطيني المعتمد') }}</h2>
-                            </div>
-                        </div>
-                        <span class="royal-hero-badge-tag">
-                            <i class="fa-solid fa-award"></i>
-                            {{ __('الثانوية العامة (التوجيهي) 2026 م') }}
-                        </span>
-                    </div>
-
-                    <p class="royal-hero-desc">
-                        {{ __('بوابتك المتخصصة للتفوق والدرجات العالية في الثانوية العامة في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). شروحات مصورة نموذجية، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص PDF، وحاسبة المعدل الوزارية بإشراف م.أحمد شمالي.') }}
-                    </p>
-
-                    <!-- بوابات الدخول السريعة الذكية (4 Interactive Gateways) -->
-                    <div class="royal-hero-gateways-grid">
-
-                        <!-- 1. بوابة تسجيل الدخول / حسابي -->
-                        @if(Auth::guard('student')->check() || Auth::check())
-                            <a href="{{ route('dashboard') }}" class="royal-gateway-card gateway-card-student">
-                                <div class="gateway-card-header">
-                                    <div class="gateway-icon-pod">
-                                        <i class="fa-solid fa-gauge-high"></i>
-                                    </div>
-                                    <span class="gateway-pill">{{ __('متصل الآن 🟢') }}</span>
-                                </div>
-                                <h3 class="gateway-title">{{ __('لوحة تحكم حسابي') }}</h3>
-                                <p class="gateway-desc">{{ __('متابعة تقدمك الدراسي، الدروس المتبقية، والتقييمات الذاتية.') }}</p>
-                                <span class="gateway-cta-btn btn-primary-pulse">
-                                    <span>{{ __('الدخول للوحة التحكم') }}</span>
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </span>
-                            </a>
-                        @else
-                            <a href="{{ route('login') }}" class="royal-gateway-card gateway-card-student">
-                                <div class="gateway-card-header">
-                                    <div class="gateway-icon-pod">
-                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                                    </div>
-                                    <span class="gateway-pill">{{ __('دخول فوري ⚡') }}</span>
-                                </div>
-                                <h3 class="gateway-title">{{ __('بوابة تسجيل الدخول') }}</h3>
-                                <p class="gateway-desc">{{ __('ادخل إلى حسابك لمتابعة حصصك، اختباراتك، والمواد المسجلة.') }}</p>
-                                <span class="gateway-cta-btn btn-primary-pulse">
-                                    <span>{{ __('تسجيل الدخول لحسابك') }}</span>
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </span>
-                            </a>
-                        @endif
-
-                        <!-- 2. إنشاء حساب طالب جديد -->
-                        <a href="{{ route('students.create') }}" class="royal-gateway-card gateway-card-register">
-                            <div class="gateway-card-header">
-                                <div class="gateway-icon-pod">
-                                    <i class="fa-solid fa-user-plus"></i>
-                                </div>
-                                <span class="gateway-pill">{{ __('مجاناً ✨') }}</span>
-                            </div>
-                            <h3 class="gateway-title">{{ __('تسجيل طالب جديد') }}</h3>
-                            <p class="gateway-desc">{{ __('انضم لآلاف طلبة التوجيهي واستفد من الشروحات والملخصات المعتمدة.') }}</p>
-                            <span class="gateway-cta-btn btn-gold-pulse">
-                                <span>{{ __('فتح حساب طالب جديد') }}</span>
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </span>
-                        </a>
-
-                        <!-- 3. حاسبة معدل التوجيهي الوزارية -->
-                        <a href="{{ route('tawjihi.calculator') }}" class="royal-gateway-card gateway-card-calc">
-                            <div class="gateway-card-header">
-                                <div class="gateway-icon-pod">
-                                    <i class="fa-solid fa-calculator"></i>
-                                </div>
-                                <span class="gateway-pill">{{ __('نظام 2026 🎯') }}</span>
-                            </div>
-                            <h3 class="gateway-title">{{ __('حاسبة المعدل الوزارية') }}</h3>
-                            <p class="gateway-desc">{{ __('احتساب دقيق ومعتمد لمعدلك وفق معايير وزارة التربية والتعليم لكافة الفروع.') }}</p>
-                            <span class="gateway-cta-btn btn-emerald-pulse">
-                                <span>{{ __('احسب معدلك الآن') }}</span>
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </span>
-                        </a>
-
-                        <!-- 4. المكتبة الأوفلاين والدروس المحفوظة بدون إنترنت -->
-                        <a href="{{ route('offline.videos') }}" class="royal-gateway-card gateway-card-offline">
-                            <div class="gateway-card-header">
-                                <div class="gateway-icon-pod">
-                                    <i class="fa-solid fa-cloud-arrow-down"></i>
-                                </div>
-                                <span class="gateway-pill">{{ __('بدون نت 🚀') }}</span>
-                            </div>
-                            <h3 class="gateway-title">{{ __('دروسي المحفوظة أوفلاين') }}</h3>
-                            <p class="gateway-desc">{{ __('شاهد الحصص والشروحات المحملة على هاتفك حتى عند انقطاع الإنترنت.') }}</p>
-                            <span class="gateway-cta-btn btn-sapphire-pulse">
-                                <span>{{ __('عرض الحصص المحملة') }}</span>
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </span>
-                        </a>
-
-                    </div>
-
-                    <!-- أشرطة المؤشرات الأكاديمية السريعة أسفل البوابات -->
-                    <div class="royal-hero-quick-badges">
-                        <a href="#free-samples" class="quick-badge-item" style="text-decoration: none; border-color: #fca5a5; color: #dc2626; background: #fff1f2; font-weight: 800; cursor: pointer;">
-                            <i class="fa-solid fa-circle-play" style="color: #ef4444;"></i>
-                            <span>{{ __('حصص مجانية لتجربة الشرح (عربي وإنجليزي)') }} 🎬</span>
-                        </a>
-                        <div class="quick-badge-item">
-                            <i class="fa-solid fa-book-bookmark"></i>
-                            <span>{{ __('المنهاج الفلسطيني المعتمد (القدس، الضفة، غزة)') }}</span>
-                        </div>
-                        <div class="quick-badge-item">
-                            <i class="fa-solid fa-chalkboard-user"></i>
-                            <span>{{ __('إشراف وتدريس نخبة معلمين متميزين') }}</span>
-                        </div>
-                        <div class="quick-badge-item">
-                            <i class="fa-solid fa-file-pdf"></i>
-                            <span>{{ __('دوسيات وامتحانات وزارية محلولة 100%') }}</span>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- صرح الحصص النموذجية المجانية لتقييم المنهاج (Free Sample Lessons Showcase) -->
                 @php
                     $arVideo = $freeVideos['arabic'] ?? null;
@@ -3749,6 +3698,134 @@
                             </div>
                             @endif
 
+                        </div>
+                    </div>
+                </div>
+
+                <!-- صرح الترحيب الأكاديمي وبوابات الوصول الذكية -->
+                <div class="royal-hero-arch">
+                    <div class="royal-hero-top">
+                        <div class="royal-hero-title-wrap">
+                            <div class="royal-hero-crest-icon">
+                                <i class="fa-solid fa-graduation-cap"></i>
+                            </div>
+                            <div>
+                                <h2>{{ __('منظومة Step by Step | المنهاج الفلسطيني المعتمد') }}</h2>
+                            </div>
+                        </div>
+                        <span class="royal-hero-badge-tag">
+                            <i class="fa-solid fa-award"></i>
+                            {{ __('الثانوية العامة (التوجيهي) 2026 م') }}
+                        </span>
+                    </div>
+
+                    <p class="royal-hero-desc">
+                        {{ __('بوابتك المتخصصة للتفوق والدرجات العالية في الثانوية العامة في كافة محافظات فلسطين (القدس، الضفة الغربية، وقطاع غزة). شروحات مصورة نموذجية، بنك الامتحانات الوزارية المحلولة، دوسيات وتلاخيص PDF، وحاسبة المعدل الوزارية بإشراف م.أحمد شمالي.') }}
+                    </p>
+
+                    <!-- بوابات الدخول السريعة الذكية (4 Interactive Gateways) -->
+                    <div class="royal-hero-gateways-grid">
+
+                        <!-- 1. بوابة تسجيل الدخول / حسابي -->
+                        @if(Auth::guard('student')->check() || Auth::check())
+                            <a href="{{ route('dashboard') }}" class="royal-gateway-card gateway-card-student">
+                                <div class="gateway-card-header">
+                                    <div class="gateway-icon-pod">
+                                        <i class="fa-solid fa-gauge-high"></i>
+                                    </div>
+                                    <span class="gateway-pill">{{ __('متصل الآن 🟢') }}</span>
+                                </div>
+                                <h3 class="gateway-title">{{ __('لوحة تحكم حسابي') }}</h3>
+                                <p class="gateway-desc">{{ __('متابعة تقدمك الدراسي، الدروس المتبقية، والتقييمات الذاتية.') }}</p>
+                                <span class="gateway-cta-btn btn-primary-pulse">
+                                    <span>{{ __('الدخول للوحة التحكم') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </span>
+                            </a>
+                        @else
+                            <a href="{{ route('login') }}" class="royal-gateway-card gateway-card-student">
+                                <div class="gateway-card-header">
+                                    <div class="gateway-icon-pod">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                    <span class="gateway-pill">{{ __('دخول فوري ⚡') }}</span>
+                                </div>
+                                <h3 class="gateway-title">{{ __('بوابة تسجيل الدخول') }}</h3>
+                                <p class="gateway-desc">{{ __('ادخل إلى حسابك لمتابعة حصصك، اختباراتك، والمواد المسجلة.') }}</p>
+                                <span class="gateway-cta-btn btn-primary-pulse">
+                                    <span>{{ __('تسجيل الدخول لحسابك') }}</span>
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </span>
+                            </a>
+                        @endif
+
+                        <!-- 2. إنشاء حساب طالب جديد -->
+                        <a href="{{ route('students.create') }}" class="royal-gateway-card gateway-card-register">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('مجاناً ✨') }}</span>
+                            </div>
+                            <h3 class="gateway-title">{{ __('تسجيل طالب جديد') }}</h3>
+                            <p class="gateway-desc">{{ __('انضم لآلاف طلبة التوجيهي واستفد من الشروحات والملخصات المعتمدة.') }}</p>
+                            <span class="gateway-cta-btn btn-gold-pulse">
+                                <span>{{ __('فتح حساب طالب جديد') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                        <!-- 3. حاسبة معدل التوجيهي الوزارية -->
+                        <a href="{{ route('tawjihi.calculator') }}" class="royal-gateway-card gateway-card-calc">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-calculator"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('نظام 2026 🎯') }}</span>
+                            </div>
+                            <h3 class="gateway-title">{{ __('حاسبة المعدل الوزارية') }}</h3>
+                            <p class="gateway-desc">{{ __('احتساب دقيق ومعتمد لمعدلك وفق معايير وزارة التربية والتعليم لكافة الفروع.') }}</p>
+                            <span class="gateway-cta-btn btn-emerald-pulse">
+                                <span>{{ __('احسب معدلك الآن') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                        <!-- 4. المكتبة الأوفلاين والدروس المحفوظة بدون إنترنت -->
+                        <a href="{{ route('offline.videos') }}" class="royal-gateway-card gateway-card-offline">
+                            <div class="gateway-card-header">
+                                <div class="gateway-icon-pod">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i>
+                                </div>
+                                <span class="gateway-pill">{{ __('بدون نت 🚀') }}</span>
+                            </div>
+                            <h3 class="gateway-title">{{ __('دروسي المحفوظة أوفلاين') }}</h3>
+                            <p class="gateway-desc">{{ __('شاهد الحصص والشروحات المحملة على هاتفك حتى عند انقطاع الإنترنت.') }}</p>
+                            <span class="gateway-cta-btn btn-sapphire-pulse">
+                                <span>{{ __('عرض الحصص المحملة') }}</span>
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </span>
+                        </a>
+
+                    </div>
+
+                    <!-- أشرطة المؤشرات الأكاديمية السريعة أسفل البوابات -->
+                    <div class="royal-hero-quick-badges">
+                        <a href="#free-samples" class="quick-badge-item" style="text-decoration: none; border-color: #fca5a5; color: #dc2626; background: #fff1f2; font-weight: 800; cursor: pointer;">
+                            <i class="fa-solid fa-circle-play" style="color: #ef4444;"></i>
+                            <span>{{ __('حصص مجانية لتجربة الشرح (عربي وإنجليزي)') }} 🎬</span>
+                        </a>
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-book-bookmark"></i>
+                            <span>{{ __('المنهاج الفلسطيني المعتمد (القدس، الضفة، غزة)') }}</span>
+                        </div>
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                            <span>{{ __('إشراف وتدريس نخبة معلمين متميزين') }}</span>
+                        </div>
+                        <div class="quick-badge-item">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>{{ __('دوسيات وامتحانات وزارية محلولة 100%') }}</span>
                         </div>
                     </div>
                 </div>

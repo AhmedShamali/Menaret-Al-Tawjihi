@@ -213,8 +213,8 @@
    ========================================================================= */
 .ai-widget-wrapper {
     position: fixed;
-    bottom: 80px;
-    {{ app()->getLocale() === 'ar' ? 'left: 24px;' : 'right: 24px;' }}
+    bottom: 24px;
+    {{ app()->getLocale() === 'ar' ? 'left: 78px;' : 'right: 78px;' }}
     z-index: 99998;
     font-family: inherit;
     --ai-primary: #1d4ed8;
@@ -287,10 +287,11 @@ html[dir="ltr"] .ai-widget-wrapper {
     font-size: 0.65rem;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-    opacity: 0;
-    transform: scale(0.85);
+    opacity: 0.65;
+    transform: scale(0.9);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.ai-launcher-dismiss-btn:hover,
 .ai-launcher-group:hover .ai-launcher-dismiss-btn {
     opacity: 1;
     transform: scale(1);
