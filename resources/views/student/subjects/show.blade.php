@@ -1343,16 +1343,20 @@ body.has-fullscreen-player {
 
 .ed-poster-top-bar {
     position: absolute;
-    top: 14px;
-    right: 14px;
-    left: 14px;
+    top: 10px;
+    right: 10px;
+    left: 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
     z-index: 3;
+    pointer-events: none;
 }
 
 .ed-poster-badge {
+    pointer-events: auto;
     background: rgba(15, 23, 42, 0.78);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -2491,14 +2495,16 @@ video::-webkit-media-controls-download-button {
                                                 <img src="{{ $posterThumb }}" alt="{{ $video->title }}" class="ed-poster-bg-img" loading="lazy" onerror="this.src='{{ asset('images/video-placeholder.jpg') }}'">
                                                 <div class="ed-poster-overlay"></div>
                                                 <div class="ed-poster-top-bar">
-                                                    <span class="ed-poster-badge">
-                                                        <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
-                                                    </span>
-                                                    @if(!empty($video->is_first_free_lesson))
-                                                        <span class="ed-poster-badge" style="background: #16a34a; color: #ffffff; font-weight: 800;">
-                                                            <i class="fa-solid fa-gift"></i> {{ __('حصة تجريبية مجانية 100%') }}
+                                                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                                        <span class="ed-poster-badge">
+                                                            <i class="fa-solid fa-graduation-cap"></i> {{ __('الدرس') }} #{{ $video->order }}
                                                         </span>
-                                                    @endif
+                                                        @if(!empty($video->is_first_free_lesson))
+                                                            <span class="ed-poster-badge" style="background: #16a34a; color: #ffffff; font-weight: 800; border-color: rgba(74, 222, 128, 0.4);">
+                                                                <i class="fa-solid fa-gift"></i> {{ __('حصة تجريبية مجانية 100%') }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
                                                     <span class="ed-poster-badge hd">
                                                         <i class="fa-solid fa-sparkles"></i> 1080p Full HD
                                                     </span>
