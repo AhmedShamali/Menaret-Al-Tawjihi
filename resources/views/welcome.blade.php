@@ -2759,6 +2759,90 @@
             font-weight: 800;
         }
 
+        .vfo-fs-btn {
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+            pointer-events: auto;
+        }
+
+        .vfo-fs-btn:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.04);
+        }
+
+        .video-facade-container:fullscreen,
+        .video-facade-container:-webkit-full-screen,
+        .video-facade-container.is-sample-fullscreen {
+            position: fixed !important;
+            inset: 0 !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            z-index: 2147483647 !important;
+            background: #000000 !important;
+            border-radius: 0 !important;
+        }
+
+        .video-facade-container.force-sample-landscape {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            width: 100vh !important;
+            height: 100vw !important;
+            max-width: 100vh !important;
+            max-height: 100vw !important;
+            transform: translate(-50%, -50%) rotate(90deg) !important;
+            transform-origin: center center !important;
+            z-index: 2147483647 !important;
+            background: #000000 !important;
+            border-radius: 0 !important;
+        }
+
+        .video-facade-container:fullscreen iframe,
+        .video-facade-container.is-sample-fullscreen iframe,
+        .video-facade-container.force-sample-landscape iframe {
+            width: 100% !important;
+            height: 100% !important;
+            inset: 0 !important;
+        }
+
+        .sample-fs-exit-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 99999999;
+            background: rgba(15, 23, 42, 0.88);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+        }
+        .sample-fs-exit-btn:hover {
+            background: #dc2626;
+        }
+
         .vfo-center-play {
             position: absolute;
             top: 50%;
@@ -3475,7 +3559,13 @@
                                             <i class="fa-brands fa-youtube"></i>
                                             <span>YouTube HD</span>
                                         </span>
-                                        <span class="vfo-quality-tag">{{ $arVideo['quality'] }}</span>
+                                        <div style="display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+                                            <span class="vfo-quality-tag">{{ $arVideo['quality'] }}</span>
+                                            <button type="button" class="vfo-fs-btn" onclick="toggleFreeSampleFullscreen('Arabic', '{{ $arVideo['embed_url'] }}', event)" title="{{ __('تكبير بملء الشاشة بالعرض') }}">
+                                                <i class="fa-solid fa-expand"></i>
+                                                <span>{{ __('تكبير بالعرض') }}</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div class="vfo-center-play" title="{{ __('تشغيل الحصة مجاناً') }}">
@@ -3580,7 +3670,13 @@
                                             <i class="fa-brands fa-youtube"></i>
                                             <span>YouTube HD</span>
                                         </span>
-                                        <span class="vfo-quality-tag">{{ $enVideo['quality'] }}</span>
+                                        <div style="display: flex; align-items: center; gap: 6px; pointer-events: auto;">
+                                            <span class="vfo-quality-tag">{{ $enVideo['quality'] }}</span>
+                                            <button type="button" class="vfo-fs-btn" onclick="toggleFreeSampleFullscreen('English', '{{ $enVideo['embed_url'] }}', event)" title="{{ __('تكبير بملء الشاشة بالعرض') }}">
+                                                <i class="fa-solid fa-expand"></i>
+                                                <span>{{ __('تكبير بالعرض') }}</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <div class="vfo-center-play" title="{{ __('تشغيل الحصة مجاناً') }}">
@@ -4113,18 +4209,118 @@
                 finalUrl += (finalUrl.includes('?') ? '&' : '?') + 'autoplay=1';
             }
 
-            // إنشاء إطار يوتيوب فائق السرعة
+            // إنشاء إطار يوتيوب فائق السرعة مع دعم ملء الشاشة الكامل
             const iframe = document.createElement('iframe');
             iframe.className = 'video-iframe-active';
             iframe.src = finalUrl;
             iframe.title = 'حصة تجريبية مجانية - ' + subject;
-            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+            iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen';
             iframe.allowFullscreen = true;
+            iframe.setAttribute('allowfullscreen', 'true');
+            iframe.setAttribute('webkitallowfullscreen', 'true');
+            iframe.setAttribute('mozallowfullscreen', 'true');
 
             // تفريغ الحاوية وتضمين المشغل فوراً
             container.innerHTML = '';
             container.appendChild(iframe);
         }
+
+        function toggleFreeSampleFullscreen(subject, embedUrl, e) {
+            if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+            const container = document.getElementById('facade' + subject);
+            if (!container) return;
+
+            if (!container.querySelector('iframe')) {
+                playFreeSampleVideo(subject, embedUrl);
+            }
+
+            const isFs = !!(
+                document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                container.classList.contains('is-sample-fullscreen')
+            );
+
+            if (!isFs) {
+                // تدوير الشاشة بالعرض للأجهزة الذكية والتابلت
+                if (screen.orientation && typeof screen.orientation.lock === 'function') {
+                    screen.orientation.lock('landscape').catch(() => {});
+                }
+                if (window.innerWidth < window.innerHeight && window.innerWidth <= 992) {
+                    container.classList.add('force-sample-landscape');
+                }
+
+                let req = container.requestFullscreen || 
+                          container.webkitRequestFullscreen || 
+                          container.webkitRequestFullScreen || 
+                          container.mozRequestFullScreen;
+
+                if (req) {
+                    try {
+                        let res = req.call(container);
+                        if (res && typeof res.catch === 'function') {
+                            res.catch(() => enterFallbackSampleFullscreen(container, subject));
+                        }
+                    } catch(err) {
+                        enterFallbackSampleFullscreen(container, subject);
+                    }
+                } else {
+                    enterFallbackSampleFullscreen(container, subject);
+                }
+            } else {
+                exitFallbackSampleFullscreen(container, subject);
+            }
+        }
+
+        function enterFallbackSampleFullscreen(container, subject) {
+            container.classList.add('is-sample-fullscreen');
+            document.body.classList.add('has-fullscreen-player');
+
+            let exitBtn = document.getElementById('sample_exit_' + subject);
+            if (!exitBtn) {
+                exitBtn = document.createElement('button');
+                exitBtn.id = 'sample_exit_' + subject;
+                exitBtn.className = 'sample-fs-exit-btn';
+                exitBtn.innerHTML = '<i class="fa-solid fa-compress"></i> <span>' + '{{ __("إلغاء التكبير") }}' + '</span>';
+                exitBtn.onclick = function(e) {
+                    e.stopPropagation();
+                    toggleFreeSampleFullscreen(subject, '', e);
+                };
+                container.appendChild(exitBtn);
+            }
+            exitBtn.style.display = 'inline-flex';
+        }
+
+        function exitFallbackSampleFullscreen(container, subject) {
+            if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                try { screen.orientation.unlock(); } catch(err) {}
+            }
+            if (container) {
+                container.classList.remove('is-sample-fullscreen');
+                container.classList.remove('force-sample-landscape');
+            }
+            document.body.classList.remove('has-fullscreen-player');
+            try {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+            } catch(err) {}
+            const exitBtn = document.getElementById('sample_exit_' + subject);
+            if (exitBtn) exitBtn.style.display = 'none';
+        }
+
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement) {
+                if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+                    try { screen.orientation.unlock(); } catch(err) {}
+                }
+                document.querySelectorAll('.video-facade-container').forEach(c => {
+                    c.classList.remove('force-sample-landscape');
+                    c.classList.remove('is-sample-fullscreen');
+                });
+                document.body.classList.remove('has-fullscreen-player');
+                document.querySelectorAll('.sample-fs-exit-btn').forEach(b => b.style.display = 'none');
+            }
+        });
 
         function filterSampleVideos(type) {
             const cardAr = document.getElementById('sampleCardArabic');

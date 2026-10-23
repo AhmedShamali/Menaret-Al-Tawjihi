@@ -531,6 +531,60 @@ body.has-fullscreen-player {
     border-color: #ef4444;
 }
 
+.ed-fs-rotate-floating-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 99999999;
+    background: rgba(30, 58, 138, 0.9);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+    transition: all 0.2s ease;
+}
+
+.ed-fs-rotate-floating-btn:hover {
+    background: #1e40af;
+    transform: scale(1.05);
+}
+
+.ed-player-frame.force-landscape {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    width: 100vh !important;
+    height: 100vw !important;
+    max-width: 100vh !important;
+    max-height: 100vw !important;
+    transform: translate(-50%, -50%) rotate(90deg) !important;
+    transform-origin: center center !important;
+    z-index: 2147483647 !important;
+    background: #000000 !important;
+    border-radius: 0 !important;
+    padding-top: 0 !important;
+    margin: 0 !important;
+}
+
+.ed-player-frame.force-landscape .ed-yt-frame-container,
+.ed-player-frame.force-landscape .ed-yt-viewport,
+.ed-player-frame.force-landscape .ed-pure-player-layer,
+.ed-player-frame.force-landscape iframe,
+.ed-player-frame.force-landscape video {
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+}
+
 .ed-yt-frame-container {
     position: absolute;
     inset: 0;
@@ -2623,7 +2677,10 @@ video::-webkit-media-controls-download-button {
                                                                     </div>
                                                                 </div>
 
-                                                                <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('ملء الشاشة (F)') }}">
+                                                                <button type="button" class="ed-ctrl-btn rotate-landscape-btn" onclick="toggleStudentLandscapeMode('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('تدوير الشاشة بالعرض') }}">
+                                                                    <i class="fa-solid fa-rotate"></i>
+                                                                </button>
+                                                                <button type="button" class="ed-ctrl-btn fs" onclick="togglePlatformFullscreen('{{ $video->id }}', event); event.stopPropagation();" title="{{ __('ملء الشاشة بالعرض (F)') }}">
                                                                     <i class="fa-solid fa-expand"></i>
                                                                 </button>
                                                             </div>
@@ -2759,9 +2816,9 @@ video::-webkit-media-controls-download-button {
                                                 <i class="fa-solid fa-table-columns"></i>
                                                 <span>{{ __('وضع المسرح') }}</span>
                                             </button>
-                                            <button type="button" class="ed-btn-action-fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة') }}">
+                                            <button type="button" class="ed-btn-action-fs" onclick="togglePlatformFullscreen('{{ $video->id }}')" title="{{ __('تكبير العرض بملء الشاشة بالعرض') }}">
                                                 <i class="fa-solid fa-expand"></i>
-                                                <span>{{ __('تكبير الشاشة') }}</span>
+                                                <span>{{ __('تكبير بالعرض') }}</span>
                                             </button>
                                         </div>
                                     </div>
@@ -4192,7 +4249,7 @@ function updateFullscreenButtonsUI(videoId, isFs) {
     }
 }
 
-// تكبير المشغل الأكاديمي بملء الشاشة الفاخر مع دعم كافة الأجهزة والمتصفحات
+// تكبير المشغل الأكاديمي بملء الشاشة الفاخر بالعرض مع دعم كافة الأجهزة والمتصفحات
 function togglePlatformFullscreen(videoId, e) {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     let frame = null;
@@ -4219,6 +4276,16 @@ function togglePlatformFullscreen(videoId, e) {
 
     if (!isFs) {
         // Enter Fullscreen
+        // 1. طلب قفل وتدوير الشاشة بالعرض للأجهزة الذكية (Android / Tablets)
+        if (screen.orientation && typeof screen.orientation.lock === 'function') {
+            screen.orientation.lock('landscape').catch(() => {});
+        }
+
+        // 2. إذا كانت شاشة الجوال/التابلت في وضع رأسي (Portrait)، تفعيل التدوير بالعرض
+        if (window.innerWidth < window.innerHeight && window.innerWidth <= 992) {
+            frame.classList.add('force-landscape');
+        }
+
         let req = frame.requestFullscreen || 
                   frame.webkitRequestFullscreen || 
                   frame.webkitRequestFullScreen || 
@@ -4244,6 +4311,12 @@ function togglePlatformFullscreen(videoId, e) {
         }
     } else {
         // Exit Fullscreen
+        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            try { screen.orientation.unlock(); } catch(err) {}
+        }
+        if (frame) {
+            frame.classList.remove('force-landscape');
+        }
         try {
             if (document.exitFullscreen) {
                 document.exitFullscreen().catch(() => {});
@@ -4277,6 +4350,7 @@ function enterFallbackFullscreen(frame, videoId) {
     }
     updateFullscreenButtonsUI(videoId, true);
     
+    // زر الخروج العائم
     let exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
     if (!exitBtn) {
         exitBtn = document.createElement('button');
@@ -4290,10 +4364,31 @@ function enterFallbackFullscreen(frame, videoId) {
         frame.appendChild(exitBtn);
     }
     exitBtn.style.display = 'inline-flex';
+
+    // زر التدوير بالعرض العائم للجوالات والتابلت
+    let rotateBtn = document.getElementById(`fs_rotate_btn_${videoId}`);
+    if (!rotateBtn) {
+        rotateBtn = document.createElement('button');
+        rotateBtn.id = `fs_rotate_btn_${videoId}`;
+        rotateBtn.className = 'ed-fs-rotate-floating-btn';
+        rotateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> <span>' + '{{ __("تدوير بالعرض") }}' + '</span>';
+        rotateBtn.onclick = function(e) {
+            e.stopPropagation();
+            toggleForceLandscape(frame, videoId);
+        };
+        frame.appendChild(rotateBtn);
+    }
+    rotateBtn.style.display = 'inline-flex';
 }
 
 function exitFallbackFullscreen(frame, videoId) {
-    if (frame) frame.classList.remove('is-platform-fullscreen');
+    if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+        try { screen.orientation.unlock(); } catch(err) {}
+    }
+    if (frame) {
+        frame.classList.remove('is-platform-fullscreen');
+        frame.classList.remove('force-landscape');
+    }
     document.body.classList.remove('has-fullscreen-player');
     const card = document.getElementById(`card_video_${videoId}`) || (frame ? frame.closest('.ed-video-card') : null);
     if (card) {
@@ -4302,11 +4397,50 @@ function exitFallbackFullscreen(frame, videoId) {
     updateFullscreenButtonsUI(videoId, false);
     const exitBtn = document.getElementById(`fs_exit_btn_${videoId}`);
     if (exitBtn) exitBtn.style.display = 'none';
+    const rotateBtn = document.getElementById(`fs_rotate_btn_${videoId}`);
+    if (rotateBtn) rotateBtn.style.display = 'none';
+}
+
+function toggleForceLandscape(frame, videoId) {
+    if (!frame) return;
+    const isForced = frame.classList.toggle('force-landscape');
+    const rotateBtn = document.getElementById(`fs_rotate_btn_${videoId}`);
+    if (rotateBtn) {
+        if (isForced) {
+            rotateBtn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> <span>' + '{{ __("عرض عادي") }}' + '</span>';
+        } else {
+            rotateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> <span>' + '{{ __("تدوير بالعرض") }}' + '</span>';
+        }
+    }
+}
+
+function toggleStudentLandscapeMode(videoId, e) {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    const frame = document.getElementById(`player_frame_${videoId}`);
+    if (!frame) return;
+    const isFs = !!(
+        document.fullscreenElement || 
+        document.webkitFullscreenElement || 
+        document.mozFullScreenElement || 
+        document.msFullscreenElement || 
+        frame.classList.contains('is-platform-fullscreen')
+    );
+    if (!isFs) {
+        togglePlatformFullscreen(videoId, e);
+    } else {
+        toggleForceLandscape(frame, videoId);
+    }
 }
 
 function syncFullscreenState() {
     const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
     if (!isFs) {
+        if (screen.orientation && typeof screen.orientation.unlock === 'function') {
+            try { screen.orientation.unlock(); } catch(err) {}
+        }
+        document.querySelectorAll('.ed-player-frame').forEach(f => {
+            f.classList.remove('force-landscape');
+        });
         document.querySelectorAll('.ed-player-frame.is-platform-fullscreen').forEach(f => {
             const vidId = f.id.replace('player_frame_', '');
             exitFallbackFullscreen(f, vidId);
@@ -4316,8 +4450,8 @@ function syncFullscreenState() {
         });
         document.body.classList.remove('has-fullscreen-player');
         document.querySelectorAll('.ed-btn-action-fs').forEach(btn => {
-            btn.innerHTML = '<i class="fa-solid fa-expand"></i> <span>' + '{{ __("تكبير الشاشة") }}' + '</span>';
-            btn.title = '{{ __("تكبير العرض بملء الشاشة") }}';
+            btn.innerHTML = '<i class="fa-solid fa-expand"></i> <span>' + '{{ __("تكبير بالعرض") }}' + '</span>';
+            btn.title = '{{ __("تكبير العرض بملء الشاشة بالعرض") }}';
         });
         document.querySelectorAll('.ed-ctrl-btn.fs i').forEach(icon => {
             icon.className = 'fa-solid fa-expand';
@@ -4332,6 +4466,19 @@ function syncFullscreenState() {
         }
     }
 }
+
+window.addEventListener('resize', function() {
+    if (window.innerWidth > window.innerHeight) {
+        document.querySelectorAll('.ed-player-frame.force-landscape').forEach(f => {
+            f.classList.remove('force-landscape');
+            const vidId = f.id.replace('player_frame_', '');
+            const rotateBtn = document.getElementById(`fs_rotate_btn_${vidId}`);
+            if (rotateBtn) {
+                rotateBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> <span>' + '{{ __("تدوير بالعرض") }}' + '</span>';
+            }
+        });
+    }
+});
 
 document.addEventListener('fullscreenchange', syncFullscreenState);
 document.addEventListener('webkitfullscreenchange', syncFullscreenState);
