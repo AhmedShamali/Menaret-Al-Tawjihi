@@ -41,9 +41,16 @@ class NotificationController extends Controller
         });
 
         // 2. جلب رسائل المعلمين والدعم الفني غير المقروءة أو الحديثة
-        $messages = Message::where('student_id', $student->id)
-            ->where('sender_type', '!=', 'student')
-            ->latest()
+        $msgQuery = Message::where('student_id', $student->id)
+            ->where('sender_type', '!=', 'student');
+
+        if (\Illuminate\Support\Facades\Schema::hasColumn('messages', 'hidden_in_notifications')) {
+            $msgQuery->where(function ($q) {
+                $q->where('hidden_in_notifications', false)->orWhereNull('hidden_in_notifications');
+            });
+        }
+
+        $messages = $msgQuery->latest()
             ->take(50)
             ->get()
             ->map(function ($msg) {
@@ -300,9 +307,13 @@ class NotificationController extends Controller
         }
 
         if (str_starts_with($id, 'msg_')) {
-            // لا نحذف رسالة المحادثة الأصلية لكن نعتبرها مقروءة
+            // لا نحذف رسالة المحادثة الأصلية لكن نعتبرها مقروءة ومخفية من قائمة التنبيهات
             $msgId = (int)str_replace('msg_', '', $id);
-            Message::where('id', $msgId)->where('student_id', $student->id)->update(['is_read' => true]);
+            $updateData = ['is_read' => true];
+            if (\Illuminate\Support\Facades\Schema::hasColumn('messages', 'hidden_in_notifications')) {
+                $updateData['hidden_in_notifications'] = true;
+            }
+            Message::where('id', $msgId)->where('student_id', $student->id)->update($updateData);
             return response()->json(['status' => 'success', 'message' => 'تم إخفاء التنبيه بنجاح']);
         }
 
@@ -325,43 +336,61 @@ class NotificationController extends Controller
         if ($isStudent) {
             $student = CurrentActor::student() ?? auth('student')->user();
             if (!$student) {
-                return response()->json(['count' => 0, 'items' => []]);
+                return response()->json(['success' => true, 'count' => 0, 'items' => []]);
             }
 
-            // إشعارات النظام غير المقروءة للطالب
-            $systemUnread = $student->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+            // 1. إشعارات النظام غير المقروءة للطالب
+            $systemUnread = $student->unreadNotifications()->latest()->take(6)->get()->map(function ($notif) {
                 $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
                 return [
                     'id'         => $notif->id,
                     'title'      => $data['title'] ?? 'إشعار جديد',
                     'message'    => Str::limit($data['message'] ?? '', 55),
                     'type'       => $data['type'] ?? 'system',
-                    'url'        => $data['action_url'] ?? $data['url'] ?? route('student.dashboard'),
+                    'icon'       => $data['icon'] ?? 'fa-bell',
+                    'url'        => route('notifications.open', $notif->id),
+                    'raw_time'   => $notif->created_at,
                     'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
                 ];
             });
 
-            // رسائل المحادثة غير المقروءة للطالب
-            $messagesUnread = Message::where('student_id', $student->id)
+            // 2. رسائل المحادثة غير المقروءة للطالب
+            $messagesQuery = Message::where('student_id', $student->id)
                 ->where('sender_type', '!=', 'student')
                 ->where(function ($q) {
                     $q->where('is_read', false)->orWhereNull('is_read');
-                })
-                ->latest()
-                ->take(5)
-                ->get()
-                ->map(function ($msg) {
-                    return [
-                        'id'         => 'msg_' . $msg->id,
-                        'title'      => $msg->sender_type === 'teacher' ? 'رسالة من المعلم' : 'رد من الدعم الفني',
-                        'message'    => Str::limit($msg->message, 55),
-                        'type'       => 'message',
-                        'url'        => $msg->sender_type === 'teacher' ? route('student.teachers.chat', $msg->teacher_id ?? 1) : route('student.support'),
-                        'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
-                    ];
                 });
 
-            $combined = $systemUnread->concat($messagesUnread)->sortByDesc('created_at')->take(5)->values();
+            if (\Illuminate\Support\Facades\Schema::hasColumn('messages', 'hidden_in_notifications')) {
+                $messagesQuery->where(function ($q) {
+                    $q->where('hidden_in_notifications', false)->orWhereNull('hidden_in_notifications');
+                });
+            }
+
+            $messagesUnread = $messagesQuery->latest()->take(6)->get()->map(function ($msg) {
+                return [
+                    'id'         => 'msg_' . $msg->id,
+                    'title'      => $msg->sender_type === 'teacher' ? 'رسالة من أستاذ المادة 💬' : 'رد من الدعم الفني 🎧',
+                    'message'    => Str::limit($msg->message, 55),
+                    'type'       => 'message',
+                    'icon'       => 'fa-comments',
+                    'url'        => route('notifications.open', 'msg_' . $msg->id),
+                    'raw_time'   => $msg->created_at,
+                    'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
+                ];
+            });
+
+            $combined = $systemUnread->concat($messagesUnread)
+                ->sortByDesc(function ($item) {
+                    return $item['raw_time'] ? $item['raw_time']->timestamp : 0;
+                })
+                ->take(6)
+                ->values()
+                ->map(function ($item) {
+                    unset($item['raw_time']);
+                    return $item;
+                });
+
             $unreadMessagesCount = Message::where('student_id', $student->id)
                 ->where('sender_type', '!=', 'student')
                 ->where(function ($q) {
@@ -372,23 +401,60 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'count' => $totalCount,
-                'items' => $combined
+                'count'   => $totalCount,
+                'items'   => $combined
             ]);
         } elseif ($isWeb && auth()->user()->role === 'admin') {
             $admin = auth()->user();
 
-            $systemUnread = $admin->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+            $systemUnread = $admin->unreadNotifications()->latest()->take(6)->get()->map(function ($notif) {
                 $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
                 return [
                     'id'         => $notif->id,
                     'title'      => $data['title'] ?? 'تنبيه إداري',
                     'message'    => Str::limit($data['message'] ?? '', 55),
                     'type'       => $data['type'] ?? 'system',
-                    'url'        => $data['action_url'] ?? $data['url'] ?? route('admin.dashboard'),
+                    'icon'       => $data['icon'] ?? 'fa-shield-halved',
+                    'url'        => route('notifications.open', $notif->id),
+                    'raw_time'   => $notif->created_at,
                     'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
                 ];
             });
+
+            // رسائل الطلاب وتذاكر الدعم غير المقروءة للمدير
+            $messagesUnread = Message::whereNull('teacher_id')
+                ->where('sender_type', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->with('student')
+                ->latest()
+                ->take(6)
+                ->get()
+                ->map(function ($msg) {
+                    $studentName = $msg->student ? ($msg->student->name_ar ?? $msg->student->name ?? 'طالب') : 'طالب';
+                    return [
+                        'id'         => 'msg_' . $msg->id,
+                        'title'      => 'رسالة دعم من ' . $studentName,
+                        'message'    => Str::limit($msg->message, 55),
+                        'type'       => 'message',
+                        'icon'       => 'fa-comment-dots',
+                        'url'        => route('notifications.open', 'msg_' . $msg->id),
+                        'raw_time'   => $msg->created_at,
+                        'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
+                    ];
+                });
+
+            $combined = $systemUnread->concat($messagesUnread)
+                ->sortByDesc(function ($item) {
+                    return $item['raw_time'] ? $item['raw_time']->timestamp : 0;
+                })
+                ->take(6)
+                ->values()
+                ->map(function ($item) {
+                    unset($item['raw_time']);
+                    return $item;
+                });
 
             $msgCount = Message::whereNull('teacher_id')
                 ->where('sender_type', 'student')
@@ -401,23 +467,60 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'count' => $totalCount,
-                'items' => $systemUnread
+                'count'   => $totalCount,
+                'items'   => $combined
             ]);
         } elseif ($isWeb && auth()->user()->role === 'teacher') {
             $teacher = auth()->user();
 
-            $systemUnread = $teacher->unreadNotifications()->latest()->take(5)->get()->map(function ($notif) {
+            $systemUnread = $teacher->unreadNotifications()->latest()->take(6)->get()->map(function ($notif) {
                 $data = is_array($notif->data) ? $notif->data : json_decode($notif->data, true) ?? [];
                 return [
                     'id'         => $notif->id,
                     'title'      => $data['title'] ?? 'تنبيه أكاديمي',
                     'message'    => Str::limit($data['message'] ?? '', 55),
                     'type'       => $data['type'] ?? 'system',
-                    'url'        => $data['action_url'] ?? $data['url'] ?? route('teacher.dashboard'),
+                    'icon'       => $data['icon'] ?? 'fa-chalkboard-teacher',
+                    'url'        => route('notifications.open', $notif->id),
+                    'raw_time'   => $notif->created_at,
                     'created_at' => $notif->created_at ? $notif->created_at->diffForHumans() : 'الآن',
                 ];
             });
+
+            // استفسارات الطلاب لمعلم المادة
+            $messagesUnread = Message::where('teacher_id', $teacher->id)
+                ->where('sender_type', 'student')
+                ->where(function ($q) {
+                    $q->where('is_read', false)->orWhereNull('is_read');
+                })
+                ->with('student')
+                ->latest()
+                ->take(6)
+                ->get()
+                ->map(function ($msg) {
+                    $studentName = $msg->student ? ($msg->student->name_ar ?? $msg->student->name ?? 'طالب') : 'طالب';
+                    return [
+                        'id'         => 'msg_' . $msg->id,
+                        'title'      => 'استفسار دراسي من ' . $studentName,
+                        'message'    => Str::limit($msg->message, 55),
+                        'type'       => 'message',
+                        'icon'       => 'fa-comments',
+                        'url'        => route('notifications.open', 'msg_' . $msg->id),
+                        'raw_time'   => $msg->created_at,
+                        'created_at' => $msg->created_at ? $msg->created_at->diffForHumans() : 'الآن',
+                    ];
+                });
+
+            $combined = $systemUnread->concat($messagesUnread)
+                ->sortByDesc(function ($item) {
+                    return $item['raw_time'] ? $item['raw_time']->timestamp : 0;
+                })
+                ->take(6)
+                ->values()
+                ->map(function ($item) {
+                    unset($item['raw_time']);
+                    return $item;
+                });
 
             $msgCount = Message::where('teacher_id', $teacher->id)
                 ->where('sender_type', 'student')
@@ -430,15 +533,15 @@ class NotificationController extends Controller
 
             return response()->json([
                 'success' => true,
-                'count' => $totalCount,
-                'items' => $systemUnread
+                'count'   => $totalCount,
+                'items'   => $combined
             ]);
         }
 
         return response()->json([
             'success' => true,
-            'count' => 0,
-            'items' => []
+            'count'   => 0,
+            'items'   => []
         ]);
     }
 }

@@ -230,6 +230,66 @@ class NotificationService
     }
 
     /**
+     * إرسال تنبيه لمستخدم بالنظام (معلم أو مدير أو موظف)
+     */
+    public static function notifyUser(
+        int $userId,
+        string $title,
+        string $message,
+        string $type = 'system',
+        ?string $actionUrl = null,
+        ?string $icon = null,
+        array $extraData = []
+    ): bool {
+        try {
+            $user = User::find($userId);
+            if (!$user) return false;
+
+            $defaultIcons = [
+                'message' => 'fa-comments',
+                'chat'    => 'fa-comments',
+                'support' => 'fa-reply',
+                'exam'    => 'fa-pen-to-square',
+                'grade'   => 'fa-marker',
+                'student' => 'fa-user-graduate',
+                'payment' => 'fa-wallet',
+                'system'  => 'fa-bell',
+            ];
+
+            $iconClass = $icon ?? ($defaultIcons[$type] ?? 'fa-bell');
+
+            $payload = array_merge([
+                'title'      => $title,
+                'message'    => $message,
+                'type'       => $type,
+                'action_url' => $actionUrl,
+                'icon'       => $iconClass,
+                'created_at' => now()->toIso8601String(),
+            ], $extraData);
+
+            $notifType = ($user->role === 'admin') 
+                ? 'App\\Notifications\\AdminAlert' 
+                : (($user->role === 'teacher') ? 'App\\Notifications\\TeacherAlert' : 'App\\Notifications\\SystemAlert');
+
+            DB::table('notifications')->insert([
+                'id'              => (string) Str::uuid(),
+                'type'            => $notifType,
+                'notifiable_type' => 'App\\Models\\User',
+                'notifiable_id'   => $userId,
+                'data'            => json_encode($payload, JSON_UNESCAPED_UNICODE),
+                'read_at'         => null,
+                'created_at'      => now(),
+                'updated_at'      => now(),
+            ]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('فشل إرسال الإشعار للمستخدم: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
      * إرسال تنبيه لكافة الطلاب المسجلين في مادة محددة
      */
     public static function notifyEnrolledStudents(

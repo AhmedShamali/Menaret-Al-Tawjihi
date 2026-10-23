@@ -3647,6 +3647,18 @@
                                     {{ __('عرض كافة التنبيهات ←') }}
                                 </a>
                             </div>
+                        @elseif(auth()->check() && auth()->user()->role === 'admin')
+                            <div style="padding: 10px; background: var(--ed-surface-alt); border-top: 1px solid var(--ed-border); text-align: center;">
+                                <a href="{{ route('admin.messages.index') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--ed-primary); text-decoration: none;">
+                                    {{ __('عرض كافة الرسائل والوارد ←') }}
+                                </a>
+                            </div>
+                        @elseif(auth()->check() && auth()->user()->role === 'teacher')
+                            <div style="padding: 10px; background: var(--ed-surface-alt); border-top: 1px solid var(--ed-border); text-align: center;">
+                                <a href="{{ route('teacher.messages.index') }}" style="font-size: 0.8rem; font-weight: 600; color: var(--ed-primary); text-decoration: none;">
+                                    {{ __('عرض كافة استفسارات الطلاب ←') }}
+                                </a>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -3879,6 +3891,45 @@
                 console.error('Error marking all notifications read:', err);
             });
         }
+
+        window.updateNavNotificationsList = function(items) {
+            const list = document.getElementById('navNotificationsList');
+            if (!list || !Array.isArray(items)) return;
+
+            if (items.length === 0) {
+                list.innerHTML = '<div style="padding: 28px 16px; text-align: center; color: var(--ed-text-muted);">' +
+                    '<i class="fa-regular fa-circle-check" style="font-size: 1.6rem; margin-bottom: 6px; display: block; color: var(--ed-success); opacity: 0.8;"></i>' +
+                    '<span style="font-size: 0.84rem; font-weight: 500;">' + @json(__('لا توجد تنبيهات جديدة')) + '</span></div>';
+                return;
+            }
+
+            let html = '';
+            items.forEach(item => {
+                const icon = item.icon || 'fa-bell';
+                const title = item.title || '';
+                const msg = item.message || '';
+                const time = item.created_at || 'الآن';
+                const url = item.url || '#';
+
+                html += `<a href="${url}" class="notif-dropdown-item" style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--ed-border-subtle); text-decoration: none; color: inherit; transition: var(--transition-smooth);" onmouseover="this.style.background='var(--ed-surface-alt)'" onmouseout="this.style.background='transparent'">
+                    <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--ed-primary-soft); color: var(--ed-primary); display: grid; place-items: center; flex-shrink: 0; font-size: 0.95rem;">
+                        <i class="fa-solid ${icon}"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 0.82rem; font-weight: 700; color: var(--ed-text-main); margin-bottom: 2px;">
+                            ${title}
+                        </div>
+                        <div style="font-size: 0.78rem; font-weight: 500; color: var(--ed-text-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">
+                            ${msg}
+                        </div>
+                        <span style="font-size: 0.7rem; color: var(--ed-text-dim); display: flex; align-items: center; gap: 4px;">
+                            <i class="fa-regular fa-clock" style="font-size: 0.65rem;"></i> ${time}
+                        </span>
+                    </div>
+                </a>`;
+            });
+            list.innerHTML = html;
+        };
 
         // الحفاظ التام على الواجهات الفاتحة الأصلية وإزالة أي أثر للوضع الداكن
         try {

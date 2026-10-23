@@ -199,7 +199,18 @@ class SchemaHealer
                 }
             }
 
-            // 9. فحص وإنشاء جداول الذكاء الاصطناعي الأكاديمي الشامل
+            // 9. فحص وتحديث جدول الرسائل messages لدعم إخفاء التنبيهات
+            if (Schema::hasTable('messages')) {
+                if (!Schema::hasColumn('messages', 'hidden_in_notifications')) {
+                    try {
+                        Schema::table('messages', function (Blueprint $table) {
+                            $table->boolean('hidden_in_notifications')->default(false);
+                        });
+                    } catch (\Throwable $e) {}
+                }
+            }
+
+            // 10. فحص وإنشاء جداول الذكاء الاصطناعي الأكاديمي الشامل
             if (!Schema::hasTable('ai_conversations')) {
                 Schema::create('ai_conversations', function (Blueprint $table) {
                         $table->id();

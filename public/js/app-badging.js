@@ -204,6 +204,9 @@
         .then(function (data) {
             if (data && typeof data.count !== 'undefined') {
                 window.updateAppNotificationBadge(data.count);
+                if (window.updateNavNotificationsList && Array.isArray(data.items)) {
+                    window.updateNavNotificationsList(data.items);
+                }
             }
         })
         .catch(function () {});

@@ -1000,7 +1000,7 @@ class CommunicationController extends Controller
                     "رسالة جديدة من المعلم ({$teacher->name})",
                     \Illuminate\Support\Str::limit($request->message, 80),
                     'chat',
-                    route('admin.teachers.chat', ['teacher_id' => $teacher->id]),
+                    route('admin.teachers.direct_chat', ['teacher_id' => $teacher->id]),
                     'fa-comments'
                 );
             } catch (\Throwable $e) {}
