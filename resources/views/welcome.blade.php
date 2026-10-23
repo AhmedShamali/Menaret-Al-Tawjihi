@@ -357,27 +357,27 @@
         }
         .royal-navbar-inner {
             width: 100%;
-            max-width: 1440px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 0 24px;
+            padding: 0 clamp(16px, 2.5vw, 36px);
             height: 72px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             flex-wrap: nowrap;
             box-sizing: border-box;
         }
         .royal-brand-group {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             text-decoration: none;
             flex-shrink: 0;
         }
         .royal-crest-seal {
-            width: 52px;
-            height: 52px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: #ffffff;
             border: 2px solid var(--royal-gold);
@@ -395,19 +395,21 @@
             border-radius: 50%;
         }
         .royal-brand-meta h1 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 900;
             color: var(--royal-navy);
             line-height: 1.25;
             letter-spacing: -0.2px;
             margin: 0;
+            white-space: nowrap;
         }
         .royal-brand-meta p {
-            font-size: 12px;
+            font-size: 11.5px;
             color: var(--academic-text-muted);
             font-weight: 600;
             margin-top: 2px;
             margin-bottom: 0;
+            white-space: nowrap;
         }
 
         .royal-nav-menu {
@@ -416,21 +418,24 @@
             list-style: none;
             margin: 0;
             padding: 0;
-            gap: 4px;
+            gap: 2px;
             height: 100%;
+            flex-shrink: 1;
+            min-width: 0;
         }
         .royal-nav-item {
             height: 100%;
             display: flex;
             align-items: center;
+            flex-shrink: 0;
         }
         .royal-nav-link {
             display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 11px;
+            gap: 5px;
+            padding: 6px 9px;
             color: var(--academic-text-body);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             border-radius: var(--radius-sm);
             transition: var(--transition);
@@ -439,7 +444,7 @@
         }
         .royal-nav-link i {
             color: var(--royal-gold);
-            font-size: 13px;
+            font-size: 12px;
             transition: var(--transition);
         }
         .royal-nav-link:hover {
@@ -2012,21 +2017,14 @@
             .footer-inner { grid-template-columns: 1fr 1fr; }
         }
 
-        /* شاشات اللابتوب والمتوسطة (1121px إلى 1400px): منع أي تداخل أو تكدس في شريط القوائم نهائياً */
-        @media (max-width: 1400px) {
+        /* شاشات اللابتوب والمتوسطة: منع أي تداخل نهائياً على جميع مقاسات الشاشات */
+        @media (max-width: 1380px) {
             .royal-navbar-inner {
                 padding: 0 16px;
                 gap: 10px;
-                flex-wrap: nowrap;
-            }
-            .royal-brand-group {
-                gap: 8px;
-            }
-            .royal-brand-meta h1 {
-                font-size: 16px;
             }
             .royal-brand-meta p {
-                font-size: 11px;
+                display: none;
             }
             .royal-nav-menu {
                 gap: 2px;
@@ -2035,35 +2033,18 @@
                 padding: 6px 7px;
                 font-size: 12px;
                 gap: 4px;
-                white-space: nowrap;
-            }
-            .royal-nav-link i {
-                font-size: 11.5px;
-            }
-            .royal-nav-actions {
-                gap: 6px;
-                flex-shrink: 0;
-            }
-            /* إخفاء زر تطبيق الجوال من شريط القوائم على شاشات اللابتوب لمنع أي تداخل نهائياً مع وجوده بالشريط العلوي */
-            .royal-nav-actions .btn-royal-app-download {
-                display: none !important;
             }
             .btn-royal-login {
-                padding: 6px 11px;
+                padding: 6px 12px;
                 font-size: 12px;
-                white-space: nowrap;
             }
             .btn-royal-gold {
-                padding: 6px 13px;
+                padding: 6px 14px;
                 font-size: 12px;
-                white-space: nowrap;
             }
         }
 
-        @media (max-width: 1280px) {
-            .royal-brand-meta p {
-                display: none;
-            }
+        @media (max-width: 1240px) {
             .royal-nav-link {
                 padding: 5px 6px;
                 font-size: 11.5px;
@@ -3212,19 +3193,6 @@
             </ul>
 
             <div class="royal-nav-actions">
-                <!-- زر تحميل وتثبيت تطبيق الجوال -->
-                <button type="button" 
-                        class="btn-royal-app-download" 
-                        onclick="triggerPwaInstall()" 
-                        title="{{ __('تحميل وتثبيت تطبيق Step by Step على هاتفك أو حاسوبك') }}"
-                        aria-label="{{ __('تحميل التطبيق') }}">
-                    <span class="royal-app-icon-wrap">
-                        <i class="fa-solid fa-mobile-screen-button"></i>
-                        <span class="royal-app-arrow-badge"><i class="fa-solid fa-arrow-down"></i></span>
-                    </span>
-                    <span class="label-full">{{ __('تطبيق الجوال') }}</span>
-                    <span class="label-short" style="display: none;">{{ __('التطبيق') }}</span>
-                </button>
                 @if(Auth::guard('student')->check() || Auth::check())
                     <a href="{{ route('dashboard') }}" class="btn-royal-gold" title="{{ __('لوحة التحكم') }}">
                         <i class="fa-solid fa-gauge-high"></i>

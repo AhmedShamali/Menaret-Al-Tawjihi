@@ -213,8 +213,9 @@
    ========================================================================= */
 .ai-widget-wrapper {
     position: fixed;
-    bottom: 24px;
-    {{ app()->getLocale() === 'ar' ? 'left: 78px;' : 'right: 78px;' }}
+    bottom: 84px;
+    right: 24px;
+    left: auto;
     z-index: 99998;
     font-family: inherit;
     --ai-primary: #1d4ed8;
@@ -239,8 +240,8 @@ html[dir="ltr"] .ai-widget-wrapper {
 @media (max-width: 1024px) {
     .ai-widget-wrapper {
         bottom: calc(122px + env(safe-area-inset-bottom, 0px));
-        left: 14px;
-        right: auto;
+        right: 14px;
+        left: auto;
     }
     html[dir="ltr"] .ai-widget-wrapper {
         left: auto !important;
@@ -251,8 +252,8 @@ html[dir="ltr"] .ai-widget-wrapper {
 @media (max-width: 768px) {
     .ai-widget-wrapper {
         bottom: calc(124px + env(safe-area-inset-bottom, 0px));
-        left: 14px;
-        right: auto;
+        right: 14px;
+        left: auto;
     }
     html[dir="ltr"] .ai-widget-wrapper {
         left: auto !important;
@@ -367,7 +368,8 @@ html[dir="ltr"] .ai-widget-wrapper {
 .ai-widget-panel {
     position: absolute;
     bottom: 58px;
-    {{ app()->getLocale() === 'ar' ? 'left: 0;' : 'right: 0;' }}
+    right: 0;
+    left: auto;
     width: 440px;
     max-width: calc(100vw - 32px);
     height: 640px;
@@ -383,8 +385,8 @@ html[dir="ltr"] .ai-widget-wrapper {
 }
 
 html[dir="ltr"] .ai-widget-panel {
-    left: auto !important;
     right: 0 !important;
+    left: auto !important;
 }
 @keyframes aiPanelSlideUp {
     from { opacity: 0; transform: translateY(14px) scale(0.97); }
